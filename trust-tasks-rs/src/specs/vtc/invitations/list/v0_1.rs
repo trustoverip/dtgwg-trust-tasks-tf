@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,61 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Registry view of one issued Invitation Credential. Carries no credential material — the VIC itself is returned only once, by `issue`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "InvitationSummary",
-///  "description": "Registry view of one issued Invitation Credential. Carries no credential material — the VIC itself is returned only once, by `issue`.",
-///  "type": "object",
-///  "required": [
-///    "id",
-///    "issuedAt",
-///    "issuedBy",
-///    "subjectDid"
-///  ],
-///  "properties": {
-///    "id": {
-///      "description": "VIC identifier; the revoke target.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "issuedAt": {
-///      "description": "When it was issued.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "issuedBy": {
-///      "description": "DID of the operator who issued it.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "revokedAt": {
-///      "description": "When it was revoked; absent while live.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "role": {
-///      "description": "Role granted on redemption, when the invitation names one.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "subjectDid": {
-///      "description": "DID the invitation admits.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "validUntil": {
-///      "description": "Expiry, when the invitation is time-bounded.",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "invitationSummary"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -237,16 +158,6 @@ impl InvitationSummary {
 }
 ///VIC identifier; the revoke target.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "VIC identifier; the revoke target.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct InvitationSummaryId(::std::string::String);
@@ -306,16 +217,6 @@ impl<'de> ::serde::Deserialize<'de> for InvitationSummaryId {
 }
 ///DID of the operator who issued it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "DID of the operator who issued it.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct InvitationSummaryIssuedBy(::std::string::String);
@@ -375,16 +276,6 @@ impl<'de> ::serde::Deserialize<'de> for InvitationSummaryIssuedBy {
 }
 ///Role granted on redemption, when the invitation names one.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Role granted on redemption, when the invitation names one.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct InvitationSummaryRole(::std::string::String);
@@ -444,16 +335,6 @@ impl<'de> ::serde::Deserialize<'de> for InvitationSummaryRole {
 }
 ///DID the invitation admits.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "DID the invitation admits.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct InvitationSummarySubjectDid(::std::string::String);
@@ -513,22 +394,6 @@ impl<'de> ::serde::Deserialize<'de> for InvitationSummarySubjectDid {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/invitations/list/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -550,32 +415,6 @@ impl Payload {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "invitations"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "invitations": {
-///      "description": "Every issued invitation, live and revoked. Never includes credential material.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/InvitationSummary"
-///      }
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -823,14 +662,14 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/invitations/list/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"InvitationSummary\": {\n      \"$anchor\": \"invitationSummary\",\n      \"additionalProperties\": false,\n      \"description\": \"Registry view of one issued Invitation Credential. Carries no credential material — the VIC itself is returned only once, by `issue`.\",\n      \"properties\": {\n        \"id\": {\n          \"description\": \"VIC identifier; the revoke target.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issuedAt\": {\n          \"description\": \"When it was issued.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"issuedBy\": {\n          \"description\": \"DID of the operator who issued it.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When it was revoked; absent while live.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"role\": {\n          \"description\": \"Role granted on redemption, when the invitation names one.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"subjectDid\": {\n          \"description\": \"DID the invitation admits.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"validUntil\": {\n          \"description\": \"Expiry, when the invitation is time-bounded.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"subjectDid\",\n        \"issuedBy\",\n        \"issuedAt\"\n      ],\n      \"title\": \"InvitationSummary\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"invitations\": {\n          \"description\": \"Every issued invitation, live and revoked. Never includes credential material.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/InvitationSummary\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"invitations\"\n      ],\n      \"title\": \"VTC Invitations List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/invitations/list/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"title\": \"VTC Invitations List — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"InvitationSummary\":{\"$anchor\":\"invitationSummary\",\"additionalProperties\":false,\"description\":\"Registry view of one issued Invitation Credential. Carries no credential material — the VIC itself is returned only once, by `issue`.\",\"properties\":{\"id\":{\"description\":\"VIC identifier; the revoke target.\",\"minLength\":1,\"type\":\"string\"},\"issuedAt\":{\"description\":\"When it was issued.\",\"format\":\"date-time\",\"type\":\"string\"},\"issuedBy\":{\"description\":\"DID of the operator who issued it.\",\"minLength\":1,\"type\":\"string\"},\"revokedAt\":{\"description\":\"When it was revoked; absent while live.\",\"format\":\"date-time\",\"type\":\"string\"},\"role\":{\"description\":\"Role granted on redemption, when the invitation names one.\",\"minLength\":1,\"type\":\"string\"},\"subjectDid\":{\"description\":\"DID the invitation admits.\",\"minLength\":1,\"type\":\"string\"},\"validUntil\":{\"description\":\"Expiry, when the invitation is time-bounded.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"id\",\"subjectDid\",\"issuedBy\",\"issuedAt\"],\"title\":\"InvitationSummary\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"invitations\":{\"description\":\"Every issued invitation, live and revoked. Never includes credential material.\",\"items\":{\"$ref\":\"#/$defs/InvitationSummary\"},\"type\":\"array\"}},\"required\":[\"invitations\"],\"title\":\"VTC Invitations List — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/invitations/list/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"title\":\"VTC Invitations List — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/invitations/list/0.1#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"InvitationSummary\": {\n      \"$anchor\": \"invitationSummary\",\n      \"additionalProperties\": false,\n      \"description\": \"Registry view of one issued Invitation Credential. Carries no credential material — the VIC itself is returned only once, by `issue`.\",\n      \"properties\": {\n        \"id\": {\n          \"description\": \"VIC identifier; the revoke target.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issuedAt\": {\n          \"description\": \"When it was issued.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"issuedBy\": {\n          \"description\": \"DID of the operator who issued it.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When it was revoked; absent while live.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"role\": {\n          \"description\": \"Role granted on redemption, when the invitation names one.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"subjectDid\": {\n          \"description\": \"DID the invitation admits.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"validUntil\": {\n          \"description\": \"Expiry, when the invitation is time-bounded.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"subjectDid\",\n        \"issuedBy\",\n        \"issuedAt\"\n      ],\n      \"title\": \"InvitationSummary\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"invitations\": {\n          \"description\": \"Every issued invitation, live and revoked. Never includes credential material.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/InvitationSummary\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"invitations\"\n      ],\n      \"title\": \"VTC Invitations List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"InvitationSummary\":{\"$anchor\":\"invitationSummary\",\"additionalProperties\":false,\"description\":\"Registry view of one issued Invitation Credential. Carries no credential material — the VIC itself is returned only once, by `issue`.\",\"properties\":{\"id\":{\"description\":\"VIC identifier; the revoke target.\",\"minLength\":1,\"type\":\"string\"},\"issuedAt\":{\"description\":\"When it was issued.\",\"format\":\"date-time\",\"type\":\"string\"},\"issuedBy\":{\"description\":\"DID of the operator who issued it.\",\"minLength\":1,\"type\":\"string\"},\"revokedAt\":{\"description\":\"When it was revoked; absent while live.\",\"format\":\"date-time\",\"type\":\"string\"},\"role\":{\"description\":\"Role granted on redemption, when the invitation names one.\",\"minLength\":1,\"type\":\"string\"},\"subjectDid\":{\"description\":\"DID the invitation admits.\",\"minLength\":1,\"type\":\"string\"},\"validUntil\":{\"description\":\"Expiry, when the invitation is time-bounded.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"id\",\"subjectDid\",\"issuedBy\",\"issuedAt\"],\"title\":\"InvitationSummary\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"invitations\":{\"description\":\"Every issued invitation, live and revoked. Never includes credential material.\",\"items\":{\"$ref\":\"#/$defs/InvitationSummary\"},\"type\":\"array\"}},\"required\":[\"invitations\"],\"title\":\"VTC Invitations List — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

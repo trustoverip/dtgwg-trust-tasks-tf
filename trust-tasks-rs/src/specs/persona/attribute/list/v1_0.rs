@@ -34,123 +34,6 @@ pub mod error {
 }
 ///One atomic fact a holder keeps about themselves. Several attributes MAY share a `type` — three phone numbers, a legal name and a preferred name — which is why `attributeId` is the identity of a fact and `type` is not. The pool is flat and unordered; ordering is a profile's concern.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Attribute",
-///  "description": "One atomic fact a holder keeps about themselves. Several attributes MAY share a `type` — three phone numbers, a legal name and a preferred name — which is why `attributeId` is the identity of a fact and `type` is not. The pool is flat and unordered; ordering is a profile's concern.",
-///  "type": "object",
-///  "required": [
-///    "attributeId",
-///    "provenance",
-///    "type",
-///    "updatedAt",
-///    "valueType",
-///    "version"
-///  ],
-///  "properties": {
-///    "attributeId": {
-///      "$ref": "#/definitions/Ulid"
-///    },
-///    "createdAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "endorsements": {
-///      "description": "Vault identifiers of credentials in which a third party endorses this value — a colleague vouching for a skill, an employer confirming a title. INVENTORY, not evidence: the value remains whatever its `provenance` says, and a vouched self-assertion is still self-asserted. Folding a vouch into `provenance` would make it render as attested, which is the one thing provenance exists to prevent. Not disclosed with the value; a holder who wants a counterparty to see an endorsement presents the credential itself. Absent when there are none.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "minLength": 1
-///      },
-///      "maxItems": 64,
-///      "uniqueItems": true
-///    },
-///    "label": {
-///      "description": "The holder's own words for this attribute, shown in a picker. Never disclosed to a verifier; it is a note to self.",
-///      "type": "string",
-///      "maxLength": 128
-///    },
-///    "provenance": {
-///      "$ref": "#/definitions/Provenance"
-///    },
-///    "release": {
-///      "description": "Set only where the holder decided it explicitly. Absent resolves from the claim-type registry.",
-///      "$ref": "#/definitions/ReleaseRequirement"
-///    },
-///    "retainedVersions": {
-///      "description": "Earlier versions of this attribute the maintainer still holds, and why. A maintainer that keeps a replaced value to serve `pinVersion` MUST list it here: a holder who overwrote a value may reasonably believe it gone, and this is how they learn otherwise. Values are not included — the holder reads one through the profile that pins it, or removes it with persona/attribute/purge-version. Absent when none are held.",
-///      "type": "array",
-///      "items": {
-///        "type": "object",
-///        "required": [
-///          "pinnedBy",
-///          "version"
-///        ],
-///        "properties": {
-///          "pinnedBy": {
-///            "description": "The profiles pinning this version — the reason it is kept. A version no profile pins is not retained.",
-///            "type": "array",
-///            "items": {
-///              "$ref": "#/definitions/Ulid"
-///            },
-///            "maxItems": 256,
-///            "minItems": 1
-///          },
-///          "updatedAt": {
-///            "description": "When this version was written.",
-///            "type": "string",
-///            "format": "date-time"
-///          },
-///          "version": {
-///            "$ref": "#/definitions/Version"
-///          }
-///        },
-///        "additionalProperties": false
-///      },
-///      "maxItems": 64
-///    },
-///    "sensitivity": {
-///      "description": "Set only where the holder decided it explicitly. Absent resolves from the claim-type registry — see CLAIM-TYPES.md §4, 'store the override, derive the default'.",
-///      "$ref": "#/definitions/Sensitivity"
-///    },
-///    "stale": {
-///      "description": "Present and true when a `credentialBacked` value could not be re-derived. `staleReason` says why. A maintainer MUST refuse to disclose a stale attribute.",
-///      "type": "boolean"
-///    },
-///    "staleReason": {
-///      "description": "Why re-derivation failed. Present only alongside `stale`.",
-///      "type": "string",
-///      "enum": [
-///        "revoked",
-///        "expired",
-///        "archived",
-///        "deleted",
-///        "notFound"
-///      ]
-///    },
-///    "type": {
-///      "$ref": "#/definitions/ClaimType"
-///    },
-///    "updatedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "value": {
-///      "description": "The fact itself, agreeing with `valueType`. Encrypted at rest by the maintainer.\n\nOPTIONAL, and its absence is meaningful in two distinct situations a consumer MUST NOT conflate: the caller asked for a metadata-only view (`list` without `includeValues`, which is the DEFAULT and the common case), or a credential-backed value could not be re-derived. `stale` tells them apart. Requiring this member would make the default listing unrepresentable — a maintainer would have to choose between disclosing every value in bulk and emitting a non-conformant response."
-///    },
-///    "valueType": {
-///      "$ref": "#/definitions/ValueType"
-///    },
-///    "version": {
-///      "$ref": "#/definitions/Version"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -214,15 +97,6 @@ impl Attribute {
 }
 ///`AttributeEndorsementsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct AttributeEndorsementsItem(::std::string::String);
@@ -282,16 +156,6 @@ impl<'de> ::serde::Deserialize<'de> for AttributeEndorsementsItem {
 }
 ///The holder's own words for this attribute, shown in a picker. Never disclosed to a verifier; it is a note to self.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The holder's own words for this attribute, shown in a picker. Never disclosed to a verifier; it is a note to self.",
-///  "type": "string",
-///  "maxLength": 128
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct AttributeLabel(::std::string::String);
@@ -351,38 +215,6 @@ impl<'de> ::serde::Deserialize<'de> for AttributeLabel {
 }
 ///`AttributeRetainedVersionsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "pinnedBy",
-///    "version"
-///  ],
-///  "properties": {
-///    "pinnedBy": {
-///      "description": "The profiles pinning this version — the reason it is kept. A version no profile pins is not retained.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Ulid"
-///      },
-///      "maxItems": 256,
-///      "minItems": 1
-///    },
-///    "updatedAt": {
-///      "description": "When this version was written.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "version": {
-///      "$ref": "#/definitions/Version"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -406,22 +238,6 @@ impl AttributeRetainedVersionsItem {
 }
 ///Why re-derivation failed. Present only alongside `stale`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Why re-derivation failed. Present only alongside `stale`.",
-///  "type": "string",
-///  "enum": [
-///    "revoked",
-///    "expired",
-///    "archived",
-///    "deleted",
-///    "notFound"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -500,19 +316,6 @@ The token is the maintainer's own; no external vocabulary is primary. External v
 
 The `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ClaimType",
-///  "description": "The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\n\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\n\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1,
-///  "pattern": "^(x:)?[a-z][a-zA-Z0-9]*(\\.[a-z][a-zA-Z0-9]*)*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ClaimType(::std::string::String);
@@ -584,21 +387,6 @@ impl<'de> ::serde::Deserialize<'de> for ClaimType {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -620,15 +408,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -692,55 +471,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Enumerate the holder's attribute pool, optionally narrowed to a vocabulary prefix. Cursor-paginated. Values are omitted unless asked for, so a picker can render the pool without decrypting every fact in it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/persona/attribute/list/1.0",
-///  "title": "Payload",
-///  "description": "Enumerate the holder's attribute pool, optionally narrowed to a vocabulary prefix. Cursor-paginated. Values are omitted unless asked for, so a picker can render the pool without decrypting every fact in it.",
-///  "type": "object",
-///  "properties": {
-///    "cursor": {
-///      "description": "Opaque continuation token from a prior response's `nextCursor`. A producer MUST NOT construct or parse one.",
-///      "type": "string",
-///      "maxLength": 4096
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "includeSensitive": {
-///      "description": "When false (the default), a listing that asked for values still omits the value of any attribute resolving to `sensitivity: high` — the metadata is returned, the plaintext is not. Setting it asks for those too.\n\nThis is the half of sensitivity that is not cosmetic. A consumer that masks a value it has already received defends a screen; it does not keep a card number out of a log, a crash dump or a process's memory. Ignoring this member and masking client-side is a conforming implementation of nothing.\n\nSeparate from `includeValues` rather than a third state of it, because the two escalations are answerable by different callers: a picker wants every name and no card, and should not have to choose between plaintext for everything and plaintext for nothing.\n\nHas no effect unless `includeValues` is also set: it widens that request, and can never be the thing that introduces plaintext on its own.",
-///      "default": false,
-///      "type": "boolean"
-///    },
-///    "includeStale": {
-///      "description": "When true (the default), credential-backed attributes whose backing could not be re-derived are returned carrying `stale` and `staleReason`. Set false to omit them. The default is true because a holder needs to SEE that a credential-backed fact has gone stale — silently dropping it would present a pool that looks smaller than it is, and the holder would not know a claim had stopped being presentable.",
-///      "default": true,
-///      "type": "boolean"
-///    },
-///    "includeValues": {
-///      "description": "When false (the default), each returned attribute carries its metadata and no `value`. A pool listing is the common case and it does not need plaintext: a picker renders `type` and `label`. Defaulting to false means the expensive, sensitive path is the one a producer has to ask for.",
-///      "default": false,
-///      "type": "boolean"
-///    },
-///    "limit": {
-///      "description": "Maximum attributes to return. The maintainer MAY return fewer for reasons of its own and a producer MUST NOT infer exhaustion from a short page — only an absent `nextCursor` means the end.",
-///      "default": 100,
-///      "type": "integer",
-///      "maximum": 500.0,
-///      "minimum": 1.0
-///    },
-///    "typePrefix": {
-///      "description": "Narrows the result to attributes whose `type` begins with this string, compared over the UTF-8 encoding. Because the vocabulary is dotted most-general-segment-first, `phone` selects every phone number and `name` every name — which is the access pattern a builder actually has. The maintainer MUST NOT interpret the value further; a prefix that ends mid-segment is a byte comparison like any other.",
-///      "type": "string",
-///      "maxLength": 128
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -797,16 +527,6 @@ impl Payload {
 }
 ///Opaque continuation token from a prior response's `nextCursor`. A producer MUST NOT construct or parse one.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Opaque continuation token from a prior response's `nextCursor`. A producer MUST NOT construct or parse one.",
-///  "type": "string",
-///  "maxLength": 4096
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadCursor(::std::string::String);
@@ -866,16 +586,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCursor {
 }
 ///Narrows the result to attributes whose `type` begins with this string, compared over the UTF-8 encoding. Because the vocabulary is dotted most-general-segment-first, `phone` selects every phone number and `name` every name — which is the access pattern a builder actually has. The maintainer MUST NOT interpret the value further; a prefix that ends mid-segment is a byte comparison like any other.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Narrows the result to attributes whose `type` begins with this string, compared over the UTF-8 encoding. Because the vocabulary is dotted most-general-segment-first, `phone` selects every phone number and `name` every name — which is the access pattern a builder actually has. The maintainer MUST NOT interpret the value further; a prefix that ends mid-segment is a byte comparison like any other.",
-///  "type": "string",
-///  "maxLength": 128
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadTypePrefix(::std::string::String);
@@ -938,22 +648,6 @@ How strongly a credential-backed claim is hidden when presented, ordered most pr
 
 The distinction between the first two and the last two is of kind, not degree: only `predicate` and `derived` avoid handing two verifiers a join key. A maintainer MUST default to the highest rung the credential's format supports, and MUST NOT silently fall to a lower one — a request that cannot be satisfied at the rung a producer asked for is refused, because a silent privacy downgrade discloses material the holder believed was hidden.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ProofRung",
-///  "description": "How strongly a credential-backed claim is hidden when presented, ordered most private first. `predicate` proves a statement over a claim without disclosing the claim. `derived` discloses exactly the claims needed via an unlinkable derived proof, so two presentations cannot be joined. `selectiveDisclosure` discloses exactly the claims needed but carries the issuer's signature unchanged, so two presentations ARE linkable. `whole` discloses the entire credential.\n\nThe distinction between the first two and the last two is of kind, not degree: only `predicate` and `derived` avoid handing two verifiers a join key. A maintainer MUST default to the highest rung the credential's format supports, and MUST NOT silently fall to a lower one — a request that cannot be satisfied at the rung a producer asked for is refused, because a silent privacy downgrade discloses material the holder believed was hidden.",
-///  "type": "string",
-///  "enum": [
-///    "predicate",
-///    "derived",
-///    "selectiveDisclosure",
-///    "whole"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1034,112 +728,6 @@ Where a value comes from, and the member that makes this family worth building o
 
 For how strongly a disclosed value identifies the holder, the kinds rank `credentialBacked` above `derived` above `selfAsserted`; `generated` values are per-verifier and do not correlate.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Provenance",
-///  "description": "Where a value comes from, and the member that makes this family worth building on a trust stack rather than in an address book. It survives to the verifier, so a recipient can tell — per field — what the holder typed from what an issuer attested.\n\n`selfAsserted` — the holder supplied it.\n\n`credentialBacked` — the value is derived from a credential in the vault at `claimPath`. The stored value is a CACHE FOR DISPLAY; the credential is the truth. A maintainer MUST re-derive it on read and MUST fail closed (never presenting a stale value) when the credential has been revoked, has expired, or has been archived or deleted.\n\n`generated` — the value is minted per verifier at disclosure time and recorded against that verifier, so every relying party receives a different one that routes back to the holder. This is the shape of the most widely adopted consumer privacy feature in this space; a maintainer need not operate a relay to conform, but the shape must exist, because retrofitting per-verifier values into a pool-of-values model is a migration rather than an addition.\n\n`derived` — the value was taken from a source the holder connected or supplied — a code-hosting profile, an uploaded CV — rather than typed by them or attested by an issuer. Nobody signed it: it is the holder's claim that the source said so, and a consumer MUST NOT present it as attested. It exists as its own kind because a derived value is neither of the others — the holder did not author it, and no one vouches for it — and a holder deciding whether to disclose deserves to know which of their values they typed.\n\nFor how strongly a disclosed value identifies the holder, the kinds rank `credentialBacked` above `derived` above `selfAsserted`; `generated` values are per-verifier and do not correlate.",
-///  "type": "object",
-///  "oneOf": [
-///    {
-///      "required": [
-///        "kind"
-///      ],
-///      "properties": {
-///        "kind": {
-///          "const": "selfAsserted"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "required": [
-///        "claimPath",
-///        "credentialId",
-///        "kind"
-///      ],
-///      "properties": {
-///        "claimPath": {
-///          "description": "RFC 6901 JSON Pointer to the claim within the credential, e.g. `/credentialSubject/familyName`.",
-///          "type": "string",
-///          "pattern": "^(/[^/~]*(~[01][^/~]*)*)*$"
-///        },
-///        "credentialId": {
-///          "description": "Vault identifier of the backing credential.",
-///          "type": "string",
-///          "minLength": 1
-///        },
-///        "issuerDid": {
-///          "description": "Issuer of the backing credential. Advisory: a consumer MUST verify the credential rather than trusting this member.",
-///          "type": "string",
-///          "minLength": 1
-///        },
-///        "kind": {
-///          "const": "credentialBacked"
-///        },
-///        "proof": {
-///          "description": "The disclosure rung this claim was, or will be, presented at.",
-///          "$ref": "#/definitions/ProofRung"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "required": [
-///        "generator",
-///        "kind"
-///      ],
-///      "properties": {
-///        "generator": {
-///          "description": "Names the minting scheme, e.g. `relayEmail`. Maintainer-defined.",
-///          "type": "string",
-///          "maxLength": 64,
-///          "minLength": 1
-///        },
-///        "kind": {
-///          "const": "generated"
-///        },
-///        "perVerifier": {
-///          "description": "When true (the default and the only useful setting), a distinct value is minted for each verifier.",
-///          "default": true,
-///          "type": "boolean"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "required": [
-///        "derivedAt",
-///        "kind",
-///        "source"
-///      ],
-///      "properties": {
-///        "derivedAt": {
-///          "description": "When the value was taken from the source. A derived value is a snapshot: the source may have changed since, and nothing re-derives it.",
-///          "type": "string",
-///          "format": "date-time"
-///        },
-///        "kind": {
-///          "const": "derived"
-///        },
-///        "source": {
-///          "description": "The KIND of source the value was taken from — `github`, `cvUpload`, `linkedIn` — never an account, handle or URL. Provenance survives to the verifier, so this member is disclosed with the claim; a handle here would disclose an identifier the holder never chose to share.",
-///          "type": "string",
-///          "maxLength": 64,
-///          "minLength": 1,
-///          "pattern": "^[a-z][A-Za-z0-9.-]*$"
-///        }
-///      },
-///      "additionalProperties": false
-///    }
-///  ],
-///  "required": [
-///    "kind"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged, deny_unknown_fields)]
 #[non_exhaustive]
@@ -1185,16 +773,6 @@ pub enum Provenance {
 }
 ///RFC 6901 JSON Pointer to the claim within the credential, e.g. `/credentialSubject/familyName`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "RFC 6901 JSON Pointer to the claim within the credential, e.g. `/credentialSubject/familyName`.",
-///  "type": "string",
-///  "pattern": "^(/[^/~]*(~[01][^/~]*)*)*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ProvenanceVariant1ClaimPath(::std::string::String);
@@ -1258,16 +836,6 @@ impl<'de> ::serde::Deserialize<'de> for ProvenanceVariant1ClaimPath {
 }
 ///Vault identifier of the backing credential.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Vault identifier of the backing credential.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ProvenanceVariant1CredentialId(::std::string::String);
@@ -1327,16 +895,6 @@ impl<'de> ::serde::Deserialize<'de> for ProvenanceVariant1CredentialId {
 }
 ///Issuer of the backing credential. Advisory: a consumer MUST verify the credential rather than trusting this member.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Issuer of the backing credential. Advisory: a consumer MUST verify the credential rather than trusting this member.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ProvenanceVariant1IssuerDid(::std::string::String);
@@ -1396,17 +954,6 @@ impl<'de> ::serde::Deserialize<'de> for ProvenanceVariant1IssuerDid {
 }
 ///Names the minting scheme, e.g. `relayEmail`. Maintainer-defined.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Names the minting scheme, e.g. `relayEmail`. Maintainer-defined.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ProvenanceVariant2Generator(::std::string::String);
@@ -1469,18 +1016,6 @@ impl<'de> ::serde::Deserialize<'de> for ProvenanceVariant2Generator {
 }
 ///The KIND of source the value was taken from — `github`, `cvUpload`, `linkedIn` — never an account, handle or URL. Provenance survives to the verifier, so this member is disclosed with the claim; a handle here would disclose an identifier the holder never chose to share.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The KIND of source the value was taken from — `github`, `cvUpload`, `linkedIn` — never an account, handle or URL. Provenance survives to the verifier, so this member is disclosed with the claim; a handle here would disclose an identifier the holder never chose to share.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1,
-///  "pattern": "^[a-z][A-Za-z0-9.-]*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ProvenanceVariant3Source(::std::string::String);
@@ -1555,20 +1090,6 @@ What it takes to let a value LEAVE. Distinct from `Sensitivity`, which governs s
 
 Absent means *not decided by the holder* and resolves from the claim-type registry, which defaults `payment.*` and `gov.*` to `stepUp`.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ReleaseRequirement",
-///  "description": "What it takes to let a value LEAVE. Distinct from `Sensitivity`, which governs showing it to the holder.\n\n`consent` is the ordinary gate: `persona/disclosure/preview` renders what would leave and `persona/disclosure/present` releases it, so a human sees it once.\n\n`stepUp` additionally requires a fresh authentication bound to THAT preview — not to the session. Without the binding, \"each time\" degrades into \"once per login\", which is the failure the requirement exists to prevent; the single-use `previewId` the preview already mints is what an implementation binds to. A maintainer MUST refuse `persona/disclosure/present` for a `stepUp` attribute when no such approval accompanies it.\n\nAbsent means *not decided by the holder* and resolves from the claim-type registry, which defaults `payment.*` and `gov.*` to `stepUp`.",
-///  "type": "string",
-///  "enum": [
-///    "consent",
-///    "stepUp"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1630,38 +1151,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ReleaseRequirement {
 }
 ///Success response to persona/attribute/list. Type https://trusttasks.org/spec/persona/attribute/list/1.0#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to persona/attribute/list. Type https://trusttasks.org/spec/persona/attribute/list/1.0#response.",
-///  "type": "object",
-///  "required": [
-///    "attributes"
-///  ],
-///  "properties": {
-///    "attributes": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Attribute"
-///      },
-///      "maxItems": 500
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "nextCursor": {
-///      "description": "Present when more attributes remain. Absent means the enumeration is complete — that absence is the only exhaustion signal.",
-///      "type": "string",
-///      "maxLength": 4096
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1684,16 +1173,6 @@ impl Response {
 }
 ///Present when more attributes remain. Absent means the enumeration is complete — that absence is the only exhaustion signal.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Present when more attributes remain. Absent means the enumeration is complete — that absence is the only exhaustion signal.",
-///  "type": "string",
-///  "maxLength": 4096
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseNextCursor(::std::string::String);
@@ -1758,20 +1237,6 @@ Absent means *not decided by the holder*, not `normal`: a consumer resolves it f
 
 Distinct from how linkable the value is. A payment card is highly sensitive and barely linkable — every card number is unique, so knowing one tells a second verifier nothing about the first. Reading either as a proxy for the other produces a consumer that hides the wrong things.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Sensitivity",
-///  "description": "How carefully a value is shown TO ITS OWN HOLDER. `high` means a consumer masks it by default, reveals it one attribute at a time on a deliberate act, and — the half that is not cosmetic — omits it from a listing that did not ask for sensitive values.\n\nAbsent means *not decided by the holder*, not `normal`: a consumer resolves it from the claim-type registry (see CLAIM-TYPES.md §4), which is why this member is optional and why an unregistered token resolves conservatively rather than permissively.\n\nDistinct from how linkable the value is. A payment card is highly sensitive and barely linkable — every card number is unique, so knowing one tells a second verifier nothing about the first. Reading either as a proxy for the other produces a consumer that hides the wrong things.",
-///  "type": "string",
-///  "enum": [
-///    "normal",
-///    "high"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1833,17 +1298,6 @@ impl ::std::convert::TryFrom<::std::string::String> for Sensitivity {
 }
 ///A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ulid",
-///  "description": "A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.",
-///  "type": "string",
-///  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Ulid(::std::string::String);
@@ -1907,23 +1361,6 @@ impl<'de> ::serde::Deserialize<'de> for Ulid {
 }
 ///The JSON shape of `value`, declared so that a consumer can render and compare without guessing. The maintainer validates that `value` agrees with this member and does nothing further: it does NOT validate a phone number against a phone-number grammar. That is a producer's affordance, and a store that grows opinions about the contents of its records eventually blocks its consumer's release.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ValueType",
-///  "description": "The JSON shape of `value`, declared so that a consumer can render and compare without guessing. The maintainer validates that `value` agrees with this member and does nothing further: it does NOT validate a phone number against a phone-number grammar. That is a producer's affordance, and a store that grows opinions about the contents of its records eventually blocks its consumer's release.",
-///  "type": "string",
-///  "enum": [
-///    "string",
-///    "number",
-///    "boolean",
-///    "date",
-///    "object"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1997,17 +1434,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ValueType {
 }
 ///A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Version",
-///  "description": "A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.",
-///  "type": "integer",
-///  "minimum": 1.0
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Version(pub ::std::num::NonZeroU64);
@@ -2606,7 +2032,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Attribute\": {\n      \"additionalProperties\": false,\n      \"description\": \"One atomic fact a holder keeps about themselves. Several attributes MAY share a `type` — three phone numbers, a legal name and a preferred name — which is why `attributeId` is the identity of a fact and `type` is not. The pool is flat and unordered; ordering is a profile's concern.\",\n      \"properties\": {\n        \"attributeId\": {\n          \"$ref\": \"#/$defs/Ulid\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"endorsements\": {\n          \"description\": \"Vault identifiers of credentials in which a third party endorses this value — a colleague vouching for a skill, an employer confirming a title. INVENTORY, not evidence: the value remains whatever its `provenance` says, and a vouched self-assertion is still self-asserted. Folding a vouch into `provenance` would make it render as attested, which is the one thing provenance exists to prevent. Not disclosed with the value; a holder who wants a counterparty to see an endorsement presents the credential itself. Absent when there are none.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"maxItems\": 64,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"label\": {\n          \"description\": \"The holder's own words for this attribute, shown in a picker. Never disclosed to a verifier; it is a note to self.\",\n          \"maxLength\": 128,\n          \"type\": \"string\"\n        },\n        \"provenance\": {\n          \"$ref\": \"#/$defs/Provenance\"\n        },\n        \"release\": {\n          \"$ref\": \"#/$defs/ReleaseRequirement\",\n          \"description\": \"Set only where the holder decided it explicitly. Absent resolves from the claim-type registry.\"\n        },\n        \"retainedVersions\": {\n          \"description\": \"Earlier versions of this attribute the maintainer still holds, and why. A maintainer that keeps a replaced value to serve `pinVersion` MUST list it here: a holder who overwrote a value may reasonably believe it gone, and this is how they learn otherwise. Values are not included — the holder reads one through the profile that pins it, or removes it with persona/attribute/purge-version. Absent when none are held.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"pinnedBy\": {\n                \"description\": \"The profiles pinning this version — the reason it is kept. A version no profile pins is not retained.\",\n                \"items\": {\n                  \"$ref\": \"#/$defs/Ulid\"\n                },\n                \"maxItems\": 256,\n                \"minItems\": 1,\n                \"type\": \"array\"\n              },\n              \"updatedAt\": {\n                \"description\": \"When this version was written.\",\n                \"format\": \"date-time\",\n                \"type\": \"string\"\n              },\n              \"version\": {\n                \"$ref\": \"#/$defs/Version\"\n              }\n            },\n            \"required\": [\n              \"version\",\n              \"pinnedBy\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 64,\n          \"type\": \"array\"\n        },\n        \"sensitivity\": {\n          \"$ref\": \"#/$defs/Sensitivity\",\n          \"description\": \"Set only where the holder decided it explicitly. Absent resolves from the claim-type registry — see CLAIM-TYPES.md §4, 'store the override, derive the default'.\"\n        },\n        \"stale\": {\n          \"description\": \"Present and true when a `credentialBacked` value could not be re-derived. `staleReason` says why. A maintainer MUST refuse to disclose a stale attribute.\",\n          \"type\": \"boolean\"\n        },\n        \"staleReason\": {\n          \"description\": \"Why re-derivation failed. Present only alongside `stale`.\",\n          \"enum\": [\n            \"revoked\",\n            \"expired\",\n            \"archived\",\n            \"deleted\",\n            \"notFound\"\n          ],\n          \"type\": \"string\"\n        },\n        \"type\": {\n          \"$ref\": \"#/$defs/ClaimType\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"value\": {\n          \"description\": \"The fact itself, agreeing with `valueType`. Encrypted at rest by the maintainer.\\n\\nOPTIONAL, and its absence is meaningful in two distinct situations a consumer MUST NOT conflate: the caller asked for a metadata-only view (`list` without `includeValues`, which is the DEFAULT and the common case), or a credential-backed value could not be re-derived. `stale` tells them apart. Requiring this member would make the default listing unrepresentable — a maintainer would have to choose between disclosing every value in bulk and emitting a non-conformant response.\"\n        },\n        \"valueType\": {\n          \"$ref\": \"#/$defs/ValueType\"\n        },\n        \"version\": {\n          \"$ref\": \"#/$defs/Version\"\n        }\n      },\n      \"required\": [\n        \"attributeId\",\n        \"type\",\n        \"valueType\",\n        \"provenance\",\n        \"version\",\n        \"updatedAt\"\n      ],\n      \"title\": \"Attribute\",\n      \"type\": \"object\"\n    },\n    \"ClaimType\": {\n      \"description\": \"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\n      \"title\": \"ClaimType\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ProofRung\": {\n      \"description\": \"How strongly a credential-backed claim is hidden when presented, ordered most private first. `predicate` proves a statement over a claim without disclosing the claim. `derived` discloses exactly the claims needed via an unlinkable derived proof, so two presentations cannot be joined. `selectiveDisclosure` discloses exactly the claims needed but carries the issuer's signature unchanged, so two presentations ARE linkable. `whole` discloses the entire credential.\\n\\nThe distinction between the first two and the last two is of kind, not degree: only `predicate` and `derived` avoid handing two verifiers a join key. A maintainer MUST default to the highest rung the credential's format supports, and MUST NOT silently fall to a lower one — a request that cannot be satisfied at the rung a producer asked for is refused, because a silent privacy downgrade discloses material the holder believed was hidden.\",\n      \"enum\": [\n        \"predicate\",\n        \"derived\",\n        \"selectiveDisclosure\",\n        \"whole\"\n      ],\n      \"title\": \"ProofRung\",\n      \"type\": \"string\"\n    },\n    \"Provenance\": {\n      \"description\": \"Where a value comes from, and the member that makes this family worth building on a trust stack rather than in an address book. It survives to the verifier, so a recipient can tell — per field — what the holder typed from what an issuer attested.\\n\\n`selfAsserted` — the holder supplied it.\\n\\n`credentialBacked` — the value is derived from a credential in the vault at `claimPath`. The stored value is a CACHE FOR DISPLAY; the credential is the truth. A maintainer MUST re-derive it on read and MUST fail closed (never presenting a stale value) when the credential has been revoked, has expired, or has been archived or deleted.\\n\\n`generated` — the value is minted per verifier at disclosure time and recorded against that verifier, so every relying party receives a different one that routes back to the holder. This is the shape of the most widely adopted consumer privacy feature in this space; a maintainer need not operate a relay to conform, but the shape must exist, because retrofitting per-verifier values into a pool-of-values model is a migration rather than an addition.\\n\\n`derived` — the value was taken from a source the holder connected or supplied — a code-hosting profile, an uploaded CV — rather than typed by them or attested by an issuer. Nobody signed it: it is the holder's claim that the source said so, and a consumer MUST NOT present it as attested. It exists as its own kind because a derived value is neither of the others — the holder did not author it, and no one vouches for it — and a holder deciding whether to disclose deserves to know which of their values they typed.\\n\\nFor how strongly a disclosed value identifies the holder, the kinds rank `credentialBacked` above `derived` above `selfAsserted`; `generated` values are per-verifier and do not correlate.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"selfAsserted\"\n            }\n          },\n          \"required\": [\n            \"kind\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"claimPath\": {\n              \"description\": \"RFC 6901 JSON Pointer to the claim within the credential, e.g. `/credentialSubject/familyName`.\",\n              \"pattern\": \"^(/[^/~]*(~[01][^/~]*)*)*$\",\n              \"type\": \"string\"\n            },\n            \"credentialId\": {\n              \"description\": \"Vault identifier of the backing credential.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"issuerDid\": {\n              \"description\": \"Issuer of the backing credential. Advisory: a consumer MUST verify the credential rather than trusting this member.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"credentialBacked\"\n            },\n            \"proof\": {\n              \"$ref\": \"#/$defs/ProofRung\",\n              \"description\": \"The disclosure rung this claim was, or will be, presented at.\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"credentialId\",\n            \"claimPath\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"generator\": {\n              \"description\": \"Names the minting scheme, e.g. `relayEmail`. Maintainer-defined.\",\n              \"maxLength\": 64,\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"generated\"\n            },\n            \"perVerifier\": {\n              \"default\": true,\n              \"description\": \"When true (the default and the only useful setting), a distinct value is minted for each verifier.\",\n              \"type\": \"boolean\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"generator\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"derivedAt\": {\n              \"description\": \"When the value was taken from the source. A derived value is a snapshot: the source may have changed since, and nothing re-derives it.\",\n              \"format\": \"date-time\",\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"derived\"\n            },\n            \"source\": {\n              \"description\": \"The KIND of source the value was taken from — `github`, `cvUpload`, `linkedIn` — never an account, handle or URL. Provenance survives to the verifier, so this member is disclosed with the claim; a handle here would disclose an identifier the holder never chose to share.\",\n              \"maxLength\": 64,\n              \"minLength\": 1,\n              \"pattern\": \"^[a-z][A-Za-z0-9.-]*$\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"source\",\n            \"derivedAt\"\n          ]\n        }\n      ],\n      \"required\": [\n        \"kind\"\n      ],\n      \"title\": \"Provenance\",\n      \"type\": \"object\"\n    },\n    \"ReleaseRequirement\": {\n      \"description\": \"What it takes to let a value LEAVE. Distinct from `Sensitivity`, which governs showing it to the holder.\\n\\n`consent` is the ordinary gate: `persona/disclosure/preview` renders what would leave and `persona/disclosure/present` releases it, so a human sees it once.\\n\\n`stepUp` additionally requires a fresh authentication bound to THAT preview — not to the session. Without the binding, \\\"each time\\\" degrades into \\\"once per login\\\", which is the failure the requirement exists to prevent; the single-use `previewId` the preview already mints is what an implementation binds to. A maintainer MUST refuse `persona/disclosure/present` for a `stepUp` attribute when no such approval accompanies it.\\n\\nAbsent means *not decided by the holder* and resolves from the claim-type registry, which defaults `payment.*` and `gov.*` to `stepUp`.\",\n      \"enum\": [\n        \"consent\",\n        \"stepUp\"\n      ],\n      \"title\": \"ReleaseRequirement\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/attribute/list. Type https://trusttasks.org/spec/persona/attribute/list/1.0#response.\",\n      \"properties\": {\n        \"attributes\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Attribute\"\n          },\n          \"maxItems\": 500,\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"nextCursor\": {\n          \"description\": \"Present when more attributes remain. Absent means the enumeration is complete — that absence is the only exhaustion signal.\",\n          \"maxLength\": 4096,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"attributes\"\n      ],\n      \"title\": \"Persona Attribute List — response payload\",\n      \"type\": \"object\"\n    },\n    \"Sensitivity\": {\n      \"description\": \"How carefully a value is shown TO ITS OWN HOLDER. `high` means a consumer masks it by default, reveals it one attribute at a time on a deliberate act, and — the half that is not cosmetic — omits it from a listing that did not ask for sensitive values.\\n\\nAbsent means *not decided by the holder*, not `normal`: a consumer resolves it from the claim-type registry (see CLAIM-TYPES.md §4), which is why this member is optional and why an unregistered token resolves conservatively rather than permissively.\\n\\nDistinct from how linkable the value is. A payment card is highly sensitive and barely linkable — every card number is unique, so knowing one tells a second verifier nothing about the first. Reading either as a proxy for the other produces a consumer that hides the wrong things.\",\n      \"enum\": [\n        \"normal\",\n        \"high\"\n      ],\n      \"title\": \"Sensitivity\",\n      \"type\": \"string\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    },\n    \"ValueType\": {\n      \"description\": \"The JSON shape of `value`, declared so that a consumer can render and compare without guessing. The maintainer validates that `value` agrees with this member and does nothing further: it does NOT validate a phone number against a phone-number grammar. That is a producer's affordance, and a store that grows opinions about the contents of its records eventually blocks its consumer's release.\",\n      \"enum\": [\n        \"string\",\n        \"number\",\n        \"boolean\",\n        \"date\",\n        \"object\"\n      ],\n      \"title\": \"ValueType\",\n      \"type\": \"string\"\n    },\n    \"Version\": {\n      \"description\": \"A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.\",\n      \"minimum\": 1,\n      \"title\": \"Version\",\n      \"type\": \"integer\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/persona/attribute/list/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Enumerate the holder's attribute pool, optionally narrowed to a vocabulary prefix. Cursor-paginated. Values are omitted unless asked for, so a picker can render the pool without decrypting every fact in it.\",\n  \"properties\": {\n    \"cursor\": {\n      \"description\": \"Opaque continuation token from a prior response's `nextCursor`. A producer MUST NOT construct or parse one.\",\n      \"maxLength\": 4096,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"includeSensitive\": {\n      \"default\": false,\n      \"description\": \"When false (the default), a listing that asked for values still omits the value of any attribute resolving to `sensitivity: high` — the metadata is returned, the plaintext is not. Setting it asks for those too.\\n\\nThis is the half of sensitivity that is not cosmetic. A consumer that masks a value it has already received defends a screen; it does not keep a card number out of a log, a crash dump or a process's memory. Ignoring this member and masking client-side is a conforming implementation of nothing.\\n\\nSeparate from `includeValues` rather than a third state of it, because the two escalations are answerable by different callers: a picker wants every name and no card, and should not have to choose between plaintext for everything and plaintext for nothing.\\n\\nHas no effect unless `includeValues` is also set: it widens that request, and can never be the thing that introduces plaintext on its own.\",\n      \"type\": \"boolean\"\n    },\n    \"includeStale\": {\n      \"default\": true,\n      \"description\": \"When true (the default), credential-backed attributes whose backing could not be re-derived are returned carrying `stale` and `staleReason`. Set false to omit them. The default is true because a holder needs to SEE that a credential-backed fact has gone stale — silently dropping it would present a pool that looks smaller than it is, and the holder would not know a claim had stopped being presentable.\",\n      \"type\": \"boolean\"\n    },\n    \"includeValues\": {\n      \"default\": false,\n      \"description\": \"When false (the default), each returned attribute carries its metadata and no `value`. A pool listing is the common case and it does not need plaintext: a picker renders `type` and `label`. Defaulting to false means the expensive, sensitive path is the one a producer has to ask for.\",\n      \"type\": \"boolean\"\n    },\n    \"limit\": {\n      \"default\": 100,\n      \"description\": \"Maximum attributes to return. The maintainer MAY return fewer for reasons of its own and a producer MUST NOT infer exhaustion from a short page — only an absent `nextCursor` means the end.\",\n      \"maximum\": 500,\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"typePrefix\": {\n      \"description\": \"Narrows the result to attributes whose `type` begins with this string, compared over the UTF-8 encoding. Because the vocabulary is dotted most-general-segment-first, `phone` selects every phone number and `name` every name — which is the access pattern a builder actually has. The maintainer MUST NOT interpret the value further; a prefix that ends mid-segment is a byte comparison like any other.\",\n      \"maxLength\": 128,\n      \"type\": \"string\"\n    }\n  },\n  \"title\": \"Persona Attribute List — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Attribute\":{\"additionalProperties\":false,\"description\":\"One atomic fact a holder keeps about themselves. Several attributes MAY share a `type` — three phone numbers, a legal name and a preferred name — which is why `attributeId` is the identity of a fact and `type` is not. The pool is flat and unordered; ordering is a profile's concern.\",\"properties\":{\"attributeId\":{\"$ref\":\"#/$defs/Ulid\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"endorsements\":{\"description\":\"Vault identifiers of credentials in which a third party endorses this value — a colleague vouching for a skill, an employer confirming a title. INVENTORY, not evidence: the value remains whatever its `provenance` says, and a vouched self-assertion is still self-asserted. Folding a vouch into `provenance` would make it render as attested, which is the one thing provenance exists to prevent. Not disclosed with the value; a holder who wants a counterparty to see an endorsement presents the credential itself. Absent when there are none.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"maxItems\":64,\"type\":\"array\",\"uniqueItems\":true},\"label\":{\"description\":\"The holder's own words for this attribute, shown in a picker. Never disclosed to a verifier; it is a note to self.\",\"maxLength\":128,\"type\":\"string\"},\"provenance\":{\"$ref\":\"#/$defs/Provenance\"},\"release\":{\"$ref\":\"#/$defs/ReleaseRequirement\",\"description\":\"Set only where the holder decided it explicitly. Absent resolves from the claim-type registry.\"},\"retainedVersions\":{\"description\":\"Earlier versions of this attribute the maintainer still holds, and why. A maintainer that keeps a replaced value to serve `pinVersion` MUST list it here: a holder who overwrote a value may reasonably believe it gone, and this is how they learn otherwise. Values are not included — the holder reads one through the profile that pins it, or removes it with persona/attribute/purge-version. Absent when none are held.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"pinnedBy\":{\"description\":\"The profiles pinning this version — the reason it is kept. A version no profile pins is not retained.\",\"items\":{\"$ref\":\"#/$defs/Ulid\"},\"maxItems\":256,\"minItems\":1,\"type\":\"array\"},\"updatedAt\":{\"description\":\"When this version was written.\",\"format\":\"date-time\",\"type\":\"string\"},\"version\":{\"$ref\":\"#/$defs/Version\"}},\"required\":[\"version\",\"pinnedBy\"],\"type\":\"object\"},\"maxItems\":64,\"type\":\"array\"},\"sensitivity\":{\"$ref\":\"#/$defs/Sensitivity\",\"description\":\"Set only where the holder decided it explicitly. Absent resolves from the claim-type registry — see CLAIM-TYPES.md §4, 'store the override, derive the default'.\"},\"stale\":{\"description\":\"Present and true when a `credentialBacked` value could not be re-derived. `staleReason` says why. A maintainer MUST refuse to disclose a stale attribute.\",\"type\":\"boolean\"},\"staleReason\":{\"description\":\"Why re-derivation failed. Present only alongside `stale`.\",\"enum\":[\"revoked\",\"expired\",\"archived\",\"deleted\",\"notFound\"],\"type\":\"string\"},\"type\":{\"$ref\":\"#/$defs/ClaimType\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"value\":{\"description\":\"The fact itself, agreeing with `valueType`. Encrypted at rest by the maintainer.\\n\\nOPTIONAL, and its absence is meaningful in two distinct situations a consumer MUST NOT conflate: the caller asked for a metadata-only view (`list` without `includeValues`, which is the DEFAULT and the common case), or a credential-backed value could not be re-derived. `stale` tells them apart. Requiring this member would make the default listing unrepresentable — a maintainer would have to choose between disclosing every value in bulk and emitting a non-conformant response.\"},\"valueType\":{\"$ref\":\"#/$defs/ValueType\"},\"version\":{\"$ref\":\"#/$defs/Version\"}},\"required\":[\"attributeId\",\"type\",\"valueType\",\"provenance\",\"version\",\"updatedAt\"],\"title\":\"Attribute\",\"type\":\"object\"},\"ClaimType\":{\"description\":\"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\"title\":\"ClaimType\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ProofRung\":{\"description\":\"How strongly a credential-backed claim is hidden when presented, ordered most private first. `predicate` proves a statement over a claim without disclosing the claim. `derived` discloses exactly the claims needed via an unlinkable derived proof, so two presentations cannot be joined. `selectiveDisclosure` discloses exactly the claims needed but carries the issuer's signature unchanged, so two presentations ARE linkable. `whole` discloses the entire credential.\\n\\nThe distinction between the first two and the last two is of kind, not degree: only `predicate` and `derived` avoid handing two verifiers a join key. A maintainer MUST default to the highest rung the credential's format supports, and MUST NOT silently fall to a lower one — a request that cannot be satisfied at the rung a producer asked for is refused, because a silent privacy downgrade discloses material the holder believed was hidden.\",\"enum\":[\"predicate\",\"derived\",\"selectiveDisclosure\",\"whole\"],\"title\":\"ProofRung\",\"type\":\"string\"},\"Provenance\":{\"description\":\"Where a value comes from, and the member that makes this family worth building on a trust stack rather than in an address book. It survives to the verifier, so a recipient can tell — per field — what the holder typed from what an issuer attested.\\n\\n`selfAsserted` — the holder supplied it.\\n\\n`credentialBacked` — the value is derived from a credential in the vault at `claimPath`. The stored value is a CACHE FOR DISPLAY; the credential is the truth. A maintainer MUST re-derive it on read and MUST fail closed (never presenting a stale value) when the credential has been revoked, has expired, or has been archived or deleted.\\n\\n`generated` — the value is minted per verifier at disclosure time and recorded against that verifier, so every relying party receives a different one that routes back to the holder. This is the shape of the most widely adopted consumer privacy feature in this space; a maintainer need not operate a relay to conform, but the shape must exist, because retrofitting per-verifier values into a pool-of-values model is a migration rather than an addition.\\n\\n`derived` — the value was taken from a source the holder connected or supplied — a code-hosting profile, an uploaded CV — rather than typed by them or attested by an issuer. Nobody signed it: it is the holder's claim that the source said so, and a consumer MUST NOT present it as attested. It exists as its own kind because a derived value is neither of the others — the holder did not author it, and no one vouches for it — and a holder deciding whether to disclose deserves to know which of their values they typed.\\n\\nFor how strongly a disclosed value identifies the holder, the kinds rank `credentialBacked` above `derived` above `selfAsserted`; `generated` values are per-verifier and do not correlate.\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"kind\":{\"const\":\"selfAsserted\"}},\"required\":[\"kind\"]},{\"additionalProperties\":false,\"properties\":{\"claimPath\":{\"description\":\"RFC 6901 JSON Pointer to the claim within the credential, e.g. `/credentialSubject/familyName`.\",\"pattern\":\"^(/[^/~]*(~[01][^/~]*)*)*$\",\"type\":\"string\"},\"credentialId\":{\"description\":\"Vault identifier of the backing credential.\",\"minLength\":1,\"type\":\"string\"},\"issuerDid\":{\"description\":\"Issuer of the backing credential. Advisory: a consumer MUST verify the credential rather than trusting this member.\",\"minLength\":1,\"type\":\"string\"},\"kind\":{\"const\":\"credentialBacked\"},\"proof\":{\"$ref\":\"#/$defs/ProofRung\",\"description\":\"The disclosure rung this claim was, or will be, presented at.\"}},\"required\":[\"kind\",\"credentialId\",\"claimPath\"]},{\"additionalProperties\":false,\"properties\":{\"generator\":{\"description\":\"Names the minting scheme, e.g. `relayEmail`. Maintainer-defined.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"kind\":{\"const\":\"generated\"},\"perVerifier\":{\"default\":true,\"description\":\"When true (the default and the only useful setting), a distinct value is minted for each verifier.\",\"type\":\"boolean\"}},\"required\":[\"kind\",\"generator\"]},{\"additionalProperties\":false,\"properties\":{\"derivedAt\":{\"description\":\"When the value was taken from the source. A derived value is a snapshot: the source may have changed since, and nothing re-derives it.\",\"format\":\"date-time\",\"type\":\"string\"},\"kind\":{\"const\":\"derived\"},\"source\":{\"description\":\"The KIND of source the value was taken from — `github`, `cvUpload`, `linkedIn` — never an account, handle or URL. Provenance survives to the verifier, so this member is disclosed with the claim; a handle here would disclose an identifier the holder never chose to share.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z][A-Za-z0-9.-]*$\",\"type\":\"string\"}},\"required\":[\"kind\",\"source\",\"derivedAt\"]}],\"required\":[\"kind\"],\"title\":\"Provenance\",\"type\":\"object\"},\"ReleaseRequirement\":{\"description\":\"What it takes to let a value LEAVE. Distinct from `Sensitivity`, which governs showing it to the holder.\\n\\n`consent` is the ordinary gate: `persona/disclosure/preview` renders what would leave and `persona/disclosure/present` releases it, so a human sees it once.\\n\\n`stepUp` additionally requires a fresh authentication bound to THAT preview — not to the session. Without the binding, \\\"each time\\\" degrades into \\\"once per login\\\", which is the failure the requirement exists to prevent; the single-use `previewId` the preview already mints is what an implementation binds to. A maintainer MUST refuse `persona/disclosure/present` for a `stepUp` attribute when no such approval accompanies it.\\n\\nAbsent means *not decided by the holder* and resolves from the claim-type registry, which defaults `payment.*` and `gov.*` to `stepUp`.\",\"enum\":[\"consent\",\"stepUp\"],\"title\":\"ReleaseRequirement\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to persona/attribute/list. Type https://trusttasks.org/spec/persona/attribute/list/1.0#response.\",\"properties\":{\"attributes\":{\"items\":{\"$ref\":\"#/$defs/Attribute\"},\"maxItems\":500,\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"nextCursor\":{\"description\":\"Present when more attributes remain. Absent means the enumeration is complete — that absence is the only exhaustion signal.\",\"maxLength\":4096,\"type\":\"string\"}},\"required\":[\"attributes\"],\"title\":\"Persona Attribute List — response payload\",\"type\":\"object\"},\"Sensitivity\":{\"description\":\"How carefully a value is shown TO ITS OWN HOLDER. `high` means a consumer masks it by default, reveals it one attribute at a time on a deliberate act, and — the half that is not cosmetic — omits it from a listing that did not ask for sensitive values.\\n\\nAbsent means *not decided by the holder*, not `normal`: a consumer resolves it from the claim-type registry (see CLAIM-TYPES.md §4), which is why this member is optional and why an unregistered token resolves conservatively rather than permissively.\\n\\nDistinct from how linkable the value is. A payment card is highly sensitive and barely linkable — every card number is unique, so knowing one tells a second verifier nothing about the first. Reading either as a proxy for the other produces a consumer that hides the wrong things.\",\"enum\":[\"normal\",\"high\"],\"title\":\"Sensitivity\",\"type\":\"string\"},\"Ulid\":{\"description\":\"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\"pattern\":\"^[0-9A-HJKMNP-TV-Z]{26}$\",\"title\":\"Ulid\",\"type\":\"string\"},\"ValueType\":{\"description\":\"The JSON shape of `value`, declared so that a consumer can render and compare without guessing. The maintainer validates that `value` agrees with this member and does nothing further: it does NOT validate a phone number against a phone-number grammar. That is a producer's affordance, and a store that grows opinions about the contents of its records eventually blocks its consumer's release.\",\"enum\":[\"string\",\"number\",\"boolean\",\"date\",\"object\"],\"title\":\"ValueType\",\"type\":\"string\"},\"Version\":{\"description\":\"A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.\",\"minimum\":1,\"title\":\"Version\",\"type\":\"integer\"}},\"$id\":\"https://trusttasks.org/spec/persona/attribute/list/1.0\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Enumerate the holder's attribute pool, optionally narrowed to a vocabulary prefix. Cursor-paginated. Values are omitted unless asked for, so a picker can render the pool without decrypting every fact in it.\",\"properties\":{\"cursor\":{\"description\":\"Opaque continuation token from a prior response's `nextCursor`. A producer MUST NOT construct or parse one.\",\"maxLength\":4096,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"includeSensitive\":{\"default\":false,\"description\":\"When false (the default), a listing that asked for values still omits the value of any attribute resolving to `sensitivity: high` — the metadata is returned, the plaintext is not. Setting it asks for those too.\\n\\nThis is the half of sensitivity that is not cosmetic. A consumer that masks a value it has already received defends a screen; it does not keep a card number out of a log, a crash dump or a process's memory. Ignoring this member and masking client-side is a conforming implementation of nothing.\\n\\nSeparate from `includeValues` rather than a third state of it, because the two escalations are answerable by different callers: a picker wants every name and no card, and should not have to choose between plaintext for everything and plaintext for nothing.\\n\\nHas no effect unless `includeValues` is also set: it widens that request, and can never be the thing that introduces plaintext on its own.\",\"type\":\"boolean\"},\"includeStale\":{\"default\":true,\"description\":\"When true (the default), credential-backed attributes whose backing could not be re-derived are returned carrying `stale` and `staleReason`. Set false to omit them. The default is true because a holder needs to SEE that a credential-backed fact has gone stale — silently dropping it would present a pool that looks smaller than it is, and the holder would not know a claim had stopped being presentable.\",\"type\":\"boolean\"},\"includeValues\":{\"default\":false,\"description\":\"When false (the default), each returned attribute carries its metadata and no `value`. A pool listing is the common case and it does not need plaintext: a picker renders `type` and `label`. Defaulting to false means the expensive, sensitive path is the one a producer has to ask for.\",\"type\":\"boolean\"},\"limit\":{\"default\":100,\"description\":\"Maximum attributes to return. The maintainer MAY return fewer for reasons of its own and a producer MUST NOT infer exhaustion from a short page — only an absent `nextCursor` means the end.\",\"maximum\":500,\"minimum\":1,\"type\":\"integer\"},\"typePrefix\":{\"description\":\"Narrows the result to attributes whose `type` begins with this string, compared over the UTF-8 encoding. Because the vocabulary is dotted most-general-segment-first, `phone` selects every phone number and `name` every name — which is the access pattern a builder actually has. The maintainer MUST NOT interpret the value further; a prefix that ends mid-segment is a byte comparison like any other.\",\"maxLength\":128,\"type\":\"string\"}},\"title\":\"Persona Attribute List — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -2615,7 +2041,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Attribute\": {\n      \"additionalProperties\": false,\n      \"description\": \"One atomic fact a holder keeps about themselves. Several attributes MAY share a `type` — three phone numbers, a legal name and a preferred name — which is why `attributeId` is the identity of a fact and `type` is not. The pool is flat and unordered; ordering is a profile's concern.\",\n      \"properties\": {\n        \"attributeId\": {\n          \"$ref\": \"#/$defs/Ulid\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"endorsements\": {\n          \"description\": \"Vault identifiers of credentials in which a third party endorses this value — a colleague vouching for a skill, an employer confirming a title. INVENTORY, not evidence: the value remains whatever its `provenance` says, and a vouched self-assertion is still self-asserted. Folding a vouch into `provenance` would make it render as attested, which is the one thing provenance exists to prevent. Not disclosed with the value; a holder who wants a counterparty to see an endorsement presents the credential itself. Absent when there are none.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"maxItems\": 64,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"label\": {\n          \"description\": \"The holder's own words for this attribute, shown in a picker. Never disclosed to a verifier; it is a note to self.\",\n          \"maxLength\": 128,\n          \"type\": \"string\"\n        },\n        \"provenance\": {\n          \"$ref\": \"#/$defs/Provenance\"\n        },\n        \"release\": {\n          \"$ref\": \"#/$defs/ReleaseRequirement\",\n          \"description\": \"Set only where the holder decided it explicitly. Absent resolves from the claim-type registry.\"\n        },\n        \"retainedVersions\": {\n          \"description\": \"Earlier versions of this attribute the maintainer still holds, and why. A maintainer that keeps a replaced value to serve `pinVersion` MUST list it here: a holder who overwrote a value may reasonably believe it gone, and this is how they learn otherwise. Values are not included — the holder reads one through the profile that pins it, or removes it with persona/attribute/purge-version. Absent when none are held.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"pinnedBy\": {\n                \"description\": \"The profiles pinning this version — the reason it is kept. A version no profile pins is not retained.\",\n                \"items\": {\n                  \"$ref\": \"#/$defs/Ulid\"\n                },\n                \"maxItems\": 256,\n                \"minItems\": 1,\n                \"type\": \"array\"\n              },\n              \"updatedAt\": {\n                \"description\": \"When this version was written.\",\n                \"format\": \"date-time\",\n                \"type\": \"string\"\n              },\n              \"version\": {\n                \"$ref\": \"#/$defs/Version\"\n              }\n            },\n            \"required\": [\n              \"version\",\n              \"pinnedBy\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 64,\n          \"type\": \"array\"\n        },\n        \"sensitivity\": {\n          \"$ref\": \"#/$defs/Sensitivity\",\n          \"description\": \"Set only where the holder decided it explicitly. Absent resolves from the claim-type registry — see CLAIM-TYPES.md §4, 'store the override, derive the default'.\"\n        },\n        \"stale\": {\n          \"description\": \"Present and true when a `credentialBacked` value could not be re-derived. `staleReason` says why. A maintainer MUST refuse to disclose a stale attribute.\",\n          \"type\": \"boolean\"\n        },\n        \"staleReason\": {\n          \"description\": \"Why re-derivation failed. Present only alongside `stale`.\",\n          \"enum\": [\n            \"revoked\",\n            \"expired\",\n            \"archived\",\n            \"deleted\",\n            \"notFound\"\n          ],\n          \"type\": \"string\"\n        },\n        \"type\": {\n          \"$ref\": \"#/$defs/ClaimType\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"value\": {\n          \"description\": \"The fact itself, agreeing with `valueType`. Encrypted at rest by the maintainer.\\n\\nOPTIONAL, and its absence is meaningful in two distinct situations a consumer MUST NOT conflate: the caller asked for a metadata-only view (`list` without `includeValues`, which is the DEFAULT and the common case), or a credential-backed value could not be re-derived. `stale` tells them apart. Requiring this member would make the default listing unrepresentable — a maintainer would have to choose between disclosing every value in bulk and emitting a non-conformant response.\"\n        },\n        \"valueType\": {\n          \"$ref\": \"#/$defs/ValueType\"\n        },\n        \"version\": {\n          \"$ref\": \"#/$defs/Version\"\n        }\n      },\n      \"required\": [\n        \"attributeId\",\n        \"type\",\n        \"valueType\",\n        \"provenance\",\n        \"version\",\n        \"updatedAt\"\n      ],\n      \"title\": \"Attribute\",\n      \"type\": \"object\"\n    },\n    \"ClaimType\": {\n      \"description\": \"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\n      \"title\": \"ClaimType\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ProofRung\": {\n      \"description\": \"How strongly a credential-backed claim is hidden when presented, ordered most private first. `predicate` proves a statement over a claim without disclosing the claim. `derived` discloses exactly the claims needed via an unlinkable derived proof, so two presentations cannot be joined. `selectiveDisclosure` discloses exactly the claims needed but carries the issuer's signature unchanged, so two presentations ARE linkable. `whole` discloses the entire credential.\\n\\nThe distinction between the first two and the last two is of kind, not degree: only `predicate` and `derived` avoid handing two verifiers a join key. A maintainer MUST default to the highest rung the credential's format supports, and MUST NOT silently fall to a lower one — a request that cannot be satisfied at the rung a producer asked for is refused, because a silent privacy downgrade discloses material the holder believed was hidden.\",\n      \"enum\": [\n        \"predicate\",\n        \"derived\",\n        \"selectiveDisclosure\",\n        \"whole\"\n      ],\n      \"title\": \"ProofRung\",\n      \"type\": \"string\"\n    },\n    \"Provenance\": {\n      \"description\": \"Where a value comes from, and the member that makes this family worth building on a trust stack rather than in an address book. It survives to the verifier, so a recipient can tell — per field — what the holder typed from what an issuer attested.\\n\\n`selfAsserted` — the holder supplied it.\\n\\n`credentialBacked` — the value is derived from a credential in the vault at `claimPath`. The stored value is a CACHE FOR DISPLAY; the credential is the truth. A maintainer MUST re-derive it on read and MUST fail closed (never presenting a stale value) when the credential has been revoked, has expired, or has been archived or deleted.\\n\\n`generated` — the value is minted per verifier at disclosure time and recorded against that verifier, so every relying party receives a different one that routes back to the holder. This is the shape of the most widely adopted consumer privacy feature in this space; a maintainer need not operate a relay to conform, but the shape must exist, because retrofitting per-verifier values into a pool-of-values model is a migration rather than an addition.\\n\\n`derived` — the value was taken from a source the holder connected or supplied — a code-hosting profile, an uploaded CV — rather than typed by them or attested by an issuer. Nobody signed it: it is the holder's claim that the source said so, and a consumer MUST NOT present it as attested. It exists as its own kind because a derived value is neither of the others — the holder did not author it, and no one vouches for it — and a holder deciding whether to disclose deserves to know which of their values they typed.\\n\\nFor how strongly a disclosed value identifies the holder, the kinds rank `credentialBacked` above `derived` above `selfAsserted`; `generated` values are per-verifier and do not correlate.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"selfAsserted\"\n            }\n          },\n          \"required\": [\n            \"kind\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"claimPath\": {\n              \"description\": \"RFC 6901 JSON Pointer to the claim within the credential, e.g. `/credentialSubject/familyName`.\",\n              \"pattern\": \"^(/[^/~]*(~[01][^/~]*)*)*$\",\n              \"type\": \"string\"\n            },\n            \"credentialId\": {\n              \"description\": \"Vault identifier of the backing credential.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"issuerDid\": {\n              \"description\": \"Issuer of the backing credential. Advisory: a consumer MUST verify the credential rather than trusting this member.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"credentialBacked\"\n            },\n            \"proof\": {\n              \"$ref\": \"#/$defs/ProofRung\",\n              \"description\": \"The disclosure rung this claim was, or will be, presented at.\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"credentialId\",\n            \"claimPath\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"generator\": {\n              \"description\": \"Names the minting scheme, e.g. `relayEmail`. Maintainer-defined.\",\n              \"maxLength\": 64,\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"generated\"\n            },\n            \"perVerifier\": {\n              \"default\": true,\n              \"description\": \"When true (the default and the only useful setting), a distinct value is minted for each verifier.\",\n              \"type\": \"boolean\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"generator\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"derivedAt\": {\n              \"description\": \"When the value was taken from the source. A derived value is a snapshot: the source may have changed since, and nothing re-derives it.\",\n              \"format\": \"date-time\",\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"derived\"\n            },\n            \"source\": {\n              \"description\": \"The KIND of source the value was taken from — `github`, `cvUpload`, `linkedIn` — never an account, handle or URL. Provenance survives to the verifier, so this member is disclosed with the claim; a handle here would disclose an identifier the holder never chose to share.\",\n              \"maxLength\": 64,\n              \"minLength\": 1,\n              \"pattern\": \"^[a-z][A-Za-z0-9.-]*$\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"source\",\n            \"derivedAt\"\n          ]\n        }\n      ],\n      \"required\": [\n        \"kind\"\n      ],\n      \"title\": \"Provenance\",\n      \"type\": \"object\"\n    },\n    \"ReleaseRequirement\": {\n      \"description\": \"What it takes to let a value LEAVE. Distinct from `Sensitivity`, which governs showing it to the holder.\\n\\n`consent` is the ordinary gate: `persona/disclosure/preview` renders what would leave and `persona/disclosure/present` releases it, so a human sees it once.\\n\\n`stepUp` additionally requires a fresh authentication bound to THAT preview — not to the session. Without the binding, \\\"each time\\\" degrades into \\\"once per login\\\", which is the failure the requirement exists to prevent; the single-use `previewId` the preview already mints is what an implementation binds to. A maintainer MUST refuse `persona/disclosure/present` for a `stepUp` attribute when no such approval accompanies it.\\n\\nAbsent means *not decided by the holder* and resolves from the claim-type registry, which defaults `payment.*` and `gov.*` to `stepUp`.\",\n      \"enum\": [\n        \"consent\",\n        \"stepUp\"\n      ],\n      \"title\": \"ReleaseRequirement\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/attribute/list. Type https://trusttasks.org/spec/persona/attribute/list/1.0#response.\",\n      \"properties\": {\n        \"attributes\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Attribute\"\n          },\n          \"maxItems\": 500,\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"nextCursor\": {\n          \"description\": \"Present when more attributes remain. Absent means the enumeration is complete — that absence is the only exhaustion signal.\",\n          \"maxLength\": 4096,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"attributes\"\n      ],\n      \"title\": \"Persona Attribute List — response payload\",\n      \"type\": \"object\"\n    },\n    \"Sensitivity\": {\n      \"description\": \"How carefully a value is shown TO ITS OWN HOLDER. `high` means a consumer masks it by default, reveals it one attribute at a time on a deliberate act, and — the half that is not cosmetic — omits it from a listing that did not ask for sensitive values.\\n\\nAbsent means *not decided by the holder*, not `normal`: a consumer resolves it from the claim-type registry (see CLAIM-TYPES.md §4), which is why this member is optional and why an unregistered token resolves conservatively rather than permissively.\\n\\nDistinct from how linkable the value is. A payment card is highly sensitive and barely linkable — every card number is unique, so knowing one tells a second verifier nothing about the first. Reading either as a proxy for the other produces a consumer that hides the wrong things.\",\n      \"enum\": [\n        \"normal\",\n        \"high\"\n      ],\n      \"title\": \"Sensitivity\",\n      \"type\": \"string\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    },\n    \"ValueType\": {\n      \"description\": \"The JSON shape of `value`, declared so that a consumer can render and compare without guessing. The maintainer validates that `value` agrees with this member and does nothing further: it does NOT validate a phone number against a phone-number grammar. That is a producer's affordance, and a store that grows opinions about the contents of its records eventually blocks its consumer's release.\",\n      \"enum\": [\n        \"string\",\n        \"number\",\n        \"boolean\",\n        \"date\",\n        \"object\"\n      ],\n      \"title\": \"ValueType\",\n      \"type\": \"string\"\n    },\n    \"Version\": {\n      \"description\": \"A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.\",\n      \"minimum\": 1,\n      \"title\": \"Version\",\n      \"type\": \"integer\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Attribute\":{\"additionalProperties\":false,\"description\":\"One atomic fact a holder keeps about themselves. Several attributes MAY share a `type` — three phone numbers, a legal name and a preferred name — which is why `attributeId` is the identity of a fact and `type` is not. The pool is flat and unordered; ordering is a profile's concern.\",\"properties\":{\"attributeId\":{\"$ref\":\"#/$defs/Ulid\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"endorsements\":{\"description\":\"Vault identifiers of credentials in which a third party endorses this value — a colleague vouching for a skill, an employer confirming a title. INVENTORY, not evidence: the value remains whatever its `provenance` says, and a vouched self-assertion is still self-asserted. Folding a vouch into `provenance` would make it render as attested, which is the one thing provenance exists to prevent. Not disclosed with the value; a holder who wants a counterparty to see an endorsement presents the credential itself. Absent when there are none.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"maxItems\":64,\"type\":\"array\",\"uniqueItems\":true},\"label\":{\"description\":\"The holder's own words for this attribute, shown in a picker. Never disclosed to a verifier; it is a note to self.\",\"maxLength\":128,\"type\":\"string\"},\"provenance\":{\"$ref\":\"#/$defs/Provenance\"},\"release\":{\"$ref\":\"#/$defs/ReleaseRequirement\",\"description\":\"Set only where the holder decided it explicitly. Absent resolves from the claim-type registry.\"},\"retainedVersions\":{\"description\":\"Earlier versions of this attribute the maintainer still holds, and why. A maintainer that keeps a replaced value to serve `pinVersion` MUST list it here: a holder who overwrote a value may reasonably believe it gone, and this is how they learn otherwise. Values are not included — the holder reads one through the profile that pins it, or removes it with persona/attribute/purge-version. Absent when none are held.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"pinnedBy\":{\"description\":\"The profiles pinning this version — the reason it is kept. A version no profile pins is not retained.\",\"items\":{\"$ref\":\"#/$defs/Ulid\"},\"maxItems\":256,\"minItems\":1,\"type\":\"array\"},\"updatedAt\":{\"description\":\"When this version was written.\",\"format\":\"date-time\",\"type\":\"string\"},\"version\":{\"$ref\":\"#/$defs/Version\"}},\"required\":[\"version\",\"pinnedBy\"],\"type\":\"object\"},\"maxItems\":64,\"type\":\"array\"},\"sensitivity\":{\"$ref\":\"#/$defs/Sensitivity\",\"description\":\"Set only where the holder decided it explicitly. Absent resolves from the claim-type registry — see CLAIM-TYPES.md §4, 'store the override, derive the default'.\"},\"stale\":{\"description\":\"Present and true when a `credentialBacked` value could not be re-derived. `staleReason` says why. A maintainer MUST refuse to disclose a stale attribute.\",\"type\":\"boolean\"},\"staleReason\":{\"description\":\"Why re-derivation failed. Present only alongside `stale`.\",\"enum\":[\"revoked\",\"expired\",\"archived\",\"deleted\",\"notFound\"],\"type\":\"string\"},\"type\":{\"$ref\":\"#/$defs/ClaimType\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"value\":{\"description\":\"The fact itself, agreeing with `valueType`. Encrypted at rest by the maintainer.\\n\\nOPTIONAL, and its absence is meaningful in two distinct situations a consumer MUST NOT conflate: the caller asked for a metadata-only view (`list` without `includeValues`, which is the DEFAULT and the common case), or a credential-backed value could not be re-derived. `stale` tells them apart. Requiring this member would make the default listing unrepresentable — a maintainer would have to choose between disclosing every value in bulk and emitting a non-conformant response.\"},\"valueType\":{\"$ref\":\"#/$defs/ValueType\"},\"version\":{\"$ref\":\"#/$defs/Version\"}},\"required\":[\"attributeId\",\"type\",\"valueType\",\"provenance\",\"version\",\"updatedAt\"],\"title\":\"Attribute\",\"type\":\"object\"},\"ClaimType\":{\"description\":\"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\"title\":\"ClaimType\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ProofRung\":{\"description\":\"How strongly a credential-backed claim is hidden when presented, ordered most private first. `predicate` proves a statement over a claim without disclosing the claim. `derived` discloses exactly the claims needed via an unlinkable derived proof, so two presentations cannot be joined. `selectiveDisclosure` discloses exactly the claims needed but carries the issuer's signature unchanged, so two presentations ARE linkable. `whole` discloses the entire credential.\\n\\nThe distinction between the first two and the last two is of kind, not degree: only `predicate` and `derived` avoid handing two verifiers a join key. A maintainer MUST default to the highest rung the credential's format supports, and MUST NOT silently fall to a lower one — a request that cannot be satisfied at the rung a producer asked for is refused, because a silent privacy downgrade discloses material the holder believed was hidden.\",\"enum\":[\"predicate\",\"derived\",\"selectiveDisclosure\",\"whole\"],\"title\":\"ProofRung\",\"type\":\"string\"},\"Provenance\":{\"description\":\"Where a value comes from, and the member that makes this family worth building on a trust stack rather than in an address book. It survives to the verifier, so a recipient can tell — per field — what the holder typed from what an issuer attested.\\n\\n`selfAsserted` — the holder supplied it.\\n\\n`credentialBacked` — the value is derived from a credential in the vault at `claimPath`. The stored value is a CACHE FOR DISPLAY; the credential is the truth. A maintainer MUST re-derive it on read and MUST fail closed (never presenting a stale value) when the credential has been revoked, has expired, or has been archived or deleted.\\n\\n`generated` — the value is minted per verifier at disclosure time and recorded against that verifier, so every relying party receives a different one that routes back to the holder. This is the shape of the most widely adopted consumer privacy feature in this space; a maintainer need not operate a relay to conform, but the shape must exist, because retrofitting per-verifier values into a pool-of-values model is a migration rather than an addition.\\n\\n`derived` — the value was taken from a source the holder connected or supplied — a code-hosting profile, an uploaded CV — rather than typed by them or attested by an issuer. Nobody signed it: it is the holder's claim that the source said so, and a consumer MUST NOT present it as attested. It exists as its own kind because a derived value is neither of the others — the holder did not author it, and no one vouches for it — and a holder deciding whether to disclose deserves to know which of their values they typed.\\n\\nFor how strongly a disclosed value identifies the holder, the kinds rank `credentialBacked` above `derived` above `selfAsserted`; `generated` values are per-verifier and do not correlate.\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"kind\":{\"const\":\"selfAsserted\"}},\"required\":[\"kind\"]},{\"additionalProperties\":false,\"properties\":{\"claimPath\":{\"description\":\"RFC 6901 JSON Pointer to the claim within the credential, e.g. `/credentialSubject/familyName`.\",\"pattern\":\"^(/[^/~]*(~[01][^/~]*)*)*$\",\"type\":\"string\"},\"credentialId\":{\"description\":\"Vault identifier of the backing credential.\",\"minLength\":1,\"type\":\"string\"},\"issuerDid\":{\"description\":\"Issuer of the backing credential. Advisory: a consumer MUST verify the credential rather than trusting this member.\",\"minLength\":1,\"type\":\"string\"},\"kind\":{\"const\":\"credentialBacked\"},\"proof\":{\"$ref\":\"#/$defs/ProofRung\",\"description\":\"The disclosure rung this claim was, or will be, presented at.\"}},\"required\":[\"kind\",\"credentialId\",\"claimPath\"]},{\"additionalProperties\":false,\"properties\":{\"generator\":{\"description\":\"Names the minting scheme, e.g. `relayEmail`. Maintainer-defined.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"kind\":{\"const\":\"generated\"},\"perVerifier\":{\"default\":true,\"description\":\"When true (the default and the only useful setting), a distinct value is minted for each verifier.\",\"type\":\"boolean\"}},\"required\":[\"kind\",\"generator\"]},{\"additionalProperties\":false,\"properties\":{\"derivedAt\":{\"description\":\"When the value was taken from the source. A derived value is a snapshot: the source may have changed since, and nothing re-derives it.\",\"format\":\"date-time\",\"type\":\"string\"},\"kind\":{\"const\":\"derived\"},\"source\":{\"description\":\"The KIND of source the value was taken from — `github`, `cvUpload`, `linkedIn` — never an account, handle or URL. Provenance survives to the verifier, so this member is disclosed with the claim; a handle here would disclose an identifier the holder never chose to share.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z][A-Za-z0-9.-]*$\",\"type\":\"string\"}},\"required\":[\"kind\",\"source\",\"derivedAt\"]}],\"required\":[\"kind\"],\"title\":\"Provenance\",\"type\":\"object\"},\"ReleaseRequirement\":{\"description\":\"What it takes to let a value LEAVE. Distinct from `Sensitivity`, which governs showing it to the holder.\\n\\n`consent` is the ordinary gate: `persona/disclosure/preview` renders what would leave and `persona/disclosure/present` releases it, so a human sees it once.\\n\\n`stepUp` additionally requires a fresh authentication bound to THAT preview — not to the session. Without the binding, \\\"each time\\\" degrades into \\\"once per login\\\", which is the failure the requirement exists to prevent; the single-use `previewId` the preview already mints is what an implementation binds to. A maintainer MUST refuse `persona/disclosure/present` for a `stepUp` attribute when no such approval accompanies it.\\n\\nAbsent means *not decided by the holder* and resolves from the claim-type registry, which defaults `payment.*` and `gov.*` to `stepUp`.\",\"enum\":[\"consent\",\"stepUp\"],\"title\":\"ReleaseRequirement\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to persona/attribute/list. Type https://trusttasks.org/spec/persona/attribute/list/1.0#response.\",\"properties\":{\"attributes\":{\"items\":{\"$ref\":\"#/$defs/Attribute\"},\"maxItems\":500,\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"nextCursor\":{\"description\":\"Present when more attributes remain. Absent means the enumeration is complete — that absence is the only exhaustion signal.\",\"maxLength\":4096,\"type\":\"string\"}},\"required\":[\"attributes\"],\"title\":\"Persona Attribute List — response payload\",\"type\":\"object\"},\"Sensitivity\":{\"description\":\"How carefully a value is shown TO ITS OWN HOLDER. `high` means a consumer masks it by default, reveals it one attribute at a time on a deliberate act, and — the half that is not cosmetic — omits it from a listing that did not ask for sensitive values.\\n\\nAbsent means *not decided by the holder*, not `normal`: a consumer resolves it from the claim-type registry (see CLAIM-TYPES.md §4), which is why this member is optional and why an unregistered token resolves conservatively rather than permissively.\\n\\nDistinct from how linkable the value is. A payment card is highly sensitive and barely linkable — every card number is unique, so knowing one tells a second verifier nothing about the first. Reading either as a proxy for the other produces a consumer that hides the wrong things.\",\"enum\":[\"normal\",\"high\"],\"title\":\"Sensitivity\",\"type\":\"string\"},\"Ulid\":{\"description\":\"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\"pattern\":\"^[0-9A-HJKMNP-TV-Z]{26}$\",\"title\":\"Ulid\",\"type\":\"string\"},\"ValueType\":{\"description\":\"The JSON shape of `value`, declared so that a consumer can render and compare without guessing. The maintainer validates that `value` agrees with this member and does nothing further: it does NOT validate a phone number against a phone-number grammar. That is a producer's affordance, and a store that grows opinions about the contents of its records eventually blocks its consumer's release.\",\"enum\":[\"string\",\"number\",\"boolean\",\"date\",\"object\"],\"title\":\"ValueType\",\"type\":\"string\"},\"Version\":{\"description\":\"A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.\",\"minimum\":1,\"title\":\"Version\",\"type\":\"integer\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

@@ -34,62 +34,6 @@ pub mod error {
 }
 ///The voting/trustees/decrypt request, signed as the trustee.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DecryptDocument",
-///  "description": "The voting/trustees/decrypt request, signed as the trustee.",
-///  "type": "object",
-///  "required": [
-///    "id",
-///    "issuedAt",
-///    "issuer",
-///    "payload",
-///    "proof",
-///    "recipient",
-///    "type"
-///  ],
-///  "properties": {
-///    "expiresAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "id": {
-///      "type": "string",
-///      "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
-///    },
-///    "issuedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "issuer": {
-///      "description": "The signer.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1
-///    },
-///    "payload": {
-///      "description": "That task's request payload.",
-///      "type": "object"
-///    },
-///    "proof": {
-///      "description": "A Data Integrity proof by an `authentication` key of `issuer`.",
-///      "type": "object"
-///    },
-///    "recipient": {
-///      "description": "The ballot box.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1
-///    },
-///    "type": {
-///      "const": "https://trusttasks.org/spec/voting/trustees/decrypt/0.1"
-///    }
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[non_exhaustive]
 pub struct DecryptDocument {
@@ -120,15 +64,6 @@ impl DecryptDocument {
 }
 ///`DecryptDocumentId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DecryptDocumentId(::std::string::String);
@@ -199,17 +134,6 @@ impl<'de> ::serde::Deserialize<'de> for DecryptDocumentId {
 }
 ///The signer.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The signer.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DecryptDocumentIssuer(::std::string::String);
@@ -272,17 +196,6 @@ impl<'de> ::serde::Deserialize<'de> for DecryptDocumentIssuer {
 }
 ///The ballot box.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The ballot box.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DecryptDocumentRecipient(::std::string::String);
@@ -345,49 +258,6 @@ impl<'de> ::serde::Deserialize<'de> for DecryptDocumentRecipient {
 }
 ///What a partial decryption decrypts: the sealed cast at a board leaf, or the total of one option of one question.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DecryptionTarget",
-///  "description": "What a partial decryption decrypts: the sealed cast at a board leaf, or the total of one option of one question.",
-///  "type": "object",
-///  "oneOf": [
-///    {
-///      "required": [
-///        "leafIndex"
-///      ]
-///    },
-///    {
-///      "required": [
-///        "option",
-///        "question"
-///      ]
-///    }
-///  ],
-///  "required": [
-///    "ciphertext"
-///  ],
-///  "properties": {
-///    "ciphertext": {
-///      "$ref": "#/definitions/ElGamalCiphertext"
-///    },
-///    "leafIndex": {
-///      "description": "A sealed cast's board leaf.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "option": {
-///      "$ref": "#/definitions/Key"
-///    },
-///    "question": {
-///      "$ref": "#/definitions/Key"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged, deny_unknown_fields)]
 #[non_exhaustive]
@@ -406,29 +276,6 @@ pub enum DecryptionTarget {
 }
 ///`(a, b) = (r·G, M + r·Y)` under the election key `Y` (CONVENTIONS §9.2).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ElGamalCiphertext",
-///  "description": "`(a, b) = (r·G, M + r·Y)` under the election key `Y` (CONVENTIONS §9.2).",
-///  "type": "object",
-///  "required": [
-///    "a",
-///    "b"
-///  ],
-///  "properties": {
-///    "a": {
-///      "$ref": "#/definitions/GroupElement"
-///    },
-///    "b": {
-///      "$ref": "#/definitions/GroupElement"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -443,17 +290,6 @@ impl ElGamalCiphertext {
 }
 ///An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ElectionId",
-///  "description": "An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.",
-///  "type": "string",
-///  "pattern": "^[A-Za-z0-9._-]{1,128}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ElectionId(::std::string::String);
@@ -517,21 +353,6 @@ impl<'de> ::serde::Deserialize<'de> for ElectionId {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -553,15 +374,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -625,19 +437,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A Ristretto group element: its 32-byte compression, multibase base58btc. Never the identity (CONVENTIONS §9.1).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "GroupElement",
-///  "description": "A Ristretto group element: its 32-byte compression, multibase base58btc. Never the identity (CONVENTIONS §9.1).",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 2,
-///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct GroupElement(::std::string::String);
@@ -707,17 +506,6 @@ impl<'de> ::serde::Deserialize<'de> for GroupElement {
 }
 ///A question or option key, unique within its manifest or question.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Key",
-///  "description": "A question or option key, unique within its manifest or question.",
-///  "type": "string",
-///  "pattern": "^[A-Za-z0-9._-]{1,64}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Key(::std::string::String);
@@ -779,65 +567,6 @@ impl<'de> ::serde::Deserialize<'de> for Key {
 }
 ///The trustee's VTA makes its partial decryption of each target, with proofs, and returns the voting/trustees/decrypt request signed as the trustee.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/pcs/trustee/decrypt/0.2",
-///  "title": "Payload",
-///  "description": "The trustee's VTA makes its partial decryption of each target, with proofs, and returns the voting/trustees/decrypt request signed as the trustee.",
-///  "type": "object",
-///  "required": [
-///    "authorization",
-///    "community",
-///    "contextId",
-///    "electionId",
-///    "targets",
-///    "trustee"
-///  ],
-///  "properties": {
-///    "authorization": {
-///      "description": "The community's voting/trustees/authorize request, as voting/trustees/status carries it.",
-///      "$ref": "#/definitions/SignedRequest"
-///    },
-///    "community": {
-///      "description": "The community's DID.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1
-///    },
-///    "contextId": {
-///      "description": "The VTA context the trustee's keys live in.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "electionId": {
-///      "$ref": "#/definitions/ElectionId"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "targets": {
-///      "description": "The targets voting/trustees/status lists.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/DecryptionTarget"
-///      },
-///      "maxItems": 100000,
-///      "minItems": 1
-///    },
-///    "trustee": {
-///      "description": "The trustee's DID: a persona this VTA holds, named in the manifest's `trustees.dids`.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -865,17 +594,6 @@ impl Payload {
 }
 ///The community's DID.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The community's DID.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadCommunity(::std::string::String);
@@ -938,17 +656,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCommunity {
 }
 ///The VTA context the trustee's keys live in.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The VTA context the trustee's keys live in.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadContextId(::std::string::String);
@@ -1011,17 +718,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
 }
 ///The trustee's DID: a persona this VTA holds, named in the manifest's `trustees.dids`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The trustee's DID: a persona this VTA holds, named in the manifest's `trustees.dids`.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadTrustee(::std::string::String);
@@ -1084,76 +780,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadTrustee {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "document"
-///  ],
-///  "properties": {
-///    "document": {
-///      "title": "DecryptDocument",
-///      "description": "The voting/trustees/decrypt request, signed as the trustee.",
-///      "type": "object",
-///      "required": [
-///        "id",
-///        "issuedAt",
-///        "issuer",
-///        "payload",
-///        "proof",
-///        "recipient",
-///        "type"
-///      ],
-///      "properties": {
-///        "expiresAt": {
-///          "type": "string",
-///          "format": "date-time"
-///        },
-///        "id": {
-///          "type": "string",
-///          "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
-///        },
-///        "issuedAt": {
-///          "type": "string",
-///          "format": "date-time"
-///        },
-///        "issuer": {
-///          "description": "The signer.",
-///          "type": "string",
-///          "maxLength": 2048,
-///          "minLength": 1
-///        },
-///        "payload": {
-///          "description": "That task's request payload.",
-///          "type": "object"
-///        },
-///        "proof": {
-///          "description": "A Data Integrity proof by an `authentication` key of `issuer`.",
-///          "type": "object"
-///        },
-///        "recipient": {
-///          "description": "The ballot box.",
-///          "type": "string",
-///          "maxLength": 2048,
-///          "minLength": 1
-///        },
-///        "type": {
-///          "const": "https://trusttasks.org/spec/voting/trustees/decrypt/0.1"
-///        }
-///      }
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1169,17 +795,6 @@ impl Response {
 }
 ///A whole Trust Task request document — `id`, `type`, `issuer`, `payload` and every other member, `proof` included — exactly as the ballot box received it, never re-serialised: its proof is taken over its members, and a re-serialised copy does not reliably reproduce them. Typed as an open object so every member survives; CONVENTIONS §9.6 gives the checks that make it a trustee's step.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "SignedRequest",
-///  "description": "A whole Trust Task request document — `id`, `type`, `issuer`, `payload` and every other member, `proof` included — exactly as the ballot box received it, never re-serialised: its proof is taken over its members, and a re-serialised copy does not reliably reproduce them. Typed as an open object so every member survives; CONVENTIONS §9.6 gives the checks that make it a trustee's step.",
-///  "type": "object",
-///  "minProperties": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct SignedRequest(pub ::serde_json::Map<::std::string::String, ::serde_json::Value>);
@@ -1595,7 +1210,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DecryptionTarget\": {\n      \"additionalProperties\": false,\n      \"description\": \"What a partial decryption decrypts: the sealed cast at a board leaf, or the total of one option of one question.\",\n      \"oneOf\": [\n        {\n          \"required\": [\n            \"leafIndex\"\n          ]\n        },\n        {\n          \"required\": [\n            \"question\",\n            \"option\"\n          ]\n        }\n      ],\n      \"properties\": {\n        \"ciphertext\": {\n          \"$ref\": \"#/$defs/ElGamalCiphertext\"\n        },\n        \"leafIndex\": {\n          \"description\": \"A sealed cast's board leaf.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"option\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"question\": {\n          \"$ref\": \"#/$defs/Key\"\n        }\n      },\n      \"required\": [\n        \"ciphertext\"\n      ],\n      \"title\": \"DecryptionTarget\",\n      \"type\": \"object\"\n    },\n    \"ElGamalCiphertext\": {\n      \"additionalProperties\": false,\n      \"description\": \"`(a, b) = (r·G, M + r·Y)` under the election key `Y` (CONVENTIONS §9.2).\",\n      \"properties\": {\n        \"a\": {\n          \"$ref\": \"#/$defs/GroupElement\"\n        },\n        \"b\": {\n          \"$ref\": \"#/$defs/GroupElement\"\n        }\n      },\n      \"required\": [\n        \"a\",\n        \"b\"\n      ],\n      \"title\": \"ElGamalCiphertext\",\n      \"type\": \"object\"\n    },\n    \"ElectionId\": {\n      \"description\": \"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,128}$\",\n      \"title\": \"ElectionId\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"GroupElement\": {\n      \"description\": \"A Ristretto group element: its 32-byte compression, multibase base58btc. Never the identity (CONVENTIONS §9.1).\",\n      \"maxLength\": 64,\n      \"minLength\": 2,\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"GroupElement\",\n      \"type\": \"string\"\n    },\n    \"Key\": {\n      \"description\": \"A question or option key, unique within its manifest or question.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,64}$\",\n      \"title\": \"Key\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"document\": {\n          \"description\": \"The voting/trustees/decrypt request, signed as the trustee.\",\n          \"properties\": {\n            \"expiresAt\": {\n              \"format\": \"date-time\",\n              \"type\": \"string\"\n            },\n            \"id\": {\n              \"pattern\": \"^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$\",\n              \"type\": \"string\"\n            },\n            \"issuedAt\": {\n              \"format\": \"date-time\",\n              \"type\": \"string\"\n            },\n            \"issuer\": {\n              \"description\": \"The signer.\",\n              \"maxLength\": 2048,\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"payload\": {\n              \"description\": \"That task's request payload.\",\n              \"type\": \"object\"\n            },\n            \"proof\": {\n              \"description\": \"A Data Integrity proof by an `authentication` key of `issuer`.\",\n              \"type\": \"object\"\n            },\n            \"recipient\": {\n              \"description\": \"The ballot box.\",\n              \"maxLength\": 2048,\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"type\": {\n              \"const\": \"https://trusttasks.org/spec/voting/trustees/decrypt/0.1\"\n            }\n          },\n          \"required\": [\n            \"id\",\n            \"type\",\n            \"issuer\",\n            \"recipient\",\n            \"issuedAt\",\n            \"payload\",\n            \"proof\"\n          ],\n          \"title\": \"DecryptDocument\",\n          \"type\": \"object\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"document\"\n      ],\n      \"title\": \"VTA PCS — Trustee Decrypt — response payload\",\n      \"type\": \"object\"\n    },\n    \"SignedRequest\": {\n      \"description\": \"A whole Trust Task request document — `id`, `type`, `issuer`, `payload` and every other member, `proof` included — exactly as the ballot box received it, never re-serialised: its proof is taken over its members, and a re-serialised copy does not reliably reproduce them. Typed as an open object so every member survives; CONVENTIONS §9.6 gives the checks that make it a trustee's step.\",\n      \"minProperties\": 1,\n      \"title\": \"SignedRequest\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/pcs/trustee/decrypt/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"The trustee's VTA makes its partial decryption of each target, with proofs, and returns the voting/trustees/decrypt request signed as the trustee.\",\n  \"properties\": {\n    \"authorization\": {\n      \"$ref\": \"#/$defs/SignedRequest\",\n      \"description\": \"The community's voting/trustees/authorize request, as voting/trustees/status carries it.\"\n    },\n    \"community\": {\n      \"description\": \"The community's DID.\",\n      \"maxLength\": 2048,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"contextId\": {\n      \"description\": \"The VTA context the trustee's keys live in.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"electionId\": {\n      \"$ref\": \"#/$defs/ElectionId\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"targets\": {\n      \"description\": \"The targets voting/trustees/status lists.\",\n      \"items\": {\n        \"$ref\": \"#/$defs/DecryptionTarget\"\n      },\n      \"maxItems\": 100000,\n      \"minItems\": 1,\n      \"type\": \"array\"\n    },\n    \"trustee\": {\n      \"description\": \"The trustee's DID: a persona this VTA holds, named in the manifest's `trustees.dids`.\",\n      \"maxLength\": 2048,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"contextId\",\n    \"community\",\n    \"electionId\",\n    \"trustee\",\n    \"targets\",\n    \"authorization\"\n  ],\n  \"title\": \"VTA PCS — Trustee Decrypt — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"DecryptionTarget\":{\"additionalProperties\":false,\"description\":\"What a partial decryption decrypts: the sealed cast at a board leaf, or the total of one option of one question.\",\"oneOf\":[{\"required\":[\"leafIndex\"]},{\"required\":[\"question\",\"option\"]}],\"properties\":{\"ciphertext\":{\"$ref\":\"#/$defs/ElGamalCiphertext\"},\"leafIndex\":{\"description\":\"A sealed cast's board leaf.\",\"minimum\":0,\"type\":\"integer\"},\"option\":{\"$ref\":\"#/$defs/Key\"},\"question\":{\"$ref\":\"#/$defs/Key\"}},\"required\":[\"ciphertext\"],\"title\":\"DecryptionTarget\",\"type\":\"object\"},\"ElGamalCiphertext\":{\"additionalProperties\":false,\"description\":\"`(a, b) = (r·G, M + r·Y)` under the election key `Y` (CONVENTIONS §9.2).\",\"properties\":{\"a\":{\"$ref\":\"#/$defs/GroupElement\"},\"b\":{\"$ref\":\"#/$defs/GroupElement\"}},\"required\":[\"a\",\"b\"],\"title\":\"ElGamalCiphertext\",\"type\":\"object\"},\"ElectionId\":{\"description\":\"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\"pattern\":\"^[A-Za-z0-9._-]{1,128}$\",\"title\":\"ElectionId\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"GroupElement\":{\"description\":\"A Ristretto group element: its 32-byte compression, multibase base58btc. Never the identity (CONVENTIONS §9.1).\",\"maxLength\":64,\"minLength\":2,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"GroupElement\",\"type\":\"string\"},\"Key\":{\"description\":\"A question or option key, unique within its manifest or question.\",\"pattern\":\"^[A-Za-z0-9._-]{1,64}$\",\"title\":\"Key\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"document\":{\"description\":\"The voting/trustees/decrypt request, signed as the trustee.\",\"properties\":{\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"id\":{\"pattern\":\"^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$\",\"type\":\"string\"},\"issuedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"issuer\":{\"description\":\"The signer.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"payload\":{\"description\":\"That task's request payload.\",\"type\":\"object\"},\"proof\":{\"description\":\"A Data Integrity proof by an `authentication` key of `issuer`.\",\"type\":\"object\"},\"recipient\":{\"description\":\"The ballot box.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"type\":{\"const\":\"https://trusttasks.org/spec/voting/trustees/decrypt/0.1\"}},\"required\":[\"id\",\"type\",\"issuer\",\"recipient\",\"issuedAt\",\"payload\",\"proof\"],\"title\":\"DecryptDocument\",\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"document\"],\"title\":\"VTA PCS — Trustee Decrypt — response payload\",\"type\":\"object\"},\"SignedRequest\":{\"description\":\"A whole Trust Task request document — `id`, `type`, `issuer`, `payload` and every other member, `proof` included — exactly as the ballot box received it, never re-serialised: its proof is taken over its members, and a re-serialised copy does not reliably reproduce them. Typed as an open object so every member survives; CONVENTIONS §9.6 gives the checks that make it a trustee's step.\",\"minProperties\":1,\"title\":\"SignedRequest\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vta/pcs/trustee/decrypt/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The trustee's VTA makes its partial decryption of each target, with proofs, and returns the voting/trustees/decrypt request signed as the trustee.\",\"properties\":{\"authorization\":{\"$ref\":\"#/$defs/SignedRequest\",\"description\":\"The community's voting/trustees/authorize request, as voting/trustees/status carries it.\"},\"community\":{\"description\":\"The community's DID.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"contextId\":{\"description\":\"The VTA context the trustee's keys live in.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"targets\":{\"description\":\"The targets voting/trustees/status lists.\",\"items\":{\"$ref\":\"#/$defs/DecryptionTarget\"},\"maxItems\":100000,\"minItems\":1,\"type\":\"array\"},\"trustee\":{\"description\":\"The trustee's DID: a persona this VTA holds, named in the manifest's `trustees.dids`.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"contextId\",\"community\",\"electionId\",\"trustee\",\"targets\",\"authorization\"],\"title\":\"VTA PCS — Trustee Decrypt — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1604,7 +1219,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DecryptionTarget\": {\n      \"additionalProperties\": false,\n      \"description\": \"What a partial decryption decrypts: the sealed cast at a board leaf, or the total of one option of one question.\",\n      \"oneOf\": [\n        {\n          \"required\": [\n            \"leafIndex\"\n          ]\n        },\n        {\n          \"required\": [\n            \"question\",\n            \"option\"\n          ]\n        }\n      ],\n      \"properties\": {\n        \"ciphertext\": {\n          \"$ref\": \"#/$defs/ElGamalCiphertext\"\n        },\n        \"leafIndex\": {\n          \"description\": \"A sealed cast's board leaf.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"option\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"question\": {\n          \"$ref\": \"#/$defs/Key\"\n        }\n      },\n      \"required\": [\n        \"ciphertext\"\n      ],\n      \"title\": \"DecryptionTarget\",\n      \"type\": \"object\"\n    },\n    \"ElGamalCiphertext\": {\n      \"additionalProperties\": false,\n      \"description\": \"`(a, b) = (r·G, M + r·Y)` under the election key `Y` (CONVENTIONS §9.2).\",\n      \"properties\": {\n        \"a\": {\n          \"$ref\": \"#/$defs/GroupElement\"\n        },\n        \"b\": {\n          \"$ref\": \"#/$defs/GroupElement\"\n        }\n      },\n      \"required\": [\n        \"a\",\n        \"b\"\n      ],\n      \"title\": \"ElGamalCiphertext\",\n      \"type\": \"object\"\n    },\n    \"ElectionId\": {\n      \"description\": \"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,128}$\",\n      \"title\": \"ElectionId\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"GroupElement\": {\n      \"description\": \"A Ristretto group element: its 32-byte compression, multibase base58btc. Never the identity (CONVENTIONS §9.1).\",\n      \"maxLength\": 64,\n      \"minLength\": 2,\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"GroupElement\",\n      \"type\": \"string\"\n    },\n    \"Key\": {\n      \"description\": \"A question or option key, unique within its manifest or question.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,64}$\",\n      \"title\": \"Key\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"document\": {\n          \"description\": \"The voting/trustees/decrypt request, signed as the trustee.\",\n          \"properties\": {\n            \"expiresAt\": {\n              \"format\": \"date-time\",\n              \"type\": \"string\"\n            },\n            \"id\": {\n              \"pattern\": \"^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$\",\n              \"type\": \"string\"\n            },\n            \"issuedAt\": {\n              \"format\": \"date-time\",\n              \"type\": \"string\"\n            },\n            \"issuer\": {\n              \"description\": \"The signer.\",\n              \"maxLength\": 2048,\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"payload\": {\n              \"description\": \"That task's request payload.\",\n              \"type\": \"object\"\n            },\n            \"proof\": {\n              \"description\": \"A Data Integrity proof by an `authentication` key of `issuer`.\",\n              \"type\": \"object\"\n            },\n            \"recipient\": {\n              \"description\": \"The ballot box.\",\n              \"maxLength\": 2048,\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"type\": {\n              \"const\": \"https://trusttasks.org/spec/voting/trustees/decrypt/0.1\"\n            }\n          },\n          \"required\": [\n            \"id\",\n            \"type\",\n            \"issuer\",\n            \"recipient\",\n            \"issuedAt\",\n            \"payload\",\n            \"proof\"\n          ],\n          \"title\": \"DecryptDocument\",\n          \"type\": \"object\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"document\"\n      ],\n      \"title\": \"VTA PCS — Trustee Decrypt — response payload\",\n      \"type\": \"object\"\n    },\n    \"SignedRequest\": {\n      \"description\": \"A whole Trust Task request document — `id`, `type`, `issuer`, `payload` and every other member, `proof` included — exactly as the ballot box received it, never re-serialised: its proof is taken over its members, and a re-serialised copy does not reliably reproduce them. Typed as an open object so every member survives; CONVENTIONS §9.6 gives the checks that make it a trustee's step.\",\n      \"minProperties\": 1,\n      \"title\": \"SignedRequest\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"DecryptionTarget\":{\"additionalProperties\":false,\"description\":\"What a partial decryption decrypts: the sealed cast at a board leaf, or the total of one option of one question.\",\"oneOf\":[{\"required\":[\"leafIndex\"]},{\"required\":[\"question\",\"option\"]}],\"properties\":{\"ciphertext\":{\"$ref\":\"#/$defs/ElGamalCiphertext\"},\"leafIndex\":{\"description\":\"A sealed cast's board leaf.\",\"minimum\":0,\"type\":\"integer\"},\"option\":{\"$ref\":\"#/$defs/Key\"},\"question\":{\"$ref\":\"#/$defs/Key\"}},\"required\":[\"ciphertext\"],\"title\":\"DecryptionTarget\",\"type\":\"object\"},\"ElGamalCiphertext\":{\"additionalProperties\":false,\"description\":\"`(a, b) = (r·G, M + r·Y)` under the election key `Y` (CONVENTIONS §9.2).\",\"properties\":{\"a\":{\"$ref\":\"#/$defs/GroupElement\"},\"b\":{\"$ref\":\"#/$defs/GroupElement\"}},\"required\":[\"a\",\"b\"],\"title\":\"ElGamalCiphertext\",\"type\":\"object\"},\"ElectionId\":{\"description\":\"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\"pattern\":\"^[A-Za-z0-9._-]{1,128}$\",\"title\":\"ElectionId\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"GroupElement\":{\"description\":\"A Ristretto group element: its 32-byte compression, multibase base58btc. Never the identity (CONVENTIONS §9.1).\",\"maxLength\":64,\"minLength\":2,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"GroupElement\",\"type\":\"string\"},\"Key\":{\"description\":\"A question or option key, unique within its manifest or question.\",\"pattern\":\"^[A-Za-z0-9._-]{1,64}$\",\"title\":\"Key\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"document\":{\"description\":\"The voting/trustees/decrypt request, signed as the trustee.\",\"properties\":{\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"id\":{\"pattern\":\"^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$\",\"type\":\"string\"},\"issuedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"issuer\":{\"description\":\"The signer.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"payload\":{\"description\":\"That task's request payload.\",\"type\":\"object\"},\"proof\":{\"description\":\"A Data Integrity proof by an `authentication` key of `issuer`.\",\"type\":\"object\"},\"recipient\":{\"description\":\"The ballot box.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"type\":{\"const\":\"https://trusttasks.org/spec/voting/trustees/decrypt/0.1\"}},\"required\":[\"id\",\"type\",\"issuer\",\"recipient\",\"issuedAt\",\"payload\",\"proof\"],\"title\":\"DecryptDocument\",\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"document\"],\"title\":\"VTA PCS — Trustee Decrypt — response payload\",\"type\":\"object\"},\"SignedRequest\":{\"description\":\"A whole Trust Task request document — `id`, `type`, `issuer`, `payload` and every other member, `proof` included — exactly as the ballot box received it, never re-serialised: its proof is taken over its members, and a re-serialised copy does not reliably reproduce them. Typed as an open object so every member survives; CONVENTIONS §9.6 gives the checks that make it a trustee's step.\",\"minProperties\":1,\"title\":\"SignedRequest\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

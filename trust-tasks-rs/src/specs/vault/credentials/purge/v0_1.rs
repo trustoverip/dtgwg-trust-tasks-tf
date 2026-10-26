@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,39 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Erase a stored credential immediately and irrecoverably.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vault/credentials/purge/0.1",
-///  "title": "Payload",
-///  "description": "Erase a stored credential immediately and irrecoverably.",
-///  "type": "object",
-///  "required": [
-///    "id"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "id": {
-///      "description": "Local handle from a query descriptor. Opaque; consumers must not derive or guess one.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "reason": {
-///      "description": "Free text recorded with the transition. Must not carry credential contents.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -195,17 +138,6 @@ impl Payload {
 }
 ///Local handle from a query descriptor. Opaque; consumers must not derive or guess one.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Local handle from a query descriptor. Opaque; consumers must not derive or guess one.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadId(::std::string::String);
@@ -268,17 +200,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadId {
 }
 ///Free text recorded with the transition. Must not carry credential contents.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Free text recorded with the transition. Must not carry credential contents.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadReason(::std::string::String);
@@ -341,36 +262,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "id",
-///    "lifecycle"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "id": {
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "lifecycle": {
-///      "description": "State after the transition, echoed rather than left to be inferred from the verb.",
-///      "$ref": "#/definitions/VaultLifecycle"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -389,16 +280,6 @@ impl Response {
 }
 ///`ResponseId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseId(::std::string::String);
@@ -461,20 +342,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseId {
 }
 ///Archival state. Orthogonal to validity.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Archival state. Orthogonal to validity.",
-///  "type": "string",
-///  "enum": [
-///    "active",
-///    "archived",
-///    "deleted"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -682,7 +549,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"id\": {\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"lifecycle\": {\n          \"$ref\": \"#/$defs/VaultLifecycle\",\n          \"description\": \"State after the transition, echoed rather than left to be inferred from the verb.\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"lifecycle\"\n      ],\n      \"title\": \"Vault Credentials Purge — response payload\",\n      \"type\": \"object\"\n    },\n    \"VaultLifecycle\": {\n      \"description\": \"Archival state. Orthogonal to validity.\",\n      \"enum\": [\n        \"active\",\n        \"archived\",\n        \"deleted\"\n      ],\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vault/credentials/purge/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Erase a stored credential immediately and irrecoverably.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"id\": {\n      \"description\": \"Local handle from a query descriptor. Opaque; consumers must not derive or guess one.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"reason\": {\n      \"description\": \"Free text recorded with the transition. Must not carry credential contents.\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"id\"\n  ],\n  \"title\": \"Vault Credentials — Purge\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"id\":{\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"lifecycle\":{\"$ref\":\"#/$defs/VaultLifecycle\",\"description\":\"State after the transition, echoed rather than left to be inferred from the verb.\"}},\"required\":[\"id\",\"lifecycle\"],\"title\":\"Vault Credentials Purge — response payload\",\"type\":\"object\"},\"VaultLifecycle\":{\"description\":\"Archival state. Orthogonal to validity.\",\"enum\":[\"active\",\"archived\",\"deleted\"],\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/vault/credentials/purge/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Erase a stored credential immediately and irrecoverably.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"id\":{\"description\":\"Local handle from a query descriptor. Opaque; consumers must not derive or guess one.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"reason\":{\"description\":\"Free text recorded with the transition. Must not carry credential contents.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\"],\"title\":\"Vault Credentials — Purge\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -692,7 +559,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"id\": {\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"lifecycle\": {\n          \"$ref\": \"#/$defs/VaultLifecycle\",\n          \"description\": \"State after the transition, echoed rather than left to be inferred from the verb.\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"lifecycle\"\n      ],\n      \"title\": \"Vault Credentials Purge — response payload\",\n      \"type\": \"object\"\n    },\n    \"VaultLifecycle\": {\n      \"description\": \"Archival state. Orthogonal to validity.\",\n      \"enum\": [\n        \"active\",\n        \"archived\",\n        \"deleted\"\n      ],\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"id\":{\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"lifecycle\":{\"$ref\":\"#/$defs/VaultLifecycle\",\"description\":\"State after the transition, echoed rather than left to be inferred from the verb.\"}},\"required\":[\"id\",\"lifecycle\"],\"title\":\"Vault Credentials Purge — response payload\",\"type\":\"object\"},\"VaultLifecycle\":{\"description\":\"Archival state. Orthogonal to validity.\",\"enum\":[\"active\",\"archived\",\"deleted\"],\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

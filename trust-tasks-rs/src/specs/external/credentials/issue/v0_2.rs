@@ -35,18 +35,6 @@ pub mod error {
 }
 ///The custodian context that owns the account. Act scope in this context decides who may manage the account and who may consume it; the account's keys are derived in this context's key space.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "AccountContextId",
-///  "description": "The custodian context that owns the account. Act scope in this context decides who may manage the account and who may consume it; the account's keys are derived in this context's key space.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct AccountContextId(::std::string::String);
@@ -109,19 +97,6 @@ impl<'de> ::serde::Deserialize<'de> for AccountContextId {
 }
 ///The account's identifier within its context, chosen by whoever creates it. Lowercase letters, digits and hyphens, so that it can be embedded in a certificate subject, a token subject or a provider-side condition without escaping. Unique per context; never reused after deletion while anything that names it (a provider-side trust policy, an audit row) may still exist.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "AccountId",
-///  "description": "The account's identifier within its context, chosen by whoever creates it. Lowercase letters, digits and hyphens, so that it can be embedded in a certificate subject, a token subject or a provider-side condition without escaping. Unique per context; never reused after deletion while anything that names it (a provider-side trust policy, an audit row) may still exist.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1,
-///  "pattern": "^[a-z0-9][a-z0-9-]*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct AccountId(::std::string::String);
@@ -189,19 +164,6 @@ impl<'de> ::serde::Deserialize<'de> for AccountId {
 }
 ///A SHA-256 digest in standard base64 (RFC 4648 §4, padded), as S3 carries it in `x-amz-checksum-sha256`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ChecksumSha256",
-///  "description": "A SHA-256 digest in standard base64 (RFC 4648 §4, padded), as S3 carries it in `x-amz-checksum-sha256`.",
-///  "type": "string",
-///  "maxLength": 44,
-///  "minLength": 44,
-///  "pattern": "^[A-Za-z0-9+/]{43}=$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ChecksumSha256(::std::string::String);
@@ -269,49 +231,6 @@ impl<'de> ::serde::Deserialize<'de> for ChecksumSha256 {
 }
 ///What one issuance may do. For storage models, `prefix` and `actions` (both required, a rule this schema leaves to the custodian because other models use neither); for `s3-static-presign`, also `objectKey`, since a presigned URL is one operation on one object; for `oauth2-private-key-jwt`, `scopes`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "CredentialScope",
-///  "description": "What one issuance may do. For storage models, `prefix` and `actions` (both required, a rule this schema leaves to the custodian because other models use neither); for `s3-static-presign`, also `objectKey`, since a presigned URL is one operation on one object; for `oauth2-private-key-jwt`, `scopes`.",
-///  "type": "object",
-///  "properties": {
-///    "actions": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/ProviderObjectAction"
-///      },
-///      "maxItems": 3,
-///      "minItems": 1,
-///      "uniqueItems": true
-///    },
-///    "objectKey": {
-///      "description": "`s3-static-presign` only: the object's name within `prefix`. The presigned URL names `prefix` + `objectKey` and nothing else, and `actions` must hold exactly one action.",
-///      "type": "string",
-///      "maxLength": 1024,
-///      "minLength": 1,
-///      "pattern": "^[A-Za-z0-9._-]+$"
-///    },
-///    "prefix": {
-///      "$ref": "#/definitions/ProviderObjectPrefix"
-///    },
-///    "scopes": {
-///      "description": "`oauth2-private-key-jwt` only: the OAuth scopes requested.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "maxLength": 256,
-///        "pattern": "^[!#-\\[\\]-~]+$"
-///      },
-///      "maxItems": 64,
-///      "uniqueItems": true
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -348,18 +267,6 @@ impl CredentialScope {
 }
 ///`s3-static-presign` only: the object's name within `prefix`. The presigned URL names `prefix` + `objectKey` and nothing else, and `actions` must hold exactly one action.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`s3-static-presign` only: the object's name within `prefix`. The presigned URL names `prefix` + `objectKey` and nothing else, and `actions` must hold exactly one action.",
-///  "type": "string",
-///  "maxLength": 1024,
-///  "minLength": 1,
-///  "pattern": "^[A-Za-z0-9._-]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CredentialScopeObjectKey(::std::string::String);
@@ -427,16 +334,6 @@ impl<'de> ::serde::Deserialize<'de> for CredentialScopeObjectKey {
 }
 ///`CredentialScopeScopesItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 256,
-///  "pattern": "^[!#-\\[\\]-~]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CredentialScopeScopesItem(::std::string::String);
@@ -501,21 +398,6 @@ impl<'de> ::serde::Deserialize<'de> for CredentialScopeScopesItem {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -537,15 +419,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -609,69 +482,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Obtain a short-lived, downscoped provider credential from an external account, sealed to the caller: session or token credentials under `scope`, or a batch of presigned requests on one object under `presign`. The outer document members are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/external/credentials/issue/0.2",
-///  "title": "Payload",
-///  "description": "Obtain a short-lived, downscoped provider credential from an external account, sealed to the caller: session or token credentials under `scope`, or a batch of presigned requests on one object under `presign`. The outer document members are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "oneOf": [
-///    {
-///      "not": {
-///        "required": [
-///          "presign"
-///        ]
-///      },
-///      "required": [
-///        "scope"
-///      ]
-///    },
-///    {
-///      "not": {
-///        "required": [
-///          "scope"
-///        ]
-///      },
-///      "required": [
-///        "presign"
-///      ]
-///    }
-///  ],
-///  "required": [
-///    "account",
-///    "context",
-///    "ttlSeconds"
-///  ],
-///  "properties": {
-///    "account": {
-///      "$ref": "#/definitions/AccountId"
-///    },
-///    "context": {
-///      "$ref": "#/definitions/AccountContextId"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "presign": {
-///      "$ref": "#/definitions/PresignBatch"
-///    },
-///    "scope": {
-///      "description": "For every brokered model but `s3-static-presign`: the prefix and actions, or the OAuth scopes, the session or token is downscoped to. `objectKey` is not used in this version.",
-///      "$ref": "#/definitions/CredentialScope"
-///    },
-///    "ttlSeconds": {
-///      "description": "Requested lifetime; never more than the binding's `maxTtlSeconds`. For `presign`, the lifetime of every URL in the batch.",
-///      "type": "integer",
-///      "maximum": 3600.0,
-///      "minimum": 60.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged, deny_unknown_fields)]
 #[non_exhaustive]
@@ -701,49 +511,6 @@ pub enum Payload {
 }
 ///`s3-static-presign` only: up to 128 operations on **one** object, `prefix` + `objectKey`, and at most one multipart upload of it. Each operation becomes one presigned request, sealed together. Consistency rules JSON Schema cannot state, which the custodian enforces: `uploadId` is present exactly when an operation needs it (`upload-part`, `list-parts`, `complete-multipart`, `abort-multipart`) and absent when the batch holds `create-multipart`; no two operations are identical; no two `upload-part` operations name the same `partNumber`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "PresignBatch",
-///  "description": "`s3-static-presign` only: up to 128 operations on **one** object, `prefix` + `objectKey`, and at most one multipart upload of it. Each operation becomes one presigned request, sealed together. Consistency rules JSON Schema cannot state, which the custodian enforces: `uploadId` is present exactly when an operation needs it (`upload-part`, `list-parts`, `complete-multipart`, `abort-multipart`) and absent when the batch holds `create-multipart`; no two operations are identical; no two `upload-part` operations name the same `partNumber`.",
-///  "type": "object",
-///  "required": [
-///    "objectKey",
-///    "prefix",
-///    "requests"
-///  ],
-///  "properties": {
-///    "objectKey": {
-///      "description": "The object's name within `prefix`. Every request in the batch names `prefix` + `objectKey` and no other object.",
-///      "type": "string",
-///      "maxLength": 1024,
-///      "minLength": 1,
-///      "pattern": "^[A-Za-z0-9._-]+$"
-///    },
-///    "prefix": {
-///      "$ref": "#/definitions/ProviderObjectPrefix"
-///    },
-///    "requests": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/PresignRequest"
-///      },
-///      "maxItems": 128,
-///      "minItems": 1
-///    },
-///    "uploadId": {
-///      "description": "The multipart upload the batch's multipart operations act on, as storage returned it from CreateMultipartUpload. Signed into each such request's query, percent-encoded by the SigV4 encoder, never interpolated.",
-///      "type": "string",
-///      "maxLength": 1024,
-///      "minLength": 1,
-///      "pattern": "^[A-Za-z0-9._~+/=-]+$"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -768,18 +535,6 @@ impl PresignBatch {
 }
 ///The object's name within `prefix`. Every request in the batch names `prefix` + `objectKey` and no other object.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The object's name within `prefix`. Every request in the batch names `prefix` + `objectKey` and no other object.",
-///  "type": "string",
-///  "maxLength": 1024,
-///  "minLength": 1,
-///  "pattern": "^[A-Za-z0-9._-]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PresignBatchObjectKey(::std::string::String);
@@ -847,18 +602,6 @@ impl<'de> ::serde::Deserialize<'de> for PresignBatchObjectKey {
 }
 ///The multipart upload the batch's multipart operations act on, as storage returned it from CreateMultipartUpload. Signed into each such request's query, percent-encoded by the SigV4 encoder, never interpolated.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The multipart upload the batch's multipart operations act on, as storage returned it from CreateMultipartUpload. Signed into each such request's query, percent-encoded by the SigV4 encoder, never interpolated.",
-///  "type": "string",
-///  "maxLength": 1024,
-///  "minLength": 1,
-///  "pattern": "^[A-Za-z0-9._~+/=-]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PresignBatchUploadId(::std::string::String);
@@ -926,193 +669,6 @@ impl<'de> ::serde::Deserialize<'de> for PresignBatchUploadId {
 }
 ///One operation to presign, discriminated by `operation`. The ceiling action each needs is in `PresignOperation`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "PresignRequest",
-///  "description": "One operation to presign, discriminated by `operation`. The ceiling action each needs is in `PresignOperation`.",
-///  "oneOf": [
-///    {
-///      "title": "PresignPut",
-///      "description": "PutObject of the whole object, bound to its exact length and SHA-256.",
-///      "type": "object",
-///      "required": [
-///        "checksumSha256",
-///        "contentLength",
-///        "operation"
-///      ],
-///      "properties": {
-///        "checksumSha256": {
-///          "$ref": "#/definitions/ChecksumSha256"
-///        },
-///        "contentLength": {
-///          "description": "The object's exact length in bytes, signed into the request as `Content-Length`. At most 5 GiB, S3's single-request ceiling.",
-///          "type": "integer",
-///          "maximum": 5368709120.0,
-///          "minimum": 0.0
-///        },
-///        "operation": {
-///          "type": "string",
-///          "const": "put"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "PresignGet",
-///      "description": "GetObject.",
-///      "type": "object",
-///      "required": [
-///        "operation"
-///      ],
-///      "properties": {
-///        "operation": {
-///          "type": "string",
-///          "const": "get"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "PresignHead",
-///      "description": "HeadObject, with `x-amz-checksum-mode: ENABLED` signed so storage reports the object's checksum.",
-///      "type": "object",
-///      "required": [
-///        "operation"
-///      ],
-///      "properties": {
-///        "operation": {
-///          "type": "string",
-///          "const": "head"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "PresignDelete",
-///      "description": "DeleteObject.",
-///      "type": "object",
-///      "required": [
-///        "operation"
-///      ],
-///      "properties": {
-///        "operation": {
-///          "type": "string",
-///          "const": "delete"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "PresignCreateMultipart",
-///      "description": "CreateMultipartUpload, with `x-amz-checksum-algorithm: SHA256` signed so every part of the upload must carry a SHA-256 checksum.",
-///      "type": "object",
-///      "required": [
-///        "operation"
-///      ],
-///      "properties": {
-///        "operation": {
-///          "type": "string",
-///          "const": "create-multipart"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "PresignUploadPart",
-///      "description": "UploadPart of one part of `uploadId`, bound to its number, its exact length and its SHA-256.",
-///      "type": "object",
-///      "required": [
-///        "checksumSha256",
-///        "contentLength",
-///        "operation",
-///        "partNumber"
-///      ],
-///      "properties": {
-///        "checksumSha256": {
-///          "$ref": "#/definitions/ChecksumSha256"
-///        },
-///        "contentLength": {
-///          "description": "The part's exact length in bytes, signed into the request as `Content-Length`. At most 5 GiB, S3's part ceiling.",
-///          "type": "integer",
-///          "maximum": 5368709120.0,
-///          "minimum": 1.0
-///        },
-///        "operation": {
-///          "type": "string",
-///          "const": "upload-part"
-///        },
-///        "partNumber": {
-///          "type": "integer",
-///          "maximum": 10000.0,
-///          "minimum": 1.0
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "PresignListParts",
-///      "description": "ListParts of `uploadId`: each part's number, length, ETag and checksum, up to 1000 per page.",
-///      "type": "object",
-///      "required": [
-///        "operation"
-///      ],
-///      "properties": {
-///        "operation": {
-///          "type": "string",
-///          "const": "list-parts"
-///        },
-///        "partNumberMarker": {
-///          "description": "List parts after this number. Absent, from the first.",
-///          "type": "integer",
-///          "maximum": 10000.0,
-///          "minimum": 0.0
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "PresignCompleteMultipart",
-///      "description": "CompleteMultipartUpload of `uploadId`, bound to the assembled object's exact length.",
-///      "type": "object",
-///      "required": [
-///        "contentLength",
-///        "operation"
-///      ],
-///      "properties": {
-///        "contentLength": {
-///          "description": "The assembled object's exact length in bytes, signed into the request as `x-amz-mp-object-size`, so storage refuses a completion that would assemble any other size. At most 5 TiB, S3's object ceiling.",
-///          "type": "integer",
-///          "maximum": 5497558138880.0,
-///          "minimum": 0.0
-///        },
-///        "operation": {
-///          "type": "string",
-///          "const": "complete-multipart"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "PresignAbortMultipart",
-///      "description": "AbortMultipartUpload of `uploadId`.",
-///      "type": "object",
-///      "required": [
-///        "operation"
-///      ],
-///      "properties": {
-///        "operation": {
-///          "type": "string",
-///          "const": "abort-multipart"
-///        }
-///      },
-///      "additionalProperties": false
-///    }
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(tag = "operation", deny_unknown_fields)]
 #[non_exhaustive]
@@ -1180,21 +736,6 @@ pub enum PresignRequest {
 }
 ///`put`: write an object. `get`: read one. `delete`: remove one. No list, ACL, policy or bucket-level action exists here, so none can be granted.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ProviderObjectAction",
-///  "description": "`put`: write an object. `get`: read one. `delete`: remove one. No list, ACL, policy or bucket-level action exists here, so none can be granted.",
-///  "type": "string",
-///  "enum": [
-///    "put",
-///    "get",
-///    "delete"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1260,19 +801,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ProviderObjectAction {
 }
 ///An object-key prefix within the account's bucket: one or more segments of lowercase letters, digits, `.`, `_` and `-`, each beginning with a letter or digit and ending with `/`. No quote, backslash, wildcard, whitespace, `..` segment or empty segment can appear. That is deliberate: the custodian places this value inside a provider policy — an IAM session policy (JSON), a GCS Credential Access Boundary condition (CEL) — and a value able to carry a metacharacter can break out of the string it is placed in and widen the policy. That is a known class of defect (CVE-2026-42811, a CEL injection in downscoped GCS credentials). Even with this pattern, a custodian MUST build provider policies with the provider language's own encoder, never by string interpolation.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ProviderObjectPrefix",
-///  "description": "An object-key prefix within the account's bucket: one or more segments of lowercase letters, digits, `.`, `_` and `-`, each beginning with a letter or digit and ending with `/`. No quote, backslash, wildcard, whitespace, `..` segment or empty segment can appear. That is deliberate: the custodian places this value inside a provider policy — an IAM session policy (JSON), a GCS Credential Access Boundary condition (CEL) — and a value able to carry a metacharacter can break out of the string it is placed in and widen the policy. That is a known class of defect (CVE-2026-42811, a CEL injection in downscoped GCS credentials). Even with this pattern, a custodian MUST build provider policies with the provider language's own encoder, never by string interpolation.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 2,
-///  "pattern": "^([a-z0-9][a-z0-9._-]{0,127}/){1,16}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ProviderObjectPrefix(::std::string::String);
@@ -1342,68 +870,6 @@ impl<'de> ::serde::Deserialize<'de> for ProviderObjectPrefix {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "oneOf": [
-///    {
-///      "not": {
-///        "required": [
-///          "presign"
-///        ]
-///      },
-///      "required": [
-///        "scope"
-///      ]
-///    },
-///    {
-///      "not": {
-///        "required": [
-///          "scope"
-///        ]
-///      },
-///      "required": [
-///        "presign"
-///      ]
-///    }
-///  ],
-///  "required": [
-///    "expiresAt",
-///    "sealedCredential"
-///  ],
-///  "properties": {
-///    "expiresAt": {
-///      "description": "The provider's expiry for the credential, in the clear; for `presign`, the earliest expiry in the batch.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "presign": {
-///      "description": "The batch actually presigned, which equals the requested one.",
-///      "$ref": "#/definitions/PresignBatch"
-///    },
-///    "scope": {
-///      "description": "The scope actually granted, which equals the requested one.",
-///      "$ref": "#/definitions/CredentialScope"
-///    },
-///    "sealedCredential": {
-///      "description": "A `SealedTransferBundle` (external/_shared/0.1), sealed to the caller's key-agreement key, whose cleartext is an `ExternalCredentialPayload` for `scope` or a `PresignedRequestSet` for `presign`. Bounded at 256 KiB rather than the shared 64 KiB because a batch of 128 presigned requests does not fit 64 KiB.",
-///      "type": "string",
-///      "maxLength": 262144,
-///      "minLength": 64,
-///      "pattern": "^-----BEGIN VTA SEALED BUNDLE-----[\\s\\S]+-----END VTA SEALED BUNDLE-----\\s*$"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged, deny_unknown_fields)]
 #[non_exhaustive]
@@ -1436,18 +902,6 @@ pub enum Response {
 }
 ///A `SealedTransferBundle` (external/_shared/0.1), sealed to the caller's key-agreement key, whose cleartext is an `ExternalCredentialPayload` for `scope` or a `PresignedRequestSet` for `presign`. Bounded at 256 KiB rather than the shared 64 KiB because a batch of 128 presigned requests does not fit 64 KiB.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "A `SealedTransferBundle` (external/_shared/0.1), sealed to the caller's key-agreement key, whose cleartext is an `ExternalCredentialPayload` for `scope` or a `PresignedRequestSet` for `presign`. Bounded at 256 KiB rather than the shared 64 KiB because a batch of 128 presigned requests does not fit 64 KiB.",
-///  "type": "string",
-///  "maxLength": 262144,
-///  "minLength": 64,
-///  "pattern": "^-----BEGIN VTA SEALED BUNDLE-----[\\s\\S]+-----END VTA SEALED BUNDLE-----\\s*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseVariant0SealedCredential(::std::string::String);
@@ -1524,18 +978,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseVariant0SealedCredential {
 }
 ///A `SealedTransferBundle` (external/_shared/0.1), sealed to the caller's key-agreement key, whose cleartext is an `ExternalCredentialPayload` for `scope` or a `PresignedRequestSet` for `presign`. Bounded at 256 KiB rather than the shared 64 KiB because a batch of 128 presigned requests does not fit 64 KiB.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "A `SealedTransferBundle` (external/_shared/0.1), sealed to the caller's key-agreement key, whose cleartext is an `ExternalCredentialPayload` for `scope` or a `PresignedRequestSet` for `presign`. Bounded at 256 KiB rather than the shared 64 KiB because a batch of 128 presigned requests does not fit 64 KiB.",
-///  "type": "string",
-///  "maxLength": 262144,
-///  "minLength": 64,
-///  "pattern": "^-----BEGIN VTA SEALED BUNDLE-----[\\s\\S]+-----END VTA SEALED BUNDLE-----\\s*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseVariant1SealedCredential(::std::string::String);
@@ -1802,7 +1244,7 @@ impl crate::Payload for Payload {
     const MAX_DOCUMENT_BYTES: Option<usize> = Some(65536usize);
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AccountContextId\": {\n      \"description\": \"The custodian context that owns the account. Act scope in this context decides who may manage the account and who may consume it; the account's keys are derived in this context's key space.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"title\": \"AccountContextId\",\n      \"type\": \"string\"\n    },\n    \"AccountId\": {\n      \"description\": \"The account's identifier within its context, chosen by whoever creates it. Lowercase letters, digits and hyphens, so that it can be embedded in a certificate subject, a token subject or a provider-side condition without escaping. Unique per context; never reused after deletion while anything that names it (a provider-side trust policy, an audit row) may still exist.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z0-9][a-z0-9-]*$\",\n      \"title\": \"AccountId\",\n      \"type\": \"string\"\n    },\n    \"ChecksumSha256\": {\n      \"description\": \"A SHA-256 digest in standard base64 (RFC 4648 §4, padded), as S3 carries it in `x-amz-checksum-sha256`.\",\n      \"maxLength\": 44,\n      \"minLength\": 44,\n      \"pattern\": \"^[A-Za-z0-9+/]{43}=$\",\n      \"title\": \"ChecksumSha256\",\n      \"type\": \"string\"\n    },\n    \"CredentialScope\": {\n      \"additionalProperties\": false,\n      \"description\": \"What one issuance may do. For storage models, `prefix` and `actions` (both required, a rule this schema leaves to the custodian because other models use neither); for `s3-static-presign`, also `objectKey`, since a presigned URL is one operation on one object; for `oauth2-private-key-jwt`, `scopes`.\",\n      \"properties\": {\n        \"actions\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/ProviderObjectAction\"\n          },\n          \"maxItems\": 3,\n          \"minItems\": 1,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"objectKey\": {\n          \"description\": \"`s3-static-presign` only: the object's name within `prefix`. The presigned URL names `prefix` + `objectKey` and nothing else, and `actions` must hold exactly one action.\",\n          \"maxLength\": 1024,\n          \"minLength\": 1,\n          \"pattern\": \"^[A-Za-z0-9._-]+$\",\n          \"type\": \"string\"\n        },\n        \"prefix\": {\n          \"$ref\": \"#/$defs/ProviderObjectPrefix\"\n        },\n        \"scopes\": {\n          \"description\": \"`oauth2-private-key-jwt` only: the OAuth scopes requested.\",\n          \"items\": {\n            \"maxLength\": 256,\n            \"pattern\": \"^[!#-\\\\[\\\\]-~]+$\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 64,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        }\n      },\n      \"title\": \"CredentialScope\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"PresignBatch\": {\n      \"additionalProperties\": false,\n      \"description\": \"`s3-static-presign` only: up to 128 operations on **one** object, `prefix` + `objectKey`, and at most one multipart upload of it. Each operation becomes one presigned request, sealed together. Consistency rules JSON Schema cannot state, which the custodian enforces: `uploadId` is present exactly when an operation needs it (`upload-part`, `list-parts`, `complete-multipart`, `abort-multipart`) and absent when the batch holds `create-multipart`; no two operations are identical; no two `upload-part` operations name the same `partNumber`.\",\n      \"properties\": {\n        \"objectKey\": {\n          \"description\": \"The object's name within `prefix`. Every request in the batch names `prefix` + `objectKey` and no other object.\",\n          \"maxLength\": 1024,\n          \"minLength\": 1,\n          \"pattern\": \"^[A-Za-z0-9._-]+$\",\n          \"type\": \"string\"\n        },\n        \"prefix\": {\n          \"$ref\": \"#/$defs/ProviderObjectPrefix\"\n        },\n        \"requests\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/PresignRequest\"\n          },\n          \"maxItems\": 128,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"uploadId\": {\n          \"description\": \"The multipart upload the batch's multipart operations act on, as storage returned it from CreateMultipartUpload. Signed into each such request's query, percent-encoded by the SigV4 encoder, never interpolated.\",\n          \"maxLength\": 1024,\n          \"minLength\": 1,\n          \"pattern\": \"^[A-Za-z0-9._~+/=-]+$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"prefix\",\n        \"objectKey\",\n        \"requests\"\n      ],\n      \"title\": \"PresignBatch\",\n      \"type\": \"object\"\n    },\n    \"PresignRequest\": {\n      \"description\": \"One operation to presign, discriminated by `operation`. The ceiling action each needs is in `PresignOperation`.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"description\": \"PutObject of the whole object, bound to its exact length and SHA-256.\",\n          \"properties\": {\n            \"checksumSha256\": {\n              \"$ref\": \"#/$defs/ChecksumSha256\"\n            },\n            \"contentLength\": {\n              \"description\": \"The object's exact length in bytes, signed into the request as `Content-Length`. At most 5 GiB, S3's single-request ceiling.\",\n              \"maximum\": 5368709120,\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"operation\": {\n              \"const\": \"put\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"operation\",\n            \"contentLength\",\n            \"checksumSha256\"\n          ],\n          \"title\": \"PresignPut\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"GetObject.\",\n          \"properties\": {\n            \"operation\": {\n              \"const\": \"get\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"operation\"\n          ],\n          \"title\": \"PresignGet\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"HeadObject, with `x-amz-checksum-mode: ENABLED` signed so storage reports the object's checksum.\",\n          \"properties\": {\n            \"operation\": {\n              \"const\": \"head\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"operation\"\n          ],\n          \"title\": \"PresignHead\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"DeleteObject.\",\n          \"properties\": {\n            \"operation\": {\n              \"const\": \"delete\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"operation\"\n          ],\n          \"title\": \"PresignDelete\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"CreateMultipartUpload, with `x-amz-checksum-algorithm: SHA256` signed so every part of the upload must carry a SHA-256 checksum.\",\n          \"properties\": {\n            \"operation\": {\n              \"const\": \"create-multipart\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"operation\"\n          ],\n          \"title\": \"PresignCreateMultipart\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"UploadPart of one part of `uploadId`, bound to its number, its exact length and its SHA-256.\",\n          \"properties\": {\n            \"checksumSha256\": {\n              \"$ref\": \"#/$defs/ChecksumSha256\"\n            },\n            \"contentLength\": {\n              \"description\": \"The part's exact length in bytes, signed into the request as `Content-Length`. At most 5 GiB, S3's part ceiling.\",\n              \"maximum\": 5368709120,\n              \"minimum\": 1,\n              \"type\": \"integer\"\n            },\n            \"operation\": {\n              \"const\": \"upload-part\",\n              \"type\": \"string\"\n            },\n            \"partNumber\": {\n              \"maximum\": 10000,\n              \"minimum\": 1,\n              \"type\": \"integer\"\n            }\n          },\n          \"required\": [\n            \"operation\",\n            \"partNumber\",\n            \"contentLength\",\n            \"checksumSha256\"\n          ],\n          \"title\": \"PresignUploadPart\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"ListParts of `uploadId`: each part's number, length, ETag and checksum, up to 1000 per page.\",\n          \"properties\": {\n            \"operation\": {\n              \"const\": \"list-parts\",\n              \"type\": \"string\"\n            },\n            \"partNumberMarker\": {\n              \"description\": \"List parts after this number. Absent, from the first.\",\n              \"maximum\": 10000,\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            }\n          },\n          \"required\": [\n            \"operation\"\n          ],\n          \"title\": \"PresignListParts\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"CompleteMultipartUpload of `uploadId`, bound to the assembled object's exact length.\",\n          \"properties\": {\n            \"contentLength\": {\n              \"description\": \"The assembled object's exact length in bytes, signed into the request as `x-amz-mp-object-size`, so storage refuses a completion that would assemble any other size. At most 5 TiB, S3's object ceiling.\",\n              \"maximum\": 5497558138880,\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"operation\": {\n              \"const\": \"complete-multipart\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"operation\",\n            \"contentLength\"\n          ],\n          \"title\": \"PresignCompleteMultipart\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"AbortMultipartUpload of `uploadId`.\",\n          \"properties\": {\n            \"operation\": {\n              \"const\": \"abort-multipart\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"operation\"\n          ],\n          \"title\": \"PresignAbortMultipart\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"PresignRequest\"\n    },\n    \"ProviderObjectAction\": {\n      \"description\": \"`put`: write an object. `get`: read one. `delete`: remove one. No list, ACL, policy or bucket-level action exists here, so none can be granted.\",\n      \"enum\": [\n        \"put\",\n        \"get\",\n        \"delete\"\n      ],\n      \"title\": \"ProviderObjectAction\",\n      \"type\": \"string\"\n    },\n    \"ProviderObjectPrefix\": {\n      \"description\": \"An object-key prefix within the account's bucket: one or more segments of lowercase letters, digits, `.`, `_` and `-`, each beginning with a letter or digit and ending with `/`. No quote, backslash, wildcard, whitespace, `..` segment or empty segment can appear. That is deliberate: the custodian places this value inside a provider policy — an IAM session policy (JSON), a GCS Credential Access Boundary condition (CEL) — and a value able to carry a metacharacter can break out of the string it is placed in and widen the policy. That is a known class of defect (CVE-2026-42811, a CEL injection in downscoped GCS credentials). Even with this pattern, a custodian MUST build provider policies with the provider language's own encoder, never by string interpolation.\",\n      \"maxLength\": 512,\n      \"minLength\": 2,\n      \"pattern\": \"^([a-z0-9][a-z0-9._-]{0,127}/){1,16}$\",\n      \"title\": \"ProviderObjectPrefix\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"oneOf\": [\n        {\n          \"not\": {\n            \"required\": [\n              \"presign\"\n            ]\n          },\n          \"required\": [\n            \"scope\"\n          ]\n        },\n        {\n          \"not\": {\n            \"required\": [\n              \"scope\"\n            ]\n          },\n          \"required\": [\n            \"presign\"\n          ]\n        }\n      ],\n      \"properties\": {\n        \"expiresAt\": {\n          \"description\": \"The provider's expiry for the credential, in the clear; for `presign`, the earliest expiry in the batch.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"presign\": {\n          \"$ref\": \"#/$defs/PresignBatch\",\n          \"description\": \"The batch actually presigned, which equals the requested one.\"\n        },\n        \"scope\": {\n          \"$ref\": \"#/$defs/CredentialScope\",\n          \"description\": \"The scope actually granted, which equals the requested one.\"\n        },\n        \"sealedCredential\": {\n          \"description\": \"A `SealedTransferBundle` (external/_shared/0.1), sealed to the caller's key-agreement key, whose cleartext is an `ExternalCredentialPayload` for `scope` or a `PresignedRequestSet` for `presign`. Bounded at 256 KiB rather than the shared 64 KiB because a batch of 128 presigned requests does not fit 64 KiB.\",\n          \"maxLength\": 262144,\n          \"minLength\": 64,\n          \"pattern\": \"^-----BEGIN VTA SEALED BUNDLE-----[\\\\s\\\\S]+-----END VTA SEALED BUNDLE-----\\\\s*$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"sealedCredential\",\n        \"expiresAt\"\n      ],\n      \"title\": \"External Credentials — Issue — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/external/credentials/issue/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Obtain a short-lived, downscoped provider credential from an external account, sealed to the caller: session or token credentials under `scope`, or a batch of presigned requests on one object under `presign`. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"oneOf\": [\n    {\n      \"not\": {\n        \"required\": [\n          \"presign\"\n        ]\n      },\n      \"required\": [\n        \"scope\"\n      ]\n    },\n    {\n      \"not\": {\n        \"required\": [\n          \"scope\"\n        ]\n      },\n      \"required\": [\n        \"presign\"\n      ]\n    }\n  ],\n  \"properties\": {\n    \"account\": {\n      \"$ref\": \"#/$defs/AccountId\"\n    },\n    \"context\": {\n      \"$ref\": \"#/$defs/AccountContextId\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"presign\": {\n      \"$ref\": \"#/$defs/PresignBatch\"\n    },\n    \"scope\": {\n      \"$ref\": \"#/$defs/CredentialScope\",\n      \"description\": \"For every brokered model but `s3-static-presign`: the prefix and actions, or the OAuth scopes, the session or token is downscoped to. `objectKey` is not used in this version.\"\n    },\n    \"ttlSeconds\": {\n      \"description\": \"Requested lifetime; never more than the binding's `maxTtlSeconds`. For `presign`, the lifetime of every URL in the batch.\",\n      \"maximum\": 3600,\n      \"minimum\": 60,\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"context\",\n    \"account\",\n    \"ttlSeconds\"\n  ],\n  \"title\": \"External Credentials — Issue — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"AccountContextId\":{\"description\":\"The custodian context that owns the account. Act scope in this context decides who may manage the account and who may consume it; the account's keys are derived in this context's key space.\",\"maxLength\":256,\"minLength\":1,\"title\":\"AccountContextId\",\"type\":\"string\"},\"AccountId\":{\"description\":\"The account's identifier within its context, chosen by whoever creates it. Lowercase letters, digits and hyphens, so that it can be embedded in a certificate subject, a token subject or a provider-side condition without escaping. Unique per context; never reused after deletion while anything that names it (a provider-side trust policy, an audit row) may still exist.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9][a-z0-9-]*$\",\"title\":\"AccountId\",\"type\":\"string\"},\"ChecksumSha256\":{\"description\":\"A SHA-256 digest in standard base64 (RFC 4648 §4, padded), as S3 carries it in `x-amz-checksum-sha256`.\",\"maxLength\":44,\"minLength\":44,\"pattern\":\"^[A-Za-z0-9+/]{43}=$\",\"title\":\"ChecksumSha256\",\"type\":\"string\"},\"CredentialScope\":{\"additionalProperties\":false,\"description\":\"What one issuance may do. For storage models, `prefix` and `actions` (both required, a rule this schema leaves to the custodian because other models use neither); for `s3-static-presign`, also `objectKey`, since a presigned URL is one operation on one object; for `oauth2-private-key-jwt`, `scopes`.\",\"properties\":{\"actions\":{\"items\":{\"$ref\":\"#/$defs/ProviderObjectAction\"},\"maxItems\":3,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"objectKey\":{\"description\":\"`s3-static-presign` only: the object's name within `prefix`. The presigned URL names `prefix` + `objectKey` and nothing else, and `actions` must hold exactly one action.\",\"maxLength\":1024,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9._-]+$\",\"type\":\"string\"},\"prefix\":{\"$ref\":\"#/$defs/ProviderObjectPrefix\"},\"scopes\":{\"description\":\"`oauth2-private-key-jwt` only: the OAuth scopes requested.\",\"items\":{\"maxLength\":256,\"pattern\":\"^[!#-\\\\[\\\\]-~]+$\",\"type\":\"string\"},\"maxItems\":64,\"type\":\"array\",\"uniqueItems\":true}},\"title\":\"CredentialScope\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"PresignBatch\":{\"additionalProperties\":false,\"description\":\"`s3-static-presign` only: up to 128 operations on **one** object, `prefix` + `objectKey`, and at most one multipart upload of it. Each operation becomes one presigned request, sealed together. Consistency rules JSON Schema cannot state, which the custodian enforces: `uploadId` is present exactly when an operation needs it (`upload-part`, `list-parts`, `complete-multipart`, `abort-multipart`) and absent when the batch holds `create-multipart`; no two operations are identical; no two `upload-part` operations name the same `partNumber`.\",\"properties\":{\"objectKey\":{\"description\":\"The object's name within `prefix`. Every request in the batch names `prefix` + `objectKey` and no other object.\",\"maxLength\":1024,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9._-]+$\",\"type\":\"string\"},\"prefix\":{\"$ref\":\"#/$defs/ProviderObjectPrefix\"},\"requests\":{\"items\":{\"$ref\":\"#/$defs/PresignRequest\"},\"maxItems\":128,\"minItems\":1,\"type\":\"array\"},\"uploadId\":{\"description\":\"The multipart upload the batch's multipart operations act on, as storage returned it from CreateMultipartUpload. Signed into each such request's query, percent-encoded by the SigV4 encoder, never interpolated.\",\"maxLength\":1024,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9._~+/=-]+$\",\"type\":\"string\"}},\"required\":[\"prefix\",\"objectKey\",\"requests\"],\"title\":\"PresignBatch\",\"type\":\"object\"},\"PresignRequest\":{\"description\":\"One operation to presign, discriminated by `operation`. The ceiling action each needs is in `PresignOperation`.\",\"oneOf\":[{\"additionalProperties\":false,\"description\":\"PutObject of the whole object, bound to its exact length and SHA-256.\",\"properties\":{\"checksumSha256\":{\"$ref\":\"#/$defs/ChecksumSha256\"},\"contentLength\":{\"description\":\"The object's exact length in bytes, signed into the request as `Content-Length`. At most 5 GiB, S3's single-request ceiling.\",\"maximum\":5368709120,\"minimum\":0,\"type\":\"integer\"},\"operation\":{\"const\":\"put\",\"type\":\"string\"}},\"required\":[\"operation\",\"contentLength\",\"checksumSha256\"],\"title\":\"PresignPut\",\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"GetObject.\",\"properties\":{\"operation\":{\"const\":\"get\",\"type\":\"string\"}},\"required\":[\"operation\"],\"title\":\"PresignGet\",\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"HeadObject, with `x-amz-checksum-mode: ENABLED` signed so storage reports the object's checksum.\",\"properties\":{\"operation\":{\"const\":\"head\",\"type\":\"string\"}},\"required\":[\"operation\"],\"title\":\"PresignHead\",\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"DeleteObject.\",\"properties\":{\"operation\":{\"const\":\"delete\",\"type\":\"string\"}},\"required\":[\"operation\"],\"title\":\"PresignDelete\",\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"CreateMultipartUpload, with `x-amz-checksum-algorithm: SHA256` signed so every part of the upload must carry a SHA-256 checksum.\",\"properties\":{\"operation\":{\"const\":\"create-multipart\",\"type\":\"string\"}},\"required\":[\"operation\"],\"title\":\"PresignCreateMultipart\",\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"UploadPart of one part of `uploadId`, bound to its number, its exact length and its SHA-256.\",\"properties\":{\"checksumSha256\":{\"$ref\":\"#/$defs/ChecksumSha256\"},\"contentLength\":{\"description\":\"The part's exact length in bytes, signed into the request as `Content-Length`. At most 5 GiB, S3's part ceiling.\",\"maximum\":5368709120,\"minimum\":1,\"type\":\"integer\"},\"operation\":{\"const\":\"upload-part\",\"type\":\"string\"},\"partNumber\":{\"maximum\":10000,\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"operation\",\"partNumber\",\"contentLength\",\"checksumSha256\"],\"title\":\"PresignUploadPart\",\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"ListParts of `uploadId`: each part's number, length, ETag and checksum, up to 1000 per page.\",\"properties\":{\"operation\":{\"const\":\"list-parts\",\"type\":\"string\"},\"partNumberMarker\":{\"description\":\"List parts after this number. Absent, from the first.\",\"maximum\":10000,\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"operation\"],\"title\":\"PresignListParts\",\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"CompleteMultipartUpload of `uploadId`, bound to the assembled object's exact length.\",\"properties\":{\"contentLength\":{\"description\":\"The assembled object's exact length in bytes, signed into the request as `x-amz-mp-object-size`, so storage refuses a completion that would assemble any other size. At most 5 TiB, S3's object ceiling.\",\"maximum\":5497558138880,\"minimum\":0,\"type\":\"integer\"},\"operation\":{\"const\":\"complete-multipart\",\"type\":\"string\"}},\"required\":[\"operation\",\"contentLength\"],\"title\":\"PresignCompleteMultipart\",\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"AbortMultipartUpload of `uploadId`.\",\"properties\":{\"operation\":{\"const\":\"abort-multipart\",\"type\":\"string\"}},\"required\":[\"operation\"],\"title\":\"PresignAbortMultipart\",\"type\":\"object\"}],\"title\":\"PresignRequest\"},\"ProviderObjectAction\":{\"description\":\"`put`: write an object. `get`: read one. `delete`: remove one. No list, ACL, policy or bucket-level action exists here, so none can be granted.\",\"enum\":[\"put\",\"get\",\"delete\"],\"title\":\"ProviderObjectAction\",\"type\":\"string\"},\"ProviderObjectPrefix\":{\"description\":\"An object-key prefix within the account's bucket: one or more segments of lowercase letters, digits, `.`, `_` and `-`, each beginning with a letter or digit and ending with `/`. No quote, backslash, wildcard, whitespace, `..` segment or empty segment can appear. That is deliberate: the custodian places this value inside a provider policy — an IAM session policy (JSON), a GCS Credential Access Boundary condition (CEL) — and a value able to carry a metacharacter can break out of the string it is placed in and widen the policy. That is a known class of defect (CVE-2026-42811, a CEL injection in downscoped GCS credentials). Even with this pattern, a custodian MUST build provider policies with the provider language's own encoder, never by string interpolation.\",\"maxLength\":512,\"minLength\":2,\"pattern\":\"^([a-z0-9][a-z0-9._-]{0,127}/){1,16}$\",\"title\":\"ProviderObjectPrefix\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"oneOf\":[{\"not\":{\"required\":[\"presign\"]},\"required\":[\"scope\"]},{\"not\":{\"required\":[\"scope\"]},\"required\":[\"presign\"]}],\"properties\":{\"expiresAt\":{\"description\":\"The provider's expiry for the credential, in the clear; for `presign`, the earliest expiry in the batch.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"presign\":{\"$ref\":\"#/$defs/PresignBatch\",\"description\":\"The batch actually presigned, which equals the requested one.\"},\"scope\":{\"$ref\":\"#/$defs/CredentialScope\",\"description\":\"The scope actually granted, which equals the requested one.\"},\"sealedCredential\":{\"description\":\"A `SealedTransferBundle` (external/_shared/0.1), sealed to the caller's key-agreement key, whose cleartext is an `ExternalCredentialPayload` for `scope` or a `PresignedRequestSet` for `presign`. Bounded at 256 KiB rather than the shared 64 KiB because a batch of 128 presigned requests does not fit 64 KiB.\",\"maxLength\":262144,\"minLength\":64,\"pattern\":\"^-----BEGIN VTA SEALED BUNDLE-----[\\\\s\\\\S]+-----END VTA SEALED BUNDLE-----\\\\s*$\",\"type\":\"string\"}},\"required\":[\"sealedCredential\",\"expiresAt\"],\"title\":\"External Credentials — Issue — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/external/credentials/issue/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Obtain a short-lived, downscoped provider credential from an external account, sealed to the caller: session or token credentials under `scope`, or a batch of presigned requests on one object under `presign`. The outer document members are owned by the framework — SPEC §6.3.\",\"oneOf\":[{\"not\":{\"required\":[\"presign\"]},\"required\":[\"scope\"]},{\"not\":{\"required\":[\"scope\"]},\"required\":[\"presign\"]}],\"properties\":{\"account\":{\"$ref\":\"#/$defs/AccountId\"},\"context\":{\"$ref\":\"#/$defs/AccountContextId\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"presign\":{\"$ref\":\"#/$defs/PresignBatch\"},\"scope\":{\"$ref\":\"#/$defs/CredentialScope\",\"description\":\"For every brokered model but `s3-static-presign`: the prefix and actions, or the OAuth scopes, the session or token is downscoped to. `objectKey` is not used in this version.\"},\"ttlSeconds\":{\"description\":\"Requested lifetime; never more than the binding's `maxTtlSeconds`. For `presign`, the lifetime of every URL in the batch.\",\"maximum\":3600,\"minimum\":60,\"type\":\"integer\"}},\"required\":[\"context\",\"account\",\"ttlSeconds\"],\"title\":\"External Credentials — Issue — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1813,7 +1255,7 @@ impl crate::Payload for Response {
     const MAX_DOCUMENT_BYTES: Option<usize> = Some(294912usize);
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AccountContextId\": {\n      \"description\": \"The custodian context that owns the account. Act scope in this context decides who may manage the account and who may consume it; the account's keys are derived in this context's key space.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"title\": \"AccountContextId\",\n      \"type\": \"string\"\n    },\n    \"AccountId\": {\n      \"description\": \"The account's identifier within its context, chosen by whoever creates it. Lowercase letters, digits and hyphens, so that it can be embedded in a certificate subject, a token subject or a provider-side condition without escaping. Unique per context; never reused after deletion while anything that names it (a provider-side trust policy, an audit row) may still exist.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z0-9][a-z0-9-]*$\",\n      \"title\": \"AccountId\",\n      \"type\": \"string\"\n    },\n    \"ChecksumSha256\": {\n      \"description\": \"A SHA-256 digest in standard base64 (RFC 4648 §4, padded), as S3 carries it in `x-amz-checksum-sha256`.\",\n      \"maxLength\": 44,\n      \"minLength\": 44,\n      \"pattern\": \"^[A-Za-z0-9+/]{43}=$\",\n      \"title\": \"ChecksumSha256\",\n      \"type\": \"string\"\n    },\n    \"CredentialScope\": {\n      \"additionalProperties\": false,\n      \"description\": \"What one issuance may do. For storage models, `prefix` and `actions` (both required, a rule this schema leaves to the custodian because other models use neither); for `s3-static-presign`, also `objectKey`, since a presigned URL is one operation on one object; for `oauth2-private-key-jwt`, `scopes`.\",\n      \"properties\": {\n        \"actions\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/ProviderObjectAction\"\n          },\n          \"maxItems\": 3,\n          \"minItems\": 1,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"objectKey\": {\n          \"description\": \"`s3-static-presign` only: the object's name within `prefix`. The presigned URL names `prefix` + `objectKey` and nothing else, and `actions` must hold exactly one action.\",\n          \"maxLength\": 1024,\n          \"minLength\": 1,\n          \"pattern\": \"^[A-Za-z0-9._-]+$\",\n          \"type\": \"string\"\n        },\n        \"prefix\": {\n          \"$ref\": \"#/$defs/ProviderObjectPrefix\"\n        },\n        \"scopes\": {\n          \"description\": \"`oauth2-private-key-jwt` only: the OAuth scopes requested.\",\n          \"items\": {\n            \"maxLength\": 256,\n            \"pattern\": \"^[!#-\\\\[\\\\]-~]+$\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 64,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        }\n      },\n      \"title\": \"CredentialScope\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"PresignBatch\": {\n      \"additionalProperties\": false,\n      \"description\": \"`s3-static-presign` only: up to 128 operations on **one** object, `prefix` + `objectKey`, and at most one multipart upload of it. Each operation becomes one presigned request, sealed together. Consistency rules JSON Schema cannot state, which the custodian enforces: `uploadId` is present exactly when an operation needs it (`upload-part`, `list-parts`, `complete-multipart`, `abort-multipart`) and absent when the batch holds `create-multipart`; no two operations are identical; no two `upload-part` operations name the same `partNumber`.\",\n      \"properties\": {\n        \"objectKey\": {\n          \"description\": \"The object's name within `prefix`. Every request in the batch names `prefix` + `objectKey` and no other object.\",\n          \"maxLength\": 1024,\n          \"minLength\": 1,\n          \"pattern\": \"^[A-Za-z0-9._-]+$\",\n          \"type\": \"string\"\n        },\n        \"prefix\": {\n          \"$ref\": \"#/$defs/ProviderObjectPrefix\"\n        },\n        \"requests\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/PresignRequest\"\n          },\n          \"maxItems\": 128,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"uploadId\": {\n          \"description\": \"The multipart upload the batch's multipart operations act on, as storage returned it from CreateMultipartUpload. Signed into each such request's query, percent-encoded by the SigV4 encoder, never interpolated.\",\n          \"maxLength\": 1024,\n          \"minLength\": 1,\n          \"pattern\": \"^[A-Za-z0-9._~+/=-]+$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"prefix\",\n        \"objectKey\",\n        \"requests\"\n      ],\n      \"title\": \"PresignBatch\",\n      \"type\": \"object\"\n    },\n    \"PresignRequest\": {\n      \"description\": \"One operation to presign, discriminated by `operation`. The ceiling action each needs is in `PresignOperation`.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"description\": \"PutObject of the whole object, bound to its exact length and SHA-256.\",\n          \"properties\": {\n            \"checksumSha256\": {\n              \"$ref\": \"#/$defs/ChecksumSha256\"\n            },\n            \"contentLength\": {\n              \"description\": \"The object's exact length in bytes, signed into the request as `Content-Length`. At most 5 GiB, S3's single-request ceiling.\",\n              \"maximum\": 5368709120,\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"operation\": {\n              \"const\": \"put\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"operation\",\n            \"contentLength\",\n            \"checksumSha256\"\n          ],\n          \"title\": \"PresignPut\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"GetObject.\",\n          \"properties\": {\n            \"operation\": {\n              \"const\": \"get\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"operation\"\n          ],\n          \"title\": \"PresignGet\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"HeadObject, with `x-amz-checksum-mode: ENABLED` signed so storage reports the object's checksum.\",\n          \"properties\": {\n            \"operation\": {\n              \"const\": \"head\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"operation\"\n          ],\n          \"title\": \"PresignHead\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"DeleteObject.\",\n          \"properties\": {\n            \"operation\": {\n              \"const\": \"delete\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"operation\"\n          ],\n          \"title\": \"PresignDelete\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"CreateMultipartUpload, with `x-amz-checksum-algorithm: SHA256` signed so every part of the upload must carry a SHA-256 checksum.\",\n          \"properties\": {\n            \"operation\": {\n              \"const\": \"create-multipart\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"operation\"\n          ],\n          \"title\": \"PresignCreateMultipart\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"UploadPart of one part of `uploadId`, bound to its number, its exact length and its SHA-256.\",\n          \"properties\": {\n            \"checksumSha256\": {\n              \"$ref\": \"#/$defs/ChecksumSha256\"\n            },\n            \"contentLength\": {\n              \"description\": \"The part's exact length in bytes, signed into the request as `Content-Length`. At most 5 GiB, S3's part ceiling.\",\n              \"maximum\": 5368709120,\n              \"minimum\": 1,\n              \"type\": \"integer\"\n            },\n            \"operation\": {\n              \"const\": \"upload-part\",\n              \"type\": \"string\"\n            },\n            \"partNumber\": {\n              \"maximum\": 10000,\n              \"minimum\": 1,\n              \"type\": \"integer\"\n            }\n          },\n          \"required\": [\n            \"operation\",\n            \"partNumber\",\n            \"contentLength\",\n            \"checksumSha256\"\n          ],\n          \"title\": \"PresignUploadPart\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"ListParts of `uploadId`: each part's number, length, ETag and checksum, up to 1000 per page.\",\n          \"properties\": {\n            \"operation\": {\n              \"const\": \"list-parts\",\n              \"type\": \"string\"\n            },\n            \"partNumberMarker\": {\n              \"description\": \"List parts after this number. Absent, from the first.\",\n              \"maximum\": 10000,\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            }\n          },\n          \"required\": [\n            \"operation\"\n          ],\n          \"title\": \"PresignListParts\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"CompleteMultipartUpload of `uploadId`, bound to the assembled object's exact length.\",\n          \"properties\": {\n            \"contentLength\": {\n              \"description\": \"The assembled object's exact length in bytes, signed into the request as `x-amz-mp-object-size`, so storage refuses a completion that would assemble any other size. At most 5 TiB, S3's object ceiling.\",\n              \"maximum\": 5497558138880,\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"operation\": {\n              \"const\": \"complete-multipart\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"operation\",\n            \"contentLength\"\n          ],\n          \"title\": \"PresignCompleteMultipart\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"AbortMultipartUpload of `uploadId`.\",\n          \"properties\": {\n            \"operation\": {\n              \"const\": \"abort-multipart\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"operation\"\n          ],\n          \"title\": \"PresignAbortMultipart\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"PresignRequest\"\n    },\n    \"ProviderObjectAction\": {\n      \"description\": \"`put`: write an object. `get`: read one. `delete`: remove one. No list, ACL, policy or bucket-level action exists here, so none can be granted.\",\n      \"enum\": [\n        \"put\",\n        \"get\",\n        \"delete\"\n      ],\n      \"title\": \"ProviderObjectAction\",\n      \"type\": \"string\"\n    },\n    \"ProviderObjectPrefix\": {\n      \"description\": \"An object-key prefix within the account's bucket: one or more segments of lowercase letters, digits, `.`, `_` and `-`, each beginning with a letter or digit and ending with `/`. No quote, backslash, wildcard, whitespace, `..` segment or empty segment can appear. That is deliberate: the custodian places this value inside a provider policy — an IAM session policy (JSON), a GCS Credential Access Boundary condition (CEL) — and a value able to carry a metacharacter can break out of the string it is placed in and widen the policy. That is a known class of defect (CVE-2026-42811, a CEL injection in downscoped GCS credentials). Even with this pattern, a custodian MUST build provider policies with the provider language's own encoder, never by string interpolation.\",\n      \"maxLength\": 512,\n      \"minLength\": 2,\n      \"pattern\": \"^([a-z0-9][a-z0-9._-]{0,127}/){1,16}$\",\n      \"title\": \"ProviderObjectPrefix\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"oneOf\": [\n        {\n          \"not\": {\n            \"required\": [\n              \"presign\"\n            ]\n          },\n          \"required\": [\n            \"scope\"\n          ]\n        },\n        {\n          \"not\": {\n            \"required\": [\n              \"scope\"\n            ]\n          },\n          \"required\": [\n            \"presign\"\n          ]\n        }\n      ],\n      \"properties\": {\n        \"expiresAt\": {\n          \"description\": \"The provider's expiry for the credential, in the clear; for `presign`, the earliest expiry in the batch.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"presign\": {\n          \"$ref\": \"#/$defs/PresignBatch\",\n          \"description\": \"The batch actually presigned, which equals the requested one.\"\n        },\n        \"scope\": {\n          \"$ref\": \"#/$defs/CredentialScope\",\n          \"description\": \"The scope actually granted, which equals the requested one.\"\n        },\n        \"sealedCredential\": {\n          \"description\": \"A `SealedTransferBundle` (external/_shared/0.1), sealed to the caller's key-agreement key, whose cleartext is an `ExternalCredentialPayload` for `scope` or a `PresignedRequestSet` for `presign`. Bounded at 256 KiB rather than the shared 64 KiB because a batch of 128 presigned requests does not fit 64 KiB.\",\n          \"maxLength\": 262144,\n          \"minLength\": 64,\n          \"pattern\": \"^-----BEGIN VTA SEALED BUNDLE-----[\\\\s\\\\S]+-----END VTA SEALED BUNDLE-----\\\\s*$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"sealedCredential\",\n        \"expiresAt\"\n      ],\n      \"title\": \"External Credentials — Issue — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"AccountContextId\":{\"description\":\"The custodian context that owns the account. Act scope in this context decides who may manage the account and who may consume it; the account's keys are derived in this context's key space.\",\"maxLength\":256,\"minLength\":1,\"title\":\"AccountContextId\",\"type\":\"string\"},\"AccountId\":{\"description\":\"The account's identifier within its context, chosen by whoever creates it. Lowercase letters, digits and hyphens, so that it can be embedded in a certificate subject, a token subject or a provider-side condition without escaping. Unique per context; never reused after deletion while anything that names it (a provider-side trust policy, an audit row) may still exist.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9][a-z0-9-]*$\",\"title\":\"AccountId\",\"type\":\"string\"},\"ChecksumSha256\":{\"description\":\"A SHA-256 digest in standard base64 (RFC 4648 §4, padded), as S3 carries it in `x-amz-checksum-sha256`.\",\"maxLength\":44,\"minLength\":44,\"pattern\":\"^[A-Za-z0-9+/]{43}=$\",\"title\":\"ChecksumSha256\",\"type\":\"string\"},\"CredentialScope\":{\"additionalProperties\":false,\"description\":\"What one issuance may do. For storage models, `prefix` and `actions` (both required, a rule this schema leaves to the custodian because other models use neither); for `s3-static-presign`, also `objectKey`, since a presigned URL is one operation on one object; for `oauth2-private-key-jwt`, `scopes`.\",\"properties\":{\"actions\":{\"items\":{\"$ref\":\"#/$defs/ProviderObjectAction\"},\"maxItems\":3,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"objectKey\":{\"description\":\"`s3-static-presign` only: the object's name within `prefix`. The presigned URL names `prefix` + `objectKey` and nothing else, and `actions` must hold exactly one action.\",\"maxLength\":1024,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9._-]+$\",\"type\":\"string\"},\"prefix\":{\"$ref\":\"#/$defs/ProviderObjectPrefix\"},\"scopes\":{\"description\":\"`oauth2-private-key-jwt` only: the OAuth scopes requested.\",\"items\":{\"maxLength\":256,\"pattern\":\"^[!#-\\\\[\\\\]-~]+$\",\"type\":\"string\"},\"maxItems\":64,\"type\":\"array\",\"uniqueItems\":true}},\"title\":\"CredentialScope\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"PresignBatch\":{\"additionalProperties\":false,\"description\":\"`s3-static-presign` only: up to 128 operations on **one** object, `prefix` + `objectKey`, and at most one multipart upload of it. Each operation becomes one presigned request, sealed together. Consistency rules JSON Schema cannot state, which the custodian enforces: `uploadId` is present exactly when an operation needs it (`upload-part`, `list-parts`, `complete-multipart`, `abort-multipart`) and absent when the batch holds `create-multipart`; no two operations are identical; no two `upload-part` operations name the same `partNumber`.\",\"properties\":{\"objectKey\":{\"description\":\"The object's name within `prefix`. Every request in the batch names `prefix` + `objectKey` and no other object.\",\"maxLength\":1024,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9._-]+$\",\"type\":\"string\"},\"prefix\":{\"$ref\":\"#/$defs/ProviderObjectPrefix\"},\"requests\":{\"items\":{\"$ref\":\"#/$defs/PresignRequest\"},\"maxItems\":128,\"minItems\":1,\"type\":\"array\"},\"uploadId\":{\"description\":\"The multipart upload the batch's multipart operations act on, as storage returned it from CreateMultipartUpload. Signed into each such request's query, percent-encoded by the SigV4 encoder, never interpolated.\",\"maxLength\":1024,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9._~+/=-]+$\",\"type\":\"string\"}},\"required\":[\"prefix\",\"objectKey\",\"requests\"],\"title\":\"PresignBatch\",\"type\":\"object\"},\"PresignRequest\":{\"description\":\"One operation to presign, discriminated by `operation`. The ceiling action each needs is in `PresignOperation`.\",\"oneOf\":[{\"additionalProperties\":false,\"description\":\"PutObject of the whole object, bound to its exact length and SHA-256.\",\"properties\":{\"checksumSha256\":{\"$ref\":\"#/$defs/ChecksumSha256\"},\"contentLength\":{\"description\":\"The object's exact length in bytes, signed into the request as `Content-Length`. At most 5 GiB, S3's single-request ceiling.\",\"maximum\":5368709120,\"minimum\":0,\"type\":\"integer\"},\"operation\":{\"const\":\"put\",\"type\":\"string\"}},\"required\":[\"operation\",\"contentLength\",\"checksumSha256\"],\"title\":\"PresignPut\",\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"GetObject.\",\"properties\":{\"operation\":{\"const\":\"get\",\"type\":\"string\"}},\"required\":[\"operation\"],\"title\":\"PresignGet\",\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"HeadObject, with `x-amz-checksum-mode: ENABLED` signed so storage reports the object's checksum.\",\"properties\":{\"operation\":{\"const\":\"head\",\"type\":\"string\"}},\"required\":[\"operation\"],\"title\":\"PresignHead\",\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"DeleteObject.\",\"properties\":{\"operation\":{\"const\":\"delete\",\"type\":\"string\"}},\"required\":[\"operation\"],\"title\":\"PresignDelete\",\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"CreateMultipartUpload, with `x-amz-checksum-algorithm: SHA256` signed so every part of the upload must carry a SHA-256 checksum.\",\"properties\":{\"operation\":{\"const\":\"create-multipart\",\"type\":\"string\"}},\"required\":[\"operation\"],\"title\":\"PresignCreateMultipart\",\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"UploadPart of one part of `uploadId`, bound to its number, its exact length and its SHA-256.\",\"properties\":{\"checksumSha256\":{\"$ref\":\"#/$defs/ChecksumSha256\"},\"contentLength\":{\"description\":\"The part's exact length in bytes, signed into the request as `Content-Length`. At most 5 GiB, S3's part ceiling.\",\"maximum\":5368709120,\"minimum\":1,\"type\":\"integer\"},\"operation\":{\"const\":\"upload-part\",\"type\":\"string\"},\"partNumber\":{\"maximum\":10000,\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"operation\",\"partNumber\",\"contentLength\",\"checksumSha256\"],\"title\":\"PresignUploadPart\",\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"ListParts of `uploadId`: each part's number, length, ETag and checksum, up to 1000 per page.\",\"properties\":{\"operation\":{\"const\":\"list-parts\",\"type\":\"string\"},\"partNumberMarker\":{\"description\":\"List parts after this number. Absent, from the first.\",\"maximum\":10000,\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"operation\"],\"title\":\"PresignListParts\",\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"CompleteMultipartUpload of `uploadId`, bound to the assembled object's exact length.\",\"properties\":{\"contentLength\":{\"description\":\"The assembled object's exact length in bytes, signed into the request as `x-amz-mp-object-size`, so storage refuses a completion that would assemble any other size. At most 5 TiB, S3's object ceiling.\",\"maximum\":5497558138880,\"minimum\":0,\"type\":\"integer\"},\"operation\":{\"const\":\"complete-multipart\",\"type\":\"string\"}},\"required\":[\"operation\",\"contentLength\"],\"title\":\"PresignCompleteMultipart\",\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"AbortMultipartUpload of `uploadId`.\",\"properties\":{\"operation\":{\"const\":\"abort-multipart\",\"type\":\"string\"}},\"required\":[\"operation\"],\"title\":\"PresignAbortMultipart\",\"type\":\"object\"}],\"title\":\"PresignRequest\"},\"ProviderObjectAction\":{\"description\":\"`put`: write an object. `get`: read one. `delete`: remove one. No list, ACL, policy or bucket-level action exists here, so none can be granted.\",\"enum\":[\"put\",\"get\",\"delete\"],\"title\":\"ProviderObjectAction\",\"type\":\"string\"},\"ProviderObjectPrefix\":{\"description\":\"An object-key prefix within the account's bucket: one or more segments of lowercase letters, digits, `.`, `_` and `-`, each beginning with a letter or digit and ending with `/`. No quote, backslash, wildcard, whitespace, `..` segment or empty segment can appear. That is deliberate: the custodian places this value inside a provider policy — an IAM session policy (JSON), a GCS Credential Access Boundary condition (CEL) — and a value able to carry a metacharacter can break out of the string it is placed in and widen the policy. That is a known class of defect (CVE-2026-42811, a CEL injection in downscoped GCS credentials). Even with this pattern, a custodian MUST build provider policies with the provider language's own encoder, never by string interpolation.\",\"maxLength\":512,\"minLength\":2,\"pattern\":\"^([a-z0-9][a-z0-9._-]{0,127}/){1,16}$\",\"title\":\"ProviderObjectPrefix\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"oneOf\":[{\"not\":{\"required\":[\"presign\"]},\"required\":[\"scope\"]},{\"not\":{\"required\":[\"scope\"]},\"required\":[\"presign\"]}],\"properties\":{\"expiresAt\":{\"description\":\"The provider's expiry for the credential, in the clear; for `presign`, the earliest expiry in the batch.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"presign\":{\"$ref\":\"#/$defs/PresignBatch\",\"description\":\"The batch actually presigned, which equals the requested one.\"},\"scope\":{\"$ref\":\"#/$defs/CredentialScope\",\"description\":\"The scope actually granted, which equals the requested one.\"},\"sealedCredential\":{\"description\":\"A `SealedTransferBundle` (external/_shared/0.1), sealed to the caller's key-agreement key, whose cleartext is an `ExternalCredentialPayload` for `scope` or a `PresignedRequestSet` for `presign`. Bounded at 256 KiB rather than the shared 64 KiB because a batch of 128 presigned requests does not fit 64 KiB.\",\"maxLength\":262144,\"minLength\":64,\"pattern\":\"^-----BEGIN VTA SEALED BUNDLE-----[\\\\s\\\\S]+-----END VTA SEALED BUNDLE-----\\\\s*$\",\"type\":\"string\"}},\"required\":[\"sealedCredential\",\"expiresAt\"],\"title\":\"External Credentials — Issue — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

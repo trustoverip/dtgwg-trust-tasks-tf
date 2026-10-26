@@ -35,21 +35,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -71,15 +56,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -143,23 +119,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///An empty request. The outer document members are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/attestation/mnemonic-status/0.1",
-///  "title": "Payload",
-///  "description": "An empty request. The outer document members are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -182,46 +141,6 @@ impl Payload {
 }
 ///The mnemonic export guard's current state. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/attestation/mnemonic-status/0.1#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The mnemonic export guard's current state. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/attestation/mnemonic-status/0.1#response.",
-///  "type": "object",
-///  "required": [
-///    "alreadyExported",
-///    "entropyAvailable",
-///    "windowActive",
-///    "windowRemainingSecs"
-///  ],
-///  "properties": {
-///    "alreadyExported": {
-///      "description": "Whether the mnemonic has already been exported. Once true, no further export succeeds — the release is one-time.",
-///      "type": "boolean"
-///    },
-///    "entropyAvailable": {
-///      "description": "Whether the guard still holds entropy. False on every boot after the first, since a VTA generates its seed only once.",
-///      "type": "boolean"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "windowActive": {
-///      "description": "Whether the export window is currently open.",
-///      "type": "boolean"
-///    },
-///    "windowRemainingSecs": {
-///      "description": "Seconds remaining in the export window; 0 once it has expired or was never active.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -386,7 +305,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The mnemonic export guard's current state. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/attestation/mnemonic-status/0.1#response.\",\n      \"properties\": {\n        \"alreadyExported\": {\n          \"description\": \"Whether the mnemonic has already been exported. Once true, no further export succeeds — the release is one-time.\",\n          \"type\": \"boolean\"\n        },\n        \"entropyAvailable\": {\n          \"description\": \"Whether the guard still holds entropy. False on every boot after the first, since a VTA generates its seed only once.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"windowActive\": {\n          \"description\": \"Whether the export window is currently open.\",\n          \"type\": \"boolean\"\n        },\n        \"windowRemainingSecs\": {\n          \"description\": \"Seconds remaining in the export window; 0 once it has expired or was never active.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"windowActive\",\n        \"alreadyExported\",\n        \"entropyAvailable\",\n        \"windowRemainingSecs\"\n      ],\n      \"title\": \"VTA Attestation — Mnemonic Status — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/attestation/mnemonic-status/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"An empty request. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"title\": \"VTA Attestation — Mnemonic Status — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The mnemonic export guard's current state. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/attestation/mnemonic-status/0.1#response.\",\"properties\":{\"alreadyExported\":{\"description\":\"Whether the mnemonic has already been exported. Once true, no further export succeeds — the release is one-time.\",\"type\":\"boolean\"},\"entropyAvailable\":{\"description\":\"Whether the guard still holds entropy. False on every boot after the first, since a VTA generates its seed only once.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"windowActive\":{\"description\":\"Whether the export window is currently open.\",\"type\":\"boolean\"},\"windowRemainingSecs\":{\"description\":\"Seconds remaining in the export window; 0 once it has expired or was never active.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"windowActive\",\"alreadyExported\",\"entropyAvailable\",\"windowRemainingSecs\"],\"title\":\"VTA Attestation — Mnemonic Status — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vta/attestation/mnemonic-status/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"An empty request. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"title\":\"VTA Attestation — Mnemonic Status — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -395,7 +314,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The mnemonic export guard's current state. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/attestation/mnemonic-status/0.1#response.\",\n      \"properties\": {\n        \"alreadyExported\": {\n          \"description\": \"Whether the mnemonic has already been exported. Once true, no further export succeeds — the release is one-time.\",\n          \"type\": \"boolean\"\n        },\n        \"entropyAvailable\": {\n          \"description\": \"Whether the guard still holds entropy. False on every boot after the first, since a VTA generates its seed only once.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"windowActive\": {\n          \"description\": \"Whether the export window is currently open.\",\n          \"type\": \"boolean\"\n        },\n        \"windowRemainingSecs\": {\n          \"description\": \"Seconds remaining in the export window; 0 once it has expired or was never active.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"windowActive\",\n        \"alreadyExported\",\n        \"entropyAvailable\",\n        \"windowRemainingSecs\"\n      ],\n      \"title\": \"VTA Attestation — Mnemonic Status — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The mnemonic export guard's current state. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/attestation/mnemonic-status/0.1#response.\",\"properties\":{\"alreadyExported\":{\"description\":\"Whether the mnemonic has already been exported. Once true, no further export succeeds — the release is one-time.\",\"type\":\"boolean\"},\"entropyAvailable\":{\"description\":\"Whether the guard still holds entropy. False on every boot after the first, since a VTA generates its seed only once.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"windowActive\":{\"description\":\"Whether the export window is currently open.\",\"type\":\"boolean\"},\"windowRemainingSecs\":{\"description\":\"Seconds remaining in the export window; 0 once it has expired or was never active.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"windowActive\",\"alreadyExported\",\"entropyAvailable\",\"windowRemainingSecs\"],\"title\":\"VTA Attestation — Mnemonic Status — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

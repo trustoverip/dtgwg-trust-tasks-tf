@@ -34,78 +34,6 @@ pub mod error {
 }
 ///`DidRecord`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DidRecord",
-///  "type": "object",
-///  "required": [
-///    "createdAt",
-///    "mnemonic",
-///    "owner",
-///    "updatedAt",
-///    "versionCount"
-///  ],
-///  "properties": {
-///    "createdAt": {
-///      "description": "RFC3339 timestamp of initial reservation.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "didId": {
-///      "description": "Fully-qualified DID identifier resolved from the most recent log entry (e.g. `did:webvh:<scid>:host:path`). Absent when `versionCount === 0`.",
-///      "type": "string"
-///    },
-///    "didUrl": {
-///      "description": "Resolvable URL of the DID's log document (e.g. `https://did.example.com/alice/did.jsonl`). Stable across the record's lifetime: present from the initial reservation (`versionCount === 0`), it tells the owner where to publish the signed log and where resolvers fetch it. Distinct from `didId`, which only exists once a log entry has been published.",
-///      "type": "string",
-///      "format": "uri"
-///    },
-///    "disabled": {
-///      "description": "When `true`, the DID is administratively disabled — the host serves a deactivation marker but retains content for recovery within the host's retention policy.",
-///      "type": "boolean"
-///    },
-///    "domain": {
-///      "description": "Hosting domain (hostname) under which the DID resolves. Matches the host segment of the embedded DID identifier.",
-///      "type": "string"
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "method": {
-///      "description": "DID method this record was registered under (e.g. `webvh`, `web`). When omitted, consumers MAY treat the record as legacy; SHOULD default to `webvh` only if their host predates the multi-method era.",
-///      "type": "string"
-///    },
-///    "mnemonic": {
-///      "description": "Local path under which the DID is hosted (e.g. `alice`, `tenant/staff/alice`, `.well-known`). Compared by exact string equality (SPEC.md §4.8); producers SHOULD emit canonical form.",
-///      "type": "string"
-///    },
-///    "owner": {
-///      "description": "VID of the party that currently owns the record. Authorization to mutate the record is anchored on this field.",
-///      "type": "string"
-///    },
-///    "totalResolves": {
-///      "description": "Lifetime resolve counter, when the host exposes per-DID statistics.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "updatedAt": {
-///      "description": "RFC3339 timestamp of the most recent record mutation.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "versionCount": {
-///      "description": "Number of log entries the host currently holds for the DID. `0` indicates a reservation with no published log yet.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -164,21 +92,6 @@ impl DidRecord {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -200,15 +113,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -272,37 +176,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/did-management/did/check-name/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "properties": {
-///    "domain": {
-///      "description": "Optional explicit hosting domain for the reservation. Honored only when `reserve: true`.",
-///      "type": "string"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "path": {
-///      "description": "Local path to test. REQUIRED for an availability probe (`reserve: false`). OPTIONAL when `reserve: true`: omit it to ask the host to auto-assign a fresh, server-generated mnemonic for the reservation.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "reserve": {
-///      "description": "When true and the path is available — or, when `path` is omitted, always — atomically reserve a slot under the caller and return the resulting DidRecord. When `path` is omitted the host generates a fresh unused mnemonic (auto-assign).",
-///      "default": false,
-///      "type": "boolean"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$comment": "`path` is intentionally not listed in `required`: it is REQUIRED for an availability probe but OPTIONAL (auto-assign) when `reserve: true`. JSON-Schema `if/then/else` would express this exactly, but the Rust codegen (typify) does not support conditional subschemas, so the rule is stated in spec.md §Conformance and enforced by the consumer, which MUST reject a path-less request unless `reserve: true`."
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -336,16 +209,6 @@ impl Payload {
 }
 ///Local path to test. REQUIRED for an availability probe (`reserve: false`). OPTIONAL when `reserve: true`: omit it to ask the host to auto-assign a fresh, server-generated mnemonic for the reservation.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Local path to test. REQUIRED for an availability probe (`reserve: false`). OPTIONAL when `reserve: true`: omit it to ask the host to auto-assign a fresh, server-generated mnemonic for the reservation.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadPath(::std::string::String);
@@ -405,38 +268,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPath {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "available",
-///    "reserved"
-///  ],
-///  "properties": {
-///    "available": {
-///      "description": "True iff the path is currently free to register.",
-///      "type": "boolean"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "record": {
-///      "description": "Present iff `reserved === true`. Carries the newly-committed DidRecord with `versionCount: 0`.",
-///      "$ref": "#/definitions/DidRecord"
-///    },
-///    "reserved": {
-///      "description": "True iff a reservation was committed in this call. Implies the request set `reserve: true` AND the path was available.",
-///      "type": "boolean"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -837,7 +668,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$comment\": \"`path` is intentionally not listed in `required`: it is REQUIRED for an availability probe but OPTIONAL (auto-assign) when `reserve: true`. JSON-Schema `if/then/else` would express this exactly, but the Rust codegen (typify) does not support conditional subschemas, so the rule is stated in spec.md §Conformance and enforced by the consumer, which MUST reject a path-less request unless `reserve: true`.\",\n  \"$defs\": {\n    \"DidRecord\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"createdAt\": {\n          \"description\": \"RFC3339 timestamp of initial reservation.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"didId\": {\n          \"description\": \"Fully-qualified DID identifier resolved from the most recent log entry (e.g. `did:webvh:<scid>:host:path`). Absent when `versionCount === 0`.\",\n          \"type\": \"string\"\n        },\n        \"didUrl\": {\n          \"description\": \"Resolvable URL of the DID's log document (e.g. `https://did.example.com/alice/did.jsonl`). Stable across the record's lifetime: present from the initial reservation (`versionCount === 0`), it tells the owner where to publish the signed log and where resolvers fetch it. Distinct from `didId`, which only exists once a log entry has been published.\",\n          \"format\": \"uri\",\n          \"type\": \"string\"\n        },\n        \"disabled\": {\n          \"description\": \"When `true`, the DID is administratively disabled — the host serves a deactivation marker but retains content for recovery within the host's retention policy.\",\n          \"type\": \"boolean\"\n        },\n        \"domain\": {\n          \"description\": \"Hosting domain (hostname) under which the DID resolves. Matches the host segment of the embedded DID identifier.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"method\": {\n          \"description\": \"DID method this record was registered under (e.g. `webvh`, `web`). When omitted, consumers MAY treat the record as legacy; SHOULD default to `webvh` only if their host predates the multi-method era.\",\n          \"type\": \"string\"\n        },\n        \"mnemonic\": {\n          \"description\": \"Local path under which the DID is hosted (e.g. `alice`, `tenant/staff/alice`, `.well-known`). Compared by exact string equality (SPEC.md §4.8); producers SHOULD emit canonical form.\",\n          \"type\": \"string\"\n        },\n        \"owner\": {\n          \"description\": \"VID of the party that currently owns the record. Authorization to mutate the record is anchored on this field.\",\n          \"type\": \"string\"\n        },\n        \"totalResolves\": {\n          \"description\": \"Lifetime resolve counter, when the host exposes per-DID statistics.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"updatedAt\": {\n          \"description\": \"RFC3339 timestamp of the most recent record mutation.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"versionCount\": {\n          \"description\": \"Number of log entries the host currently holds for the DID. `0` indicates a reservation with no published log yet.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"mnemonic\",\n        \"owner\",\n        \"createdAt\",\n        \"updatedAt\",\n        \"versionCount\"\n      ],\n      \"title\": \"DidRecord\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"available\": {\n          \"description\": \"True iff the path is currently free to register.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"record\": {\n          \"$ref\": \"#/$defs/DidRecord\",\n          \"description\": \"Present iff `reserved === true`. Carries the newly-committed DidRecord with `versionCount: 0`.\"\n        },\n        \"reserved\": {\n          \"description\": \"True iff a reservation was committed in this call. Implies the request set `reserve: true` AND the path was available.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"available\",\n        \"reserved\"\n      ],\n      \"title\": \"DID Management Check Name — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/did-management/did/check-name/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"domain\": {\n      \"description\": \"Optional explicit hosting domain for the reservation. Honored only when `reserve: true`.\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"path\": {\n      \"description\": \"Local path to test. REQUIRED for an availability probe (`reserve: false`). OPTIONAL when `reserve: true`: omit it to ask the host to auto-assign a fresh, server-generated mnemonic for the reservation.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"reserve\": {\n      \"default\": false,\n      \"description\": \"When true and the path is available — or, when `path` is omitted, always — atomically reserve a slot under the caller and return the resulting DidRecord. When `path` is omitted the host generates a fresh unused mnemonic (auto-assign).\",\n      \"type\": \"boolean\"\n    }\n  },\n  \"title\": \"DID Management Check Name — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$comment\":\"`path` is intentionally not listed in `required`: it is REQUIRED for an availability probe but OPTIONAL (auto-assign) when `reserve: true`. JSON-Schema `if/then/else` would express this exactly, but the Rust codegen (typify) does not support conditional subschemas, so the rule is stated in spec.md §Conformance and enforced by the consumer, which MUST reject a path-less request unless `reserve: true`.\",\"$defs\":{\"DidRecord\":{\"additionalProperties\":false,\"properties\":{\"createdAt\":{\"description\":\"RFC3339 timestamp of initial reservation.\",\"format\":\"date-time\",\"type\":\"string\"},\"didId\":{\"description\":\"Fully-qualified DID identifier resolved from the most recent log entry (e.g. `did:webvh:<scid>:host:path`). Absent when `versionCount === 0`.\",\"type\":\"string\"},\"didUrl\":{\"description\":\"Resolvable URL of the DID's log document (e.g. `https://did.example.com/alice/did.jsonl`). Stable across the record's lifetime: present from the initial reservation (`versionCount === 0`), it tells the owner where to publish the signed log and where resolvers fetch it. Distinct from `didId`, which only exists once a log entry has been published.\",\"format\":\"uri\",\"type\":\"string\"},\"disabled\":{\"description\":\"When `true`, the DID is administratively disabled — the host serves a deactivation marker but retains content for recovery within the host's retention policy.\",\"type\":\"boolean\"},\"domain\":{\"description\":\"Hosting domain (hostname) under which the DID resolves. Matches the host segment of the embedded DID identifier.\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"method\":{\"description\":\"DID method this record was registered under (e.g. `webvh`, `web`). When omitted, consumers MAY treat the record as legacy; SHOULD default to `webvh` only if their host predates the multi-method era.\",\"type\":\"string\"},\"mnemonic\":{\"description\":\"Local path under which the DID is hosted (e.g. `alice`, `tenant/staff/alice`, `.well-known`). Compared by exact string equality (SPEC.md §4.8); producers SHOULD emit canonical form.\",\"type\":\"string\"},\"owner\":{\"description\":\"VID of the party that currently owns the record. Authorization to mutate the record is anchored on this field.\",\"type\":\"string\"},\"totalResolves\":{\"description\":\"Lifetime resolve counter, when the host exposes per-DID statistics.\",\"minimum\":0,\"type\":\"integer\"},\"updatedAt\":{\"description\":\"RFC3339 timestamp of the most recent record mutation.\",\"format\":\"date-time\",\"type\":\"string\"},\"versionCount\":{\"description\":\"Number of log entries the host currently holds for the DID. `0` indicates a reservation with no published log yet.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"mnemonic\",\"owner\",\"createdAt\",\"updatedAt\",\"versionCount\"],\"title\":\"DidRecord\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"available\":{\"description\":\"True iff the path is currently free to register.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"record\":{\"$ref\":\"#/$defs/DidRecord\",\"description\":\"Present iff `reserved === true`. Carries the newly-committed DidRecord with `versionCount: 0`.\"},\"reserved\":{\"description\":\"True iff a reservation was committed in this call. Implies the request set `reserve: true` AND the path was available.\",\"type\":\"boolean\"}},\"required\":[\"available\",\"reserved\"],\"title\":\"DID Management Check Name — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/did-management/did/check-name/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"domain\":{\"description\":\"Optional explicit hosting domain for the reservation. Honored only when `reserve: true`.\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"path\":{\"description\":\"Local path to test. REQUIRED for an availability probe (`reserve: false`). OPTIONAL when `reserve: true`: omit it to ask the host to auto-assign a fresh, server-generated mnemonic for the reservation.\",\"minLength\":1,\"type\":\"string\"},\"reserve\":{\"default\":false,\"description\":\"When true and the path is available — or, when `path` is omitted, always — atomically reserve a slot under the caller and return the resulting DidRecord. When `path` is omitted the host generates a fresh unused mnemonic (auto-assign).\",\"type\":\"boolean\"}},\"title\":\"DID Management Check Name — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -846,7 +677,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DidRecord\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"createdAt\": {\n          \"description\": \"RFC3339 timestamp of initial reservation.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"didId\": {\n          \"description\": \"Fully-qualified DID identifier resolved from the most recent log entry (e.g. `did:webvh:<scid>:host:path`). Absent when `versionCount === 0`.\",\n          \"type\": \"string\"\n        },\n        \"didUrl\": {\n          \"description\": \"Resolvable URL of the DID's log document (e.g. `https://did.example.com/alice/did.jsonl`). Stable across the record's lifetime: present from the initial reservation (`versionCount === 0`), it tells the owner where to publish the signed log and where resolvers fetch it. Distinct from `didId`, which only exists once a log entry has been published.\",\n          \"format\": \"uri\",\n          \"type\": \"string\"\n        },\n        \"disabled\": {\n          \"description\": \"When `true`, the DID is administratively disabled — the host serves a deactivation marker but retains content for recovery within the host's retention policy.\",\n          \"type\": \"boolean\"\n        },\n        \"domain\": {\n          \"description\": \"Hosting domain (hostname) under which the DID resolves. Matches the host segment of the embedded DID identifier.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"method\": {\n          \"description\": \"DID method this record was registered under (e.g. `webvh`, `web`). When omitted, consumers MAY treat the record as legacy; SHOULD default to `webvh` only if their host predates the multi-method era.\",\n          \"type\": \"string\"\n        },\n        \"mnemonic\": {\n          \"description\": \"Local path under which the DID is hosted (e.g. `alice`, `tenant/staff/alice`, `.well-known`). Compared by exact string equality (SPEC.md §4.8); producers SHOULD emit canonical form.\",\n          \"type\": \"string\"\n        },\n        \"owner\": {\n          \"description\": \"VID of the party that currently owns the record. Authorization to mutate the record is anchored on this field.\",\n          \"type\": \"string\"\n        },\n        \"totalResolves\": {\n          \"description\": \"Lifetime resolve counter, when the host exposes per-DID statistics.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"updatedAt\": {\n          \"description\": \"RFC3339 timestamp of the most recent record mutation.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"versionCount\": {\n          \"description\": \"Number of log entries the host currently holds for the DID. `0` indicates a reservation with no published log yet.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"mnemonic\",\n        \"owner\",\n        \"createdAt\",\n        \"updatedAt\",\n        \"versionCount\"\n      ],\n      \"title\": \"DidRecord\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"available\": {\n          \"description\": \"True iff the path is currently free to register.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"record\": {\n          \"$ref\": \"#/$defs/DidRecord\",\n          \"description\": \"Present iff `reserved === true`. Carries the newly-committed DidRecord with `versionCount: 0`.\"\n        },\n        \"reserved\": {\n          \"description\": \"True iff a reservation was committed in this call. Implies the request set `reserve: true` AND the path was available.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"available\",\n        \"reserved\"\n      ],\n      \"title\": \"DID Management Check Name — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"DidRecord\":{\"additionalProperties\":false,\"properties\":{\"createdAt\":{\"description\":\"RFC3339 timestamp of initial reservation.\",\"format\":\"date-time\",\"type\":\"string\"},\"didId\":{\"description\":\"Fully-qualified DID identifier resolved from the most recent log entry (e.g. `did:webvh:<scid>:host:path`). Absent when `versionCount === 0`.\",\"type\":\"string\"},\"didUrl\":{\"description\":\"Resolvable URL of the DID's log document (e.g. `https://did.example.com/alice/did.jsonl`). Stable across the record's lifetime: present from the initial reservation (`versionCount === 0`), it tells the owner where to publish the signed log and where resolvers fetch it. Distinct from `didId`, which only exists once a log entry has been published.\",\"format\":\"uri\",\"type\":\"string\"},\"disabled\":{\"description\":\"When `true`, the DID is administratively disabled — the host serves a deactivation marker but retains content for recovery within the host's retention policy.\",\"type\":\"boolean\"},\"domain\":{\"description\":\"Hosting domain (hostname) under which the DID resolves. Matches the host segment of the embedded DID identifier.\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"method\":{\"description\":\"DID method this record was registered under (e.g. `webvh`, `web`). When omitted, consumers MAY treat the record as legacy; SHOULD default to `webvh` only if their host predates the multi-method era.\",\"type\":\"string\"},\"mnemonic\":{\"description\":\"Local path under which the DID is hosted (e.g. `alice`, `tenant/staff/alice`, `.well-known`). Compared by exact string equality (SPEC.md §4.8); producers SHOULD emit canonical form.\",\"type\":\"string\"},\"owner\":{\"description\":\"VID of the party that currently owns the record. Authorization to mutate the record is anchored on this field.\",\"type\":\"string\"},\"totalResolves\":{\"description\":\"Lifetime resolve counter, when the host exposes per-DID statistics.\",\"minimum\":0,\"type\":\"integer\"},\"updatedAt\":{\"description\":\"RFC3339 timestamp of the most recent record mutation.\",\"format\":\"date-time\",\"type\":\"string\"},\"versionCount\":{\"description\":\"Number of log entries the host currently holds for the DID. `0` indicates a reservation with no published log yet.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"mnemonic\",\"owner\",\"createdAt\",\"updatedAt\",\"versionCount\"],\"title\":\"DidRecord\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"available\":{\"description\":\"True iff the path is currently free to register.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"record\":{\"$ref\":\"#/$defs/DidRecord\",\"description\":\"Present iff `reserved === true`. Carries the newly-committed DidRecord with `versionCount: 0`.\"},\"reserved\":{\"description\":\"True iff a reservation was committed in this call. Implies the request set `reserve: true` AND the path was available.\",\"type\":\"boolean\"}},\"required\":[\"available\",\"reserved\"],\"title\":\"DID Management Check Name — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

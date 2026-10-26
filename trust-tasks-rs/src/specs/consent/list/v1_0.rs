@@ -35,53 +35,6 @@ pub mod error {
 }
 ///A recorded consent decision over a ConsentSubject.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "A recorded consent decision over a ConsentSubject.",
-///  "type": "object",
-///  "required": [
-///    "effect",
-///    "grantedAt",
-///    "grantedBy",
-///    "subject"
-///  ],
-///  "properties": {
-///    "effect": {
-///      "$ref": "#/definitions/Effect"
-///    },
-///    "evidence": {
-///      "description": "How the decision was authorized — e.g. \"did-signed\" (approver's DID signed the consent/decision) or \"bridge-attested\" (an enrolled bridge relayed the operator's out-of-band choice).",
-///      "type": "string"
-///    },
-///    "expiresAt": {
-///      "description": "Optional. After this time the grant lapses and the subject must be re-consented.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "grantedAt": {
-///      "description": "RFC 3339 time the decision was recorded.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "grantedBy": {
-///      "description": "VID of the approver who made the decision.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "scope": {
-///      "description": "Granted scope. REQUIRED when `effect` is `allow`; absent for `deny`.",
-///      "$ref": "#/definitions/Scope"
-///    },
-///    "subject": {
-///      "$ref": "#/definitions/ConsentSubject"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -115,16 +68,6 @@ impl ConsentGrant {
 }
 ///VID of the approver who made the decision.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "VID of the approver who made the decision.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ConsentGrantGrantedBy(::std::string::String);
@@ -184,42 +127,6 @@ impl<'de> ::serde::Deserialize<'de> for ConsentGrantGrantedBy {
 }
 ///The platform-agnostic identifier of WHAT is being consented to: one conversation, for one agent.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The platform-agnostic identifier of WHAT is being consented to: one conversation, for one agent.",
-///  "type": "object",
-///  "required": [
-///    "agent",
-///    "conversationRef",
-///    "kind",
-///    "platform"
-///  ],
-///  "properties": {
-///    "agent": {
-///      "description": "VID (DID) of the AI agent the conversation would reach.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "conversationRef": {
-///      "description": "The bridge's OPAQUE conversation handle (e.g. \"sig-1a2b3c4d\"). NEVER the raw platform address — the VTA never learns the phone number / chat id.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "kind": {
-///      "$ref": "#/definitions/Kind"
-///    },
-///    "platform": {
-///      "description": "Messaging-platform tag, e.g. \"signal\", \"whatsapp\", \"slack\".",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -240,16 +147,6 @@ impl ConsentSubject {
 }
 ///VID (DID) of the AI agent the conversation would reach.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "VID (DID) of the AI agent the conversation would reach.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ConsentSubjectAgent(::std::string::String);
@@ -309,16 +206,6 @@ impl<'de> ::serde::Deserialize<'de> for ConsentSubjectAgent {
 }
 ///The bridge's OPAQUE conversation handle (e.g. "sig-1a2b3c4d"). NEVER the raw platform address — the VTA never learns the phone number / chat id.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The bridge's OPAQUE conversation handle (e.g. \"sig-1a2b3c4d\"). NEVER the raw platform address — the VTA never learns the phone number / chat id.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ConsentSubjectConversationRef(::std::string::String);
@@ -378,16 +265,6 @@ impl<'de> ::serde::Deserialize<'de> for ConsentSubjectConversationRef {
 }
 ///Messaging-platform tag, e.g. "signal", "whatsapp", "slack".
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Messaging-platform tag, e.g. \"signal\", \"whatsapp\", \"slack\".",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ConsentSubjectPlatform(::std::string::String);
@@ -447,19 +324,6 @@ impl<'de> ::serde::Deserialize<'de> for ConsentSubjectPlatform {
 }
 ///Whether the subject is permitted. The ABSENCE of any grant is treated as `deny` (default-deny).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Whether the subject is permitted. The ABSENCE of any grant is treated as `deny` (default-deny).",
-///  "type": "string",
-///  "enum": [
-///    "allow",
-///    "deny"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -521,21 +385,6 @@ impl ::std::convert::TryFrom<::std::string::String> for Effect {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -557,15 +406,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -629,20 +469,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///The interaction kind: a 1:1 direct message, a multi-party group, or a broadcast channel.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The interaction kind: a 1:1 direct message, a multi-party group, or a broadcast channel.",
-///  "type": "string",
-///  "enum": [
-///    "dm",
-///    "group",
-///    "channel"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -708,41 +534,6 @@ impl ::std::convert::TryFrom<::std::string::String> for Kind {
 }
 ///A bridge fetches the consent grants it should enforce.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/consent/list/1.0",
-///  "title": "Payload",
-///  "description": "A bridge fetches the consent grants it should enforce.",
-///  "type": "object",
-///  "properties": {
-///    "agent": {
-///      "description": "Optional. Restrict to grants for this agent VID.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "platform": {
-///      "description": "Optional. Restrict to this platform tag.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "since": {
-///      "description": "Optional opaque cursor; return only grants changed after it.",
-///      "type": "string"
-///    },
-///    "subject": {
-///      "description": "Optional. A full subject, to point-check a single conversation.",
-///      "$ref": "#/definitions/ConsentSubject"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -781,16 +572,6 @@ impl Payload {
 }
 ///Optional. Restrict to grants for this agent VID.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Optional. Restrict to grants for this agent VID.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadAgent(::std::string::String);
@@ -850,16 +631,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadAgent {
 }
 ///Optional. Restrict to this platform tag.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Optional. Restrict to this platform tag.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadPlatform(::std::string::String);
@@ -919,37 +690,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPlatform {
 }
 ///The grants the requesting bridge is authorized to enforce.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The grants the requesting bridge is authorized to enforce.",
-///  "type": "object",
-///  "required": [
-///    "grants"
-///  ],
-///  "properties": {
-///    "cursor": {
-///      "description": "Optional cursor for incremental follow-up.",
-///      "type": "string"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "grants": {
-///      "description": "Matching consent grants.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/ConsentGrant"
-///      }
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -970,19 +710,6 @@ impl Response {
 }
 ///What the agent may do: `receive` = read inbound on this conversation; `converse` = read and reply.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "What the agent may do: `receive` = read inbound on this conversation; `converse` = read and reply.",
-///  "type": "string",
-///  "enum": [
-///    "receive",
-///    "converse"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1440,14 +1167,14 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/consent/list/1.0";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ConsentGrant\": {\n      \"additionalProperties\": false,\n      \"description\": \"A recorded consent decision over a ConsentSubject.\",\n      \"properties\": {\n        \"effect\": {\n          \"$ref\": \"#/$defs/Effect\"\n        },\n        \"evidence\": {\n          \"description\": \"How the decision was authorized — e.g. \\\"did-signed\\\" (approver's DID signed the consent/decision) or \\\"bridge-attested\\\" (an enrolled bridge relayed the operator's out-of-band choice).\",\n          \"type\": \"string\"\n        },\n        \"expiresAt\": {\n          \"description\": \"Optional. After this time the grant lapses and the subject must be re-consented.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"grantedAt\": {\n          \"description\": \"RFC 3339 time the decision was recorded.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"grantedBy\": {\n          \"description\": \"VID of the approver who made the decision.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"scope\": {\n          \"$ref\": \"#/$defs/Scope\",\n          \"description\": \"Granted scope. REQUIRED when `effect` is `allow`; absent for `deny`.\"\n        },\n        \"subject\": {\n          \"$ref\": \"#/$defs/ConsentSubject\"\n        }\n      },\n      \"required\": [\n        \"subject\",\n        \"effect\",\n        \"grantedBy\",\n        \"grantedAt\"\n      ],\n      \"type\": \"object\"\n    },\n    \"ConsentSubject\": {\n      \"additionalProperties\": false,\n      \"description\": \"The platform-agnostic identifier of WHAT is being consented to: one conversation, for one agent.\",\n      \"properties\": {\n        \"agent\": {\n          \"description\": \"VID (DID) of the AI agent the conversation would reach.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"conversationRef\": {\n          \"description\": \"The bridge's OPAQUE conversation handle (e.g. \\\"sig-1a2b3c4d\\\"). NEVER the raw platform address — the VTA never learns the phone number / chat id.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"kind\": {\n          \"$ref\": \"#/$defs/Kind\"\n        },\n        \"platform\": {\n          \"description\": \"Messaging-platform tag, e.g. \\\"signal\\\", \\\"whatsapp\\\", \\\"slack\\\".\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"platform\",\n        \"conversationRef\",\n        \"kind\",\n        \"agent\"\n      ],\n      \"type\": \"object\"\n    },\n    \"Effect\": {\n      \"description\": \"Whether the subject is permitted. The ABSENCE of any grant is treated as `deny` (default-deny).\",\n      \"enum\": [\n        \"allow\",\n        \"deny\"\n      ],\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Kind\": {\n      \"description\": \"The interaction kind: a 1:1 direct message, a multi-party group, or a broadcast channel.\",\n      \"enum\": [\n        \"dm\",\n        \"group\",\n        \"channel\"\n      ],\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The grants the requesting bridge is authorized to enforce.\",\n      \"properties\": {\n        \"cursor\": {\n          \"description\": \"Optional cursor for incremental follow-up.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"grants\": {\n          \"description\": \"Matching consent grants.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/ConsentGrant\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"grants\"\n      ],\n      \"title\": \"Consent List — response payload\",\n      \"type\": \"object\"\n    },\n    \"Scope\": {\n      \"description\": \"What the agent may do: `receive` = read inbound on this conversation; `converse` = read and reply.\",\n      \"enum\": [\n        \"receive\",\n        \"converse\"\n      ],\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/consent/list/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A bridge fetches the consent grants it should enforce.\",\n  \"properties\": {\n    \"agent\": {\n      \"description\": \"Optional. Restrict to grants for this agent VID.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"platform\": {\n      \"description\": \"Optional. Restrict to this platform tag.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"since\": {\n      \"description\": \"Optional opaque cursor; return only grants changed after it.\",\n      \"type\": \"string\"\n    },\n    \"subject\": {\n      \"$ref\": \"#/$defs/ConsentSubject\",\n      \"description\": \"Optional. A full subject, to point-check a single conversation.\"\n    }\n  },\n  \"title\": \"Consent List — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"ConsentGrant\":{\"additionalProperties\":false,\"description\":\"A recorded consent decision over a ConsentSubject.\",\"properties\":{\"effect\":{\"$ref\":\"#/$defs/Effect\"},\"evidence\":{\"description\":\"How the decision was authorized — e.g. \\\"did-signed\\\" (approver's DID signed the consent/decision) or \\\"bridge-attested\\\" (an enrolled bridge relayed the operator's out-of-band choice).\",\"type\":\"string\"},\"expiresAt\":{\"description\":\"Optional. After this time the grant lapses and the subject must be re-consented.\",\"format\":\"date-time\",\"type\":\"string\"},\"grantedAt\":{\"description\":\"RFC 3339 time the decision was recorded.\",\"format\":\"date-time\",\"type\":\"string\"},\"grantedBy\":{\"description\":\"VID of the approver who made the decision.\",\"minLength\":1,\"type\":\"string\"},\"scope\":{\"$ref\":\"#/$defs/Scope\",\"description\":\"Granted scope. REQUIRED when `effect` is `allow`; absent for `deny`.\"},\"subject\":{\"$ref\":\"#/$defs/ConsentSubject\"}},\"required\":[\"subject\",\"effect\",\"grantedBy\",\"grantedAt\"],\"type\":\"object\"},\"ConsentSubject\":{\"additionalProperties\":false,\"description\":\"The platform-agnostic identifier of WHAT is being consented to: one conversation, for one agent.\",\"properties\":{\"agent\":{\"description\":\"VID (DID) of the AI agent the conversation would reach.\",\"minLength\":1,\"type\":\"string\"},\"conversationRef\":{\"description\":\"The bridge's OPAQUE conversation handle (e.g. \\\"sig-1a2b3c4d\\\"). NEVER the raw platform address — the VTA never learns the phone number / chat id.\",\"minLength\":1,\"type\":\"string\"},\"kind\":{\"$ref\":\"#/$defs/Kind\"},\"platform\":{\"description\":\"Messaging-platform tag, e.g. \\\"signal\\\", \\\"whatsapp\\\", \\\"slack\\\".\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"platform\",\"conversationRef\",\"kind\",\"agent\"],\"type\":\"object\"},\"Effect\":{\"description\":\"Whether the subject is permitted. The ABSENCE of any grant is treated as `deny` (default-deny).\",\"enum\":[\"allow\",\"deny\"],\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Kind\":{\"description\":\"The interaction kind: a 1:1 direct message, a multi-party group, or a broadcast channel.\",\"enum\":[\"dm\",\"group\",\"channel\"],\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The grants the requesting bridge is authorized to enforce.\",\"properties\":{\"cursor\":{\"description\":\"Optional cursor for incremental follow-up.\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"grants\":{\"description\":\"Matching consent grants.\",\"items\":{\"$ref\":\"#/$defs/ConsentGrant\"},\"type\":\"array\"}},\"required\":[\"grants\"],\"title\":\"Consent List — response payload\",\"type\":\"object\"},\"Scope\":{\"description\":\"What the agent may do: `receive` = read inbound on this conversation; `converse` = read and reply.\",\"enum\":[\"receive\",\"converse\"],\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/consent/list/1.0\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A bridge fetches the consent grants it should enforce.\",\"properties\":{\"agent\":{\"description\":\"Optional. Restrict to grants for this agent VID.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"platform\":{\"description\":\"Optional. Restrict to this platform tag.\",\"minLength\":1,\"type\":\"string\"},\"since\":{\"description\":\"Optional opaque cursor; return only grants changed after it.\",\"type\":\"string\"},\"subject\":{\"$ref\":\"#/$defs/ConsentSubject\",\"description\":\"Optional. A full subject, to point-check a single conversation.\"}},\"title\":\"Consent List — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/consent/list/1.0#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ConsentGrant\": {\n      \"additionalProperties\": false,\n      \"description\": \"A recorded consent decision over a ConsentSubject.\",\n      \"properties\": {\n        \"effect\": {\n          \"$ref\": \"#/$defs/Effect\"\n        },\n        \"evidence\": {\n          \"description\": \"How the decision was authorized — e.g. \\\"did-signed\\\" (approver's DID signed the consent/decision) or \\\"bridge-attested\\\" (an enrolled bridge relayed the operator's out-of-band choice).\",\n          \"type\": \"string\"\n        },\n        \"expiresAt\": {\n          \"description\": \"Optional. After this time the grant lapses and the subject must be re-consented.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"grantedAt\": {\n          \"description\": \"RFC 3339 time the decision was recorded.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"grantedBy\": {\n          \"description\": \"VID of the approver who made the decision.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"scope\": {\n          \"$ref\": \"#/$defs/Scope\",\n          \"description\": \"Granted scope. REQUIRED when `effect` is `allow`; absent for `deny`.\"\n        },\n        \"subject\": {\n          \"$ref\": \"#/$defs/ConsentSubject\"\n        }\n      },\n      \"required\": [\n        \"subject\",\n        \"effect\",\n        \"grantedBy\",\n        \"grantedAt\"\n      ],\n      \"type\": \"object\"\n    },\n    \"ConsentSubject\": {\n      \"additionalProperties\": false,\n      \"description\": \"The platform-agnostic identifier of WHAT is being consented to: one conversation, for one agent.\",\n      \"properties\": {\n        \"agent\": {\n          \"description\": \"VID (DID) of the AI agent the conversation would reach.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"conversationRef\": {\n          \"description\": \"The bridge's OPAQUE conversation handle (e.g. \\\"sig-1a2b3c4d\\\"). NEVER the raw platform address — the VTA never learns the phone number / chat id.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"kind\": {\n          \"$ref\": \"#/$defs/Kind\"\n        },\n        \"platform\": {\n          \"description\": \"Messaging-platform tag, e.g. \\\"signal\\\", \\\"whatsapp\\\", \\\"slack\\\".\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"platform\",\n        \"conversationRef\",\n        \"kind\",\n        \"agent\"\n      ],\n      \"type\": \"object\"\n    },\n    \"Effect\": {\n      \"description\": \"Whether the subject is permitted. The ABSENCE of any grant is treated as `deny` (default-deny).\",\n      \"enum\": [\n        \"allow\",\n        \"deny\"\n      ],\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Kind\": {\n      \"description\": \"The interaction kind: a 1:1 direct message, a multi-party group, or a broadcast channel.\",\n      \"enum\": [\n        \"dm\",\n        \"group\",\n        \"channel\"\n      ],\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The grants the requesting bridge is authorized to enforce.\",\n      \"properties\": {\n        \"cursor\": {\n          \"description\": \"Optional cursor for incremental follow-up.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"grants\": {\n          \"description\": \"Matching consent grants.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/ConsentGrant\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"grants\"\n      ],\n      \"title\": \"Consent List — response payload\",\n      \"type\": \"object\"\n    },\n    \"Scope\": {\n      \"description\": \"What the agent may do: `receive` = read inbound on this conversation; `converse` = read and reply.\",\n      \"enum\": [\n        \"receive\",\n        \"converse\"\n      ],\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"ConsentGrant\":{\"additionalProperties\":false,\"description\":\"A recorded consent decision over a ConsentSubject.\",\"properties\":{\"effect\":{\"$ref\":\"#/$defs/Effect\"},\"evidence\":{\"description\":\"How the decision was authorized — e.g. \\\"did-signed\\\" (approver's DID signed the consent/decision) or \\\"bridge-attested\\\" (an enrolled bridge relayed the operator's out-of-band choice).\",\"type\":\"string\"},\"expiresAt\":{\"description\":\"Optional. After this time the grant lapses and the subject must be re-consented.\",\"format\":\"date-time\",\"type\":\"string\"},\"grantedAt\":{\"description\":\"RFC 3339 time the decision was recorded.\",\"format\":\"date-time\",\"type\":\"string\"},\"grantedBy\":{\"description\":\"VID of the approver who made the decision.\",\"minLength\":1,\"type\":\"string\"},\"scope\":{\"$ref\":\"#/$defs/Scope\",\"description\":\"Granted scope. REQUIRED when `effect` is `allow`; absent for `deny`.\"},\"subject\":{\"$ref\":\"#/$defs/ConsentSubject\"}},\"required\":[\"subject\",\"effect\",\"grantedBy\",\"grantedAt\"],\"type\":\"object\"},\"ConsentSubject\":{\"additionalProperties\":false,\"description\":\"The platform-agnostic identifier of WHAT is being consented to: one conversation, for one agent.\",\"properties\":{\"agent\":{\"description\":\"VID (DID) of the AI agent the conversation would reach.\",\"minLength\":1,\"type\":\"string\"},\"conversationRef\":{\"description\":\"The bridge's OPAQUE conversation handle (e.g. \\\"sig-1a2b3c4d\\\"). NEVER the raw platform address — the VTA never learns the phone number / chat id.\",\"minLength\":1,\"type\":\"string\"},\"kind\":{\"$ref\":\"#/$defs/Kind\"},\"platform\":{\"description\":\"Messaging-platform tag, e.g. \\\"signal\\\", \\\"whatsapp\\\", \\\"slack\\\".\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"platform\",\"conversationRef\",\"kind\",\"agent\"],\"type\":\"object\"},\"Effect\":{\"description\":\"Whether the subject is permitted. The ABSENCE of any grant is treated as `deny` (default-deny).\",\"enum\":[\"allow\",\"deny\"],\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Kind\":{\"description\":\"The interaction kind: a 1:1 direct message, a multi-party group, or a broadcast channel.\",\"enum\":[\"dm\",\"group\",\"channel\"],\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The grants the requesting bridge is authorized to enforce.\",\"properties\":{\"cursor\":{\"description\":\"Optional cursor for incremental follow-up.\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"grants\":{\"description\":\"Matching consent grants.\",\"items\":{\"$ref\":\"#/$defs/ConsentGrant\"},\"type\":\"array\"}},\"required\":[\"grants\"],\"title\":\"Consent List — response payload\",\"type\":\"object\"},\"Scope\":{\"description\":\"What the agent may do: `receive` = read inbound on this conversation; `converse` = read and reply.\",\"enum\":[\"receive\",\"converse\"],\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

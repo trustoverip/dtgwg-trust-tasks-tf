@@ -41,21 +41,6 @@ This definition constrains the *encoding only*. What the digest is computed over
 
 Restricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that "interoperability is not guaranteed between implementations using such values", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DigestMultibase",
-///  "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-///  "examples": [
-///    "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-///  ],
-///  "type": "string",
-///  "minLength": 16,
-///  "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DigestMultibase(::std::string::String);
@@ -124,17 +109,6 @@ impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
 }
 ///An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ElectionId",
-///  "description": "An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.",
-///  "type": "string",
-///  "pattern": "^[A-Za-z0-9._-]{1,128}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ElectionId(::std::string::String);
@@ -198,21 +172,6 @@ impl<'de> ::serde::Deserialize<'de> for ElectionId {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -234,15 +193,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -306,18 +256,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A binary value, multibase base58btc over the suite's canonical (compressed) encoding.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Multibase",
-///  "description": "A binary value, multibase base58btc over the suite's canonical (compressed) encoding.",
-///  "type": "string",
-///  "maxLength": 16384,
-///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Multibase(::std::string::String);
@@ -384,38 +322,6 @@ impl<'de> ::serde::Deserialize<'de> for Multibase {
 }
 ///An eligible party asks the community to blind-issue its ticket for one election: the community checks eligibility against its own records and signs a commitment it cannot open, so the ticket its voter's agent unblinds is one the community has never seen. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/elections/tickets/issue/0.1",
-///  "title": "Payload",
-///  "description": "An eligible party asks the community to blind-issue its ticket for one election: the community checks eligibility against its own records and signs a commitment it cannot open, so the ticket its voter's agent unblinds is one the community has never seen. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "electionId",
-///    "manifestDigest",
-///    "request"
-///  ],
-///  "properties": {
-///    "electionId": {
-///      "$ref": "#/definitions/ElectionId"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "manifestDigest": {
-///      "description": "The digest of the manifest the requester read (vtc/elections/show) and its agent bound the request to. A ticket is only ever asked for under the manifest the voter saw.",
-///      "$ref": "#/definitions/DigestMultibase"
-///    },
-///    "request": {
-///      "$ref": "#/definitions/TicketRequest"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -436,41 +342,6 @@ impl Payload {
 }
 ///Success response to vtc/elections/tickets/issue/0.1: the blind pre-credential. The voter's VTA unblinds it into a ticket the community has never seen (vta/pcs/voter/accept).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to vtc/elections/tickets/issue/0.1: the blind pre-credential. The voter's VTA unblinds it into a ticket the community has never seen (vta/pcs/voter/accept).",
-///  "type": "object",
-///  "required": [
-///    "electionId",
-///    "label",
-///    "preCredential"
-///  ],
-///  "properties": {
-///    "electionId": {
-///      "$ref": "#/definitions/ElectionId"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "label": {
-///      "description": "The label signed under — the one asked for.",
-///      "type": "string",
-///      "maxLength": 134,
-///      "pattern": "^voter/[A-Za-z0-9._-]{1,128}$"
-///    },
-///    "preCredential": {
-///      "description": "The pre-credential, under the community's voting key. Useless to anyone but the holder of the request's blinding state.",
-///      "$ref": "#/definitions/Multibase"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -492,17 +363,6 @@ impl Response {
 }
 ///The label signed under — the one asked for.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The label signed under — the one asked for.",
-///  "type": "string",
-///  "maxLength": 134,
-///  "pattern": "^voter/[A-Za-z0-9._-]{1,128}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseLabel(::std::string::String);
@@ -569,40 +429,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseLabel {
 }
 ///The suite's blinded root request, serialised as vtc/vetting/vetters/pcs-root carries one. Opaque to the community beyond verifying it under its voting parameters.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RootRequest",
-///  "description": "The suite's blinded root request, serialised as vtc/vetting/vetters/pcs-root carries one. Opaque to the community beyond verifying it under its voting parameters.",
-///  "type": "object",
-///  "required": [
-///    "proof"
-///  ],
-///  "properties": {
-///    "encoding": {
-///      "description": "The issuance encoding the suite carries.",
-///      "type": "string",
-///      "maxLength": 4096,
-///      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///    },
-///    "proof": {
-///      "description": "The proof that the commitment is well formed and the requester holds its secret.",
-///      "type": "string",
-///      "maxLength": 8192,
-///      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///    },
-///    "t0": {
-///      "description": "The request's tag under the root context.",
-///      "type": "string",
-///      "maxLength": 4096,
-///      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -623,17 +449,6 @@ impl RootRequest {
 }
 ///The issuance encoding the suite carries.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The issuance encoding the suite carries.",
-///  "type": "string",
-///  "maxLength": 4096,
-///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RootRequestEncoding(::std::string::String);
@@ -700,17 +515,6 @@ impl<'de> ::serde::Deserialize<'de> for RootRequestEncoding {
 }
 ///The proof that the commitment is well formed and the requester holds its secret.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The proof that the commitment is well formed and the requester holds its secret.",
-///  "type": "string",
-///  "maxLength": 8192,
-///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RootRequestProof(::std::string::String);
@@ -777,17 +581,6 @@ impl<'de> ::serde::Deserialize<'de> for RootRequestProof {
 }
 ///The request's tag under the root context.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The request's tag under the root context.",
-///  "type": "string",
-///  "maxLength": 4096,
-///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RootRequestT0(::std::string::String);
@@ -854,37 +647,6 @@ impl<'de> ::serde::Deserialize<'de> for RootRequestT0 {
 }
 ///The blinded root request for the election's ticket class, as the voter's VTA built it (vta/pcs/voter/register). The community verifies it under its voting parameters and learns nothing else from it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "TicketRequest",
-///  "description": "The blinded root request for the election's ticket class, as the voter's VTA built it (vta/pcs/voter/register). The community verifies it under its voting parameters and learns nothing else from it.",
-///  "type": "object",
-///  "required": [
-///    "id",
-///    "label",
-///    "request"
-///  ],
-///  "properties": {
-///    "id": {
-///      "description": "The voter's PCS identifier for this election, derived from the election's voter key, which is allocated for this election alone (VTI-VOT-023).",
-///      "$ref": "#/definitions/Multibase"
-///    },
-///    "label": {
-///      "description": "The ticket class label, `voter/<electionId>` (CONVENTIONS §3.2). It MUST name the election `electionId` names.",
-///      "type": "string",
-///      "maxLength": 134,
-///      "pattern": "^voter/[A-Za-z0-9._-]{1,128}$"
-///    },
-///    "request": {
-///      "$ref": "#/definitions/RootRequest"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -902,17 +664,6 @@ impl TicketRequest {
 }
 ///The ticket class label, `voter/<electionId>` (CONVENTIONS §3.2). It MUST name the election `electionId` names.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The ticket class label, `voter/<electionId>` (CONVENTIONS §3.2). It MUST name the election `electionId` names.",
-///  "type": "string",
-///  "maxLength": 134,
-///  "pattern": "^voter/[A-Za-z0-9._-]{1,128}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct TicketRequestLabel(::std::string::String);
@@ -1288,7 +1039,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"ElectionId\": {\n      \"description\": \"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,128}$\",\n      \"title\": \"ElectionId\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Multibase\": {\n      \"description\": \"A binary value, multibase base58btc over the suite's canonical (compressed) encoding.\",\n      \"maxLength\": 16384,\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"Multibase\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vtc/elections/tickets/issue/0.1: the blind pre-credential. The voter's VTA unblinds it into a ticket the community has never seen (vta/pcs/voter/accept).\",\n      \"properties\": {\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"label\": {\n          \"description\": \"The label signed under — the one asked for.\",\n          \"maxLength\": 134,\n          \"pattern\": \"^voter/[A-Za-z0-9._-]{1,128}$\",\n          \"type\": \"string\"\n        },\n        \"preCredential\": {\n          \"$ref\": \"#/$defs/Multibase\",\n          \"description\": \"The pre-credential, under the community's voting key. Useless to anyone but the holder of the request's blinding state.\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"label\",\n        \"preCredential\"\n      ],\n      \"title\": \"VTC Elections — Tickets — Issue — response payload\",\n      \"type\": \"object\"\n    },\n    \"RootRequest\": {\n      \"additionalProperties\": false,\n      \"description\": \"The suite's blinded root request, serialised as vtc/vetting/vetters/pcs-root carries one. Opaque to the community beyond verifying it under its voting parameters.\",\n      \"properties\": {\n        \"encoding\": {\n          \"description\": \"The issuance encoding the suite carries.\",\n          \"maxLength\": 4096,\n          \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n          \"type\": \"string\"\n        },\n        \"proof\": {\n          \"description\": \"The proof that the commitment is well formed and the requester holds its secret.\",\n          \"maxLength\": 8192,\n          \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n          \"type\": \"string\"\n        },\n        \"t0\": {\n          \"description\": \"The request's tag under the root context.\",\n          \"maxLength\": 4096,\n          \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"proof\"\n      ],\n      \"title\": \"RootRequest\",\n      \"type\": \"object\"\n    },\n    \"TicketRequest\": {\n      \"additionalProperties\": false,\n      \"description\": \"The blinded root request for the election's ticket class, as the voter's VTA built it (vta/pcs/voter/register). The community verifies it under its voting parameters and learns nothing else from it.\",\n      \"properties\": {\n        \"id\": {\n          \"$ref\": \"#/$defs/Multibase\",\n          \"description\": \"The voter's PCS identifier for this election, derived from the election's voter key, which is allocated for this election alone (VTI-VOT-023).\"\n        },\n        \"label\": {\n          \"description\": \"The ticket class label, `voter/<electionId>` (CONVENTIONS §3.2). It MUST name the election `electionId` names.\",\n          \"maxLength\": 134,\n          \"pattern\": \"^voter/[A-Za-z0-9._-]{1,128}$\",\n          \"type\": \"string\"\n        },\n        \"request\": {\n          \"$ref\": \"#/$defs/RootRequest\"\n        }\n      },\n      \"required\": [\n        \"label\",\n        \"id\",\n        \"request\"\n      ],\n      \"title\": \"TicketRequest\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/elections/tickets/issue/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"An eligible party asks the community to blind-issue its ticket for one election: the community checks eligibility against its own records and signs a commitment it cannot open, so the ticket its voter's agent unblinds is one the community has never seen. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"electionId\": {\n      \"$ref\": \"#/$defs/ElectionId\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"manifestDigest\": {\n      \"$ref\": \"#/$defs/DigestMultibase\",\n      \"description\": \"The digest of the manifest the requester read (vtc/elections/show) and its agent bound the request to. A ticket is only ever asked for under the manifest the voter saw.\"\n    },\n    \"request\": {\n      \"$ref\": \"#/$defs/TicketRequest\"\n    }\n  },\n  \"required\": [\n    \"electionId\",\n    \"manifestDigest\",\n    \"request\"\n  ],\n  \"title\": \"VTC Elections — Tickets — Issue — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"ElectionId\":{\"description\":\"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\"pattern\":\"^[A-Za-z0-9._-]{1,128}$\",\"title\":\"ElectionId\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Multibase\":{\"description\":\"A binary value, multibase base58btc over the suite's canonical (compressed) encoding.\",\"maxLength\":16384,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"Multibase\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vtc/elections/tickets/issue/0.1: the blind pre-credential. The voter's VTA unblinds it into a ticket the community has never seen (vta/pcs/voter/accept).\",\"properties\":{\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"label\":{\"description\":\"The label signed under — the one asked for.\",\"maxLength\":134,\"pattern\":\"^voter/[A-Za-z0-9._-]{1,128}$\",\"type\":\"string\"},\"preCredential\":{\"$ref\":\"#/$defs/Multibase\",\"description\":\"The pre-credential, under the community's voting key. Useless to anyone but the holder of the request's blinding state.\"}},\"required\":[\"electionId\",\"label\",\"preCredential\"],\"title\":\"VTC Elections — Tickets — Issue — response payload\",\"type\":\"object\"},\"RootRequest\":{\"additionalProperties\":false,\"description\":\"The suite's blinded root request, serialised as vtc/vetting/vetters/pcs-root carries one. Opaque to the community beyond verifying it under its voting parameters.\",\"properties\":{\"encoding\":{\"description\":\"The issuance encoding the suite carries.\",\"maxLength\":4096,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"proof\":{\"description\":\"The proof that the commitment is well formed and the requester holds its secret.\",\"maxLength\":8192,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"t0\":{\"description\":\"The request's tag under the root context.\",\"maxLength\":4096,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"}},\"required\":[\"proof\"],\"title\":\"RootRequest\",\"type\":\"object\"},\"TicketRequest\":{\"additionalProperties\":false,\"description\":\"The blinded root request for the election's ticket class, as the voter's VTA built it (vta/pcs/voter/register). The community verifies it under its voting parameters and learns nothing else from it.\",\"properties\":{\"id\":{\"$ref\":\"#/$defs/Multibase\",\"description\":\"The voter's PCS identifier for this election, derived from the election's voter key, which is allocated for this election alone (VTI-VOT-023).\"},\"label\":{\"description\":\"The ticket class label, `voter/<electionId>` (CONVENTIONS §3.2). It MUST name the election `electionId` names.\",\"maxLength\":134,\"pattern\":\"^voter/[A-Za-z0-9._-]{1,128}$\",\"type\":\"string\"},\"request\":{\"$ref\":\"#/$defs/RootRequest\"}},\"required\":[\"label\",\"id\",\"request\"],\"title\":\"TicketRequest\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/elections/tickets/issue/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"An eligible party asks the community to blind-issue its ticket for one election: the community checks eligibility against its own records and signs a commitment it cannot open, so the ticket its voter's agent unblinds is one the community has never seen. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"manifestDigest\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"The digest of the manifest the requester read (vtc/elections/show) and its agent bound the request to. A ticket is only ever asked for under the manifest the voter saw.\"},\"request\":{\"$ref\":\"#/$defs/TicketRequest\"}},\"required\":[\"electionId\",\"manifestDigest\",\"request\"],\"title\":\"VTC Elections — Tickets — Issue — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1298,7 +1049,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"ElectionId\": {\n      \"description\": \"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,128}$\",\n      \"title\": \"ElectionId\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Multibase\": {\n      \"description\": \"A binary value, multibase base58btc over the suite's canonical (compressed) encoding.\",\n      \"maxLength\": 16384,\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"Multibase\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vtc/elections/tickets/issue/0.1: the blind pre-credential. The voter's VTA unblinds it into a ticket the community has never seen (vta/pcs/voter/accept).\",\n      \"properties\": {\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"label\": {\n          \"description\": \"The label signed under — the one asked for.\",\n          \"maxLength\": 134,\n          \"pattern\": \"^voter/[A-Za-z0-9._-]{1,128}$\",\n          \"type\": \"string\"\n        },\n        \"preCredential\": {\n          \"$ref\": \"#/$defs/Multibase\",\n          \"description\": \"The pre-credential, under the community's voting key. Useless to anyone but the holder of the request's blinding state.\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"label\",\n        \"preCredential\"\n      ],\n      \"title\": \"VTC Elections — Tickets — Issue — response payload\",\n      \"type\": \"object\"\n    },\n    \"RootRequest\": {\n      \"additionalProperties\": false,\n      \"description\": \"The suite's blinded root request, serialised as vtc/vetting/vetters/pcs-root carries one. Opaque to the community beyond verifying it under its voting parameters.\",\n      \"properties\": {\n        \"encoding\": {\n          \"description\": \"The issuance encoding the suite carries.\",\n          \"maxLength\": 4096,\n          \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n          \"type\": \"string\"\n        },\n        \"proof\": {\n          \"description\": \"The proof that the commitment is well formed and the requester holds its secret.\",\n          \"maxLength\": 8192,\n          \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n          \"type\": \"string\"\n        },\n        \"t0\": {\n          \"description\": \"The request's tag under the root context.\",\n          \"maxLength\": 4096,\n          \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"proof\"\n      ],\n      \"title\": \"RootRequest\",\n      \"type\": \"object\"\n    },\n    \"TicketRequest\": {\n      \"additionalProperties\": false,\n      \"description\": \"The blinded root request for the election's ticket class, as the voter's VTA built it (vta/pcs/voter/register). The community verifies it under its voting parameters and learns nothing else from it.\",\n      \"properties\": {\n        \"id\": {\n          \"$ref\": \"#/$defs/Multibase\",\n          \"description\": \"The voter's PCS identifier for this election, derived from the election's voter key, which is allocated for this election alone (VTI-VOT-023).\"\n        },\n        \"label\": {\n          \"description\": \"The ticket class label, `voter/<electionId>` (CONVENTIONS §3.2). It MUST name the election `electionId` names.\",\n          \"maxLength\": 134,\n          \"pattern\": \"^voter/[A-Za-z0-9._-]{1,128}$\",\n          \"type\": \"string\"\n        },\n        \"request\": {\n          \"$ref\": \"#/$defs/RootRequest\"\n        }\n      },\n      \"required\": [\n        \"label\",\n        \"id\",\n        \"request\"\n      ],\n      \"title\": \"TicketRequest\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"ElectionId\":{\"description\":\"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\"pattern\":\"^[A-Za-z0-9._-]{1,128}$\",\"title\":\"ElectionId\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Multibase\":{\"description\":\"A binary value, multibase base58btc over the suite's canonical (compressed) encoding.\",\"maxLength\":16384,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"Multibase\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vtc/elections/tickets/issue/0.1: the blind pre-credential. The voter's VTA unblinds it into a ticket the community has never seen (vta/pcs/voter/accept).\",\"properties\":{\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"label\":{\"description\":\"The label signed under — the one asked for.\",\"maxLength\":134,\"pattern\":\"^voter/[A-Za-z0-9._-]{1,128}$\",\"type\":\"string\"},\"preCredential\":{\"$ref\":\"#/$defs/Multibase\",\"description\":\"The pre-credential, under the community's voting key. Useless to anyone but the holder of the request's blinding state.\"}},\"required\":[\"electionId\",\"label\",\"preCredential\"],\"title\":\"VTC Elections — Tickets — Issue — response payload\",\"type\":\"object\"},\"RootRequest\":{\"additionalProperties\":false,\"description\":\"The suite's blinded root request, serialised as vtc/vetting/vetters/pcs-root carries one. Opaque to the community beyond verifying it under its voting parameters.\",\"properties\":{\"encoding\":{\"description\":\"The issuance encoding the suite carries.\",\"maxLength\":4096,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"proof\":{\"description\":\"The proof that the commitment is well formed and the requester holds its secret.\",\"maxLength\":8192,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"t0\":{\"description\":\"The request's tag under the root context.\",\"maxLength\":4096,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"}},\"required\":[\"proof\"],\"title\":\"RootRequest\",\"type\":\"object\"},\"TicketRequest\":{\"additionalProperties\":false,\"description\":\"The blinded root request for the election's ticket class, as the voter's VTA built it (vta/pcs/voter/register). The community verifies it under its voting parameters and learns nothing else from it.\",\"properties\":{\"id\":{\"$ref\":\"#/$defs/Multibase\",\"description\":\"The voter's PCS identifier for this election, derived from the election's voter key, which is allocated for this election alone (VTI-VOT-023).\"},\"label\":{\"description\":\"The ticket class label, `voter/<electionId>` (CONVENTIONS §3.2). It MUST name the election `electionId` names.\",\"maxLength\":134,\"pattern\":\"^voter/[A-Za-z0-9._-]{1,128}$\",\"type\":\"string\"},\"request\":{\"$ref\":\"#/$defs/RootRequest\"}},\"required\":[\"label\",\"id\",\"request\"],\"title\":\"TicketRequest\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

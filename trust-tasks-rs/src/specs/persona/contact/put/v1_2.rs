@@ -39,19 +39,6 @@ The token is the maintainer's own; no external vocabulary is primary. External v
 
 The `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ClaimType",
-///  "description": "The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\n\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\n\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1,
-///  "pattern": "^(x:)?[a-z][a-zA-Z0-9]*(\\.[a-z][a-zA-Z0-9]*)*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ClaimType(::std::string::String);
@@ -123,58 +110,6 @@ impl<'de> ::serde::Deserialize<'de> for ClaimType {
 }
 ///What a peer disclosed, as received. Structurally the same claim set a holder composes and presents — a profile and a contact card are one schema seen from two sides — which is why a maintainer validates both with the same code and a consumer renders both with the same view.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ContactDocument",
-///  "description": "What a peer disclosed, as received. Structurally the same claim set a holder composes and presents — a profile and a contact card are one schema seen from two sides — which is why a maintainer validates both with the same code and a consumer renders both with the same view.",
-///  "type": "object",
-///  "required": [
-///    "claims"
-///  ],
-///  "properties": {
-///    "cardVersion": {
-///      "description": "The publisher's own monotonic counter, if they supplied one. Advisory: it orders the publisher's revisions relative to each other and MUST NOT be trusted to order them against anything else.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "claims": {
-///      "type": "array",
-///      "items": {
-///        "type": "object",
-///        "required": [
-///          "type",
-///          "value",
-///          "valueType"
-///        ],
-///        "properties": {
-///          "provenance": {
-///            "description": "As asserted by the publisher. A recipient MUST NOT treat a claimed credentialBacked provenance as verified — it is a statement about what the publisher says backs the claim, and verification is a separate act against the credential itself.",
-///            "$ref": "#/definitions/Provenance"
-///          },
-///          "type": {
-///            "$ref": "#/definitions/ClaimType"
-///          },
-///          "value": {},
-///          "valueType": {
-///            "$ref": "#/definitions/ValueType"
-///          }
-///        },
-///        "additionalProperties": false
-///      },
-///      "maxItems": 256
-///    },
-///    "publisher": {
-///      "description": "The DID that published the document, as it appeared. Normally a pairwise identifier, so it names the relationship rather than the person.",
-///      "type": "string",
-///      "maxLength": 2048
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -198,33 +133,6 @@ impl ContactDocument {
 }
 ///`ContactDocumentClaimsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "type",
-///    "value",
-///    "valueType"
-///  ],
-///  "properties": {
-///    "provenance": {
-///      "description": "As asserted by the publisher. A recipient MUST NOT treat a claimed credentialBacked provenance as verified — it is a statement about what the publisher says backs the claim, and verification is a separate act against the credential itself.",
-///      "$ref": "#/definitions/Provenance"
-///    },
-///    "type": {
-///      "$ref": "#/definitions/ClaimType"
-///    },
-///    "value": {},
-///    "valueType": {
-///      "$ref": "#/definitions/ValueType"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -245,16 +153,6 @@ impl ContactDocumentClaimsItem {
 }
 ///The DID that published the document, as it appeared. Normally a pairwise identifier, so it names the relationship rather than the person.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The DID that published the document, as it appeared. Normally a pairwise identifier, so it names the relationship rather than the person.",
-///  "type": "string",
-///  "maxLength": 2048
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ContactDocumentPublisher(::std::string::String);
@@ -314,19 +212,6 @@ impl<'de> ::serde::Deserialize<'de> for ContactDocumentPublisher {
 }
 ///A community directory entry's identifier, exactly as that community's directory returned it. Opaque and community-scoped: the agent stores and compares it as a string, never parses it, and never treats the same value under two communities as the same entry.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DirectoryEntryId",
-///  "description": "A community directory entry's identifier, exactly as that community's directory returned it. Opaque and community-scoped: the agent stores and compares it as a string, never parses it, and never treats the same value under two communities as the same entry.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1,
-///  "pattern": "^[A-Za-z0-9_-]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DirectoryEntryId(::std::string::String);
@@ -394,34 +279,6 @@ impl<'de> ::serde::Deserialize<'de> for DirectoryEntryId {
 }
 ///Links a contact to the entry in a community's member directory it corresponds to, so the holder's own client can join that community's directory with the holder's address book — showing a star or a petname beside an entry — without either side telling the other. The community never learns the link exists; the contact never learns it either. A contact has at most one.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DirectoryRef",
-///  "description": "Links a contact to the entry in a community's member directory it corresponds to, so the holder's own client can join that community's directory with the holder's address book — showing a star or a petname beside an entry — without either side telling the other. The community never learns the link exists; the contact never learns it either. A contact has at most one.",
-///  "type": "object",
-///  "required": [
-///    "entryId",
-///    "vtcDid"
-///  ],
-///  "properties": {
-///    "entryId": {
-///      "description": "The entry, as that community's directory identifies it.",
-///      "$ref": "#/definitions/DirectoryEntryId"
-///    },
-///    "vtcDid": {
-///      "description": "The DID of the community whose directory holds the entry.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1,
-///      "pattern": "^did:[a-z0-9]+:"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -440,18 +297,6 @@ impl DirectoryRef {
 }
 ///The DID of the community whose directory holds the entry.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The DID of the community whose directory holds the entry.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1,
-///  "pattern": "^did:[a-z0-9]+:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DirectoryRefVtcDid(::std::string::String);
@@ -519,21 +364,6 @@ impl<'de> ::serde::Deserialize<'de> for DirectoryRefVtcDid {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -555,15 +385,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -627,17 +448,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Identifier of one of the holder's contact lists: a ULID in Crockford base32, uppercase, assigned by the agent when the list is created. Meaningful only inside the context that holds the list; it is never sent to anyone but the holder's own clients.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ListId",
-///  "description": "Identifier of one of the holder's contact lists: a ULID in Crockford base32, uppercase, assigned by the agent when the list is created. Meaningful only inside the context that holds the list; it is never sent to anyone but the holder's own clients.",
-///  "type": "string",
-///  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ListId(::std::string::String);
@@ -701,22 +511,6 @@ impl<'de> ::serde::Deserialize<'de> for ListId {
 }
 ///The lists a contact is on, as a set: order carries no meaning. A contact on no list has no `lists` member, never an empty array, so there is one way to say "none".
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ListIds",
-///  "description": "The lists a contact is on, as a set: order carries no meaning. A contact on no list has no `lists` member, never an empty array, so there is one way to say \"none\".",
-///  "type": "array",
-///  "items": {
-///    "$ref": "#/definitions/ListId"
-///  },
-///  "maxItems": 64,
-///  "minItems": 1,
-///  "uniqueItems": true
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct ListIds(pub Vec<ListId>);
@@ -738,130 +532,6 @@ impl ::std::convert::From<Vec<ListId>> for ListIds {
 }
 ///File what a peer disclosed, or change the holder's own annotations on a contact, or both. Three forms. FILING (`subjectDid`, `knownByPersona`, `document`; no `contactId`) appends a revision, never overwrites, so a changed value is visible as a change rather than arriving silently — exactly as 1.0. ANNOTATING (`contactId`; no `subjectDid`, `knownByPersona`, `document` or `credentialRefs`) changes the holder's star, petname, lists, directory link or notes on an existing contact and appends no revision. LINKING (`directoryRef`, `knownByPersona`; no `contactId`, `subjectDid`, `document` or `credentialRefs`) keeps annotations on a member of a community's directory whose DID the holder has not been shown: it finds, or makes, the contact for that entry and persona, and appends no revision. In every form each annotation given replaces the stored one, each `removeX` removes one, and each annotation absent is unchanged. The outer document members are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/persona/contact/put/1.2",
-///  "title": "Payload",
-///  "description": "File what a peer disclosed, or change the holder's own annotations on a contact, or both. Three forms. FILING (`subjectDid`, `knownByPersona`, `document`; no `contactId`) appends a revision, never overwrites, so a changed value is visible as a change rather than arriving silently — exactly as 1.0. ANNOTATING (`contactId`; no `subjectDid`, `knownByPersona`, `document` or `credentialRefs`) changes the holder's star, petname, lists, directory link or notes on an existing contact and appends no revision. LINKING (`directoryRef`, `knownByPersona`; no `contactId`, `subjectDid`, `document` or `credentialRefs`) keeps annotations on a member of a community's directory whose DID the holder has not been shown: it finds, or makes, the contact for that entry and persona, and appends no revision. In every form each annotation given replaces the stored one, each `removeX` removes one, and each annotation absent is unchanged. The outer document members are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "contextId"
-///  ],
-///  "properties": {
-///    "contactId": {
-///      "description": "Annotating form only: the existing contact whose annotations change. A filing never names one — the agent keys a filing on (contextId, subjectDid, knownByPersona) as in 1.0.",
-///      "$ref": "#/definitions/Ulid"
-///    },
-///    "contextId": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "credentialRefs": {
-///      "description": "Filing form only. Vault identifiers of credentials the peer presented alongside the document. The credentials themselves belong in the credential vault and the contact holds references.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "minLength": 1
-///      },
-///      "maxItems": 256
-///    },
-///    "directoryRef": {
-///      "description": "Link the contact to a community directory entry, replacing any link it had. Absent: unchanged.",
-///      "$ref": "#/definitions/DirectoryRef"
-///    },
-///    "document": {
-///      "$ref": "#/definitions/ContactDocument"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "knownByPersona": {
-///      "description": "Filing and linking forms. Which of the holder's personas knows this contact. A contact belongs to the relationship, not to the holder at large — the same peer met through two personas is two contacts, and collapsing them would correlate the holder's own personas in their own address book.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1
-///    },
-///    "lists": {
-///      "description": "The lists the contact is on, replacing the whole set. Every identifier MUST name a list in this context. Absent: unchanged. Take the contact off every list with `removeLists`.",
-///      "$ref": "#/definitions/ListIds"
-///    },
-///    "notes": {
-///      "description": "The holder's private note about this contact, replacing any they had. Absent: unchanged. Never disclosed to anyone, including the contact.",
-///      "type": "string",
-///      "maxLength": 4096,
-///      "minLength": 1
-///    },
-///    "petname": {
-///      "description": "The holder's private name for the contact, replacing any they had. Absent: unchanged.",
-///      "$ref": "#/definitions/Petname"
-///    },
-///    "removeDirectoryRef": {
-///      "description": "Remove the contact's directory link. Only `true` is accepted.",
-///      "type": "boolean",
-///      "const": true
-///    },
-///    "removeLists": {
-///      "description": "Take the contact off every list. Only `true` is accepted.",
-///      "type": "boolean",
-///      "const": true
-///    },
-///    "removeNotes": {
-///      "description": "Remove the note. Only `true` is accepted.",
-///      "type": "boolean",
-///      "const": true
-///    },
-///    "removePetname": {
-///      "description": "Remove the petname. Only `true` is meaningful, so only `true` is accepted. A separate member rather than `petname: null`, because a nullable optional member makes \"unchanged\" and \"remove\" the same value in libraries that map both to one absent option.",
-///      "type": "boolean",
-///      "const": true
-///    },
-///    "starred": {
-///      "description": "Star or unstar the contact. Absent: unchanged. A boolean rather than a remove member because `false` is a value the holder chose, not an absence.",
-///      "type": "boolean"
-///    },
-///    "subjectDid": {
-///      "description": "Filing form only. The DID the document is about, as disclosed. Normally pairwise, so it names this relationship and not the person across all of theirs.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "dependentSchemas": {
-///    "removeDirectoryRef": {
-///      "not": {
-///        "required": [
-///          "directoryRef"
-///        ]
-///      }
-///    },
-///    "removeLists": {
-///      "not": {
-///        "required": [
-///          "lists"
-///        ]
-///      }
-///    },
-///    "removeNotes": {
-///      "not": {
-///        "required": [
-///          "notes"
-///        ]
-///      }
-///    },
-///    "removePetname": {
-///      "not": {
-///        "required": [
-///          "petname"
-///        ]
-///      }
-///    }
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -955,15 +625,6 @@ impl Payload {
 }
 ///`PayloadContextId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadContextId(::std::string::String);
@@ -1023,15 +684,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
 }
 ///`PayloadCredentialRefsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadCredentialRefsItem(::std::string::String);
@@ -1091,17 +743,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCredentialRefsItem {
 }
 ///Filing and linking forms. Which of the holder's personas knows this contact. A contact belongs to the relationship, not to the holder at large — the same peer met through two personas is two contacts, and collapsing them would correlate the holder's own personas in their own address book.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Filing and linking forms. Which of the holder's personas knows this contact. A contact belongs to the relationship, not to the holder at large — the same peer met through two personas is two contacts, and collapsing them would correlate the holder's own personas in their own address book.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadKnownByPersona(::std::string::String);
@@ -1164,17 +805,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadKnownByPersona {
 }
 ///The holder's private note about this contact, replacing any they had. Absent: unchanged. Never disclosed to anyone, including the contact.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The holder's private note about this contact, replacing any they had. Absent: unchanged. Never disclosed to anyone, including the contact.",
-///  "type": "string",
-///  "maxLength": 4096,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadNotes(::std::string::String);
@@ -1237,17 +867,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadNotes {
 }
 ///Filing form only. The DID the document is about, as disclosed. Normally pairwise, so it names this relationship and not the person across all of theirs.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Filing form only. The DID the document is about, as disclosed. Normally pairwise, so it names this relationship and not the person across all of theirs.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadSubjectDid(::std::string::String);
@@ -1310,19 +929,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubjectDid {
 }
 ///The holder's private name for a contact, on one line: no control characters, line breaks included. A petname in Zooko's sense — chosen by the holder, meaningful to the holder, and unforgeable by anyone else, because nobody else can write it. Distinct from the contact's own disclosed `nickname` or display name, which the contact chose and may change. Compared exactly, as a string: an agent does not case-fold or normalise it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Petname",
-///  "description": "The holder's private name for a contact, on one line: no control characters, line breaks included. A petname in Zooko's sense — chosen by the holder, meaningful to the holder, and unforgeable by anyone else, because nobody else can write it. Distinct from the contact's own disclosed `nickname` or display name, which the contact chose and may change. Compared exactly, as a string: an agent does not case-fold or normalise it.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1,
-///  "pattern": "^[^\\u0000-\\u001F\\u007F]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Petname(::std::string::String);
@@ -1395,22 +1001,6 @@ How strongly a credential-backed claim is hidden when presented, ordered most pr
 
 The distinction between the first two and the last two is of kind, not degree: only `predicate` and `derived` avoid handing two verifiers a join key. A maintainer MUST default to the highest rung the credential's format supports, and MUST NOT silently fall to a lower one — a request that cannot be satisfied at the rung a producer asked for is refused, because a silent privacy downgrade discloses material the holder believed was hidden.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ProofRung",
-///  "description": "How strongly a credential-backed claim is hidden when presented, ordered most private first. `predicate` proves a statement over a claim without disclosing the claim. `derived` discloses exactly the claims needed via an unlinkable derived proof, so two presentations cannot be joined. `selectiveDisclosure` discloses exactly the claims needed but carries the issuer's signature unchanged, so two presentations ARE linkable. `whole` discloses the entire credential.\n\nThe distinction between the first two and the last two is of kind, not degree: only `predicate` and `derived` avoid handing two verifiers a join key. A maintainer MUST default to the highest rung the credential's format supports, and MUST NOT silently fall to a lower one — a request that cannot be satisfied at the rung a producer asked for is refused, because a silent privacy downgrade discloses material the holder believed was hidden.",
-///  "type": "string",
-///  "enum": [
-///    "predicate",
-///    "derived",
-///    "selectiveDisclosure",
-///    "whole"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1491,112 +1081,6 @@ Where a value comes from, and the member that makes this family worth building o
 
 For how strongly a disclosed value identifies the holder, the kinds rank `credentialBacked` above `derived` above `selfAsserted`; `generated` values are per-verifier and do not correlate.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Provenance",
-///  "description": "Where a value comes from, and the member that makes this family worth building on a trust stack rather than in an address book. It survives to the verifier, so a recipient can tell — per field — what the holder typed from what an issuer attested.\n\n`selfAsserted` — the holder supplied it.\n\n`credentialBacked` — the value is derived from a credential in the vault at `claimPath`. The stored value is a CACHE FOR DISPLAY; the credential is the truth. A maintainer MUST re-derive it on read and MUST fail closed (never presenting a stale value) when the credential has been revoked, has expired, or has been archived or deleted.\n\n`generated` — the value is minted per verifier at disclosure time and recorded against that verifier, so every relying party receives a different one that routes back to the holder. This is the shape of the most widely adopted consumer privacy feature in this space; a maintainer need not operate a relay to conform, but the shape must exist, because retrofitting per-verifier values into a pool-of-values model is a migration rather than an addition.\n\n`derived` — the value was taken from a source the holder connected or supplied — a code-hosting profile, an uploaded CV — rather than typed by them or attested by an issuer. Nobody signed it: it is the holder's claim that the source said so, and a consumer MUST NOT present it as attested. It exists as its own kind because a derived value is neither of the others — the holder did not author it, and no one vouches for it — and a holder deciding whether to disclose deserves to know which of their values they typed.\n\nFor how strongly a disclosed value identifies the holder, the kinds rank `credentialBacked` above `derived` above `selfAsserted`; `generated` values are per-verifier and do not correlate.",
-///  "type": "object",
-///  "oneOf": [
-///    {
-///      "required": [
-///        "kind"
-///      ],
-///      "properties": {
-///        "kind": {
-///          "const": "selfAsserted"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "required": [
-///        "claimPath",
-///        "credentialId",
-///        "kind"
-///      ],
-///      "properties": {
-///        "claimPath": {
-///          "description": "RFC 6901 JSON Pointer to the claim within the credential, e.g. `/credentialSubject/familyName`.",
-///          "type": "string",
-///          "pattern": "^(/[^/~]*(~[01][^/~]*)*)*$"
-///        },
-///        "credentialId": {
-///          "description": "Vault identifier of the backing credential.",
-///          "type": "string",
-///          "minLength": 1
-///        },
-///        "issuerDid": {
-///          "description": "Issuer of the backing credential. Advisory: a consumer MUST verify the credential rather than trusting this member.",
-///          "type": "string",
-///          "minLength": 1
-///        },
-///        "kind": {
-///          "const": "credentialBacked"
-///        },
-///        "proof": {
-///          "description": "The disclosure rung this claim was, or will be, presented at.",
-///          "$ref": "#/definitions/ProofRung"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "required": [
-///        "generator",
-///        "kind"
-///      ],
-///      "properties": {
-///        "generator": {
-///          "description": "Names the minting scheme, e.g. `relayEmail`. Maintainer-defined.",
-///          "type": "string",
-///          "maxLength": 64,
-///          "minLength": 1
-///        },
-///        "kind": {
-///          "const": "generated"
-///        },
-///        "perVerifier": {
-///          "description": "When true (the default and the only useful setting), a distinct value is minted for each verifier.",
-///          "default": true,
-///          "type": "boolean"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "required": [
-///        "derivedAt",
-///        "kind",
-///        "source"
-///      ],
-///      "properties": {
-///        "derivedAt": {
-///          "description": "When the value was taken from the source. A derived value is a snapshot: the source may have changed since, and nothing re-derives it.",
-///          "type": "string",
-///          "format": "date-time"
-///        },
-///        "kind": {
-///          "const": "derived"
-///        },
-///        "source": {
-///          "description": "The KIND of source the value was taken from — `github`, `cvUpload`, `linkedIn` — never an account, handle or URL. Provenance survives to the verifier, so this member is disclosed with the claim; a handle here would disclose an identifier the holder never chose to share.",
-///          "type": "string",
-///          "maxLength": 64,
-///          "minLength": 1,
-///          "pattern": "^[a-z][A-Za-z0-9.-]*$"
-///        }
-///      },
-///      "additionalProperties": false
-///    }
-///  ],
-///  "required": [
-///    "kind"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged, deny_unknown_fields)]
 #[non_exhaustive]
@@ -1642,16 +1126,6 @@ pub enum Provenance {
 }
 ///RFC 6901 JSON Pointer to the claim within the credential, e.g. `/credentialSubject/familyName`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "RFC 6901 JSON Pointer to the claim within the credential, e.g. `/credentialSubject/familyName`.",
-///  "type": "string",
-///  "pattern": "^(/[^/~]*(~[01][^/~]*)*)*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ProvenanceVariant1ClaimPath(::std::string::String);
@@ -1715,16 +1189,6 @@ impl<'de> ::serde::Deserialize<'de> for ProvenanceVariant1ClaimPath {
 }
 ///Vault identifier of the backing credential.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Vault identifier of the backing credential.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ProvenanceVariant1CredentialId(::std::string::String);
@@ -1784,16 +1248,6 @@ impl<'de> ::serde::Deserialize<'de> for ProvenanceVariant1CredentialId {
 }
 ///Issuer of the backing credential. Advisory: a consumer MUST verify the credential rather than trusting this member.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Issuer of the backing credential. Advisory: a consumer MUST verify the credential rather than trusting this member.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ProvenanceVariant1IssuerDid(::std::string::String);
@@ -1853,17 +1307,6 @@ impl<'de> ::serde::Deserialize<'de> for ProvenanceVariant1IssuerDid {
 }
 ///Names the minting scheme, e.g. `relayEmail`. Maintainer-defined.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Names the minting scheme, e.g. `relayEmail`. Maintainer-defined.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ProvenanceVariant2Generator(::std::string::String);
@@ -1926,18 +1369,6 @@ impl<'de> ::serde::Deserialize<'de> for ProvenanceVariant2Generator {
 }
 ///The KIND of source the value was taken from — `github`, `cvUpload`, `linkedIn` — never an account, handle or URL. Provenance survives to the verifier, so this member is disclosed with the claim; a handle here would disclose an identifier the holder never chose to share.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The KIND of source the value was taken from — `github`, `cvUpload`, `linkedIn` — never an account, handle or URL. Provenance survives to the verifier, so this member is disclosed with the claim; a handle here would disclose an identifier the holder never chose to share.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1,
-///  "pattern": "^[a-z][A-Za-z0-9.-]*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ProvenanceVariant3Source(::std::string::String);
@@ -2005,53 +1436,6 @@ impl<'de> ::serde::Deserialize<'de> for ProvenanceVariant3Source {
 }
 ///Success response to persona/contact/put. Type https://trusttasks.org/spec/persona/contact/put/1.2#response. Identifiers, the current revision and what changed; no claim value and no annotation text is echoed.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to persona/contact/put. Type https://trusttasks.org/spec/persona/contact/put/1.2#response. Identifiers, the current revision and what changed; no claim value and no annotation text is echoed.",
-///  "type": "object",
-///  "required": [
-///    "annotationsChanged",
-///    "contactId",
-///    "rev",
-///    "wasCreated"
-///  ],
-///  "properties": {
-///    "annotationsChanged": {
-///      "description": "True when any annotation now differs from what was stored. False when every annotation given already matched and every one named for removal was already absent — including a filing that named none.",
-///      "type": "boolean"
-///    },
-///    "changedClaims": {
-///      "description": "Claim types whose value differs from the previous revision. Present only on a filing that updated an existing contact.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/ClaimType"
-///      },
-///      "maxItems": 256
-///    },
-///    "contactId": {
-///      "$ref": "#/definitions/Ulid"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "rev": {
-///      "description": "The contact's current revision: the one a filing just appended, or, for an annotating request, the revision that was already current. Annotations never move it.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "wasCreated": {
-///      "description": "True when this is the first revision for the subject. Always false for an annotating request.",
-///      "type": "boolean"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -2083,17 +1467,6 @@ impl Response {
 }
 ///A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ulid",
-///  "description": "A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.",
-///  "type": "string",
-///  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Ulid(::std::string::String);
@@ -2157,23 +1530,6 @@ impl<'de> ::serde::Deserialize<'de> for Ulid {
 }
 ///The JSON shape of `value`, declared so that a consumer can render and compare without guessing. The maintainer validates that `value` agrees with this member and does nothing further: it does NOT validate a phone number against a phone-number grammar. That is a producer's affordance, and a store that grows opinions about the contents of its records eventually blocks its consumer's release.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ValueType",
-///  "description": "The JSON shape of `value`, declared so that a consumer can render and compare without guessing. The maintainer validates that `value` agrees with this member and does nothing further: it does NOT validate a phone number against a phone-number grammar. That is a producer's affordance, and a store that grows opinions about the contents of its records eventually blocks its consumer's release.",
-///  "type": "string",
-///  "enum": [
-///    "string",
-///    "number",
-///    "boolean",
-///    "date",
-///    "object"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -2852,7 +2208,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ClaimType\": {\n      \"description\": \"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\n      \"title\": \"ClaimType\",\n      \"type\": \"string\"\n    },\n    \"ContactDocument\": {\n      \"additionalProperties\": false,\n      \"description\": \"What a peer disclosed, as received. Structurally the same claim set a holder composes and presents — a profile and a contact card are one schema seen from two sides — which is why a maintainer validates both with the same code and a consumer renders both with the same view.\",\n      \"properties\": {\n        \"cardVersion\": {\n          \"description\": \"The publisher's own monotonic counter, if they supplied one. Advisory: it orders the publisher's revisions relative to each other and MUST NOT be trusted to order them against anything else.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"claims\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"provenance\": {\n                \"$ref\": \"#/$defs/Provenance\",\n                \"description\": \"As asserted by the publisher. A recipient MUST NOT treat a claimed credentialBacked provenance as verified — it is a statement about what the publisher says backs the claim, and verification is a separate act against the credential itself.\"\n              },\n              \"type\": {\n                \"$ref\": \"#/$defs/ClaimType\"\n              },\n              \"value\": {},\n              \"valueType\": {\n                \"$ref\": \"#/$defs/ValueType\"\n              }\n            },\n            \"required\": [\n              \"type\",\n              \"valueType\",\n              \"value\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        },\n        \"publisher\": {\n          \"description\": \"The DID that published the document, as it appeared. Normally a pairwise identifier, so it names the relationship rather than the person.\",\n          \"maxLength\": 2048,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"claims\"\n      ],\n      \"title\": \"ContactDocument\",\n      \"type\": \"object\"\n    },\n    \"DirectoryEntryId\": {\n      \"description\": \"A community directory entry's identifier, exactly as that community's directory returned it. Opaque and community-scoped: the agent stores and compares it as a string, never parses it, and never treats the same value under two communities as the same entry.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^[A-Za-z0-9_-]+$\",\n      \"title\": \"DirectoryEntryId\",\n      \"type\": \"string\"\n    },\n    \"DirectoryRef\": {\n      \"additionalProperties\": false,\n      \"description\": \"Links a contact to the entry in a community's member directory it corresponds to, so the holder's own client can join that community's directory with the holder's address book — showing a star or a petname beside an entry — without either side telling the other. The community never learns the link exists; the contact never learns it either. A contact has at most one.\",\n      \"properties\": {\n        \"entryId\": {\n          \"$ref\": \"#/$defs/DirectoryEntryId\",\n          \"description\": \"The entry, as that community's directory identifies it.\"\n        },\n        \"vtcDid\": {\n          \"description\": \"The DID of the community whose directory holds the entry.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"pattern\": \"^did:[a-z0-9]+:\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"vtcDid\",\n        \"entryId\"\n      ],\n      \"title\": \"DirectoryRef\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ListId\": {\n      \"description\": \"Identifier of one of the holder's contact lists: a ULID in Crockford base32, uppercase, assigned by the agent when the list is created. Meaningful only inside the context that holds the list; it is never sent to anyone but the holder's own clients.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"ListId\",\n      \"type\": \"string\"\n    },\n    \"ListIds\": {\n      \"description\": \"The lists a contact is on, as a set: order carries no meaning. A contact on no list has no `lists` member, never an empty array, so there is one way to say \\\"none\\\".\",\n      \"items\": {\n        \"$ref\": \"#/$defs/ListId\"\n      },\n      \"maxItems\": 64,\n      \"minItems\": 1,\n      \"title\": \"ListIds\",\n      \"type\": \"array\",\n      \"uniqueItems\": true\n    },\n    \"Petname\": {\n      \"description\": \"The holder's private name for a contact, on one line: no control characters, line breaks included. A petname in Zooko's sense — chosen by the holder, meaningful to the holder, and unforgeable by anyone else, because nobody else can write it. Distinct from the contact's own disclosed `nickname` or display name, which the contact chose and may change. Compared exactly, as a string: an agent does not case-fold or normalise it.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[^\\\\u0000-\\\\u001F\\\\u007F]+$\",\n      \"title\": \"Petname\",\n      \"type\": \"string\"\n    },\n    \"ProofRung\": {\n      \"description\": \"How strongly a credential-backed claim is hidden when presented, ordered most private first. `predicate` proves a statement over a claim without disclosing the claim. `derived` discloses exactly the claims needed via an unlinkable derived proof, so two presentations cannot be joined. `selectiveDisclosure` discloses exactly the claims needed but carries the issuer's signature unchanged, so two presentations ARE linkable. `whole` discloses the entire credential.\\n\\nThe distinction between the first two and the last two is of kind, not degree: only `predicate` and `derived` avoid handing two verifiers a join key. A maintainer MUST default to the highest rung the credential's format supports, and MUST NOT silently fall to a lower one — a request that cannot be satisfied at the rung a producer asked for is refused, because a silent privacy downgrade discloses material the holder believed was hidden.\",\n      \"enum\": [\n        \"predicate\",\n        \"derived\",\n        \"selectiveDisclosure\",\n        \"whole\"\n      ],\n      \"title\": \"ProofRung\",\n      \"type\": \"string\"\n    },\n    \"Provenance\": {\n      \"description\": \"Where a value comes from, and the member that makes this family worth building on a trust stack rather than in an address book. It survives to the verifier, so a recipient can tell — per field — what the holder typed from what an issuer attested.\\n\\n`selfAsserted` — the holder supplied it.\\n\\n`credentialBacked` — the value is derived from a credential in the vault at `claimPath`. The stored value is a CACHE FOR DISPLAY; the credential is the truth. A maintainer MUST re-derive it on read and MUST fail closed (never presenting a stale value) when the credential has been revoked, has expired, or has been archived or deleted.\\n\\n`generated` — the value is minted per verifier at disclosure time and recorded against that verifier, so every relying party receives a different one that routes back to the holder. This is the shape of the most widely adopted consumer privacy feature in this space; a maintainer need not operate a relay to conform, but the shape must exist, because retrofitting per-verifier values into a pool-of-values model is a migration rather than an addition.\\n\\n`derived` — the value was taken from a source the holder connected or supplied — a code-hosting profile, an uploaded CV — rather than typed by them or attested by an issuer. Nobody signed it: it is the holder's claim that the source said so, and a consumer MUST NOT present it as attested. It exists as its own kind because a derived value is neither of the others — the holder did not author it, and no one vouches for it — and a holder deciding whether to disclose deserves to know which of their values they typed.\\n\\nFor how strongly a disclosed value identifies the holder, the kinds rank `credentialBacked` above `derived` above `selfAsserted`; `generated` values are per-verifier and do not correlate.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"selfAsserted\"\n            }\n          },\n          \"required\": [\n            \"kind\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"claimPath\": {\n              \"description\": \"RFC 6901 JSON Pointer to the claim within the credential, e.g. `/credentialSubject/familyName`.\",\n              \"pattern\": \"^(/[^/~]*(~[01][^/~]*)*)*$\",\n              \"type\": \"string\"\n            },\n            \"credentialId\": {\n              \"description\": \"Vault identifier of the backing credential.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"issuerDid\": {\n              \"description\": \"Issuer of the backing credential. Advisory: a consumer MUST verify the credential rather than trusting this member.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"credentialBacked\"\n            },\n            \"proof\": {\n              \"$ref\": \"#/$defs/ProofRung\",\n              \"description\": \"The disclosure rung this claim was, or will be, presented at.\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"credentialId\",\n            \"claimPath\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"generator\": {\n              \"description\": \"Names the minting scheme, e.g. `relayEmail`. Maintainer-defined.\",\n              \"maxLength\": 64,\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"generated\"\n            },\n            \"perVerifier\": {\n              \"default\": true,\n              \"description\": \"When true (the default and the only useful setting), a distinct value is minted for each verifier.\",\n              \"type\": \"boolean\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"generator\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"derivedAt\": {\n              \"description\": \"When the value was taken from the source. A derived value is a snapshot: the source may have changed since, and nothing re-derives it.\",\n              \"format\": \"date-time\",\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"derived\"\n            },\n            \"source\": {\n              \"description\": \"The KIND of source the value was taken from — `github`, `cvUpload`, `linkedIn` — never an account, handle or URL. Provenance survives to the verifier, so this member is disclosed with the claim; a handle here would disclose an identifier the holder never chose to share.\",\n              \"maxLength\": 64,\n              \"minLength\": 1,\n              \"pattern\": \"^[a-z][A-Za-z0-9.-]*$\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"source\",\n            \"derivedAt\"\n          ]\n        }\n      ],\n      \"required\": [\n        \"kind\"\n      ],\n      \"title\": \"Provenance\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/contact/put. Type https://trusttasks.org/spec/persona/contact/put/1.2#response. Identifiers, the current revision and what changed; no claim value and no annotation text is echoed.\",\n      \"properties\": {\n        \"annotationsChanged\": {\n          \"description\": \"True when any annotation now differs from what was stored. False when every annotation given already matched and every one named for removal was already absent — including a filing that named none.\",\n          \"type\": \"boolean\"\n        },\n        \"changedClaims\": {\n          \"description\": \"Claim types whose value differs from the previous revision. Present only on a filing that updated an existing contact.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/ClaimType\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        },\n        \"contactId\": {\n          \"$ref\": \"#/$defs/Ulid\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"rev\": {\n          \"description\": \"The contact's current revision: the one a filing just appended, or, for an annotating request, the revision that was already current. Annotations never move it.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"wasCreated\": {\n          \"description\": \"True when this is the first revision for the subject. Always false for an annotating request.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"contactId\",\n        \"rev\",\n        \"wasCreated\",\n        \"annotationsChanged\"\n      ],\n      \"title\": \"Persona Contact Put — response payload\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    },\n    \"ValueType\": {\n      \"description\": \"The JSON shape of `value`, declared so that a consumer can render and compare without guessing. The maintainer validates that `value` agrees with this member and does nothing further: it does NOT validate a phone number against a phone-number grammar. That is a producer's affordance, and a store that grows opinions about the contents of its records eventually blocks its consumer's release.\",\n      \"enum\": [\n        \"string\",\n        \"number\",\n        \"boolean\",\n        \"date\",\n        \"object\"\n      ],\n      \"title\": \"ValueType\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/persona/contact/put/1.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"dependentSchemas\": {\n    \"removeDirectoryRef\": {\n      \"not\": {\n        \"required\": [\n          \"directoryRef\"\n        ]\n      }\n    },\n    \"removeLists\": {\n      \"not\": {\n        \"required\": [\n          \"lists\"\n        ]\n      }\n    },\n    \"removeNotes\": {\n      \"not\": {\n        \"required\": [\n          \"notes\"\n        ]\n      }\n    },\n    \"removePetname\": {\n      \"not\": {\n        \"required\": [\n          \"petname\"\n        ]\n      }\n    }\n  },\n  \"description\": \"File what a peer disclosed, or change the holder's own annotations on a contact, or both. Three forms. FILING (`subjectDid`, `knownByPersona`, `document`; no `contactId`) appends a revision, never overwrites, so a changed value is visible as a change rather than arriving silently — exactly as 1.0. ANNOTATING (`contactId`; no `subjectDid`, `knownByPersona`, `document` or `credentialRefs`) changes the holder's star, petname, lists, directory link or notes on an existing contact and appends no revision. LINKING (`directoryRef`, `knownByPersona`; no `contactId`, `subjectDid`, `document` or `credentialRefs`) keeps annotations on a member of a community's directory whose DID the holder has not been shown: it finds, or makes, the contact for that entry and persona, and appends no revision. In every form each annotation given replaces the stored one, each `removeX` removes one, and each annotation absent is unchanged. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"oneOf\": [\n    {\n      \"not\": {\n        \"required\": [\n          \"contactId\"\n        ]\n      },\n      \"required\": [\n        \"subjectDid\",\n        \"knownByPersona\",\n        \"document\"\n      ]\n    },\n    {\n      \"anyOf\": [\n        {\n          \"required\": [\n            \"starred\"\n          ]\n        },\n        {\n          \"required\": [\n            \"petname\"\n          ]\n        },\n        {\n          \"required\": [\n            \"removePetname\"\n          ]\n        },\n        {\n          \"required\": [\n            \"lists\"\n          ]\n        },\n        {\n          \"required\": [\n            \"removeLists\"\n          ]\n        },\n        {\n          \"required\": [\n            \"directoryRef\"\n          ]\n        },\n        {\n          \"required\": [\n            \"removeDirectoryRef\"\n          ]\n        },\n        {\n          \"required\": [\n            \"notes\"\n          ]\n        },\n        {\n          \"required\": [\n            \"removeNotes\"\n          ]\n        }\n      ],\n      \"not\": {\n        \"anyOf\": [\n          {\n            \"required\": [\n              \"subjectDid\"\n            ]\n          },\n          {\n            \"required\": [\n              \"knownByPersona\"\n            ]\n          },\n          {\n            \"required\": [\n              \"document\"\n            ]\n          },\n          {\n            \"required\": [\n              \"credentialRefs\"\n            ]\n          }\n        ]\n      },\n      \"required\": [\n        \"contactId\"\n      ]\n    },\n    {\n      \"not\": {\n        \"anyOf\": [\n          {\n            \"required\": [\n              \"contactId\"\n            ]\n          },\n          {\n            \"required\": [\n              \"subjectDid\"\n            ]\n          },\n          {\n            \"required\": [\n              \"document\"\n            ]\n          },\n          {\n            \"required\": [\n              \"credentialRefs\"\n            ]\n          }\n        ]\n      },\n      \"required\": [\n        \"directoryRef\",\n        \"knownByPersona\"\n      ]\n    }\n  ],\n  \"properties\": {\n    \"contactId\": {\n      \"$ref\": \"#/$defs/Ulid\",\n      \"description\": \"Annotating form only: the existing contact whose annotations change. A filing never names one — the agent keys a filing on (contextId, subjectDid, knownByPersona) as in 1.0.\"\n    },\n    \"contextId\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"credentialRefs\": {\n      \"description\": \"Filing form only. Vault identifiers of credentials the peer presented alongside the document. The credentials themselves belong in the credential vault and the contact holds references.\",\n      \"items\": {\n        \"minLength\": 1,\n        \"type\": \"string\"\n      },\n      \"maxItems\": 256,\n      \"type\": \"array\"\n    },\n    \"directoryRef\": {\n      \"$ref\": \"#/$defs/DirectoryRef\",\n      \"description\": \"Link the contact to a community directory entry, replacing any link it had. Absent: unchanged.\"\n    },\n    \"document\": {\n      \"$ref\": \"#/$defs/ContactDocument\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"knownByPersona\": {\n      \"description\": \"Filing and linking forms. Which of the holder's personas knows this contact. A contact belongs to the relationship, not to the holder at large — the same peer met through two personas is two contacts, and collapsing them would correlate the holder's own personas in their own address book.\",\n      \"maxLength\": 2048,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"lists\": {\n      \"$ref\": \"#/$defs/ListIds\",\n      \"description\": \"The lists the contact is on, replacing the whole set. Every identifier MUST name a list in this context. Absent: unchanged. Take the contact off every list with `removeLists`.\"\n    },\n    \"notes\": {\n      \"description\": \"The holder's private note about this contact, replacing any they had. Absent: unchanged. Never disclosed to anyone, including the contact.\",\n      \"maxLength\": 4096,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"petname\": {\n      \"$ref\": \"#/$defs/Petname\",\n      \"description\": \"The holder's private name for the contact, replacing any they had. Absent: unchanged.\"\n    },\n    \"removeDirectoryRef\": {\n      \"const\": true,\n      \"description\": \"Remove the contact's directory link. Only `true` is accepted.\",\n      \"type\": \"boolean\"\n    },\n    \"removeLists\": {\n      \"const\": true,\n      \"description\": \"Take the contact off every list. Only `true` is accepted.\",\n      \"type\": \"boolean\"\n    },\n    \"removeNotes\": {\n      \"const\": true,\n      \"description\": \"Remove the note. Only `true` is accepted.\",\n      \"type\": \"boolean\"\n    },\n    \"removePetname\": {\n      \"const\": true,\n      \"description\": \"Remove the petname. Only `true` is meaningful, so only `true` is accepted. A separate member rather than `petname: null`, because a nullable optional member makes \\\"unchanged\\\" and \\\"remove\\\" the same value in libraries that map both to one absent option.\",\n      \"type\": \"boolean\"\n    },\n    \"starred\": {\n      \"description\": \"Star or unstar the contact. Absent: unchanged. A boolean rather than a remove member because `false` is a value the holder chose, not an absence.\",\n      \"type\": \"boolean\"\n    },\n    \"subjectDid\": {\n      \"description\": \"Filing form only. The DID the document is about, as disclosed. Normally pairwise, so it names this relationship and not the person across all of theirs.\",\n      \"maxLength\": 2048,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"contextId\"\n  ],\n  \"title\": \"Persona Contact Put — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"ClaimType\":{\"description\":\"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\"title\":\"ClaimType\",\"type\":\"string\"},\"ContactDocument\":{\"additionalProperties\":false,\"description\":\"What a peer disclosed, as received. Structurally the same claim set a holder composes and presents — a profile and a contact card are one schema seen from two sides — which is why a maintainer validates both with the same code and a consumer renders both with the same view.\",\"properties\":{\"cardVersion\":{\"description\":\"The publisher's own monotonic counter, if they supplied one. Advisory: it orders the publisher's revisions relative to each other and MUST NOT be trusted to order them against anything else.\",\"minimum\":1,\"type\":\"integer\"},\"claims\":{\"items\":{\"additionalProperties\":false,\"properties\":{\"provenance\":{\"$ref\":\"#/$defs/Provenance\",\"description\":\"As asserted by the publisher. A recipient MUST NOT treat a claimed credentialBacked provenance as verified — it is a statement about what the publisher says backs the claim, and verification is a separate act against the credential itself.\"},\"type\":{\"$ref\":\"#/$defs/ClaimType\"},\"value\":{},\"valueType\":{\"$ref\":\"#/$defs/ValueType\"}},\"required\":[\"type\",\"valueType\",\"value\"],\"type\":\"object\"},\"maxItems\":256,\"type\":\"array\"},\"publisher\":{\"description\":\"The DID that published the document, as it appeared. Normally a pairwise identifier, so it names the relationship rather than the person.\",\"maxLength\":2048,\"type\":\"string\"}},\"required\":[\"claims\"],\"title\":\"ContactDocument\",\"type\":\"object\"},\"DirectoryEntryId\":{\"description\":\"A community directory entry's identifier, exactly as that community's directory returned it. Opaque and community-scoped: the agent stores and compares it as a string, never parses it, and never treats the same value under two communities as the same entry.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9_-]+$\",\"title\":\"DirectoryEntryId\",\"type\":\"string\"},\"DirectoryRef\":{\"additionalProperties\":false,\"description\":\"Links a contact to the entry in a community's member directory it corresponds to, so the holder's own client can join that community's directory with the holder's address book — showing a star or a petname beside an entry — without either side telling the other. The community never learns the link exists; the contact never learns it either. A contact has at most one.\",\"properties\":{\"entryId\":{\"$ref\":\"#/$defs/DirectoryEntryId\",\"description\":\"The entry, as that community's directory identifies it.\"},\"vtcDid\":{\"description\":\"The DID of the community whose directory holds the entry.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^did:[a-z0-9]+:\",\"type\":\"string\"}},\"required\":[\"vtcDid\",\"entryId\"],\"title\":\"DirectoryRef\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ListId\":{\"description\":\"Identifier of one of the holder's contact lists: a ULID in Crockford base32, uppercase, assigned by the agent when the list is created. Meaningful only inside the context that holds the list; it is never sent to anyone but the holder's own clients.\",\"pattern\":\"^[0-9A-HJKMNP-TV-Z]{26}$\",\"title\":\"ListId\",\"type\":\"string\"},\"ListIds\":{\"description\":\"The lists a contact is on, as a set: order carries no meaning. A contact on no list has no `lists` member, never an empty array, so there is one way to say \\\"none\\\".\",\"items\":{\"$ref\":\"#/$defs/ListId\"},\"maxItems\":64,\"minItems\":1,\"title\":\"ListIds\",\"type\":\"array\",\"uniqueItems\":true},\"Petname\":{\"description\":\"The holder's private name for a contact, on one line: no control characters, line breaks included. A petname in Zooko's sense — chosen by the holder, meaningful to the holder, and unforgeable by anyone else, because nobody else can write it. Distinct from the contact's own disclosed `nickname` or display name, which the contact chose and may change. Compared exactly, as a string: an agent does not case-fold or normalise it.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[^\\\\u0000-\\\\u001F\\\\u007F]+$\",\"title\":\"Petname\",\"type\":\"string\"},\"ProofRung\":{\"description\":\"How strongly a credential-backed claim is hidden when presented, ordered most private first. `predicate` proves a statement over a claim without disclosing the claim. `derived` discloses exactly the claims needed via an unlinkable derived proof, so two presentations cannot be joined. `selectiveDisclosure` discloses exactly the claims needed but carries the issuer's signature unchanged, so two presentations ARE linkable. `whole` discloses the entire credential.\\n\\nThe distinction between the first two and the last two is of kind, not degree: only `predicate` and `derived` avoid handing two verifiers a join key. A maintainer MUST default to the highest rung the credential's format supports, and MUST NOT silently fall to a lower one — a request that cannot be satisfied at the rung a producer asked for is refused, because a silent privacy downgrade discloses material the holder believed was hidden.\",\"enum\":[\"predicate\",\"derived\",\"selectiveDisclosure\",\"whole\"],\"title\":\"ProofRung\",\"type\":\"string\"},\"Provenance\":{\"description\":\"Where a value comes from, and the member that makes this family worth building on a trust stack rather than in an address book. It survives to the verifier, so a recipient can tell — per field — what the holder typed from what an issuer attested.\\n\\n`selfAsserted` — the holder supplied it.\\n\\n`credentialBacked` — the value is derived from a credential in the vault at `claimPath`. The stored value is a CACHE FOR DISPLAY; the credential is the truth. A maintainer MUST re-derive it on read and MUST fail closed (never presenting a stale value) when the credential has been revoked, has expired, or has been archived or deleted.\\n\\n`generated` — the value is minted per verifier at disclosure time and recorded against that verifier, so every relying party receives a different one that routes back to the holder. This is the shape of the most widely adopted consumer privacy feature in this space; a maintainer need not operate a relay to conform, but the shape must exist, because retrofitting per-verifier values into a pool-of-values model is a migration rather than an addition.\\n\\n`derived` — the value was taken from a source the holder connected or supplied — a code-hosting profile, an uploaded CV — rather than typed by them or attested by an issuer. Nobody signed it: it is the holder's claim that the source said so, and a consumer MUST NOT present it as attested. It exists as its own kind because a derived value is neither of the others — the holder did not author it, and no one vouches for it — and a holder deciding whether to disclose deserves to know which of their values they typed.\\n\\nFor how strongly a disclosed value identifies the holder, the kinds rank `credentialBacked` above `derived` above `selfAsserted`; `generated` values are per-verifier and do not correlate.\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"kind\":{\"const\":\"selfAsserted\"}},\"required\":[\"kind\"]},{\"additionalProperties\":false,\"properties\":{\"claimPath\":{\"description\":\"RFC 6901 JSON Pointer to the claim within the credential, e.g. `/credentialSubject/familyName`.\",\"pattern\":\"^(/[^/~]*(~[01][^/~]*)*)*$\",\"type\":\"string\"},\"credentialId\":{\"description\":\"Vault identifier of the backing credential.\",\"minLength\":1,\"type\":\"string\"},\"issuerDid\":{\"description\":\"Issuer of the backing credential. Advisory: a consumer MUST verify the credential rather than trusting this member.\",\"minLength\":1,\"type\":\"string\"},\"kind\":{\"const\":\"credentialBacked\"},\"proof\":{\"$ref\":\"#/$defs/ProofRung\",\"description\":\"The disclosure rung this claim was, or will be, presented at.\"}},\"required\":[\"kind\",\"credentialId\",\"claimPath\"]},{\"additionalProperties\":false,\"properties\":{\"generator\":{\"description\":\"Names the minting scheme, e.g. `relayEmail`. Maintainer-defined.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"kind\":{\"const\":\"generated\"},\"perVerifier\":{\"default\":true,\"description\":\"When true (the default and the only useful setting), a distinct value is minted for each verifier.\",\"type\":\"boolean\"}},\"required\":[\"kind\",\"generator\"]},{\"additionalProperties\":false,\"properties\":{\"derivedAt\":{\"description\":\"When the value was taken from the source. A derived value is a snapshot: the source may have changed since, and nothing re-derives it.\",\"format\":\"date-time\",\"type\":\"string\"},\"kind\":{\"const\":\"derived\"},\"source\":{\"description\":\"The KIND of source the value was taken from — `github`, `cvUpload`, `linkedIn` — never an account, handle or URL. Provenance survives to the verifier, so this member is disclosed with the claim; a handle here would disclose an identifier the holder never chose to share.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z][A-Za-z0-9.-]*$\",\"type\":\"string\"}},\"required\":[\"kind\",\"source\",\"derivedAt\"]}],\"required\":[\"kind\"],\"title\":\"Provenance\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to persona/contact/put. Type https://trusttasks.org/spec/persona/contact/put/1.2#response. Identifiers, the current revision and what changed; no claim value and no annotation text is echoed.\",\"properties\":{\"annotationsChanged\":{\"description\":\"True when any annotation now differs from what was stored. False when every annotation given already matched and every one named for removal was already absent — including a filing that named none.\",\"type\":\"boolean\"},\"changedClaims\":{\"description\":\"Claim types whose value differs from the previous revision. Present only on a filing that updated an existing contact.\",\"items\":{\"$ref\":\"#/$defs/ClaimType\"},\"maxItems\":256,\"type\":\"array\"},\"contactId\":{\"$ref\":\"#/$defs/Ulid\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"rev\":{\"description\":\"The contact's current revision: the one a filing just appended, or, for an annotating request, the revision that was already current. Annotations never move it.\",\"minimum\":1,\"type\":\"integer\"},\"wasCreated\":{\"description\":\"True when this is the first revision for the subject. Always false for an annotating request.\",\"type\":\"boolean\"}},\"required\":[\"contactId\",\"rev\",\"wasCreated\",\"annotationsChanged\"],\"title\":\"Persona Contact Put — response payload\",\"type\":\"object\"},\"Ulid\":{\"description\":\"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\"pattern\":\"^[0-9A-HJKMNP-TV-Z]{26}$\",\"title\":\"Ulid\",\"type\":\"string\"},\"ValueType\":{\"description\":\"The JSON shape of `value`, declared so that a consumer can render and compare without guessing. The maintainer validates that `value` agrees with this member and does nothing further: it does NOT validate a phone number against a phone-number grammar. That is a producer's affordance, and a store that grows opinions about the contents of its records eventually blocks its consumer's release.\",\"enum\":[\"string\",\"number\",\"boolean\",\"date\",\"object\"],\"title\":\"ValueType\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/persona/contact/put/1.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"dependentSchemas\":{\"removeDirectoryRef\":{\"not\":{\"required\":[\"directoryRef\"]}},\"removeLists\":{\"not\":{\"required\":[\"lists\"]}},\"removeNotes\":{\"not\":{\"required\":[\"notes\"]}},\"removePetname\":{\"not\":{\"required\":[\"petname\"]}}},\"description\":\"File what a peer disclosed, or change the holder's own annotations on a contact, or both. Three forms. FILING (`subjectDid`, `knownByPersona`, `document`; no `contactId`) appends a revision, never overwrites, so a changed value is visible as a change rather than arriving silently — exactly as 1.0. ANNOTATING (`contactId`; no `subjectDid`, `knownByPersona`, `document` or `credentialRefs`) changes the holder's star, petname, lists, directory link or notes on an existing contact and appends no revision. LINKING (`directoryRef`, `knownByPersona`; no `contactId`, `subjectDid`, `document` or `credentialRefs`) keeps annotations on a member of a community's directory whose DID the holder has not been shown: it finds, or makes, the contact for that entry and persona, and appends no revision. In every form each annotation given replaces the stored one, each `removeX` removes one, and each annotation absent is unchanged. The outer document members are owned by the framework — SPEC §6.3.\",\"oneOf\":[{\"not\":{\"required\":[\"contactId\"]},\"required\":[\"subjectDid\",\"knownByPersona\",\"document\"]},{\"anyOf\":[{\"required\":[\"starred\"]},{\"required\":[\"petname\"]},{\"required\":[\"removePetname\"]},{\"required\":[\"lists\"]},{\"required\":[\"removeLists\"]},{\"required\":[\"directoryRef\"]},{\"required\":[\"removeDirectoryRef\"]},{\"required\":[\"notes\"]},{\"required\":[\"removeNotes\"]}],\"not\":{\"anyOf\":[{\"required\":[\"subjectDid\"]},{\"required\":[\"knownByPersona\"]},{\"required\":[\"document\"]},{\"required\":[\"credentialRefs\"]}]},\"required\":[\"contactId\"]},{\"not\":{\"anyOf\":[{\"required\":[\"contactId\"]},{\"required\":[\"subjectDid\"]},{\"required\":[\"document\"]},{\"required\":[\"credentialRefs\"]}]},\"required\":[\"directoryRef\",\"knownByPersona\"]}],\"properties\":{\"contactId\":{\"$ref\":\"#/$defs/Ulid\",\"description\":\"Annotating form only: the existing contact whose annotations change. A filing never names one — the agent keys a filing on (contextId, subjectDid, knownByPersona) as in 1.0.\"},\"contextId\":{\"minLength\":1,\"type\":\"string\"},\"credentialRefs\":{\"description\":\"Filing form only. Vault identifiers of credentials the peer presented alongside the document. The credentials themselves belong in the credential vault and the contact holds references.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"maxItems\":256,\"type\":\"array\"},\"directoryRef\":{\"$ref\":\"#/$defs/DirectoryRef\",\"description\":\"Link the contact to a community directory entry, replacing any link it had. Absent: unchanged.\"},\"document\":{\"$ref\":\"#/$defs/ContactDocument\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"knownByPersona\":{\"description\":\"Filing and linking forms. Which of the holder's personas knows this contact. A contact belongs to the relationship, not to the holder at large — the same peer met through two personas is two contacts, and collapsing them would correlate the holder's own personas in their own address book.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"lists\":{\"$ref\":\"#/$defs/ListIds\",\"description\":\"The lists the contact is on, replacing the whole set. Every identifier MUST name a list in this context. Absent: unchanged. Take the contact off every list with `removeLists`.\"},\"notes\":{\"description\":\"The holder's private note about this contact, replacing any they had. Absent: unchanged. Never disclosed to anyone, including the contact.\",\"maxLength\":4096,\"minLength\":1,\"type\":\"string\"},\"petname\":{\"$ref\":\"#/$defs/Petname\",\"description\":\"The holder's private name for the contact, replacing any they had. Absent: unchanged.\"},\"removeDirectoryRef\":{\"const\":true,\"description\":\"Remove the contact's directory link. Only `true` is accepted.\",\"type\":\"boolean\"},\"removeLists\":{\"const\":true,\"description\":\"Take the contact off every list. Only `true` is accepted.\",\"type\":\"boolean\"},\"removeNotes\":{\"const\":true,\"description\":\"Remove the note. Only `true` is accepted.\",\"type\":\"boolean\"},\"removePetname\":{\"const\":true,\"description\":\"Remove the petname. Only `true` is meaningful, so only `true` is accepted. A separate member rather than `petname: null`, because a nullable optional member makes \\\"unchanged\\\" and \\\"remove\\\" the same value in libraries that map both to one absent option.\",\"type\":\"boolean\"},\"starred\":{\"description\":\"Star or unstar the contact. Absent: unchanged. A boolean rather than a remove member because `false` is a value the holder chose, not an absence.\",\"type\":\"boolean\"},\"subjectDid\":{\"description\":\"Filing form only. The DID the document is about, as disclosed. Normally pairwise, so it names this relationship and not the person across all of theirs.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"contextId\"],\"title\":\"Persona Contact Put — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -2861,7 +2217,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ClaimType\": {\n      \"description\": \"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\n      \"title\": \"ClaimType\",\n      \"type\": \"string\"\n    },\n    \"ContactDocument\": {\n      \"additionalProperties\": false,\n      \"description\": \"What a peer disclosed, as received. Structurally the same claim set a holder composes and presents — a profile and a contact card are one schema seen from two sides — which is why a maintainer validates both with the same code and a consumer renders both with the same view.\",\n      \"properties\": {\n        \"cardVersion\": {\n          \"description\": \"The publisher's own monotonic counter, if they supplied one. Advisory: it orders the publisher's revisions relative to each other and MUST NOT be trusted to order them against anything else.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"claims\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"provenance\": {\n                \"$ref\": \"#/$defs/Provenance\",\n                \"description\": \"As asserted by the publisher. A recipient MUST NOT treat a claimed credentialBacked provenance as verified — it is a statement about what the publisher says backs the claim, and verification is a separate act against the credential itself.\"\n              },\n              \"type\": {\n                \"$ref\": \"#/$defs/ClaimType\"\n              },\n              \"value\": {},\n              \"valueType\": {\n                \"$ref\": \"#/$defs/ValueType\"\n              }\n            },\n            \"required\": [\n              \"type\",\n              \"valueType\",\n              \"value\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        },\n        \"publisher\": {\n          \"description\": \"The DID that published the document, as it appeared. Normally a pairwise identifier, so it names the relationship rather than the person.\",\n          \"maxLength\": 2048,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"claims\"\n      ],\n      \"title\": \"ContactDocument\",\n      \"type\": \"object\"\n    },\n    \"DirectoryEntryId\": {\n      \"description\": \"A community directory entry's identifier, exactly as that community's directory returned it. Opaque and community-scoped: the agent stores and compares it as a string, never parses it, and never treats the same value under two communities as the same entry.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^[A-Za-z0-9_-]+$\",\n      \"title\": \"DirectoryEntryId\",\n      \"type\": \"string\"\n    },\n    \"DirectoryRef\": {\n      \"additionalProperties\": false,\n      \"description\": \"Links a contact to the entry in a community's member directory it corresponds to, so the holder's own client can join that community's directory with the holder's address book — showing a star or a petname beside an entry — without either side telling the other. The community never learns the link exists; the contact never learns it either. A contact has at most one.\",\n      \"properties\": {\n        \"entryId\": {\n          \"$ref\": \"#/$defs/DirectoryEntryId\",\n          \"description\": \"The entry, as that community's directory identifies it.\"\n        },\n        \"vtcDid\": {\n          \"description\": \"The DID of the community whose directory holds the entry.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"pattern\": \"^did:[a-z0-9]+:\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"vtcDid\",\n        \"entryId\"\n      ],\n      \"title\": \"DirectoryRef\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ListId\": {\n      \"description\": \"Identifier of one of the holder's contact lists: a ULID in Crockford base32, uppercase, assigned by the agent when the list is created. Meaningful only inside the context that holds the list; it is never sent to anyone but the holder's own clients.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"ListId\",\n      \"type\": \"string\"\n    },\n    \"ListIds\": {\n      \"description\": \"The lists a contact is on, as a set: order carries no meaning. A contact on no list has no `lists` member, never an empty array, so there is one way to say \\\"none\\\".\",\n      \"items\": {\n        \"$ref\": \"#/$defs/ListId\"\n      },\n      \"maxItems\": 64,\n      \"minItems\": 1,\n      \"title\": \"ListIds\",\n      \"type\": \"array\",\n      \"uniqueItems\": true\n    },\n    \"Petname\": {\n      \"description\": \"The holder's private name for a contact, on one line: no control characters, line breaks included. A petname in Zooko's sense — chosen by the holder, meaningful to the holder, and unforgeable by anyone else, because nobody else can write it. Distinct from the contact's own disclosed `nickname` or display name, which the contact chose and may change. Compared exactly, as a string: an agent does not case-fold or normalise it.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[^\\\\u0000-\\\\u001F\\\\u007F]+$\",\n      \"title\": \"Petname\",\n      \"type\": \"string\"\n    },\n    \"ProofRung\": {\n      \"description\": \"How strongly a credential-backed claim is hidden when presented, ordered most private first. `predicate` proves a statement over a claim without disclosing the claim. `derived` discloses exactly the claims needed via an unlinkable derived proof, so two presentations cannot be joined. `selectiveDisclosure` discloses exactly the claims needed but carries the issuer's signature unchanged, so two presentations ARE linkable. `whole` discloses the entire credential.\\n\\nThe distinction between the first two and the last two is of kind, not degree: only `predicate` and `derived` avoid handing two verifiers a join key. A maintainer MUST default to the highest rung the credential's format supports, and MUST NOT silently fall to a lower one — a request that cannot be satisfied at the rung a producer asked for is refused, because a silent privacy downgrade discloses material the holder believed was hidden.\",\n      \"enum\": [\n        \"predicate\",\n        \"derived\",\n        \"selectiveDisclosure\",\n        \"whole\"\n      ],\n      \"title\": \"ProofRung\",\n      \"type\": \"string\"\n    },\n    \"Provenance\": {\n      \"description\": \"Where a value comes from, and the member that makes this family worth building on a trust stack rather than in an address book. It survives to the verifier, so a recipient can tell — per field — what the holder typed from what an issuer attested.\\n\\n`selfAsserted` — the holder supplied it.\\n\\n`credentialBacked` — the value is derived from a credential in the vault at `claimPath`. The stored value is a CACHE FOR DISPLAY; the credential is the truth. A maintainer MUST re-derive it on read and MUST fail closed (never presenting a stale value) when the credential has been revoked, has expired, or has been archived or deleted.\\n\\n`generated` — the value is minted per verifier at disclosure time and recorded against that verifier, so every relying party receives a different one that routes back to the holder. This is the shape of the most widely adopted consumer privacy feature in this space; a maintainer need not operate a relay to conform, but the shape must exist, because retrofitting per-verifier values into a pool-of-values model is a migration rather than an addition.\\n\\n`derived` — the value was taken from a source the holder connected or supplied — a code-hosting profile, an uploaded CV — rather than typed by them or attested by an issuer. Nobody signed it: it is the holder's claim that the source said so, and a consumer MUST NOT present it as attested. It exists as its own kind because a derived value is neither of the others — the holder did not author it, and no one vouches for it — and a holder deciding whether to disclose deserves to know which of their values they typed.\\n\\nFor how strongly a disclosed value identifies the holder, the kinds rank `credentialBacked` above `derived` above `selfAsserted`; `generated` values are per-verifier and do not correlate.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"selfAsserted\"\n            }\n          },\n          \"required\": [\n            \"kind\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"claimPath\": {\n              \"description\": \"RFC 6901 JSON Pointer to the claim within the credential, e.g. `/credentialSubject/familyName`.\",\n              \"pattern\": \"^(/[^/~]*(~[01][^/~]*)*)*$\",\n              \"type\": \"string\"\n            },\n            \"credentialId\": {\n              \"description\": \"Vault identifier of the backing credential.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"issuerDid\": {\n              \"description\": \"Issuer of the backing credential. Advisory: a consumer MUST verify the credential rather than trusting this member.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"credentialBacked\"\n            },\n            \"proof\": {\n              \"$ref\": \"#/$defs/ProofRung\",\n              \"description\": \"The disclosure rung this claim was, or will be, presented at.\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"credentialId\",\n            \"claimPath\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"generator\": {\n              \"description\": \"Names the minting scheme, e.g. `relayEmail`. Maintainer-defined.\",\n              \"maxLength\": 64,\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"generated\"\n            },\n            \"perVerifier\": {\n              \"default\": true,\n              \"description\": \"When true (the default and the only useful setting), a distinct value is minted for each verifier.\",\n              \"type\": \"boolean\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"generator\"\n          ]\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"derivedAt\": {\n              \"description\": \"When the value was taken from the source. A derived value is a snapshot: the source may have changed since, and nothing re-derives it.\",\n              \"format\": \"date-time\",\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"derived\"\n            },\n            \"source\": {\n              \"description\": \"The KIND of source the value was taken from — `github`, `cvUpload`, `linkedIn` — never an account, handle or URL. Provenance survives to the verifier, so this member is disclosed with the claim; a handle here would disclose an identifier the holder never chose to share.\",\n              \"maxLength\": 64,\n              \"minLength\": 1,\n              \"pattern\": \"^[a-z][A-Za-z0-9.-]*$\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"source\",\n            \"derivedAt\"\n          ]\n        }\n      ],\n      \"required\": [\n        \"kind\"\n      ],\n      \"title\": \"Provenance\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/contact/put. Type https://trusttasks.org/spec/persona/contact/put/1.2#response. Identifiers, the current revision and what changed; no claim value and no annotation text is echoed.\",\n      \"properties\": {\n        \"annotationsChanged\": {\n          \"description\": \"True when any annotation now differs from what was stored. False when every annotation given already matched and every one named for removal was already absent — including a filing that named none.\",\n          \"type\": \"boolean\"\n        },\n        \"changedClaims\": {\n          \"description\": \"Claim types whose value differs from the previous revision. Present only on a filing that updated an existing contact.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/ClaimType\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        },\n        \"contactId\": {\n          \"$ref\": \"#/$defs/Ulid\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"rev\": {\n          \"description\": \"The contact's current revision: the one a filing just appended, or, for an annotating request, the revision that was already current. Annotations never move it.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"wasCreated\": {\n          \"description\": \"True when this is the first revision for the subject. Always false for an annotating request.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"contactId\",\n        \"rev\",\n        \"wasCreated\",\n        \"annotationsChanged\"\n      ],\n      \"title\": \"Persona Contact Put — response payload\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    },\n    \"ValueType\": {\n      \"description\": \"The JSON shape of `value`, declared so that a consumer can render and compare without guessing. The maintainer validates that `value` agrees with this member and does nothing further: it does NOT validate a phone number against a phone-number grammar. That is a producer's affordance, and a store that grows opinions about the contents of its records eventually blocks its consumer's release.\",\n      \"enum\": [\n        \"string\",\n        \"number\",\n        \"boolean\",\n        \"date\",\n        \"object\"\n      ],\n      \"title\": \"ValueType\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"ClaimType\":{\"description\":\"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\"title\":\"ClaimType\",\"type\":\"string\"},\"ContactDocument\":{\"additionalProperties\":false,\"description\":\"What a peer disclosed, as received. Structurally the same claim set a holder composes and presents — a profile and a contact card are one schema seen from two sides — which is why a maintainer validates both with the same code and a consumer renders both with the same view.\",\"properties\":{\"cardVersion\":{\"description\":\"The publisher's own monotonic counter, if they supplied one. Advisory: it orders the publisher's revisions relative to each other and MUST NOT be trusted to order them against anything else.\",\"minimum\":1,\"type\":\"integer\"},\"claims\":{\"items\":{\"additionalProperties\":false,\"properties\":{\"provenance\":{\"$ref\":\"#/$defs/Provenance\",\"description\":\"As asserted by the publisher. A recipient MUST NOT treat a claimed credentialBacked provenance as verified — it is a statement about what the publisher says backs the claim, and verification is a separate act against the credential itself.\"},\"type\":{\"$ref\":\"#/$defs/ClaimType\"},\"value\":{},\"valueType\":{\"$ref\":\"#/$defs/ValueType\"}},\"required\":[\"type\",\"valueType\",\"value\"],\"type\":\"object\"},\"maxItems\":256,\"type\":\"array\"},\"publisher\":{\"description\":\"The DID that published the document, as it appeared. Normally a pairwise identifier, so it names the relationship rather than the person.\",\"maxLength\":2048,\"type\":\"string\"}},\"required\":[\"claims\"],\"title\":\"ContactDocument\",\"type\":\"object\"},\"DirectoryEntryId\":{\"description\":\"A community directory entry's identifier, exactly as that community's directory returned it. Opaque and community-scoped: the agent stores and compares it as a string, never parses it, and never treats the same value under two communities as the same entry.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9_-]+$\",\"title\":\"DirectoryEntryId\",\"type\":\"string\"},\"DirectoryRef\":{\"additionalProperties\":false,\"description\":\"Links a contact to the entry in a community's member directory it corresponds to, so the holder's own client can join that community's directory with the holder's address book — showing a star or a petname beside an entry — without either side telling the other. The community never learns the link exists; the contact never learns it either. A contact has at most one.\",\"properties\":{\"entryId\":{\"$ref\":\"#/$defs/DirectoryEntryId\",\"description\":\"The entry, as that community's directory identifies it.\"},\"vtcDid\":{\"description\":\"The DID of the community whose directory holds the entry.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^did:[a-z0-9]+:\",\"type\":\"string\"}},\"required\":[\"vtcDid\",\"entryId\"],\"title\":\"DirectoryRef\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ListId\":{\"description\":\"Identifier of one of the holder's contact lists: a ULID in Crockford base32, uppercase, assigned by the agent when the list is created. Meaningful only inside the context that holds the list; it is never sent to anyone but the holder's own clients.\",\"pattern\":\"^[0-9A-HJKMNP-TV-Z]{26}$\",\"title\":\"ListId\",\"type\":\"string\"},\"ListIds\":{\"description\":\"The lists a contact is on, as a set: order carries no meaning. A contact on no list has no `lists` member, never an empty array, so there is one way to say \\\"none\\\".\",\"items\":{\"$ref\":\"#/$defs/ListId\"},\"maxItems\":64,\"minItems\":1,\"title\":\"ListIds\",\"type\":\"array\",\"uniqueItems\":true},\"Petname\":{\"description\":\"The holder's private name for a contact, on one line: no control characters, line breaks included. A petname in Zooko's sense — chosen by the holder, meaningful to the holder, and unforgeable by anyone else, because nobody else can write it. Distinct from the contact's own disclosed `nickname` or display name, which the contact chose and may change. Compared exactly, as a string: an agent does not case-fold or normalise it.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[^\\\\u0000-\\\\u001F\\\\u007F]+$\",\"title\":\"Petname\",\"type\":\"string\"},\"ProofRung\":{\"description\":\"How strongly a credential-backed claim is hidden when presented, ordered most private first. `predicate` proves a statement over a claim without disclosing the claim. `derived` discloses exactly the claims needed via an unlinkable derived proof, so two presentations cannot be joined. `selectiveDisclosure` discloses exactly the claims needed but carries the issuer's signature unchanged, so two presentations ARE linkable. `whole` discloses the entire credential.\\n\\nThe distinction between the first two and the last two is of kind, not degree: only `predicate` and `derived` avoid handing two verifiers a join key. A maintainer MUST default to the highest rung the credential's format supports, and MUST NOT silently fall to a lower one — a request that cannot be satisfied at the rung a producer asked for is refused, because a silent privacy downgrade discloses material the holder believed was hidden.\",\"enum\":[\"predicate\",\"derived\",\"selectiveDisclosure\",\"whole\"],\"title\":\"ProofRung\",\"type\":\"string\"},\"Provenance\":{\"description\":\"Where a value comes from, and the member that makes this family worth building on a trust stack rather than in an address book. It survives to the verifier, so a recipient can tell — per field — what the holder typed from what an issuer attested.\\n\\n`selfAsserted` — the holder supplied it.\\n\\n`credentialBacked` — the value is derived from a credential in the vault at `claimPath`. The stored value is a CACHE FOR DISPLAY; the credential is the truth. A maintainer MUST re-derive it on read and MUST fail closed (never presenting a stale value) when the credential has been revoked, has expired, or has been archived or deleted.\\n\\n`generated` — the value is minted per verifier at disclosure time and recorded against that verifier, so every relying party receives a different one that routes back to the holder. This is the shape of the most widely adopted consumer privacy feature in this space; a maintainer need not operate a relay to conform, but the shape must exist, because retrofitting per-verifier values into a pool-of-values model is a migration rather than an addition.\\n\\n`derived` — the value was taken from a source the holder connected or supplied — a code-hosting profile, an uploaded CV — rather than typed by them or attested by an issuer. Nobody signed it: it is the holder's claim that the source said so, and a consumer MUST NOT present it as attested. It exists as its own kind because a derived value is neither of the others — the holder did not author it, and no one vouches for it — and a holder deciding whether to disclose deserves to know which of their values they typed.\\n\\nFor how strongly a disclosed value identifies the holder, the kinds rank `credentialBacked` above `derived` above `selfAsserted`; `generated` values are per-verifier and do not correlate.\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"kind\":{\"const\":\"selfAsserted\"}},\"required\":[\"kind\"]},{\"additionalProperties\":false,\"properties\":{\"claimPath\":{\"description\":\"RFC 6901 JSON Pointer to the claim within the credential, e.g. `/credentialSubject/familyName`.\",\"pattern\":\"^(/[^/~]*(~[01][^/~]*)*)*$\",\"type\":\"string\"},\"credentialId\":{\"description\":\"Vault identifier of the backing credential.\",\"minLength\":1,\"type\":\"string\"},\"issuerDid\":{\"description\":\"Issuer of the backing credential. Advisory: a consumer MUST verify the credential rather than trusting this member.\",\"minLength\":1,\"type\":\"string\"},\"kind\":{\"const\":\"credentialBacked\"},\"proof\":{\"$ref\":\"#/$defs/ProofRung\",\"description\":\"The disclosure rung this claim was, or will be, presented at.\"}},\"required\":[\"kind\",\"credentialId\",\"claimPath\"]},{\"additionalProperties\":false,\"properties\":{\"generator\":{\"description\":\"Names the minting scheme, e.g. `relayEmail`. Maintainer-defined.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"kind\":{\"const\":\"generated\"},\"perVerifier\":{\"default\":true,\"description\":\"When true (the default and the only useful setting), a distinct value is minted for each verifier.\",\"type\":\"boolean\"}},\"required\":[\"kind\",\"generator\"]},{\"additionalProperties\":false,\"properties\":{\"derivedAt\":{\"description\":\"When the value was taken from the source. A derived value is a snapshot: the source may have changed since, and nothing re-derives it.\",\"format\":\"date-time\",\"type\":\"string\"},\"kind\":{\"const\":\"derived\"},\"source\":{\"description\":\"The KIND of source the value was taken from — `github`, `cvUpload`, `linkedIn` — never an account, handle or URL. Provenance survives to the verifier, so this member is disclosed with the claim; a handle here would disclose an identifier the holder never chose to share.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z][A-Za-z0-9.-]*$\",\"type\":\"string\"}},\"required\":[\"kind\",\"source\",\"derivedAt\"]}],\"required\":[\"kind\"],\"title\":\"Provenance\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to persona/contact/put. Type https://trusttasks.org/spec/persona/contact/put/1.2#response. Identifiers, the current revision and what changed; no claim value and no annotation text is echoed.\",\"properties\":{\"annotationsChanged\":{\"description\":\"True when any annotation now differs from what was stored. False when every annotation given already matched and every one named for removal was already absent — including a filing that named none.\",\"type\":\"boolean\"},\"changedClaims\":{\"description\":\"Claim types whose value differs from the previous revision. Present only on a filing that updated an existing contact.\",\"items\":{\"$ref\":\"#/$defs/ClaimType\"},\"maxItems\":256,\"type\":\"array\"},\"contactId\":{\"$ref\":\"#/$defs/Ulid\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"rev\":{\"description\":\"The contact's current revision: the one a filing just appended, or, for an annotating request, the revision that was already current. Annotations never move it.\",\"minimum\":1,\"type\":\"integer\"},\"wasCreated\":{\"description\":\"True when this is the first revision for the subject. Always false for an annotating request.\",\"type\":\"boolean\"}},\"required\":[\"contactId\",\"rev\",\"wasCreated\",\"annotationsChanged\"],\"title\":\"Persona Contact Put — response payload\",\"type\":\"object\"},\"Ulid\":{\"description\":\"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\"pattern\":\"^[0-9A-HJKMNP-TV-Z]{26}$\",\"title\":\"Ulid\",\"type\":\"string\"},\"ValueType\":{\"description\":\"The JSON shape of `value`, declared so that a consumer can render and compare without guessing. The maintainer validates that `value` agrees with this member and does nothing further: it does NOT validate a phone number against a phone-number grammar. That is a producer's affordance, and a store that grows opinions about the contents of its records eventually blocks its consumer's release.\",\"enum\":[\"string\",\"number\",\"boolean\",\"date\",\"object\"],\"title\":\"ValueType\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

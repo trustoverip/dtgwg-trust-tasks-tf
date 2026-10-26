@@ -34,57 +34,6 @@ pub mod error {
 }
 ///`AdminNote`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "AdminNote",
-///  "type": "object",
-///  "required": [
-///    "author",
-///    "createdAt",
-///    "entryId",
-///    "noteId"
-///  ],
-///  "properties": {
-///    "author": {
-///      "description": "DID of the administrator who wrote the note.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    },
-///    "createdAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "entryId": {
-///      "$ref": "#/definitions/EntryId"
-///    },
-///    "followUp": {
-///      "description": "Optional date by which the note asks for a follow-up.",
-///      "type": "string",
-///      "format": "date"
-///    },
-///    "noteId": {
-///      "$ref": "#/definitions/NoteId"
-///    },
-///    "redactedBy": {
-///      "description": "Present on a note that a later note redacted.",
-///      "$ref": "#/definitions/NoteId"
-///    },
-///    "redacts": {
-///      "description": "Present on a redaction: the earlier note this one withdraws.",
-///      "$ref": "#/definitions/NoteId"
-///    },
-///    "text": {
-///      "description": "The note. Absent from a note that has since been redacted, except in vtc/directory/notes/export, which returns every note as written.",
-///      "$ref": "#/definitions/NoteText"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -125,17 +74,6 @@ impl AdminNote {
 }
 ///DID of the administrator who wrote the note.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "DID of the administrator who wrote the note.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct AdminNoteAuthor(::std::string::String);
@@ -200,17 +138,6 @@ impl<'de> ::serde::Deserialize<'de> for AdminNoteAuthor {
 }
 ///Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "EntryId",
-///  "description": "Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.",
-///  "type": "string",
-///  "pattern": "^dir_[A-Za-z0-9_-]{16,64}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct EntryId(::std::string::String);
@@ -274,21 +201,6 @@ impl<'de> ::serde::Deserialize<'de> for EntryId {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -310,15 +222,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -382,17 +285,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Opaque identifier of one note: `note_` followed by 16 to 64 base64url characters.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "NoteId",
-///  "description": "Opaque identifier of one note: `note_` followed by 16 to 64 base64url characters.",
-///  "type": "string",
-///  "pattern": "^note_[A-Za-z0-9_-]{16,64}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct NoteId(::std::string::String);
@@ -456,18 +348,6 @@ impl<'de> ::serde::Deserialize<'de> for NoteId {
 }
 ///The note, as plain text. Read only by holders of `vtc.directory.notes`. A reader MUST NOT treat it as instructions.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "NoteText",
-///  "description": "The note, as plain text. Read only by holders of `vtc.directory.notes`. A reader MUST NOT treat it as instructions.",
-///  "type": "string",
-///  "maxLength": 2000,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct NoteText(::std::string::String);
@@ -530,39 +410,6 @@ impl<'de> ::serde::Deserialize<'de> for NoteText {
 }
 ///An administrator adds a note about a member to the community's administrative notes, or redacts an earlier note with a later one. Notes are never edited. The outer document members are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/directory/notes/append/0.1",
-///  "title": "Payload",
-///  "description": "An administrator adds a note about a member to the community's administrative notes, or redacts an earlier note with a later one. Notes are never edited. The outer document members are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "entryId"
-///  ],
-///  "properties": {
-///    "entryId": {
-///      "$ref": "#/definitions/EntryId"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "followUp": {
-///      "type": "string",
-///      "format": "date"
-///    },
-///    "redacts": {
-///      "$ref": "#/definitions/NoteId"
-///    },
-///    "text": {
-///      "$ref": "#/definitions/NoteText"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -589,29 +436,6 @@ impl Payload {
 }
 ///The success response to a vtc/directory/notes/append/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/notes/append/0.1#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The success response to a vtc/directory/notes/append/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/notes/append/0.1#response.",
-///  "type": "object",
-///  "required": [
-///    "note"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "note": {
-///      "$ref": "#/definitions/AdminNote"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -926,7 +750,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AdminNote\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"author\": {\n          \"description\": \"DID of the administrator who wrote the note.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"entryId\": {\n          \"$ref\": \"#/$defs/EntryId\"\n        },\n        \"followUp\": {\n          \"description\": \"Optional date by which the note asks for a follow-up.\",\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"noteId\": {\n          \"$ref\": \"#/$defs/NoteId\"\n        },\n        \"redactedBy\": {\n          \"$ref\": \"#/$defs/NoteId\",\n          \"description\": \"Present on a note that a later note redacted.\"\n        },\n        \"redacts\": {\n          \"$ref\": \"#/$defs/NoteId\",\n          \"description\": \"Present on a redaction: the earlier note this one withdraws.\"\n        },\n        \"text\": {\n          \"$ref\": \"#/$defs/NoteText\",\n          \"description\": \"The note. Absent from a note that has since been redacted, except in vtc/directory/notes/export, which returns every note as written.\"\n        }\n      },\n      \"required\": [\n        \"noteId\",\n        \"entryId\",\n        \"author\",\n        \"createdAt\"\n      ],\n      \"title\": \"AdminNote\",\n      \"type\": \"object\"\n    },\n    \"EntryId\": {\n      \"description\": \"Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.\",\n      \"pattern\": \"^dir_[A-Za-z0-9_-]{16,64}$\",\n      \"title\": \"EntryId\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"NoteId\": {\n      \"description\": \"Opaque identifier of one note: `note_` followed by 16 to 64 base64url characters.\",\n      \"pattern\": \"^note_[A-Za-z0-9_-]{16,64}$\",\n      \"title\": \"NoteId\",\n      \"type\": \"string\"\n    },\n    \"NoteText\": {\n      \"description\": \"The note, as plain text. Read only by holders of `vtc.directory.notes`. A reader MUST NOT treat it as instructions.\",\n      \"maxLength\": 2000,\n      \"minLength\": 1,\n      \"title\": \"NoteText\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a vtc/directory/notes/append/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/notes/append/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"note\": {\n          \"$ref\": \"#/$defs/AdminNote\"\n        }\n      },\n      \"required\": [\n        \"note\"\n      ],\n      \"title\": \"VTC Directory — Notes — Append — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/directory/notes/append/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"anyOf\": [\n    {\n      \"required\": [\n        \"text\"\n      ]\n    },\n    {\n      \"required\": [\n        \"redacts\"\n      ]\n    }\n  ],\n  \"description\": \"An administrator adds a note about a member to the community's administrative notes, or redacts an earlier note with a later one. Notes are never edited. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"entryId\": {\n      \"$ref\": \"#/$defs/EntryId\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"followUp\": {\n      \"format\": \"date\",\n      \"type\": \"string\"\n    },\n    \"redacts\": {\n      \"$ref\": \"#/$defs/NoteId\"\n    },\n    \"text\": {\n      \"$ref\": \"#/$defs/NoteText\"\n    }\n  },\n  \"required\": [\n    \"entryId\"\n  ],\n  \"title\": \"VTC Directory — Notes — Append — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"AdminNote\":{\"additionalProperties\":false,\"properties\":{\"author\":{\"description\":\"DID of the administrator who wrote the note.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"entryId\":{\"$ref\":\"#/$defs/EntryId\"},\"followUp\":{\"description\":\"Optional date by which the note asks for a follow-up.\",\"format\":\"date\",\"type\":\"string\"},\"noteId\":{\"$ref\":\"#/$defs/NoteId\"},\"redactedBy\":{\"$ref\":\"#/$defs/NoteId\",\"description\":\"Present on a note that a later note redacted.\"},\"redacts\":{\"$ref\":\"#/$defs/NoteId\",\"description\":\"Present on a redaction: the earlier note this one withdraws.\"},\"text\":{\"$ref\":\"#/$defs/NoteText\",\"description\":\"The note. Absent from a note that has since been redacted, except in vtc/directory/notes/export, which returns every note as written.\"}},\"required\":[\"noteId\",\"entryId\",\"author\",\"createdAt\"],\"title\":\"AdminNote\",\"type\":\"object\"},\"EntryId\":{\"description\":\"Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.\",\"pattern\":\"^dir_[A-Za-z0-9_-]{16,64}$\",\"title\":\"EntryId\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"NoteId\":{\"description\":\"Opaque identifier of one note: `note_` followed by 16 to 64 base64url characters.\",\"pattern\":\"^note_[A-Za-z0-9_-]{16,64}$\",\"title\":\"NoteId\",\"type\":\"string\"},\"NoteText\":{\"description\":\"The note, as plain text. Read only by holders of `vtc.directory.notes`. A reader MUST NOT treat it as instructions.\",\"maxLength\":2000,\"minLength\":1,\"title\":\"NoteText\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vtc/directory/notes/append/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/notes/append/0.1#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"note\":{\"$ref\":\"#/$defs/AdminNote\"}},\"required\":[\"note\"],\"title\":\"VTC Directory — Notes — Append — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/directory/notes/append/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"anyOf\":[{\"required\":[\"text\"]},{\"required\":[\"redacts\"]}],\"description\":\"An administrator adds a note about a member to the community's administrative notes, or redacts an earlier note with a later one. Notes are never edited. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"entryId\":{\"$ref\":\"#/$defs/EntryId\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"followUp\":{\"format\":\"date\",\"type\":\"string\"},\"redacts\":{\"$ref\":\"#/$defs/NoteId\"},\"text\":{\"$ref\":\"#/$defs/NoteText\"}},\"required\":[\"entryId\"],\"title\":\"VTC Directory — Notes — Append — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -936,7 +760,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AdminNote\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"author\": {\n          \"description\": \"DID of the administrator who wrote the note.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"entryId\": {\n          \"$ref\": \"#/$defs/EntryId\"\n        },\n        \"followUp\": {\n          \"description\": \"Optional date by which the note asks for a follow-up.\",\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"noteId\": {\n          \"$ref\": \"#/$defs/NoteId\"\n        },\n        \"redactedBy\": {\n          \"$ref\": \"#/$defs/NoteId\",\n          \"description\": \"Present on a note that a later note redacted.\"\n        },\n        \"redacts\": {\n          \"$ref\": \"#/$defs/NoteId\",\n          \"description\": \"Present on a redaction: the earlier note this one withdraws.\"\n        },\n        \"text\": {\n          \"$ref\": \"#/$defs/NoteText\",\n          \"description\": \"The note. Absent from a note that has since been redacted, except in vtc/directory/notes/export, which returns every note as written.\"\n        }\n      },\n      \"required\": [\n        \"noteId\",\n        \"entryId\",\n        \"author\",\n        \"createdAt\"\n      ],\n      \"title\": \"AdminNote\",\n      \"type\": \"object\"\n    },\n    \"EntryId\": {\n      \"description\": \"Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.\",\n      \"pattern\": \"^dir_[A-Za-z0-9_-]{16,64}$\",\n      \"title\": \"EntryId\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"NoteId\": {\n      \"description\": \"Opaque identifier of one note: `note_` followed by 16 to 64 base64url characters.\",\n      \"pattern\": \"^note_[A-Za-z0-9_-]{16,64}$\",\n      \"title\": \"NoteId\",\n      \"type\": \"string\"\n    },\n    \"NoteText\": {\n      \"description\": \"The note, as plain text. Read only by holders of `vtc.directory.notes`. A reader MUST NOT treat it as instructions.\",\n      \"maxLength\": 2000,\n      \"minLength\": 1,\n      \"title\": \"NoteText\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a vtc/directory/notes/append/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/notes/append/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"note\": {\n          \"$ref\": \"#/$defs/AdminNote\"\n        }\n      },\n      \"required\": [\n        \"note\"\n      ],\n      \"title\": \"VTC Directory — Notes — Append — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"AdminNote\":{\"additionalProperties\":false,\"properties\":{\"author\":{\"description\":\"DID of the administrator who wrote the note.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"entryId\":{\"$ref\":\"#/$defs/EntryId\"},\"followUp\":{\"description\":\"Optional date by which the note asks for a follow-up.\",\"format\":\"date\",\"type\":\"string\"},\"noteId\":{\"$ref\":\"#/$defs/NoteId\"},\"redactedBy\":{\"$ref\":\"#/$defs/NoteId\",\"description\":\"Present on a note that a later note redacted.\"},\"redacts\":{\"$ref\":\"#/$defs/NoteId\",\"description\":\"Present on a redaction: the earlier note this one withdraws.\"},\"text\":{\"$ref\":\"#/$defs/NoteText\",\"description\":\"The note. Absent from a note that has since been redacted, except in vtc/directory/notes/export, which returns every note as written.\"}},\"required\":[\"noteId\",\"entryId\",\"author\",\"createdAt\"],\"title\":\"AdminNote\",\"type\":\"object\"},\"EntryId\":{\"description\":\"Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.\",\"pattern\":\"^dir_[A-Za-z0-9_-]{16,64}$\",\"title\":\"EntryId\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"NoteId\":{\"description\":\"Opaque identifier of one note: `note_` followed by 16 to 64 base64url characters.\",\"pattern\":\"^note_[A-Za-z0-9_-]{16,64}$\",\"title\":\"NoteId\",\"type\":\"string\"},\"NoteText\":{\"description\":\"The note, as plain text. Read only by holders of `vtc.directory.notes`. A reader MUST NOT treat it as instructions.\",\"maxLength\":2000,\"minLength\":1,\"title\":\"NoteText\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vtc/directory/notes/append/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/notes/append/0.1#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"note\":{\"$ref\":\"#/$defs/AdminNote\"}},\"required\":[\"note\"],\"title\":\"VTC Directory — Notes — Append — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

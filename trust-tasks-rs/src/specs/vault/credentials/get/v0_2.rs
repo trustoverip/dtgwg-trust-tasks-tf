@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,33 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Fetch one stored credential's full body by id.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vault/credentials/get/0.2",
-///  "title": "Payload",
-///  "description": "Fetch one stored credential's full body by id.",
-///  "type": "object",
-///  "required": [
-///    "id"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "id": {
-///      "description": "Local handle from a query descriptor. Opaque; consumers must not derive or guess one.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -186,17 +135,6 @@ impl Payload {
 }
 ///Local handle from a query descriptor. Opaque; consumers must not derive or guess one.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Local handle from a query descriptor. Opaque; consumers must not derive or guess one.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadId(::std::string::String);
@@ -259,56 +197,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadId {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "oneOf": [
-///    {
-///      "required": [
-///        "credential"
-///      ]
-///    },
-///    {
-///      "required": [
-///        "credentialBase64"
-///      ]
-///    }
-///  ],
-///  "required": [
-///    "format"
-///  ],
-///  "properties": {
-///    "credential": {
-///      "description": "The verifiable credential as stored, for a format whose canonical form is a JSON object. Carried verbatim. Mutually exclusive with `credentialBase64`.",
-///      "type": "object",
-///      "minProperties": 1
-///    },
-///    "credentialBase64": {
-///      "description": "The credential's stored bytes, base64url-encoded without padding, for a format whose canonical form is not a JSON object: an SD-JWT's compact serialisation, an mdoc's CBOR. Mutually exclusive with `credential`.",
-///      "type": "string",
-///      "maxLength": 1048576,
-///      "minLength": 1,
-///      "pattern": "^[A-Za-z0-9_-]+$"
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "format": {
-///      "description": "The credential's format, as an OpenID for Verifiable Credentials format identifier (`ldp_vc`, `dc+sd-jwt`, `mso_mdoc`, `jwt_vc_json`), so the consumer reads the body without sniffing it.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged, deny_unknown_fields)]
 #[non_exhaustive]
@@ -335,17 +223,6 @@ pub enum Response {
 }
 ///The credential's format, as an OpenID for Verifiable Credentials format identifier (`ldp_vc`, `dc+sd-jwt`, `mso_mdoc`, `jwt_vc_json`), so the consumer reads the body without sniffing it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The credential's format, as an OpenID for Verifiable Credentials format identifier (`ldp_vc`, `dc+sd-jwt`, `mso_mdoc`, `jwt_vc_json`), so the consumer reads the body without sniffing it.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseVariant0Format(::std::string::String);
@@ -408,18 +285,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseVariant0Format {
 }
 ///The credential's stored bytes, base64url-encoded without padding, for a format whose canonical form is not a JSON object: an SD-JWT's compact serialisation, an mdoc's CBOR. Mutually exclusive with `credential`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The credential's stored bytes, base64url-encoded without padding, for a format whose canonical form is not a JSON object: an SD-JWT's compact serialisation, an mdoc's CBOR. Mutually exclusive with `credential`.",
-///  "type": "string",
-///  "maxLength": 1048576,
-///  "minLength": 1,
-///  "pattern": "^[A-Za-z0-9_-]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseVariant1CredentialBase64(::std::string::String);
@@ -487,17 +352,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseVariant1CredentialBase64 {
 }
 ///The credential's format, as an OpenID for Verifiable Credentials format identifier (`ldp_vc`, `dc+sd-jwt`, `mso_mdoc`, `jwt_vc_json`), so the consumer reads the body without sniffing it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The credential's format, as an OpenID for Verifiable Credentials format identifier (`ldp_vc`, `dc+sd-jwt`, `mso_mdoc`, `jwt_vc_json`), so the consumer reads the body without sniffing it.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseVariant1Format(::std::string::String);
@@ -619,7 +473,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"oneOf\": [\n        {\n          \"required\": [\n            \"credential\"\n          ]\n        },\n        {\n          \"required\": [\n            \"credentialBase64\"\n          ]\n        }\n      ],\n      \"properties\": {\n        \"credential\": {\n          \"description\": \"The verifiable credential as stored, for a format whose canonical form is a JSON object. Carried verbatim. Mutually exclusive with `credentialBase64`.\",\n          \"minProperties\": 1,\n          \"type\": \"object\"\n        },\n        \"credentialBase64\": {\n          \"description\": \"The credential's stored bytes, base64url-encoded without padding, for a format whose canonical form is not a JSON object: an SD-JWT's compact serialisation, an mdoc's CBOR. Mutually exclusive with `credential`.\",\n          \"maxLength\": 1048576,\n          \"minLength\": 1,\n          \"pattern\": \"^[A-Za-z0-9_-]+$\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"format\": {\n          \"description\": \"The credential's format, as an OpenID for Verifiable Credentials format identifier (`ldp_vc`, `dc+sd-jwt`, `mso_mdoc`, `jwt_vc_json`), so the consumer reads the body without sniffing it.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"format\"\n      ],\n      \"title\": \"Vault Credentials Get — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vault/credentials/get/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Fetch one stored credential's full body by id.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"id\": {\n      \"description\": \"Local handle from a query descriptor. Opaque; consumers must not derive or guess one.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"id\"\n  ],\n  \"title\": \"Vault Credentials — Get\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"oneOf\":[{\"required\":[\"credential\"]},{\"required\":[\"credentialBase64\"]}],\"properties\":{\"credential\":{\"description\":\"The verifiable credential as stored, for a format whose canonical form is a JSON object. Carried verbatim. Mutually exclusive with `credentialBase64`.\",\"minProperties\":1,\"type\":\"object\"},\"credentialBase64\":{\"description\":\"The credential's stored bytes, base64url-encoded without padding, for a format whose canonical form is not a JSON object: an SD-JWT's compact serialisation, an mdoc's CBOR. Mutually exclusive with `credential`.\",\"maxLength\":1048576,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9_-]+$\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"format\":{\"description\":\"The credential's format, as an OpenID for Verifiable Credentials format identifier (`ldp_vc`, `dc+sd-jwt`, `mso_mdoc`, `jwt_vc_json`), so the consumer reads the body without sniffing it.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"format\"],\"title\":\"Vault Credentials Get — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vault/credentials/get/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Fetch one stored credential's full body by id.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"id\":{\"description\":\"Local handle from a query descriptor. Opaque; consumers must not derive or guess one.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\"],\"title\":\"Vault Credentials — Get\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -628,7 +482,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"oneOf\": [\n        {\n          \"required\": [\n            \"credential\"\n          ]\n        },\n        {\n          \"required\": [\n            \"credentialBase64\"\n          ]\n        }\n      ],\n      \"properties\": {\n        \"credential\": {\n          \"description\": \"The verifiable credential as stored, for a format whose canonical form is a JSON object. Carried verbatim. Mutually exclusive with `credentialBase64`.\",\n          \"minProperties\": 1,\n          \"type\": \"object\"\n        },\n        \"credentialBase64\": {\n          \"description\": \"The credential's stored bytes, base64url-encoded without padding, for a format whose canonical form is not a JSON object: an SD-JWT's compact serialisation, an mdoc's CBOR. Mutually exclusive with `credential`.\",\n          \"maxLength\": 1048576,\n          \"minLength\": 1,\n          \"pattern\": \"^[A-Za-z0-9_-]+$\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"format\": {\n          \"description\": \"The credential's format, as an OpenID for Verifiable Credentials format identifier (`ldp_vc`, `dc+sd-jwt`, `mso_mdoc`, `jwt_vc_json`), so the consumer reads the body without sniffing it.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"format\"\n      ],\n      \"title\": \"Vault Credentials Get — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"oneOf\":[{\"required\":[\"credential\"]},{\"required\":[\"credentialBase64\"]}],\"properties\":{\"credential\":{\"description\":\"The verifiable credential as stored, for a format whose canonical form is a JSON object. Carried verbatim. Mutually exclusive with `credentialBase64`.\",\"minProperties\":1,\"type\":\"object\"},\"credentialBase64\":{\"description\":\"The credential's stored bytes, base64url-encoded without padding, for a format whose canonical form is not a JSON object: an SD-JWT's compact serialisation, an mdoc's CBOR. Mutually exclusive with `credential`.\",\"maxLength\":1048576,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9_-]+$\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"format\":{\"description\":\"The credential's format, as an OpenID for Verifiable Credentials format identifier (`ldp_vc`, `dc+sd-jwt`, `mso_mdoc`, `jwt_vc_json`), so the consumer reads the body without sniffing it.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"format\"],\"title\":\"Vault Credentials Get — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

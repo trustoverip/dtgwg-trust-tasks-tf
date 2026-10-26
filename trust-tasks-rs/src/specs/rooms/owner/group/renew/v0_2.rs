@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,45 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/rooms/owner/group/renew/0.2",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "host",
-///    "roomId"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "host": {
-///      "description": "The room's host, as a DID: where the room's epoch advances.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    },
-///    "reason": {
-///      "description": "Why, carried to the host's epoch advance. Untrusted and attributed to its author: it MUST NOT carry personal data or a credential.",
-///      "type": "string",
-///      "maxLength": 500,
-///      "minLength": 1
-///    },
-///    "roomId": {
-///      "description": "The sealed room to renew. The recipient MUST hold its group.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -204,17 +141,6 @@ impl Payload {
 }
 ///The room's host, as a DID: where the room's epoch advances.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The room's host, as a DID: where the room's epoch advances.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadHost(::std::string::String);
@@ -279,17 +205,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadHost {
 }
 ///Why, carried to the host's epoch advance. Untrusted and attributed to its author: it MUST NOT carry personal data or a credential.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Why, carried to the host's epoch advance. Untrusted and attributed to its author: it MUST NOT carry personal data or a credential.",
-///  "type": "string",
-///  "maxLength": 500,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadReason(::std::string::String);
@@ -352,17 +267,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 }
 ///The sealed room to renew. The recipient MUST hold its group.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The sealed room to renew. The recipient MUST hold its group.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadRoomId(::std::string::String);
@@ -425,38 +329,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRoomId {
 }
 ///Success response to rooms/owner/group/renew. Type https://trusttasks.org/spec/rooms/owner/group/renew/0.2#response. The room's new epoch, at which the host and the group agree.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to rooms/owner/group/renew. Type https://trusttasks.org/spec/rooms/owner/group/renew/0.2#response. The room's new epoch, at which the host and the group agree.",
-///  "type": "object",
-///  "required": [
-///    "epoch",
-///    "roomId"
-///  ],
-///  "properties": {
-///    "epoch": {
-///      "description": "The room epoch after the renewal, as the host recorded it.",
-///      "type": "integer",
-///      "minimum": 2.0
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "roomId": {
-///      "description": "The room.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -476,17 +348,6 @@ impl Response {
 }
 ///The room.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The room.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseRoomId(::std::string::String);
@@ -705,7 +566,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/owner/group/renew. Type https://trusttasks.org/spec/rooms/owner/group/renew/0.2#response. The room's new epoch, at which the host and the group agree.\",\n      \"properties\": {\n        \"epoch\": {\n          \"description\": \"The room epoch after the renewal, as the host recorded it.\",\n          \"minimum\": 2,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"roomId\": {\n          \"description\": \"The room.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"epoch\"\n      ],\n      \"title\": \"Rooms Owner Group Renew — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/rooms/owner/group/renew/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"host\": {\n      \"description\": \"The room's host, as a DID: where the room's epoch advances.\",\n      \"maxLength\": 2048,\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    },\n    \"reason\": {\n      \"description\": \"Why, carried to the host's epoch advance. Untrusted and attributed to its author: it MUST NOT carry personal data or a credential.\",\n      \"maxLength\": 500,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"roomId\": {\n      \"description\": \"The sealed room to renew. The recipient MUST hold its group.\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"roomId\",\n    \"host\"\n  ],\n  \"title\": \"Rooms Owner Group Renew — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to rooms/owner/group/renew. Type https://trusttasks.org/spec/rooms/owner/group/renew/0.2#response. The room's new epoch, at which the host and the group agree.\",\"properties\":{\"epoch\":{\"description\":\"The room epoch after the renewal, as the host recorded it.\",\"minimum\":2,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"roomId\":{\"description\":\"The room.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"roomId\",\"epoch\"],\"title\":\"Rooms Owner Group Renew — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/rooms/owner/group/renew/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"host\":{\"description\":\"The room's host, as a DID: where the room's epoch advances.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"reason\":{\"description\":\"Why, carried to the host's epoch advance. Untrusted and attributed to its author: it MUST NOT carry personal data or a credential.\",\"maxLength\":500,\"minLength\":1,\"type\":\"string\"},\"roomId\":{\"description\":\"The sealed room to renew. The recipient MUST hold its group.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"roomId\",\"host\"],\"title\":\"Rooms Owner Group Renew — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -715,7 +576,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/owner/group/renew. Type https://trusttasks.org/spec/rooms/owner/group/renew/0.2#response. The room's new epoch, at which the host and the group agree.\",\n      \"properties\": {\n        \"epoch\": {\n          \"description\": \"The room epoch after the renewal, as the host recorded it.\",\n          \"minimum\": 2,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"roomId\": {\n          \"description\": \"The room.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"epoch\"\n      ],\n      \"title\": \"Rooms Owner Group Renew — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to rooms/owner/group/renew. Type https://trusttasks.org/spec/rooms/owner/group/renew/0.2#response. The room's new epoch, at which the host and the group agree.\",\"properties\":{\"epoch\":{\"description\":\"The room epoch after the renewal, as the host recorded it.\",\"minimum\":2,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"roomId\":{\"description\":\"The room.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"roomId\",\"epoch\"],\"title\":\"Rooms Owner Group Renew — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

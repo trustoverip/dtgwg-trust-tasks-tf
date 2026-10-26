@@ -35,17 +35,6 @@ pub mod error {
 }
 ///An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ElectionId",
-///  "description": "An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.",
-///  "type": "string",
-///  "pattern": "^[A-Za-z0-9._-]{1,128}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ElectionId(::std::string::String);
@@ -109,56 +98,6 @@ impl<'de> ::serde::Deserialize<'de> for ElectionId {
 }
 ///One election as a list shows it. vtc/elections/show reads it whole.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ElectionListItem",
-///  "description": "One election as a list shows it. vtc/elections/show reads it whole.",
-///  "type": "object",
-///  "required": [
-///    "binding",
-///    "electionId",
-///    "state",
-///    "ticketHeld",
-///    "votingCloses",
-///    "votingOpens"
-///  ],
-///  "properties": {
-///    "binding": {
-///      "description": "The manifest's `binding`.",
-///      "type": "boolean"
-///    },
-///    "electionId": {
-///      "$ref": "#/definitions/ElectionId"
-///    },
-///    "state": {
-///      "$ref": "#/definitions/RegistrarState"
-///    },
-///    "ticketHeld": {
-///      "description": "Whether the community has issued a ticket for this election to the caller. About the caller only, never anyone else.",
-///      "type": "boolean"
-///    },
-///    "title": {
-///      "description": "The manifest's `title`, when it has one.",
-///      "type": "string",
-///      "maxLength": 512
-///    },
-///    "votingCloses": {
-///      "type": "string",
-///      "format": "date-time",
-///      "maxLength": 64
-///    },
-///    "votingOpens": {
-///      "type": "string",
-///      "format": "date-time",
-///      "maxLength": 64
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -186,16 +125,6 @@ impl ElectionListItem {
 }
 ///The manifest's `title`, when it has one.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The manifest's `title`, when it has one.",
-///  "type": "string",
-///  "maxLength": 512
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ElectionListItemTitle(::std::string::String);
@@ -255,21 +184,6 @@ impl<'de> ::serde::Deserialize<'de> for ElectionListItemTitle {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -291,15 +205,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -363,38 +268,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A member or an administrator pages through the community's elections that the caller may see. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/elections/list/0.2",
-///  "title": "Payload",
-///  "description": "A member or an administrator pages through the community's elections that the caller may see. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "properties": {
-///    "cursor": {
-///      "description": "An opaque continuation token from a previous response's `nextCursor`, bound to the caller and to `state`; a responder MUST NOT accept a cursor it did not issue.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "limit": {
-///      "description": "The most items to return; the responder chooses a default and MAY return fewer.",
-///      "type": "integer",
-///      "maximum": 100.0,
-///      "minimum": 1.0
-///    },
-///    "state": {
-///      "$ref": "#/definitions/RegistrarState"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -428,17 +301,6 @@ impl Payload {
 }
 ///An opaque continuation token from a previous response's `nextCursor`, bound to the caller and to `state`; a responder MUST NOT accept a cursor it did not issue.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "An opaque continuation token from a previous response's `nextCursor`, bound to the caller and to `state`; a responder MUST NOT accept a cursor it did not issue.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadCursor(::std::string::String);
@@ -501,26 +363,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCursor {
 }
 ///An election's state as its registrar holds it: the ballot box's `ElectionState` once the ballot box has registered the election, or, before that, `pendingRegistration` (the community is still delivering the registration) or `registrationRefused` (the ballot box refused it on a later delivery, and only a cancellation clears it). The first six values are the ballot box's `ElectionState` (voting/_shared/0.1).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RegistrarState",
-///  "description": "An election's state as its registrar holds it: the ballot box's `ElectionState` once the ballot box has registered the election, or, before that, `pendingRegistration` (the community is still delivering the registration) or `registrationRefused` (the ballot box refused it on a later delivery, and only a cancellation clears it). The first six values are the ballot box's `ElectionState` (voting/_shared/0.1).",
-///  "type": "string",
-///  "enum": [
-///    "registered",
-///    "registration",
-///    "voting",
-///    "closed",
-///    "tallied",
-///    "cancelled",
-///    "pendingRegistration",
-///    "registrationRefused"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -606,39 +448,6 @@ impl ::std::convert::TryFrom<::std::string::String> for RegistrarState {
 }
 ///Success response to vtc/elections/list/0.2: one page of the elections the caller may see.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to vtc/elections/list/0.2: one page of the elections the caller may see.",
-///  "type": "object",
-///  "required": [
-///    "elections"
-///  ],
-///  "properties": {
-///    "elections": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/ElectionListItem"
-///      },
-///      "maxItems": 100
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "nextCursor": {
-///      "description": "Continuation token for the next page; pass it as `cursor`. Absent on the last page — never `null`.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -662,17 +471,6 @@ impl Response {
 }
 ///Continuation token for the next page; pass it as `cursor`. Absent on the last page — never `null`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Continuation token for the next page; pass it as `cursor`. Absent on the last page — never `null`.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseNextCursor(::std::string::String);
@@ -1028,14 +826,14 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/elections/list/0.2";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ElectionId\": {\n      \"description\": \"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,128}$\",\n      \"title\": \"ElectionId\",\n      \"type\": \"string\"\n    },\n    \"ElectionListItem\": {\n      \"additionalProperties\": false,\n      \"description\": \"One election as a list shows it. vtc/elections/show reads it whole.\",\n      \"properties\": {\n        \"binding\": {\n          \"description\": \"The manifest's `binding`.\",\n          \"type\": \"boolean\"\n        },\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"state\": {\n          \"$ref\": \"#/$defs/RegistrarState\"\n        },\n        \"ticketHeld\": {\n          \"description\": \"Whether the community has issued a ticket for this election to the caller. About the caller only, never anyone else.\",\n          \"type\": \"boolean\"\n        },\n        \"title\": {\n          \"description\": \"The manifest's `title`, when it has one.\",\n          \"maxLength\": 512,\n          \"type\": \"string\"\n        },\n        \"votingCloses\": {\n          \"format\": \"date-time\",\n          \"maxLength\": 64,\n          \"type\": \"string\"\n        },\n        \"votingOpens\": {\n          \"format\": \"date-time\",\n          \"maxLength\": 64,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"state\",\n        \"votingOpens\",\n        \"votingCloses\",\n        \"binding\",\n        \"ticketHeld\"\n      ],\n      \"title\": \"ElectionListItem\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"RegistrarState\": {\n      \"description\": \"An election's state as its registrar holds it: the ballot box's `ElectionState` once the ballot box has registered the election, or, before that, `pendingRegistration` (the community is still delivering the registration) or `registrationRefused` (the ballot box refused it on a later delivery, and only a cancellation clears it). The first six values are the ballot box's `ElectionState` (voting/_shared/0.1).\",\n      \"enum\": [\n        \"registered\",\n        \"registration\",\n        \"voting\",\n        \"closed\",\n        \"tallied\",\n        \"cancelled\",\n        \"pendingRegistration\",\n        \"registrationRefused\"\n      ],\n      \"title\": \"RegistrarState\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vtc/elections/list/0.2: one page of the elections the caller may see.\",\n      \"properties\": {\n        \"elections\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/ElectionListItem\"\n          },\n          \"maxItems\": 100,\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"nextCursor\": {\n          \"description\": \"Continuation token for the next page; pass it as `cursor`. Absent on the last page — never `null`.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"elections\"\n      ],\n      \"title\": \"VTC Elections — List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/elections/list/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A member or an administrator pages through the community's elections that the caller may see. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"cursor\": {\n      \"description\": \"An opaque continuation token from a previous response's `nextCursor`, bound to the caller and to `state`; a responder MUST NOT accept a cursor it did not issue.\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"limit\": {\n      \"description\": \"The most items to return; the responder chooses a default and MAY return fewer.\",\n      \"maximum\": 100,\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"state\": {\n      \"$ref\": \"#/$defs/RegistrarState\"\n    }\n  },\n  \"title\": \"VTC Elections — List — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"ElectionId\":{\"description\":\"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\"pattern\":\"^[A-Za-z0-9._-]{1,128}$\",\"title\":\"ElectionId\",\"type\":\"string\"},\"ElectionListItem\":{\"additionalProperties\":false,\"description\":\"One election as a list shows it. vtc/elections/show reads it whole.\",\"properties\":{\"binding\":{\"description\":\"The manifest's `binding`.\",\"type\":\"boolean\"},\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"state\":{\"$ref\":\"#/$defs/RegistrarState\"},\"ticketHeld\":{\"description\":\"Whether the community has issued a ticket for this election to the caller. About the caller only, never anyone else.\",\"type\":\"boolean\"},\"title\":{\"description\":\"The manifest's `title`, when it has one.\",\"maxLength\":512,\"type\":\"string\"},\"votingCloses\":{\"format\":\"date-time\",\"maxLength\":64,\"type\":\"string\"},\"votingOpens\":{\"format\":\"date-time\",\"maxLength\":64,\"type\":\"string\"}},\"required\":[\"electionId\",\"state\",\"votingOpens\",\"votingCloses\",\"binding\",\"ticketHeld\"],\"title\":\"ElectionListItem\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"RegistrarState\":{\"description\":\"An election's state as its registrar holds it: the ballot box's `ElectionState` once the ballot box has registered the election, or, before that, `pendingRegistration` (the community is still delivering the registration) or `registrationRefused` (the ballot box refused it on a later delivery, and only a cancellation clears it). The first six values are the ballot box's `ElectionState` (voting/_shared/0.1).\",\"enum\":[\"registered\",\"registration\",\"voting\",\"closed\",\"tallied\",\"cancelled\",\"pendingRegistration\",\"registrationRefused\"],\"title\":\"RegistrarState\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vtc/elections/list/0.2: one page of the elections the caller may see.\",\"properties\":{\"elections\":{\"items\":{\"$ref\":\"#/$defs/ElectionListItem\"},\"maxItems\":100,\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"nextCursor\":{\"description\":\"Continuation token for the next page; pass it as `cursor`. Absent on the last page — never `null`.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"elections\"],\"title\":\"VTC Elections — List — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/elections/list/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A member or an administrator pages through the community's elections that the caller may see. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"cursor\":{\"description\":\"An opaque continuation token from a previous response's `nextCursor`, bound to the caller and to `state`; a responder MUST NOT accept a cursor it did not issue.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"limit\":{\"description\":\"The most items to return; the responder chooses a default and MAY return fewer.\",\"maximum\":100,\"minimum\":1,\"type\":\"integer\"},\"state\":{\"$ref\":\"#/$defs/RegistrarState\"}},\"title\":\"VTC Elections — List — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/elections/list/0.2#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ElectionId\": {\n      \"description\": \"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,128}$\",\n      \"title\": \"ElectionId\",\n      \"type\": \"string\"\n    },\n    \"ElectionListItem\": {\n      \"additionalProperties\": false,\n      \"description\": \"One election as a list shows it. vtc/elections/show reads it whole.\",\n      \"properties\": {\n        \"binding\": {\n          \"description\": \"The manifest's `binding`.\",\n          \"type\": \"boolean\"\n        },\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"state\": {\n          \"$ref\": \"#/$defs/RegistrarState\"\n        },\n        \"ticketHeld\": {\n          \"description\": \"Whether the community has issued a ticket for this election to the caller. About the caller only, never anyone else.\",\n          \"type\": \"boolean\"\n        },\n        \"title\": {\n          \"description\": \"The manifest's `title`, when it has one.\",\n          \"maxLength\": 512,\n          \"type\": \"string\"\n        },\n        \"votingCloses\": {\n          \"format\": \"date-time\",\n          \"maxLength\": 64,\n          \"type\": \"string\"\n        },\n        \"votingOpens\": {\n          \"format\": \"date-time\",\n          \"maxLength\": 64,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"state\",\n        \"votingOpens\",\n        \"votingCloses\",\n        \"binding\",\n        \"ticketHeld\"\n      ],\n      \"title\": \"ElectionListItem\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"RegistrarState\": {\n      \"description\": \"An election's state as its registrar holds it: the ballot box's `ElectionState` once the ballot box has registered the election, or, before that, `pendingRegistration` (the community is still delivering the registration) or `registrationRefused` (the ballot box refused it on a later delivery, and only a cancellation clears it). The first six values are the ballot box's `ElectionState` (voting/_shared/0.1).\",\n      \"enum\": [\n        \"registered\",\n        \"registration\",\n        \"voting\",\n        \"closed\",\n        \"tallied\",\n        \"cancelled\",\n        \"pendingRegistration\",\n        \"registrationRefused\"\n      ],\n      \"title\": \"RegistrarState\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vtc/elections/list/0.2: one page of the elections the caller may see.\",\n      \"properties\": {\n        \"elections\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/ElectionListItem\"\n          },\n          \"maxItems\": 100,\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"nextCursor\": {\n          \"description\": \"Continuation token for the next page; pass it as `cursor`. Absent on the last page — never `null`.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"elections\"\n      ],\n      \"title\": \"VTC Elections — List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"ElectionId\":{\"description\":\"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\"pattern\":\"^[A-Za-z0-9._-]{1,128}$\",\"title\":\"ElectionId\",\"type\":\"string\"},\"ElectionListItem\":{\"additionalProperties\":false,\"description\":\"One election as a list shows it. vtc/elections/show reads it whole.\",\"properties\":{\"binding\":{\"description\":\"The manifest's `binding`.\",\"type\":\"boolean\"},\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"state\":{\"$ref\":\"#/$defs/RegistrarState\"},\"ticketHeld\":{\"description\":\"Whether the community has issued a ticket for this election to the caller. About the caller only, never anyone else.\",\"type\":\"boolean\"},\"title\":{\"description\":\"The manifest's `title`, when it has one.\",\"maxLength\":512,\"type\":\"string\"},\"votingCloses\":{\"format\":\"date-time\",\"maxLength\":64,\"type\":\"string\"},\"votingOpens\":{\"format\":\"date-time\",\"maxLength\":64,\"type\":\"string\"}},\"required\":[\"electionId\",\"state\",\"votingOpens\",\"votingCloses\",\"binding\",\"ticketHeld\"],\"title\":\"ElectionListItem\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"RegistrarState\":{\"description\":\"An election's state as its registrar holds it: the ballot box's `ElectionState` once the ballot box has registered the election, or, before that, `pendingRegistration` (the community is still delivering the registration) or `registrationRefused` (the ballot box refused it on a later delivery, and only a cancellation clears it). The first six values are the ballot box's `ElectionState` (voting/_shared/0.1).\",\"enum\":[\"registered\",\"registration\",\"voting\",\"closed\",\"tallied\",\"cancelled\",\"pendingRegistration\",\"registrationRefused\"],\"title\":\"RegistrarState\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vtc/elections/list/0.2: one page of the elections the caller may see.\",\"properties\":{\"elections\":{\"items\":{\"$ref\":\"#/$defs/ElectionListItem\"},\"maxItems\":100,\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"nextCursor\":{\"description\":\"Continuation token for the next page; pass it as `cursor`. Absent on the last page — never `null`.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"elections\"],\"title\":\"VTC Elections — List — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

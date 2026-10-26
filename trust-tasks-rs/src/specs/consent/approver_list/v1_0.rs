@@ -34,46 +34,6 @@ pub mod error {
 }
 ///Who approves inbound-messaging consent for a given platform within a VTA context, and how the prompt reaches them.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Who approves inbound-messaging consent for a given platform within a VTA context, and how the prompt reaches them.",
-///  "type": "object",
-///  "required": [
-///    "approver",
-///    "context",
-///    "platform"
-///  ],
-///  "properties": {
-///    "approver": {
-///      "description": "VID (DID) of the operator authorized to decide consent for this platform/context.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "context": {
-///      "description": "The VTA context path this binding applies to.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "platform": {
-///      "description": "Messaging-platform tag, e.g. \"signal\", \"whatsapp\", \"slack\".",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "route": {
-///      "description": "Optional. How to deliver the prompt; defaults to bridge-relay when omitted.",
-///      "$ref": "#/definitions/Route"
-///    },
-///    "routeHint": {
-///      "description": "Optional routing detail — e.g. the operator's opaque conversationRef for `bridge-relay`.",
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -102,16 +62,6 @@ impl ApproverBinding {
 }
 ///VID (DID) of the operator authorized to decide consent for this platform/context.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "VID (DID) of the operator authorized to decide consent for this platform/context.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ApproverBindingApprover(::std::string::String);
@@ -171,16 +121,6 @@ impl<'de> ::serde::Deserialize<'de> for ApproverBindingApprover {
 }
 ///The VTA context path this binding applies to.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The VTA context path this binding applies to.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ApproverBindingContext(::std::string::String);
@@ -240,16 +180,6 @@ impl<'de> ::serde::Deserialize<'de> for ApproverBindingContext {
 }
 ///Messaging-platform tag, e.g. "signal", "whatsapp", "slack".
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Messaging-platform tag, e.g. \"signal\", \"whatsapp\", \"slack\".",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ApproverBindingPlatform(::std::string::String);
@@ -309,21 +239,6 @@ impl<'de> ::serde::Deserialize<'de> for ApproverBindingPlatform {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -345,15 +260,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -417,33 +323,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Fetch approver bindings, optionally filtered by platform or context.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/consent/approver-list/1.0",
-///  "title": "Payload",
-///  "description": "Fetch approver bindings, optionally filtered by platform or context.",
-///  "type": "object",
-///  "properties": {
-///    "context": {
-///      "description": "Optional. Restrict to this context path.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "platform": {
-///      "description": "Optional. Restrict to this platform tag.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -473,16 +352,6 @@ impl Payload {
 }
 ///Optional. Restrict to this context path.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Optional. Restrict to this context path.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadContext(::std::string::String);
@@ -542,16 +411,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContext {
 }
 ///Optional. Restrict to this platform tag.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Optional. Restrict to this platform tag.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadPlatform(::std::string::String);
@@ -611,32 +470,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPlatform {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "approvers"
-///  ],
-///  "properties": {
-///    "approvers": {
-///      "description": "Matching approver bindings.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/ApproverBinding"
-///      }
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -653,19 +486,6 @@ impl Response {
 }
 ///How a consent prompt reaches the approver: `wake` pushes to the approver's device for a DID-signed decision; `bridge-relay` renders it through an enrolled bridge (e.g. a numbered card in the operator's messaging app) for a bridge-attested decision.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "How a consent prompt reaches the approver: `wake` pushes to the approver's device for a DID-signed decision; `bridge-relay` renders it through an enrolled bridge (e.g. a numbered card in the operator's messaging app) for a bridge-attested decision.",
-///  "type": "string",
-///  "enum": [
-///    "wake",
-///    "bridge-relay"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -956,14 +776,14 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/consent/approver-list/1.0";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ApproverBinding\": {\n      \"additionalProperties\": false,\n      \"description\": \"Who approves inbound-messaging consent for a given platform within a VTA context, and how the prompt reaches them.\",\n      \"properties\": {\n        \"approver\": {\n          \"description\": \"VID (DID) of the operator authorized to decide consent for this platform/context.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"context\": {\n          \"description\": \"The VTA context path this binding applies to.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"platform\": {\n          \"description\": \"Messaging-platform tag, e.g. \\\"signal\\\", \\\"whatsapp\\\", \\\"slack\\\".\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"route\": {\n          \"$ref\": \"#/$defs/Route\",\n          \"description\": \"Optional. How to deliver the prompt; defaults to bridge-relay when omitted.\"\n        },\n        \"routeHint\": {\n          \"description\": \"Optional routing detail — e.g. the operator's opaque conversationRef for `bridge-relay`.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"platform\",\n        \"context\",\n        \"approver\"\n      ],\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"approvers\": {\n          \"description\": \"Matching approver bindings.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/ApproverBinding\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"approvers\"\n      ],\n      \"title\": \"Consent List Approvers — response payload\",\n      \"type\": \"object\"\n    },\n    \"Route\": {\n      \"description\": \"How a consent prompt reaches the approver: `wake` pushes to the approver's device for a DID-signed decision; `bridge-relay` renders it through an enrolled bridge (e.g. a numbered card in the operator's messaging app) for a bridge-attested decision.\",\n      \"enum\": [\n        \"wake\",\n        \"bridge-relay\"\n      ],\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/consent/approver-list/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Fetch approver bindings, optionally filtered by platform or context.\",\n  \"properties\": {\n    \"context\": {\n      \"description\": \"Optional. Restrict to this context path.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"platform\": {\n      \"description\": \"Optional. Restrict to this platform tag.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"title\": \"Consent List Approvers — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"ApproverBinding\":{\"additionalProperties\":false,\"description\":\"Who approves inbound-messaging consent for a given platform within a VTA context, and how the prompt reaches them.\",\"properties\":{\"approver\":{\"description\":\"VID (DID) of the operator authorized to decide consent for this platform/context.\",\"minLength\":1,\"type\":\"string\"},\"context\":{\"description\":\"The VTA context path this binding applies to.\",\"minLength\":1,\"type\":\"string\"},\"platform\":{\"description\":\"Messaging-platform tag, e.g. \\\"signal\\\", \\\"whatsapp\\\", \\\"slack\\\".\",\"minLength\":1,\"type\":\"string\"},\"route\":{\"$ref\":\"#/$defs/Route\",\"description\":\"Optional. How to deliver the prompt; defaults to bridge-relay when omitted.\"},\"routeHint\":{\"description\":\"Optional routing detail — e.g. the operator's opaque conversationRef for `bridge-relay`.\",\"type\":\"string\"}},\"required\":[\"platform\",\"context\",\"approver\"],\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"approvers\":{\"description\":\"Matching approver bindings.\",\"items\":{\"$ref\":\"#/$defs/ApproverBinding\"},\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"approvers\"],\"title\":\"Consent List Approvers — response payload\",\"type\":\"object\"},\"Route\":{\"description\":\"How a consent prompt reaches the approver: `wake` pushes to the approver's device for a DID-signed decision; `bridge-relay` renders it through an enrolled bridge (e.g. a numbered card in the operator's messaging app) for a bridge-attested decision.\",\"enum\":[\"wake\",\"bridge-relay\"],\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/consent/approver-list/1.0\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Fetch approver bindings, optionally filtered by platform or context.\",\"properties\":{\"context\":{\"description\":\"Optional. Restrict to this context path.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"platform\":{\"description\":\"Optional. Restrict to this platform tag.\",\"minLength\":1,\"type\":\"string\"}},\"title\":\"Consent List Approvers — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/consent/approver-list/1.0#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ApproverBinding\": {\n      \"additionalProperties\": false,\n      \"description\": \"Who approves inbound-messaging consent for a given platform within a VTA context, and how the prompt reaches them.\",\n      \"properties\": {\n        \"approver\": {\n          \"description\": \"VID (DID) of the operator authorized to decide consent for this platform/context.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"context\": {\n          \"description\": \"The VTA context path this binding applies to.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"platform\": {\n          \"description\": \"Messaging-platform tag, e.g. \\\"signal\\\", \\\"whatsapp\\\", \\\"slack\\\".\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"route\": {\n          \"$ref\": \"#/$defs/Route\",\n          \"description\": \"Optional. How to deliver the prompt; defaults to bridge-relay when omitted.\"\n        },\n        \"routeHint\": {\n          \"description\": \"Optional routing detail — e.g. the operator's opaque conversationRef for `bridge-relay`.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"platform\",\n        \"context\",\n        \"approver\"\n      ],\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"approvers\": {\n          \"description\": \"Matching approver bindings.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/ApproverBinding\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"approvers\"\n      ],\n      \"title\": \"Consent List Approvers — response payload\",\n      \"type\": \"object\"\n    },\n    \"Route\": {\n      \"description\": \"How a consent prompt reaches the approver: `wake` pushes to the approver's device for a DID-signed decision; `bridge-relay` renders it through an enrolled bridge (e.g. a numbered card in the operator's messaging app) for a bridge-attested decision.\",\n      \"enum\": [\n        \"wake\",\n        \"bridge-relay\"\n      ],\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"ApproverBinding\":{\"additionalProperties\":false,\"description\":\"Who approves inbound-messaging consent for a given platform within a VTA context, and how the prompt reaches them.\",\"properties\":{\"approver\":{\"description\":\"VID (DID) of the operator authorized to decide consent for this platform/context.\",\"minLength\":1,\"type\":\"string\"},\"context\":{\"description\":\"The VTA context path this binding applies to.\",\"minLength\":1,\"type\":\"string\"},\"platform\":{\"description\":\"Messaging-platform tag, e.g. \\\"signal\\\", \\\"whatsapp\\\", \\\"slack\\\".\",\"minLength\":1,\"type\":\"string\"},\"route\":{\"$ref\":\"#/$defs/Route\",\"description\":\"Optional. How to deliver the prompt; defaults to bridge-relay when omitted.\"},\"routeHint\":{\"description\":\"Optional routing detail — e.g. the operator's opaque conversationRef for `bridge-relay`.\",\"type\":\"string\"}},\"required\":[\"platform\",\"context\",\"approver\"],\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"approvers\":{\"description\":\"Matching approver bindings.\",\"items\":{\"$ref\":\"#/$defs/ApproverBinding\"},\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"approvers\"],\"title\":\"Consent List Approvers — response payload\",\"type\":\"object\"},\"Route\":{\"description\":\"How a consent prompt reaches the approver: `wake` pushes to the approver's device for a DID-signed decision; `bridge-relay` renders it through an enrolled bridge (e.g. a numbered card in the operator's messaging app) for a bridge-attested decision.\",\"enum\":[\"wake\",\"bridge-relay\"],\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

@@ -34,16 +34,6 @@ pub mod error {
 }
 ///The community's hidden-vetting parameters exactly as its join manifest publishes them, under the criterion's `vetting.ext`. The caller copies them in verbatim on every call that needs them, because the community rotates labels and the engine keeps no copy of its own: a stale copy costs the caller a refused proof, never a mistaken one.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "CommunityParameters",
-///  "description": "The community's hidden-vetting parameters exactly as its join manifest publishes them, under the criterion's `vetting.ext`. The caller copies them in verbatim on every call that needs them, because the community rotates labels and the engine keeps no copy of its own: a stale copy costs the caller a refused proof, never a mistaken one.",
-///  "$ref": "#/definitions/PublishedConfig"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct CommunityParameters(pub PublishedConfig);
@@ -65,21 +55,6 @@ impl ::std::convert::From<PublishedConfig> for CommunityParameters {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -101,15 +76,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -173,17 +139,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A binary value, multibase base58btc over the suite's canonical encoding.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Multibase",
-///  "description": "A binary value, multibase base58btc over the suite's canonical encoding.",
-///  "type": "string",
-///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Multibase(::std::string::String);
@@ -247,73 +202,6 @@ impl<'de> ::serde::Deserialize<'de> for Multibase {
 }
 ///A vetter's client hands its VTA the community's answer to a token draw; the VTA unblinds the tokens into the vetter's wallet.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/pcs/tokens/accept/0.1",
-///  "title": "Payload",
-///  "description": "A vetter's client hands its VTA the community's answer to a token draw; the VTA unblinds the tokens into the vetter's wallet.",
-///  "type": "object",
-///  "required": [
-///    "community",
-///    "contextId",
-///    "parameters",
-///    "response"
-///  ],
-///  "properties": {
-///    "community": {
-///      "description": "The community's DID: the helper whose parameters the engine runs under.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "contextId": {
-///      "description": "The context the engine belongs to. Its key is derived from this context's base.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "parameters": {
-///      "description": "The community's published hidden-vetting parameters, copied verbatim from its join manifest.",
-///      "$ref": "#/definitions/CommunityParameters"
-///    },
-///    "response": {
-///      "description": "The payload of the community's vtc/vetting/vetters/pcs-tokens/0.1 response, without its ext.",
-///      "type": "object",
-///      "required": [
-///        "label",
-///        "preCredentials",
-///        "tick"
-///      ],
-///      "properties": {
-///        "label": {
-///          "type": "string",
-///          "maxLength": 128,
-///          "minLength": 1
-///        },
-///        "preCredentials": {
-///          "type": "array",
-///          "items": {
-///            "type": "string",
-///            "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///          },
-///          "maxItems": 64,
-///          "minItems": 1
-///        },
-///        "tick": {
-///          "type": "integer",
-///          "minimum": 0.0
-///        }
-///      },
-///      "additionalProperties": false
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -336,16 +224,6 @@ impl Payload {
 }
 ///The community's DID: the helper whose parameters the engine runs under.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The community's DID: the helper whose parameters the engine runs under.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadCommunity(::std::string::String);
@@ -405,16 +283,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCommunity {
 }
 ///The context the engine belongs to. Its key is derived from this context's base.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The context the engine belongs to. Its key is derived from this context's base.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadContextId(::std::string::String);
@@ -474,41 +342,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
 }
 ///The payload of the community's vtc/vetting/vetters/pcs-tokens/0.1 response, without its ext.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The payload of the community's vtc/vetting/vetters/pcs-tokens/0.1 response, without its ext.",
-///  "type": "object",
-///  "required": [
-///    "label",
-///    "preCredentials",
-///    "tick"
-///  ],
-///  "properties": {
-///    "label": {
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "preCredentials": {
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///      },
-///      "maxItems": 64,
-///      "minItems": 1
-///    },
-///    "tick": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -525,16 +358,6 @@ impl PayloadResponse {
 }
 ///`PayloadResponseLabel`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadResponseLabel(::std::string::String);
@@ -597,15 +420,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadResponseLabel {
 }
 ///`PayloadResponsePreCredentialsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadResponsePreCredentialsItem(::std::string::String);
@@ -669,71 +483,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadResponsePreCredentialsItem {
 }
 ///The parameters exactly as they now appear in this community's join manifest, under vetting.ext. What an applicant and a vetter read.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "PublishedConfig",
-///  "description": "The parameters exactly as they now appear in this community's join manifest, under vetting.ext. What an applicant and a vetter read.",
-///  "type": "object",
-///  "required": [
-///    "dripPerTick",
-///    "events",
-///    "helperKey",
-///    "suite",
-///    "tickLength",
-///    "tokenKey",
-///    "tokenLabels",
-///    "vetterLabels"
-///  ],
-///  "properties": {
-///    "dripPerTick": {
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "events": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/PublishedEvent"
-///      }
-///    },
-///    "helperKey": {
-///      "description": "The helper verification key, multibase — named for its role on the wire rather than for hvk.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "suite": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "tickLength": {
-///      "$ref": "#/definitions/TickLength"
-///    },
-///    "tokenKey": {
-///      "description": "The token verification key, multibase — named for its role on the wire rather than for tvk.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "tokenLabels": {
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "minLength": 1
-///      }
-///    },
-///    "vetterLabels": {
-///      "description": "Class labels published whole, e.g. vetter/2026-09 — a request names one of these, not the bare period.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "minLength": 1
-///      }
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -763,16 +512,6 @@ impl PublishedConfig {
 }
 ///The helper verification key, multibase — named for its role on the wire rather than for hvk.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The helper verification key, multibase — named for its role on the wire rather than for hvk.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PublishedConfigHelperKey(::std::string::String);
@@ -832,15 +571,6 @@ impl<'de> ::serde::Deserialize<'de> for PublishedConfigHelperKey {
 }
 ///`PublishedConfigSuite`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PublishedConfigSuite(::std::string::String);
@@ -900,16 +630,6 @@ impl<'de> ::serde::Deserialize<'de> for PublishedConfigSuite {
 }
 ///The token verification key, multibase — named for its role on the wire rather than for tvk.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The token verification key, multibase — named for its role on the wire rather than for tvk.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PublishedConfigTokenKey(::std::string::String);
@@ -969,15 +689,6 @@ impl<'de> ::serde::Deserialize<'de> for PublishedConfigTokenKey {
 }
 ///`PublishedConfigTokenLabelsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PublishedConfigTokenLabelsItem(::std::string::String);
@@ -1037,15 +748,6 @@ impl<'de> ::serde::Deserialize<'de> for PublishedConfigTokenLabelsItem {
 }
 ///`PublishedConfigVetterLabelsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PublishedConfigVetterLabelsItem(::std::string::String);
@@ -1105,48 +807,6 @@ impl<'de> ::serde::Deserialize<'de> for PublishedConfigVetterLabelsItem {
 }
 ///The published shape drops approvedBy and graceDays: who approved is the community's own record, and a vetter is told closesAfter when its request is approved rather than being handed the raw grace period here.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "PublishedEvent",
-///  "description": "The published shape drops approvedBy and graceDays: who approved is the community's own record, and a vetter is told closesAfter when its request is approved rather than being handed the raw grace period here.",
-///  "type": "object",
-///  "required": [
-///    "endDate",
-///    "eventId",
-///    "groupFloor",
-///    "startDate",
-///    "tiers"
-///  ],
-///  "properties": {
-///    "endDate": {
-///      "type": "string",
-///      "format": "date"
-///    },
-///    "eventId": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "groupFloor": {
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "startDate": {
-///      "type": "string",
-///      "format": "date"
-///    },
-///    "tiers": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Tier"
-///      }
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1168,15 +828,6 @@ impl PublishedEvent {
 }
 ///`PublishedEventEventId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PublishedEventEventId(::std::string::String);
@@ -1236,34 +887,6 @@ impl<'de> ::serde::Deserialize<'de> for PublishedEventEventId {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "received",
-///    "vetter"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "received": {
-///      "description": "Tokens taken into the wallet.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "vetter": {
-///      "$ref": "#/definitions/VetterSummary"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1281,17 +904,6 @@ impl Response {
 }
 ///The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "TickLength",
-///  "description": "The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`).",
-///  "type": "string",
-///  "pattern": "^P(?:\\d+D(?:T\\d+H)?|T\\d+H)$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct TickLength(::std::string::String);
@@ -1355,32 +967,6 @@ impl<'de> ::serde::Deserialize<'de> for TickLength {
 }
 ///`Tier`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Tier",
-///  "type": "object",
-///  "required": [
-///    "dripPerTick",
-///    "name"
-///  ],
-///  "properties": {
-///    "dripPerTick": {
-///      "description": "How many tokens a tick under this tier yields.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "name": {
-///      "description": "How the menu names it: desk, busy-desk.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1398,16 +984,6 @@ impl Tier {
 }
 ///How the menu names it: desk, busy-desk.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "How the menu names it: desk, busy-desk.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct TierName(::std::string::String);
@@ -1467,32 +1043,6 @@ impl<'de> ::serde::Deserialize<'de> for TierName {
 }
 ///One draw of the token drip: a label and a tick.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "TokenDraw",
-///  "description": "One draw of the token drip: a label and a tick.",
-///  "type": "object",
-///  "required": [
-///    "label",
-///    "tick"
-///  ],
-///  "properties": {
-///    "label": {
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "tick": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1507,16 +1057,6 @@ impl TokenDraw {
 }
 ///`TokenDrawLabel`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct TokenDrawLabel(::std::string::String);
@@ -1579,92 +1119,6 @@ impl<'de> ::serde::Deserialize<'de> for TokenDrawLabel {
 }
 ///A vetter engine as the VTA holds it, without its key, its credentials or its tokens.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "VetterSummary",
-///  "description": "A vetter engine as the VTA holds it, without its key, its credentials or its tokens.",
-///  "type": "object",
-///  "required": [
-///    "attested",
-///    "community",
-///    "contextId",
-///    "drawsInFlight",
-///    "enrolledLabels",
-///    "id",
-///    "memberDid",
-///    "pendingLabels",
-///    "suite",
-///    "tokensFree",
-///    "tokensHeld"
-///  ],
-///  "properties": {
-///    "attested": {
-///      "description": "Attestations made through this engine.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "community": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "contextId": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "drawsInFlight": {
-///      "description": "Draws requested and not yet accepted or abandoned.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/TokenDraw"
-///      }
-///    },
-///    "enrolledLabels": {
-///      "description": "Class labels this vetter holds a credential under, newest first.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "pattern": "^vetter/[0-9]{4}-[0-9]{2}$"
-///      }
-///    },
-///    "id": {
-///      "description": "The vetter's PCS identifier for this community.",
-///      "$ref": "#/definitions/Multibase"
-///    },
-///    "memberDid": {
-///      "description": "The member DID the engine draws tokens as. Bound into every token request.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "pendingLabels": {
-///      "description": "Class labels requested and not yet accepted.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "pattern": "^vetter/[0-9]{4}-[0-9]{2}$"
-///      }
-///    },
-///    "suite": {
-///      "type": "string",
-///      "maxLength": 64,
-///      "minLength": 1
-///    },
-///    "tokensFree": {
-///      "description": "Tokens held and not reserved.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "tokensHeld": {
-///      "description": "Tokens held in all.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1703,15 +1157,6 @@ impl VetterSummary {
 }
 ///`VetterSummaryCommunity`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct VetterSummaryCommunity(::std::string::String);
@@ -1771,15 +1216,6 @@ impl<'de> ::serde::Deserialize<'de> for VetterSummaryCommunity {
 }
 ///`VetterSummaryContextId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct VetterSummaryContextId(::std::string::String);
@@ -1839,15 +1275,6 @@ impl<'de> ::serde::Deserialize<'de> for VetterSummaryContextId {
 }
 ///`VetterSummaryEnrolledLabelsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^vetter/[0-9]{4}-[0-9]{2}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct VetterSummaryEnrolledLabelsItem(::std::string::String);
@@ -1911,16 +1338,6 @@ impl<'de> ::serde::Deserialize<'de> for VetterSummaryEnrolledLabelsItem {
 }
 ///The member DID the engine draws tokens as. Bound into every token request.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The member DID the engine draws tokens as. Bound into every token request.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct VetterSummaryMemberDid(::std::string::String);
@@ -1980,15 +1397,6 @@ impl<'de> ::serde::Deserialize<'de> for VetterSummaryMemberDid {
 }
 ///`VetterSummaryPendingLabelsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^vetter/[0-9]{4}-[0-9]{2}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct VetterSummaryPendingLabelsItem(::std::string::String);
@@ -2052,16 +1460,6 @@ impl<'de> ::serde::Deserialize<'de> for VetterSummaryPendingLabelsItem {
 }
 ///`VetterSummarySuite`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct VetterSummarySuite(::std::string::String);
@@ -2896,7 +2294,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CommunityParameters\": {\n      \"$ref\": \"#/$defs/PublishedConfig\",\n      \"description\": \"The community's hidden-vetting parameters exactly as its join manifest publishes them, under the criterion's `vetting.ext`. The caller copies them in verbatim on every call that needs them, because the community rotates labels and the engine keeps no copy of its own: a stale copy costs the caller a refused proof, never a mistaken one.\",\n      \"title\": \"CommunityParameters\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Multibase\": {\n      \"description\": \"A binary value, multibase base58btc over the suite's canonical encoding.\",\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"Multibase\",\n      \"type\": \"string\"\n    },\n    \"PublishedConfig\": {\n      \"additionalProperties\": false,\n      \"description\": \"The parameters exactly as they now appear in this community's join manifest, under vetting.ext. What an applicant and a vetter read.\",\n      \"properties\": {\n        \"dripPerTick\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"events\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/PublishedEvent\"\n          },\n          \"type\": \"array\"\n        },\n        \"helperKey\": {\n          \"description\": \"The helper verification key, multibase — named for its role on the wire rather than for hvk.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"suite\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tickLength\": {\n          \"$ref\": \"#/$defs/TickLength\"\n        },\n        \"tokenKey\": {\n          \"description\": \"The token verification key, multibase — named for its role on the wire rather than for tvk.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tokenLabels\": {\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"vetterLabels\": {\n          \"description\": \"Class labels published whole, e.g. vetter/2026-09 — a request names one of these, not the bare period.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"suite\",\n        \"helperKey\",\n        \"tokenKey\",\n        \"vetterLabels\",\n        \"tokenLabels\",\n        \"dripPerTick\",\n        \"tickLength\",\n        \"events\"\n      ],\n      \"title\": \"PublishedConfig\",\n      \"type\": \"object\"\n    },\n    \"PublishedEvent\": {\n      \"additionalProperties\": false,\n      \"description\": \"The published shape drops approvedBy and graceDays: who approved is the community's own record, and a vetter is told closesAfter when its request is approved rather than being handed the raw grace period here.\",\n      \"properties\": {\n        \"endDate\": {\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"eventId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"groupFloor\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"startDate\": {\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"tiers\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Tier\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"eventId\",\n        \"startDate\",\n        \"endDate\",\n        \"groupFloor\",\n        \"tiers\"\n      ],\n      \"title\": \"PublishedEvent\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"received\": {\n          \"description\": \"Tokens taken into the wallet.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"vetter\": {\n          \"$ref\": \"#/$defs/VetterSummary\"\n        }\n      },\n      \"required\": [\n        \"received\",\n        \"vetter\"\n      ],\n      \"title\": \"VTA PCS — Tokens — Accept — response payload\",\n      \"type\": \"object\"\n    },\n    \"TickLength\": {\n      \"description\": \"The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`).\",\n      \"pattern\": \"^P(?:\\\\d+D(?:T\\\\d+H)?|T\\\\d+H)$\",\n      \"title\": \"TickLength\",\n      \"type\": \"string\"\n    },\n    \"Tier\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"dripPerTick\": {\n          \"description\": \"How many tokens a tick under this tier yields.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"name\": {\n          \"description\": \"How the menu names it: desk, busy-desk.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"name\",\n        \"dripPerTick\"\n      ],\n      \"title\": \"Tier\",\n      \"type\": \"object\"\n    },\n    \"TokenDraw\": {\n      \"additionalProperties\": false,\n      \"description\": \"One draw of the token drip: a label and a tick.\",\n      \"properties\": {\n        \"label\": {\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tick\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"label\",\n        \"tick\"\n      ],\n      \"title\": \"TokenDraw\",\n      \"type\": \"object\"\n    },\n    \"VetterSummary\": {\n      \"additionalProperties\": false,\n      \"description\": \"A vetter engine as the VTA holds it, without its key, its credentials or its tokens.\",\n      \"properties\": {\n        \"attested\": {\n          \"description\": \"Attestations made through this engine.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"community\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"contextId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"drawsInFlight\": {\n          \"description\": \"Draws requested and not yet accepted or abandoned.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/TokenDraw\"\n          },\n          \"type\": \"array\"\n        },\n        \"enrolledLabels\": {\n          \"description\": \"Class labels this vetter holds a credential under, newest first.\",\n          \"items\": {\n            \"pattern\": \"^vetter/[0-9]{4}-[0-9]{2}$\",\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"id\": {\n          \"$ref\": \"#/$defs/Multibase\",\n          \"description\": \"The vetter's PCS identifier for this community.\"\n        },\n        \"memberDid\": {\n          \"description\": \"The member DID the engine draws tokens as. Bound into every token request.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"pendingLabels\": {\n          \"description\": \"Class labels requested and not yet accepted.\",\n          \"items\": {\n            \"pattern\": \"^vetter/[0-9]{4}-[0-9]{2}$\",\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"suite\": {\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tokensFree\": {\n          \"description\": \"Tokens held and not reserved.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"tokensHeld\": {\n          \"description\": \"Tokens held in all.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"contextId\",\n        \"community\",\n        \"memberDid\",\n        \"suite\",\n        \"id\",\n        \"enrolledLabels\",\n        \"pendingLabels\",\n        \"tokensFree\",\n        \"tokensHeld\",\n        \"drawsInFlight\",\n        \"attested\"\n      ],\n      \"title\": \"VetterSummary\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/pcs/tokens/accept/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A vetter's client hands its VTA the community's answer to a token draw; the VTA unblinds the tokens into the vetter's wallet.\",\n  \"properties\": {\n    \"community\": {\n      \"description\": \"The community's DID: the helper whose parameters the engine runs under.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"contextId\": {\n      \"description\": \"The context the engine belongs to. Its key is derived from this context's base.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"parameters\": {\n      \"$ref\": \"#/$defs/CommunityParameters\",\n      \"description\": \"The community's published hidden-vetting parameters, copied verbatim from its join manifest.\"\n    },\n    \"response\": {\n      \"additionalProperties\": false,\n      \"description\": \"The payload of the community's vtc/vetting/vetters/pcs-tokens/0.1 response, without its ext.\",\n      \"properties\": {\n        \"label\": {\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"preCredentials\": {\n          \"items\": {\n            \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"tick\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"label\",\n        \"tick\",\n        \"preCredentials\"\n      ],\n      \"type\": \"object\"\n    }\n  },\n  \"required\": [\n    \"contextId\",\n    \"community\",\n    \"parameters\",\n    \"response\"\n  ],\n  \"title\": \"VTA PCS — Tokens — Accept — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"CommunityParameters\":{\"$ref\":\"#/$defs/PublishedConfig\",\"description\":\"The community's hidden-vetting parameters exactly as its join manifest publishes them, under the criterion's `vetting.ext`. The caller copies them in verbatim on every call that needs them, because the community rotates labels and the engine keeps no copy of its own: a stale copy costs the caller a refused proof, never a mistaken one.\",\"title\":\"CommunityParameters\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Multibase\":{\"description\":\"A binary value, multibase base58btc over the suite's canonical encoding.\",\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"Multibase\",\"type\":\"string\"},\"PublishedConfig\":{\"additionalProperties\":false,\"description\":\"The parameters exactly as they now appear in this community's join manifest, under vetting.ext. What an applicant and a vetter read.\",\"properties\":{\"dripPerTick\":{\"minimum\":1,\"type\":\"integer\"},\"events\":{\"items\":{\"$ref\":\"#/$defs/PublishedEvent\"},\"type\":\"array\"},\"helperKey\":{\"description\":\"The helper verification key, multibase — named for its role on the wire rather than for hvk.\",\"minLength\":1,\"type\":\"string\"},\"suite\":{\"minLength\":1,\"type\":\"string\"},\"tickLength\":{\"$ref\":\"#/$defs/TickLength\"},\"tokenKey\":{\"description\":\"The token verification key, multibase — named for its role on the wire rather than for tvk.\",\"minLength\":1,\"type\":\"string\"},\"tokenLabels\":{\"items\":{\"minLength\":1,\"type\":\"string\"},\"type\":\"array\"},\"vetterLabels\":{\"description\":\"Class labels published whole, e.g. vetter/2026-09 — a request names one of these, not the bare period.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"suite\",\"helperKey\",\"tokenKey\",\"vetterLabels\",\"tokenLabels\",\"dripPerTick\",\"tickLength\",\"events\"],\"title\":\"PublishedConfig\",\"type\":\"object\"},\"PublishedEvent\":{\"additionalProperties\":false,\"description\":\"The published shape drops approvedBy and graceDays: who approved is the community's own record, and a vetter is told closesAfter when its request is approved rather than being handed the raw grace period here.\",\"properties\":{\"endDate\":{\"format\":\"date\",\"type\":\"string\"},\"eventId\":{\"minLength\":1,\"type\":\"string\"},\"groupFloor\":{\"minimum\":1,\"type\":\"integer\"},\"startDate\":{\"format\":\"date\",\"type\":\"string\"},\"tiers\":{\"items\":{\"$ref\":\"#/$defs/Tier\"},\"type\":\"array\"}},\"required\":[\"eventId\",\"startDate\",\"endDate\",\"groupFloor\",\"tiers\"],\"title\":\"PublishedEvent\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"received\":{\"description\":\"Tokens taken into the wallet.\",\"minimum\":0,\"type\":\"integer\"},\"vetter\":{\"$ref\":\"#/$defs/VetterSummary\"}},\"required\":[\"received\",\"vetter\"],\"title\":\"VTA PCS — Tokens — Accept — response payload\",\"type\":\"object\"},\"TickLength\":{\"description\":\"The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`).\",\"pattern\":\"^P(?:\\\\d+D(?:T\\\\d+H)?|T\\\\d+H)$\",\"title\":\"TickLength\",\"type\":\"string\"},\"Tier\":{\"additionalProperties\":false,\"properties\":{\"dripPerTick\":{\"description\":\"How many tokens a tick under this tier yields.\",\"minimum\":1,\"type\":\"integer\"},\"name\":{\"description\":\"How the menu names it: desk, busy-desk.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"name\",\"dripPerTick\"],\"title\":\"Tier\",\"type\":\"object\"},\"TokenDraw\":{\"additionalProperties\":false,\"description\":\"One draw of the token drip: a label and a tick.\",\"properties\":{\"label\":{\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"tick\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"label\",\"tick\"],\"title\":\"TokenDraw\",\"type\":\"object\"},\"VetterSummary\":{\"additionalProperties\":false,\"description\":\"A vetter engine as the VTA holds it, without its key, its credentials or its tokens.\",\"properties\":{\"attested\":{\"description\":\"Attestations made through this engine.\",\"minimum\":0,\"type\":\"integer\"},\"community\":{\"minLength\":1,\"type\":\"string\"},\"contextId\":{\"minLength\":1,\"type\":\"string\"},\"drawsInFlight\":{\"description\":\"Draws requested and not yet accepted or abandoned.\",\"items\":{\"$ref\":\"#/$defs/TokenDraw\"},\"type\":\"array\"},\"enrolledLabels\":{\"description\":\"Class labels this vetter holds a credential under, newest first.\",\"items\":{\"pattern\":\"^vetter/[0-9]{4}-[0-9]{2}$\",\"type\":\"string\"},\"type\":\"array\"},\"id\":{\"$ref\":\"#/$defs/Multibase\",\"description\":\"The vetter's PCS identifier for this community.\"},\"memberDid\":{\"description\":\"The member DID the engine draws tokens as. Bound into every token request.\",\"minLength\":1,\"type\":\"string\"},\"pendingLabels\":{\"description\":\"Class labels requested and not yet accepted.\",\"items\":{\"pattern\":\"^vetter/[0-9]{4}-[0-9]{2}$\",\"type\":\"string\"},\"type\":\"array\"},\"suite\":{\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"tokensFree\":{\"description\":\"Tokens held and not reserved.\",\"minimum\":0,\"type\":\"integer\"},\"tokensHeld\":{\"description\":\"Tokens held in all.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"contextId\",\"community\",\"memberDid\",\"suite\",\"id\",\"enrolledLabels\",\"pendingLabels\",\"tokensFree\",\"tokensHeld\",\"drawsInFlight\",\"attested\"],\"title\":\"VetterSummary\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vta/pcs/tokens/accept/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A vetter's client hands its VTA the community's answer to a token draw; the VTA unblinds the tokens into the vetter's wallet.\",\"properties\":{\"community\":{\"description\":\"The community's DID: the helper whose parameters the engine runs under.\",\"minLength\":1,\"type\":\"string\"},\"contextId\":{\"description\":\"The context the engine belongs to. Its key is derived from this context's base.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"parameters\":{\"$ref\":\"#/$defs/CommunityParameters\",\"description\":\"The community's published hidden-vetting parameters, copied verbatim from its join manifest.\"},\"response\":{\"additionalProperties\":false,\"description\":\"The payload of the community's vtc/vetting/vetters/pcs-tokens/0.1 response, without its ext.\",\"properties\":{\"label\":{\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"preCredentials\":{\"items\":{\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\"},\"tick\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"label\",\"tick\",\"preCredentials\"],\"type\":\"object\"}},\"required\":[\"contextId\",\"community\",\"parameters\",\"response\"],\"title\":\"VTA PCS — Tokens — Accept — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -2904,7 +2302,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CommunityParameters\": {\n      \"$ref\": \"#/$defs/PublishedConfig\",\n      \"description\": \"The community's hidden-vetting parameters exactly as its join manifest publishes them, under the criterion's `vetting.ext`. The caller copies them in verbatim on every call that needs them, because the community rotates labels and the engine keeps no copy of its own: a stale copy costs the caller a refused proof, never a mistaken one.\",\n      \"title\": \"CommunityParameters\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Multibase\": {\n      \"description\": \"A binary value, multibase base58btc over the suite's canonical encoding.\",\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"Multibase\",\n      \"type\": \"string\"\n    },\n    \"PublishedConfig\": {\n      \"additionalProperties\": false,\n      \"description\": \"The parameters exactly as they now appear in this community's join manifest, under vetting.ext. What an applicant and a vetter read.\",\n      \"properties\": {\n        \"dripPerTick\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"events\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/PublishedEvent\"\n          },\n          \"type\": \"array\"\n        },\n        \"helperKey\": {\n          \"description\": \"The helper verification key, multibase — named for its role on the wire rather than for hvk.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"suite\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tickLength\": {\n          \"$ref\": \"#/$defs/TickLength\"\n        },\n        \"tokenKey\": {\n          \"description\": \"The token verification key, multibase — named for its role on the wire rather than for tvk.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tokenLabels\": {\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"vetterLabels\": {\n          \"description\": \"Class labels published whole, e.g. vetter/2026-09 — a request names one of these, not the bare period.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"suite\",\n        \"helperKey\",\n        \"tokenKey\",\n        \"vetterLabels\",\n        \"tokenLabels\",\n        \"dripPerTick\",\n        \"tickLength\",\n        \"events\"\n      ],\n      \"title\": \"PublishedConfig\",\n      \"type\": \"object\"\n    },\n    \"PublishedEvent\": {\n      \"additionalProperties\": false,\n      \"description\": \"The published shape drops approvedBy and graceDays: who approved is the community's own record, and a vetter is told closesAfter when its request is approved rather than being handed the raw grace period here.\",\n      \"properties\": {\n        \"endDate\": {\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"eventId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"groupFloor\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"startDate\": {\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"tiers\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Tier\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"eventId\",\n        \"startDate\",\n        \"endDate\",\n        \"groupFloor\",\n        \"tiers\"\n      ],\n      \"title\": \"PublishedEvent\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"received\": {\n          \"description\": \"Tokens taken into the wallet.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"vetter\": {\n          \"$ref\": \"#/$defs/VetterSummary\"\n        }\n      },\n      \"required\": [\n        \"received\",\n        \"vetter\"\n      ],\n      \"title\": \"VTA PCS — Tokens — Accept — response payload\",\n      \"type\": \"object\"\n    },\n    \"TickLength\": {\n      \"description\": \"The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`).\",\n      \"pattern\": \"^P(?:\\\\d+D(?:T\\\\d+H)?|T\\\\d+H)$\",\n      \"title\": \"TickLength\",\n      \"type\": \"string\"\n    },\n    \"Tier\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"dripPerTick\": {\n          \"description\": \"How many tokens a tick under this tier yields.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"name\": {\n          \"description\": \"How the menu names it: desk, busy-desk.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"name\",\n        \"dripPerTick\"\n      ],\n      \"title\": \"Tier\",\n      \"type\": \"object\"\n    },\n    \"TokenDraw\": {\n      \"additionalProperties\": false,\n      \"description\": \"One draw of the token drip: a label and a tick.\",\n      \"properties\": {\n        \"label\": {\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tick\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"label\",\n        \"tick\"\n      ],\n      \"title\": \"TokenDraw\",\n      \"type\": \"object\"\n    },\n    \"VetterSummary\": {\n      \"additionalProperties\": false,\n      \"description\": \"A vetter engine as the VTA holds it, without its key, its credentials or its tokens.\",\n      \"properties\": {\n        \"attested\": {\n          \"description\": \"Attestations made through this engine.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"community\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"contextId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"drawsInFlight\": {\n          \"description\": \"Draws requested and not yet accepted or abandoned.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/TokenDraw\"\n          },\n          \"type\": \"array\"\n        },\n        \"enrolledLabels\": {\n          \"description\": \"Class labels this vetter holds a credential under, newest first.\",\n          \"items\": {\n            \"pattern\": \"^vetter/[0-9]{4}-[0-9]{2}$\",\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"id\": {\n          \"$ref\": \"#/$defs/Multibase\",\n          \"description\": \"The vetter's PCS identifier for this community.\"\n        },\n        \"memberDid\": {\n          \"description\": \"The member DID the engine draws tokens as. Bound into every token request.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"pendingLabels\": {\n          \"description\": \"Class labels requested and not yet accepted.\",\n          \"items\": {\n            \"pattern\": \"^vetter/[0-9]{4}-[0-9]{2}$\",\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"suite\": {\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tokensFree\": {\n          \"description\": \"Tokens held and not reserved.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"tokensHeld\": {\n          \"description\": \"Tokens held in all.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"contextId\",\n        \"community\",\n        \"memberDid\",\n        \"suite\",\n        \"id\",\n        \"enrolledLabels\",\n        \"pendingLabels\",\n        \"tokensFree\",\n        \"tokensHeld\",\n        \"drawsInFlight\",\n        \"attested\"\n      ],\n      \"title\": \"VetterSummary\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"CommunityParameters\":{\"$ref\":\"#/$defs/PublishedConfig\",\"description\":\"The community's hidden-vetting parameters exactly as its join manifest publishes them, under the criterion's `vetting.ext`. The caller copies them in verbatim on every call that needs them, because the community rotates labels and the engine keeps no copy of its own: a stale copy costs the caller a refused proof, never a mistaken one.\",\"title\":\"CommunityParameters\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Multibase\":{\"description\":\"A binary value, multibase base58btc over the suite's canonical encoding.\",\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"Multibase\",\"type\":\"string\"},\"PublishedConfig\":{\"additionalProperties\":false,\"description\":\"The parameters exactly as they now appear in this community's join manifest, under vetting.ext. What an applicant and a vetter read.\",\"properties\":{\"dripPerTick\":{\"minimum\":1,\"type\":\"integer\"},\"events\":{\"items\":{\"$ref\":\"#/$defs/PublishedEvent\"},\"type\":\"array\"},\"helperKey\":{\"description\":\"The helper verification key, multibase — named for its role on the wire rather than for hvk.\",\"minLength\":1,\"type\":\"string\"},\"suite\":{\"minLength\":1,\"type\":\"string\"},\"tickLength\":{\"$ref\":\"#/$defs/TickLength\"},\"tokenKey\":{\"description\":\"The token verification key, multibase — named for its role on the wire rather than for tvk.\",\"minLength\":1,\"type\":\"string\"},\"tokenLabels\":{\"items\":{\"minLength\":1,\"type\":\"string\"},\"type\":\"array\"},\"vetterLabels\":{\"description\":\"Class labels published whole, e.g. vetter/2026-09 — a request names one of these, not the bare period.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"suite\",\"helperKey\",\"tokenKey\",\"vetterLabels\",\"tokenLabels\",\"dripPerTick\",\"tickLength\",\"events\"],\"title\":\"PublishedConfig\",\"type\":\"object\"},\"PublishedEvent\":{\"additionalProperties\":false,\"description\":\"The published shape drops approvedBy and graceDays: who approved is the community's own record, and a vetter is told closesAfter when its request is approved rather than being handed the raw grace period here.\",\"properties\":{\"endDate\":{\"format\":\"date\",\"type\":\"string\"},\"eventId\":{\"minLength\":1,\"type\":\"string\"},\"groupFloor\":{\"minimum\":1,\"type\":\"integer\"},\"startDate\":{\"format\":\"date\",\"type\":\"string\"},\"tiers\":{\"items\":{\"$ref\":\"#/$defs/Tier\"},\"type\":\"array\"}},\"required\":[\"eventId\",\"startDate\",\"endDate\",\"groupFloor\",\"tiers\"],\"title\":\"PublishedEvent\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"received\":{\"description\":\"Tokens taken into the wallet.\",\"minimum\":0,\"type\":\"integer\"},\"vetter\":{\"$ref\":\"#/$defs/VetterSummary\"}},\"required\":[\"received\",\"vetter\"],\"title\":\"VTA PCS — Tokens — Accept — response payload\",\"type\":\"object\"},\"TickLength\":{\"description\":\"The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`).\",\"pattern\":\"^P(?:\\\\d+D(?:T\\\\d+H)?|T\\\\d+H)$\",\"title\":\"TickLength\",\"type\":\"string\"},\"Tier\":{\"additionalProperties\":false,\"properties\":{\"dripPerTick\":{\"description\":\"How many tokens a tick under this tier yields.\",\"minimum\":1,\"type\":\"integer\"},\"name\":{\"description\":\"How the menu names it: desk, busy-desk.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"name\",\"dripPerTick\"],\"title\":\"Tier\",\"type\":\"object\"},\"TokenDraw\":{\"additionalProperties\":false,\"description\":\"One draw of the token drip: a label and a tick.\",\"properties\":{\"label\":{\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"tick\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"label\",\"tick\"],\"title\":\"TokenDraw\",\"type\":\"object\"},\"VetterSummary\":{\"additionalProperties\":false,\"description\":\"A vetter engine as the VTA holds it, without its key, its credentials or its tokens.\",\"properties\":{\"attested\":{\"description\":\"Attestations made through this engine.\",\"minimum\":0,\"type\":\"integer\"},\"community\":{\"minLength\":1,\"type\":\"string\"},\"contextId\":{\"minLength\":1,\"type\":\"string\"},\"drawsInFlight\":{\"description\":\"Draws requested and not yet accepted or abandoned.\",\"items\":{\"$ref\":\"#/$defs/TokenDraw\"},\"type\":\"array\"},\"enrolledLabels\":{\"description\":\"Class labels this vetter holds a credential under, newest first.\",\"items\":{\"pattern\":\"^vetter/[0-9]{4}-[0-9]{2}$\",\"type\":\"string\"},\"type\":\"array\"},\"id\":{\"$ref\":\"#/$defs/Multibase\",\"description\":\"The vetter's PCS identifier for this community.\"},\"memberDid\":{\"description\":\"The member DID the engine draws tokens as. Bound into every token request.\",\"minLength\":1,\"type\":\"string\"},\"pendingLabels\":{\"description\":\"Class labels requested and not yet accepted.\",\"items\":{\"pattern\":\"^vetter/[0-9]{4}-[0-9]{2}$\",\"type\":\"string\"},\"type\":\"array\"},\"suite\":{\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"tokensFree\":{\"description\":\"Tokens held and not reserved.\",\"minimum\":0,\"type\":\"integer\"},\"tokensHeld\":{\"description\":\"Tokens held in all.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"contextId\",\"community\",\"memberDid\",\"suite\",\"id\",\"enrolledLabels\",\"pendingLabels\",\"tokensFree\",\"tokensHeld\",\"drawsInFlight\",\"attested\"],\"title\":\"VetterSummary\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

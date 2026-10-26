@@ -35,17 +35,6 @@ pub mod error {
 }
 ///Optimistic-concurrency precondition on a write. A positive value requires that the record's current `version` equals it exactly. Zero means "create only" — the write applies only if no LIVE record exists at the address, which is what makes lease acquisition safe: without it two instances can each read "absent", each write, and each believe it won. A tombstone is not a live record, so `expectedVersion: 0` succeeds over one; the created record takes the namespace's next counter value, which is necessarily greater than the tombstone's.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ExpectedVersion",
-///  "description": "Optimistic-concurrency precondition on a write. A positive value requires that the record's current `version` equals it exactly. Zero means \"create only\" — the write applies only if no LIVE record exists at the address, which is what makes lease acquisition safe: without it two instances can each read \"absent\", each write, and each believe it won. A tombstone is not a live record, so `expectedVersion: 0` succeeds over one; the created record takes the namespace's next counter value, which is necessarily greater than the tombstone's.",
-///  "type": "integer",
-///  "minimum": 0.0
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct ExpectedVersion(pub u64);
@@ -90,21 +79,6 @@ impl ::std::fmt::Display for ExpectedVersion {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -126,15 +100,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -198,19 +163,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Application-chosen identifier for a record within a namespace. Opaque to the maintainer: it MUST NOT be parsed, normalized, or case-folded, and prefix matching in `list` is a byte-prefix comparison over the UTF-8 encoding. Applications SHOULD use `/`-delimited hierarchical keys (`community/acme`, `contact/z6Mk…`) so that `prefix` can address a record family, but the delimiter is a convention between an application and itself — the maintainer attaches no meaning to it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Key",
-///  "description": "Application-chosen identifier for a record within a namespace. Opaque to the maintainer: it MUST NOT be parsed, normalized, or case-folded, and prefix matching in `list` is a byte-prefix comparison over the UTF-8 encoding. Applications SHOULD use `/`-delimited hierarchical keys (`community/acme`, `contact/z6Mk…`) so that `prefix` can address a record family, but the delimiter is a convention between an application and itself — the maintainer attaches no meaning to it.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1,
-///  "pattern": "^[^\\u0000]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Key(::std::string::String);
@@ -278,19 +230,6 @@ impl<'de> ::serde::Deserialize<'de> for Key {
 }
 ///Scopes one application's records within a context, so several tools can share a context without colliding — `openvtc`, `cnm`, an agent runtime. The maintainer MUST NOT interpret the value; it is an opaque partition name. Namespaces are first-come and unreserved, so an application SHOULD pick a stable, specific one: a future per-namespace ACL would grant on this exact string, which makes renaming a namespace a migration rather than an edit.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Namespace",
-///  "description": "Scopes one application's records within a context, so several tools can share a context without colliding — `openvtc`, `cnm`, an agent runtime. The maintainer MUST NOT interpret the value; it is an opaque partition name. Namespaces are first-come and unreserved, so an application SHOULD pick a stable, specific one: a future per-namespace ACL would grant on this exact string, which makes renaming a namespace a migration rather than an edit.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1,
-///  "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Namespace(::std::string::String);
@@ -360,57 +299,6 @@ impl<'de> ::serde::Deserialize<'de> for Namespace {
 }
 ///Write up to 64 application-state records in one round trip, each carrying its own optimistic-concurrency precondition. The batch `mode` decides what a single failure costs: `independent` (the default) applies each write on its own merits, `atomic` applies all or none.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/app-state/put-many/1.0",
-///  "title": "Payload",
-///  "description": "Write up to 64 application-state records in one round trip, each carrying its own optimistic-concurrency precondition. The batch `mode` decides what a single failure costs: `independent` (the default) applies each write on its own merits, `atomic` applies all or none.",
-///  "type": "object",
-///  "required": [
-///    "contextId",
-///    "namespace",
-///    "writes"
-///  ],
-///  "properties": {
-///    "contextId": {
-///      "description": "The VTA context the records are scoped to; the isolation boundary.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "mode": {
-///      "description": "`independent` applies each write on its own merits, so one conflicted record does not block the other nine — what a flush of unrelated edits wants, and why it is the default. `atomic` applies all or none, for records carrying a joint invariant. An atomic DEFAULT would let one stale record silently wedge an entire flush, and a caller could not tell a wedged flush from a slow one.",
-///      "default": "independent",
-///      "type": "string",
-///      "enum": [
-///        "independent",
-///        "atomic"
-///      ],
-///      "$comment": "The default is load-bearing rather than a convenience; see the spec's Abstract."
-///    },
-///    "namespace": {
-///      "description": "One namespace per batch. Atomicity is only meaningful within the counter the writes take their versions from, and that counter is per (contextId, namespace).",
-///      "$ref": "#/definitions/Namespace"
-///    },
-///    "writes": {
-///      "description": "The writes to apply. Keys MUST be distinct: two writes to one key in a batch have no defined order and are refused rather than serialised.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Write"
-///      },
-///      "maxItems": 64,
-///      "minItems": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -437,16 +325,6 @@ impl Payload {
 }
 ///The VTA context the records are scoped to; the isolation boundary.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The VTA context the records are scoped to; the isolation boundary.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadContextId(::std::string::String);
@@ -506,21 +384,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
 }
 ///`independent` applies each write on its own merits, so one conflicted record does not block the other nine — what a flush of unrelated edits wants, and why it is the default. `atomic` applies all or none, for records carrying a joint invariant. An atomic DEFAULT would let one stale record silently wedge an entire flush, and a caller could not tell a wedged flush from a slow one.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`independent` applies each write on its own merits, so one conflicted record does not block the other nine — what a flush of unrelated edits wants, and why it is the default. `atomic` applies all or none, for records carrying a joint invariant. An atomic DEFAULT would let one stale record silently wedge an entire flush, and a caller could not tell a wedged flush from a slow one.",
-///  "default": "independent",
-///  "type": "string",
-///  "enum": [
-///    "independent",
-///    "atomic"
-///  ],
-///  "$comment": "The default is load-bearing rather than a convenience; see the spec's Abstract."
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -587,49 +450,6 @@ impl ::std::default::Default for PayloadMode {
 }
 ///Success response to vta/app-state/put-many in `independent` mode. Type https://trusttasks.org/spec/vta/app-state/put-many/1.0#response. A response is returned even when some writes conflicted, because the task did what it promised — applied each write on its own merits — and the per-record outcomes are the answer rather than the failure. An `atomic` batch that does not apply is a trust-task-error carrying vta/app-state/put-many:atomicBatchRejected, whose details carry the same per-record outcomes.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to vta/app-state/put-many in `independent` mode. Type https://trusttasks.org/spec/vta/app-state/put-many/1.0#response. A response is returned even when some writes conflicted, because the task did what it promised — applied each write on its own merits — and the per-record outcomes are the answer rather than the failure. An `atomic` batch that does not apply is a trust-task-error carrying vta/app-state/put-many:atomicBatchRejected, whose details carry the same per-record outcomes.",
-///  "type": "object",
-///  "required": [
-///    "mode",
-///    "results"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "highWatermark": {
-///      "description": "The namespace's counter value after the batch. A writer that is also a sync consumer can adopt this instead of issuing a list call to discover where its own writes landed.",
-///      "$ref": "#/definitions/Version"
-///    },
-///    "mode": {
-///      "description": "The mode the maintainer applied, echoed so a caller relying on the default sees what it got.",
-///      "type": "string",
-///      "enum": [
-///        "independent",
-///        "atomic"
-///      ]
-///    },
-///    "results": {
-///      "description": "One result per requested write, in request order. Every write is accounted for.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/WriteResult"
-///      },
-///      "maxItems": 64,
-///      "minItems": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -657,19 +477,6 @@ impl Response {
 }
 ///The mode the maintainer applied, echoed so a caller relying on the default sees what it got.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The mode the maintainer applied, echoed so a caller relying on the default sees what it got.",
-///  "type": "string",
-///  "enum": [
-///    "independent",
-///    "atomic"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -731,17 +538,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseMode {
 }
 ///A value of the namespace's monotonic write counter (see this schema's description). Server-assigned; a producer never chooses one.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Version",
-///  "description": "A value of the namespace's monotonic write counter (see this schema's description). Server-assigned; a producer never chooses one.",
-///  "type": "integer",
-///  "minimum": 1.0
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Version(pub ::std::num::NonZeroU64);
@@ -786,58 +582,6 @@ impl ::std::fmt::Display for Version {
 }
 ///One write within the batch. Shaped exactly like a vta/app-state/put payload minus the context and namespace, which the batch supplies.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Write",
-///  "description": "One write within the batch. Shaped exactly like a vta/app-state/put payload minus the context and namespace, which the batch supplies.",
-///  "type": "object",
-///  "oneOf": [
-///    {
-///      "not": {
-///        "required": [
-///          "mergePatch"
-///        ]
-///      },
-///      "required": [
-///        "value"
-///      ]
-///    },
-///    {
-///      "not": {
-///        "required": [
-///          "value"
-///        ]
-///      },
-///      "required": [
-///        "mergePatch"
-///      ]
-///    }
-///  ],
-///  "required": [
-///    "key"
-///  ],
-///  "properties": {
-///    "expectedVersion": {
-///      "description": "This write's own precondition, evaluated independently of every other write in the batch. A positive value requires the record to be at exactly that version; 0 requires that no live record exists.",
-///      "$ref": "#/definitions/ExpectedVersion"
-///    },
-///    "key": {
-///      "$ref": "#/definitions/Key"
-///    },
-///    "mergePatch": {
-///      "description": "An RFC 7386 JSON Merge Patch applied to the record's current value. Requires a live record at the address; otherwise this write's outcome is `notFound`. Mutually exclusive with `value`.",
-///      "type": "object"
-///    },
-///    "value": {
-///      "description": "The complete new value, replacing whatever the record held. Any JSON value, including `null`. Mutually exclusive with `mergePatch`."
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged, deny_unknown_fields)]
 #[non_exhaustive]
@@ -870,66 +614,6 @@ pub enum Write {
 }
 ///The outcome of one write within a `vta/app-state/put-many` batch. Per-record rather than per-batch, because the default batch mode applies each write on its own merits: a caller flushing ten unrelated edits needs to know which one conflicted, not merely that something did.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "WriteResult",
-///  "description": "The outcome of one write within a `vta/app-state/put-many` batch. Per-record rather than per-batch, because the default batch mode applies each write on its own merits: a caller flushing ten unrelated edits needs to know which one conflicted, not merely that something did.",
-///  "type": "object",
-///  "required": [
-///    "key",
-///    "outcome"
-///  ],
-///  "properties": {
-///    "actualBytes": {
-///      "description": "On `tooLarge`: the size of the rejected value in bytes.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "created": {
-///      "description": "On `written`: true when no live record existed at the address beforehand.",
-///      "type": "boolean"
-///    },
-///    "currentDeleted": {
-///      "description": "On `conflict`: true when the address holds a tombstone rather than a live record.",
-///      "type": "boolean"
-///    },
-///    "currentValue": {
-///      "description": "On `conflict`: the value the maintainer actually holds, returned WITH the rejection rather than left for the caller to re-read. A bare rejection has no fixed point under contention — between the rejection and the re-read the record can change again — so returning the winner's view removes the race rather than narrowing it. Absent when `currentDeleted` is true or no record exists."
-///    },
-///    "currentVersion": {
-///      "description": "On `conflict`: the version the maintainer actually holds. Absent when the conflict is that no record exists (`expectedVersion` was positive and the address is empty).",
-///      "$ref": "#/definitions/Version"
-///    },
-///    "key": {
-///      "$ref": "#/definitions/Key"
-///    },
-///    "limitBytes": {
-///      "description": "On `tooLarge`: the maintainer's per-record cap in bytes.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "outcome": {
-///      "description": "`written`: applied, and `version` carries the new value. `conflict`: `expectedVersion` did not match; `currentVersion`, `currentValue` and `currentDeleted` carry the maintainer's view so the caller can resolve without a re-read. `tooLarge`: the value exceeded the per-record cap; `limitBytes` and `actualBytes` say by how much. `notFound`: a `mergePatch` write named an address with no live record. `skipped`: atomic mode only — this write was not attempted because another in the batch failed.",
-///      "type": "string",
-///      "enum": [
-///        "written",
-///        "conflict",
-///        "tooLarge",
-///        "notFound",
-///        "skipped"
-///      ]
-///    },
-///    "version": {
-///      "description": "The new version, on `written`.",
-///      "$ref": "#/definitions/Version"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -986,22 +670,6 @@ impl WriteResult {
 }
 ///`written`: applied, and `version` carries the new value. `conflict`: `expectedVersion` did not match; `currentVersion`, `currentValue` and `currentDeleted` carry the maintainer's view so the caller can resolve without a re-read. `tooLarge`: the value exceeded the per-record cap; `limitBytes` and `actualBytes` say by how much. `notFound`: a `mergePatch` write named an address with no live record. `skipped`: atomic mode only — this write was not attempted because another in the batch failed.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`written`: applied, and `version` carries the new value. `conflict`: `expectedVersion` did not match; `currentVersion`, `currentValue` and `currentDeleted` carry the maintainer's view so the caller can resolve without a re-read. `tooLarge`: the value exceeded the per-record cap; `limitBytes` and `actualBytes` say by how much. `notFound`: a `mergePatch` write named an address with no live record. `skipped`: atomic mode only — this write was not attempted because another in the batch failed.",
-///  "type": "string",
-///  "enum": [
-///    "written",
-///    "conflict",
-///    "tooLarge",
-///    "notFound",
-///    "skipped"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1420,7 +1088,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ExpectedVersion\": {\n      \"description\": \"Optimistic-concurrency precondition on a write. A positive value requires that the record's current `version` equals it exactly. Zero means \\\"create only\\\" — the write applies only if no LIVE record exists at the address, which is what makes lease acquisition safe: without it two instances can each read \\\"absent\\\", each write, and each believe it won. A tombstone is not a live record, so `expectedVersion: 0` succeeds over one; the created record takes the namespace's next counter value, which is necessarily greater than the tombstone's.\",\n      \"minimum\": 0,\n      \"title\": \"ExpectedVersion\",\n      \"type\": \"integer\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Key\": {\n      \"description\": \"Application-chosen identifier for a record within a namespace. Opaque to the maintainer: it MUST NOT be parsed, normalized, or case-folded, and prefix matching in `list` is a byte-prefix comparison over the UTF-8 encoding. Applications SHOULD use `/`-delimited hierarchical keys (`community/acme`, `contact/z6Mk…`) so that `prefix` can address a record family, but the delimiter is a convention between an application and itself — the maintainer attaches no meaning to it.\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"pattern\": \"^[^\\\\u0000]+$\",\n      \"title\": \"Key\",\n      \"type\": \"string\"\n    },\n    \"Namespace\": {\n      \"description\": \"Scopes one application's records within a context, so several tools can share a context without colliding — `openvtc`, `cnm`, an agent runtime. The maintainer MUST NOT interpret the value; it is an opaque partition name. Namespaces are first-come and unreserved, so an application SHOULD pick a stable, specific one: a future per-namespace ACL would grant on this exact string, which makes renaming a namespace a migration rather than an edit.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z][a-z0-9]*(-[a-z0-9]+)*$\",\n      \"title\": \"Namespace\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/app-state/put-many in `independent` mode. Type https://trusttasks.org/spec/vta/app-state/put-many/1.0#response. A response is returned even when some writes conflicted, because the task did what it promised — applied each write on its own merits — and the per-record outcomes are the answer rather than the failure. An `atomic` batch that does not apply is a trust-task-error carrying vta/app-state/put-many:atomicBatchRejected, whose details carry the same per-record outcomes.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"highWatermark\": {\n          \"$ref\": \"#/$defs/Version\",\n          \"description\": \"The namespace's counter value after the batch. A writer that is also a sync consumer can adopt this instead of issuing a list call to discover where its own writes landed.\"\n        },\n        \"mode\": {\n          \"description\": \"The mode the maintainer applied, echoed so a caller relying on the default sees what it got.\",\n          \"enum\": [\n            \"independent\",\n            \"atomic\"\n          ],\n          \"type\": \"string\"\n        },\n        \"results\": {\n          \"description\": \"One result per requested write, in request order. Every write is accounted for.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/WriteResult\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"mode\",\n        \"results\"\n      ],\n      \"title\": \"VTA Application State Put-Many — response payload\",\n      \"type\": \"object\"\n    },\n    \"Version\": {\n      \"description\": \"A value of the namespace's monotonic write counter (see this schema's description). Server-assigned; a producer never chooses one.\",\n      \"minimum\": 1,\n      \"title\": \"Version\",\n      \"type\": \"integer\"\n    },\n    \"Write\": {\n      \"additionalProperties\": false,\n      \"description\": \"One write within the batch. Shaped exactly like a vta/app-state/put payload minus the context and namespace, which the batch supplies.\",\n      \"oneOf\": [\n        {\n          \"not\": {\n            \"required\": [\n              \"mergePatch\"\n            ]\n          },\n          \"required\": [\n            \"value\"\n          ]\n        },\n        {\n          \"not\": {\n            \"required\": [\n              \"value\"\n            ]\n          },\n          \"required\": [\n            \"mergePatch\"\n          ]\n        }\n      ],\n      \"properties\": {\n        \"expectedVersion\": {\n          \"$ref\": \"#/$defs/ExpectedVersion\",\n          \"description\": \"This write's own precondition, evaluated independently of every other write in the batch. A positive value requires the record to be at exactly that version; 0 requires that no live record exists.\"\n        },\n        \"key\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"mergePatch\": {\n          \"description\": \"An RFC 7386 JSON Merge Patch applied to the record's current value. Requires a live record at the address; otherwise this write's outcome is `notFound`. Mutually exclusive with `value`.\",\n          \"type\": \"object\"\n        },\n        \"value\": {\n          \"description\": \"The complete new value, replacing whatever the record held. Any JSON value, including `null`. Mutually exclusive with `mergePatch`.\"\n        }\n      },\n      \"required\": [\n        \"key\"\n      ],\n      \"title\": \"Write\",\n      \"type\": \"object\"\n    },\n    \"WriteResult\": {\n      \"additionalProperties\": false,\n      \"description\": \"The outcome of one write within a `vta/app-state/put-many` batch. Per-record rather than per-batch, because the default batch mode applies each write on its own merits: a caller flushing ten unrelated edits needs to know which one conflicted, not merely that something did.\",\n      \"properties\": {\n        \"actualBytes\": {\n          \"description\": \"On `tooLarge`: the size of the rejected value in bytes.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"created\": {\n          \"description\": \"On `written`: true when no live record existed at the address beforehand.\",\n          \"type\": \"boolean\"\n        },\n        \"currentDeleted\": {\n          \"description\": \"On `conflict`: true when the address holds a tombstone rather than a live record.\",\n          \"type\": \"boolean\"\n        },\n        \"currentValue\": {\n          \"description\": \"On `conflict`: the value the maintainer actually holds, returned WITH the rejection rather than left for the caller to re-read. A bare rejection has no fixed point under contention — between the rejection and the re-read the record can change again — so returning the winner's view removes the race rather than narrowing it. Absent when `currentDeleted` is true or no record exists.\"\n        },\n        \"currentVersion\": {\n          \"$ref\": \"#/$defs/Version\",\n          \"description\": \"On `conflict`: the version the maintainer actually holds. Absent when the conflict is that no record exists (`expectedVersion` was positive and the address is empty).\"\n        },\n        \"key\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"limitBytes\": {\n          \"description\": \"On `tooLarge`: the maintainer's per-record cap in bytes.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"outcome\": {\n          \"description\": \"`written`: applied, and `version` carries the new value. `conflict`: `expectedVersion` did not match; `currentVersion`, `currentValue` and `currentDeleted` carry the maintainer's view so the caller can resolve without a re-read. `tooLarge`: the value exceeded the per-record cap; `limitBytes` and `actualBytes` say by how much. `notFound`: a `mergePatch` write named an address with no live record. `skipped`: atomic mode only — this write was not attempted because another in the batch failed.\",\n          \"enum\": [\n            \"written\",\n            \"conflict\",\n            \"tooLarge\",\n            \"notFound\",\n            \"skipped\"\n          ],\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"$ref\": \"#/$defs/Version\",\n          \"description\": \"The new version, on `written`.\"\n        }\n      },\n      \"required\": [\n        \"key\",\n        \"outcome\"\n      ],\n      \"title\": \"WriteResult\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/app-state/put-many/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Write up to 64 application-state records in one round trip, each carrying its own optimistic-concurrency precondition. The batch `mode` decides what a single failure costs: `independent` (the default) applies each write on its own merits, `atomic` applies all or none.\",\n  \"properties\": {\n    \"contextId\": {\n      \"description\": \"The VTA context the records are scoped to; the isolation boundary.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"mode\": {\n      \"$comment\": \"The default is load-bearing rather than a convenience; see the spec's Abstract.\",\n      \"default\": \"independent\",\n      \"description\": \"`independent` applies each write on its own merits, so one conflicted record does not block the other nine — what a flush of unrelated edits wants, and why it is the default. `atomic` applies all or none, for records carrying a joint invariant. An atomic DEFAULT would let one stale record silently wedge an entire flush, and a caller could not tell a wedged flush from a slow one.\",\n      \"enum\": [\n        \"independent\",\n        \"atomic\"\n      ],\n      \"type\": \"string\"\n    },\n    \"namespace\": {\n      \"$ref\": \"#/$defs/Namespace\",\n      \"description\": \"One namespace per batch. Atomicity is only meaningful within the counter the writes take their versions from, and that counter is per (contextId, namespace).\"\n    },\n    \"writes\": {\n      \"description\": \"The writes to apply. Keys MUST be distinct: two writes to one key in a batch have no defined order and are refused rather than serialised.\",\n      \"items\": {\n        \"$ref\": \"#/$defs/Write\"\n      },\n      \"maxItems\": 64,\n      \"minItems\": 1,\n      \"type\": \"array\"\n    }\n  },\n  \"required\": [\n    \"contextId\",\n    \"namespace\",\n    \"writes\"\n  ],\n  \"title\": \"VTA Application State Put-Many — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"ExpectedVersion\":{\"description\":\"Optimistic-concurrency precondition on a write. A positive value requires that the record's current `version` equals it exactly. Zero means \\\"create only\\\" — the write applies only if no LIVE record exists at the address, which is what makes lease acquisition safe: without it two instances can each read \\\"absent\\\", each write, and each believe it won. A tombstone is not a live record, so `expectedVersion: 0` succeeds over one; the created record takes the namespace's next counter value, which is necessarily greater than the tombstone's.\",\"minimum\":0,\"title\":\"ExpectedVersion\",\"type\":\"integer\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Key\":{\"description\":\"Application-chosen identifier for a record within a namespace. Opaque to the maintainer: it MUST NOT be parsed, normalized, or case-folded, and prefix matching in `list` is a byte-prefix comparison over the UTF-8 encoding. Applications SHOULD use `/`-delimited hierarchical keys (`community/acme`, `contact/z6Mk…`) so that `prefix` can address a record family, but the delimiter is a convention between an application and itself — the maintainer attaches no meaning to it.\",\"maxLength\":512,\"minLength\":1,\"pattern\":\"^[^\\\\u0000]+$\",\"title\":\"Key\",\"type\":\"string\"},\"Namespace\":{\"description\":\"Scopes one application's records within a context, so several tools can share a context without colliding — `openvtc`, `cnm`, an agent runtime. The maintainer MUST NOT interpret the value; it is an opaque partition name. Namespaces are first-come and unreserved, so an application SHOULD pick a stable, specific one: a future per-namespace ACL would grant on this exact string, which makes renaming a namespace a migration rather than an edit.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z][a-z0-9]*(-[a-z0-9]+)*$\",\"title\":\"Namespace\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vta/app-state/put-many in `independent` mode. Type https://trusttasks.org/spec/vta/app-state/put-many/1.0#response. A response is returned even when some writes conflicted, because the task did what it promised — applied each write on its own merits — and the per-record outcomes are the answer rather than the failure. An `atomic` batch that does not apply is a trust-task-error carrying vta/app-state/put-many:atomicBatchRejected, whose details carry the same per-record outcomes.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"highWatermark\":{\"$ref\":\"#/$defs/Version\",\"description\":\"The namespace's counter value after the batch. A writer that is also a sync consumer can adopt this instead of issuing a list call to discover where its own writes landed.\"},\"mode\":{\"description\":\"The mode the maintainer applied, echoed so a caller relying on the default sees what it got.\",\"enum\":[\"independent\",\"atomic\"],\"type\":\"string\"},\"results\":{\"description\":\"One result per requested write, in request order. Every write is accounted for.\",\"items\":{\"$ref\":\"#/$defs/WriteResult\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\"}},\"required\":[\"mode\",\"results\"],\"title\":\"VTA Application State Put-Many — response payload\",\"type\":\"object\"},\"Version\":{\"description\":\"A value of the namespace's monotonic write counter (see this schema's description). Server-assigned; a producer never chooses one.\",\"minimum\":1,\"title\":\"Version\",\"type\":\"integer\"},\"Write\":{\"additionalProperties\":false,\"description\":\"One write within the batch. Shaped exactly like a vta/app-state/put payload minus the context and namespace, which the batch supplies.\",\"oneOf\":[{\"not\":{\"required\":[\"mergePatch\"]},\"required\":[\"value\"]},{\"not\":{\"required\":[\"value\"]},\"required\":[\"mergePatch\"]}],\"properties\":{\"expectedVersion\":{\"$ref\":\"#/$defs/ExpectedVersion\",\"description\":\"This write's own precondition, evaluated independently of every other write in the batch. A positive value requires the record to be at exactly that version; 0 requires that no live record exists.\"},\"key\":{\"$ref\":\"#/$defs/Key\"},\"mergePatch\":{\"description\":\"An RFC 7386 JSON Merge Patch applied to the record's current value. Requires a live record at the address; otherwise this write's outcome is `notFound`. Mutually exclusive with `value`.\",\"type\":\"object\"},\"value\":{\"description\":\"The complete new value, replacing whatever the record held. Any JSON value, including `null`. Mutually exclusive with `mergePatch`.\"}},\"required\":[\"key\"],\"title\":\"Write\",\"type\":\"object\"},\"WriteResult\":{\"additionalProperties\":false,\"description\":\"The outcome of one write within a `vta/app-state/put-many` batch. Per-record rather than per-batch, because the default batch mode applies each write on its own merits: a caller flushing ten unrelated edits needs to know which one conflicted, not merely that something did.\",\"properties\":{\"actualBytes\":{\"description\":\"On `tooLarge`: the size of the rejected value in bytes.\",\"minimum\":0,\"type\":\"integer\"},\"created\":{\"description\":\"On `written`: true when no live record existed at the address beforehand.\",\"type\":\"boolean\"},\"currentDeleted\":{\"description\":\"On `conflict`: true when the address holds a tombstone rather than a live record.\",\"type\":\"boolean\"},\"currentValue\":{\"description\":\"On `conflict`: the value the maintainer actually holds, returned WITH the rejection rather than left for the caller to re-read. A bare rejection has no fixed point under contention — between the rejection and the re-read the record can change again — so returning the winner's view removes the race rather than narrowing it. Absent when `currentDeleted` is true or no record exists.\"},\"currentVersion\":{\"$ref\":\"#/$defs/Version\",\"description\":\"On `conflict`: the version the maintainer actually holds. Absent when the conflict is that no record exists (`expectedVersion` was positive and the address is empty).\"},\"key\":{\"$ref\":\"#/$defs/Key\"},\"limitBytes\":{\"description\":\"On `tooLarge`: the maintainer's per-record cap in bytes.\",\"minimum\":0,\"type\":\"integer\"},\"outcome\":{\"description\":\"`written`: applied, and `version` carries the new value. `conflict`: `expectedVersion` did not match; `currentVersion`, `currentValue` and `currentDeleted` carry the maintainer's view so the caller can resolve without a re-read. `tooLarge`: the value exceeded the per-record cap; `limitBytes` and `actualBytes` say by how much. `notFound`: a `mergePatch` write named an address with no live record. `skipped`: atomic mode only — this write was not attempted because another in the batch failed.\",\"enum\":[\"written\",\"conflict\",\"tooLarge\",\"notFound\",\"skipped\"],\"type\":\"string\"},\"version\":{\"$ref\":\"#/$defs/Version\",\"description\":\"The new version, on `written`.\"}},\"required\":[\"key\",\"outcome\"],\"title\":\"WriteResult\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vta/app-state/put-many/1.0\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Write up to 64 application-state records in one round trip, each carrying its own optimistic-concurrency precondition. The batch `mode` decides what a single failure costs: `independent` (the default) applies each write on its own merits, `atomic` applies all or none.\",\"properties\":{\"contextId\":{\"description\":\"The VTA context the records are scoped to; the isolation boundary.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"mode\":{\"$comment\":\"The default is load-bearing rather than a convenience; see the spec's Abstract.\",\"default\":\"independent\",\"description\":\"`independent` applies each write on its own merits, so one conflicted record does not block the other nine — what a flush of unrelated edits wants, and why it is the default. `atomic` applies all or none, for records carrying a joint invariant. An atomic DEFAULT would let one stale record silently wedge an entire flush, and a caller could not tell a wedged flush from a slow one.\",\"enum\":[\"independent\",\"atomic\"],\"type\":\"string\"},\"namespace\":{\"$ref\":\"#/$defs/Namespace\",\"description\":\"One namespace per batch. Atomicity is only meaningful within the counter the writes take their versions from, and that counter is per (contextId, namespace).\"},\"writes\":{\"description\":\"The writes to apply. Keys MUST be distinct: two writes to one key in a batch have no defined order and are refused rather than serialised.\",\"items\":{\"$ref\":\"#/$defs/Write\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\"}},\"required\":[\"contextId\",\"namespace\",\"writes\"],\"title\":\"VTA Application State Put-Many — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1430,7 +1098,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ExpectedVersion\": {\n      \"description\": \"Optimistic-concurrency precondition on a write. A positive value requires that the record's current `version` equals it exactly. Zero means \\\"create only\\\" — the write applies only if no LIVE record exists at the address, which is what makes lease acquisition safe: without it two instances can each read \\\"absent\\\", each write, and each believe it won. A tombstone is not a live record, so `expectedVersion: 0` succeeds over one; the created record takes the namespace's next counter value, which is necessarily greater than the tombstone's.\",\n      \"minimum\": 0,\n      \"title\": \"ExpectedVersion\",\n      \"type\": \"integer\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Key\": {\n      \"description\": \"Application-chosen identifier for a record within a namespace. Opaque to the maintainer: it MUST NOT be parsed, normalized, or case-folded, and prefix matching in `list` is a byte-prefix comparison over the UTF-8 encoding. Applications SHOULD use `/`-delimited hierarchical keys (`community/acme`, `contact/z6Mk…`) so that `prefix` can address a record family, but the delimiter is a convention between an application and itself — the maintainer attaches no meaning to it.\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"pattern\": \"^[^\\\\u0000]+$\",\n      \"title\": \"Key\",\n      \"type\": \"string\"\n    },\n    \"Namespace\": {\n      \"description\": \"Scopes one application's records within a context, so several tools can share a context without colliding — `openvtc`, `cnm`, an agent runtime. The maintainer MUST NOT interpret the value; it is an opaque partition name. Namespaces are first-come and unreserved, so an application SHOULD pick a stable, specific one: a future per-namespace ACL would grant on this exact string, which makes renaming a namespace a migration rather than an edit.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z][a-z0-9]*(-[a-z0-9]+)*$\",\n      \"title\": \"Namespace\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/app-state/put-many in `independent` mode. Type https://trusttasks.org/spec/vta/app-state/put-many/1.0#response. A response is returned even when some writes conflicted, because the task did what it promised — applied each write on its own merits — and the per-record outcomes are the answer rather than the failure. An `atomic` batch that does not apply is a trust-task-error carrying vta/app-state/put-many:atomicBatchRejected, whose details carry the same per-record outcomes.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"highWatermark\": {\n          \"$ref\": \"#/$defs/Version\",\n          \"description\": \"The namespace's counter value after the batch. A writer that is also a sync consumer can adopt this instead of issuing a list call to discover where its own writes landed.\"\n        },\n        \"mode\": {\n          \"description\": \"The mode the maintainer applied, echoed so a caller relying on the default sees what it got.\",\n          \"enum\": [\n            \"independent\",\n            \"atomic\"\n          ],\n          \"type\": \"string\"\n        },\n        \"results\": {\n          \"description\": \"One result per requested write, in request order. Every write is accounted for.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/WriteResult\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"mode\",\n        \"results\"\n      ],\n      \"title\": \"VTA Application State Put-Many — response payload\",\n      \"type\": \"object\"\n    },\n    \"Version\": {\n      \"description\": \"A value of the namespace's monotonic write counter (see this schema's description). Server-assigned; a producer never chooses one.\",\n      \"minimum\": 1,\n      \"title\": \"Version\",\n      \"type\": \"integer\"\n    },\n    \"Write\": {\n      \"additionalProperties\": false,\n      \"description\": \"One write within the batch. Shaped exactly like a vta/app-state/put payload minus the context and namespace, which the batch supplies.\",\n      \"oneOf\": [\n        {\n          \"not\": {\n            \"required\": [\n              \"mergePatch\"\n            ]\n          },\n          \"required\": [\n            \"value\"\n          ]\n        },\n        {\n          \"not\": {\n            \"required\": [\n              \"value\"\n            ]\n          },\n          \"required\": [\n            \"mergePatch\"\n          ]\n        }\n      ],\n      \"properties\": {\n        \"expectedVersion\": {\n          \"$ref\": \"#/$defs/ExpectedVersion\",\n          \"description\": \"This write's own precondition, evaluated independently of every other write in the batch. A positive value requires the record to be at exactly that version; 0 requires that no live record exists.\"\n        },\n        \"key\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"mergePatch\": {\n          \"description\": \"An RFC 7386 JSON Merge Patch applied to the record's current value. Requires a live record at the address; otherwise this write's outcome is `notFound`. Mutually exclusive with `value`.\",\n          \"type\": \"object\"\n        },\n        \"value\": {\n          \"description\": \"The complete new value, replacing whatever the record held. Any JSON value, including `null`. Mutually exclusive with `mergePatch`.\"\n        }\n      },\n      \"required\": [\n        \"key\"\n      ],\n      \"title\": \"Write\",\n      \"type\": \"object\"\n    },\n    \"WriteResult\": {\n      \"additionalProperties\": false,\n      \"description\": \"The outcome of one write within a `vta/app-state/put-many` batch. Per-record rather than per-batch, because the default batch mode applies each write on its own merits: a caller flushing ten unrelated edits needs to know which one conflicted, not merely that something did.\",\n      \"properties\": {\n        \"actualBytes\": {\n          \"description\": \"On `tooLarge`: the size of the rejected value in bytes.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"created\": {\n          \"description\": \"On `written`: true when no live record existed at the address beforehand.\",\n          \"type\": \"boolean\"\n        },\n        \"currentDeleted\": {\n          \"description\": \"On `conflict`: true when the address holds a tombstone rather than a live record.\",\n          \"type\": \"boolean\"\n        },\n        \"currentValue\": {\n          \"description\": \"On `conflict`: the value the maintainer actually holds, returned WITH the rejection rather than left for the caller to re-read. A bare rejection has no fixed point under contention — between the rejection and the re-read the record can change again — so returning the winner's view removes the race rather than narrowing it. Absent when `currentDeleted` is true or no record exists.\"\n        },\n        \"currentVersion\": {\n          \"$ref\": \"#/$defs/Version\",\n          \"description\": \"On `conflict`: the version the maintainer actually holds. Absent when the conflict is that no record exists (`expectedVersion` was positive and the address is empty).\"\n        },\n        \"key\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"limitBytes\": {\n          \"description\": \"On `tooLarge`: the maintainer's per-record cap in bytes.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"outcome\": {\n          \"description\": \"`written`: applied, and `version` carries the new value. `conflict`: `expectedVersion` did not match; `currentVersion`, `currentValue` and `currentDeleted` carry the maintainer's view so the caller can resolve without a re-read. `tooLarge`: the value exceeded the per-record cap; `limitBytes` and `actualBytes` say by how much. `notFound`: a `mergePatch` write named an address with no live record. `skipped`: atomic mode only — this write was not attempted because another in the batch failed.\",\n          \"enum\": [\n            \"written\",\n            \"conflict\",\n            \"tooLarge\",\n            \"notFound\",\n            \"skipped\"\n          ],\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"$ref\": \"#/$defs/Version\",\n          \"description\": \"The new version, on `written`.\"\n        }\n      },\n      \"required\": [\n        \"key\",\n        \"outcome\"\n      ],\n      \"title\": \"WriteResult\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"ExpectedVersion\":{\"description\":\"Optimistic-concurrency precondition on a write. A positive value requires that the record's current `version` equals it exactly. Zero means \\\"create only\\\" — the write applies only if no LIVE record exists at the address, which is what makes lease acquisition safe: without it two instances can each read \\\"absent\\\", each write, and each believe it won. A tombstone is not a live record, so `expectedVersion: 0` succeeds over one; the created record takes the namespace's next counter value, which is necessarily greater than the tombstone's.\",\"minimum\":0,\"title\":\"ExpectedVersion\",\"type\":\"integer\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Key\":{\"description\":\"Application-chosen identifier for a record within a namespace. Opaque to the maintainer: it MUST NOT be parsed, normalized, or case-folded, and prefix matching in `list` is a byte-prefix comparison over the UTF-8 encoding. Applications SHOULD use `/`-delimited hierarchical keys (`community/acme`, `contact/z6Mk…`) so that `prefix` can address a record family, but the delimiter is a convention between an application and itself — the maintainer attaches no meaning to it.\",\"maxLength\":512,\"minLength\":1,\"pattern\":\"^[^\\\\u0000]+$\",\"title\":\"Key\",\"type\":\"string\"},\"Namespace\":{\"description\":\"Scopes one application's records within a context, so several tools can share a context without colliding — `openvtc`, `cnm`, an agent runtime. The maintainer MUST NOT interpret the value; it is an opaque partition name. Namespaces are first-come and unreserved, so an application SHOULD pick a stable, specific one: a future per-namespace ACL would grant on this exact string, which makes renaming a namespace a migration rather than an edit.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z][a-z0-9]*(-[a-z0-9]+)*$\",\"title\":\"Namespace\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vta/app-state/put-many in `independent` mode. Type https://trusttasks.org/spec/vta/app-state/put-many/1.0#response. A response is returned even when some writes conflicted, because the task did what it promised — applied each write on its own merits — and the per-record outcomes are the answer rather than the failure. An `atomic` batch that does not apply is a trust-task-error carrying vta/app-state/put-many:atomicBatchRejected, whose details carry the same per-record outcomes.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"highWatermark\":{\"$ref\":\"#/$defs/Version\",\"description\":\"The namespace's counter value after the batch. A writer that is also a sync consumer can adopt this instead of issuing a list call to discover where its own writes landed.\"},\"mode\":{\"description\":\"The mode the maintainer applied, echoed so a caller relying on the default sees what it got.\",\"enum\":[\"independent\",\"atomic\"],\"type\":\"string\"},\"results\":{\"description\":\"One result per requested write, in request order. Every write is accounted for.\",\"items\":{\"$ref\":\"#/$defs/WriteResult\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\"}},\"required\":[\"mode\",\"results\"],\"title\":\"VTA Application State Put-Many — response payload\",\"type\":\"object\"},\"Version\":{\"description\":\"A value of the namespace's monotonic write counter (see this schema's description). Server-assigned; a producer never chooses one.\",\"minimum\":1,\"title\":\"Version\",\"type\":\"integer\"},\"Write\":{\"additionalProperties\":false,\"description\":\"One write within the batch. Shaped exactly like a vta/app-state/put payload minus the context and namespace, which the batch supplies.\",\"oneOf\":[{\"not\":{\"required\":[\"mergePatch\"]},\"required\":[\"value\"]},{\"not\":{\"required\":[\"value\"]},\"required\":[\"mergePatch\"]}],\"properties\":{\"expectedVersion\":{\"$ref\":\"#/$defs/ExpectedVersion\",\"description\":\"This write's own precondition, evaluated independently of every other write in the batch. A positive value requires the record to be at exactly that version; 0 requires that no live record exists.\"},\"key\":{\"$ref\":\"#/$defs/Key\"},\"mergePatch\":{\"description\":\"An RFC 7386 JSON Merge Patch applied to the record's current value. Requires a live record at the address; otherwise this write's outcome is `notFound`. Mutually exclusive with `value`.\",\"type\":\"object\"},\"value\":{\"description\":\"The complete new value, replacing whatever the record held. Any JSON value, including `null`. Mutually exclusive with `mergePatch`.\"}},\"required\":[\"key\"],\"title\":\"Write\",\"type\":\"object\"},\"WriteResult\":{\"additionalProperties\":false,\"description\":\"The outcome of one write within a `vta/app-state/put-many` batch. Per-record rather than per-batch, because the default batch mode applies each write on its own merits: a caller flushing ten unrelated edits needs to know which one conflicted, not merely that something did.\",\"properties\":{\"actualBytes\":{\"description\":\"On `tooLarge`: the size of the rejected value in bytes.\",\"minimum\":0,\"type\":\"integer\"},\"created\":{\"description\":\"On `written`: true when no live record existed at the address beforehand.\",\"type\":\"boolean\"},\"currentDeleted\":{\"description\":\"On `conflict`: true when the address holds a tombstone rather than a live record.\",\"type\":\"boolean\"},\"currentValue\":{\"description\":\"On `conflict`: the value the maintainer actually holds, returned WITH the rejection rather than left for the caller to re-read. A bare rejection has no fixed point under contention — between the rejection and the re-read the record can change again — so returning the winner's view removes the race rather than narrowing it. Absent when `currentDeleted` is true or no record exists.\"},\"currentVersion\":{\"$ref\":\"#/$defs/Version\",\"description\":\"On `conflict`: the version the maintainer actually holds. Absent when the conflict is that no record exists (`expectedVersion` was positive and the address is empty).\"},\"key\":{\"$ref\":\"#/$defs/Key\"},\"limitBytes\":{\"description\":\"On `tooLarge`: the maintainer's per-record cap in bytes.\",\"minimum\":0,\"type\":\"integer\"},\"outcome\":{\"description\":\"`written`: applied, and `version` carries the new value. `conflict`: `expectedVersion` did not match; `currentVersion`, `currentValue` and `currentDeleted` carry the maintainer's view so the caller can resolve without a re-read. `tooLarge`: the value exceeded the per-record cap; `limitBytes` and `actualBytes` say by how much. `notFound`: a `mergePatch` write named an address with no live record. `skipped`: atomic mode only — this write was not attempted because another in the batch failed.\",\"enum\":[\"written\",\"conflict\",\"tooLarge\",\"notFound\",\"skipped\"],\"type\":\"string\"},\"version\":{\"$ref\":\"#/$defs/Version\",\"description\":\"The new version, on `written`.\"}},\"required\":[\"key\",\"outcome\"],\"title\":\"WriteResult\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

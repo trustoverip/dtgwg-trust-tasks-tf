@@ -35,18 +35,6 @@ pub mod error {
 }
 ///A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Did",
-///  "description": "A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:[a-z0-9]+:(?:(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})*:)*(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Did(::std::string::String);
@@ -120,21 +108,6 @@ impl<'de> ::serde::Deserialize<'de> for Did {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -156,15 +129,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -228,19 +192,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, or a self-hosted Forgejo instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ForgeHost",
-///  "description": "The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, or a self-hosted Forgejo instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.",
-///  "type": "string",
-///  "maxLength": 253,
-///  "minLength": 3,
-///  "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ForgeHost(::std::string::String);
@@ -316,18 +267,6 @@ impl<'de> ::serde::Deserialize<'de> for ForgeHost {
 }
 ///An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub and Forgejo ids are decimal integers written as strings (`"812736451"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ForgeId",
-///  "description": "An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub and Forgejo ids are decimal integers written as strings (`\"812736451\"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ForgeId(::std::string::String);
@@ -390,78 +329,6 @@ impl<'de> ::serde::Deserialize<'de> for ForgeId {
 }
 ///What the bridge serving the namespace last reported about its standing on the forge owner — its app, its installation and what the owner's plan allows. Display only: it changes no decision the VTC takes. Every member but `missingPermissions` is absent until the bridge reports it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ForgeStatus",
-///  "description": "What the bridge serving the namespace last reported about its standing on the forge owner — its app, its installation and what the owner's plan allows. Display only: it changes no decision the VTC takes. Every member but `missingPermissions` is absent until the bridge reports it.",
-///  "type": "object",
-///  "required": [
-///    "missingPermissions"
-///  ],
-///  "properties": {
-///    "appName": {
-///      "description": "The app's display name.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "appRegistration": {
-///      "description": "Where the app's manifest registration stands, in the bridge's words (`registered`, `pending`).",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "appSlug": {
-///      "description": "The app's URL slug on the forge.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "bridgePostedCheck": {
-///      "description": "The bridge can post the verify-trust check itself, the fallback where no required workflow is available.",
-///      "type": "boolean"
-///    },
-///    "installationId": {
-///      "description": "The forge's identifier for its installation of the community's app (GitHub).",
-///      "type": "string",
-///      "maxLength": 64,
-///      "minLength": 1
-///    },
-///    "missingPermissions": {
-///      "description": "Permissions the app needs and the installation has not granted, in the forge's vocabulary. Empty when none are missing, or none were reported.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "maxLength": 128,
-///        "minLength": 1
-///      },
-///      "maxItems": 256,
-///      "uniqueItems": true
-///    },
-///    "orgRulesets": {
-///      "description": "Organisation rulesets are available on the owner's plan.",
-///      "type": "boolean"
-///    },
-///    "permissionUpgradePending": {
-///      "description": "A new version of the app asks for permissions the forge owner has not approved yet.",
-///      "type": "boolean"
-///    },
-///    "reportedAt": {
-///      "description": "When the VTC received the report.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "requiredWorkflow": {
-///      "description": "The organisation ruleset requiring the verify-trust workflow is in force.",
-///      "type": "boolean"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -540,17 +407,6 @@ impl ForgeStatus {
 }
 ///The app's display name.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The app's display name.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ForgeStatusAppName(::std::string::String);
@@ -613,17 +469,6 @@ impl<'de> ::serde::Deserialize<'de> for ForgeStatusAppName {
 }
 ///Where the app's manifest registration stands, in the bridge's words (`registered`, `pending`).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Where the app's manifest registration stands, in the bridge's words (`registered`, `pending`).",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ForgeStatusAppRegistration(::std::string::String);
@@ -686,17 +531,6 @@ impl<'de> ::serde::Deserialize<'de> for ForgeStatusAppRegistration {
 }
 ///The app's URL slug on the forge.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The app's URL slug on the forge.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ForgeStatusAppSlug(::std::string::String);
@@ -759,17 +593,6 @@ impl<'de> ::serde::Deserialize<'de> for ForgeStatusAppSlug {
 }
 ///The forge's identifier for its installation of the community's app (GitHub).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The forge's identifier for its installation of the community's app (GitHub).",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ForgeStatusInstallationId(::std::string::String);
@@ -832,16 +655,6 @@ impl<'de> ::serde::Deserialize<'de> for ForgeStatusInstallationId {
 }
 ///`ForgeStatusMissingPermissionsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ForgeStatusMissingPermissionsItem(::std::string::String);
@@ -904,24 +717,6 @@ impl<'de> ::serde::Deserialize<'de> for ForgeStatusMissingPermissionsItem {
 }
 ///A level of the bridge's forge-neutral role ladder, lowest first: the vocabulary role drift's `observed` and `expected` are reported in. `none` is no direct role on the repository.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "MappedRole",
-///  "description": "A level of the bridge's forge-neutral role ladder, lowest first: the vocabulary role drift's `observed` and `expected` are reported in. `none` is no direct role on the repository.",
-///  "type": "string",
-///  "enum": [
-///    "none",
-///    "read",
-///    "triage",
-///    "write",
-///    "maintain",
-///    "admin"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -999,18 +794,6 @@ impl ::std::convert::TryFrom<::std::string::String> for MappedRole {
 }
 ///The VTC's opaque identifier for a namespace, assigned when it is bound. Stable for the life of the binding; never reused for another binding.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "NamespaceId",
-///  "description": "The VTC's opaque identifier for a namespace, assigned when it is bound. Stable for the life of the binding; never reused for another binding.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct NamespaceId(::std::string::String);
@@ -1073,149 +856,6 @@ impl<'de> ::serde::Deserialize<'de> for NamespaceId {
 }
 ///One namespace as its administrators govern it: the binding, who administers it, how many repositories it holds, and what its bridge last reported.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "NamespaceStatus",
-///  "description": "One namespace as its administrators govern it: the binding, who administers it, how many repositories it holds, and what its bridge last reported.",
-///  "type": "object",
-///  "required": [
-///    "admins",
-///    "boundBy",
-///    "cascadeOnDeparture",
-///    "forge",
-///    "headless",
-///    "id",
-///    "installationRemoved",
-///    "mode",
-///    "owner",
-///    "repoCount",
-///    "requestedAt",
-///    "resource",
-///    "roleDrift",
-///    "roleMapSource",
-///    "state"
-///  ],
-///  "properties": {
-///    "admins": {
-///      "description": "Everyone holding a live, explicitly recorded `git.ns.admin` on the namespace. Each of them can grant anything in it.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Did"
-///      },
-///      "uniqueItems": true
-///    },
-///    "boundAt": {
-///      "description": "When binding completed. Absent while `pending`.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "boundBy": {
-///      "description": "Who bound it.",
-///      "$ref": "#/definitions/Did"
-///    },
-///    "bridgeDid": {
-///      "description": "The bridge that serves the namespace. Absent in manual mode.",
-///      "$ref": "#/definitions/Did"
-///    },
-///    "cascadeOnDeparture": {
-///      "description": "Whether the community's policy revokes the grants a member made when that member leaves. Community-wide, as `roleDrift`.",
-///      "type": "boolean"
-///    },
-///    "forge": {
-///      "$ref": "#/definitions/ForgeHost"
-///    },
-///    "forgeStatus": {
-///      "$ref": "#/definitions/ForgeStatus"
-///    },
-///    "headless": {
-///      "description": "Bound, with no live admin: its last admin left or lapsed. Nobody can grant in it until an administrator reseats one (`git-ns/namespace/reseat`).",
-///      "type": "boolean"
-///    },
-///    "id": {
-///      "$ref": "#/definitions/NamespaceId"
-///    },
-///    "installationRemoved": {
-///      "description": "The bridge reported losing its access to the forge owner, and has not reported access since.",
-///      "type": "boolean"
-///    },
-///    "kind": {
-///      "description": "Whether the owner is an organisation or a personal account, once the forge has said.",
-///      "type": "string",
-///      "enum": [
-///        "organization",
-///        "user"
-///      ]
-///    },
-///    "mode": {
-///      "description": "As `GitNamespace.mode` in the shared schema.",
-///      "type": "string",
-///      "enum": [
-///        "bridge",
-///        "manual"
-///      ]
-///    },
-///    "owner": {
-///      "description": "The organisation or user on the forge, lowercased.",
-///      "$ref": "#/definitions/Segment"
-///    },
-///    "ownerId": {
-///      "description": "The forge's id for the owner, once the forge has said. Unlike `owner`, it survives a rename.",
-///      "$ref": "#/definitions/ForgeId"
-///    },
-///    "repoCount": {
-///      "description": "How many repositories the VTC records in the namespace, in any state.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "requestedAt": {
-///      "description": "When binding was requested.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "resource": {
-///      "description": "The namespace as a resource: `<forge>/<owner>`.",
-///      "$ref": "#/definitions/Resource"
-///    },
-///    "roleDrift": {
-///      "description": "What the community's policy does with a forge role nobody granted: `report` it as drift for an administrator to resolve, or `enforce` the projection by reverting it. Community-wide; repeated on every namespace so that each row stands alone.",
-///      "type": "string",
-///      "enum": [
-///        "report",
-///        "enforce"
-///      ]
-///    },
-///    "roleMap": {
-///      "description": "The forge role each right projects to on a repository without a map of its own, as the serving bridge last reported it. Absent while `roleMapSource` is `unknown`: no map, the default included, is assumed.",
-///      "$ref": "#/definitions/RoleMap"
-///    },
-///    "roleMapReportedAt": {
-///      "description": "The `issuedAt` of the role-map report held, on the bridge's clock.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "roleMapSource": {
-///      "description": "`reported` — the bridge serving the namespace reported its role map. `unknown` — it has not, since the namespace was bound or came to be served by it.",
-///      "type": "string",
-///      "enum": [
-///        "reported",
-///        "unknown"
-///      ]
-///    },
-///    "state": {
-///      "description": "As `GitNamespace.state` in the shared schema.",
-///      "type": "string",
-///      "enum": [
-///        "pending",
-///        "bound"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1307,19 +947,6 @@ impl NamespaceStatus {
 }
 ///Whether the owner is an organisation or a personal account, once the forge has said.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Whether the owner is an organisation or a personal account, once the forge has said.",
-///  "type": "string",
-///  "enum": [
-///    "organization",
-///    "user"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1381,19 +1008,6 @@ impl ::std::convert::TryFrom<::std::string::String> for NamespaceStatusKind {
 }
 ///As `GitNamespace.mode` in the shared schema.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "As `GitNamespace.mode` in the shared schema.",
-///  "type": "string",
-///  "enum": [
-///    "bridge",
-///    "manual"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1455,19 +1069,6 @@ impl ::std::convert::TryFrom<::std::string::String> for NamespaceStatusMode {
 }
 ///What the community's policy does with a forge role nobody granted: `report` it as drift for an administrator to resolve, or `enforce` the projection by reverting it. Community-wide; repeated on every namespace so that each row stands alone.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "What the community's policy does with a forge role nobody granted: `report` it as drift for an administrator to resolve, or `enforce` the projection by reverting it. Community-wide; repeated on every namespace so that each row stands alone.",
-///  "type": "string",
-///  "enum": [
-///    "report",
-///    "enforce"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1529,19 +1130,6 @@ impl ::std::convert::TryFrom<::std::string::String> for NamespaceStatusRoleDrift
 }
 ///`reported` — the bridge serving the namespace reported its role map. `unknown` — it has not, since the namespace was bound or came to be served by it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`reported` — the bridge serving the namespace reported its role map. `unknown` — it has not, since the namespace was bound or came to be served by it.",
-///  "type": "string",
-///  "enum": [
-///    "reported",
-///    "unknown"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1603,19 +1191,6 @@ impl ::std::convert::TryFrom<::std::string::String> for NamespaceStatusRoleMapSo
 }
 ///As `GitNamespace.state` in the shared schema.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "As `GitNamespace.state` in the shared schema.",
-///  "type": "string",
-///  "enum": [
-///    "pending",
-///    "bound"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1677,27 +1252,6 @@ impl ::std::convert::TryFrom<::std::string::String> for NamespaceStatusState {
 }
 ///An administrator lists the namespaces they administer — every one, for a holder of the community-administrator capability — with each one's admins, repository count, bridge and forge status.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/git-ns/namespace/list/0.1",
-///  "title": "Payload",
-///  "description": "An administrator lists the namespaces they administer — every one, for a holder of the community-administrator capability — with each one's admins, repository count, bridge and forge status.",
-///  "type": "object",
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "namespace": {
-///      "description": "Only this namespace. It must be one the caller administers; a namespace they do not administer, or one this VTC does not have, is refused with `notAdministrator` alike.",
-///      "$ref": "#/definitions/NamespaceId"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1724,18 +1278,6 @@ impl Payload {
 }
 ///A forge-qualified resource: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo>` for one repository, all lowercase — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Resource",
-///  "description": "A forge-qualified resource: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo>` for one repository, all lowercase — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.",
-///  "type": "string",
-///  "maxLength": 455,
-///  "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+(?:/[a-z0-9_-][a-z0-9._-]{0,99}){1,2}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Resource(::std::string::String);
@@ -1809,33 +1351,6 @@ impl<'de> ::serde::Deserialize<'de> for Resource {
 }
 ///The namespaces the caller administers, or the one asked for.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The namespaces the caller administers, or the one asked for.",
-///  "type": "object",
-///  "required": [
-///    "namespaces"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "namespaces": {
-///      "description": "Every administered namespace, `pending` ones included, ordered by `resource`. Empty only for a holder of the community-administrator capability on a VTC with no namespace.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/NamespaceStatus"
-///      }
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1853,33 +1368,6 @@ impl Response {
 }
 ///The forge role each repository right is given, as the forge applies it: after the forge's own ladder has rounded it down. `own` is the role `git.repo.own` projects to, `maintain` that of `git.repo.maintain`, `commit` that of `git.commit.sign` (`none` is fork-based contribution). There is no member for `git.ns.admin` or `git.repo.create`, which project to no forge role whatever a bridge is configured with. Ordered: `own` is at least `maintain`, which is at least `commit`, and `commit` is at most `write`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RoleMap",
-///  "description": "The forge role each repository right is given, as the forge applies it: after the forge's own ladder has rounded it down. `own` is the role `git.repo.own` projects to, `maintain` that of `git.repo.maintain`, `commit` that of `git.commit.sign` (`none` is fork-based contribution). There is no member for `git.ns.admin` or `git.repo.create`, which project to no forge role whatever a bridge is configured with. Ordered: `own` is at least `maintain`, which is at least `commit`, and `commit` is at most `write`.",
-///  "type": "object",
-///  "required": [
-///    "commit",
-///    "maintain",
-///    "own"
-///  ],
-///  "properties": {
-///    "commit": {
-///      "$ref": "#/definitions/MappedRole"
-///    },
-///    "maintain": {
-///      "$ref": "#/definitions/MappedRole"
-///    },
-///    "own": {
-///      "$ref": "#/definitions/MappedRole"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1895,19 +1383,6 @@ impl RoleMap {
 }
 ///One lowercased owner or repository name. Forges compare these case-insensitively, so the wire form is always lowercase and a producer lowercases before sending. A leading `.` is refused, which rules out `.` and `..`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Segment",
-///  "description": "One lowercased owner or repository name. Forges compare these case-insensitively, so the wire form is always lowercase and a producer lowercases before sending. A leading `.` is refused, which rules out `.` and `..`.",
-///  "type": "string",
-///  "maxLength": 100,
-///  "minLength": 1,
-///  "pattern": "^[a-z0-9_-][a-z0-9._-]*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Segment(::std::string::String);
@@ -2696,7 +2171,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Did\": {\n      \"description\": \"A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.\",\n      \"maxLength\": 2048,\n      \"pattern\": \"^did:[a-z0-9]+:(?:(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})*:)*(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})+$\",\n      \"title\": \"Did\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ForgeHost\": {\n      \"description\": \"The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, or a self-hosted Forgejo instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.\",\n      \"maxLength\": 253,\n      \"minLength\": 3,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$\",\n      \"title\": \"ForgeHost\",\n      \"type\": \"string\"\n    },\n    \"ForgeId\": {\n      \"description\": \"An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub and Forgejo ids are decimal integers written as strings (`\\\"812736451\\\"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"title\": \"ForgeId\",\n      \"type\": \"string\"\n    },\n    \"ForgeStatus\": {\n      \"additionalProperties\": false,\n      \"description\": \"What the bridge serving the namespace last reported about its standing on the forge owner — its app, its installation and what the owner's plan allows. Display only: it changes no decision the VTC takes. Every member but `missingPermissions` is absent until the bridge reports it.\",\n      \"properties\": {\n        \"appName\": {\n          \"description\": \"The app's display name.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"appRegistration\": {\n          \"description\": \"Where the app's manifest registration stands, in the bridge's words (`registered`, `pending`).\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"appSlug\": {\n          \"description\": \"The app's URL slug on the forge.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"bridgePostedCheck\": {\n          \"description\": \"The bridge can post the verify-trust check itself, the fallback where no required workflow is available.\",\n          \"type\": \"boolean\"\n        },\n        \"installationId\": {\n          \"description\": \"The forge's identifier for its installation of the community's app (GitHub).\",\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"missingPermissions\": {\n          \"description\": \"Permissions the app needs and the installation has not granted, in the forge's vocabulary. Empty when none are missing, or none were reported.\",\n          \"items\": {\n            \"maxLength\": 128,\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"orgRulesets\": {\n          \"description\": \"Organisation rulesets are available on the owner's plan.\",\n          \"type\": \"boolean\"\n        },\n        \"permissionUpgradePending\": {\n          \"description\": \"A new version of the app asks for permissions the forge owner has not approved yet.\",\n          \"type\": \"boolean\"\n        },\n        \"reportedAt\": {\n          \"description\": \"When the VTC received the report.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"requiredWorkflow\": {\n          \"description\": \"The organisation ruleset requiring the verify-trust workflow is in force.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"missingPermissions\"\n      ],\n      \"title\": \"ForgeStatus\",\n      \"type\": \"object\"\n    },\n    \"MappedRole\": {\n      \"description\": \"A level of the bridge's forge-neutral role ladder, lowest first: the vocabulary role drift's `observed` and `expected` are reported in. `none` is no direct role on the repository.\",\n      \"enum\": [\n        \"none\",\n        \"read\",\n        \"triage\",\n        \"write\",\n        \"maintain\",\n        \"admin\"\n      ],\n      \"title\": \"MappedRole\",\n      \"type\": \"string\"\n    },\n    \"NamespaceId\": {\n      \"description\": \"The VTC's opaque identifier for a namespace, assigned when it is bound. Stable for the life of the binding; never reused for another binding.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"title\": \"NamespaceId\",\n      \"type\": \"string\"\n    },\n    \"NamespaceStatus\": {\n      \"additionalProperties\": false,\n      \"description\": \"One namespace as its administrators govern it: the binding, who administers it, how many repositories it holds, and what its bridge last reported.\",\n      \"properties\": {\n        \"admins\": {\n          \"description\": \"Everyone holding a live, explicitly recorded `git.ns.admin` on the namespace. Each of them can grant anything in it.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Did\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"boundAt\": {\n          \"description\": \"When binding completed. Absent while `pending`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"boundBy\": {\n          \"$ref\": \"#/$defs/Did\",\n          \"description\": \"Who bound it.\"\n        },\n        \"bridgeDid\": {\n          \"$ref\": \"#/$defs/Did\",\n          \"description\": \"The bridge that serves the namespace. Absent in manual mode.\"\n        },\n        \"cascadeOnDeparture\": {\n          \"description\": \"Whether the community's policy revokes the grants a member made when that member leaves. Community-wide, as `roleDrift`.\",\n          \"type\": \"boolean\"\n        },\n        \"forge\": {\n          \"$ref\": \"#/$defs/ForgeHost\"\n        },\n        \"forgeStatus\": {\n          \"$ref\": \"#/$defs/ForgeStatus\"\n        },\n        \"headless\": {\n          \"description\": \"Bound, with no live admin: its last admin left or lapsed. Nobody can grant in it until an administrator reseats one (`git-ns/namespace/reseat`).\",\n          \"type\": \"boolean\"\n        },\n        \"id\": {\n          \"$ref\": \"#/$defs/NamespaceId\"\n        },\n        \"installationRemoved\": {\n          \"description\": \"The bridge reported losing its access to the forge owner, and has not reported access since.\",\n          \"type\": \"boolean\"\n        },\n        \"kind\": {\n          \"description\": \"Whether the owner is an organisation or a personal account, once the forge has said.\",\n          \"enum\": [\n            \"organization\",\n            \"user\"\n          ],\n          \"type\": \"string\"\n        },\n        \"mode\": {\n          \"description\": \"As `GitNamespace.mode` in the shared schema.\",\n          \"enum\": [\n            \"bridge\",\n            \"manual\"\n          ],\n          \"type\": \"string\"\n        },\n        \"owner\": {\n          \"$ref\": \"#/$defs/Segment\",\n          \"description\": \"The organisation or user on the forge, lowercased.\"\n        },\n        \"ownerId\": {\n          \"$ref\": \"#/$defs/ForgeId\",\n          \"description\": \"The forge's id for the owner, once the forge has said. Unlike `owner`, it survives a rename.\"\n        },\n        \"repoCount\": {\n          \"description\": \"How many repositories the VTC records in the namespace, in any state.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"requestedAt\": {\n          \"description\": \"When binding was requested.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"resource\": {\n          \"$ref\": \"#/$defs/Resource\",\n          \"description\": \"The namespace as a resource: `<forge>/<owner>`.\"\n        },\n        \"roleDrift\": {\n          \"description\": \"What the community's policy does with a forge role nobody granted: `report` it as drift for an administrator to resolve, or `enforce` the projection by reverting it. Community-wide; repeated on every namespace so that each row stands alone.\",\n          \"enum\": [\n            \"report\",\n            \"enforce\"\n          ],\n          \"type\": \"string\"\n        },\n        \"roleMap\": {\n          \"$ref\": \"#/$defs/RoleMap\",\n          \"description\": \"The forge role each right projects to on a repository without a map of its own, as the serving bridge last reported it. Absent while `roleMapSource` is `unknown`: no map, the default included, is assumed.\"\n        },\n        \"roleMapReportedAt\": {\n          \"description\": \"The `issuedAt` of the role-map report held, on the bridge's clock.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"roleMapSource\": {\n          \"description\": \"`reported` — the bridge serving the namespace reported its role map. `unknown` — it has not, since the namespace was bound or came to be served by it.\",\n          \"enum\": [\n            \"reported\",\n            \"unknown\"\n          ],\n          \"type\": \"string\"\n        },\n        \"state\": {\n          \"description\": \"As `GitNamespace.state` in the shared schema.\",\n          \"enum\": [\n            \"pending\",\n            \"bound\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"forge\",\n        \"owner\",\n        \"resource\",\n        \"mode\",\n        \"state\",\n        \"boundBy\",\n        \"requestedAt\",\n        \"admins\",\n        \"repoCount\",\n        \"headless\",\n        \"installationRemoved\",\n        \"roleDrift\",\n        \"cascadeOnDeparture\",\n        \"roleMapSource\"\n      ],\n      \"title\": \"NamespaceStatus\",\n      \"type\": \"object\"\n    },\n    \"Resource\": {\n      \"description\": \"A forge-qualified resource: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo>` for one repository, all lowercase — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.\",\n      \"maxLength\": 455,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+(?:/[a-z0-9_-][a-z0-9._-]{0,99}){1,2}$\",\n      \"title\": \"Resource\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The namespaces the caller administers, or the one asked for.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"namespaces\": {\n          \"description\": \"Every administered namespace, `pending` ones included, ordered by `resource`. Empty only for a holder of the community-administrator capability on a VTC with no namespace.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/NamespaceStatus\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"namespaces\"\n      ],\n      \"title\": \"Git Namespaces — List Namespaces — response payload\",\n      \"type\": \"object\"\n    },\n    \"RoleMap\": {\n      \"additionalProperties\": false,\n      \"description\": \"The forge role each repository right is given, as the forge applies it: after the forge's own ladder has rounded it down. `own` is the role `git.repo.own` projects to, `maintain` that of `git.repo.maintain`, `commit` that of `git.commit.sign` (`none` is fork-based contribution). There is no member for `git.ns.admin` or `git.repo.create`, which project to no forge role whatever a bridge is configured with. Ordered: `own` is at least `maintain`, which is at least `commit`, and `commit` is at most `write`.\",\n      \"properties\": {\n        \"commit\": {\n          \"$ref\": \"#/$defs/MappedRole\"\n        },\n        \"maintain\": {\n          \"$ref\": \"#/$defs/MappedRole\"\n        },\n        \"own\": {\n          \"$ref\": \"#/$defs/MappedRole\"\n        }\n      },\n      \"required\": [\n        \"own\",\n        \"maintain\",\n        \"commit\"\n      ],\n      \"title\": \"RoleMap\",\n      \"type\": \"object\"\n    },\n    \"Segment\": {\n      \"description\": \"One lowercased owner or repository name. Forges compare these case-insensitively, so the wire form is always lowercase and a producer lowercases before sending. A leading `.` is refused, which rules out `.` and `..`.\",\n      \"maxLength\": 100,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z0-9_-][a-z0-9._-]*$\",\n      \"title\": \"Segment\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/git-ns/namespace/list/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"An administrator lists the namespaces they administer — every one, for a holder of the community-administrator capability — with each one's admins, repository count, bridge and forge status.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"namespace\": {\n      \"$ref\": \"#/$defs/NamespaceId\",\n      \"description\": \"Only this namespace. It must be one the caller administers; a namespace they do not administer, or one this VTC does not have, is refused with `notAdministrator` alike.\"\n    }\n  },\n  \"required\": [],\n  \"title\": \"Git Namespaces — List Namespaces — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Did\":{\"description\":\"A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.\",\"maxLength\":2048,\"pattern\":\"^did:[a-z0-9]+:(?:(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})*:)*(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})+$\",\"title\":\"Did\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ForgeHost\":{\"description\":\"The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, or a self-hosted Forgejo instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.\",\"maxLength\":253,\"minLength\":3,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$\",\"title\":\"ForgeHost\",\"type\":\"string\"},\"ForgeId\":{\"description\":\"An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub and Forgejo ids are decimal integers written as strings (`\\\"812736451\\\"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.\",\"maxLength\":64,\"minLength\":1,\"title\":\"ForgeId\",\"type\":\"string\"},\"ForgeStatus\":{\"additionalProperties\":false,\"description\":\"What the bridge serving the namespace last reported about its standing on the forge owner — its app, its installation and what the owner's plan allows. Display only: it changes no decision the VTC takes. Every member but `missingPermissions` is absent until the bridge reports it.\",\"properties\":{\"appName\":{\"description\":\"The app's display name.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"appRegistration\":{\"description\":\"Where the app's manifest registration stands, in the bridge's words (`registered`, `pending`).\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"appSlug\":{\"description\":\"The app's URL slug on the forge.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"bridgePostedCheck\":{\"description\":\"The bridge can post the verify-trust check itself, the fallback where no required workflow is available.\",\"type\":\"boolean\"},\"installationId\":{\"description\":\"The forge's identifier for its installation of the community's app (GitHub).\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"missingPermissions\":{\"description\":\"Permissions the app needs and the installation has not granted, in the forge's vocabulary. Empty when none are missing, or none were reported.\",\"items\":{\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"maxItems\":256,\"type\":\"array\",\"uniqueItems\":true},\"orgRulesets\":{\"description\":\"Organisation rulesets are available on the owner's plan.\",\"type\":\"boolean\"},\"permissionUpgradePending\":{\"description\":\"A new version of the app asks for permissions the forge owner has not approved yet.\",\"type\":\"boolean\"},\"reportedAt\":{\"description\":\"When the VTC received the report.\",\"format\":\"date-time\",\"type\":\"string\"},\"requiredWorkflow\":{\"description\":\"The organisation ruleset requiring the verify-trust workflow is in force.\",\"type\":\"boolean\"}},\"required\":[\"missingPermissions\"],\"title\":\"ForgeStatus\",\"type\":\"object\"},\"MappedRole\":{\"description\":\"A level of the bridge's forge-neutral role ladder, lowest first: the vocabulary role drift's `observed` and `expected` are reported in. `none` is no direct role on the repository.\",\"enum\":[\"none\",\"read\",\"triage\",\"write\",\"maintain\",\"admin\"],\"title\":\"MappedRole\",\"type\":\"string\"},\"NamespaceId\":{\"description\":\"The VTC's opaque identifier for a namespace, assigned when it is bound. Stable for the life of the binding; never reused for another binding.\",\"maxLength\":128,\"minLength\":1,\"title\":\"NamespaceId\",\"type\":\"string\"},\"NamespaceStatus\":{\"additionalProperties\":false,\"description\":\"One namespace as its administrators govern it: the binding, who administers it, how many repositories it holds, and what its bridge last reported.\",\"properties\":{\"admins\":{\"description\":\"Everyone holding a live, explicitly recorded `git.ns.admin` on the namespace. Each of them can grant anything in it.\",\"items\":{\"$ref\":\"#/$defs/Did\"},\"type\":\"array\",\"uniqueItems\":true},\"boundAt\":{\"description\":\"When binding completed. Absent while `pending`.\",\"format\":\"date-time\",\"type\":\"string\"},\"boundBy\":{\"$ref\":\"#/$defs/Did\",\"description\":\"Who bound it.\"},\"bridgeDid\":{\"$ref\":\"#/$defs/Did\",\"description\":\"The bridge that serves the namespace. Absent in manual mode.\"},\"cascadeOnDeparture\":{\"description\":\"Whether the community's policy revokes the grants a member made when that member leaves. Community-wide, as `roleDrift`.\",\"type\":\"boolean\"},\"forge\":{\"$ref\":\"#/$defs/ForgeHost\"},\"forgeStatus\":{\"$ref\":\"#/$defs/ForgeStatus\"},\"headless\":{\"description\":\"Bound, with no live admin: its last admin left or lapsed. Nobody can grant in it until an administrator reseats one (`git-ns/namespace/reseat`).\",\"type\":\"boolean\"},\"id\":{\"$ref\":\"#/$defs/NamespaceId\"},\"installationRemoved\":{\"description\":\"The bridge reported losing its access to the forge owner, and has not reported access since.\",\"type\":\"boolean\"},\"kind\":{\"description\":\"Whether the owner is an organisation or a personal account, once the forge has said.\",\"enum\":[\"organization\",\"user\"],\"type\":\"string\"},\"mode\":{\"description\":\"As `GitNamespace.mode` in the shared schema.\",\"enum\":[\"bridge\",\"manual\"],\"type\":\"string\"},\"owner\":{\"$ref\":\"#/$defs/Segment\",\"description\":\"The organisation or user on the forge, lowercased.\"},\"ownerId\":{\"$ref\":\"#/$defs/ForgeId\",\"description\":\"The forge's id for the owner, once the forge has said. Unlike `owner`, it survives a rename.\"},\"repoCount\":{\"description\":\"How many repositories the VTC records in the namespace, in any state.\",\"minimum\":0,\"type\":\"integer\"},\"requestedAt\":{\"description\":\"When binding was requested.\",\"format\":\"date-time\",\"type\":\"string\"},\"resource\":{\"$ref\":\"#/$defs/Resource\",\"description\":\"The namespace as a resource: `<forge>/<owner>`.\"},\"roleDrift\":{\"description\":\"What the community's policy does with a forge role nobody granted: `report` it as drift for an administrator to resolve, or `enforce` the projection by reverting it. Community-wide; repeated on every namespace so that each row stands alone.\",\"enum\":[\"report\",\"enforce\"],\"type\":\"string\"},\"roleMap\":{\"$ref\":\"#/$defs/RoleMap\",\"description\":\"The forge role each right projects to on a repository without a map of its own, as the serving bridge last reported it. Absent while `roleMapSource` is `unknown`: no map, the default included, is assumed.\"},\"roleMapReportedAt\":{\"description\":\"The `issuedAt` of the role-map report held, on the bridge's clock.\",\"format\":\"date-time\",\"type\":\"string\"},\"roleMapSource\":{\"description\":\"`reported` — the bridge serving the namespace reported its role map. `unknown` — it has not, since the namespace was bound or came to be served by it.\",\"enum\":[\"reported\",\"unknown\"],\"type\":\"string\"},\"state\":{\"description\":\"As `GitNamespace.state` in the shared schema.\",\"enum\":[\"pending\",\"bound\"],\"type\":\"string\"}},\"required\":[\"id\",\"forge\",\"owner\",\"resource\",\"mode\",\"state\",\"boundBy\",\"requestedAt\",\"admins\",\"repoCount\",\"headless\",\"installationRemoved\",\"roleDrift\",\"cascadeOnDeparture\",\"roleMapSource\"],\"title\":\"NamespaceStatus\",\"type\":\"object\"},\"Resource\":{\"description\":\"A forge-qualified resource: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo>` for one repository, all lowercase — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.\",\"maxLength\":455,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+(?:/[a-z0-9_-][a-z0-9._-]{0,99}){1,2}$\",\"title\":\"Resource\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The namespaces the caller administers, or the one asked for.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"namespaces\":{\"description\":\"Every administered namespace, `pending` ones included, ordered by `resource`. Empty only for a holder of the community-administrator capability on a VTC with no namespace.\",\"items\":{\"$ref\":\"#/$defs/NamespaceStatus\"},\"type\":\"array\"}},\"required\":[\"namespaces\"],\"title\":\"Git Namespaces — List Namespaces — response payload\",\"type\":\"object\"},\"RoleMap\":{\"additionalProperties\":false,\"description\":\"The forge role each repository right is given, as the forge applies it: after the forge's own ladder has rounded it down. `own` is the role `git.repo.own` projects to, `maintain` that of `git.repo.maintain`, `commit` that of `git.commit.sign` (`none` is fork-based contribution). There is no member for `git.ns.admin` or `git.repo.create`, which project to no forge role whatever a bridge is configured with. Ordered: `own` is at least `maintain`, which is at least `commit`, and `commit` is at most `write`.\",\"properties\":{\"commit\":{\"$ref\":\"#/$defs/MappedRole\"},\"maintain\":{\"$ref\":\"#/$defs/MappedRole\"},\"own\":{\"$ref\":\"#/$defs/MappedRole\"}},\"required\":[\"own\",\"maintain\",\"commit\"],\"title\":\"RoleMap\",\"type\":\"object\"},\"Segment\":{\"description\":\"One lowercased owner or repository name. Forges compare these case-insensitively, so the wire form is always lowercase and a producer lowercases before sending. A leading `.` is refused, which rules out `.` and `..`.\",\"maxLength\":100,\"minLength\":1,\"pattern\":\"^[a-z0-9_-][a-z0-9._-]*$\",\"title\":\"Segment\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/git-ns/namespace/list/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"An administrator lists the namespaces they administer — every one, for a holder of the community-administrator capability — with each one's admins, repository count, bridge and forge status.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"namespace\":{\"$ref\":\"#/$defs/NamespaceId\",\"description\":\"Only this namespace. It must be one the caller administers; a namespace they do not administer, or one this VTC does not have, is refused with `notAdministrator` alike.\"}},\"required\":[],\"title\":\"Git Namespaces — List Namespaces — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -2704,7 +2179,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Did\": {\n      \"description\": \"A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.\",\n      \"maxLength\": 2048,\n      \"pattern\": \"^did:[a-z0-9]+:(?:(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})*:)*(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})+$\",\n      \"title\": \"Did\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ForgeHost\": {\n      \"description\": \"The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, or a self-hosted Forgejo instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.\",\n      \"maxLength\": 253,\n      \"minLength\": 3,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$\",\n      \"title\": \"ForgeHost\",\n      \"type\": \"string\"\n    },\n    \"ForgeId\": {\n      \"description\": \"An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub and Forgejo ids are decimal integers written as strings (`\\\"812736451\\\"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"title\": \"ForgeId\",\n      \"type\": \"string\"\n    },\n    \"ForgeStatus\": {\n      \"additionalProperties\": false,\n      \"description\": \"What the bridge serving the namespace last reported about its standing on the forge owner — its app, its installation and what the owner's plan allows. Display only: it changes no decision the VTC takes. Every member but `missingPermissions` is absent until the bridge reports it.\",\n      \"properties\": {\n        \"appName\": {\n          \"description\": \"The app's display name.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"appRegistration\": {\n          \"description\": \"Where the app's manifest registration stands, in the bridge's words (`registered`, `pending`).\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"appSlug\": {\n          \"description\": \"The app's URL slug on the forge.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"bridgePostedCheck\": {\n          \"description\": \"The bridge can post the verify-trust check itself, the fallback where no required workflow is available.\",\n          \"type\": \"boolean\"\n        },\n        \"installationId\": {\n          \"description\": \"The forge's identifier for its installation of the community's app (GitHub).\",\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"missingPermissions\": {\n          \"description\": \"Permissions the app needs and the installation has not granted, in the forge's vocabulary. Empty when none are missing, or none were reported.\",\n          \"items\": {\n            \"maxLength\": 128,\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"orgRulesets\": {\n          \"description\": \"Organisation rulesets are available on the owner's plan.\",\n          \"type\": \"boolean\"\n        },\n        \"permissionUpgradePending\": {\n          \"description\": \"A new version of the app asks for permissions the forge owner has not approved yet.\",\n          \"type\": \"boolean\"\n        },\n        \"reportedAt\": {\n          \"description\": \"When the VTC received the report.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"requiredWorkflow\": {\n          \"description\": \"The organisation ruleset requiring the verify-trust workflow is in force.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"missingPermissions\"\n      ],\n      \"title\": \"ForgeStatus\",\n      \"type\": \"object\"\n    },\n    \"MappedRole\": {\n      \"description\": \"A level of the bridge's forge-neutral role ladder, lowest first: the vocabulary role drift's `observed` and `expected` are reported in. `none` is no direct role on the repository.\",\n      \"enum\": [\n        \"none\",\n        \"read\",\n        \"triage\",\n        \"write\",\n        \"maintain\",\n        \"admin\"\n      ],\n      \"title\": \"MappedRole\",\n      \"type\": \"string\"\n    },\n    \"NamespaceId\": {\n      \"description\": \"The VTC's opaque identifier for a namespace, assigned when it is bound. Stable for the life of the binding; never reused for another binding.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"title\": \"NamespaceId\",\n      \"type\": \"string\"\n    },\n    \"NamespaceStatus\": {\n      \"additionalProperties\": false,\n      \"description\": \"One namespace as its administrators govern it: the binding, who administers it, how many repositories it holds, and what its bridge last reported.\",\n      \"properties\": {\n        \"admins\": {\n          \"description\": \"Everyone holding a live, explicitly recorded `git.ns.admin` on the namespace. Each of them can grant anything in it.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Did\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"boundAt\": {\n          \"description\": \"When binding completed. Absent while `pending`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"boundBy\": {\n          \"$ref\": \"#/$defs/Did\",\n          \"description\": \"Who bound it.\"\n        },\n        \"bridgeDid\": {\n          \"$ref\": \"#/$defs/Did\",\n          \"description\": \"The bridge that serves the namespace. Absent in manual mode.\"\n        },\n        \"cascadeOnDeparture\": {\n          \"description\": \"Whether the community's policy revokes the grants a member made when that member leaves. Community-wide, as `roleDrift`.\",\n          \"type\": \"boolean\"\n        },\n        \"forge\": {\n          \"$ref\": \"#/$defs/ForgeHost\"\n        },\n        \"forgeStatus\": {\n          \"$ref\": \"#/$defs/ForgeStatus\"\n        },\n        \"headless\": {\n          \"description\": \"Bound, with no live admin: its last admin left or lapsed. Nobody can grant in it until an administrator reseats one (`git-ns/namespace/reseat`).\",\n          \"type\": \"boolean\"\n        },\n        \"id\": {\n          \"$ref\": \"#/$defs/NamespaceId\"\n        },\n        \"installationRemoved\": {\n          \"description\": \"The bridge reported losing its access to the forge owner, and has not reported access since.\",\n          \"type\": \"boolean\"\n        },\n        \"kind\": {\n          \"description\": \"Whether the owner is an organisation or a personal account, once the forge has said.\",\n          \"enum\": [\n            \"organization\",\n            \"user\"\n          ],\n          \"type\": \"string\"\n        },\n        \"mode\": {\n          \"description\": \"As `GitNamespace.mode` in the shared schema.\",\n          \"enum\": [\n            \"bridge\",\n            \"manual\"\n          ],\n          \"type\": \"string\"\n        },\n        \"owner\": {\n          \"$ref\": \"#/$defs/Segment\",\n          \"description\": \"The organisation or user on the forge, lowercased.\"\n        },\n        \"ownerId\": {\n          \"$ref\": \"#/$defs/ForgeId\",\n          \"description\": \"The forge's id for the owner, once the forge has said. Unlike `owner`, it survives a rename.\"\n        },\n        \"repoCount\": {\n          \"description\": \"How many repositories the VTC records in the namespace, in any state.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"requestedAt\": {\n          \"description\": \"When binding was requested.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"resource\": {\n          \"$ref\": \"#/$defs/Resource\",\n          \"description\": \"The namespace as a resource: `<forge>/<owner>`.\"\n        },\n        \"roleDrift\": {\n          \"description\": \"What the community's policy does with a forge role nobody granted: `report` it as drift for an administrator to resolve, or `enforce` the projection by reverting it. Community-wide; repeated on every namespace so that each row stands alone.\",\n          \"enum\": [\n            \"report\",\n            \"enforce\"\n          ],\n          \"type\": \"string\"\n        },\n        \"roleMap\": {\n          \"$ref\": \"#/$defs/RoleMap\",\n          \"description\": \"The forge role each right projects to on a repository without a map of its own, as the serving bridge last reported it. Absent while `roleMapSource` is `unknown`: no map, the default included, is assumed.\"\n        },\n        \"roleMapReportedAt\": {\n          \"description\": \"The `issuedAt` of the role-map report held, on the bridge's clock.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"roleMapSource\": {\n          \"description\": \"`reported` — the bridge serving the namespace reported its role map. `unknown` — it has not, since the namespace was bound or came to be served by it.\",\n          \"enum\": [\n            \"reported\",\n            \"unknown\"\n          ],\n          \"type\": \"string\"\n        },\n        \"state\": {\n          \"description\": \"As `GitNamespace.state` in the shared schema.\",\n          \"enum\": [\n            \"pending\",\n            \"bound\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"forge\",\n        \"owner\",\n        \"resource\",\n        \"mode\",\n        \"state\",\n        \"boundBy\",\n        \"requestedAt\",\n        \"admins\",\n        \"repoCount\",\n        \"headless\",\n        \"installationRemoved\",\n        \"roleDrift\",\n        \"cascadeOnDeparture\",\n        \"roleMapSource\"\n      ],\n      \"title\": \"NamespaceStatus\",\n      \"type\": \"object\"\n    },\n    \"Resource\": {\n      \"description\": \"A forge-qualified resource: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo>` for one repository, all lowercase — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.\",\n      \"maxLength\": 455,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+(?:/[a-z0-9_-][a-z0-9._-]{0,99}){1,2}$\",\n      \"title\": \"Resource\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The namespaces the caller administers, or the one asked for.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"namespaces\": {\n          \"description\": \"Every administered namespace, `pending` ones included, ordered by `resource`. Empty only for a holder of the community-administrator capability on a VTC with no namespace.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/NamespaceStatus\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"namespaces\"\n      ],\n      \"title\": \"Git Namespaces — List Namespaces — response payload\",\n      \"type\": \"object\"\n    },\n    \"RoleMap\": {\n      \"additionalProperties\": false,\n      \"description\": \"The forge role each repository right is given, as the forge applies it: after the forge's own ladder has rounded it down. `own` is the role `git.repo.own` projects to, `maintain` that of `git.repo.maintain`, `commit` that of `git.commit.sign` (`none` is fork-based contribution). There is no member for `git.ns.admin` or `git.repo.create`, which project to no forge role whatever a bridge is configured with. Ordered: `own` is at least `maintain`, which is at least `commit`, and `commit` is at most `write`.\",\n      \"properties\": {\n        \"commit\": {\n          \"$ref\": \"#/$defs/MappedRole\"\n        },\n        \"maintain\": {\n          \"$ref\": \"#/$defs/MappedRole\"\n        },\n        \"own\": {\n          \"$ref\": \"#/$defs/MappedRole\"\n        }\n      },\n      \"required\": [\n        \"own\",\n        \"maintain\",\n        \"commit\"\n      ],\n      \"title\": \"RoleMap\",\n      \"type\": \"object\"\n    },\n    \"Segment\": {\n      \"description\": \"One lowercased owner or repository name. Forges compare these case-insensitively, so the wire form is always lowercase and a producer lowercases before sending. A leading `.` is refused, which rules out `.` and `..`.\",\n      \"maxLength\": 100,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z0-9_-][a-z0-9._-]*$\",\n      \"title\": \"Segment\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Did\":{\"description\":\"A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.\",\"maxLength\":2048,\"pattern\":\"^did:[a-z0-9]+:(?:(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})*:)*(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})+$\",\"title\":\"Did\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ForgeHost\":{\"description\":\"The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, or a self-hosted Forgejo instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.\",\"maxLength\":253,\"minLength\":3,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$\",\"title\":\"ForgeHost\",\"type\":\"string\"},\"ForgeId\":{\"description\":\"An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub and Forgejo ids are decimal integers written as strings (`\\\"812736451\\\"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.\",\"maxLength\":64,\"minLength\":1,\"title\":\"ForgeId\",\"type\":\"string\"},\"ForgeStatus\":{\"additionalProperties\":false,\"description\":\"What the bridge serving the namespace last reported about its standing on the forge owner — its app, its installation and what the owner's plan allows. Display only: it changes no decision the VTC takes. Every member but `missingPermissions` is absent until the bridge reports it.\",\"properties\":{\"appName\":{\"description\":\"The app's display name.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"appRegistration\":{\"description\":\"Where the app's manifest registration stands, in the bridge's words (`registered`, `pending`).\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"appSlug\":{\"description\":\"The app's URL slug on the forge.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"bridgePostedCheck\":{\"description\":\"The bridge can post the verify-trust check itself, the fallback where no required workflow is available.\",\"type\":\"boolean\"},\"installationId\":{\"description\":\"The forge's identifier for its installation of the community's app (GitHub).\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"missingPermissions\":{\"description\":\"Permissions the app needs and the installation has not granted, in the forge's vocabulary. Empty when none are missing, or none were reported.\",\"items\":{\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"maxItems\":256,\"type\":\"array\",\"uniqueItems\":true},\"orgRulesets\":{\"description\":\"Organisation rulesets are available on the owner's plan.\",\"type\":\"boolean\"},\"permissionUpgradePending\":{\"description\":\"A new version of the app asks for permissions the forge owner has not approved yet.\",\"type\":\"boolean\"},\"reportedAt\":{\"description\":\"When the VTC received the report.\",\"format\":\"date-time\",\"type\":\"string\"},\"requiredWorkflow\":{\"description\":\"The organisation ruleset requiring the verify-trust workflow is in force.\",\"type\":\"boolean\"}},\"required\":[\"missingPermissions\"],\"title\":\"ForgeStatus\",\"type\":\"object\"},\"MappedRole\":{\"description\":\"A level of the bridge's forge-neutral role ladder, lowest first: the vocabulary role drift's `observed` and `expected` are reported in. `none` is no direct role on the repository.\",\"enum\":[\"none\",\"read\",\"triage\",\"write\",\"maintain\",\"admin\"],\"title\":\"MappedRole\",\"type\":\"string\"},\"NamespaceId\":{\"description\":\"The VTC's opaque identifier for a namespace, assigned when it is bound. Stable for the life of the binding; never reused for another binding.\",\"maxLength\":128,\"minLength\":1,\"title\":\"NamespaceId\",\"type\":\"string\"},\"NamespaceStatus\":{\"additionalProperties\":false,\"description\":\"One namespace as its administrators govern it: the binding, who administers it, how many repositories it holds, and what its bridge last reported.\",\"properties\":{\"admins\":{\"description\":\"Everyone holding a live, explicitly recorded `git.ns.admin` on the namespace. Each of them can grant anything in it.\",\"items\":{\"$ref\":\"#/$defs/Did\"},\"type\":\"array\",\"uniqueItems\":true},\"boundAt\":{\"description\":\"When binding completed. Absent while `pending`.\",\"format\":\"date-time\",\"type\":\"string\"},\"boundBy\":{\"$ref\":\"#/$defs/Did\",\"description\":\"Who bound it.\"},\"bridgeDid\":{\"$ref\":\"#/$defs/Did\",\"description\":\"The bridge that serves the namespace. Absent in manual mode.\"},\"cascadeOnDeparture\":{\"description\":\"Whether the community's policy revokes the grants a member made when that member leaves. Community-wide, as `roleDrift`.\",\"type\":\"boolean\"},\"forge\":{\"$ref\":\"#/$defs/ForgeHost\"},\"forgeStatus\":{\"$ref\":\"#/$defs/ForgeStatus\"},\"headless\":{\"description\":\"Bound, with no live admin: its last admin left or lapsed. Nobody can grant in it until an administrator reseats one (`git-ns/namespace/reseat`).\",\"type\":\"boolean\"},\"id\":{\"$ref\":\"#/$defs/NamespaceId\"},\"installationRemoved\":{\"description\":\"The bridge reported losing its access to the forge owner, and has not reported access since.\",\"type\":\"boolean\"},\"kind\":{\"description\":\"Whether the owner is an organisation or a personal account, once the forge has said.\",\"enum\":[\"organization\",\"user\"],\"type\":\"string\"},\"mode\":{\"description\":\"As `GitNamespace.mode` in the shared schema.\",\"enum\":[\"bridge\",\"manual\"],\"type\":\"string\"},\"owner\":{\"$ref\":\"#/$defs/Segment\",\"description\":\"The organisation or user on the forge, lowercased.\"},\"ownerId\":{\"$ref\":\"#/$defs/ForgeId\",\"description\":\"The forge's id for the owner, once the forge has said. Unlike `owner`, it survives a rename.\"},\"repoCount\":{\"description\":\"How many repositories the VTC records in the namespace, in any state.\",\"minimum\":0,\"type\":\"integer\"},\"requestedAt\":{\"description\":\"When binding was requested.\",\"format\":\"date-time\",\"type\":\"string\"},\"resource\":{\"$ref\":\"#/$defs/Resource\",\"description\":\"The namespace as a resource: `<forge>/<owner>`.\"},\"roleDrift\":{\"description\":\"What the community's policy does with a forge role nobody granted: `report` it as drift for an administrator to resolve, or `enforce` the projection by reverting it. Community-wide; repeated on every namespace so that each row stands alone.\",\"enum\":[\"report\",\"enforce\"],\"type\":\"string\"},\"roleMap\":{\"$ref\":\"#/$defs/RoleMap\",\"description\":\"The forge role each right projects to on a repository without a map of its own, as the serving bridge last reported it. Absent while `roleMapSource` is `unknown`: no map, the default included, is assumed.\"},\"roleMapReportedAt\":{\"description\":\"The `issuedAt` of the role-map report held, on the bridge's clock.\",\"format\":\"date-time\",\"type\":\"string\"},\"roleMapSource\":{\"description\":\"`reported` — the bridge serving the namespace reported its role map. `unknown` — it has not, since the namespace was bound or came to be served by it.\",\"enum\":[\"reported\",\"unknown\"],\"type\":\"string\"},\"state\":{\"description\":\"As `GitNamespace.state` in the shared schema.\",\"enum\":[\"pending\",\"bound\"],\"type\":\"string\"}},\"required\":[\"id\",\"forge\",\"owner\",\"resource\",\"mode\",\"state\",\"boundBy\",\"requestedAt\",\"admins\",\"repoCount\",\"headless\",\"installationRemoved\",\"roleDrift\",\"cascadeOnDeparture\",\"roleMapSource\"],\"title\":\"NamespaceStatus\",\"type\":\"object\"},\"Resource\":{\"description\":\"A forge-qualified resource: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo>` for one repository, all lowercase — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.\",\"maxLength\":455,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+(?:/[a-z0-9_-][a-z0-9._-]{0,99}){1,2}$\",\"title\":\"Resource\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The namespaces the caller administers, or the one asked for.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"namespaces\":{\"description\":\"Every administered namespace, `pending` ones included, ordered by `resource`. Empty only for a holder of the community-administrator capability on a VTC with no namespace.\",\"items\":{\"$ref\":\"#/$defs/NamespaceStatus\"},\"type\":\"array\"}},\"required\":[\"namespaces\"],\"title\":\"Git Namespaces — List Namespaces — response payload\",\"type\":\"object\"},\"RoleMap\":{\"additionalProperties\":false,\"description\":\"The forge role each repository right is given, as the forge applies it: after the forge's own ladder has rounded it down. `own` is the role `git.repo.own` projects to, `maintain` that of `git.repo.maintain`, `commit` that of `git.commit.sign` (`none` is fork-based contribution). There is no member for `git.ns.admin` or `git.repo.create`, which project to no forge role whatever a bridge is configured with. Ordered: `own` is at least `maintain`, which is at least `commit`, and `commit` is at most `write`.\",\"properties\":{\"commit\":{\"$ref\":\"#/$defs/MappedRole\"},\"maintain\":{\"$ref\":\"#/$defs/MappedRole\"},\"own\":{\"$ref\":\"#/$defs/MappedRole\"}},\"required\":[\"own\",\"maintain\",\"commit\"],\"title\":\"RoleMap\",\"type\":\"object\"},\"Segment\":{\"description\":\"One lowercased owner or repository name. Forges compare these case-insensitively, so the wire form is always lowercase and a producer lowercases before sending. A leading `.` is refused, which rules out `.` and `..`.\",\"maxLength\":100,\"minLength\":1,\"pattern\":\"^[a-z0-9_-][a-z0-9._-]*$\",\"title\":\"Segment\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,27 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/messaging/ping/0.2",
-///  "title": "Payload",
-///  "type": "object",
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "nonce": {
-///      "description": "Optional opaque value the requester may supply to correlate the response to this probe. The mediator echoes it verbatim in the response.",
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -189,52 +144,6 @@ impl Payload {
 }
 ///The success response to a messaging/ping request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/ping/0.2#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The success response to a messaging/ping request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/ping/0.2#response.",
-///  "type": "object",
-///  "required": [
-///    "respondedAt",
-///    "status"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "nonce": {
-///      "description": "Echoed verbatim from the request when one was supplied.",
-///      "type": "string"
-///    },
-///    "protocols": {
-///      "description": "The transport protocols the mediator currently serves (e.g. `didcomm`, `tsp`). Open set; requesters ignore unrecognized tokens. MAY be omitted in a reduced response to an unauthenticated requester.",
-///      "type": "array",
-///      "items": {
-///        "type": "string"
-///      }
-///    },
-///    "respondedAt": {
-///      "description": "The mediator's current time (RFC 3339). Advisory; not a trusted time source.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "status": {
-///      "description": "Coarse health. `ok` = able to accept and route messages; `degraded` = reachable but operating with reduced function. A mediator that cannot serve at all returns the framework `unavailable` error instead of a response.",
-///      "type": "string",
-///      "enum": [
-///        "ok",
-///        "degraded"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -261,19 +170,6 @@ impl Response {
 }
 ///Coarse health. `ok` = able to accept and route messages; `degraded` = reachable but operating with reduced function. A mediator that cannot serve at all returns the framework `unavailable` error instead of a response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Coarse health. `ok` = able to accept and route messages; `degraded` = reachable but operating with reduced function. A mediator that cannot serve at all returns the framework `unavailable` error instead of a response.",
-///  "type": "string",
-///  "enum": [
-///    "ok",
-///    "degraded"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -494,14 +390,14 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/messaging/ping/0.2";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a messaging/ping request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/ping/0.2#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"nonce\": {\n          \"description\": \"Echoed verbatim from the request when one was supplied.\",\n          \"type\": \"string\"\n        },\n        \"protocols\": {\n          \"description\": \"The transport protocols the mediator currently serves (e.g. `didcomm`, `tsp`). Open set; requesters ignore unrecognized tokens. MAY be omitted in a reduced response to an unauthenticated requester.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"respondedAt\": {\n          \"description\": \"The mediator's current time (RFC 3339). Advisory; not a trusted time source.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"description\": \"Coarse health. `ok` = able to accept and route messages; `degraded` = reachable but operating with reduced function. A mediator that cannot serve at all returns the framework `unavailable` error instead of a response.\",\n          \"enum\": [\n            \"ok\",\n            \"degraded\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"respondedAt\",\n        \"status\"\n      ],\n      \"title\": \"Messaging Ping — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/messaging/ping/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"nonce\": {\n      \"description\": \"Optional opaque value the requester may supply to correlate the response to this probe. The mediator echoes it verbatim in the response.\",\n      \"type\": \"string\"\n    }\n  },\n  \"title\": \"Messaging Ping — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a messaging/ping request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/ping/0.2#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"nonce\":{\"description\":\"Echoed verbatim from the request when one was supplied.\",\"type\":\"string\"},\"protocols\":{\"description\":\"The transport protocols the mediator currently serves (e.g. `didcomm`, `tsp`). Open set; requesters ignore unrecognized tokens. MAY be omitted in a reduced response to an unauthenticated requester.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"respondedAt\":{\"description\":\"The mediator's current time (RFC 3339). Advisory; not a trusted time source.\",\"format\":\"date-time\",\"type\":\"string\"},\"status\":{\"description\":\"Coarse health. `ok` = able to accept and route messages; `degraded` = reachable but operating with reduced function. A mediator that cannot serve at all returns the framework `unavailable` error instead of a response.\",\"enum\":[\"ok\",\"degraded\"],\"type\":\"string\"}},\"required\":[\"respondedAt\",\"status\"],\"title\":\"Messaging Ping — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/messaging/ping/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"nonce\":{\"description\":\"Optional opaque value the requester may supply to correlate the response to this probe. The mediator echoes it verbatim in the response.\",\"type\":\"string\"}},\"title\":\"Messaging Ping — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/messaging/ping/0.2#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a messaging/ping request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/ping/0.2#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"nonce\": {\n          \"description\": \"Echoed verbatim from the request when one was supplied.\",\n          \"type\": \"string\"\n        },\n        \"protocols\": {\n          \"description\": \"The transport protocols the mediator currently serves (e.g. `didcomm`, `tsp`). Open set; requesters ignore unrecognized tokens. MAY be omitted in a reduced response to an unauthenticated requester.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"respondedAt\": {\n          \"description\": \"The mediator's current time (RFC 3339). Advisory; not a trusted time source.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"description\": \"Coarse health. `ok` = able to accept and route messages; `degraded` = reachable but operating with reduced function. A mediator that cannot serve at all returns the framework `unavailable` error instead of a response.\",\n          \"enum\": [\n            \"ok\",\n            \"degraded\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"respondedAt\",\n        \"status\"\n      ],\n      \"title\": \"Messaging Ping — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a messaging/ping request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/ping/0.2#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"nonce\":{\"description\":\"Echoed verbatim from the request when one was supplied.\",\"type\":\"string\"},\"protocols\":{\"description\":\"The transport protocols the mediator currently serves (e.g. `didcomm`, `tsp`). Open set; requesters ignore unrecognized tokens. MAY be omitted in a reduced response to an unauthenticated requester.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"respondedAt\":{\"description\":\"The mediator's current time (RFC 3339). Advisory; not a trusted time source.\",\"format\":\"date-time\",\"type\":\"string\"},\"status\":{\"description\":\"Coarse health. `ok` = able to accept and route messages; `degraded` = reachable but operating with reduced function. A mediator that cannot serve at all returns the framework `unavailable` error instead of a response.\",\"enum\":[\"ok\",\"degraded\"],\"type\":\"string\"}},\"required\":[\"respondedAt\",\"status\"],\"title\":\"Messaging Ping — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

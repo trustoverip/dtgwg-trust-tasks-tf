@@ -35,21 +35,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -71,15 +56,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -143,56 +119,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Request payload for vta/services/update. Replaces the settings on a transport that is already advertised. Refused when the transport is not currently enabled — that case is `enable`, and conflating the two would let a typo silently advertise a service the operator meant to change.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/services/update/1.0",
-///  "title": "Payload",
-///  "description": "Request payload for vta/services/update. Replaces the settings on a transport that is already advertised. Refused when the transport is not currently enabled — that case is `enable`, and conflating the two would let a typo silently advertise a service the operator meant to change.",
-///  "type": "object",
-///  "required": [
-///    "config",
-///    "service"
-///  ],
-///  "properties": {
-///    "config": {
-///      "description": "Kind-specific settings. Which member applies is decided by `service`, and the two must agree — a `rest` request carrying `mediatorDid` is malformed, not a request with an ignored field. `didcomm` and `tsp` take `mediatorDid`; `rest` and `webauthn` take `url`.",
-///      "type": "object",
-///      "properties": {
-///        "force": {
-///          "description": "`didcomm` only: skip the mediator handshake except for DID resolution. Absent means the handshake runs, which is the safe reading — this carries no schema-level default on purpose, because a default would materialise the field into a `rest` or `webauthn` config where it has no meaning. The handshake is what proves the mediator is reachable and willing, so forcing past it can advertise a mediator that cannot actually deliver.",
-///          "type": "boolean"
-///        },
-///        "handshakeTimeoutSecs": {
-///          "description": "`didcomm` only: trust-ping round-trip budget. Default 10.",
-///          "type": "integer",
-///          "minimum": 1.0
-///        },
-///        "mediatorDid": {
-///          "description": "Mediator to route through. Applies to `didcomm` and `tsp`.",
-///          "type": "string",
-///          "minLength": 1
-///        },
-///        "url": {
-///          "description": "Endpoint to advertise. Applies to `rest` and `webauthn`. MUST be `https://`, with no fragment and no userinfo — the agent refuses anything else, because this value ends up in a signed DID document that clients will fetch.",
-///          "type": "string",
-///          "minLength": 1
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "service": {
-///      "$ref": "#/definitions/ServiceKind"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -210,37 +136,6 @@ impl Payload {
 }
 ///Kind-specific settings. Which member applies is decided by `service`, and the two must agree — a `rest` request carrying `mediatorDid` is malformed, not a request with an ignored field. `didcomm` and `tsp` take `mediatorDid`; `rest` and `webauthn` take `url`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Kind-specific settings. Which member applies is decided by `service`, and the two must agree — a `rest` request carrying `mediatorDid` is malformed, not a request with an ignored field. `didcomm` and `tsp` take `mediatorDid`; `rest` and `webauthn` take `url`.",
-///  "type": "object",
-///  "properties": {
-///    "force": {
-///      "description": "`didcomm` only: skip the mediator handshake except for DID resolution. Absent means the handshake runs, which is the safe reading — this carries no schema-level default on purpose, because a default would materialise the field into a `rest` or `webauthn` config where it has no meaning. The handshake is what proves the mediator is reachable and willing, so forcing past it can advertise a mediator that cannot actually deliver.",
-///      "type": "boolean"
-///    },
-///    "handshakeTimeoutSecs": {
-///      "description": "`didcomm` only: trust-ping round-trip budget. Default 10.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "mediatorDid": {
-///      "description": "Mediator to route through. Applies to `didcomm` and `tsp`.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "url": {
-///      "description": "Endpoint to advertise. Applies to `rest` and `webauthn`. MUST be `https://`, with no fragment and no userinfo — the agent refuses anything else, because this value ends up in a signed DID document that clients will fetch.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -283,16 +178,6 @@ impl PayloadConfig {
 }
 ///Mediator to route through. Applies to `didcomm` and `tsp`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Mediator to route through. Applies to `didcomm` and `tsp`.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadConfigMediatorDid(::std::string::String);
@@ -352,16 +237,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadConfigMediatorDid {
 }
 ///Endpoint to advertise. Applies to `rest` and `webauthn`. MUST be `https://`, with no fragment and no userinfo — the agent refuses anything else, because this value ends up in a signed DID document that clients will fetch.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Endpoint to advertise. Applies to `rest` and `webauthn`. MUST be `https://`, with no fragment and no userinfo — the agent refuses anything else, because this value ends up in a signed DID document that clients will fetch.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadConfigUrl(::std::string::String);
@@ -421,29 +296,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadConfigUrl {
 }
 ///Success response to vta/services/update. Type https://trusttasks.org/spec/vta/services/update/1.0#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to vta/services/update. Type https://trusttasks.org/spec/vta/services/update/1.0#response.",
-///  "type": "object",
-///  "required": [
-///    "result"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "result": {
-///      "$ref": "#/definitions/ServiceMutationResult"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -460,22 +312,6 @@ impl Response {
 }
 ///Which transport a task is acting on. This is the discriminator: it selects which member of `config` is meaningful, and a payload naming one kind with another's config is malformed rather than merely ignored.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ServiceKind",
-///  "description": "Which transport a task is acting on. This is the discriminator: it selects which member of `config` is meaningful, and a payload naming one kind with another's config is malformed rather than merely ignored.",
-///  "type": "string",
-///  "enum": [
-///    "didcomm",
-///    "rest",
-///    "tsp",
-///    "webauthn"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -545,54 +381,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ServiceKind {
 }
 ///The outcome of a change to an advertised service. Every member describes the **log entry the change produced**, because that is what the change actually is: the agent's DID document is the record, and a consumer that treats the response as a mere acknowledgement will miss that a redeploy may be required.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ServiceMutationResult",
-///  "description": "The outcome of a change to an advertised service. Every member describes the **log entry the change produced**, because that is what the change actually is: the agent's DID document is the record, and a consumer that treats the response as a mere acknowledgement will miss that a redeploy may be required.",
-///  "type": "object",
-///  "required": [
-///    "effectiveAt",
-///    "logEntryVersionId"
-///  ],
-///  "properties": {
-///    "drainUntil": {
-///      "description": "Present when the change scheduled a DIDComm drain. Its absence means no drain was scheduled, NOT that a drain finished instantly: a consumer reporting 'done' on an absent value would be right, and one reporting it on a present value would be wrong.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "drainingMediator": {
-///      "description": "The mediator being drained, when `drainUntil` is present.",
-///      "type": "string"
-///    },
-///    "effectiveAt": {
-///      "description": "RFC 3339 instant the change took effect — the same instant stamped on the new log entry.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "logEntryVersionId": {
-///      "description": "Version id of the new did:webvh log entry this change wrote. Joins the change to the document's history.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "serverless": {
-///      "description": "True when the agent's DID is self-hosted. **The change is persisted locally but NOT published**: the operator must fetch the updated `did.jsonl` and redeploy before any verifier sees it. A consumer that ignores this reports success for a change no one else can observe yet.",
-///      "default": false,
-///      "type": "boolean"
-///    },
-///    "vtaDid": {
-///      "description": "The agent's own DID — subject of the log entry this change wrote. Carried so a caller can follow up without a second round trip.",
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -637,16 +425,6 @@ impl ServiceMutationResult {
 }
 ///Version id of the new did:webvh log entry this change wrote. Joins the change to the document's history.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Version id of the new did:webvh log entry this change wrote. Joins the change to the document's history.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ServiceMutationResultLogEntryVersionId(::std::string::String);
@@ -1061,7 +839,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/services/update. Type https://trusttasks.org/spec/vta/services/update/1.0#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"result\": {\n          \"$ref\": \"#/$defs/ServiceMutationResult\"\n        }\n      },\n      \"required\": [\n        \"result\"\n      ],\n      \"title\": \"VTA Services — Update — response payload\",\n      \"type\": \"object\"\n    },\n    \"ServiceKind\": {\n      \"description\": \"Which transport a task is acting on. This is the discriminator: it selects which member of `config` is meaningful, and a payload naming one kind with another's config is malformed rather than merely ignored.\",\n      \"enum\": [\n        \"didcomm\",\n        \"rest\",\n        \"tsp\",\n        \"webauthn\"\n      ],\n      \"title\": \"ServiceKind\",\n      \"type\": \"string\"\n    },\n    \"ServiceMutationResult\": {\n      \"additionalProperties\": false,\n      \"description\": \"The outcome of a change to an advertised service. Every member describes the **log entry the change produced**, because that is what the change actually is: the agent's DID document is the record, and a consumer that treats the response as a mere acknowledgement will miss that a redeploy may be required.\",\n      \"properties\": {\n        \"drainUntil\": {\n          \"description\": \"Present when the change scheduled a DIDComm drain. Its absence means no drain was scheduled, NOT that a drain finished instantly: a consumer reporting 'done' on an absent value would be right, and one reporting it on a present value would be wrong.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"drainingMediator\": {\n          \"description\": \"The mediator being drained, when `drainUntil` is present.\",\n          \"type\": \"string\"\n        },\n        \"effectiveAt\": {\n          \"description\": \"RFC 3339 instant the change took effect — the same instant stamped on the new log entry.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"logEntryVersionId\": {\n          \"description\": \"Version id of the new did:webvh log entry this change wrote. Joins the change to the document's history.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"serverless\": {\n          \"default\": false,\n          \"description\": \"True when the agent's DID is self-hosted. **The change is persisted locally but NOT published**: the operator must fetch the updated `did.jsonl` and redeploy before any verifier sees it. A consumer that ignores this reports success for a change no one else can observe yet.\",\n          \"type\": \"boolean\"\n        },\n        \"vtaDid\": {\n          \"description\": \"The agent's own DID — subject of the log entry this change wrote. Carried so a caller can follow up without a second round trip.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"logEntryVersionId\",\n        \"effectiveAt\"\n      ],\n      \"title\": \"ServiceMutationResult\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/services/update/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Request payload for vta/services/update. Replaces the settings on a transport that is already advertised. Refused when the transport is not currently enabled — that case is `enable`, and conflating the two would let a typo silently advertise a service the operator meant to change.\",\n  \"properties\": {\n    \"config\": {\n      \"additionalProperties\": false,\n      \"description\": \"Kind-specific settings. Which member applies is decided by `service`, and the two must agree — a `rest` request carrying `mediatorDid` is malformed, not a request with an ignored field. `didcomm` and `tsp` take `mediatorDid`; `rest` and `webauthn` take `url`.\",\n      \"properties\": {\n        \"force\": {\n          \"description\": \"`didcomm` only: skip the mediator handshake except for DID resolution. Absent means the handshake runs, which is the safe reading — this carries no schema-level default on purpose, because a default would materialise the field into a `rest` or `webauthn` config where it has no meaning. The handshake is what proves the mediator is reachable and willing, so forcing past it can advertise a mediator that cannot actually deliver.\",\n          \"type\": \"boolean\"\n        },\n        \"handshakeTimeoutSecs\": {\n          \"description\": \"`didcomm` only: trust-ping round-trip budget. Default 10.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"mediatorDid\": {\n          \"description\": \"Mediator to route through. Applies to `didcomm` and `tsp`.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"url\": {\n          \"description\": \"Endpoint to advertise. Applies to `rest` and `webauthn`. MUST be `https://`, with no fragment and no userinfo — the agent refuses anything else, because this value ends up in a signed DID document that clients will fetch.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"type\": \"object\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"service\": {\n      \"$ref\": \"#/$defs/ServiceKind\"\n    }\n  },\n  \"required\": [\n    \"service\",\n    \"config\"\n  ],\n  \"title\": \"VTA Services — Update — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vta/services/update. Type https://trusttasks.org/spec/vta/services/update/1.0#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"result\":{\"$ref\":\"#/$defs/ServiceMutationResult\"}},\"required\":[\"result\"],\"title\":\"VTA Services — Update — response payload\",\"type\":\"object\"},\"ServiceKind\":{\"description\":\"Which transport a task is acting on. This is the discriminator: it selects which member of `config` is meaningful, and a payload naming one kind with another's config is malformed rather than merely ignored.\",\"enum\":[\"didcomm\",\"rest\",\"tsp\",\"webauthn\"],\"title\":\"ServiceKind\",\"type\":\"string\"},\"ServiceMutationResult\":{\"additionalProperties\":false,\"description\":\"The outcome of a change to an advertised service. Every member describes the **log entry the change produced**, because that is what the change actually is: the agent's DID document is the record, and a consumer that treats the response as a mere acknowledgement will miss that a redeploy may be required.\",\"properties\":{\"drainUntil\":{\"description\":\"Present when the change scheduled a DIDComm drain. Its absence means no drain was scheduled, NOT that a drain finished instantly: a consumer reporting 'done' on an absent value would be right, and one reporting it on a present value would be wrong.\",\"format\":\"date-time\",\"type\":\"string\"},\"drainingMediator\":{\"description\":\"The mediator being drained, when `drainUntil` is present.\",\"type\":\"string\"},\"effectiveAt\":{\"description\":\"RFC 3339 instant the change took effect — the same instant stamped on the new log entry.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"logEntryVersionId\":{\"description\":\"Version id of the new did:webvh log entry this change wrote. Joins the change to the document's history.\",\"minLength\":1,\"type\":\"string\"},\"serverless\":{\"default\":false,\"description\":\"True when the agent's DID is self-hosted. **The change is persisted locally but NOT published**: the operator must fetch the updated `did.jsonl` and redeploy before any verifier sees it. A consumer that ignores this reports success for a change no one else can observe yet.\",\"type\":\"boolean\"},\"vtaDid\":{\"description\":\"The agent's own DID — subject of the log entry this change wrote. Carried so a caller can follow up without a second round trip.\",\"type\":\"string\"}},\"required\":[\"logEntryVersionId\",\"effectiveAt\"],\"title\":\"ServiceMutationResult\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vta/services/update/1.0\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Request payload for vta/services/update. Replaces the settings on a transport that is already advertised. Refused when the transport is not currently enabled — that case is `enable`, and conflating the two would let a typo silently advertise a service the operator meant to change.\",\"properties\":{\"config\":{\"additionalProperties\":false,\"description\":\"Kind-specific settings. Which member applies is decided by `service`, and the two must agree — a `rest` request carrying `mediatorDid` is malformed, not a request with an ignored field. `didcomm` and `tsp` take `mediatorDid`; `rest` and `webauthn` take `url`.\",\"properties\":{\"force\":{\"description\":\"`didcomm` only: skip the mediator handshake except for DID resolution. Absent means the handshake runs, which is the safe reading — this carries no schema-level default on purpose, because a default would materialise the field into a `rest` or `webauthn` config where it has no meaning. The handshake is what proves the mediator is reachable and willing, so forcing past it can advertise a mediator that cannot actually deliver.\",\"type\":\"boolean\"},\"handshakeTimeoutSecs\":{\"description\":\"`didcomm` only: trust-ping round-trip budget. Default 10.\",\"minimum\":1,\"type\":\"integer\"},\"mediatorDid\":{\"description\":\"Mediator to route through. Applies to `didcomm` and `tsp`.\",\"minLength\":1,\"type\":\"string\"},\"url\":{\"description\":\"Endpoint to advertise. Applies to `rest` and `webauthn`. MUST be `https://`, with no fragment and no userinfo — the agent refuses anything else, because this value ends up in a signed DID document that clients will fetch.\",\"minLength\":1,\"type\":\"string\"}},\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"service\":{\"$ref\":\"#/$defs/ServiceKind\"}},\"required\":[\"service\",\"config\"],\"title\":\"VTA Services — Update — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1070,7 +848,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/services/update. Type https://trusttasks.org/spec/vta/services/update/1.0#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"result\": {\n          \"$ref\": \"#/$defs/ServiceMutationResult\"\n        }\n      },\n      \"required\": [\n        \"result\"\n      ],\n      \"title\": \"VTA Services — Update — response payload\",\n      \"type\": \"object\"\n    },\n    \"ServiceKind\": {\n      \"description\": \"Which transport a task is acting on. This is the discriminator: it selects which member of `config` is meaningful, and a payload naming one kind with another's config is malformed rather than merely ignored.\",\n      \"enum\": [\n        \"didcomm\",\n        \"rest\",\n        \"tsp\",\n        \"webauthn\"\n      ],\n      \"title\": \"ServiceKind\",\n      \"type\": \"string\"\n    },\n    \"ServiceMutationResult\": {\n      \"additionalProperties\": false,\n      \"description\": \"The outcome of a change to an advertised service. Every member describes the **log entry the change produced**, because that is what the change actually is: the agent's DID document is the record, and a consumer that treats the response as a mere acknowledgement will miss that a redeploy may be required.\",\n      \"properties\": {\n        \"drainUntil\": {\n          \"description\": \"Present when the change scheduled a DIDComm drain. Its absence means no drain was scheduled, NOT that a drain finished instantly: a consumer reporting 'done' on an absent value would be right, and one reporting it on a present value would be wrong.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"drainingMediator\": {\n          \"description\": \"The mediator being drained, when `drainUntil` is present.\",\n          \"type\": \"string\"\n        },\n        \"effectiveAt\": {\n          \"description\": \"RFC 3339 instant the change took effect — the same instant stamped on the new log entry.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"logEntryVersionId\": {\n          \"description\": \"Version id of the new did:webvh log entry this change wrote. Joins the change to the document's history.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"serverless\": {\n          \"default\": false,\n          \"description\": \"True when the agent's DID is self-hosted. **The change is persisted locally but NOT published**: the operator must fetch the updated `did.jsonl` and redeploy before any verifier sees it. A consumer that ignores this reports success for a change no one else can observe yet.\",\n          \"type\": \"boolean\"\n        },\n        \"vtaDid\": {\n          \"description\": \"The agent's own DID — subject of the log entry this change wrote. Carried so a caller can follow up without a second round trip.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"logEntryVersionId\",\n        \"effectiveAt\"\n      ],\n      \"title\": \"ServiceMutationResult\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vta/services/update. Type https://trusttasks.org/spec/vta/services/update/1.0#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"result\":{\"$ref\":\"#/$defs/ServiceMutationResult\"}},\"required\":[\"result\"],\"title\":\"VTA Services — Update — response payload\",\"type\":\"object\"},\"ServiceKind\":{\"description\":\"Which transport a task is acting on. This is the discriminator: it selects which member of `config` is meaningful, and a payload naming one kind with another's config is malformed rather than merely ignored.\",\"enum\":[\"didcomm\",\"rest\",\"tsp\",\"webauthn\"],\"title\":\"ServiceKind\",\"type\":\"string\"},\"ServiceMutationResult\":{\"additionalProperties\":false,\"description\":\"The outcome of a change to an advertised service. Every member describes the **log entry the change produced**, because that is what the change actually is: the agent's DID document is the record, and a consumer that treats the response as a mere acknowledgement will miss that a redeploy may be required.\",\"properties\":{\"drainUntil\":{\"description\":\"Present when the change scheduled a DIDComm drain. Its absence means no drain was scheduled, NOT that a drain finished instantly: a consumer reporting 'done' on an absent value would be right, and one reporting it on a present value would be wrong.\",\"format\":\"date-time\",\"type\":\"string\"},\"drainingMediator\":{\"description\":\"The mediator being drained, when `drainUntil` is present.\",\"type\":\"string\"},\"effectiveAt\":{\"description\":\"RFC 3339 instant the change took effect — the same instant stamped on the new log entry.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"logEntryVersionId\":{\"description\":\"Version id of the new did:webvh log entry this change wrote. Joins the change to the document's history.\",\"minLength\":1,\"type\":\"string\"},\"serverless\":{\"default\":false,\"description\":\"True when the agent's DID is self-hosted. **The change is persisted locally but NOT published**: the operator must fetch the updated `did.jsonl` and redeploy before any verifier sees it. A consumer that ignores this reports success for a change no one else can observe yet.\",\"type\":\"boolean\"},\"vtaDid\":{\"description\":\"The agent's own DID — subject of the log entry this change wrote. Carried so a caller can follow up without a second round trip.\",\"type\":\"string\"}},\"required\":[\"logEntryVersionId\",\"effectiveAt\"],\"title\":\"ServiceMutationResult\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

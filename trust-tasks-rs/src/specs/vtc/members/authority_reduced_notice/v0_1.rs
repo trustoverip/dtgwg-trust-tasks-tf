@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,80 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A community tells a subject that an administrator reduced their administrative authority — revoked their entry, demoted their role, or narrowed what it allows — on whose authority, when, why, and whether anyone else agreed. Unsolicited: the subject did not ask. The removal of a member is vtc/members/removal-notice; this is the reduction of authority, which may leave the subject a member.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/members/authority-reduced-notice/0.1",
-///  "title": "Payload",
-///  "description": "A community tells a subject that an administrator reduced their administrative authority — revoked their entry, demoted their role, or narrowed what it allows — on whose authority, when, why, and whether anyone else agreed. Unsolicited: the subject did not ask. The removal of a member is vtc/members/removal-notice; this is the reduction of authority, which may leave the subject a member.",
-///  "type": "object",
-///  "required": [
-///    "agreement",
-///    "code",
-///    "decidedAt",
-///    "decidedBy",
-///    "did",
-///    "previousRole"
-///  ],
-///  "properties": {
-///    "agreement": {
-///      "description": "Whether a party other than the deciding administrator and the subject agreed. `consented`: the reduction ran on the consent of at least one other administrator. `unopposed`: nobody other than the decider and the subject held the authority to consent, so the decider's own re-authentication was the only gate. The distinction is the subject's evidence that a reduction no third party reviewed happened.",
-///      "type": "string",
-///      "enum": [
-///        "consented",
-///        "unopposed"
-///      ]
-///    },
-///    "code": {
-///      "description": "What happened. `revoked`: the subject's access control entry was removed. `demoted`: its role was changed to one with a lower ceiling. `narrowed`: its role stayed and what it allows was reduced.",
-///      "type": "string",
-///      "enum": [
-///        "revoked",
-///        "demoted",
-///        "narrowed"
-///      ]
-///    },
-///    "decidedAt": {
-///      "description": "When the reduction took effect — not when the notice was sent.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "decidedBy": {
-///      "description": "DID of the administrator who decided. The community itself is the document's issuer.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "did": {
-///      "description": "The subject whose authority was reduced — the notice's recipient. Carried in the payload as well as the envelope so that a forwarded notice still names its subject.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "previousRole": {
-///      "description": "The role the subject held before the change.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "reason": {
-///      "description": "The deciding administrator's stated reason, verbatim. Absent when none was given; absent and empty are different claims.",
-///      "type": "string",
-///      "maxLength": 1024
-///    },
-///    "resultingRole": {
-///      "description": "The role the subject holds after the change. Absent exactly when `code` is `revoked`.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -255,19 +157,6 @@ impl Payload {
 }
 ///Whether a party other than the deciding administrator and the subject agreed. `consented`: the reduction ran on the consent of at least one other administrator. `unopposed`: nobody other than the decider and the subject held the authority to consent, so the decider's own re-authentication was the only gate. The distinction is the subject's evidence that a reduction no third party reviewed happened.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Whether a party other than the deciding administrator and the subject agreed. `consented`: the reduction ran on the consent of at least one other administrator. `unopposed`: nobody other than the decider and the subject held the authority to consent, so the decider's own re-authentication was the only gate. The distinction is the subject's evidence that a reduction no third party reviewed happened.",
-///  "type": "string",
-///  "enum": [
-///    "consented",
-///    "unopposed"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -329,20 +218,6 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadAgreement {
 }
 ///What happened. `revoked`: the subject's access control entry was removed. `demoted`: its role was changed to one with a lower ceiling. `narrowed`: its role stayed and what it allows was reduced.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "What happened. `revoked`: the subject's access control entry was removed. `demoted`: its role was changed to one with a lower ceiling. `narrowed`: its role stayed and what it allows was reduced.",
-///  "type": "string",
-///  "enum": [
-///    "revoked",
-///    "demoted",
-///    "narrowed"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -408,16 +283,6 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadCode {
 }
 ///DID of the administrator who decided. The community itself is the document's issuer.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "DID of the administrator who decided. The community itself is the document's issuer.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadDecidedBy(::std::string::String);
@@ -477,16 +342,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDecidedBy {
 }
 ///The subject whose authority was reduced — the notice's recipient. Carried in the payload as well as the envelope so that a forwarded notice still names its subject.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The subject whose authority was reduced — the notice's recipient. Carried in the payload as well as the envelope so that a forwarded notice still names its subject.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadDid(::std::string::String);
@@ -546,17 +401,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDid {
 }
 ///The role the subject held before the change.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The role the subject held before the change.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadPreviousRole(::std::string::String);
@@ -619,16 +463,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPreviousRole {
 }
 ///The deciding administrator's stated reason, verbatim. Absent when none was given; absent and empty are different claims.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The deciding administrator's stated reason, verbatim. Absent when none was given; absent and empty are different claims.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadReason(::std::string::String);
@@ -688,17 +522,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 }
 ///The role the subject holds after the change. Absent exactly when `code` is `revoked`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The role the subject holds after the change. Absent exactly when `code` is `revoked`.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadResultingRole(::std::string::String);
@@ -926,7 +749,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/members/authority-reduced-notice/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A community tells a subject that an administrator reduced their administrative authority — revoked their entry, demoted their role, or narrowed what it allows — on whose authority, when, why, and whether anyone else agreed. Unsolicited: the subject did not ask. The removal of a member is vtc/members/removal-notice; this is the reduction of authority, which may leave the subject a member.\",\n  \"properties\": {\n    \"agreement\": {\n      \"description\": \"Whether a party other than the deciding administrator and the subject agreed. `consented`: the reduction ran on the consent of at least one other administrator. `unopposed`: nobody other than the decider and the subject held the authority to consent, so the decider's own re-authentication was the only gate. The distinction is the subject's evidence that a reduction no third party reviewed happened.\",\n      \"enum\": [\n        \"consented\",\n        \"unopposed\"\n      ],\n      \"type\": \"string\"\n    },\n    \"code\": {\n      \"description\": \"What happened. `revoked`: the subject's access control entry was removed. `demoted`: its role was changed to one with a lower ceiling. `narrowed`: its role stayed and what it allows was reduced.\",\n      \"enum\": [\n        \"revoked\",\n        \"demoted\",\n        \"narrowed\"\n      ],\n      \"type\": \"string\"\n    },\n    \"decidedAt\": {\n      \"description\": \"When the reduction took effect — not when the notice was sent.\",\n      \"format\": \"date-time\",\n      \"type\": \"string\"\n    },\n    \"decidedBy\": {\n      \"description\": \"DID of the administrator who decided. The community itself is the document's issuer.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"did\": {\n      \"description\": \"The subject whose authority was reduced — the notice's recipient. Carried in the payload as well as the envelope so that a forwarded notice still names its subject.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"previousRole\": {\n      \"description\": \"The role the subject held before the change.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"reason\": {\n      \"description\": \"The deciding administrator's stated reason, verbatim. Absent when none was given; absent and empty are different claims.\",\n      \"maxLength\": 1024,\n      \"type\": \"string\"\n    },\n    \"resultingRole\": {\n      \"description\": \"The role the subject holds after the change. Absent exactly when `code` is `revoked`.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"did\",\n    \"code\",\n    \"previousRole\",\n    \"decidedAt\",\n    \"decidedBy\",\n    \"agreement\"\n  ],\n  \"title\": \"VTC Members Authority-Reduced Notice — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/members/authority-reduced-notice/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A community tells a subject that an administrator reduced their administrative authority — revoked their entry, demoted their role, or narrowed what it allows — on whose authority, when, why, and whether anyone else agreed. Unsolicited: the subject did not ask. The removal of a member is vtc/members/removal-notice; this is the reduction of authority, which may leave the subject a member.\",\"properties\":{\"agreement\":{\"description\":\"Whether a party other than the deciding administrator and the subject agreed. `consented`: the reduction ran on the consent of at least one other administrator. `unopposed`: nobody other than the decider and the subject held the authority to consent, so the decider's own re-authentication was the only gate. The distinction is the subject's evidence that a reduction no third party reviewed happened.\",\"enum\":[\"consented\",\"unopposed\"],\"type\":\"string\"},\"code\":{\"description\":\"What happened. `revoked`: the subject's access control entry was removed. `demoted`: its role was changed to one with a lower ceiling. `narrowed`: its role stayed and what it allows was reduced.\",\"enum\":[\"revoked\",\"demoted\",\"narrowed\"],\"type\":\"string\"},\"decidedAt\":{\"description\":\"When the reduction took effect — not when the notice was sent.\",\"format\":\"date-time\",\"type\":\"string\"},\"decidedBy\":{\"description\":\"DID of the administrator who decided. The community itself is the document's issuer.\",\"minLength\":1,\"type\":\"string\"},\"did\":{\"description\":\"The subject whose authority was reduced — the notice's recipient. Carried in the payload as well as the envelope so that a forwarded notice still names its subject.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"previousRole\":{\"description\":\"The role the subject held before the change.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"reason\":{\"description\":\"The deciding administrator's stated reason, verbatim. Absent when none was given; absent and empty are different claims.\",\"maxLength\":1024,\"type\":\"string\"},\"resultingRole\":{\"description\":\"The role the subject holds after the change. Absent exactly when `code` is `revoked`.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"did\",\"code\",\"previousRole\",\"decidedAt\",\"decidedBy\",\"agreement\"],\"title\":\"VTC Members Authority-Reduced Notice — payload\",\"type\":\"object\"}\n",
     );
 }
 /// The earlier `MAJOR.MINOR` of this slug that this version declares it

@@ -34,37 +34,6 @@ pub mod error {
 }
 ///The effective configuration — defaults filled in — and the last sweep.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "AutoGrantStatus",
-///  "description": "The effective configuration — defaults filled in — and the last sweep.",
-///  "type": "object",
-///  "required": [
-///    "enabled",
-///    "sweepMinutes",
-///    "validitySeconds"
-///  ],
-///  "properties": {
-///    "enabled": {
-///      "description": "Whether the sweep runs.",
-///      "type": "boolean"
-///    },
-///    "lastSweep": {
-///      "$ref": "#/definitions/AutoGrantSweep"
-///    },
-///    "sweepMinutes": {
-///      "$ref": "#/definitions/SweepMinutes"
-///    },
-///    "validitySeconds": {
-///      "$ref": "#/definitions/GrantValiditySeconds"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -89,45 +58,6 @@ impl AutoGrantStatus {
 }
 ///What one sweep did.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "AutoGrantSweep",
-///  "description": "What one sweep did.",
-///  "type": "object",
-///  "required": [
-///    "errors",
-///    "granted",
-///    "ranAt",
-///    "revoked"
-///  ],
-///  "properties": {
-///    "errors": {
-///      "description": "Members the sweep could not decide or act on.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "granted": {
-///      "description": "Grants issued.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "ranAt": {
-///      "description": "When the sweep finished.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "revoked": {
-///      "description": "Automatic grants revoked. The sweep revokes only grants it issued.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -149,21 +79,6 @@ impl AutoGrantSweep {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -185,15 +100,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -257,18 +163,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Validity of a grant the sweep issues, in seconds: between one day and two years, the bounds vtc/vetting/vetters/grant applies to an administrator's grants.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "GrantValiditySeconds",
-///  "description": "Validity of a grant the sweep issues, in seconds: between one day and two years, the bounds vtc/vetting/vetters/grant applies to an administrator's grants.",
-///  "type": "integer",
-///  "maximum": 63072000.0,
-///  "minimum": 86400.0
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct GrantValiditySeconds(pub i64);
@@ -313,36 +207,6 @@ impl ::std::fmt::Display for GrantValiditySeconds {
 }
 ///The whole configuration; an absent member takes its default. The outer document members are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/vetting/auto-grant/update/0.1",
-///  "title": "Payload",
-///  "description": "The whole configuration; an absent member takes its default. The outer document members are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "enabled"
-///  ],
-///  "properties": {
-///    "enabled": {
-///      "description": "Whether the sweep runs.",
-///      "type": "boolean"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "sweepMinutes": {
-///      "$ref": "#/definitions/SweepMinutes"
-///    },
-///    "validitySeconds": {
-///      "$ref": "#/definitions/GrantValiditySeconds"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -371,28 +235,6 @@ impl Payload {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "autoGrant"
-///  ],
-///  "properties": {
-///    "autoGrant": {
-///      "$ref": "#/definitions/AutoGrantStatus"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -409,18 +251,6 @@ impl Response {
 }
 ///Minutes between sweeps: at most every five minutes, at least once a day.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "SweepMinutes",
-///  "description": "Minutes between sweeps: at most every five minutes, at least once a day.",
-///  "type": "integer",
-///  "maximum": 1440.0,
-///  "minimum": 5.0
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct SweepMinutes(pub i64);
@@ -778,7 +608,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AutoGrantStatus\": {\n      \"additionalProperties\": false,\n      \"description\": \"The effective configuration — defaults filled in — and the last sweep.\",\n      \"properties\": {\n        \"enabled\": {\n          \"description\": \"Whether the sweep runs.\",\n          \"type\": \"boolean\"\n        },\n        \"lastSweep\": {\n          \"$ref\": \"#/$defs/AutoGrantSweep\"\n        },\n        \"sweepMinutes\": {\n          \"$ref\": \"#/$defs/SweepMinutes\"\n        },\n        \"validitySeconds\": {\n          \"$ref\": \"#/$defs/GrantValiditySeconds\"\n        }\n      },\n      \"required\": [\n        \"enabled\",\n        \"sweepMinutes\",\n        \"validitySeconds\"\n      ],\n      \"title\": \"AutoGrantStatus\",\n      \"type\": \"object\"\n    },\n    \"AutoGrantSweep\": {\n      \"additionalProperties\": false,\n      \"description\": \"What one sweep did.\",\n      \"properties\": {\n        \"errors\": {\n          \"description\": \"Members the sweep could not decide or act on.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"granted\": {\n          \"description\": \"Grants issued.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"ranAt\": {\n          \"description\": \"When the sweep finished.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"revoked\": {\n          \"description\": \"Automatic grants revoked. The sweep revokes only grants it issued.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"ranAt\",\n        \"granted\",\n        \"revoked\",\n        \"errors\"\n      ],\n      \"title\": \"AutoGrantSweep\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"GrantValiditySeconds\": {\n      \"description\": \"Validity of a grant the sweep issues, in seconds: between one day and two years, the bounds vtc/vetting/vetters/grant applies to an administrator's grants.\",\n      \"maximum\": 63072000,\n      \"minimum\": 86400,\n      \"title\": \"GrantValiditySeconds\",\n      \"type\": \"integer\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"autoGrant\": {\n          \"$ref\": \"#/$defs/AutoGrantStatus\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"autoGrant\"\n      ],\n      \"title\": \"VTC Vetting — Auto-Grant — Update — response payload\",\n      \"type\": \"object\"\n    },\n    \"SweepMinutes\": {\n      \"description\": \"Minutes between sweeps: at most every five minutes, at least once a day.\",\n      \"maximum\": 1440,\n      \"minimum\": 5,\n      \"title\": \"SweepMinutes\",\n      \"type\": \"integer\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/vetting/auto-grant/update/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"The whole configuration; an absent member takes its default. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"enabled\": {\n      \"description\": \"Whether the sweep runs.\",\n      \"type\": \"boolean\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"sweepMinutes\": {\n      \"$ref\": \"#/$defs/SweepMinutes\"\n    },\n    \"validitySeconds\": {\n      \"$ref\": \"#/$defs/GrantValiditySeconds\"\n    }\n  },\n  \"required\": [\n    \"enabled\"\n  ],\n  \"title\": \"VTC Vetting — Auto-Grant — Update — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"AutoGrantStatus\":{\"additionalProperties\":false,\"description\":\"The effective configuration — defaults filled in — and the last sweep.\",\"properties\":{\"enabled\":{\"description\":\"Whether the sweep runs.\",\"type\":\"boolean\"},\"lastSweep\":{\"$ref\":\"#/$defs/AutoGrantSweep\"},\"sweepMinutes\":{\"$ref\":\"#/$defs/SweepMinutes\"},\"validitySeconds\":{\"$ref\":\"#/$defs/GrantValiditySeconds\"}},\"required\":[\"enabled\",\"sweepMinutes\",\"validitySeconds\"],\"title\":\"AutoGrantStatus\",\"type\":\"object\"},\"AutoGrantSweep\":{\"additionalProperties\":false,\"description\":\"What one sweep did.\",\"properties\":{\"errors\":{\"description\":\"Members the sweep could not decide or act on.\",\"minimum\":0,\"type\":\"integer\"},\"granted\":{\"description\":\"Grants issued.\",\"minimum\":0,\"type\":\"integer\"},\"ranAt\":{\"description\":\"When the sweep finished.\",\"format\":\"date-time\",\"type\":\"string\"},\"revoked\":{\"description\":\"Automatic grants revoked. The sweep revokes only grants it issued.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"ranAt\",\"granted\",\"revoked\",\"errors\"],\"title\":\"AutoGrantSweep\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"GrantValiditySeconds\":{\"description\":\"Validity of a grant the sweep issues, in seconds: between one day and two years, the bounds vtc/vetting/vetters/grant applies to an administrator's grants.\",\"maximum\":63072000,\"minimum\":86400,\"title\":\"GrantValiditySeconds\",\"type\":\"integer\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"autoGrant\":{\"$ref\":\"#/$defs/AutoGrantStatus\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"autoGrant\"],\"title\":\"VTC Vetting — Auto-Grant — Update — response payload\",\"type\":\"object\"},\"SweepMinutes\":{\"description\":\"Minutes between sweeps: at most every five minutes, at least once a day.\",\"maximum\":1440,\"minimum\":5,\"title\":\"SweepMinutes\",\"type\":\"integer\"}},\"$id\":\"https://trusttasks.org/spec/vtc/vetting/auto-grant/update/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The whole configuration; an absent member takes its default. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"enabled\":{\"description\":\"Whether the sweep runs.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"sweepMinutes\":{\"$ref\":\"#/$defs/SweepMinutes\"},\"validitySeconds\":{\"$ref\":\"#/$defs/GrantValiditySeconds\"}},\"required\":[\"enabled\"],\"title\":\"VTC Vetting — Auto-Grant — Update — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -788,7 +618,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AutoGrantStatus\": {\n      \"additionalProperties\": false,\n      \"description\": \"The effective configuration — defaults filled in — and the last sweep.\",\n      \"properties\": {\n        \"enabled\": {\n          \"description\": \"Whether the sweep runs.\",\n          \"type\": \"boolean\"\n        },\n        \"lastSweep\": {\n          \"$ref\": \"#/$defs/AutoGrantSweep\"\n        },\n        \"sweepMinutes\": {\n          \"$ref\": \"#/$defs/SweepMinutes\"\n        },\n        \"validitySeconds\": {\n          \"$ref\": \"#/$defs/GrantValiditySeconds\"\n        }\n      },\n      \"required\": [\n        \"enabled\",\n        \"sweepMinutes\",\n        \"validitySeconds\"\n      ],\n      \"title\": \"AutoGrantStatus\",\n      \"type\": \"object\"\n    },\n    \"AutoGrantSweep\": {\n      \"additionalProperties\": false,\n      \"description\": \"What one sweep did.\",\n      \"properties\": {\n        \"errors\": {\n          \"description\": \"Members the sweep could not decide or act on.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"granted\": {\n          \"description\": \"Grants issued.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"ranAt\": {\n          \"description\": \"When the sweep finished.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"revoked\": {\n          \"description\": \"Automatic grants revoked. The sweep revokes only grants it issued.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"ranAt\",\n        \"granted\",\n        \"revoked\",\n        \"errors\"\n      ],\n      \"title\": \"AutoGrantSweep\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"GrantValiditySeconds\": {\n      \"description\": \"Validity of a grant the sweep issues, in seconds: between one day and two years, the bounds vtc/vetting/vetters/grant applies to an administrator's grants.\",\n      \"maximum\": 63072000,\n      \"minimum\": 86400,\n      \"title\": \"GrantValiditySeconds\",\n      \"type\": \"integer\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"autoGrant\": {\n          \"$ref\": \"#/$defs/AutoGrantStatus\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"autoGrant\"\n      ],\n      \"title\": \"VTC Vetting — Auto-Grant — Update — response payload\",\n      \"type\": \"object\"\n    },\n    \"SweepMinutes\": {\n      \"description\": \"Minutes between sweeps: at most every five minutes, at least once a day.\",\n      \"maximum\": 1440,\n      \"minimum\": 5,\n      \"title\": \"SweepMinutes\",\n      \"type\": \"integer\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"AutoGrantStatus\":{\"additionalProperties\":false,\"description\":\"The effective configuration — defaults filled in — and the last sweep.\",\"properties\":{\"enabled\":{\"description\":\"Whether the sweep runs.\",\"type\":\"boolean\"},\"lastSweep\":{\"$ref\":\"#/$defs/AutoGrantSweep\"},\"sweepMinutes\":{\"$ref\":\"#/$defs/SweepMinutes\"},\"validitySeconds\":{\"$ref\":\"#/$defs/GrantValiditySeconds\"}},\"required\":[\"enabled\",\"sweepMinutes\",\"validitySeconds\"],\"title\":\"AutoGrantStatus\",\"type\":\"object\"},\"AutoGrantSweep\":{\"additionalProperties\":false,\"description\":\"What one sweep did.\",\"properties\":{\"errors\":{\"description\":\"Members the sweep could not decide or act on.\",\"minimum\":0,\"type\":\"integer\"},\"granted\":{\"description\":\"Grants issued.\",\"minimum\":0,\"type\":\"integer\"},\"ranAt\":{\"description\":\"When the sweep finished.\",\"format\":\"date-time\",\"type\":\"string\"},\"revoked\":{\"description\":\"Automatic grants revoked. The sweep revokes only grants it issued.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"ranAt\",\"granted\",\"revoked\",\"errors\"],\"title\":\"AutoGrantSweep\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"GrantValiditySeconds\":{\"description\":\"Validity of a grant the sweep issues, in seconds: between one day and two years, the bounds vtc/vetting/vetters/grant applies to an administrator's grants.\",\"maximum\":63072000,\"minimum\":86400,\"title\":\"GrantValiditySeconds\",\"type\":\"integer\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"autoGrant\":{\"$ref\":\"#/$defs/AutoGrantStatus\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"autoGrant\"],\"title\":\"VTC Vetting — Auto-Grant — Update — response payload\",\"type\":\"object\"},\"SweepMinutes\":{\"description\":\"Minutes between sweeps: at most every five minutes, at least once a day.\",\"maximum\":1440,\"minimum\":5,\"title\":\"SweepMinutes\",\"type\":\"integer\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

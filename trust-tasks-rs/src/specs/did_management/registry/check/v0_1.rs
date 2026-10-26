@@ -35,21 +35,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -71,15 +56,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -143,31 +119,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/did-management/registry/check/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "instanceId"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "instanceId": {
-///      "description": "The registry identifier of the instance to re-evaluate.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -186,17 +137,6 @@ impl Payload {
 }
 ///The registry identifier of the instance to re-evaluate.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The registry identifier of the instance to re-evaluate.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadInstanceId(::std::string::String);
@@ -259,29 +199,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadInstanceId {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "instance"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "instance": {
-///      "description": "The entry as it stands after the re-evaluation.",
-///      "$ref": "#/definitions/ServiceInstance"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -299,113 +216,6 @@ impl Response {
 }
 ///`ServiceInstance`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ServiceInstance",
-///  "type": "object",
-///  "required": [
-///    "did",
-///    "instanceId",
-///    "registeredAt",
-///    "servedDomains",
-///    "serviceType",
-///    "status"
-///  ],
-///  "properties": {
-///    "advertisedServices": {
-///      "description": "`service[].type` values of the instance's DID document when the control plane last resolved it. Display only: nothing is routed on it. Absent when the document has not been resolved.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "minLength": 1
-///      }
-///    },
-///    "did": {
-///      "description": "The instance's own DID — the identity its signed documents are verified against and the one the control plane addresses.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "enabledMethods": {
-///      "description": "DID methods the instance can host (e.g. `webvh`, `web`, `webs`), as it declared at registration.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "minLength": 1
-///      }
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "instanceId": {
-///      "description": "Stable identifier the control plane uses for this instance. SHOULD be derived from the instance's DID so it survives restarts.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "label": {
-///      "description": "Operator-chosen display label. Untrusted free text.",
-///      "type": "string",
-///      "maxLength": 256
-///    },
-///    "lastHealthCheck": {
-///      "description": "When the instance last answered a health probe. Absent when it never has.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "lastInbound": {
-///      "description": "The last document the control plane received from this instance. Absent when it has received none.",
-///      "$ref": "#/definitions/TransportObservation"
-///    },
-///    "lastOutbound": {
-///      "description": "The last document the control plane delivered to this instance. Absent when it has delivered none.",
-///      "$ref": "#/definitions/TransportObservation"
-///    },
-///    "publicUrl": {
-///      "description": "The instance's public base URL, where it serves DID resolution. Absent when the instance registered without one.",
-///      "type": "string",
-///      "format": "uri"
-///    },
-///    "registeredAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "servedDomains": {
-///      "description": "Hosting domains the instance has acknowledged serving. Always present — empty for an instance that serves none, which includes every `witness` and `watcher`.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "minLength": 1
-///      }
-///    },
-///    "serviceType": {
-///      "description": "`server` — a hosting server (edge) that resolves DIDs the control plane syncs to it. `witness` — a did:webvh witness. `watcher` — a did:webvh watcher that mirrors logs.",
-///      "type": "string",
-///      "enum": [
-///        "server",
-///        "witness",
-///        "watcher"
-///      ]
-///    },
-///    "servicesCheckedAt": {
-///      "description": "When `advertisedServices` was last resolved. Absent with it.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "status": {
-///      "description": "The control plane's current verdict, from the instance's last answered health probe. `degraded` — answered late; `unreachable` — has not answered within the control plane's configured window.",
-///      "type": "string",
-///      "enum": [
-///        "active",
-///        "degraded",
-///        "unreachable"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -487,15 +297,6 @@ impl ServiceInstance {
 }
 ///`ServiceInstanceAdvertisedServicesItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ServiceInstanceAdvertisedServicesItem(::std::string::String);
@@ -555,16 +356,6 @@ impl<'de> ::serde::Deserialize<'de> for ServiceInstanceAdvertisedServicesItem {
 }
 ///The instance's own DID — the identity its signed documents are verified against and the one the control plane addresses.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The instance's own DID — the identity its signed documents are verified against and the one the control plane addresses.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ServiceInstanceDid(::std::string::String);
@@ -624,15 +415,6 @@ impl<'de> ::serde::Deserialize<'de> for ServiceInstanceDid {
 }
 ///`ServiceInstanceEnabledMethodsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ServiceInstanceEnabledMethodsItem(::std::string::String);
@@ -692,16 +474,6 @@ impl<'de> ::serde::Deserialize<'de> for ServiceInstanceEnabledMethodsItem {
 }
 ///Stable identifier the control plane uses for this instance. SHOULD be derived from the instance's DID so it survives restarts.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Stable identifier the control plane uses for this instance. SHOULD be derived from the instance's DID so it survives restarts.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ServiceInstanceInstanceId(::std::string::String);
@@ -761,16 +533,6 @@ impl<'de> ::serde::Deserialize<'de> for ServiceInstanceInstanceId {
 }
 ///Operator-chosen display label. Untrusted free text.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Operator-chosen display label. Untrusted free text.",
-///  "type": "string",
-///  "maxLength": 256
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ServiceInstanceLabel(::std::string::String);
@@ -830,15 +592,6 @@ impl<'de> ::serde::Deserialize<'de> for ServiceInstanceLabel {
 }
 ///`ServiceInstanceServedDomainsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ServiceInstanceServedDomainsItem(::std::string::String);
@@ -898,20 +651,6 @@ impl<'de> ::serde::Deserialize<'de> for ServiceInstanceServedDomainsItem {
 }
 ///`server` — a hosting server (edge) that resolves DIDs the control plane syncs to it. `witness` — a did:webvh witness. `watcher` — a did:webvh watcher that mirrors logs.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`server` — a hosting server (edge) that resolves DIDs the control plane syncs to it. `witness` — a did:webvh witness. `watcher` — a did:webvh watcher that mirrors logs.",
-///  "type": "string",
-///  "enum": [
-///    "server",
-///    "witness",
-///    "watcher"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -977,20 +716,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ServiceInstanceServiceTy
 }
 ///The control plane's current verdict, from the instance's last answered health probe. `degraded` — answered late; `unreachable` — has not answered within the control plane's configured window.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The control plane's current verdict, from the instance's last answered health probe. `degraded` — answered late; `unreachable` — has not answered within the control plane's configured window.",
-///  "type": "string",
-///  "enum": [
-///    "active",
-///    "degraded",
-///    "unreachable"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1056,35 +781,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ServiceInstanceStatus {
 }
 ///`TransportObservation`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "TransportObservation",
-///  "type": "object",
-///  "required": [
-///    "at",
-///    "transport"
-///  ],
-///  "properties": {
-///    "at": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "transport": {
-///      "description": "The binding the document actually travelled on.",
-///      "type": "string",
-///      "enum": [
-///        "tsp",
-///        "didcomm",
-///        "https"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1100,20 +796,6 @@ impl TransportObservation {
 }
 ///The binding the document actually travelled on.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The binding the document actually travelled on.",
-///  "type": "string",
-///  "enum": [
-///    "tsp",
-///    "didcomm",
-///    "https"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1616,7 +1298,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"instance\": {\n          \"$ref\": \"#/$defs/ServiceInstance\",\n          \"description\": \"The entry as it stands after the re-evaluation.\"\n        }\n      },\n      \"required\": [\n        \"instance\"\n      ],\n      \"title\": \"Registry Check — response payload\",\n      \"type\": \"object\"\n    },\n    \"ServiceInstance\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"advertisedServices\": {\n          \"description\": \"`service[].type` values of the instance's DID document when the control plane last resolved it. Display only: nothing is routed on it. Absent when the document has not been resolved.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"did\": {\n          \"description\": \"The instance's own DID — the identity its signed documents are verified against and the one the control plane addresses.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"enabledMethods\": {\n          \"description\": \"DID methods the instance can host (e.g. `webvh`, `web`, `webs`), as it declared at registration.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"instanceId\": {\n          \"description\": \"Stable identifier the control plane uses for this instance. SHOULD be derived from the instance's DID so it survives restarts.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"label\": {\n          \"description\": \"Operator-chosen display label. Untrusted free text.\",\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"lastHealthCheck\": {\n          \"description\": \"When the instance last answered a health probe. Absent when it never has.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"lastInbound\": {\n          \"$ref\": \"#/$defs/TransportObservation\",\n          \"description\": \"The last document the control plane received from this instance. Absent when it has received none.\"\n        },\n        \"lastOutbound\": {\n          \"$ref\": \"#/$defs/TransportObservation\",\n          \"description\": \"The last document the control plane delivered to this instance. Absent when it has delivered none.\"\n        },\n        \"publicUrl\": {\n          \"description\": \"The instance's public base URL, where it serves DID resolution. Absent when the instance registered without one.\",\n          \"format\": \"uri\",\n          \"type\": \"string\"\n        },\n        \"registeredAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"servedDomains\": {\n          \"description\": \"Hosting domains the instance has acknowledged serving. Always present — empty for an instance that serves none, which includes every `witness` and `watcher`.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"serviceType\": {\n          \"description\": \"`server` — a hosting server (edge) that resolves DIDs the control plane syncs to it. `witness` — a did:webvh witness. `watcher` — a did:webvh watcher that mirrors logs.\",\n          \"enum\": [\n            \"server\",\n            \"witness\",\n            \"watcher\"\n          ],\n          \"type\": \"string\"\n        },\n        \"servicesCheckedAt\": {\n          \"description\": \"When `advertisedServices` was last resolved. Absent with it.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"description\": \"The control plane's current verdict, from the instance's last answered health probe. `degraded` — answered late; `unreachable` — has not answered within the control plane's configured window.\",\n          \"enum\": [\n            \"active\",\n            \"degraded\",\n            \"unreachable\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"instanceId\",\n        \"did\",\n        \"serviceType\",\n        \"status\",\n        \"registeredAt\",\n        \"servedDomains\"\n      ],\n      \"title\": \"ServiceInstance\",\n      \"type\": \"object\"\n    },\n    \"TransportObservation\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"at\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"transport\": {\n          \"description\": \"The binding the document actually travelled on.\",\n          \"enum\": [\n            \"tsp\",\n            \"didcomm\",\n            \"https\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"transport\",\n        \"at\"\n      ],\n      \"title\": \"TransportObservation\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/did-management/registry/check/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"instanceId\": {\n      \"description\": \"The registry identifier of the instance to re-evaluate.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"instanceId\"\n  ],\n  \"title\": \"Registry Check — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"instance\":{\"$ref\":\"#/$defs/ServiceInstance\",\"description\":\"The entry as it stands after the re-evaluation.\"}},\"required\":[\"instance\"],\"title\":\"Registry Check — response payload\",\"type\":\"object\"},\"ServiceInstance\":{\"additionalProperties\":false,\"properties\":{\"advertisedServices\":{\"description\":\"`service[].type` values of the instance's DID document when the control plane last resolved it. Display only: nothing is routed on it. Absent when the document has not been resolved.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"type\":\"array\"},\"did\":{\"description\":\"The instance's own DID — the identity its signed documents are verified against and the one the control plane addresses.\",\"minLength\":1,\"type\":\"string\"},\"enabledMethods\":{\"description\":\"DID methods the instance can host (e.g. `webvh`, `web`, `webs`), as it declared at registration.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"instanceId\":{\"description\":\"Stable identifier the control plane uses for this instance. SHOULD be derived from the instance's DID so it survives restarts.\",\"minLength\":1,\"type\":\"string\"},\"label\":{\"description\":\"Operator-chosen display label. Untrusted free text.\",\"maxLength\":256,\"type\":\"string\"},\"lastHealthCheck\":{\"description\":\"When the instance last answered a health probe. Absent when it never has.\",\"format\":\"date-time\",\"type\":\"string\"},\"lastInbound\":{\"$ref\":\"#/$defs/TransportObservation\",\"description\":\"The last document the control plane received from this instance. Absent when it has received none.\"},\"lastOutbound\":{\"$ref\":\"#/$defs/TransportObservation\",\"description\":\"The last document the control plane delivered to this instance. Absent when it has delivered none.\"},\"publicUrl\":{\"description\":\"The instance's public base URL, where it serves DID resolution. Absent when the instance registered without one.\",\"format\":\"uri\",\"type\":\"string\"},\"registeredAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"servedDomains\":{\"description\":\"Hosting domains the instance has acknowledged serving. Always present — empty for an instance that serves none, which includes every `witness` and `watcher`.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"type\":\"array\"},\"serviceType\":{\"description\":\"`server` — a hosting server (edge) that resolves DIDs the control plane syncs to it. `witness` — a did:webvh witness. `watcher` — a did:webvh watcher that mirrors logs.\",\"enum\":[\"server\",\"witness\",\"watcher\"],\"type\":\"string\"},\"servicesCheckedAt\":{\"description\":\"When `advertisedServices` was last resolved. Absent with it.\",\"format\":\"date-time\",\"type\":\"string\"},\"status\":{\"description\":\"The control plane's current verdict, from the instance's last answered health probe. `degraded` — answered late; `unreachable` — has not answered within the control plane's configured window.\",\"enum\":[\"active\",\"degraded\",\"unreachable\"],\"type\":\"string\"}},\"required\":[\"instanceId\",\"did\",\"serviceType\",\"status\",\"registeredAt\",\"servedDomains\"],\"title\":\"ServiceInstance\",\"type\":\"object\"},\"TransportObservation\":{\"additionalProperties\":false,\"properties\":{\"at\":{\"format\":\"date-time\",\"type\":\"string\"},\"transport\":{\"description\":\"The binding the document actually travelled on.\",\"enum\":[\"tsp\",\"didcomm\",\"https\"],\"type\":\"string\"}},\"required\":[\"transport\",\"at\"],\"title\":\"TransportObservation\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/did-management/registry/check/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"instanceId\":{\"description\":\"The registry identifier of the instance to re-evaluate.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"instanceId\"],\"title\":\"Registry Check — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1626,7 +1308,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"instance\": {\n          \"$ref\": \"#/$defs/ServiceInstance\",\n          \"description\": \"The entry as it stands after the re-evaluation.\"\n        }\n      },\n      \"required\": [\n        \"instance\"\n      ],\n      \"title\": \"Registry Check — response payload\",\n      \"type\": \"object\"\n    },\n    \"ServiceInstance\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"advertisedServices\": {\n          \"description\": \"`service[].type` values of the instance's DID document when the control plane last resolved it. Display only: nothing is routed on it. Absent when the document has not been resolved.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"did\": {\n          \"description\": \"The instance's own DID — the identity its signed documents are verified against and the one the control plane addresses.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"enabledMethods\": {\n          \"description\": \"DID methods the instance can host (e.g. `webvh`, `web`, `webs`), as it declared at registration.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"instanceId\": {\n          \"description\": \"Stable identifier the control plane uses for this instance. SHOULD be derived from the instance's DID so it survives restarts.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"label\": {\n          \"description\": \"Operator-chosen display label. Untrusted free text.\",\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"lastHealthCheck\": {\n          \"description\": \"When the instance last answered a health probe. Absent when it never has.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"lastInbound\": {\n          \"$ref\": \"#/$defs/TransportObservation\",\n          \"description\": \"The last document the control plane received from this instance. Absent when it has received none.\"\n        },\n        \"lastOutbound\": {\n          \"$ref\": \"#/$defs/TransportObservation\",\n          \"description\": \"The last document the control plane delivered to this instance. Absent when it has delivered none.\"\n        },\n        \"publicUrl\": {\n          \"description\": \"The instance's public base URL, where it serves DID resolution. Absent when the instance registered without one.\",\n          \"format\": \"uri\",\n          \"type\": \"string\"\n        },\n        \"registeredAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"servedDomains\": {\n          \"description\": \"Hosting domains the instance has acknowledged serving. Always present — empty for an instance that serves none, which includes every `witness` and `watcher`.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"serviceType\": {\n          \"description\": \"`server` — a hosting server (edge) that resolves DIDs the control plane syncs to it. `witness` — a did:webvh witness. `watcher` — a did:webvh watcher that mirrors logs.\",\n          \"enum\": [\n            \"server\",\n            \"witness\",\n            \"watcher\"\n          ],\n          \"type\": \"string\"\n        },\n        \"servicesCheckedAt\": {\n          \"description\": \"When `advertisedServices` was last resolved. Absent with it.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"description\": \"The control plane's current verdict, from the instance's last answered health probe. `degraded` — answered late; `unreachable` — has not answered within the control plane's configured window.\",\n          \"enum\": [\n            \"active\",\n            \"degraded\",\n            \"unreachable\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"instanceId\",\n        \"did\",\n        \"serviceType\",\n        \"status\",\n        \"registeredAt\",\n        \"servedDomains\"\n      ],\n      \"title\": \"ServiceInstance\",\n      \"type\": \"object\"\n    },\n    \"TransportObservation\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"at\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"transport\": {\n          \"description\": \"The binding the document actually travelled on.\",\n          \"enum\": [\n            \"tsp\",\n            \"didcomm\",\n            \"https\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"transport\",\n        \"at\"\n      ],\n      \"title\": \"TransportObservation\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"instance\":{\"$ref\":\"#/$defs/ServiceInstance\",\"description\":\"The entry as it stands after the re-evaluation.\"}},\"required\":[\"instance\"],\"title\":\"Registry Check — response payload\",\"type\":\"object\"},\"ServiceInstance\":{\"additionalProperties\":false,\"properties\":{\"advertisedServices\":{\"description\":\"`service[].type` values of the instance's DID document when the control plane last resolved it. Display only: nothing is routed on it. Absent when the document has not been resolved.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"type\":\"array\"},\"did\":{\"description\":\"The instance's own DID — the identity its signed documents are verified against and the one the control plane addresses.\",\"minLength\":1,\"type\":\"string\"},\"enabledMethods\":{\"description\":\"DID methods the instance can host (e.g. `webvh`, `web`, `webs`), as it declared at registration.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"instanceId\":{\"description\":\"Stable identifier the control plane uses for this instance. SHOULD be derived from the instance's DID so it survives restarts.\",\"minLength\":1,\"type\":\"string\"},\"label\":{\"description\":\"Operator-chosen display label. Untrusted free text.\",\"maxLength\":256,\"type\":\"string\"},\"lastHealthCheck\":{\"description\":\"When the instance last answered a health probe. Absent when it never has.\",\"format\":\"date-time\",\"type\":\"string\"},\"lastInbound\":{\"$ref\":\"#/$defs/TransportObservation\",\"description\":\"The last document the control plane received from this instance. Absent when it has received none.\"},\"lastOutbound\":{\"$ref\":\"#/$defs/TransportObservation\",\"description\":\"The last document the control plane delivered to this instance. Absent when it has delivered none.\"},\"publicUrl\":{\"description\":\"The instance's public base URL, where it serves DID resolution. Absent when the instance registered without one.\",\"format\":\"uri\",\"type\":\"string\"},\"registeredAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"servedDomains\":{\"description\":\"Hosting domains the instance has acknowledged serving. Always present — empty for an instance that serves none, which includes every `witness` and `watcher`.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"type\":\"array\"},\"serviceType\":{\"description\":\"`server` — a hosting server (edge) that resolves DIDs the control plane syncs to it. `witness` — a did:webvh witness. `watcher` — a did:webvh watcher that mirrors logs.\",\"enum\":[\"server\",\"witness\",\"watcher\"],\"type\":\"string\"},\"servicesCheckedAt\":{\"description\":\"When `advertisedServices` was last resolved. Absent with it.\",\"format\":\"date-time\",\"type\":\"string\"},\"status\":{\"description\":\"The control plane's current verdict, from the instance's last answered health probe. `degraded` — answered late; `unreachable` — has not answered within the control plane's configured window.\",\"enum\":[\"active\",\"degraded\",\"unreachable\"],\"type\":\"string\"}},\"required\":[\"instanceId\",\"did\",\"serviceType\",\"status\",\"registeredAt\",\"servedDomains\"],\"title\":\"ServiceInstance\",\"type\":\"object\"},\"TransportObservation\":{\"additionalProperties\":false,\"properties\":{\"at\":{\"format\":\"date-time\",\"type\":\"string\"},\"transport\":{\"description\":\"The binding the document actually travelled on.\",\"enum\":[\"tsp\",\"didcomm\",\"https\"],\"type\":\"string\"}},\"required\":[\"transport\",\"at\"],\"title\":\"TransportObservation\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

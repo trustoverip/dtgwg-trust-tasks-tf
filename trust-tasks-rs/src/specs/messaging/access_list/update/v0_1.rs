@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,50 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/messaging/access-list/update/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "did"
-///  ],
-///  "properties": {
-///    "add": {
-///      "description": "The DIDs to add to the account's access list. Applied after `clear`. Entries already present are ignored.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Vid"
-///      },
-///      "minItems": 1
-///    },
-///    "clear": {
-///      "description": "Where true, empty the access list before applying `add`. Applied first; combining `clear: true` with `add` replaces the list wholesale.",
-///      "type": "boolean"
-///    },
-///    "did": {
-///      "description": "The target account's DID whose access list is being modified.",
-///      "$ref": "#/definitions/Vid"
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "remove": {
-///      "description": "The DIDs to remove from the account's access list. Applied last. Entries not present are ignored.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Vid"
-///      },
-///      "minItems": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -212,53 +144,6 @@ impl Payload {
 }
 ///The success response to a messaging/access-list/update request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/access-list/update/0.1#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The success response to a messaging/access-list/update request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/access-list/update/0.1#response.",
-///  "type": "object",
-///  "required": [
-///    "accessListCount",
-///    "added",
-///    "did",
-///    "removed"
-///  ],
-///  "properties": {
-///    "accessListCount": {
-///      "description": "The resulting number of entries in the account's access list.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "added": {
-///      "description": "The entries actually added (those not already present when `add` was applied).",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Vid"
-///      }
-///    },
-///    "did": {
-///      "description": "The account whose access list was modified.",
-///      "$ref": "#/definitions/Vid"
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "removed": {
-///      "description": "The entries actually removed by `remove` (those present when it was applied). Entries dropped by `clear` are not enumerated here.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Vid"
-///      }
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -283,17 +168,6 @@ impl Response {
 }
 ///A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Vid",
-///  "description": "A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Vid(::std::string::String);
@@ -548,7 +422,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a messaging/access-list/update request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/access-list/update/0.1#response.\",\n      \"properties\": {\n        \"accessListCount\": {\n          \"description\": \"The resulting number of entries in the account's access list.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"added\": {\n          \"description\": \"The entries actually added (those not already present when `add` was applied).\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Vid\"\n          },\n          \"type\": \"array\"\n        },\n        \"did\": {\n          \"$ref\": \"#/$defs/Vid\",\n          \"description\": \"The account whose access list was modified.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"removed\": {\n          \"description\": \"The entries actually removed by `remove` (those present when it was applied). Entries dropped by `clear` are not enumerated here.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Vid\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"added\",\n        \"removed\",\n        \"accessListCount\"\n      ],\n      \"title\": \"Messaging Update Access List — response payload\",\n      \"type\": \"object\"\n    },\n    \"Vid\": {\n      \"description\": \"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\n      \"minLength\": 1,\n      \"title\": \"Vid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/messaging/access-list/update/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"add\": {\n      \"description\": \"The DIDs to add to the account's access list. Applied after `clear`. Entries already present are ignored.\",\n      \"items\": {\n        \"$ref\": \"#/$defs/Vid\"\n      },\n      \"minItems\": 1,\n      \"type\": \"array\"\n    },\n    \"clear\": {\n      \"description\": \"Where true, empty the access list before applying `add`. Applied first; combining `clear: true` with `add` replaces the list wholesale.\",\n      \"type\": \"boolean\"\n    },\n    \"did\": {\n      \"$ref\": \"#/$defs/Vid\",\n      \"description\": \"The target account's DID whose access list is being modified.\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"remove\": {\n      \"description\": \"The DIDs to remove from the account's access list. Applied last. Entries not present are ignored.\",\n      \"items\": {\n        \"$ref\": \"#/$defs/Vid\"\n      },\n      \"minItems\": 1,\n      \"type\": \"array\"\n    }\n  },\n  \"required\": [\n    \"did\"\n  ],\n  \"title\": \"Messaging Update Access List — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a messaging/access-list/update request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/access-list/update/0.1#response.\",\"properties\":{\"accessListCount\":{\"description\":\"The resulting number of entries in the account's access list.\",\"minimum\":0,\"type\":\"integer\"},\"added\":{\"description\":\"The entries actually added (those not already present when `add` was applied).\",\"items\":{\"$ref\":\"#/$defs/Vid\"},\"type\":\"array\"},\"did\":{\"$ref\":\"#/$defs/Vid\",\"description\":\"The account whose access list was modified.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"removed\":{\"description\":\"The entries actually removed by `remove` (those present when it was applied). Entries dropped by `clear` are not enumerated here.\",\"items\":{\"$ref\":\"#/$defs/Vid\"},\"type\":\"array\"}},\"required\":[\"did\",\"added\",\"removed\",\"accessListCount\"],\"title\":\"Messaging Update Access List — response payload\",\"type\":\"object\"},\"Vid\":{\"description\":\"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\"minLength\":1,\"title\":\"Vid\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/messaging/access-list/update/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"add\":{\"description\":\"The DIDs to add to the account's access list. Applied after `clear`. Entries already present are ignored.\",\"items\":{\"$ref\":\"#/$defs/Vid\"},\"minItems\":1,\"type\":\"array\"},\"clear\":{\"description\":\"Where true, empty the access list before applying `add`. Applied first; combining `clear: true` with `add` replaces the list wholesale.\",\"type\":\"boolean\"},\"did\":{\"$ref\":\"#/$defs/Vid\",\"description\":\"The target account's DID whose access list is being modified.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"remove\":{\"description\":\"The DIDs to remove from the account's access list. Applied last. Entries not present are ignored.\",\"items\":{\"$ref\":\"#/$defs/Vid\"},\"minItems\":1,\"type\":\"array\"}},\"required\":[\"did\"],\"title\":\"Messaging Update Access List — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -558,7 +432,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a messaging/access-list/update request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/access-list/update/0.1#response.\",\n      \"properties\": {\n        \"accessListCount\": {\n          \"description\": \"The resulting number of entries in the account's access list.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"added\": {\n          \"description\": \"The entries actually added (those not already present when `add` was applied).\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Vid\"\n          },\n          \"type\": \"array\"\n        },\n        \"did\": {\n          \"$ref\": \"#/$defs/Vid\",\n          \"description\": \"The account whose access list was modified.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"removed\": {\n          \"description\": \"The entries actually removed by `remove` (those present when it was applied). Entries dropped by `clear` are not enumerated here.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Vid\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"added\",\n        \"removed\",\n        \"accessListCount\"\n      ],\n      \"title\": \"Messaging Update Access List — response payload\",\n      \"type\": \"object\"\n    },\n    \"Vid\": {\n      \"description\": \"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\n      \"minLength\": 1,\n      \"title\": \"Vid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a messaging/access-list/update request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/access-list/update/0.1#response.\",\"properties\":{\"accessListCount\":{\"description\":\"The resulting number of entries in the account's access list.\",\"minimum\":0,\"type\":\"integer\"},\"added\":{\"description\":\"The entries actually added (those not already present when `add` was applied).\",\"items\":{\"$ref\":\"#/$defs/Vid\"},\"type\":\"array\"},\"did\":{\"$ref\":\"#/$defs/Vid\",\"description\":\"The account whose access list was modified.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"removed\":{\"description\":\"The entries actually removed by `remove` (those present when it was applied). Entries dropped by `clear` are not enumerated here.\",\"items\":{\"$ref\":\"#/$defs/Vid\"},\"type\":\"array\"}},\"required\":[\"did\",\"added\",\"removed\",\"accessListCount\"],\"title\":\"Messaging Update Access List — response payload\",\"type\":\"object\"},\"Vid\":{\"description\":\"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\"minLength\":1,\"title\":\"Vid\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

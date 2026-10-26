@@ -34,20 +34,6 @@ pub mod error {
 }
 ///`queued`: stored and not yet handed to the recipient. `delivered`: handed to the recipient (pickup or live stream) but not yet deleted by it — the recipient has not acknowledged it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DeliveryState",
-///  "description": "`queued`: stored and not yet handed to the recipient. `delivered`: handed to the recipient (pickup or live stream) but not yet deleted by it — the recipient has not acknowledged it.",
-///  "type": "string",
-///  "enum": [
-///    "queued",
-///    "delivered"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -109,21 +95,6 @@ impl ::std::convert::TryFrom<::std::string::String> for DeliveryState {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -145,15 +116,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -217,68 +179,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Metadata of one stored message. Never carries the message body.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "MessageMeta",
-///  "description": "Metadata of one stored message. Never carries the message body.",
-///  "type": "object",
-///  "required": [
-///    "msgId",
-///    "queue",
-///    "receivedAt",
-///    "size"
-///  ],
-///  "properties": {
-///    "deliveredAt": {
-///      "description": "When the message was first handed to the recipient. Present only when deliveryState is `delivered`.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "deliveryState": {
-///      "$ref": "#/definitions/DeliveryState"
-///    },
-///    "expiresAt": {
-///      "description": "When the mediator will expire the message if it is not deleted first.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "from": {
-///      "description": "The sender, where the mediator knows it. Absent for anonymous messages.",
-///      "$ref": "#/definitions/Vid"
-///    },
-///    "msgId": {
-///      "description": "The mediator's identifier for the stored message; the handle messaging/message/get and messaging/message/delete accept.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "protocol": {
-///      "$ref": "#/definitions/WireProtocol"
-///    },
-///    "queue": {
-///      "$ref": "#/definitions/Queue"
-///    },
-///    "receivedAt": {
-///      "description": "When the mediator stored the message.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "size": {
-///      "description": "Stored size in bytes.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "to": {
-///      "description": "The recipient account.",
-///      "$ref": "#/definitions/Vid"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -328,17 +228,6 @@ impl MessageMeta {
 }
 ///The mediator's identifier for the stored message; the handle messaging/message/get and messaging/message/delete accept.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The mediator's identifier for the stored message; the handle messaging/message/get and messaging/message/delete accept.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct MessageMetaMsgId(::std::string::String);
@@ -401,34 +290,6 @@ impl<'de> ::serde::Deserialize<'de> for MessageMetaMsgId {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/messaging/message/get/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "msgId"
-///  ],
-///  "properties": {
-///    "did": {
-///      "description": "The account whose queue holds the message. Omitted = the requester's own account. A requester without administrative standing may name only itself.",
-///      "$ref": "#/definitions/Vid"
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "msgId": {
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -449,15 +310,6 @@ impl Payload {
 }
 ///`PayloadMsgId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadMsgId(::std::string::String);
@@ -517,20 +369,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadMsgId {
 }
 ///Which of an account's two queues. `receive` holds messages addressed to the account awaiting its pickup. `send` holds messages the account sent that are still held against it until their recipient deletes them — so a stalled recipient fills its senders' send queues.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Queue",
-///  "description": "Which of an account's two queues. `receive` holds messages addressed to the account awaiting its pickup. `send` holds messages the account sent that are still held against it until their recipient deletes them — so a stalled recipient fills its senders' send queues.",
-///  "type": "string",
-///  "enum": [
-///    "receive",
-///    "send"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -592,36 +430,6 @@ impl ::std::convert::TryFrom<::std::string::String> for Queue {
 }
 ///The success response to a messaging/message/get request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/message/get/0.1#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The success response to a messaging/message/get request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/message/get/0.1#response.",
-///  "type": "object",
-///  "required": [
-///    "message",
-///    "meta"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "message": {
-///      "description": "The stored message exactly as the mediator holds it — a DIDComm JWE/JWS as JSON text, a TSP message as CESR qb64 text. The mediator does not decrypt it. Bounded at 10 MiB; a stored message larger than that is refused with messageTooLarge rather than truncated.",
-///      "type": "string",
-///      "maxLength": 10485760
-///    },
-///    "meta": {
-///      "$ref": "#/definitions/MessageMeta"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -640,16 +448,6 @@ impl Response {
 }
 ///The stored message exactly as the mediator holds it — a DIDComm JWE/JWS as JSON text, a TSP message as CESR qb64 text. The mediator does not decrypt it. Bounded at 10 MiB; a stored message larger than that is refused with messageTooLarge rather than truncated.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The stored message exactly as the mediator holds it — a DIDComm JWE/JWS as JSON text, a TSP message as CESR qb64 text. The mediator does not decrypt it. Bounded at 10 MiB; a stored message larger than that is refused with messageTooLarge rather than truncated.",
-///  "type": "string",
-///  "maxLength": 10485760
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseMessage(::std::string::String);
@@ -709,17 +507,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseMessage {
 }
 ///A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Vid",
-///  "description": "A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Vid(::std::string::String);
@@ -779,22 +566,6 @@ impl<'de> ::serde::Deserialize<'de> for Vid {
 }
 ///The protocol a message travelled in, as the mediator detected it from the wire form. `didcomm` is DIDComm v2 (JWE/JWS); `didcommV1` is a DIDComm v1 envelope; `tsp` is a Trust Spanning Protocol message; `other` is anything the mediator could not classify.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "WireProtocol",
-///  "description": "The protocol a message travelled in, as the mediator detected it from the wire form. `didcomm` is DIDComm v2 (JWE/JWS); `didcommV1` is a DIDComm v1 envelope; `tsp` is a Trust Spanning Protocol message; `other` is anything the mediator could not classify.",
-///  "type": "string",
-///  "enum": [
-///    "didcomm",
-///    "didcommV1",
-///    "tsp",
-///    "other"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1186,7 +957,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DeliveryState\": {\n      \"description\": \"`queued`: stored and not yet handed to the recipient. `delivered`: handed to the recipient (pickup or live stream) but not yet deleted by it — the recipient has not acknowledged it.\",\n      \"enum\": [\n        \"queued\",\n        \"delivered\"\n      ],\n      \"title\": \"DeliveryState\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"MessageMeta\": {\n      \"additionalProperties\": false,\n      \"description\": \"Metadata of one stored message. Never carries the message body.\",\n      \"properties\": {\n        \"deliveredAt\": {\n          \"description\": \"When the message was first handed to the recipient. Present only when deliveryState is `delivered`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"deliveryState\": {\n          \"$ref\": \"#/$defs/DeliveryState\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When the mediator will expire the message if it is not deleted first.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"from\": {\n          \"$ref\": \"#/$defs/Vid\",\n          \"description\": \"The sender, where the mediator knows it. Absent for anonymous messages.\"\n        },\n        \"msgId\": {\n          \"description\": \"The mediator's identifier for the stored message; the handle messaging/message/get and messaging/message/delete accept.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"protocol\": {\n          \"$ref\": \"#/$defs/WireProtocol\"\n        },\n        \"queue\": {\n          \"$ref\": \"#/$defs/Queue\"\n        },\n        \"receivedAt\": {\n          \"description\": \"When the mediator stored the message.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"size\": {\n          \"description\": \"Stored size in bytes.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"to\": {\n          \"$ref\": \"#/$defs/Vid\",\n          \"description\": \"The recipient account.\"\n        }\n      },\n      \"required\": [\n        \"msgId\",\n        \"queue\",\n        \"size\",\n        \"receivedAt\"\n      ],\n      \"title\": \"MessageMeta\",\n      \"type\": \"object\"\n    },\n    \"Queue\": {\n      \"description\": \"Which of an account's two queues. `receive` holds messages addressed to the account awaiting its pickup. `send` holds messages the account sent that are still held against it until their recipient deletes them — so a stalled recipient fills its senders' send queues.\",\n      \"enum\": [\n        \"receive\",\n        \"send\"\n      ],\n      \"title\": \"Queue\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a messaging/message/get request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/message/get/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"message\": {\n          \"description\": \"The stored message exactly as the mediator holds it — a DIDComm JWE/JWS as JSON text, a TSP message as CESR qb64 text. The mediator does not decrypt it. Bounded at 10 MiB; a stored message larger than that is refused with messageTooLarge rather than truncated.\",\n          \"maxLength\": 10485760,\n          \"type\": \"string\"\n        },\n        \"meta\": {\n          \"$ref\": \"#/$defs/MessageMeta\"\n        }\n      },\n      \"required\": [\n        \"meta\",\n        \"message\"\n      ],\n      \"title\": \"Messaging — Get Message — response payload\",\n      \"type\": \"object\"\n    },\n    \"Vid\": {\n      \"description\": \"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\n      \"minLength\": 1,\n      \"title\": \"Vid\",\n      \"type\": \"string\"\n    },\n    \"WireProtocol\": {\n      \"description\": \"The protocol a message travelled in, as the mediator detected it from the wire form. `didcomm` is DIDComm v2 (JWE/JWS); `didcommV1` is a DIDComm v1 envelope; `tsp` is a Trust Spanning Protocol message; `other` is anything the mediator could not classify.\",\n      \"enum\": [\n        \"didcomm\",\n        \"didcommV1\",\n        \"tsp\",\n        \"other\"\n      ],\n      \"title\": \"WireProtocol\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/messaging/message/get/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"did\": {\n      \"$ref\": \"#/$defs/Vid\",\n      \"description\": \"The account whose queue holds the message. Omitted = the requester's own account. A requester without administrative standing may name only itself.\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"msgId\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"msgId\"\n  ],\n  \"title\": \"Messaging — Get Message — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"DeliveryState\":{\"description\":\"`queued`: stored and not yet handed to the recipient. `delivered`: handed to the recipient (pickup or live stream) but not yet deleted by it — the recipient has not acknowledged it.\",\"enum\":[\"queued\",\"delivered\"],\"title\":\"DeliveryState\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"MessageMeta\":{\"additionalProperties\":false,\"description\":\"Metadata of one stored message. Never carries the message body.\",\"properties\":{\"deliveredAt\":{\"description\":\"When the message was first handed to the recipient. Present only when deliveryState is `delivered`.\",\"format\":\"date-time\",\"type\":\"string\"},\"deliveryState\":{\"$ref\":\"#/$defs/DeliveryState\"},\"expiresAt\":{\"description\":\"When the mediator will expire the message if it is not deleted first.\",\"format\":\"date-time\",\"type\":\"string\"},\"from\":{\"$ref\":\"#/$defs/Vid\",\"description\":\"The sender, where the mediator knows it. Absent for anonymous messages.\"},\"msgId\":{\"description\":\"The mediator's identifier for the stored message; the handle messaging/message/get and messaging/message/delete accept.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"protocol\":{\"$ref\":\"#/$defs/WireProtocol\"},\"queue\":{\"$ref\":\"#/$defs/Queue\"},\"receivedAt\":{\"description\":\"When the mediator stored the message.\",\"format\":\"date-time\",\"type\":\"string\"},\"size\":{\"description\":\"Stored size in bytes.\",\"minimum\":0,\"type\":\"integer\"},\"to\":{\"$ref\":\"#/$defs/Vid\",\"description\":\"The recipient account.\"}},\"required\":[\"msgId\",\"queue\",\"size\",\"receivedAt\"],\"title\":\"MessageMeta\",\"type\":\"object\"},\"Queue\":{\"description\":\"Which of an account's two queues. `receive` holds messages addressed to the account awaiting its pickup. `send` holds messages the account sent that are still held against it until their recipient deletes them — so a stalled recipient fills its senders' send queues.\",\"enum\":[\"receive\",\"send\"],\"title\":\"Queue\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a messaging/message/get request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/message/get/0.1#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"message\":{\"description\":\"The stored message exactly as the mediator holds it — a DIDComm JWE/JWS as JSON text, a TSP message as CESR qb64 text. The mediator does not decrypt it. Bounded at 10 MiB; a stored message larger than that is refused with messageTooLarge rather than truncated.\",\"maxLength\":10485760,\"type\":\"string\"},\"meta\":{\"$ref\":\"#/$defs/MessageMeta\"}},\"required\":[\"meta\",\"message\"],\"title\":\"Messaging — Get Message — response payload\",\"type\":\"object\"},\"Vid\":{\"description\":\"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\"minLength\":1,\"title\":\"Vid\",\"type\":\"string\"},\"WireProtocol\":{\"description\":\"The protocol a message travelled in, as the mediator detected it from the wire form. `didcomm` is DIDComm v2 (JWE/JWS); `didcommV1` is a DIDComm v1 envelope; `tsp` is a Trust Spanning Protocol message; `other` is anything the mediator could not classify.\",\"enum\":[\"didcomm\",\"didcommV1\",\"tsp\",\"other\"],\"title\":\"WireProtocol\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/messaging/message/get/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"did\":{\"$ref\":\"#/$defs/Vid\",\"description\":\"The account whose queue holds the message. Omitted = the requester's own account. A requester without administrative standing may name only itself.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"msgId\":{\"minLength\":1,\"type\":\"string\"}},\"required\":[\"msgId\"],\"title\":\"Messaging — Get Message — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1195,7 +966,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DeliveryState\": {\n      \"description\": \"`queued`: stored and not yet handed to the recipient. `delivered`: handed to the recipient (pickup or live stream) but not yet deleted by it — the recipient has not acknowledged it.\",\n      \"enum\": [\n        \"queued\",\n        \"delivered\"\n      ],\n      \"title\": \"DeliveryState\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"MessageMeta\": {\n      \"additionalProperties\": false,\n      \"description\": \"Metadata of one stored message. Never carries the message body.\",\n      \"properties\": {\n        \"deliveredAt\": {\n          \"description\": \"When the message was first handed to the recipient. Present only when deliveryState is `delivered`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"deliveryState\": {\n          \"$ref\": \"#/$defs/DeliveryState\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When the mediator will expire the message if it is not deleted first.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"from\": {\n          \"$ref\": \"#/$defs/Vid\",\n          \"description\": \"The sender, where the mediator knows it. Absent for anonymous messages.\"\n        },\n        \"msgId\": {\n          \"description\": \"The mediator's identifier for the stored message; the handle messaging/message/get and messaging/message/delete accept.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"protocol\": {\n          \"$ref\": \"#/$defs/WireProtocol\"\n        },\n        \"queue\": {\n          \"$ref\": \"#/$defs/Queue\"\n        },\n        \"receivedAt\": {\n          \"description\": \"When the mediator stored the message.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"size\": {\n          \"description\": \"Stored size in bytes.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"to\": {\n          \"$ref\": \"#/$defs/Vid\",\n          \"description\": \"The recipient account.\"\n        }\n      },\n      \"required\": [\n        \"msgId\",\n        \"queue\",\n        \"size\",\n        \"receivedAt\"\n      ],\n      \"title\": \"MessageMeta\",\n      \"type\": \"object\"\n    },\n    \"Queue\": {\n      \"description\": \"Which of an account's two queues. `receive` holds messages addressed to the account awaiting its pickup. `send` holds messages the account sent that are still held against it until their recipient deletes them — so a stalled recipient fills its senders' send queues.\",\n      \"enum\": [\n        \"receive\",\n        \"send\"\n      ],\n      \"title\": \"Queue\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a messaging/message/get request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/message/get/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"message\": {\n          \"description\": \"The stored message exactly as the mediator holds it — a DIDComm JWE/JWS as JSON text, a TSP message as CESR qb64 text. The mediator does not decrypt it. Bounded at 10 MiB; a stored message larger than that is refused with messageTooLarge rather than truncated.\",\n          \"maxLength\": 10485760,\n          \"type\": \"string\"\n        },\n        \"meta\": {\n          \"$ref\": \"#/$defs/MessageMeta\"\n        }\n      },\n      \"required\": [\n        \"meta\",\n        \"message\"\n      ],\n      \"title\": \"Messaging — Get Message — response payload\",\n      \"type\": \"object\"\n    },\n    \"Vid\": {\n      \"description\": \"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\n      \"minLength\": 1,\n      \"title\": \"Vid\",\n      \"type\": \"string\"\n    },\n    \"WireProtocol\": {\n      \"description\": \"The protocol a message travelled in, as the mediator detected it from the wire form. `didcomm` is DIDComm v2 (JWE/JWS); `didcommV1` is a DIDComm v1 envelope; `tsp` is a Trust Spanning Protocol message; `other` is anything the mediator could not classify.\",\n      \"enum\": [\n        \"didcomm\",\n        \"didcommV1\",\n        \"tsp\",\n        \"other\"\n      ],\n      \"title\": \"WireProtocol\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"DeliveryState\":{\"description\":\"`queued`: stored and not yet handed to the recipient. `delivered`: handed to the recipient (pickup or live stream) but not yet deleted by it — the recipient has not acknowledged it.\",\"enum\":[\"queued\",\"delivered\"],\"title\":\"DeliveryState\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"MessageMeta\":{\"additionalProperties\":false,\"description\":\"Metadata of one stored message. Never carries the message body.\",\"properties\":{\"deliveredAt\":{\"description\":\"When the message was first handed to the recipient. Present only when deliveryState is `delivered`.\",\"format\":\"date-time\",\"type\":\"string\"},\"deliveryState\":{\"$ref\":\"#/$defs/DeliveryState\"},\"expiresAt\":{\"description\":\"When the mediator will expire the message if it is not deleted first.\",\"format\":\"date-time\",\"type\":\"string\"},\"from\":{\"$ref\":\"#/$defs/Vid\",\"description\":\"The sender, where the mediator knows it. Absent for anonymous messages.\"},\"msgId\":{\"description\":\"The mediator's identifier for the stored message; the handle messaging/message/get and messaging/message/delete accept.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"protocol\":{\"$ref\":\"#/$defs/WireProtocol\"},\"queue\":{\"$ref\":\"#/$defs/Queue\"},\"receivedAt\":{\"description\":\"When the mediator stored the message.\",\"format\":\"date-time\",\"type\":\"string\"},\"size\":{\"description\":\"Stored size in bytes.\",\"minimum\":0,\"type\":\"integer\"},\"to\":{\"$ref\":\"#/$defs/Vid\",\"description\":\"The recipient account.\"}},\"required\":[\"msgId\",\"queue\",\"size\",\"receivedAt\"],\"title\":\"MessageMeta\",\"type\":\"object\"},\"Queue\":{\"description\":\"Which of an account's two queues. `receive` holds messages addressed to the account awaiting its pickup. `send` holds messages the account sent that are still held against it until their recipient deletes them — so a stalled recipient fills its senders' send queues.\",\"enum\":[\"receive\",\"send\"],\"title\":\"Queue\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a messaging/message/get request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/message/get/0.1#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"message\":{\"description\":\"The stored message exactly as the mediator holds it — a DIDComm JWE/JWS as JSON text, a TSP message as CESR qb64 text. The mediator does not decrypt it. Bounded at 10 MiB; a stored message larger than that is refused with messageTooLarge rather than truncated.\",\"maxLength\":10485760,\"type\":\"string\"},\"meta\":{\"$ref\":\"#/$defs/MessageMeta\"}},\"required\":[\"meta\",\"message\"],\"title\":\"Messaging — Get Message — response payload\",\"type\":\"object\"},\"Vid\":{\"description\":\"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\"minLength\":1,\"title\":\"Vid\",\"type\":\"string\"},\"WireProtocol\":{\"description\":\"The protocol a message travelled in, as the mediator detected it from the wire form. `didcomm` is DIDComm v2 (JWE/JWS); `didcommV1` is a DIDComm v1 envelope; `tsp` is a Trust Spanning Protocol message; `other` is anything the mediator could not classify.\",\"enum\":[\"didcomm\",\"didcommV1\",\"tsp\",\"other\"],\"title\":\"WireProtocol\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

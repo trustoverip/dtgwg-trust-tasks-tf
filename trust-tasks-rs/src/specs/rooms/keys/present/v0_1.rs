@@ -35,21 +35,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -71,15 +56,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -143,51 +119,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///An agent asks the party holding its principal's room credentials to produce a presentation for one room operation. The credentials never cross to the agent; only the presentation does, and it is bound to the operation it was asked for.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/rooms/keys/present/0.1",
-///  "title": "Payload",
-///  "description": "An agent asks the party holding its principal's room credentials to produce a presentation for one room operation. The credentials never cross to the agent; only the presentation does, and it is bound to the operation it was asked for.",
-///  "type": "object",
-///  "required": [
-///    "action",
-///    "roomId"
-///  ],
-///  "properties": {
-///    "action": {
-///      "description": "The action the presentation must confer. Named here so the produced presentation can be scoped to it: a presentation minted for `read` should not be reusable for `write`, and a holder that mints one covering everything has handed the agent its own standing.",
-///      "type": "string",
-///      "enum": [
-///        "read",
-///        "write",
-///        "curate",
-///        "admin"
-///      ]
-///    },
-///    "audience": {
-///      "description": "The party the presentation is for, so it cannot be replayed elsewhere. A host's identifier, normally.",
-///      "type": "string"
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "nonce": {
-///      "description": "Freshness value from the verifier, echoed into the presentation. Without one a captured presentation is replayable for as long as its credentials live.",
-///      "type": "string",
-///      "maxLength": 512
-///    },
-///    "roomId": {
-///      "description": "The room to present for.",
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -215,21 +146,6 @@ impl Payload {
 }
 ///The action the presentation must confer. Named here so the produced presentation can be scoped to it: a presentation minted for `read` should not be reusable for `write`, and a holder that mints one covering everything has handed the agent its own standing.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The action the presentation must confer. Named here so the produced presentation can be scoped to it: a presentation minted for `read` should not be reusable for `write`, and a holder that mints one covering everything has handed the agent its own standing.",
-///  "type": "string",
-///  "enum": [
-///    "read",
-///    "write",
-///    "curate",
-///    "admin"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -299,16 +215,6 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadAction {
 }
 ///Freshness value from the verifier, echoed into the presentation. Without one a captured presentation is replayable for as long as its credentials live.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Freshness value from the verifier, echoed into the presentation. Without one a captured presentation is replayable for as long as its credentials live.",
-///  "type": "string",
-///  "maxLength": 512
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadNonce(::std::string::String);
@@ -368,36 +274,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadNonce {
 }
 ///Success response to rooms/keys/present. Type https://trusttasks.org/spec/rooms/keys/present/0.1#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to rooms/keys/present. Type https://trusttasks.org/spec/rooms/keys/present/0.1#response.",
-///  "type": "object",
-///  "required": [
-///    "presentation"
-///  ],
-///  "properties": {
-///    "expiresAt": {
-///      "description": "When the presentation stops being accepted, so a caller can avoid presenting a stale one.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "presentation": {
-///      "description": "The presentation to send to the host: a membership credential, an authority chain, and — where the room withholds the subject — a same-subject binding.",
-///      "type": "object",
-///      "additionalProperties": true
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -605,7 +481,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/keys/present. Type https://trusttasks.org/spec/rooms/keys/present/0.1#response.\",\n      \"properties\": {\n        \"expiresAt\": {\n          \"description\": \"When the presentation stops being accepted, so a caller can avoid presenting a stale one.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"presentation\": {\n          \"additionalProperties\": true,\n          \"description\": \"The presentation to send to the host: a membership credential, an authority chain, and — where the room withholds the subject — a same-subject binding.\",\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"presentation\"\n      ],\n      \"title\": \"Rooms Keys Present — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/rooms/keys/present/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"An agent asks the party holding its principal's room credentials to produce a presentation for one room operation. The credentials never cross to the agent; only the presentation does, and it is bound to the operation it was asked for.\",\n  \"properties\": {\n    \"action\": {\n      \"description\": \"The action the presentation must confer. Named here so the produced presentation can be scoped to it: a presentation minted for `read` should not be reusable for `write`, and a holder that mints one covering everything has handed the agent its own standing.\",\n      \"enum\": [\n        \"read\",\n        \"write\",\n        \"curate\",\n        \"admin\"\n      ],\n      \"type\": \"string\"\n    },\n    \"audience\": {\n      \"description\": \"The party the presentation is for, so it cannot be replayed elsewhere. A host's identifier, normally.\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"nonce\": {\n      \"description\": \"Freshness value from the verifier, echoed into the presentation. Without one a captured presentation is replayable for as long as its credentials live.\",\n      \"maxLength\": 512,\n      \"type\": \"string\"\n    },\n    \"roomId\": {\n      \"description\": \"The room to present for.\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"roomId\",\n    \"action\"\n  ],\n  \"title\": \"Rooms Keys Present — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to rooms/keys/present. Type https://trusttasks.org/spec/rooms/keys/present/0.1#response.\",\"properties\":{\"expiresAt\":{\"description\":\"When the presentation stops being accepted, so a caller can avoid presenting a stale one.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"presentation\":{\"additionalProperties\":true,\"description\":\"The presentation to send to the host: a membership credential, an authority chain, and — where the room withholds the subject — a same-subject binding.\",\"type\":\"object\"}},\"required\":[\"presentation\"],\"title\":\"Rooms Keys Present — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/rooms/keys/present/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"An agent asks the party holding its principal's room credentials to produce a presentation for one room operation. The credentials never cross to the agent; only the presentation does, and it is bound to the operation it was asked for.\",\"properties\":{\"action\":{\"description\":\"The action the presentation must confer. Named here so the produced presentation can be scoped to it: a presentation minted for `read` should not be reusable for `write`, and a holder that mints one covering everything has handed the agent its own standing.\",\"enum\":[\"read\",\"write\",\"curate\",\"admin\"],\"type\":\"string\"},\"audience\":{\"description\":\"The party the presentation is for, so it cannot be replayed elsewhere. A host's identifier, normally.\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"nonce\":{\"description\":\"Freshness value from the verifier, echoed into the presentation. Without one a captured presentation is replayable for as long as its credentials live.\",\"maxLength\":512,\"type\":\"string\"},\"roomId\":{\"description\":\"The room to present for.\",\"type\":\"string\"}},\"required\":[\"roomId\",\"action\"],\"title\":\"Rooms Keys Present — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -614,7 +490,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/keys/present. Type https://trusttasks.org/spec/rooms/keys/present/0.1#response.\",\n      \"properties\": {\n        \"expiresAt\": {\n          \"description\": \"When the presentation stops being accepted, so a caller can avoid presenting a stale one.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"presentation\": {\n          \"additionalProperties\": true,\n          \"description\": \"The presentation to send to the host: a membership credential, an authority chain, and — where the room withholds the subject — a same-subject binding.\",\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"presentation\"\n      ],\n      \"title\": \"Rooms Keys Present — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to rooms/keys/present. Type https://trusttasks.org/spec/rooms/keys/present/0.1#response.\",\"properties\":{\"expiresAt\":{\"description\":\"When the presentation stops being accepted, so a caller can avoid presenting a stale one.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"presentation\":{\"additionalProperties\":true,\"description\":\"The presentation to send to the host: a membership credential, an authority chain, and — where the room withholds the subject — a same-subject binding.\",\"type\":\"object\"}},\"required\":[\"presentation\"],\"title\":\"Rooms Keys Present — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

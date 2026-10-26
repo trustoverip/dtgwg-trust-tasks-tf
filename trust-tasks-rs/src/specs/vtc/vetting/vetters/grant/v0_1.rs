@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,37 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A community administrator makes a member a vetter. The community issues the member a revocable Verifiable Authority Credential (`AuthorityCredential`) whose `authority` is the action `role:vetter` at the community's DID, delivers it over credential-exchange/issue, and returns the identifiers and validity of the grant. A member who already holds a live grant gets that grant back unchanged.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/vetting/vetters/grant/0.1",
-///  "title": "Payload",
-///  "description": "A community administrator makes a member a vetter. The community issues the member a revocable Verifiable Authority Credential (`AuthorityCredential`) whose `authority` is the action `role:vetter` at the community's DID, delivers it over credential-exchange/issue, and returns the identifiers and validity of the grant. A member who already holds a live grant gets that grant back unchanged.",
-///  "type": "object",
-///  "required": [
-///    "memberDid"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "memberDid": {
-///      "description": "The member DID to grant the vetter role to — the subject of the role credential, and the DID the vetter signs statements with.",
-///      "type": "string",
-///      "pattern": "^did:"
-///    },
-///    "validitySeconds": {
-///      "description": "OPTIONAL. How long the role credential is valid, from issuance: at least one day, at most two years. Absent: 31536000 (365 days). Ignored when the member already holds a live grant.",
-///      "type": "integer",
-///      "maximum": 63072000.0,
-///      "minimum": 86400.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -197,16 +142,6 @@ impl Payload {
 }
 ///The member DID to grant the vetter role to — the subject of the role credential, and the DID the vetter signs statements with.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The member DID to grant the vetter role to — the subject of the role credential, and the DID the vetter signs statements with.",
-///  "type": "string",
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadMemberDid(::std::string::String);
@@ -268,52 +203,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadMemberDid {
 }
 ///The grant — newly issued, or the member's existing live grant.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The grant — newly issued, or the member's existing live grant.",
-///  "type": "object",
-///  "required": [
-///    "credentialId",
-///    "endorsementId",
-///    "validFrom",
-///    "validUntil"
-///  ],
-///  "properties": {
-///    "credentialId": {
-///      "description": "The `id` of the role credential (the Verifiable Authority Credential), a URI.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1,
-///      "pattern": "^[a-zA-Z][a-zA-Z0-9+.-]*:\\S+$"
-///    },
-///    "endorsementId": {
-///      "description": "The community's record of this grant's credential and its status-list slot — the identifier vtc/endorsements/revoke takes to revoke it. The name is kept from when the role credential was an endorsement; the credential is a Verifiable Authority Credential.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "validFrom": {
-///      "description": "The role credential's `validFrom`.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "validUntil": {
-///      "description": "The role credential's `validUntil`.",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -340,18 +229,6 @@ impl Response {
 }
 ///The `id` of the role credential (the Verifiable Authority Credential), a URI.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The `id` of the role credential (the Verifiable Authority Credential), a URI.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1,
-///  "pattern": "^[a-zA-Z][a-zA-Z0-9+.-]*:\\S+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseCredentialId(::std::string::String);
@@ -421,17 +298,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseCredentialId {
 }
 ///The community's record of this grant's credential and its status-list slot — the identifier vtc/endorsements/revoke takes to revoke it. The name is kept from when the role credential was an endorsement; the credential is a Verifiable Authority Credential.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The community's record of this grant's credential and its status-list slot — the identifier vtc/endorsements/revoke takes to revoke it. The name is kept from when the role credential was an endorsement; the credential is a Verifiable Authority Credential.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseEndorsementId(::std::string::String);
@@ -663,7 +529,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The grant — newly issued, or the member's existing live grant.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"description\": \"The `id` of the role credential (the Verifiable Authority Credential), a URI.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"pattern\": \"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+$\",\n          \"type\": \"string\"\n        },\n        \"endorsementId\": {\n          \"description\": \"The community's record of this grant's credential and its status-list slot — the identifier vtc/endorsements/revoke takes to revoke it. The name is kept from when the role credential was an endorsement; the credential is a Verifiable Authority Credential.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"validFrom\": {\n          \"description\": \"The role credential's `validFrom`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"validUntil\": {\n          \"description\": \"The role credential's `validUntil`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"endorsementId\",\n        \"credentialId\",\n        \"validFrom\",\n        \"validUntil\"\n      ],\n      \"title\": \"VTC Vetting — Vetters Grant — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/vetting/vetters/grant/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A community administrator makes a member a vetter. The community issues the member a revocable Verifiable Authority Credential (`AuthorityCredential`) whose `authority` is the action `role:vetter` at the community's DID, delivers it over credential-exchange/issue, and returns the identifiers and validity of the grant. A member who already holds a live grant gets that grant back unchanged.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"memberDid\": {\n      \"description\": \"The member DID to grant the vetter role to — the subject of the role credential, and the DID the vetter signs statements with.\",\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    },\n    \"validitySeconds\": {\n      \"description\": \"OPTIONAL. How long the role credential is valid, from issuance: at least one day, at most two years. Absent: 31536000 (365 days). Ignored when the member already holds a live grant.\",\n      \"maximum\": 63072000,\n      \"minimum\": 86400,\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"memberDid\"\n  ],\n  \"title\": \"VTC Vetting — Vetters Grant — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The grant — newly issued, or the member's existing live grant.\",\"properties\":{\"credentialId\":{\"description\":\"The `id` of the role credential (the Verifiable Authority Credential), a URI.\",\"maxLength\":512,\"minLength\":1,\"pattern\":\"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+$\",\"type\":\"string\"},\"endorsementId\":{\"description\":\"The community's record of this grant's credential and its status-list slot — the identifier vtc/endorsements/revoke takes to revoke it. The name is kept from when the role credential was an endorsement; the credential is a Verifiable Authority Credential.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"validFrom\":{\"description\":\"The role credential's `validFrom`.\",\"format\":\"date-time\",\"type\":\"string\"},\"validUntil\":{\"description\":\"The role credential's `validUntil`.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"endorsementId\",\"credentialId\",\"validFrom\",\"validUntil\"],\"title\":\"VTC Vetting — Vetters Grant — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/vetting/vetters/grant/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A community administrator makes a member a vetter. The community issues the member a revocable Verifiable Authority Credential (`AuthorityCredential`) whose `authority` is the action `role:vetter` at the community's DID, delivers it over credential-exchange/issue, and returns the identifiers and validity of the grant. A member who already holds a live grant gets that grant back unchanged.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"memberDid\":{\"description\":\"The member DID to grant the vetter role to — the subject of the role credential, and the DID the vetter signs statements with.\",\"pattern\":\"^did:\",\"type\":\"string\"},\"validitySeconds\":{\"description\":\"OPTIONAL. How long the role credential is valid, from issuance: at least one day, at most two years. Absent: 31536000 (365 days). Ignored when the member already holds a live grant.\",\"maximum\":63072000,\"minimum\":86400,\"type\":\"integer\"}},\"required\":[\"memberDid\"],\"title\":\"VTC Vetting — Vetters Grant — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -673,7 +539,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The grant — newly issued, or the member's existing live grant.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"description\": \"The `id` of the role credential (the Verifiable Authority Credential), a URI.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"pattern\": \"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+$\",\n          \"type\": \"string\"\n        },\n        \"endorsementId\": {\n          \"description\": \"The community's record of this grant's credential and its status-list slot — the identifier vtc/endorsements/revoke takes to revoke it. The name is kept from when the role credential was an endorsement; the credential is a Verifiable Authority Credential.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"validFrom\": {\n          \"description\": \"The role credential's `validFrom`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"validUntil\": {\n          \"description\": \"The role credential's `validUntil`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"endorsementId\",\n        \"credentialId\",\n        \"validFrom\",\n        \"validUntil\"\n      ],\n      \"title\": \"VTC Vetting — Vetters Grant — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The grant — newly issued, or the member's existing live grant.\",\"properties\":{\"credentialId\":{\"description\":\"The `id` of the role credential (the Verifiable Authority Credential), a URI.\",\"maxLength\":512,\"minLength\":1,\"pattern\":\"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+$\",\"type\":\"string\"},\"endorsementId\":{\"description\":\"The community's record of this grant's credential and its status-list slot — the identifier vtc/endorsements/revoke takes to revoke it. The name is kept from when the role credential was an endorsement; the credential is a Verifiable Authority Credential.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"validFrom\":{\"description\":\"The role credential's `validFrom`.\",\"format\":\"date-time\",\"type\":\"string\"},\"validUntil\":{\"description\":\"The role credential's `validUntil`.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"endorsementId\",\"credentialId\",\"validFrom\",\"validUntil\"],\"title\":\"VTC Vetting — Vetters Grant — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

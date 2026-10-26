@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,44 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Invalidate one named session, every session of the producer, or every session of a named subject the producer may manage. The auth service drops the targeted session(s); any future use of their access or refresh tokens MUST fail. Exactly one of `sessionId`, `all` and `subject` is present.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/auth/revoke-session/0.2",
-///  "title": "Payload",
-///  "description": "Invalidate one named session, every session of the producer, or every session of a named subject the producer may manage. The auth service drops the targeted session(s); any future use of their access or refresh tokens MUST fail. Exactly one of `sessionId`, `all` and `subject` is present.",
-///  "type": "object",
-///  "properties": {
-///    "all": {
-///      "description": "When true, revoke every active session the consumer holds for the producer's own subject — equivalent to `subject` naming the producer. `false` targets nothing and is refused as malformedRequest; it stays schema-valid only because 0.1 admitted it. Mutually exclusive with `sessionId` and `subject`.",
-///      "type": "boolean"
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "reason": {
-///      "description": "Optional human-readable rationale (e.g. \"logout\", \"device-lost\", \"access-withdrawn\"). Surfaced in audit logs; the framework imposes no vocabulary.",
-///      "type": "string",
-///      "maxLength": 1024
-///    },
-///    "sessionId": {
-///      "description": "The session to revoke. Mutually exclusive with `all` and `subject`.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "subject": {
-///      "description": "Revoke every active session the consumer holds for this subject. The producer's own identifier, or a subject whose access the producer could withdraw under the consumer's access-control policy — see Authorization. Mutually exclusive with `sessionId` and `all`.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -222,16 +160,6 @@ impl Payload {
 }
 ///Optional human-readable rationale (e.g. "logout", "device-lost", "access-withdrawn"). Surfaced in audit logs; the framework imposes no vocabulary.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Optional human-readable rationale (e.g. \"logout\", \"device-lost\", \"access-withdrawn\"). Surfaced in audit logs; the framework imposes no vocabulary.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadReason(::std::string::String);
@@ -291,16 +219,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 }
 ///The session to revoke. Mutually exclusive with `all` and `subject`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The session to revoke. Mutually exclusive with `all` and `subject`.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadSessionId(::std::string::String);
@@ -360,17 +278,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSessionId {
 }
 ///Revoke every active session the consumer holds for this subject. The producer's own identifier, or a subject whose access the producer could withdraw under the consumer's access-control policy — see Authorization. Mutually exclusive with `sessionId` and `all`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Revoke every active session the consumer holds for this subject. The producer's own identifier, or a subject whose access the producer could withdraw under the consumer's access-control policy — see Authorization. Mutually exclusive with `sessionId` and `all`.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadSubject(::std::string::String);
@@ -435,32 +342,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubject {
 }
 ///Acknowledgement carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/revoke-session/0.2#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Acknowledgement carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/revoke-session/0.2#response.",
-///  "type": "object",
-///  "required": [
-///    "revokedCount"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "revokedCount": {
-///      "description": "Number of sessions this request invalidated. Zero is a valid outcome: the named session was already gone, or the subject held no active sessions.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -641,7 +522,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Acknowledgement carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/revoke-session/0.2#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"revokedCount\": {\n          \"description\": \"Number of sessions this request invalidated. Zero is a valid outcome: the named session was already gone, or the subject held no active sessions.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"revokedCount\"\n      ],\n      \"title\": \"Auth Revoke Session — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/auth/revoke-session/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Invalidate one named session, every session of the producer, or every session of a named subject the producer may manage. The auth service drops the targeted session(s); any future use of their access or refresh tokens MUST fail. Exactly one of `sessionId`, `all` and `subject` is present.\",\n  \"oneOf\": [\n    {\n      \"not\": {\n        \"anyOf\": [\n          {\n            \"required\": [\n              \"all\"\n            ]\n          },\n          {\n            \"required\": [\n              \"subject\"\n            ]\n          }\n        ]\n      },\n      \"required\": [\n        \"sessionId\"\n      ]\n    },\n    {\n      \"not\": {\n        \"anyOf\": [\n          {\n            \"required\": [\n              \"sessionId\"\n            ]\n          },\n          {\n            \"required\": [\n              \"subject\"\n            ]\n          }\n        ]\n      },\n      \"required\": [\n        \"all\"\n      ]\n    },\n    {\n      \"not\": {\n        \"anyOf\": [\n          {\n            \"required\": [\n              \"sessionId\"\n            ]\n          },\n          {\n            \"required\": [\n              \"all\"\n            ]\n          }\n        ]\n      },\n      \"required\": [\n        \"subject\"\n      ]\n    }\n  ],\n  \"properties\": {\n    \"all\": {\n      \"description\": \"When true, revoke every active session the consumer holds for the producer's own subject — equivalent to `subject` naming the producer. `false` targets nothing and is refused as malformedRequest; it stays schema-valid only because 0.1 admitted it. Mutually exclusive with `sessionId` and `subject`.\",\n      \"type\": \"boolean\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"reason\": {\n      \"description\": \"Optional human-readable rationale (e.g. \\\"logout\\\", \\\"device-lost\\\", \\\"access-withdrawn\\\"). Surfaced in audit logs; the framework imposes no vocabulary.\",\n      \"maxLength\": 1024,\n      \"type\": \"string\"\n    },\n    \"sessionId\": {\n      \"description\": \"The session to revoke. Mutually exclusive with `all` and `subject`.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"subject\": {\n      \"description\": \"Revoke every active session the consumer holds for this subject. The producer's own identifier, or a subject whose access the producer could withdraw under the consumer's access-control policy — see Authorization. Mutually exclusive with `sessionId` and `all`.\",\n      \"maxLength\": 2048,\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    }\n  },\n  \"title\": \"Auth — Revoke Session\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Acknowledgement carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/revoke-session/0.2#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"revokedCount\":{\"description\":\"Number of sessions this request invalidated. Zero is a valid outcome: the named session was already gone, or the subject held no active sessions.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"revokedCount\"],\"title\":\"Auth Revoke Session — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/auth/revoke-session/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Invalidate one named session, every session of the producer, or every session of a named subject the producer may manage. The auth service drops the targeted session(s); any future use of their access or refresh tokens MUST fail. Exactly one of `sessionId`, `all` and `subject` is present.\",\"oneOf\":[{\"not\":{\"anyOf\":[{\"required\":[\"all\"]},{\"required\":[\"subject\"]}]},\"required\":[\"sessionId\"]},{\"not\":{\"anyOf\":[{\"required\":[\"sessionId\"]},{\"required\":[\"subject\"]}]},\"required\":[\"all\"]},{\"not\":{\"anyOf\":[{\"required\":[\"sessionId\"]},{\"required\":[\"all\"]}]},\"required\":[\"subject\"]}],\"properties\":{\"all\":{\"description\":\"When true, revoke every active session the consumer holds for the producer's own subject — equivalent to `subject` naming the producer. `false` targets nothing and is refused as malformedRequest; it stays schema-valid only because 0.1 admitted it. Mutually exclusive with `sessionId` and `subject`.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"reason\":{\"description\":\"Optional human-readable rationale (e.g. \\\"logout\\\", \\\"device-lost\\\", \\\"access-withdrawn\\\"). Surfaced in audit logs; the framework imposes no vocabulary.\",\"maxLength\":1024,\"type\":\"string\"},\"sessionId\":{\"description\":\"The session to revoke. Mutually exclusive with `all` and `subject`.\",\"minLength\":1,\"type\":\"string\"},\"subject\":{\"description\":\"Revoke every active session the consumer holds for this subject. The producer's own identifier, or a subject whose access the producer could withdraw under the consumer's access-control policy — see Authorization. Mutually exclusive with `sessionId` and `all`.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"}},\"title\":\"Auth — Revoke Session\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -650,7 +531,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Acknowledgement carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/revoke-session/0.2#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"revokedCount\": {\n          \"description\": \"Number of sessions this request invalidated. Zero is a valid outcome: the named session was already gone, or the subject held no active sessions.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"revokedCount\"\n      ],\n      \"title\": \"Auth Revoke Session — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Acknowledgement carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/revoke-session/0.2#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"revokedCount\":{\"description\":\"Number of sessions this request invalidated. Zero is a valid outcome: the named session was already gone, or the subject held no active sessions.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"revokedCount\"],\"title\":\"Auth Revoke Session — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

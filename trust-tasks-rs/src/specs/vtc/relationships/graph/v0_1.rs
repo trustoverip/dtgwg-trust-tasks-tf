@@ -35,21 +35,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -71,15 +56,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -143,45 +119,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`GraphEdge`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "GraphEdge",
-///  "type": "object",
-///  "required": [
-///    "createdAt",
-///    "id",
-///    "issuerDid",
-///    "subjectDid"
-///  ],
-///  "properties": {
-///    "createdAt": {
-///      "description": "When the relationship was published.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "id": {
-///      "description": "Relationship credential identifier.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "issuerDid": {
-///      "description": "The vouching party.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "subjectDid": {
-///      "description": "The vouched-for party.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "graphEdge"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -205,16 +142,6 @@ impl GraphEdge {
 }
 ///Relationship credential identifier.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Relationship credential identifier.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct GraphEdgeId(::std::string::String);
@@ -274,16 +201,6 @@ impl<'de> ::serde::Deserialize<'de> for GraphEdgeId {
 }
 ///The vouching party.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The vouching party.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct GraphEdgeIssuerDid(::std::string::String);
@@ -343,16 +260,6 @@ impl<'de> ::serde::Deserialize<'de> for GraphEdgeIssuerDid {
 }
 ///The vouched-for party.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The vouched-for party.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct GraphEdgeSubjectDid(::std::string::String);
@@ -412,27 +319,6 @@ impl<'de> ::serde::Deserialize<'de> for GraphEdgeSubjectDid {
 }
 ///`GraphNode`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "GraphNode",
-///  "type": "object",
-///  "required": [
-///    "did"
-///  ],
-///  "properties": {
-///    "did": {
-///      "description": "A DID participating in at least one live relationship.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "graphNode"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -447,16 +333,6 @@ impl GraphNode {
 }
 ///A DID participating in at least one live relationship.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "A DID participating in at least one live relationship.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct GraphNodeDid(::std::string::String);
@@ -516,22 +392,6 @@ impl<'de> ::serde::Deserialize<'de> for GraphNodeDid {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/relationships/graph/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -554,40 +414,6 @@ impl Payload {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "edges",
-///    "nodes"
-///  ],
-///  "properties": {
-///    "edges": {
-///      "description": "One per unrevoked relationship credential, directed issuer -> subject.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/GraphEdge"
-///      }
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "nodes": {
-///      "description": "One per distinct DID appearing in a live edge. No isolated nodes.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/GraphNode"
-///      }
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -831,7 +657,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/relationships/graph/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"GraphEdge\": {\n      \"$anchor\": \"graphEdge\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"createdAt\": {\n          \"description\": \"When the relationship was published.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"id\": {\n          \"description\": \"Relationship credential identifier.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issuerDid\": {\n          \"description\": \"The vouching party.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"subjectDid\": {\n          \"description\": \"The vouched-for party.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"issuerDid\",\n        \"subjectDid\",\n        \"createdAt\"\n      ],\n      \"title\": \"GraphEdge\",\n      \"type\": \"object\"\n    },\n    \"GraphNode\": {\n      \"$anchor\": \"graphNode\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"did\": {\n          \"description\": \"A DID participating in at least one live relationship.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"did\"\n      ],\n      \"title\": \"GraphNode\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"edges\": {\n          \"description\": \"One per unrevoked relationship credential, directed issuer -> subject.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/GraphEdge\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"nodes\": {\n          \"description\": \"One per distinct DID appearing in a live edge. No isolated nodes.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/GraphNode\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"nodes\",\n        \"edges\"\n      ],\n      \"title\": \"VTC Relationships Graph — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/relationships/graph/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"title\": \"VTC Relationships Graph — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"GraphEdge\":{\"$anchor\":\"graphEdge\",\"additionalProperties\":false,\"properties\":{\"createdAt\":{\"description\":\"When the relationship was published.\",\"format\":\"date-time\",\"type\":\"string\"},\"id\":{\"description\":\"Relationship credential identifier.\",\"minLength\":1,\"type\":\"string\"},\"issuerDid\":{\"description\":\"The vouching party.\",\"minLength\":1,\"type\":\"string\"},\"subjectDid\":{\"description\":\"The vouched-for party.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\",\"issuerDid\",\"subjectDid\",\"createdAt\"],\"title\":\"GraphEdge\",\"type\":\"object\"},\"GraphNode\":{\"$anchor\":\"graphNode\",\"additionalProperties\":false,\"properties\":{\"did\":{\"description\":\"A DID participating in at least one live relationship.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"did\"],\"title\":\"GraphNode\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"edges\":{\"description\":\"One per unrevoked relationship credential, directed issuer -> subject.\",\"items\":{\"$ref\":\"#/$defs/GraphEdge\"},\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"nodes\":{\"description\":\"One per distinct DID appearing in a live edge. No isolated nodes.\",\"items\":{\"$ref\":\"#/$defs/GraphNode\"},\"type\":\"array\"}},\"required\":[\"nodes\",\"edges\"],\"title\":\"VTC Relationships Graph — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/relationships/graph/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"title\":\"VTC Relationships Graph — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -839,7 +665,7 @@ impl crate::Payload for Response {
         "https://trusttasks.org/spec/vtc/relationships/graph/0.1#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"GraphEdge\": {\n      \"$anchor\": \"graphEdge\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"createdAt\": {\n          \"description\": \"When the relationship was published.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"id\": {\n          \"description\": \"Relationship credential identifier.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issuerDid\": {\n          \"description\": \"The vouching party.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"subjectDid\": {\n          \"description\": \"The vouched-for party.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"issuerDid\",\n        \"subjectDid\",\n        \"createdAt\"\n      ],\n      \"title\": \"GraphEdge\",\n      \"type\": \"object\"\n    },\n    \"GraphNode\": {\n      \"$anchor\": \"graphNode\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"did\": {\n          \"description\": \"A DID participating in at least one live relationship.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"did\"\n      ],\n      \"title\": \"GraphNode\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"edges\": {\n          \"description\": \"One per unrevoked relationship credential, directed issuer -> subject.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/GraphEdge\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"nodes\": {\n          \"description\": \"One per distinct DID appearing in a live edge. No isolated nodes.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/GraphNode\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"nodes\",\n        \"edges\"\n      ],\n      \"title\": \"VTC Relationships Graph — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"GraphEdge\":{\"$anchor\":\"graphEdge\",\"additionalProperties\":false,\"properties\":{\"createdAt\":{\"description\":\"When the relationship was published.\",\"format\":\"date-time\",\"type\":\"string\"},\"id\":{\"description\":\"Relationship credential identifier.\",\"minLength\":1,\"type\":\"string\"},\"issuerDid\":{\"description\":\"The vouching party.\",\"minLength\":1,\"type\":\"string\"},\"subjectDid\":{\"description\":\"The vouched-for party.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\",\"issuerDid\",\"subjectDid\",\"createdAt\"],\"title\":\"GraphEdge\",\"type\":\"object\"},\"GraphNode\":{\"$anchor\":\"graphNode\",\"additionalProperties\":false,\"properties\":{\"did\":{\"description\":\"A DID participating in at least one live relationship.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"did\"],\"title\":\"GraphNode\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"edges\":{\"description\":\"One per unrevoked relationship credential, directed issuer -> subject.\",\"items\":{\"$ref\":\"#/$defs/GraphEdge\"},\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"nodes\":{\"description\":\"One per distinct DID appearing in a live edge. No isolated nodes.\",\"items\":{\"$ref\":\"#/$defs/GraphNode\"},\"type\":\"array\"}},\"required\":[\"nodes\",\"edges\"],\"title\":\"VTC Relationships Graph — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

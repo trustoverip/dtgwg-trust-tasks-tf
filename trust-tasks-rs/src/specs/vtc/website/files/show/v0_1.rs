@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,18 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A range of a file's bytes, base64url-encoded without padding (RFC 4648 §5). Empty for an empty range. Bounded at 349526 characters, the unpadded encoding of the 262144-byte range ceiling.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "FileData",
-///  "description": "A range of a file's bytes, base64url-encoded without padding (RFC 4648 §5). Empty for an empty range. Bounded at 349526 characters, the unpadded encoding of the 262144-byte range ceiling.",
-///  "type": "string",
-///  "maxLength": 349526,
-///  "pattern": "^[A-Za-z0-9_-]*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct FileData(::std::string::String);
@@ -218,43 +182,6 @@ impl<'de> ::serde::Deserialize<'de> for FileData {
 }
 ///Read a range of one website file. The outer document members are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/website/files/show/0.1",
-///  "title": "Payload",
-///  "description": "Read a range of one website file. The outer document members are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "path"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "ifMatch": {
-///      "$ref": "#/definitions/WebsiteEtag"
-///    },
-///    "length": {
-///      "description": "Bytes to read; 262144 when absent.",
-///      "type": "integer",
-///      "maximum": 262144.0,
-///      "minimum": 1.0
-///    },
-///    "offset": {
-///      "description": "Byte offset to read from; 0 when absent.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "path": {
-///      "$ref": "#/definitions/WebsitePath"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -282,60 +209,6 @@ impl Payload {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "complete",
-///    "contentType",
-///    "data",
-///    "etag",
-///    "offset",
-///    "path",
-///    "sizeBytes"
-///  ],
-///  "properties": {
-///    "complete": {
-///      "description": "Whether this range reached the end of the file.",
-///      "type": "boolean"
-///    },
-///    "contentType": {
-///      "description": "The media type the site serves the file as, guessed from its extension; `application/octet-stream` when unknown.",
-///      "type": "string",
-///      "maxLength": 255,
-///      "minLength": 1
-///    },
-///    "data": {
-///      "$ref": "#/definitions/FileData"
-///    },
-///    "etag": {
-///      "$ref": "#/definitions/WebsiteEtag"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "offset": {
-///      "description": "Echoed.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "path": {
-///      "$ref": "#/definitions/WebsitePath"
-///    },
-///    "sizeBytes": {
-///      "description": "The whole file's size.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -363,17 +236,6 @@ impl Response {
 }
 ///The media type the site serves the file as, guessed from its extension; `application/octet-stream` when unknown.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The media type the site serves the file as, guessed from its extension; `application/octet-stream` when unknown.",
-///  "type": "string",
-///  "maxLength": 255,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseContentType(::std::string::String);
@@ -436,17 +298,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseContentType {
 }
 ///A file's content hash: the lowercase hex SHA-256 of its bytes — the `etag` vtc/website/files/list reports, and the `ETag` a direct read of the path returns, without the HTTP quotes.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "WebsiteEtag",
-///  "description": "A file's content hash: the lowercase hex SHA-256 of its bytes — the `etag` vtc/website/files/list reports, and the `ETag` a direct read of the path returns, without the HTTP quotes.",
-///  "type": "string",
-///  "pattern": "^[0-9a-f]{64}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct WebsiteEtag(::std::string::String);
@@ -508,19 +359,6 @@ impl<'de> ::serde::Deserialize<'de> for WebsiteEtag {
 }
 ///A file's path relative to the site root, `/`-separated, with or without a leading `/`. The community resolves it inside the site root and refuses one that escapes the root (`..`), names a hidden file or directory (a segment beginning `.`), carries a blocklisted extension, or contains a control character — the same rules the public read handler applies, so nothing can be written that the site would refuse to serve, and nothing can be read that it would not.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "WebsitePath",
-///  "description": "A file's path relative to the site root, `/`-separated, with or without a leading `/`. The community resolves it inside the site root and refuses one that escapes the root (`..`), names a hidden file or directory (a segment beginning `.`), carries a blocklisted extension, or contains a control character — the same rules the public read handler applies, so nothing can be written that the site would refuse to serve, and nothing can be read that it would not.",
-///  "type": "string",
-///  "maxLength": 1024,
-///  "minLength": 1,
-///  "pattern": "^[^\\\\]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct WebsitePath(::std::string::String);
@@ -827,7 +665,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/website/files/show/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"FileData\": {\n      \"description\": \"A range of a file's bytes, base64url-encoded without padding (RFC 4648 §5). Empty for an empty range. Bounded at 349526 characters, the unpadded encoding of the 262144-byte range ceiling.\",\n      \"maxLength\": 349526,\n      \"pattern\": \"^[A-Za-z0-9_-]*$\",\n      \"title\": \"FileData\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"complete\": {\n          \"description\": \"Whether this range reached the end of the file.\",\n          \"type\": \"boolean\"\n        },\n        \"contentType\": {\n          \"description\": \"The media type the site serves the file as, guessed from its extension; `application/octet-stream` when unknown.\",\n          \"maxLength\": 255,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"data\": {\n          \"$ref\": \"#/$defs/FileData\"\n        },\n        \"etag\": {\n          \"$ref\": \"#/$defs/WebsiteEtag\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"offset\": {\n          \"description\": \"Echoed.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"path\": {\n          \"$ref\": \"#/$defs/WebsitePath\"\n        },\n        \"sizeBytes\": {\n          \"description\": \"The whole file's size.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"path\",\n        \"etag\",\n        \"sizeBytes\",\n        \"contentType\",\n        \"offset\",\n        \"data\",\n        \"complete\"\n      ],\n      \"title\": \"VTC Website — Files — Show — response payload\",\n      \"type\": \"object\"\n    },\n    \"WebsiteEtag\": {\n      \"description\": \"A file's content hash: the lowercase hex SHA-256 of its bytes — the `etag` vtc/website/files/list reports, and the `ETag` a direct read of the path returns, without the HTTP quotes.\",\n      \"pattern\": \"^[0-9a-f]{64}$\",\n      \"title\": \"WebsiteEtag\",\n      \"type\": \"string\"\n    },\n    \"WebsitePath\": {\n      \"description\": \"A file's path relative to the site root, `/`-separated, with or without a leading `/`. The community resolves it inside the site root and refuses one that escapes the root (`..`), names a hidden file or directory (a segment beginning `.`), carries a blocklisted extension, or contains a control character — the same rules the public read handler applies, so nothing can be written that the site would refuse to serve, and nothing can be read that it would not.\",\n      \"maxLength\": 1024,\n      \"minLength\": 1,\n      \"pattern\": \"^[^\\\\\\\\]+$\",\n      \"title\": \"WebsitePath\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/website/files/show/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Read a range of one website file. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"ifMatch\": {\n      \"$ref\": \"#/$defs/WebsiteEtag\"\n    },\n    \"length\": {\n      \"description\": \"Bytes to read; 262144 when absent.\",\n      \"maximum\": 262144,\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"offset\": {\n      \"description\": \"Byte offset to read from; 0 when absent.\",\n      \"minimum\": 0,\n      \"type\": \"integer\"\n    },\n    \"path\": {\n      \"$ref\": \"#/$defs/WebsitePath\"\n    }\n  },\n  \"required\": [\n    \"path\"\n  ],\n  \"title\": \"VTC Website — Files — Show — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"FileData\":{\"description\":\"A range of a file's bytes, base64url-encoded without padding (RFC 4648 §5). Empty for an empty range. Bounded at 349526 characters, the unpadded encoding of the 262144-byte range ceiling.\",\"maxLength\":349526,\"pattern\":\"^[A-Za-z0-9_-]*$\",\"title\":\"FileData\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"complete\":{\"description\":\"Whether this range reached the end of the file.\",\"type\":\"boolean\"},\"contentType\":{\"description\":\"The media type the site serves the file as, guessed from its extension; `application/octet-stream` when unknown.\",\"maxLength\":255,\"minLength\":1,\"type\":\"string\"},\"data\":{\"$ref\":\"#/$defs/FileData\"},\"etag\":{\"$ref\":\"#/$defs/WebsiteEtag\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"offset\":{\"description\":\"Echoed.\",\"minimum\":0,\"type\":\"integer\"},\"path\":{\"$ref\":\"#/$defs/WebsitePath\"},\"sizeBytes\":{\"description\":\"The whole file's size.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"path\",\"etag\",\"sizeBytes\",\"contentType\",\"offset\",\"data\",\"complete\"],\"title\":\"VTC Website — Files — Show — response payload\",\"type\":\"object\"},\"WebsiteEtag\":{\"description\":\"A file's content hash: the lowercase hex SHA-256 of its bytes — the `etag` vtc/website/files/list reports, and the `ETag` a direct read of the path returns, without the HTTP quotes.\",\"pattern\":\"^[0-9a-f]{64}$\",\"title\":\"WebsiteEtag\",\"type\":\"string\"},\"WebsitePath\":{\"description\":\"A file's path relative to the site root, `/`-separated, with or without a leading `/`. The community resolves it inside the site root and refuses one that escapes the root (`..`), names a hidden file or directory (a segment beginning `.`), carries a blocklisted extension, or contains a control character — the same rules the public read handler applies, so nothing can be written that the site would refuse to serve, and nothing can be read that it would not.\",\"maxLength\":1024,\"minLength\":1,\"pattern\":\"^[^\\\\\\\\]+$\",\"title\":\"WebsitePath\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/vtc/website/files/show/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Read a range of one website file. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"ifMatch\":{\"$ref\":\"#/$defs/WebsiteEtag\"},\"length\":{\"description\":\"Bytes to read; 262144 when absent.\",\"maximum\":262144,\"minimum\":1,\"type\":\"integer\"},\"offset\":{\"description\":\"Byte offset to read from; 0 when absent.\",\"minimum\":0,\"type\":\"integer\"},\"path\":{\"$ref\":\"#/$defs/WebsitePath\"}},\"required\":[\"path\"],\"title\":\"VTC Website — Files — Show — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -836,7 +674,7 @@ impl crate::Payload for Response {
     const MAX_DOCUMENT_BYTES: Option<usize> = Some(360448usize);
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"FileData\": {\n      \"description\": \"A range of a file's bytes, base64url-encoded without padding (RFC 4648 §5). Empty for an empty range. Bounded at 349526 characters, the unpadded encoding of the 262144-byte range ceiling.\",\n      \"maxLength\": 349526,\n      \"pattern\": \"^[A-Za-z0-9_-]*$\",\n      \"title\": \"FileData\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"complete\": {\n          \"description\": \"Whether this range reached the end of the file.\",\n          \"type\": \"boolean\"\n        },\n        \"contentType\": {\n          \"description\": \"The media type the site serves the file as, guessed from its extension; `application/octet-stream` when unknown.\",\n          \"maxLength\": 255,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"data\": {\n          \"$ref\": \"#/$defs/FileData\"\n        },\n        \"etag\": {\n          \"$ref\": \"#/$defs/WebsiteEtag\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"offset\": {\n          \"description\": \"Echoed.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"path\": {\n          \"$ref\": \"#/$defs/WebsitePath\"\n        },\n        \"sizeBytes\": {\n          \"description\": \"The whole file's size.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"path\",\n        \"etag\",\n        \"sizeBytes\",\n        \"contentType\",\n        \"offset\",\n        \"data\",\n        \"complete\"\n      ],\n      \"title\": \"VTC Website — Files — Show — response payload\",\n      \"type\": \"object\"\n    },\n    \"WebsiteEtag\": {\n      \"description\": \"A file's content hash: the lowercase hex SHA-256 of its bytes — the `etag` vtc/website/files/list reports, and the `ETag` a direct read of the path returns, without the HTTP quotes.\",\n      \"pattern\": \"^[0-9a-f]{64}$\",\n      \"title\": \"WebsiteEtag\",\n      \"type\": \"string\"\n    },\n    \"WebsitePath\": {\n      \"description\": \"A file's path relative to the site root, `/`-separated, with or without a leading `/`. The community resolves it inside the site root and refuses one that escapes the root (`..`), names a hidden file or directory (a segment beginning `.`), carries a blocklisted extension, or contains a control character — the same rules the public read handler applies, so nothing can be written that the site would refuse to serve, and nothing can be read that it would not.\",\n      \"maxLength\": 1024,\n      \"minLength\": 1,\n      \"pattern\": \"^[^\\\\\\\\]+$\",\n      \"title\": \"WebsitePath\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"FileData\":{\"description\":\"A range of a file's bytes, base64url-encoded without padding (RFC 4648 §5). Empty for an empty range. Bounded at 349526 characters, the unpadded encoding of the 262144-byte range ceiling.\",\"maxLength\":349526,\"pattern\":\"^[A-Za-z0-9_-]*$\",\"title\":\"FileData\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"complete\":{\"description\":\"Whether this range reached the end of the file.\",\"type\":\"boolean\"},\"contentType\":{\"description\":\"The media type the site serves the file as, guessed from its extension; `application/octet-stream` when unknown.\",\"maxLength\":255,\"minLength\":1,\"type\":\"string\"},\"data\":{\"$ref\":\"#/$defs/FileData\"},\"etag\":{\"$ref\":\"#/$defs/WebsiteEtag\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"offset\":{\"description\":\"Echoed.\",\"minimum\":0,\"type\":\"integer\"},\"path\":{\"$ref\":\"#/$defs/WebsitePath\"},\"sizeBytes\":{\"description\":\"The whole file's size.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"path\",\"etag\",\"sizeBytes\",\"contentType\",\"offset\",\"data\",\"complete\"],\"title\":\"VTC Website — Files — Show — response payload\",\"type\":\"object\"},\"WebsiteEtag\":{\"description\":\"A file's content hash: the lowercase hex SHA-256 of its bytes — the `etag` vtc/website/files/list reports, and the `ETag` a direct read of the path returns, without the HTTP quotes.\",\"pattern\":\"^[0-9a-f]{64}$\",\"title\":\"WebsiteEtag\",\"type\":\"string\"},\"WebsitePath\":{\"description\":\"A file's path relative to the site root, `/`-separated, with or without a leading `/`. The community resolves it inside the site root and refuses one that escapes the root (`..`), names a hidden file or directory (a segment beginning `.`), carries a blocklisted extension, or contains a control character — the same rules the public read handler applies, so nothing can be written that the site would refuse to serve, and nothing can be read that it would not.\",\"maxLength\":1024,\"minLength\":1,\"pattern\":\"^[^\\\\\\\\]+$\",\"title\":\"WebsitePath\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

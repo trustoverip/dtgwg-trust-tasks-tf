@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,21 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///What a member of a community-owned room may do there. `admin` is not among them: minting epochs, admitting and removing members are the community's, as the room's owner, and are exercised through the vtc/rooms/community/* tasks rather than by any member's credential. `curate` is not implied by `write`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "MemberAction",
-///  "description": "What a member of a community-owned room may do there. `admin` is not among them: minting epochs, admitting and removing members are the community's, as the room's owner, and are exercised through the vtc/rooms/community/* tasks rather than by any member's credential. `curate` is not implied by `write`.",
-///  "type": "string",
-///  "enum": [
-///    "read",
-///    "write",
-///    "curate"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -222,22 +183,6 @@ impl ::std::convert::TryFrom<::std::string::String> for MemberAction {
 }
 ///The actions granted, at least one. An empty list confers nothing rather than everything, and a schema that allowed it would make the more dangerous reading available to a careless consumer.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "MemberActions",
-///  "description": "The actions granted, at least one. An empty list confers nothing rather than everything, and a schema that allowed it would make the more dangerous reading available to a careless consumer.",
-///  "type": "array",
-///  "items": {
-///    "$ref": "#/definitions/MemberAction"
-///  },
-///  "maxItems": 3,
-///  "minItems": 1,
-///  "uniqueItems": true
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct MemberActions(pub Vec<MemberAction>);
@@ -259,42 +204,6 @@ impl ::std::convert::From<Vec<MemberAction>> for MemberActions {
 }
 ///The three credentials the room issued to the member, serialized as rooms/owner/{invite,issue-membership,issue-authority} return them. None is a secret: each names its subject, and a presentation of it must be signed by that subject. The member stores them in their own key holder's vault.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "OfferCredentials",
-///  "description": "The three credentials the room issued to the member, serialized as rooms/owner/{invite,issue-membership,issue-authority} return them. None is a secret: each names its subject, and a presentation of it must be signed by that subject. The member stores them in their own key holder's vault.",
-///  "type": "object",
-///  "required": [
-///    "authority",
-///    "invitation",
-///    "membership"
-///  ],
-///  "properties": {
-///    "authority": {
-///      "description": "The Verifiable Authority Credential granting `actions` until `validUntil`.",
-///      "type": "string",
-///      "maxLength": 65536,
-///      "minLength": 1
-///    },
-///    "invitation": {
-///      "description": "The Verifiable Invitation Credential. On a sealed tier the member's key holder needs it to mint a KeyPackage (rooms/keys/key-package) and to accept the Welcome (rooms/keys/welcome).",
-///      "type": "string",
-///      "maxLength": 65536,
-///      "minLength": 1
-///    },
-///    "membership": {
-///      "description": "The Verifiable Membership Credential.",
-///      "type": "string",
-///      "maxLength": 65536,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -313,17 +222,6 @@ impl OfferCredentials {
 }
 ///The Verifiable Authority Credential granting `actions` until `validUntil`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The Verifiable Authority Credential granting `actions` until `validUntil`.",
-///  "type": "string",
-///  "maxLength": 65536,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct OfferCredentialsAuthority(::std::string::String);
@@ -386,17 +284,6 @@ impl<'de> ::serde::Deserialize<'de> for OfferCredentialsAuthority {
 }
 ///The Verifiable Invitation Credential. On a sealed tier the member's key holder needs it to mint a KeyPackage (rooms/keys/key-package) and to accept the Welcome (rooms/keys/welcome).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The Verifiable Invitation Credential. On a sealed tier the member's key holder needs it to mint a KeyPackage (rooms/keys/key-package) and to accept the Welcome (rooms/keys/welcome).",
-///  "type": "string",
-///  "maxLength": 65536,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct OfferCredentialsInvitation(::std::string::String);
@@ -459,17 +346,6 @@ impl<'de> ::serde::Deserialize<'de> for OfferCredentialsInvitation {
 }
 ///The Verifiable Membership Credential.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The Verifiable Membership Credential.",
-///  "type": "string",
-///  "maxLength": 65536,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct OfferCredentialsMembership(::std::string::String);
@@ -532,73 +408,6 @@ impl<'de> ::serde::Deserialize<'de> for OfferCredentialsMembership {
 }
 ///What vtc/rooms/offers/list/0.2 returns: `Offer` plus `description`. A separate definition, not a change to `Offer`, so that vtc/rooms/offers/list/0.1 keeps the exact shape it published. `label` and `description` are the room's as they stand when the offer is read, not as they stood when it was made.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "OfferV2",
-///  "description": "What vtc/rooms/offers/list/0.2 returns: `Offer` plus `description`. A separate definition, not a change to `Offer`, so that vtc/rooms/offers/list/0.1 keeps the exact shape it published. `label` and `description` are the room's as they stand when the offer is read, not as they stood when it was made.",
-///  "type": "object",
-///  "required": [
-///    "actions",
-///    "credentials",
-///    "host",
-///    "label",
-///    "offeredAt",
-///    "roomId",
-///    "state",
-///    "validUntil",
-///    "visibility"
-///  ],
-///  "properties": {
-///    "actions": {
-///      "$ref": "#/definitions/MemberActions"
-///    },
-///    "credentials": {
-///      "$ref": "#/definitions/OfferCredentials"
-///    },
-///    "description": {
-///      "description": "Absent when the room has none.",
-///      "$ref": "#/definitions/RoomDescription"
-///    },
-///    "host": {
-///      "description": "The room's host: this community.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    },
-///    "label": {
-///      "$ref": "#/definitions/RoomLabel"
-///    },
-///    "offeredAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "roomId": {
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    },
-///    "state": {
-///      "description": "`open`: not yet accepted. `accepted`: accepted, kept listed while a repeated accept can still be answered.",
-///      "type": "string",
-///      "enum": [
-///        "open",
-///        "accepted"
-///      ]
-///    },
-///    "validUntil": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "visibility": {
-///      "$ref": "#/definitions/Visibility"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -628,17 +437,6 @@ impl OfferV2 {
 }
 ///The room's host: this community.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The room's host: this community.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct OfferV2Host(::std::string::String);
@@ -703,16 +501,6 @@ impl<'de> ::serde::Deserialize<'de> for OfferV2Host {
 }
 ///`OfferV2RoomId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct OfferV2RoomId(::std::string::String);
@@ -775,19 +563,6 @@ impl<'de> ::serde::Deserialize<'de> for OfferV2RoomId {
 }
 ///`open`: not yet accepted. `accepted`: accepted, kept listed while a repeated accept can still be answered.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`open`: not yet accepted. `accepted`: accepted, kept listed while a repeated accept can still be answered.",
-///  "type": "string",
-///  "enum": [
-///    "open",
-///    "accepted"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -849,34 +624,6 @@ impl ::std::convert::TryFrom<::std::string::String> for OfferV2State {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/rooms/offers/list/0.4",
-///  "title": "Payload",
-///  "type": "object",
-///  "properties": {
-///    "cursor": {
-///      "description": "Opaque continuation token from a previous page's `nextCursor`.",
-///      "type": "string",
-///      "maxLength": 1024,
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "limit": {
-///      "description": "Page size. The community chooses when absent (50 in the reference implementation).",
-///      "type": "integer",
-///      "maximum": 100.0,
-///      "minimum": 1.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -906,17 +653,6 @@ impl Payload {
 }
 ///Opaque continuation token from a previous page's `nextCursor`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Opaque continuation token from a previous page's `nextCursor`.",
-///  "type": "string",
-///  "maxLength": 1024,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadCursor(::std::string::String);
@@ -979,71 +715,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCursor {
 }
 ///What vtc/rooms/offers/list/0.4 returns in `renewals`: a renewal of an admission the member already holds, as the member it is addressed to sees it. `label` and `description` are the room's as they stand when it is read.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Renewal",
-///  "description": "What vtc/rooms/offers/list/0.4 returns in `renewals`: a renewal of an admission the member already holds, as the member it is addressed to sees it. `label` and `description` are the room's as they stand when it is read.",
-///  "type": "object",
-///  "required": [
-///    "actions",
-///    "credentials",
-///    "host",
-///    "issuedAt",
-///    "label",
-///    "renewsAt",
-///    "roomId",
-///    "validUntil",
-///    "visibility"
-///  ],
-///  "properties": {
-///    "actions": {
-///      "$ref": "#/definitions/MemberActions"
-///    },
-///    "credentials": {
-///      "$ref": "#/definitions/RenewalCredentials"
-///    },
-///    "description": {
-///      "description": "Absent when the room has none.",
-///      "$ref": "#/definitions/RoomDescription"
-///    },
-///    "host": {
-///      "description": "The room's host: this community.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    },
-///    "issuedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "label": {
-///      "$ref": "#/definitions/RoomLabel"
-///    },
-///    "renewsAt": {
-///      "description": "When the authority it replaces expires: the renewal is listed until then, or until a later renewal or the member's removal supersedes it.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "roomId": {
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    },
-///    "validUntil": {
-///      "description": "When the renewed authority expires.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "visibility": {
-///      "$ref": "#/definitions/Visibility"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1075,35 +746,6 @@ impl Renewal {
 }
 ///The two credentials a renewal replaces, serialized as rooms/owner/{issue-membership,issue-authority} return them: a membership and an authority granting the same actions until the renewal's `validUntil`. No invitation: the member is already admitted, and a renewal never opens a second way in. The member's surface stores each with the member's key holder **in place of** the one it renews, never beside it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RenewalCredentials",
-///  "description": "The two credentials a renewal replaces, serialized as rooms/owner/{issue-membership,issue-authority} return them: a membership and an authority granting the same actions until the renewal's `validUntil`. No invitation: the member is already admitted, and a renewal never opens a second way in. The member's surface stores each with the member's key holder **in place of** the one it renews, never beside it.",
-///  "type": "object",
-///  "required": [
-///    "authority",
-///    "membership"
-///  ],
-///  "properties": {
-///    "authority": {
-///      "description": "The renewed Verifiable Authority Credential granting `actions` until `validUntil`.",
-///      "type": "string",
-///      "maxLength": 65536,
-///      "minLength": 1
-///    },
-///    "membership": {
-///      "description": "The renewed Verifiable Membership Credential.",
-///      "type": "string",
-///      "maxLength": 65536,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1120,17 +762,6 @@ impl RenewalCredentials {
 }
 ///The renewed Verifiable Authority Credential granting `actions` until `validUntil`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The renewed Verifiable Authority Credential granting `actions` until `validUntil`.",
-///  "type": "string",
-///  "maxLength": 65536,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RenewalCredentialsAuthority(::std::string::String);
@@ -1193,17 +824,6 @@ impl<'de> ::serde::Deserialize<'de> for RenewalCredentialsAuthority {
 }
 ///The renewed Verifiable Membership Credential.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The renewed Verifiable Membership Credential.",
-///  "type": "string",
-///  "maxLength": 65536,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RenewalCredentialsMembership(::std::string::String);
@@ -1266,17 +886,6 @@ impl<'de> ::serde::Deserialize<'de> for RenewalCredentialsMembership {
 }
 ///The room's host: this community.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The room's host: this community.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RenewalHost(::std::string::String);
@@ -1341,16 +950,6 @@ impl<'de> ::serde::Deserialize<'de> for RenewalHost {
 }
 ///`RenewalRoomId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RenewalRoomId(::std::string::String);
@@ -1413,47 +1012,6 @@ impl<'de> ::serde::Deserialize<'de> for RenewalRoomId {
 }
 ///Success response to vtc/rooms/offers/list. Type https://trusttasks.org/spec/vtc/rooms/offers/list/0.4#response. The offers addressed to the caller, and the renewals of admissions they hold, and no one else's.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to vtc/rooms/offers/list. Type https://trusttasks.org/spec/vtc/rooms/offers/list/0.4#response. The offers addressed to the caller, and the renewals of admissions they hold, and no one else's.",
-///  "type": "object",
-///  "required": [
-///    "items"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "items": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/OfferV2"
-///      },
-///      "maxItems": 100
-///    },
-///    "nextCursor": {
-///      "description": "Present when more remain; pass it as `cursor`.",
-///      "type": "string",
-///      "maxLength": 1024,
-///      "minLength": 1
-///    },
-///    "renewals": {
-///      "description": "Renewals of admissions the caller holds, each with the two credentials to store in place of the ones it renews. Present only on the page answered without a `cursor`, in full; absent on every later page and when there are none.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Renewal"
-///      },
-///      "maxItems": 100
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1479,17 +1037,6 @@ impl Response {
 }
 ///Present when more remain; pass it as `cursor`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Present when more remain; pass it as `cursor`.",
-///  "type": "string",
-///  "maxLength": 1024,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseNextCursor(::std::string::String);
@@ -1552,18 +1099,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseNextCursor {
 }
 ///What the room is for, in a sentence or a short paragraph, written by an administrator: shown to administrators holding `vtc.rooms.manage` and to the members the room is offered to. Plain text — a consumer renders it as text, never as markup. Like `RoomLabel`, it is the community's own record as the room's owner: not part of the room's identity and never in anything a room's host can read. From `vtc/rooms/community/create` 0.3 and `vtc/rooms/community/update` 0.2 the community also writes it, through its own VTA, as the `description` of the room's own profile (`RoomProfile` in rooms/_shared), sealed inside the room for its members; earlier versions keep it out of the room altogether. It MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RoomDescription",
-///  "description": "What the room is for, in a sentence or a short paragraph, written by an administrator: shown to administrators holding `vtc.rooms.manage` and to the members the room is offered to. Plain text — a consumer renders it as text, never as markup. Like `RoomLabel`, it is the community's own record as the room's owner: not part of the room's identity and never in anything a room's host can read. From `vtc/rooms/community/create` 0.3 and `vtc/rooms/community/update` 0.2 the community also writes it, through its own VTA, as the `description` of the room's own profile (`RoomProfile` in rooms/_shared), sealed inside the room for its members; earlier versions keep it out of the room altogether. It MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.",
-///  "type": "string",
-///  "maxLength": 1000,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RoomDescription(::std::string::String);
@@ -1626,18 +1161,6 @@ impl<'de> ::serde::Deserialize<'de> for RoomDescription {
 }
 ///A name for the room, chosen by an administrator: shown to administrators and to the members a room is offered to. Not part of the room's identity and never in anything a room's host can read. From `vtc/rooms/community/create` 0.3 and `vtc/rooms/community/update` 0.2 the community also writes it, through its own VTA, as the `name` of the room's own profile (`RoomProfile` in rooms/_shared), sealed inside the room for its members; earlier versions keep it out of the room altogether. MUST NOT carry personal data.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RoomLabel",
-///  "description": "A name for the room, chosen by an administrator: shown to administrators and to the members a room is offered to. Not part of the room's identity and never in anything a room's host can read. From `vtc/rooms/community/create` 0.3 and `vtc/rooms/community/update` 0.2 the community also writes it, through its own VTA, as the `name` of the room's own profile (`RoomProfile` in rooms/_shared), sealed inside the room for its members; earlier versions keep it out of the room altogether. MUST NOT carry personal data.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RoomLabel(::std::string::String);
@@ -1700,21 +1223,6 @@ impl<'de> ::serde::Deserialize<'de> for RoomLabel {
 }
 ///How much of a room its host can see, fixed at creation and immutable thereafter. `open`: records are cleartext, searchable and fully audited. `attributed`: record content is sealed, and the host still learns which member acted. `private`: content is sealed and membership is presented in zero knowledge, so the host verifies that a member acted without learning which. Immutable because a downgrade cannot un-see cleartext and an upgrade would protect only what came after while presenting as though it protected everything.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Visibility",
-///  "description": "How much of a room its host can see, fixed at creation and immutable thereafter. `open`: records are cleartext, searchable and fully audited. `attributed`: record content is sealed, and the host still learns which member acted. `private`: content is sealed and membership is presented in zero knowledge, so the host verifies that a member acted without learning which. Immutable because a downgrade cannot un-see cleartext and an upgrade would protect only what came after while presenting as though it protected everything.",
-///  "type": "string",
-///  "enum": [
-///    "open",
-///    "attributed",
-///    "private"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -2404,7 +1912,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"MemberAction\": {\n      \"description\": \"What a member of a community-owned room may do there. `admin` is not among them: minting epochs, admitting and removing members are the community's, as the room's owner, and are exercised through the vtc/rooms/community/* tasks rather than by any member's credential. `curate` is not implied by `write`.\",\n      \"enum\": [\n        \"read\",\n        \"write\",\n        \"curate\"\n      ],\n      \"title\": \"MemberAction\",\n      \"type\": \"string\"\n    },\n    \"MemberActions\": {\n      \"description\": \"The actions granted, at least one. An empty list confers nothing rather than everything, and a schema that allowed it would make the more dangerous reading available to a careless consumer.\",\n      \"items\": {\n        \"$ref\": \"#/$defs/MemberAction\"\n      },\n      \"maxItems\": 3,\n      \"minItems\": 1,\n      \"title\": \"MemberActions\",\n      \"type\": \"array\",\n      \"uniqueItems\": true\n    },\n    \"OfferCredentials\": {\n      \"additionalProperties\": false,\n      \"description\": \"The three credentials the room issued to the member, serialized as rooms/owner/{invite,issue-membership,issue-authority} return them. None is a secret: each names its subject, and a presentation of it must be signed by that subject. The member stores them in their own key holder's vault.\",\n      \"properties\": {\n        \"authority\": {\n          \"description\": \"The Verifiable Authority Credential granting `actions` until `validUntil`.\",\n          \"maxLength\": 65536,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"invitation\": {\n          \"description\": \"The Verifiable Invitation Credential. On a sealed tier the member's key holder needs it to mint a KeyPackage (rooms/keys/key-package) and to accept the Welcome (rooms/keys/welcome).\",\n          \"maxLength\": 65536,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"membership\": {\n          \"description\": \"The Verifiable Membership Credential.\",\n          \"maxLength\": 65536,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"invitation\",\n        \"membership\",\n        \"authority\"\n      ],\n      \"title\": \"OfferCredentials\",\n      \"type\": \"object\"\n    },\n    \"OfferV2\": {\n      \"additionalProperties\": false,\n      \"description\": \"What vtc/rooms/offers/list/0.2 returns: `Offer` plus `description`. A separate definition, not a change to `Offer`, so that vtc/rooms/offers/list/0.1 keeps the exact shape it published. `label` and `description` are the room's as they stand when the offer is read, not as they stood when it was made.\",\n      \"properties\": {\n        \"actions\": {\n          \"$ref\": \"#/$defs/MemberActions\"\n        },\n        \"credentials\": {\n          \"$ref\": \"#/$defs/OfferCredentials\"\n        },\n        \"description\": {\n          \"$ref\": \"#/$defs/RoomDescription\",\n          \"description\": \"Absent when the room has none.\"\n        },\n        \"host\": {\n          \"description\": \"The room's host: this community.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"label\": {\n          \"$ref\": \"#/$defs/RoomLabel\"\n        },\n        \"offeredAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"roomId\": {\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"state\": {\n          \"description\": \"`open`: not yet accepted. `accepted`: accepted, kept listed while a repeated accept can still be answered.\",\n          \"enum\": [\n            \"open\",\n            \"accepted\"\n          ],\n          \"type\": \"string\"\n        },\n        \"validUntil\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"visibility\": {\n          \"$ref\": \"#/$defs/Visibility\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"host\",\n        \"label\",\n        \"visibility\",\n        \"actions\",\n        \"validUntil\",\n        \"offeredAt\",\n        \"state\",\n        \"credentials\"\n      ],\n      \"title\": \"OfferV2\",\n      \"type\": \"object\"\n    },\n    \"Renewal\": {\n      \"additionalProperties\": false,\n      \"description\": \"What vtc/rooms/offers/list/0.4 returns in `renewals`: a renewal of an admission the member already holds, as the member it is addressed to sees it. `label` and `description` are the room's as they stand when it is read.\",\n      \"properties\": {\n        \"actions\": {\n          \"$ref\": \"#/$defs/MemberActions\"\n        },\n        \"credentials\": {\n          \"$ref\": \"#/$defs/RenewalCredentials\"\n        },\n        \"description\": {\n          \"$ref\": \"#/$defs/RoomDescription\",\n          \"description\": \"Absent when the room has none.\"\n        },\n        \"host\": {\n          \"description\": \"The room's host: this community.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"issuedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"label\": {\n          \"$ref\": \"#/$defs/RoomLabel\"\n        },\n        \"renewsAt\": {\n          \"description\": \"When the authority it replaces expires: the renewal is listed until then, or until a later renewal or the member's removal supersedes it.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"roomId\": {\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"validUntil\": {\n          \"description\": \"When the renewed authority expires.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"visibility\": {\n          \"$ref\": \"#/$defs/Visibility\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"host\",\n        \"label\",\n        \"visibility\",\n        \"actions\",\n        \"validUntil\",\n        \"renewsAt\",\n        \"issuedAt\",\n        \"credentials\"\n      ],\n      \"title\": \"Renewal\",\n      \"type\": \"object\"\n    },\n    \"RenewalCredentials\": {\n      \"additionalProperties\": false,\n      \"description\": \"The two credentials a renewal replaces, serialized as rooms/owner/{issue-membership,issue-authority} return them: a membership and an authority granting the same actions until the renewal's `validUntil`. No invitation: the member is already admitted, and a renewal never opens a second way in. The member's surface stores each with the member's key holder **in place of** the one it renews, never beside it.\",\n      \"properties\": {\n        \"authority\": {\n          \"description\": \"The renewed Verifiable Authority Credential granting `actions` until `validUntil`.\",\n          \"maxLength\": 65536,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"membership\": {\n          \"description\": \"The renewed Verifiable Membership Credential.\",\n          \"maxLength\": 65536,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"membership\",\n        \"authority\"\n      ],\n      \"title\": \"RenewalCredentials\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vtc/rooms/offers/list. Type https://trusttasks.org/spec/vtc/rooms/offers/list/0.4#response. The offers addressed to the caller, and the renewals of admissions they hold, and no one else's.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"items\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/OfferV2\"\n          },\n          \"maxItems\": 100,\n          \"type\": \"array\"\n        },\n        \"nextCursor\": {\n          \"description\": \"Present when more remain; pass it as `cursor`.\",\n          \"maxLength\": 1024,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"renewals\": {\n          \"description\": \"Renewals of admissions the caller holds, each with the two credentials to store in place of the ones it renews. Present only on the page answered without a `cursor`, in full; absent on every later page and when there are none.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Renewal\"\n          },\n          \"maxItems\": 100,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"items\"\n      ],\n      \"title\": \"VTC Rooms Offers List — response payload\",\n      \"type\": \"object\"\n    },\n    \"RoomDescription\": {\n      \"description\": \"What the room is for, in a sentence or a short paragraph, written by an administrator: shown to administrators holding `vtc.rooms.manage` and to the members the room is offered to. Plain text — a consumer renders it as text, never as markup. Like `RoomLabel`, it is the community's own record as the room's owner: not part of the room's identity and never in anything a room's host can read. From `vtc/rooms/community/create` 0.3 and `vtc/rooms/community/update` 0.2 the community also writes it, through its own VTA, as the `description` of the room's own profile (`RoomProfile` in rooms/_shared), sealed inside the room for its members; earlier versions keep it out of the room altogether. It MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.\",\n      \"maxLength\": 1000,\n      \"minLength\": 1,\n      \"title\": \"RoomDescription\",\n      \"type\": \"string\"\n    },\n    \"RoomLabel\": {\n      \"description\": \"A name for the room, chosen by an administrator: shown to administrators and to the members a room is offered to. Not part of the room's identity and never in anything a room's host can read. From `vtc/rooms/community/create` 0.3 and `vtc/rooms/community/update` 0.2 the community also writes it, through its own VTA, as the `name` of the room's own profile (`RoomProfile` in rooms/_shared), sealed inside the room for its members; earlier versions keep it out of the room altogether. MUST NOT carry personal data.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"title\": \"RoomLabel\",\n      \"type\": \"string\"\n    },\n    \"Visibility\": {\n      \"description\": \"How much of a room its host can see, fixed at creation and immutable thereafter. `open`: records are cleartext, searchable and fully audited. `attributed`: record content is sealed, and the host still learns which member acted. `private`: content is sealed and membership is presented in zero knowledge, so the host verifies that a member acted without learning which. Immutable because a downgrade cannot un-see cleartext and an upgrade would protect only what came after while presenting as though it protected everything.\",\n      \"enum\": [\n        \"open\",\n        \"attributed\",\n        \"private\"\n      ],\n      \"title\": \"Visibility\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/rooms/offers/list/0.4\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"cursor\": {\n      \"description\": \"Opaque continuation token from a previous page's `nextCursor`.\",\n      \"maxLength\": 1024,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"limit\": {\n      \"description\": \"Page size. The community chooses when absent (50 in the reference implementation).\",\n      \"maximum\": 100,\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    }\n  },\n  \"title\": \"VTC Rooms Offers List — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"MemberAction\":{\"description\":\"What a member of a community-owned room may do there. `admin` is not among them: minting epochs, admitting and removing members are the community's, as the room's owner, and are exercised through the vtc/rooms/community/* tasks rather than by any member's credential. `curate` is not implied by `write`.\",\"enum\":[\"read\",\"write\",\"curate\"],\"title\":\"MemberAction\",\"type\":\"string\"},\"MemberActions\":{\"description\":\"The actions granted, at least one. An empty list confers nothing rather than everything, and a schema that allowed it would make the more dangerous reading available to a careless consumer.\",\"items\":{\"$ref\":\"#/$defs/MemberAction\"},\"maxItems\":3,\"minItems\":1,\"title\":\"MemberActions\",\"type\":\"array\",\"uniqueItems\":true},\"OfferCredentials\":{\"additionalProperties\":false,\"description\":\"The three credentials the room issued to the member, serialized as rooms/owner/{invite,issue-membership,issue-authority} return them. None is a secret: each names its subject, and a presentation of it must be signed by that subject. The member stores them in their own key holder's vault.\",\"properties\":{\"authority\":{\"description\":\"The Verifiable Authority Credential granting `actions` until `validUntil`.\",\"maxLength\":65536,\"minLength\":1,\"type\":\"string\"},\"invitation\":{\"description\":\"The Verifiable Invitation Credential. On a sealed tier the member's key holder needs it to mint a KeyPackage (rooms/keys/key-package) and to accept the Welcome (rooms/keys/welcome).\",\"maxLength\":65536,\"minLength\":1,\"type\":\"string\"},\"membership\":{\"description\":\"The Verifiable Membership Credential.\",\"maxLength\":65536,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"invitation\",\"membership\",\"authority\"],\"title\":\"OfferCredentials\",\"type\":\"object\"},\"OfferV2\":{\"additionalProperties\":false,\"description\":\"What vtc/rooms/offers/list/0.2 returns: `Offer` plus `description`. A separate definition, not a change to `Offer`, so that vtc/rooms/offers/list/0.1 keeps the exact shape it published. `label` and `description` are the room's as they stand when the offer is read, not as they stood when it was made.\",\"properties\":{\"actions\":{\"$ref\":\"#/$defs/MemberActions\"},\"credentials\":{\"$ref\":\"#/$defs/OfferCredentials\"},\"description\":{\"$ref\":\"#/$defs/RoomDescription\",\"description\":\"Absent when the room has none.\"},\"host\":{\"description\":\"The room's host: this community.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"label\":{\"$ref\":\"#/$defs/RoomLabel\"},\"offeredAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"roomId\":{\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"state\":{\"description\":\"`open`: not yet accepted. `accepted`: accepted, kept listed while a repeated accept can still be answered.\",\"enum\":[\"open\",\"accepted\"],\"type\":\"string\"},\"validUntil\":{\"format\":\"date-time\",\"type\":\"string\"},\"visibility\":{\"$ref\":\"#/$defs/Visibility\"}},\"required\":[\"roomId\",\"host\",\"label\",\"visibility\",\"actions\",\"validUntil\",\"offeredAt\",\"state\",\"credentials\"],\"title\":\"OfferV2\",\"type\":\"object\"},\"Renewal\":{\"additionalProperties\":false,\"description\":\"What vtc/rooms/offers/list/0.4 returns in `renewals`: a renewal of an admission the member already holds, as the member it is addressed to sees it. `label` and `description` are the room's as they stand when it is read.\",\"properties\":{\"actions\":{\"$ref\":\"#/$defs/MemberActions\"},\"credentials\":{\"$ref\":\"#/$defs/RenewalCredentials\"},\"description\":{\"$ref\":\"#/$defs/RoomDescription\",\"description\":\"Absent when the room has none.\"},\"host\":{\"description\":\"The room's host: this community.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"issuedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"label\":{\"$ref\":\"#/$defs/RoomLabel\"},\"renewsAt\":{\"description\":\"When the authority it replaces expires: the renewal is listed until then, or until a later renewal or the member's removal supersedes it.\",\"format\":\"date-time\",\"type\":\"string\"},\"roomId\":{\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"validUntil\":{\"description\":\"When the renewed authority expires.\",\"format\":\"date-time\",\"type\":\"string\"},\"visibility\":{\"$ref\":\"#/$defs/Visibility\"}},\"required\":[\"roomId\",\"host\",\"label\",\"visibility\",\"actions\",\"validUntil\",\"renewsAt\",\"issuedAt\",\"credentials\"],\"title\":\"Renewal\",\"type\":\"object\"},\"RenewalCredentials\":{\"additionalProperties\":false,\"description\":\"The two credentials a renewal replaces, serialized as rooms/owner/{issue-membership,issue-authority} return them: a membership and an authority granting the same actions until the renewal's `validUntil`. No invitation: the member is already admitted, and a renewal never opens a second way in. The member's surface stores each with the member's key holder **in place of** the one it renews, never beside it.\",\"properties\":{\"authority\":{\"description\":\"The renewed Verifiable Authority Credential granting `actions` until `validUntil`.\",\"maxLength\":65536,\"minLength\":1,\"type\":\"string\"},\"membership\":{\"description\":\"The renewed Verifiable Membership Credential.\",\"maxLength\":65536,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"membership\",\"authority\"],\"title\":\"RenewalCredentials\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vtc/rooms/offers/list. Type https://trusttasks.org/spec/vtc/rooms/offers/list/0.4#response. The offers addressed to the caller, and the renewals of admissions they hold, and no one else's.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"items\":{\"items\":{\"$ref\":\"#/$defs/OfferV2\"},\"maxItems\":100,\"type\":\"array\"},\"nextCursor\":{\"description\":\"Present when more remain; pass it as `cursor`.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"},\"renewals\":{\"description\":\"Renewals of admissions the caller holds, each with the two credentials to store in place of the ones it renews. Present only on the page answered without a `cursor`, in full; absent on every later page and when there are none.\",\"items\":{\"$ref\":\"#/$defs/Renewal\"},\"maxItems\":100,\"type\":\"array\"}},\"required\":[\"items\"],\"title\":\"VTC Rooms Offers List — response payload\",\"type\":\"object\"},\"RoomDescription\":{\"description\":\"What the room is for, in a sentence or a short paragraph, written by an administrator: shown to administrators holding `vtc.rooms.manage` and to the members the room is offered to. Plain text — a consumer renders it as text, never as markup. Like `RoomLabel`, it is the community's own record as the room's owner: not part of the room's identity and never in anything a room's host can read. From `vtc/rooms/community/create` 0.3 and `vtc/rooms/community/update` 0.2 the community also writes it, through its own VTA, as the `description` of the room's own profile (`RoomProfile` in rooms/_shared), sealed inside the room for its members; earlier versions keep it out of the room altogether. It MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.\",\"maxLength\":1000,\"minLength\":1,\"title\":\"RoomDescription\",\"type\":\"string\"},\"RoomLabel\":{\"description\":\"A name for the room, chosen by an administrator: shown to administrators and to the members a room is offered to. Not part of the room's identity and never in anything a room's host can read. From `vtc/rooms/community/create` 0.3 and `vtc/rooms/community/update` 0.2 the community also writes it, through its own VTA, as the `name` of the room's own profile (`RoomProfile` in rooms/_shared), sealed inside the room for its members; earlier versions keep it out of the room altogether. MUST NOT carry personal data.\",\"maxLength\":128,\"minLength\":1,\"title\":\"RoomLabel\",\"type\":\"string\"},\"Visibility\":{\"description\":\"How much of a room its host can see, fixed at creation and immutable thereafter. `open`: records are cleartext, searchable and fully audited. `attributed`: record content is sealed, and the host still learns which member acted. `private`: content is sealed and membership is presented in zero knowledge, so the host verifies that a member acted without learning which. Immutable because a downgrade cannot un-see cleartext and an upgrade would protect only what came after while presenting as though it protected everything.\",\"enum\":[\"open\",\"attributed\",\"private\"],\"title\":\"Visibility\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/vtc/rooms/offers/list/0.4\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"cursor\":{\"description\":\"Opaque continuation token from a previous page's `nextCursor`.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"limit\":{\"description\":\"Page size. The community chooses when absent (50 in the reference implementation).\",\"maximum\":100,\"minimum\":1,\"type\":\"integer\"}},\"title\":\"VTC Rooms Offers List — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -2413,7 +1921,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"MemberAction\": {\n      \"description\": \"What a member of a community-owned room may do there. `admin` is not among them: minting epochs, admitting and removing members are the community's, as the room's owner, and are exercised through the vtc/rooms/community/* tasks rather than by any member's credential. `curate` is not implied by `write`.\",\n      \"enum\": [\n        \"read\",\n        \"write\",\n        \"curate\"\n      ],\n      \"title\": \"MemberAction\",\n      \"type\": \"string\"\n    },\n    \"MemberActions\": {\n      \"description\": \"The actions granted, at least one. An empty list confers nothing rather than everything, and a schema that allowed it would make the more dangerous reading available to a careless consumer.\",\n      \"items\": {\n        \"$ref\": \"#/$defs/MemberAction\"\n      },\n      \"maxItems\": 3,\n      \"minItems\": 1,\n      \"title\": \"MemberActions\",\n      \"type\": \"array\",\n      \"uniqueItems\": true\n    },\n    \"OfferCredentials\": {\n      \"additionalProperties\": false,\n      \"description\": \"The three credentials the room issued to the member, serialized as rooms/owner/{invite,issue-membership,issue-authority} return them. None is a secret: each names its subject, and a presentation of it must be signed by that subject. The member stores them in their own key holder's vault.\",\n      \"properties\": {\n        \"authority\": {\n          \"description\": \"The Verifiable Authority Credential granting `actions` until `validUntil`.\",\n          \"maxLength\": 65536,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"invitation\": {\n          \"description\": \"The Verifiable Invitation Credential. On a sealed tier the member's key holder needs it to mint a KeyPackage (rooms/keys/key-package) and to accept the Welcome (rooms/keys/welcome).\",\n          \"maxLength\": 65536,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"membership\": {\n          \"description\": \"The Verifiable Membership Credential.\",\n          \"maxLength\": 65536,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"invitation\",\n        \"membership\",\n        \"authority\"\n      ],\n      \"title\": \"OfferCredentials\",\n      \"type\": \"object\"\n    },\n    \"OfferV2\": {\n      \"additionalProperties\": false,\n      \"description\": \"What vtc/rooms/offers/list/0.2 returns: `Offer` plus `description`. A separate definition, not a change to `Offer`, so that vtc/rooms/offers/list/0.1 keeps the exact shape it published. `label` and `description` are the room's as they stand when the offer is read, not as they stood when it was made.\",\n      \"properties\": {\n        \"actions\": {\n          \"$ref\": \"#/$defs/MemberActions\"\n        },\n        \"credentials\": {\n          \"$ref\": \"#/$defs/OfferCredentials\"\n        },\n        \"description\": {\n          \"$ref\": \"#/$defs/RoomDescription\",\n          \"description\": \"Absent when the room has none.\"\n        },\n        \"host\": {\n          \"description\": \"The room's host: this community.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"label\": {\n          \"$ref\": \"#/$defs/RoomLabel\"\n        },\n        \"offeredAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"roomId\": {\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"state\": {\n          \"description\": \"`open`: not yet accepted. `accepted`: accepted, kept listed while a repeated accept can still be answered.\",\n          \"enum\": [\n            \"open\",\n            \"accepted\"\n          ],\n          \"type\": \"string\"\n        },\n        \"validUntil\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"visibility\": {\n          \"$ref\": \"#/$defs/Visibility\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"host\",\n        \"label\",\n        \"visibility\",\n        \"actions\",\n        \"validUntil\",\n        \"offeredAt\",\n        \"state\",\n        \"credentials\"\n      ],\n      \"title\": \"OfferV2\",\n      \"type\": \"object\"\n    },\n    \"Renewal\": {\n      \"additionalProperties\": false,\n      \"description\": \"What vtc/rooms/offers/list/0.4 returns in `renewals`: a renewal of an admission the member already holds, as the member it is addressed to sees it. `label` and `description` are the room's as they stand when it is read.\",\n      \"properties\": {\n        \"actions\": {\n          \"$ref\": \"#/$defs/MemberActions\"\n        },\n        \"credentials\": {\n          \"$ref\": \"#/$defs/RenewalCredentials\"\n        },\n        \"description\": {\n          \"$ref\": \"#/$defs/RoomDescription\",\n          \"description\": \"Absent when the room has none.\"\n        },\n        \"host\": {\n          \"description\": \"The room's host: this community.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"issuedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"label\": {\n          \"$ref\": \"#/$defs/RoomLabel\"\n        },\n        \"renewsAt\": {\n          \"description\": \"When the authority it replaces expires: the renewal is listed until then, or until a later renewal or the member's removal supersedes it.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"roomId\": {\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"validUntil\": {\n          \"description\": \"When the renewed authority expires.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"visibility\": {\n          \"$ref\": \"#/$defs/Visibility\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"host\",\n        \"label\",\n        \"visibility\",\n        \"actions\",\n        \"validUntil\",\n        \"renewsAt\",\n        \"issuedAt\",\n        \"credentials\"\n      ],\n      \"title\": \"Renewal\",\n      \"type\": \"object\"\n    },\n    \"RenewalCredentials\": {\n      \"additionalProperties\": false,\n      \"description\": \"The two credentials a renewal replaces, serialized as rooms/owner/{issue-membership,issue-authority} return them: a membership and an authority granting the same actions until the renewal's `validUntil`. No invitation: the member is already admitted, and a renewal never opens a second way in. The member's surface stores each with the member's key holder **in place of** the one it renews, never beside it.\",\n      \"properties\": {\n        \"authority\": {\n          \"description\": \"The renewed Verifiable Authority Credential granting `actions` until `validUntil`.\",\n          \"maxLength\": 65536,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"membership\": {\n          \"description\": \"The renewed Verifiable Membership Credential.\",\n          \"maxLength\": 65536,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"membership\",\n        \"authority\"\n      ],\n      \"title\": \"RenewalCredentials\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vtc/rooms/offers/list. Type https://trusttasks.org/spec/vtc/rooms/offers/list/0.4#response. The offers addressed to the caller, and the renewals of admissions they hold, and no one else's.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"items\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/OfferV2\"\n          },\n          \"maxItems\": 100,\n          \"type\": \"array\"\n        },\n        \"nextCursor\": {\n          \"description\": \"Present when more remain; pass it as `cursor`.\",\n          \"maxLength\": 1024,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"renewals\": {\n          \"description\": \"Renewals of admissions the caller holds, each with the two credentials to store in place of the ones it renews. Present only on the page answered without a `cursor`, in full; absent on every later page and when there are none.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Renewal\"\n          },\n          \"maxItems\": 100,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"items\"\n      ],\n      \"title\": \"VTC Rooms Offers List — response payload\",\n      \"type\": \"object\"\n    },\n    \"RoomDescription\": {\n      \"description\": \"What the room is for, in a sentence or a short paragraph, written by an administrator: shown to administrators holding `vtc.rooms.manage` and to the members the room is offered to. Plain text — a consumer renders it as text, never as markup. Like `RoomLabel`, it is the community's own record as the room's owner: not part of the room's identity and never in anything a room's host can read. From `vtc/rooms/community/create` 0.3 and `vtc/rooms/community/update` 0.2 the community also writes it, through its own VTA, as the `description` of the room's own profile (`RoomProfile` in rooms/_shared), sealed inside the room for its members; earlier versions keep it out of the room altogether. It MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.\",\n      \"maxLength\": 1000,\n      \"minLength\": 1,\n      \"title\": \"RoomDescription\",\n      \"type\": \"string\"\n    },\n    \"RoomLabel\": {\n      \"description\": \"A name for the room, chosen by an administrator: shown to administrators and to the members a room is offered to. Not part of the room's identity and never in anything a room's host can read. From `vtc/rooms/community/create` 0.3 and `vtc/rooms/community/update` 0.2 the community also writes it, through its own VTA, as the `name` of the room's own profile (`RoomProfile` in rooms/_shared), sealed inside the room for its members; earlier versions keep it out of the room altogether. MUST NOT carry personal data.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"title\": \"RoomLabel\",\n      \"type\": \"string\"\n    },\n    \"Visibility\": {\n      \"description\": \"How much of a room its host can see, fixed at creation and immutable thereafter. `open`: records are cleartext, searchable and fully audited. `attributed`: record content is sealed, and the host still learns which member acted. `private`: content is sealed and membership is presented in zero knowledge, so the host verifies that a member acted without learning which. Immutable because a downgrade cannot un-see cleartext and an upgrade would protect only what came after while presenting as though it protected everything.\",\n      \"enum\": [\n        \"open\",\n        \"attributed\",\n        \"private\"\n      ],\n      \"title\": \"Visibility\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"MemberAction\":{\"description\":\"What a member of a community-owned room may do there. `admin` is not among them: minting epochs, admitting and removing members are the community's, as the room's owner, and are exercised through the vtc/rooms/community/* tasks rather than by any member's credential. `curate` is not implied by `write`.\",\"enum\":[\"read\",\"write\",\"curate\"],\"title\":\"MemberAction\",\"type\":\"string\"},\"MemberActions\":{\"description\":\"The actions granted, at least one. An empty list confers nothing rather than everything, and a schema that allowed it would make the more dangerous reading available to a careless consumer.\",\"items\":{\"$ref\":\"#/$defs/MemberAction\"},\"maxItems\":3,\"minItems\":1,\"title\":\"MemberActions\",\"type\":\"array\",\"uniqueItems\":true},\"OfferCredentials\":{\"additionalProperties\":false,\"description\":\"The three credentials the room issued to the member, serialized as rooms/owner/{invite,issue-membership,issue-authority} return them. None is a secret: each names its subject, and a presentation of it must be signed by that subject. The member stores them in their own key holder's vault.\",\"properties\":{\"authority\":{\"description\":\"The Verifiable Authority Credential granting `actions` until `validUntil`.\",\"maxLength\":65536,\"minLength\":1,\"type\":\"string\"},\"invitation\":{\"description\":\"The Verifiable Invitation Credential. On a sealed tier the member's key holder needs it to mint a KeyPackage (rooms/keys/key-package) and to accept the Welcome (rooms/keys/welcome).\",\"maxLength\":65536,\"minLength\":1,\"type\":\"string\"},\"membership\":{\"description\":\"The Verifiable Membership Credential.\",\"maxLength\":65536,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"invitation\",\"membership\",\"authority\"],\"title\":\"OfferCredentials\",\"type\":\"object\"},\"OfferV2\":{\"additionalProperties\":false,\"description\":\"What vtc/rooms/offers/list/0.2 returns: `Offer` plus `description`. A separate definition, not a change to `Offer`, so that vtc/rooms/offers/list/0.1 keeps the exact shape it published. `label` and `description` are the room's as they stand when the offer is read, not as they stood when it was made.\",\"properties\":{\"actions\":{\"$ref\":\"#/$defs/MemberActions\"},\"credentials\":{\"$ref\":\"#/$defs/OfferCredentials\"},\"description\":{\"$ref\":\"#/$defs/RoomDescription\",\"description\":\"Absent when the room has none.\"},\"host\":{\"description\":\"The room's host: this community.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"label\":{\"$ref\":\"#/$defs/RoomLabel\"},\"offeredAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"roomId\":{\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"state\":{\"description\":\"`open`: not yet accepted. `accepted`: accepted, kept listed while a repeated accept can still be answered.\",\"enum\":[\"open\",\"accepted\"],\"type\":\"string\"},\"validUntil\":{\"format\":\"date-time\",\"type\":\"string\"},\"visibility\":{\"$ref\":\"#/$defs/Visibility\"}},\"required\":[\"roomId\",\"host\",\"label\",\"visibility\",\"actions\",\"validUntil\",\"offeredAt\",\"state\",\"credentials\"],\"title\":\"OfferV2\",\"type\":\"object\"},\"Renewal\":{\"additionalProperties\":false,\"description\":\"What vtc/rooms/offers/list/0.4 returns in `renewals`: a renewal of an admission the member already holds, as the member it is addressed to sees it. `label` and `description` are the room's as they stand when it is read.\",\"properties\":{\"actions\":{\"$ref\":\"#/$defs/MemberActions\"},\"credentials\":{\"$ref\":\"#/$defs/RenewalCredentials\"},\"description\":{\"$ref\":\"#/$defs/RoomDescription\",\"description\":\"Absent when the room has none.\"},\"host\":{\"description\":\"The room's host: this community.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"issuedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"label\":{\"$ref\":\"#/$defs/RoomLabel\"},\"renewsAt\":{\"description\":\"When the authority it replaces expires: the renewal is listed until then, or until a later renewal or the member's removal supersedes it.\",\"format\":\"date-time\",\"type\":\"string\"},\"roomId\":{\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"validUntil\":{\"description\":\"When the renewed authority expires.\",\"format\":\"date-time\",\"type\":\"string\"},\"visibility\":{\"$ref\":\"#/$defs/Visibility\"}},\"required\":[\"roomId\",\"host\",\"label\",\"visibility\",\"actions\",\"validUntil\",\"renewsAt\",\"issuedAt\",\"credentials\"],\"title\":\"Renewal\",\"type\":\"object\"},\"RenewalCredentials\":{\"additionalProperties\":false,\"description\":\"The two credentials a renewal replaces, serialized as rooms/owner/{issue-membership,issue-authority} return them: a membership and an authority granting the same actions until the renewal's `validUntil`. No invitation: the member is already admitted, and a renewal never opens a second way in. The member's surface stores each with the member's key holder **in place of** the one it renews, never beside it.\",\"properties\":{\"authority\":{\"description\":\"The renewed Verifiable Authority Credential granting `actions` until `validUntil`.\",\"maxLength\":65536,\"minLength\":1,\"type\":\"string\"},\"membership\":{\"description\":\"The renewed Verifiable Membership Credential.\",\"maxLength\":65536,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"membership\",\"authority\"],\"title\":\"RenewalCredentials\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vtc/rooms/offers/list. Type https://trusttasks.org/spec/vtc/rooms/offers/list/0.4#response. The offers addressed to the caller, and the renewals of admissions they hold, and no one else's.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"items\":{\"items\":{\"$ref\":\"#/$defs/OfferV2\"},\"maxItems\":100,\"type\":\"array\"},\"nextCursor\":{\"description\":\"Present when more remain; pass it as `cursor`.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"},\"renewals\":{\"description\":\"Renewals of admissions the caller holds, each with the two credentials to store in place of the ones it renews. Present only on the page answered without a `cursor`, in full; absent on every later page and when there are none.\",\"items\":{\"$ref\":\"#/$defs/Renewal\"},\"maxItems\":100,\"type\":\"array\"}},\"required\":[\"items\"],\"title\":\"VTC Rooms Offers List — response payload\",\"type\":\"object\"},\"RoomDescription\":{\"description\":\"What the room is for, in a sentence or a short paragraph, written by an administrator: shown to administrators holding `vtc.rooms.manage` and to the members the room is offered to. Plain text — a consumer renders it as text, never as markup. Like `RoomLabel`, it is the community's own record as the room's owner: not part of the room's identity and never in anything a room's host can read. From `vtc/rooms/community/create` 0.3 and `vtc/rooms/community/update` 0.2 the community also writes it, through its own VTA, as the `description` of the room's own profile (`RoomProfile` in rooms/_shared), sealed inside the room for its members; earlier versions keep it out of the room altogether. It MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.\",\"maxLength\":1000,\"minLength\":1,\"title\":\"RoomDescription\",\"type\":\"string\"},\"RoomLabel\":{\"description\":\"A name for the room, chosen by an administrator: shown to administrators and to the members a room is offered to. Not part of the room's identity and never in anything a room's host can read. From `vtc/rooms/community/create` 0.3 and `vtc/rooms/community/update` 0.2 the community also writes it, through its own VTA, as the `name` of the room's own profile (`RoomProfile` in rooms/_shared), sealed inside the room for its members; earlier versions keep it out of the room altogether. MUST NOT carry personal data.\",\"maxLength\":128,\"minLength\":1,\"title\":\"RoomLabel\",\"type\":\"string\"},\"Visibility\":{\"description\":\"How much of a room its host can see, fixed at creation and immutable thereafter. `open`: records are cleartext, searchable and fully audited. `attributed`: record content is sealed, and the host still learns which member acted. `private`: content is sealed and membership is presented in zero knowledge, so the host verifies that a member acted without learning which. Immutable because a downgrade cannot un-see cleartext and an upgrade would protect only what came after while presenting as though it protected everything.\",\"enum\":[\"open\",\"attributed\",\"private\"],\"title\":\"Visibility\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

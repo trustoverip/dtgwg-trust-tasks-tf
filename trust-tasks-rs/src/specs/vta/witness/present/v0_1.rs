@@ -35,17 +35,6 @@ pub mod error {
 }
 ///A whole Trust Task document — `id`, `type`, `payload` and every other member, `proof` included — carried between the VTA and the witness by the client: one the VTA built and signed for the client to send, or one the witness returned for the client to hand back. Typed as an open object so every member survives a round trip: carried exactly as built or received, never re-serialised, because its proof is over itself. Its envelope is checked by the VTA against the session record (CONVENTIONS.md §3), not by this schema.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "CarriedDocument",
-///  "description": "A whole Trust Task document — `id`, `type`, `payload` and every other member, `proof` included — carried between the VTA and the witness by the client: one the VTA built and signed for the client to send, or one the witness returned for the client to hand back. Typed as an open object so every member survives a round trip: carried exactly as built or received, never re-serialised, because its proof is over itself. Its envelope is checked by the VTA against the session record (CONVENTIONS.md §3), not by this schema.",
-///  "type": "object",
-///  "minProperties": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct CarriedDocument(pub ::serde_json::Map<::std::string::String, ::serde_json::Value>);
@@ -71,21 +60,6 @@ impl ::std::convert::From<::serde_json::Map<::std::string::String, ::serde_json:
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -107,15 +81,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -179,34 +144,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A client hands its VTA the witness's answer to the session it opened; the VTA verifies that the answer is the witness's own, builds the presentations bound to its challenge and domain, and returns the witness/session/submit document, signed as the relationship DID, for the client to send.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/witness/present/0.1",
-///  "title": "Payload",
-///  "description": "A client hands its VTA the witness's answer to the session it opened; the VTA verifies that the answer is the witness's own, builds the presentations bound to its challenge and domain, and returns the witness/session/submit document, signed as the relationship DID, for the client to send.",
-///  "type": "object",
-///  "required": [
-///    "response",
-///    "sessionId"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "response": {
-///      "description": "The witness/session/0.1 #response the witness returned, exactly as received, under the witness's proof.",
-///      "$ref": "#/definitions/CarriedDocument"
-///    },
-///    "sessionId": {
-///      "$ref": "#/definitions/SessionId"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -226,34 +163,6 @@ impl Payload {
 }
 ///The witness/session/submit document to send.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The witness/session/submit document to send.",
-///  "type": "object",
-///  "required": [
-///    "document",
-///    "sessionId"
-///  ],
-///  "properties": {
-///    "document": {
-///      "description": "The witness/session/submit/0.1 document, on the session's thread, issued and signed by relationshipDid and addressed to the witness, carrying the relationship presentation in `vp` and, under the member link, the member presentation in the carriage the witness accepts. For the client to send from relationshipDid unaltered.",
-///      "$ref": "#/definitions/CarriedDocument"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "sessionId": {
-///      "$ref": "#/definitions/SessionId"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -273,18 +182,6 @@ impl Response {
 }
 ///The id of the witness/session document the VTA built in vta/witness/open: the session's name, the thread every document of the session is on, and the value the VWC carries as taskContext. The VTA keys its state for the session by it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "SessionId",
-///  "description": "The id of the witness/session document the VTA built in vta/witness/open: the session's name, the thread every document of the session is on, and the value the VWC carries as taskContext. The VTA keys its state for the session by it.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct SessionId(::std::string::String);
@@ -486,7 +383,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CarriedDocument\": {\n      \"description\": \"A whole Trust Task document — `id`, `type`, `payload` and every other member, `proof` included — carried between the VTA and the witness by the client: one the VTA built and signed for the client to send, or one the witness returned for the client to hand back. Typed as an open object so every member survives a round trip: carried exactly as built or received, never re-serialised, because its proof is over itself. Its envelope is checked by the VTA against the session record (CONVENTIONS.md §3), not by this schema.\",\n      \"minProperties\": 1,\n      \"title\": \"CarriedDocument\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The witness/session/submit document to send.\",\n      \"properties\": {\n        \"document\": {\n          \"$ref\": \"#/$defs/CarriedDocument\",\n          \"description\": \"The witness/session/submit/0.1 document, on the session's thread, issued and signed by relationshipDid and addressed to the witness, carrying the relationship presentation in `vp` and, under the member link, the member presentation in the carriage the witness accepts. For the client to send from relationshipDid unaltered.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"sessionId\": {\n          \"$ref\": \"#/$defs/SessionId\"\n        }\n      },\n      \"required\": [\n        \"sessionId\",\n        \"document\"\n      ],\n      \"title\": \"VTA Witness — Present — response payload\",\n      \"type\": \"object\"\n    },\n    \"SessionId\": {\n      \"description\": \"The id of the witness/session document the VTA built in vta/witness/open: the session's name, the thread every document of the session is on, and the value the VWC carries as taskContext. The VTA keys its state for the session by it.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"title\": \"SessionId\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/witness/present/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A client hands its VTA the witness's answer to the session it opened; the VTA verifies that the answer is the witness's own, builds the presentations bound to its challenge and domain, and returns the witness/session/submit document, signed as the relationship DID, for the client to send.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"response\": {\n      \"$ref\": \"#/$defs/CarriedDocument\",\n      \"description\": \"The witness/session/0.1 #response the witness returned, exactly as received, under the witness's proof.\"\n    },\n    \"sessionId\": {\n      \"$ref\": \"#/$defs/SessionId\"\n    }\n  },\n  \"required\": [\n    \"sessionId\",\n    \"response\"\n  ],\n  \"title\": \"VTA Witness — Present — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"CarriedDocument\":{\"description\":\"A whole Trust Task document — `id`, `type`, `payload` and every other member, `proof` included — carried between the VTA and the witness by the client: one the VTA built and signed for the client to send, or one the witness returned for the client to hand back. Typed as an open object so every member survives a round trip: carried exactly as built or received, never re-serialised, because its proof is over itself. Its envelope is checked by the VTA against the session record (CONVENTIONS.md §3), not by this schema.\",\"minProperties\":1,\"title\":\"CarriedDocument\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The witness/session/submit document to send.\",\"properties\":{\"document\":{\"$ref\":\"#/$defs/CarriedDocument\",\"description\":\"The witness/session/submit/0.1 document, on the session's thread, issued and signed by relationshipDid and addressed to the witness, carrying the relationship presentation in `vp` and, under the member link, the member presentation in the carriage the witness accepts. For the client to send from relationshipDid unaltered.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"sessionId\":{\"$ref\":\"#/$defs/SessionId\"}},\"required\":[\"sessionId\",\"document\"],\"title\":\"VTA Witness — Present — response payload\",\"type\":\"object\"},\"SessionId\":{\"description\":\"The id of the witness/session document the VTA built in vta/witness/open: the session's name, the thread every document of the session is on, and the value the VWC carries as taskContext. The VTA keys its state for the session by it.\",\"maxLength\":256,\"minLength\":1,\"title\":\"SessionId\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/vta/witness/present/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A client hands its VTA the witness's answer to the session it opened; the VTA verifies that the answer is the witness's own, builds the presentations bound to its challenge and domain, and returns the witness/session/submit document, signed as the relationship DID, for the client to send.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"response\":{\"$ref\":\"#/$defs/CarriedDocument\",\"description\":\"The witness/session/0.1 #response the witness returned, exactly as received, under the witness's proof.\"},\"sessionId\":{\"$ref\":\"#/$defs/SessionId\"}},\"required\":[\"sessionId\",\"response\"],\"title\":\"VTA Witness — Present — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -494,7 +391,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CarriedDocument\": {\n      \"description\": \"A whole Trust Task document — `id`, `type`, `payload` and every other member, `proof` included — carried between the VTA and the witness by the client: one the VTA built and signed for the client to send, or one the witness returned for the client to hand back. Typed as an open object so every member survives a round trip: carried exactly as built or received, never re-serialised, because its proof is over itself. Its envelope is checked by the VTA against the session record (CONVENTIONS.md §3), not by this schema.\",\n      \"minProperties\": 1,\n      \"title\": \"CarriedDocument\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The witness/session/submit document to send.\",\n      \"properties\": {\n        \"document\": {\n          \"$ref\": \"#/$defs/CarriedDocument\",\n          \"description\": \"The witness/session/submit/0.1 document, on the session's thread, issued and signed by relationshipDid and addressed to the witness, carrying the relationship presentation in `vp` and, under the member link, the member presentation in the carriage the witness accepts. For the client to send from relationshipDid unaltered.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"sessionId\": {\n          \"$ref\": \"#/$defs/SessionId\"\n        }\n      },\n      \"required\": [\n        \"sessionId\",\n        \"document\"\n      ],\n      \"title\": \"VTA Witness — Present — response payload\",\n      \"type\": \"object\"\n    },\n    \"SessionId\": {\n      \"description\": \"The id of the witness/session document the VTA built in vta/witness/open: the session's name, the thread every document of the session is on, and the value the VWC carries as taskContext. The VTA keys its state for the session by it.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"title\": \"SessionId\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"CarriedDocument\":{\"description\":\"A whole Trust Task document — `id`, `type`, `payload` and every other member, `proof` included — carried between the VTA and the witness by the client: one the VTA built and signed for the client to send, or one the witness returned for the client to hand back. Typed as an open object so every member survives a round trip: carried exactly as built or received, never re-serialised, because its proof is over itself. Its envelope is checked by the VTA against the session record (CONVENTIONS.md §3), not by this schema.\",\"minProperties\":1,\"title\":\"CarriedDocument\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The witness/session/submit document to send.\",\"properties\":{\"document\":{\"$ref\":\"#/$defs/CarriedDocument\",\"description\":\"The witness/session/submit/0.1 document, on the session's thread, issued and signed by relationshipDid and addressed to the witness, carrying the relationship presentation in `vp` and, under the member link, the member presentation in the carriage the witness accepts. For the client to send from relationshipDid unaltered.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"sessionId\":{\"$ref\":\"#/$defs/SessionId\"}},\"required\":[\"sessionId\",\"document\"],\"title\":\"VTA Witness — Present — response payload\",\"type\":\"object\"},\"SessionId\":{\"description\":\"The id of the witness/session document the VTA built in vta/witness/open: the session's name, the thread every document of the session is on, and the value the VWC carries as taskContext. The VTA keys its state for the session by it.\",\"maxLength\":256,\"minLength\":1,\"title\":\"SessionId\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

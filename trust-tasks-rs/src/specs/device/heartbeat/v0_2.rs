@@ -35,21 +35,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -71,15 +56,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -143,32 +119,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Periodic check-in from a Companion or Service. Refreshes `lastSeenAt`, carries optional state digests, and gives the maintainer a chance to deliver queued operations (notably queued wipes for targets that were offline at issuance).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/device/heartbeat/0.2",
-///  "title": "Payload",
-///  "description": "Periodic check-in from a Companion or Service. Refreshes `lastSeenAt`, carries optional state digests, and gives the maintainer a chance to deliver queued operations (notably queued wipes for targets that were offline at issuance).",
-///  "type": "object",
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "platform": {
-///      "description": "Updated platform descriptor if it changed since registration (e.g. browser updated).",
-///      "type": "string"
-///    },
-///    "vaultSeq": {
-///      "description": "Optional — consumer's current sync baseline. If the maintainer notices a gap (consumer is behind), the response can hint that a vault/sync is due.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -203,34 +153,6 @@ impl Payload {
 }
 ///`QueuedOperation`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "QueuedOperation",
-///  "type": "object",
-///  "required": [
-///    "kind",
-///    "task"
-///  ],
-///  "properties": {
-///    "kind": {
-///      "description": "Discriminator. The framework currently supports wipe; future versions may add others.",
-///      "type": "string",
-///      "enum": [
-///        "wipe",
-///        "policyReload",
-///        "configUpdate"
-///      ]
-///    },
-///    "task": {
-///      "description": "The full Trust Task document the consumer would have received if it had been online (e.g. a device/wipe/0.1 document). Consumer verifies and executes as if it had been received normally."
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -247,20 +169,6 @@ impl QueuedOperation {
 }
 ///Discriminator. The framework currently supports wipe; future versions may add others.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Discriminator. The framework currently supports wipe; future versions may add others.",
-///  "type": "string",
-///  "enum": [
-///    "wipe",
-///    "policyReload",
-///    "configUpdate"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -326,46 +234,6 @@ impl ::std::convert::TryFrom<::std::string::String> for QueuedOperationKind {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "serverTime"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "queuedOperations": {
-///      "description": "Operations the maintainer queued for this device while it was offline. The consumer MUST execute these in order before any other op.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/QueuedOperation"
-///      }
-///    },
-///    "serverTime": {
-///      "description": "Authoritative timestamp — consumers MAY use to detect clock drift.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "syncHint": {
-///      "description": "Tells the consumer whether to call vault/sync.",
-///      "type": "string",
-///      "enum": [
-///        "upToDate",
-///        "syncDue",
-///        "fullResyncRequired"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -398,20 +266,6 @@ impl Response {
 }
 ///Tells the consumer whether to call vault/sync.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Tells the consumer whether to call vault/sync.",
-///  "type": "string",
-///  "enum": [
-///    "upToDate",
-///    "syncDue",
-///    "fullResyncRequired"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -690,14 +544,14 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/device/heartbeat/0.2";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"QueuedOperation\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"kind\": {\n          \"description\": \"Discriminator. The framework currently supports wipe; future versions may add others.\",\n          \"enum\": [\n            \"wipe\",\n            \"policyReload\",\n            \"configUpdate\"\n          ],\n          \"type\": \"string\"\n        },\n        \"task\": {\n          \"description\": \"The full Trust Task document the consumer would have received if it had been online (e.g. a device/wipe/0.1 document). Consumer verifies and executes as if it had been received normally.\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"task\"\n      ],\n      \"title\": \"QueuedOperation\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"queuedOperations\": {\n          \"description\": \"Operations the maintainer queued for this device while it was offline. The consumer MUST execute these in order before any other op.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/QueuedOperation\"\n          },\n          \"type\": \"array\"\n        },\n        \"serverTime\": {\n          \"description\": \"Authoritative timestamp — consumers MAY use to detect clock drift.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"syncHint\": {\n          \"description\": \"Tells the consumer whether to call vault/sync.\",\n          \"enum\": [\n            \"upToDate\",\n            \"syncDue\",\n            \"fullResyncRequired\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"serverTime\"\n      ],\n      \"title\": \"Device Heartbeat — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/device/heartbeat/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Periodic check-in from a Companion or Service. Refreshes `lastSeenAt`, carries optional state digests, and gives the maintainer a chance to deliver queued operations (notably queued wipes for targets that were offline at issuance).\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"platform\": {\n      \"description\": \"Updated platform descriptor if it changed since registration (e.g. browser updated).\",\n      \"type\": \"string\"\n    },\n    \"vaultSeq\": {\n      \"description\": \"Optional — consumer's current sync baseline. If the maintainer notices a gap (consumer is behind), the response can hint that a vault/sync is due.\",\n      \"minimum\": 0,\n      \"type\": \"integer\"\n    }\n  },\n  \"title\": \"Device Heartbeat — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"QueuedOperation\":{\"additionalProperties\":false,\"properties\":{\"kind\":{\"description\":\"Discriminator. The framework currently supports wipe; future versions may add others.\",\"enum\":[\"wipe\",\"policyReload\",\"configUpdate\"],\"type\":\"string\"},\"task\":{\"description\":\"The full Trust Task document the consumer would have received if it had been online (e.g. a device/wipe/0.1 document). Consumer verifies and executes as if it had been received normally.\"}},\"required\":[\"kind\",\"task\"],\"title\":\"QueuedOperation\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"queuedOperations\":{\"description\":\"Operations the maintainer queued for this device while it was offline. The consumer MUST execute these in order before any other op.\",\"items\":{\"$ref\":\"#/$defs/QueuedOperation\"},\"type\":\"array\"},\"serverTime\":{\"description\":\"Authoritative timestamp — consumers MAY use to detect clock drift.\",\"format\":\"date-time\",\"type\":\"string\"},\"syncHint\":{\"description\":\"Tells the consumer whether to call vault/sync.\",\"enum\":[\"upToDate\",\"syncDue\",\"fullResyncRequired\"],\"type\":\"string\"}},\"required\":[\"serverTime\"],\"title\":\"Device Heartbeat — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/device/heartbeat/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Periodic check-in from a Companion or Service. Refreshes `lastSeenAt`, carries optional state digests, and gives the maintainer a chance to deliver queued operations (notably queued wipes for targets that were offline at issuance).\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"platform\":{\"description\":\"Updated platform descriptor if it changed since registration (e.g. browser updated).\",\"type\":\"string\"},\"vaultSeq\":{\"description\":\"Optional — consumer's current sync baseline. If the maintainer notices a gap (consumer is behind), the response can hint that a vault/sync is due.\",\"minimum\":0,\"type\":\"integer\"}},\"title\":\"Device Heartbeat — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/device/heartbeat/0.2#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"QueuedOperation\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"kind\": {\n          \"description\": \"Discriminator. The framework currently supports wipe; future versions may add others.\",\n          \"enum\": [\n            \"wipe\",\n            \"policyReload\",\n            \"configUpdate\"\n          ],\n          \"type\": \"string\"\n        },\n        \"task\": {\n          \"description\": \"The full Trust Task document the consumer would have received if it had been online (e.g. a device/wipe/0.1 document). Consumer verifies and executes as if it had been received normally.\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"task\"\n      ],\n      \"title\": \"QueuedOperation\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"queuedOperations\": {\n          \"description\": \"Operations the maintainer queued for this device while it was offline. The consumer MUST execute these in order before any other op.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/QueuedOperation\"\n          },\n          \"type\": \"array\"\n        },\n        \"serverTime\": {\n          \"description\": \"Authoritative timestamp — consumers MAY use to detect clock drift.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"syncHint\": {\n          \"description\": \"Tells the consumer whether to call vault/sync.\",\n          \"enum\": [\n            \"upToDate\",\n            \"syncDue\",\n            \"fullResyncRequired\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"serverTime\"\n      ],\n      \"title\": \"Device Heartbeat — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"QueuedOperation\":{\"additionalProperties\":false,\"properties\":{\"kind\":{\"description\":\"Discriminator. The framework currently supports wipe; future versions may add others.\",\"enum\":[\"wipe\",\"policyReload\",\"configUpdate\"],\"type\":\"string\"},\"task\":{\"description\":\"The full Trust Task document the consumer would have received if it had been online (e.g. a device/wipe/0.1 document). Consumer verifies and executes as if it had been received normally.\"}},\"required\":[\"kind\",\"task\"],\"title\":\"QueuedOperation\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"queuedOperations\":{\"description\":\"Operations the maintainer queued for this device while it was offline. The consumer MUST execute these in order before any other op.\",\"items\":{\"$ref\":\"#/$defs/QueuedOperation\"},\"type\":\"array\"},\"serverTime\":{\"description\":\"Authoritative timestamp — consumers MAY use to detect clock drift.\",\"format\":\"date-time\",\"type\":\"string\"},\"syncHint\":{\"description\":\"Tells the consumer whether to call vault/sync.\",\"enum\":[\"upToDate\",\"syncDue\",\"fullResyncRequired\"],\"type\":\"string\"}},\"required\":[\"serverTime\"],\"title\":\"Device Heartbeat — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,38 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Requeue a trust-registry reconciliation job — one the community's reconciler has abandoned, or one waiting out a retry backoff — so it is dispatched on the reconciler's next pass.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/registry/sync-jobs/retry/0.2",
-///  "title": "Payload",
-///  "description": "Requeue a trust-registry reconciliation job — one the community's reconciler has abandoned, or one waiting out a retry backoff — so it is dispatched on the reconciler's next pass.",
-///  "type": "object",
-///  "properties": {
-///    "allFailed": {
-///      "description": "Requeue every job in the terminal `failed` state. Spelled as its own member rather than an absent `jobId` so that a client bug which drops the identifier cannot silently become a bulk operation.",
-///      "type": "boolean",
-///      "const": true
-///    },
-///    "allWaiting": {
-///      "description": "Bring forward every `pending` job that is waiting out a retry backoff. Never a held job. Its own member for the same reason as `allFailed`, and distinct from it so that repairing a shared cause and hurrying a slow backoff stay two decisions.",
-///      "type": "boolean",
-///      "const": true
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "jobId": {
-///      "description": "The single job to requeue, from `vtc/registry/sync-jobs/list`. It may be `failed`, or `pending` and waiting out a retry backoff.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -219,16 +163,6 @@ impl Payload {
 }
 ///The single job to requeue, from `vtc/registry/sync-jobs/list`. It may be `failed`, or `pending` and waiting out a retry backoff.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The single job to requeue, from `vtc/registry/sync-jobs/list`. It may be `failed`, or `pending` and waiting out a retry backoff.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadJobId(::std::string::String);
@@ -288,41 +222,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadJobId {
 }
 ///`Requeued`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "from",
-///    "jobId"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "from": {
-///      "description": "The state the job was in. `failed` — the reconciler had abandoned it. `pending` — it was waiting out a retry backoff and has been brought forward.",
-///      "type": "string",
-///      "enum": [
-///        "failed",
-///        "pending"
-///      ]
-///    },
-///    "jobId": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "memberDid": {
-///      "description": "The member whose record the requeued job carries.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -348,19 +247,6 @@ impl Requeued {
 }
 ///The state the job was in. `failed` — the reconciler had abandoned it. `pending` — it was waiting out a retry backoff and has been brought forward.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The state the job was in. `failed` — the reconciler had abandoned it. `pending` — it was waiting out a retry backoff and has been brought forward.",
-///  "type": "string",
-///  "enum": [
-///    "failed",
-///    "pending"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -422,15 +308,6 @@ impl ::std::convert::TryFrom<::std::string::String> for RequeuedFrom {
 }
 ///`RequeuedJobId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RequeuedJobId(::std::string::String);
@@ -490,16 +367,6 @@ impl<'de> ::serde::Deserialize<'de> for RequeuedJobId {
 }
 ///The member whose record the requeued job carries.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The member whose record the requeued job carries.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RequeuedMemberDid(::std::string::String);
@@ -559,40 +426,6 @@ impl<'de> ::serde::Deserialize<'de> for RequeuedMemberDid {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "requeued",
-///    "skipped"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "requeued": {
-///      "description": "Jobs now scheduled for dispatch on the reconciler's next pass. Empty is a valid answer and is not an error.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Requeued"
-///      }
-///    },
-///    "skipped": {
-///      "description": "Jobs the maintainer declined to requeue, each with why. Reported rather than failing the task, so a bulk retry is not defeated by one ineligible row.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Skipped"
-///      }
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -611,37 +444,6 @@ impl Response {
 }
 ///`Skipped`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "jobId",
-///    "reason"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "jobId": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "reason": {
-///      "description": "`inFlight` — the reconciler is dispatching the job now, so requeueing it would dispatch the same mutation twice. `held` — the job is deliberately delayed, and the delay is the point; it is never brought forward. `notFound` — no such job; it may already have been dispatched, retried, discarded, or swept.",
-///      "type": "string",
-///      "enum": [
-///        "inFlight",
-///        "held",
-///        "notFound"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -660,15 +462,6 @@ impl Skipped {
 }
 ///`SkippedJobId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct SkippedJobId(::std::string::String);
@@ -728,20 +521,6 @@ impl<'de> ::serde::Deserialize<'de> for SkippedJobId {
 }
 ///`inFlight` — the reconciler is dispatching the job now, so requeueing it would dispatch the same mutation twice. `held` — the job is deliberately delayed, and the delay is the point; it is never brought forward. `notFound` — no such job; it may already have been dispatched, retried, discarded, or swept.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`inFlight` — the reconciler is dispatching the job now, so requeueing it would dispatch the same mutation twice. `held` — the job is deliberately delayed, and the delay is the point; it is never brought forward. `notFound` — no such job; it may already have been dispatched, retried, discarded, or swept.",
-///  "type": "string",
-///  "enum": [
-///    "inFlight",
-///    "held",
-///    "notFound"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1112,7 +891,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Requeued\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"from\": {\n          \"description\": \"The state the job was in. `failed` — the reconciler had abandoned it. `pending` — it was waiting out a retry backoff and has been brought forward.\",\n          \"enum\": [\n            \"failed\",\n            \"pending\"\n          ],\n          \"type\": \"string\"\n        },\n        \"jobId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"memberDid\": {\n          \"description\": \"The member whose record the requeued job carries.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"jobId\",\n        \"from\"\n      ],\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"requeued\": {\n          \"description\": \"Jobs now scheduled for dispatch on the reconciler's next pass. Empty is a valid answer and is not an error.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Requeued\"\n          },\n          \"type\": \"array\"\n        },\n        \"skipped\": {\n          \"description\": \"Jobs the maintainer declined to requeue, each with why. Reported rather than failing the task, so a bulk retry is not defeated by one ineligible row.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Skipped\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"requeued\",\n        \"skipped\"\n      ],\n      \"title\": \"VTC Registry Sync Jobs Retry — response payload\",\n      \"type\": \"object\"\n    },\n    \"Skipped\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"jobId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"reason\": {\n          \"description\": \"`inFlight` — the reconciler is dispatching the job now, so requeueing it would dispatch the same mutation twice. `held` — the job is deliberately delayed, and the delay is the point; it is never brought forward. `notFound` — no such job; it may already have been dispatched, retried, discarded, or swept.\",\n          \"enum\": [\n            \"inFlight\",\n            \"held\",\n            \"notFound\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"jobId\",\n        \"reason\"\n      ],\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/registry/sync-jobs/retry/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Requeue a trust-registry reconciliation job — one the community's reconciler has abandoned, or one waiting out a retry backoff — so it is dispatched on the reconciler's next pass.\",\n  \"oneOf\": [\n    {\n      \"not\": {\n        \"anyOf\": [\n          {\n            \"required\": [\n              \"allFailed\"\n            ]\n          },\n          {\n            \"required\": [\n              \"allWaiting\"\n            ]\n          }\n        ]\n      },\n      \"required\": [\n        \"jobId\"\n      ]\n    },\n    {\n      \"not\": {\n        \"anyOf\": [\n          {\n            \"required\": [\n              \"jobId\"\n            ]\n          },\n          {\n            \"required\": [\n              \"allWaiting\"\n            ]\n          }\n        ]\n      },\n      \"required\": [\n        \"allFailed\"\n      ]\n    },\n    {\n      \"not\": {\n        \"anyOf\": [\n          {\n            \"required\": [\n              \"jobId\"\n            ]\n          },\n          {\n            \"required\": [\n              \"allFailed\"\n            ]\n          }\n        ]\n      },\n      \"required\": [\n        \"allWaiting\"\n      ]\n    }\n  ],\n  \"properties\": {\n    \"allFailed\": {\n      \"const\": true,\n      \"description\": \"Requeue every job in the terminal `failed` state. Spelled as its own member rather than an absent `jobId` so that a client bug which drops the identifier cannot silently become a bulk operation.\",\n      \"type\": \"boolean\"\n    },\n    \"allWaiting\": {\n      \"const\": true,\n      \"description\": \"Bring forward every `pending` job that is waiting out a retry backoff. Never a held job. Its own member for the same reason as `allFailed`, and distinct from it so that repairing a shared cause and hurrying a slow backoff stay two decisions.\",\n      \"type\": \"boolean\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"jobId\": {\n      \"description\": \"The single job to requeue, from `vtc/registry/sync-jobs/list`. It may be `failed`, or `pending` and waiting out a retry backoff.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"title\": \"VTC Registry Sync Jobs Retry — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Requeued\":{\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"from\":{\"description\":\"The state the job was in. `failed` — the reconciler had abandoned it. `pending` — it was waiting out a retry backoff and has been brought forward.\",\"enum\":[\"failed\",\"pending\"],\"type\":\"string\"},\"jobId\":{\"minLength\":1,\"type\":\"string\"},\"memberDid\":{\"description\":\"The member whose record the requeued job carries.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"jobId\",\"from\"],\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"requeued\":{\"description\":\"Jobs now scheduled for dispatch on the reconciler's next pass. Empty is a valid answer and is not an error.\",\"items\":{\"$ref\":\"#/$defs/Requeued\"},\"type\":\"array\"},\"skipped\":{\"description\":\"Jobs the maintainer declined to requeue, each with why. Reported rather than failing the task, so a bulk retry is not defeated by one ineligible row.\",\"items\":{\"$ref\":\"#/$defs/Skipped\"},\"type\":\"array\"}},\"required\":[\"requeued\",\"skipped\"],\"title\":\"VTC Registry Sync Jobs Retry — response payload\",\"type\":\"object\"},\"Skipped\":{\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"jobId\":{\"minLength\":1,\"type\":\"string\"},\"reason\":{\"description\":\"`inFlight` — the reconciler is dispatching the job now, so requeueing it would dispatch the same mutation twice. `held` — the job is deliberately delayed, and the delay is the point; it is never brought forward. `notFound` — no such job; it may already have been dispatched, retried, discarded, or swept.\",\"enum\":[\"inFlight\",\"held\",\"notFound\"],\"type\":\"string\"}},\"required\":[\"jobId\",\"reason\"],\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/registry/sync-jobs/retry/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Requeue a trust-registry reconciliation job — one the community's reconciler has abandoned, or one waiting out a retry backoff — so it is dispatched on the reconciler's next pass.\",\"oneOf\":[{\"not\":{\"anyOf\":[{\"required\":[\"allFailed\"]},{\"required\":[\"allWaiting\"]}]},\"required\":[\"jobId\"]},{\"not\":{\"anyOf\":[{\"required\":[\"jobId\"]},{\"required\":[\"allWaiting\"]}]},\"required\":[\"allFailed\"]},{\"not\":{\"anyOf\":[{\"required\":[\"jobId\"]},{\"required\":[\"allFailed\"]}]},\"required\":[\"allWaiting\"]}],\"properties\":{\"allFailed\":{\"const\":true,\"description\":\"Requeue every job in the terminal `failed` state. Spelled as its own member rather than an absent `jobId` so that a client bug which drops the identifier cannot silently become a bulk operation.\",\"type\":\"boolean\"},\"allWaiting\":{\"const\":true,\"description\":\"Bring forward every `pending` job that is waiting out a retry backoff. Never a held job. Its own member for the same reason as `allFailed`, and distinct from it so that repairing a shared cause and hurrying a slow backoff stay two decisions.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"jobId\":{\"description\":\"The single job to requeue, from `vtc/registry/sync-jobs/list`. It may be `failed`, or `pending` and waiting out a retry backoff.\",\"minLength\":1,\"type\":\"string\"}},\"title\":\"VTC Registry Sync Jobs Retry — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1122,7 +901,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Requeued\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"from\": {\n          \"description\": \"The state the job was in. `failed` — the reconciler had abandoned it. `pending` — it was waiting out a retry backoff and has been brought forward.\",\n          \"enum\": [\n            \"failed\",\n            \"pending\"\n          ],\n          \"type\": \"string\"\n        },\n        \"jobId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"memberDid\": {\n          \"description\": \"The member whose record the requeued job carries.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"jobId\",\n        \"from\"\n      ],\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"requeued\": {\n          \"description\": \"Jobs now scheduled for dispatch on the reconciler's next pass. Empty is a valid answer and is not an error.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Requeued\"\n          },\n          \"type\": \"array\"\n        },\n        \"skipped\": {\n          \"description\": \"Jobs the maintainer declined to requeue, each with why. Reported rather than failing the task, so a bulk retry is not defeated by one ineligible row.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Skipped\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"requeued\",\n        \"skipped\"\n      ],\n      \"title\": \"VTC Registry Sync Jobs Retry — response payload\",\n      \"type\": \"object\"\n    },\n    \"Skipped\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"jobId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"reason\": {\n          \"description\": \"`inFlight` — the reconciler is dispatching the job now, so requeueing it would dispatch the same mutation twice. `held` — the job is deliberately delayed, and the delay is the point; it is never brought forward. `notFound` — no such job; it may already have been dispatched, retried, discarded, or swept.\",\n          \"enum\": [\n            \"inFlight\",\n            \"held\",\n            \"notFound\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"jobId\",\n        \"reason\"\n      ],\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Requeued\":{\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"from\":{\"description\":\"The state the job was in. `failed` — the reconciler had abandoned it. `pending` — it was waiting out a retry backoff and has been brought forward.\",\"enum\":[\"failed\",\"pending\"],\"type\":\"string\"},\"jobId\":{\"minLength\":1,\"type\":\"string\"},\"memberDid\":{\"description\":\"The member whose record the requeued job carries.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"jobId\",\"from\"],\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"requeued\":{\"description\":\"Jobs now scheduled for dispatch on the reconciler's next pass. Empty is a valid answer and is not an error.\",\"items\":{\"$ref\":\"#/$defs/Requeued\"},\"type\":\"array\"},\"skipped\":{\"description\":\"Jobs the maintainer declined to requeue, each with why. Reported rather than failing the task, so a bulk retry is not defeated by one ineligible row.\",\"items\":{\"$ref\":\"#/$defs/Skipped\"},\"type\":\"array\"}},\"required\":[\"requeued\",\"skipped\"],\"title\":\"VTC Registry Sync Jobs Retry — response payload\",\"type\":\"object\"},\"Skipped\":{\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"jobId\":{\"minLength\":1,\"type\":\"string\"},\"reason\":{\"description\":\"`inFlight` — the reconciler is dispatching the job now, so requeueing it would dispatch the same mutation twice. `held` — the job is deliberately delayed, and the delay is the point; it is never brought forward. `notFound` — no such job; it may already have been dispatched, retried, discarded, or swept.\",\"enum\":[\"inFlight\",\"held\",\"notFound\"],\"type\":\"string\"}},\"required\":[\"jobId\",\"reason\"],\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

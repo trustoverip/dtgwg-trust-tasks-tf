@@ -35,18 +35,6 @@ pub mod error {
 }
 ///The custodian context that owns the account. Act scope in this context decides who may manage the account and who may consume it; the account's keys are derived in this context's key space.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "AccountContextId",
-///  "description": "The custodian context that owns the account. Act scope in this context decides who may manage the account and who may consume it; the account's keys are derived in this context's key space.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct AccountContextId(::std::string::String);
@@ -109,19 +97,6 @@ impl<'de> ::serde::Deserialize<'de> for AccountContextId {
 }
 ///The account's identifier within its context, chosen by whoever creates it. Lowercase letters, digits and hyphens, so that it can be embedded in a certificate subject, a token subject or a provider-side condition without escaping. Unique per context; never reused after deletion while anything that names it (a provider-side trust policy, an audit row) may still exist.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "AccountId",
-///  "description": "The account's identifier within its context, chosen by whoever creates it. Lowercase letters, digits and hyphens, so that it can be embedded in a certificate subject, a token subject or a provider-side condition without escaping. Unique per context; never reused after deletion while anything that names it (a provider-side trust policy, an audit row) may still exist.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1,
-///  "pattern": "^[a-z0-9][a-z0-9-]*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct AccountId(::std::string::String);
@@ -189,49 +164,6 @@ impl<'de> ::serde::Deserialize<'de> for AccountId {
 }
 ///What one issuance may do. For storage models, `prefix` and `actions` (both required, a rule this schema leaves to the custodian because other models use neither); for `s3-static-presign`, also `objectKey`, since a presigned URL is one operation on one object; for `oauth2-private-key-jwt`, `scopes`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "CredentialScope",
-///  "description": "What one issuance may do. For storage models, `prefix` and `actions` (both required, a rule this schema leaves to the custodian because other models use neither); for `s3-static-presign`, also `objectKey`, since a presigned URL is one operation on one object; for `oauth2-private-key-jwt`, `scopes`.",
-///  "type": "object",
-///  "properties": {
-///    "actions": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/ProviderObjectAction"
-///      },
-///      "maxItems": 3,
-///      "minItems": 1,
-///      "uniqueItems": true
-///    },
-///    "objectKey": {
-///      "description": "`s3-static-presign` only: the object's name within `prefix`. The presigned URL names `prefix` + `objectKey` and nothing else, and `actions` must hold exactly one action.",
-///      "type": "string",
-///      "maxLength": 1024,
-///      "minLength": 1,
-///      "pattern": "^[A-Za-z0-9._-]+$"
-///    },
-///    "prefix": {
-///      "$ref": "#/definitions/ProviderObjectPrefix"
-///    },
-///    "scopes": {
-///      "description": "`oauth2-private-key-jwt` only: the OAuth scopes requested.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "maxLength": 256,
-///        "pattern": "^[!#-\\[\\]-~]+$"
-///      },
-///      "maxItems": 64,
-///      "uniqueItems": true
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -268,18 +200,6 @@ impl CredentialScope {
 }
 ///`s3-static-presign` only: the object's name within `prefix`. The presigned URL names `prefix` + `objectKey` and nothing else, and `actions` must hold exactly one action.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`s3-static-presign` only: the object's name within `prefix`. The presigned URL names `prefix` + `objectKey` and nothing else, and `actions` must hold exactly one action.",
-///  "type": "string",
-///  "maxLength": 1024,
-///  "minLength": 1,
-///  "pattern": "^[A-Za-z0-9._-]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CredentialScopeObjectKey(::std::string::String);
@@ -347,16 +267,6 @@ impl<'de> ::serde::Deserialize<'de> for CredentialScopeObjectKey {
 }
 ///`CredentialScopeScopesItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 256,
-///  "pattern": "^[!#-\\[\\]-~]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CredentialScopeScopesItem(::std::string::String);
@@ -421,21 +331,6 @@ impl<'de> ::serde::Deserialize<'de> for CredentialScopeScopesItem {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -457,15 +352,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -529,44 +415,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Obtain a short-lived, downscoped provider credential from an external account, sealed to the caller. The outer document members are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/external/credentials/issue/0.1",
-///  "title": "Payload",
-///  "description": "Obtain a short-lived, downscoped provider credential from an external account, sealed to the caller. The outer document members are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "account",
-///    "context",
-///    "scope",
-///    "ttlSeconds"
-///  ],
-///  "properties": {
-///    "account": {
-///      "$ref": "#/definitions/AccountId"
-///    },
-///    "context": {
-///      "$ref": "#/definitions/AccountContextId"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "scope": {
-///      "$ref": "#/definitions/CredentialScope"
-///    },
-///    "ttlSeconds": {
-///      "description": "Requested lifetime; never more than the binding's `maxTtlSeconds`.",
-///      "type": "integer",
-///      "maximum": 3600.0,
-///      "minimum": 60.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -588,21 +436,6 @@ impl Payload {
 }
 ///`put`: write an object. `get`: read one. `delete`: remove one. No list, ACL, policy or bucket-level action exists here, so none can be granted.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ProviderObjectAction",
-///  "description": "`put`: write an object. `get`: read one. `delete`: remove one. No list, ACL, policy or bucket-level action exists here, so none can be granted.",
-///  "type": "string",
-///  "enum": [
-///    "put",
-///    "get",
-///    "delete"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -668,19 +501,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ProviderObjectAction {
 }
 ///An object-key prefix within the account's bucket: one or more segments of lowercase letters, digits, `.`, `_` and `-`, each beginning with a letter or digit and ending with `/`. No quote, backslash, wildcard, whitespace, `..` segment or empty segment can appear. That is deliberate: the custodian places this value inside a provider policy — an IAM session policy (JSON), a GCS Credential Access Boundary condition (CEL) — and a value able to carry a metacharacter can break out of the string it is placed in and widen the policy. That is a known class of defect (CVE-2026-42811, a CEL injection in downscoped GCS credentials). Even with this pattern, a custodian MUST build provider policies with the provider language's own encoder, never by string interpolation.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ProviderObjectPrefix",
-///  "description": "An object-key prefix within the account's bucket: one or more segments of lowercase letters, digits, `.`, `_` and `-`, each beginning with a letter or digit and ending with `/`. No quote, backslash, wildcard, whitespace, `..` segment or empty segment can appear. That is deliberate: the custodian places this value inside a provider policy — an IAM session policy (JSON), a GCS Credential Access Boundary condition (CEL) — and a value able to carry a metacharacter can break out of the string it is placed in and widen the policy. That is a known class of defect (CVE-2026-42811, a CEL injection in downscoped GCS credentials). Even with this pattern, a custodian MUST build provider policies with the provider language's own encoder, never by string interpolation.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 2,
-///  "pattern": "^([a-z0-9][a-z0-9._-]{0,127}/){1,16}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ProviderObjectPrefix(::std::string::String);
@@ -750,39 +570,6 @@ impl<'de> ::serde::Deserialize<'de> for ProviderObjectPrefix {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "expiresAt",
-///    "scope",
-///    "sealedCredential"
-///  ],
-///  "properties": {
-///    "expiresAt": {
-///      "description": "The provider's expiry for the credential, in the clear.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "scope": {
-///      "description": "The scope actually granted, which equals the requested one.",
-///      "$ref": "#/definitions/CredentialScope"
-///    },
-///    "sealedCredential": {
-///      "$ref": "#/definitions/SealedTransferBundle"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -805,19 +592,6 @@ impl Response {
 }
 ///A sealed-transfer bundle: OpenPGP-style ASCII armor around an HPKE-sealed `SealedPayloadV1` (base mode, X25519-HKDF-SHA256 KEM, HKDF-SHA256 KDF, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`), with a producer assertion and Bundle-Id, Chunk and Digest-Algo headers bound into the associated data. Each task states the key it is sealed to: a single-use wrapping key from keys/import-wrapping-key for external/accounts/secret/set, and the caller's key-agreement key for external/credentials/issue. Its cleartext is an ExternalSecretPayload, an ExternalCredentialPayload or, from external/credentials/issue 0.2 for `s3-static-presign`, a PresignedRequestSet. The only form in which secret material crosses the wire in this family, in either direction: the seal is what keeps a terminating proxy, a relay, a request log or a debug dump of "the response" from ever holding a usable secret, whatever transport carried the document.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "SealedTransferBundle",
-///  "description": "A sealed-transfer bundle: OpenPGP-style ASCII armor around an HPKE-sealed `SealedPayloadV1` (base mode, X25519-HKDF-SHA256 KEM, HKDF-SHA256 KDF, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`), with a producer assertion and Bundle-Id, Chunk and Digest-Algo headers bound into the associated data. Each task states the key it is sealed to: a single-use wrapping key from keys/import-wrapping-key for external/accounts/secret/set, and the caller's key-agreement key for external/credentials/issue. Its cleartext is an ExternalSecretPayload, an ExternalCredentialPayload or, from external/credentials/issue 0.2 for `s3-static-presign`, a PresignedRequestSet. The only form in which secret material crosses the wire in this family, in either direction: the seal is what keeps a terminating proxy, a relay, a request log or a debug dump of \"the response\" from ever holding a usable secret, whatever transport carried the document.",
-///  "type": "string",
-///  "maxLength": 65536,
-///  "minLength": 64,
-///  "pattern": "^-----BEGIN VTA SEALED BUNDLE-----[\\s\\S]+-----END VTA SEALED BUNDLE-----\\s*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct SealedTransferBundle(::std::string::String);
@@ -1173,7 +947,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AccountContextId\": {\n      \"description\": \"The custodian context that owns the account. Act scope in this context decides who may manage the account and who may consume it; the account's keys are derived in this context's key space.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"title\": \"AccountContextId\",\n      \"type\": \"string\"\n    },\n    \"AccountId\": {\n      \"description\": \"The account's identifier within its context, chosen by whoever creates it. Lowercase letters, digits and hyphens, so that it can be embedded in a certificate subject, a token subject or a provider-side condition without escaping. Unique per context; never reused after deletion while anything that names it (a provider-side trust policy, an audit row) may still exist.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z0-9][a-z0-9-]*$\",\n      \"title\": \"AccountId\",\n      \"type\": \"string\"\n    },\n    \"CredentialScope\": {\n      \"additionalProperties\": false,\n      \"description\": \"What one issuance may do. For storage models, `prefix` and `actions` (both required, a rule this schema leaves to the custodian because other models use neither); for `s3-static-presign`, also `objectKey`, since a presigned URL is one operation on one object; for `oauth2-private-key-jwt`, `scopes`.\",\n      \"properties\": {\n        \"actions\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/ProviderObjectAction\"\n          },\n          \"maxItems\": 3,\n          \"minItems\": 1,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"objectKey\": {\n          \"description\": \"`s3-static-presign` only: the object's name within `prefix`. The presigned URL names `prefix` + `objectKey` and nothing else, and `actions` must hold exactly one action.\",\n          \"maxLength\": 1024,\n          \"minLength\": 1,\n          \"pattern\": \"^[A-Za-z0-9._-]+$\",\n          \"type\": \"string\"\n        },\n        \"prefix\": {\n          \"$ref\": \"#/$defs/ProviderObjectPrefix\"\n        },\n        \"scopes\": {\n          \"description\": \"`oauth2-private-key-jwt` only: the OAuth scopes requested.\",\n          \"items\": {\n            \"maxLength\": 256,\n            \"pattern\": \"^[!#-\\\\[\\\\]-~]+$\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 64,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        }\n      },\n      \"title\": \"CredentialScope\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ProviderObjectAction\": {\n      \"description\": \"`put`: write an object. `get`: read one. `delete`: remove one. No list, ACL, policy or bucket-level action exists here, so none can be granted.\",\n      \"enum\": [\n        \"put\",\n        \"get\",\n        \"delete\"\n      ],\n      \"title\": \"ProviderObjectAction\",\n      \"type\": \"string\"\n    },\n    \"ProviderObjectPrefix\": {\n      \"description\": \"An object-key prefix within the account's bucket: one or more segments of lowercase letters, digits, `.`, `_` and `-`, each beginning with a letter or digit and ending with `/`. No quote, backslash, wildcard, whitespace, `..` segment or empty segment can appear. That is deliberate: the custodian places this value inside a provider policy — an IAM session policy (JSON), a GCS Credential Access Boundary condition (CEL) — and a value able to carry a metacharacter can break out of the string it is placed in and widen the policy. That is a known class of defect (CVE-2026-42811, a CEL injection in downscoped GCS credentials). Even with this pattern, a custodian MUST build provider policies with the provider language's own encoder, never by string interpolation.\",\n      \"maxLength\": 512,\n      \"minLength\": 2,\n      \"pattern\": \"^([a-z0-9][a-z0-9._-]{0,127}/){1,16}$\",\n      \"title\": \"ProviderObjectPrefix\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"expiresAt\": {\n          \"description\": \"The provider's expiry for the credential, in the clear.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"scope\": {\n          \"$ref\": \"#/$defs/CredentialScope\",\n          \"description\": \"The scope actually granted, which equals the requested one.\"\n        },\n        \"sealedCredential\": {\n          \"$ref\": \"#/$defs/SealedTransferBundle\"\n        }\n      },\n      \"required\": [\n        \"sealedCredential\",\n        \"expiresAt\",\n        \"scope\"\n      ],\n      \"title\": \"External Credentials — Issue — response payload\",\n      \"type\": \"object\"\n    },\n    \"SealedTransferBundle\": {\n      \"description\": \"A sealed-transfer bundle: OpenPGP-style ASCII armor around an HPKE-sealed `SealedPayloadV1` (base mode, X25519-HKDF-SHA256 KEM, HKDF-SHA256 KDF, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`), with a producer assertion and Bundle-Id, Chunk and Digest-Algo headers bound into the associated data. Each task states the key it is sealed to: a single-use wrapping key from keys/import-wrapping-key for external/accounts/secret/set, and the caller's key-agreement key for external/credentials/issue. Its cleartext is an ExternalSecretPayload, an ExternalCredentialPayload or, from external/credentials/issue 0.2 for `s3-static-presign`, a PresignedRequestSet. The only form in which secret material crosses the wire in this family, in either direction: the seal is what keeps a terminating proxy, a relay, a request log or a debug dump of \\\"the response\\\" from ever holding a usable secret, whatever transport carried the document.\",\n      \"maxLength\": 65536,\n      \"minLength\": 64,\n      \"pattern\": \"^-----BEGIN VTA SEALED BUNDLE-----[\\\\s\\\\S]+-----END VTA SEALED BUNDLE-----\\\\s*$\",\n      \"title\": \"SealedTransferBundle\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/external/credentials/issue/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Obtain a short-lived, downscoped provider credential from an external account, sealed to the caller. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"account\": {\n      \"$ref\": \"#/$defs/AccountId\"\n    },\n    \"context\": {\n      \"$ref\": \"#/$defs/AccountContextId\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"scope\": {\n      \"$ref\": \"#/$defs/CredentialScope\"\n    },\n    \"ttlSeconds\": {\n      \"description\": \"Requested lifetime; never more than the binding's `maxTtlSeconds`.\",\n      \"maximum\": 3600,\n      \"minimum\": 60,\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"context\",\n    \"account\",\n    \"scope\",\n    \"ttlSeconds\"\n  ],\n  \"title\": \"External Credentials — Issue — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"AccountContextId\":{\"description\":\"The custodian context that owns the account. Act scope in this context decides who may manage the account and who may consume it; the account's keys are derived in this context's key space.\",\"maxLength\":256,\"minLength\":1,\"title\":\"AccountContextId\",\"type\":\"string\"},\"AccountId\":{\"description\":\"The account's identifier within its context, chosen by whoever creates it. Lowercase letters, digits and hyphens, so that it can be embedded in a certificate subject, a token subject or a provider-side condition without escaping. Unique per context; never reused after deletion while anything that names it (a provider-side trust policy, an audit row) may still exist.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9][a-z0-9-]*$\",\"title\":\"AccountId\",\"type\":\"string\"},\"CredentialScope\":{\"additionalProperties\":false,\"description\":\"What one issuance may do. For storage models, `prefix` and `actions` (both required, a rule this schema leaves to the custodian because other models use neither); for `s3-static-presign`, also `objectKey`, since a presigned URL is one operation on one object; for `oauth2-private-key-jwt`, `scopes`.\",\"properties\":{\"actions\":{\"items\":{\"$ref\":\"#/$defs/ProviderObjectAction\"},\"maxItems\":3,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"objectKey\":{\"description\":\"`s3-static-presign` only: the object's name within `prefix`. The presigned URL names `prefix` + `objectKey` and nothing else, and `actions` must hold exactly one action.\",\"maxLength\":1024,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9._-]+$\",\"type\":\"string\"},\"prefix\":{\"$ref\":\"#/$defs/ProviderObjectPrefix\"},\"scopes\":{\"description\":\"`oauth2-private-key-jwt` only: the OAuth scopes requested.\",\"items\":{\"maxLength\":256,\"pattern\":\"^[!#-\\\\[\\\\]-~]+$\",\"type\":\"string\"},\"maxItems\":64,\"type\":\"array\",\"uniqueItems\":true}},\"title\":\"CredentialScope\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ProviderObjectAction\":{\"description\":\"`put`: write an object. `get`: read one. `delete`: remove one. No list, ACL, policy or bucket-level action exists here, so none can be granted.\",\"enum\":[\"put\",\"get\",\"delete\"],\"title\":\"ProviderObjectAction\",\"type\":\"string\"},\"ProviderObjectPrefix\":{\"description\":\"An object-key prefix within the account's bucket: one or more segments of lowercase letters, digits, `.`, `_` and `-`, each beginning with a letter or digit and ending with `/`. No quote, backslash, wildcard, whitespace, `..` segment or empty segment can appear. That is deliberate: the custodian places this value inside a provider policy — an IAM session policy (JSON), a GCS Credential Access Boundary condition (CEL) — and a value able to carry a metacharacter can break out of the string it is placed in and widen the policy. That is a known class of defect (CVE-2026-42811, a CEL injection in downscoped GCS credentials). Even with this pattern, a custodian MUST build provider policies with the provider language's own encoder, never by string interpolation.\",\"maxLength\":512,\"minLength\":2,\"pattern\":\"^([a-z0-9][a-z0-9._-]{0,127}/){1,16}$\",\"title\":\"ProviderObjectPrefix\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"expiresAt\":{\"description\":\"The provider's expiry for the credential, in the clear.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"scope\":{\"$ref\":\"#/$defs/CredentialScope\",\"description\":\"The scope actually granted, which equals the requested one.\"},\"sealedCredential\":{\"$ref\":\"#/$defs/SealedTransferBundle\"}},\"required\":[\"sealedCredential\",\"expiresAt\",\"scope\"],\"title\":\"External Credentials — Issue — response payload\",\"type\":\"object\"},\"SealedTransferBundle\":{\"description\":\"A sealed-transfer bundle: OpenPGP-style ASCII armor around an HPKE-sealed `SealedPayloadV1` (base mode, X25519-HKDF-SHA256 KEM, HKDF-SHA256 KDF, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`), with a producer assertion and Bundle-Id, Chunk and Digest-Algo headers bound into the associated data. Each task states the key it is sealed to: a single-use wrapping key from keys/import-wrapping-key for external/accounts/secret/set, and the caller's key-agreement key for external/credentials/issue. Its cleartext is an ExternalSecretPayload, an ExternalCredentialPayload or, from external/credentials/issue 0.2 for `s3-static-presign`, a PresignedRequestSet. The only form in which secret material crosses the wire in this family, in either direction: the seal is what keeps a terminating proxy, a relay, a request log or a debug dump of \\\"the response\\\" from ever holding a usable secret, whatever transport carried the document.\",\"maxLength\":65536,\"minLength\":64,\"pattern\":\"^-----BEGIN VTA SEALED BUNDLE-----[\\\\s\\\\S]+-----END VTA SEALED BUNDLE-----\\\\s*$\",\"title\":\"SealedTransferBundle\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/external/credentials/issue/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Obtain a short-lived, downscoped provider credential from an external account, sealed to the caller. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"account\":{\"$ref\":\"#/$defs/AccountId\"},\"context\":{\"$ref\":\"#/$defs/AccountContextId\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"scope\":{\"$ref\":\"#/$defs/CredentialScope\"},\"ttlSeconds\":{\"description\":\"Requested lifetime; never more than the binding's `maxTtlSeconds`.\",\"maximum\":3600,\"minimum\":60,\"type\":\"integer\"}},\"required\":[\"context\",\"account\",\"scope\",\"ttlSeconds\"],\"title\":\"External Credentials — Issue — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1183,7 +957,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AccountContextId\": {\n      \"description\": \"The custodian context that owns the account. Act scope in this context decides who may manage the account and who may consume it; the account's keys are derived in this context's key space.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"title\": \"AccountContextId\",\n      \"type\": \"string\"\n    },\n    \"AccountId\": {\n      \"description\": \"The account's identifier within its context, chosen by whoever creates it. Lowercase letters, digits and hyphens, so that it can be embedded in a certificate subject, a token subject or a provider-side condition without escaping. Unique per context; never reused after deletion while anything that names it (a provider-side trust policy, an audit row) may still exist.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z0-9][a-z0-9-]*$\",\n      \"title\": \"AccountId\",\n      \"type\": \"string\"\n    },\n    \"CredentialScope\": {\n      \"additionalProperties\": false,\n      \"description\": \"What one issuance may do. For storage models, `prefix` and `actions` (both required, a rule this schema leaves to the custodian because other models use neither); for `s3-static-presign`, also `objectKey`, since a presigned URL is one operation on one object; for `oauth2-private-key-jwt`, `scopes`.\",\n      \"properties\": {\n        \"actions\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/ProviderObjectAction\"\n          },\n          \"maxItems\": 3,\n          \"minItems\": 1,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"objectKey\": {\n          \"description\": \"`s3-static-presign` only: the object's name within `prefix`. The presigned URL names `prefix` + `objectKey` and nothing else, and `actions` must hold exactly one action.\",\n          \"maxLength\": 1024,\n          \"minLength\": 1,\n          \"pattern\": \"^[A-Za-z0-9._-]+$\",\n          \"type\": \"string\"\n        },\n        \"prefix\": {\n          \"$ref\": \"#/$defs/ProviderObjectPrefix\"\n        },\n        \"scopes\": {\n          \"description\": \"`oauth2-private-key-jwt` only: the OAuth scopes requested.\",\n          \"items\": {\n            \"maxLength\": 256,\n            \"pattern\": \"^[!#-\\\\[\\\\]-~]+$\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 64,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        }\n      },\n      \"title\": \"CredentialScope\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ProviderObjectAction\": {\n      \"description\": \"`put`: write an object. `get`: read one. `delete`: remove one. No list, ACL, policy or bucket-level action exists here, so none can be granted.\",\n      \"enum\": [\n        \"put\",\n        \"get\",\n        \"delete\"\n      ],\n      \"title\": \"ProviderObjectAction\",\n      \"type\": \"string\"\n    },\n    \"ProviderObjectPrefix\": {\n      \"description\": \"An object-key prefix within the account's bucket: one or more segments of lowercase letters, digits, `.`, `_` and `-`, each beginning with a letter or digit and ending with `/`. No quote, backslash, wildcard, whitespace, `..` segment or empty segment can appear. That is deliberate: the custodian places this value inside a provider policy — an IAM session policy (JSON), a GCS Credential Access Boundary condition (CEL) — and a value able to carry a metacharacter can break out of the string it is placed in and widen the policy. That is a known class of defect (CVE-2026-42811, a CEL injection in downscoped GCS credentials). Even with this pattern, a custodian MUST build provider policies with the provider language's own encoder, never by string interpolation.\",\n      \"maxLength\": 512,\n      \"minLength\": 2,\n      \"pattern\": \"^([a-z0-9][a-z0-9._-]{0,127}/){1,16}$\",\n      \"title\": \"ProviderObjectPrefix\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"expiresAt\": {\n          \"description\": \"The provider's expiry for the credential, in the clear.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"scope\": {\n          \"$ref\": \"#/$defs/CredentialScope\",\n          \"description\": \"The scope actually granted, which equals the requested one.\"\n        },\n        \"sealedCredential\": {\n          \"$ref\": \"#/$defs/SealedTransferBundle\"\n        }\n      },\n      \"required\": [\n        \"sealedCredential\",\n        \"expiresAt\",\n        \"scope\"\n      ],\n      \"title\": \"External Credentials — Issue — response payload\",\n      \"type\": \"object\"\n    },\n    \"SealedTransferBundle\": {\n      \"description\": \"A sealed-transfer bundle: OpenPGP-style ASCII armor around an HPKE-sealed `SealedPayloadV1` (base mode, X25519-HKDF-SHA256 KEM, HKDF-SHA256 KDF, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`), with a producer assertion and Bundle-Id, Chunk and Digest-Algo headers bound into the associated data. Each task states the key it is sealed to: a single-use wrapping key from keys/import-wrapping-key for external/accounts/secret/set, and the caller's key-agreement key for external/credentials/issue. Its cleartext is an ExternalSecretPayload, an ExternalCredentialPayload or, from external/credentials/issue 0.2 for `s3-static-presign`, a PresignedRequestSet. The only form in which secret material crosses the wire in this family, in either direction: the seal is what keeps a terminating proxy, a relay, a request log or a debug dump of \\\"the response\\\" from ever holding a usable secret, whatever transport carried the document.\",\n      \"maxLength\": 65536,\n      \"minLength\": 64,\n      \"pattern\": \"^-----BEGIN VTA SEALED BUNDLE-----[\\\\s\\\\S]+-----END VTA SEALED BUNDLE-----\\\\s*$\",\n      \"title\": \"SealedTransferBundle\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"AccountContextId\":{\"description\":\"The custodian context that owns the account. Act scope in this context decides who may manage the account and who may consume it; the account's keys are derived in this context's key space.\",\"maxLength\":256,\"minLength\":1,\"title\":\"AccountContextId\",\"type\":\"string\"},\"AccountId\":{\"description\":\"The account's identifier within its context, chosen by whoever creates it. Lowercase letters, digits and hyphens, so that it can be embedded in a certificate subject, a token subject or a provider-side condition without escaping. Unique per context; never reused after deletion while anything that names it (a provider-side trust policy, an audit row) may still exist.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9][a-z0-9-]*$\",\"title\":\"AccountId\",\"type\":\"string\"},\"CredentialScope\":{\"additionalProperties\":false,\"description\":\"What one issuance may do. For storage models, `prefix` and `actions` (both required, a rule this schema leaves to the custodian because other models use neither); for `s3-static-presign`, also `objectKey`, since a presigned URL is one operation on one object; for `oauth2-private-key-jwt`, `scopes`.\",\"properties\":{\"actions\":{\"items\":{\"$ref\":\"#/$defs/ProviderObjectAction\"},\"maxItems\":3,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"objectKey\":{\"description\":\"`s3-static-presign` only: the object's name within `prefix`. The presigned URL names `prefix` + `objectKey` and nothing else, and `actions` must hold exactly one action.\",\"maxLength\":1024,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9._-]+$\",\"type\":\"string\"},\"prefix\":{\"$ref\":\"#/$defs/ProviderObjectPrefix\"},\"scopes\":{\"description\":\"`oauth2-private-key-jwt` only: the OAuth scopes requested.\",\"items\":{\"maxLength\":256,\"pattern\":\"^[!#-\\\\[\\\\]-~]+$\",\"type\":\"string\"},\"maxItems\":64,\"type\":\"array\",\"uniqueItems\":true}},\"title\":\"CredentialScope\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ProviderObjectAction\":{\"description\":\"`put`: write an object. `get`: read one. `delete`: remove one. No list, ACL, policy or bucket-level action exists here, so none can be granted.\",\"enum\":[\"put\",\"get\",\"delete\"],\"title\":\"ProviderObjectAction\",\"type\":\"string\"},\"ProviderObjectPrefix\":{\"description\":\"An object-key prefix within the account's bucket: one or more segments of lowercase letters, digits, `.`, `_` and `-`, each beginning with a letter or digit and ending with `/`. No quote, backslash, wildcard, whitespace, `..` segment or empty segment can appear. That is deliberate: the custodian places this value inside a provider policy — an IAM session policy (JSON), a GCS Credential Access Boundary condition (CEL) — and a value able to carry a metacharacter can break out of the string it is placed in and widen the policy. That is a known class of defect (CVE-2026-42811, a CEL injection in downscoped GCS credentials). Even with this pattern, a custodian MUST build provider policies with the provider language's own encoder, never by string interpolation.\",\"maxLength\":512,\"minLength\":2,\"pattern\":\"^([a-z0-9][a-z0-9._-]{0,127}/){1,16}$\",\"title\":\"ProviderObjectPrefix\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"expiresAt\":{\"description\":\"The provider's expiry for the credential, in the clear.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"scope\":{\"$ref\":\"#/$defs/CredentialScope\",\"description\":\"The scope actually granted, which equals the requested one.\"},\"sealedCredential\":{\"$ref\":\"#/$defs/SealedTransferBundle\"}},\"required\":[\"sealedCredential\",\"expiresAt\",\"scope\"],\"title\":\"External Credentials — Issue — response payload\",\"type\":\"object\"},\"SealedTransferBundle\":{\"description\":\"A sealed-transfer bundle: OpenPGP-style ASCII armor around an HPKE-sealed `SealedPayloadV1` (base mode, X25519-HKDF-SHA256 KEM, HKDF-SHA256 KDF, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`), with a producer assertion and Bundle-Id, Chunk and Digest-Algo headers bound into the associated data. Each task states the key it is sealed to: a single-use wrapping key from keys/import-wrapping-key for external/accounts/secret/set, and the caller's key-agreement key for external/credentials/issue. Its cleartext is an ExternalSecretPayload, an ExternalCredentialPayload or, from external/credentials/issue 0.2 for `s3-static-presign`, a PresignedRequestSet. The only form in which secret material crosses the wire in this family, in either direction: the seal is what keeps a terminating proxy, a relay, a request log or a debug dump of \\\"the response\\\" from ever holding a usable secret, whatever transport carried the document.\",\"maxLength\":65536,\"minLength\":64,\"pattern\":\"^-----BEGIN VTA SEALED BUNDLE-----[\\\\s\\\\S]+-----END VTA SEALED BUNDLE-----\\\\s*$\",\"title\":\"SealedTransferBundle\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

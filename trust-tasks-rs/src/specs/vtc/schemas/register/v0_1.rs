@@ -34,17 +34,6 @@ pub mod error {
 }
 ///A JSON Schema (the W3C `credentialSchema` a credential of this type must conform to), carried as data. Any JSON Schema the community's validator compiles; this specification does not constrain its members. Absent means the type is registered with no schema constraint.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "CredentialSchema",
-///  "description": "A JSON Schema (the W3C `credentialSchema` a credential of this type must conform to), carried as data. Any JSON Schema the community's validator compiles; this specification does not constrain its members. Absent means the type is registered with no schema constraint.",
-///  "type": "object",
-///  "additionalProperties": true
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct CredentialSchema(pub ::serde_json::Map<::std::string::String, ::serde_json::Value>);
@@ -70,18 +59,6 @@ impl ::std::convert::From<::serde_json::Map<::std::string::String, ::serde_json:
 }
 ///A credential type URI — the W3C `type` value or the SD-JWT-VC `vct` a credential of this type carries. The registry's primary key, compared as an exact string after surrounding whitespace is trimmed. Bounded at 512 bytes because it keys the community's storage.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "CredentialTypeUri",
-///  "description": "A credential type URI — the W3C `type` value or the SD-JWT-VC `vct` a credential of this type carries. The registry's primary key, compared as an exact string after surrounding whitespace is trimmed. Bounded at 512 bytes because it keys the community's storage.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CredentialTypeUri(::std::string::String);
@@ -144,19 +121,6 @@ impl<'de> ::serde::Deserialize<'de> for CredentialTypeUri {
 }
 ///The DTG credential catalog type the entry binds to, e.g. `MembershipCredential`, `AuthorityCredential` or `StatementCredential`. Absent for a community-defined type outside the DTG catalog. A statement type is identified by its predicate, not by a subtype: every DTG statement is a `StatementCredential`, and which statements a community accepts is the set of predicates it registers with vtc/endorsement-types/register.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DtgType",
-///  "description": "The DTG credential catalog type the entry binds to, e.g. `MembershipCredential`, `AuthorityCredential` or `StatementCredential`. Absent for a community-defined type outside the DTG catalog. A statement type is identified by its predicate, not by a subtype: every DTG statement is a `StatementCredential`, and which statements a community accepts is the set of predicates it registers with vtc/endorsement-types/register.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1,
-///  "pattern": "^[A-Za-z][A-Za-z0-9]*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DtgType(::std::string::String);
@@ -224,21 +188,6 @@ impl<'de> ::serde::Deserialize<'de> for DtgType {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -260,15 +209,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -332,42 +272,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Register a credential type in the community's schema registry, or replace the registration of one already there. The outer document members are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/schemas/register/0.1",
-///  "title": "Payload",
-///  "description": "Register a credential type in the community's schema registry, or replace the registration of one already there. The outer document members are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "kind",
-///    "typeUri"
-///  ],
-///  "properties": {
-///    "credentialSchema": {
-///      "$ref": "#/definitions/CredentialSchema"
-///    },
-///    "description": {
-///      "$ref": "#/definitions/SchemaDescription"
-///    },
-///    "dtgType": {
-///      "$ref": "#/definitions/DtgType"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "kind": {
-///      "$ref": "#/definitions/SchemaKind"
-///    },
-///    "typeUri": {
-///      "$ref": "#/definitions/CredentialTypeUri"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -399,28 +303,6 @@ impl Payload {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "schema"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "schema": {
-///      "$ref": "#/definitions/SchemaEntry"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -436,17 +318,6 @@ impl Response {
 }
 ///An administrator's description of the entry, shown in administration surfaces. Free text written by the registering administrator and read by other administrators; untrusted, attributed to `createdByDid` wherever it is rendered, and never read by the community's own logic.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "SchemaDescription",
-///  "description": "An administrator's description of the entry, shown in administration surfaces. Free text written by the registering administrator and read by other administrators; untrusted, attributed to `createdByDid` wherever it is rendered, and never read by the community's own logic.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct SchemaDescription(::std::string::String);
@@ -506,51 +377,6 @@ impl<'de> ::serde::Deserialize<'de> for SchemaDescription {
 }
 ///One registered credential type, as the community stores it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "SchemaEntry",
-///  "description": "One registered credential type, as the community stores it.",
-///  "type": "object",
-///  "required": [
-///    "createdAt",
-///    "createdByDid",
-///    "kind",
-///    "typeUri"
-///  ],
-///  "properties": {
-///    "createdAt": {
-///      "description": "When this entry was last registered. Registering an existing type replaces the entry, so this is the time of the latest registration, not the first.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "createdByDid": {
-///      "description": "The administrator who last registered the entry.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    },
-///    "credentialSchema": {
-///      "$ref": "#/definitions/CredentialSchema"
-///    },
-///    "description": {
-///      "$ref": "#/definitions/SchemaDescription"
-///    },
-///    "dtgType": {
-///      "$ref": "#/definitions/DtgType"
-///    },
-///    "kind": {
-///      "$ref": "#/definitions/SchemaKind"
-///    },
-///    "typeUri": {
-///      "$ref": "#/definitions/CredentialTypeUri"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -586,17 +412,6 @@ impl SchemaEntry {
 }
 ///The administrator who last registered the entry.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The administrator who last registered the entry.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct SchemaEntryCreatedByDid(::std::string::String);
@@ -661,20 +476,6 @@ impl<'de> ::serde::Deserialize<'de> for SchemaEntryCreatedByDid {
 }
 ///Which half of the registry an entry is on. `issues`: the community mints credentials of this type, and issuance refuses a type not registered as `issues`. `accepts`: the community recognises credentials of this type as evidence, and an Accepts criterion may reference only a registered type.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "SchemaKind",
-///  "description": "Which half of the registry an entry is on. `issues`: the community mints credentials of this type, and issuance refuses a type not registered as `issues`. `accepts`: the community recognises credentials of this type as evidence, and an Accepts criterion may reference only a registered type.",
-///  "type": "string",
-///  "enum": [
-///    "issues",
-///    "accepts"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1044,7 +845,7 @@ impl crate::Payload for Payload {
     const MAX_DOCUMENT_BYTES: Option<usize> = Some(262144usize);
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CredentialSchema\": {\n      \"additionalProperties\": true,\n      \"description\": \"A JSON Schema (the W3C `credentialSchema` a credential of this type must conform to), carried as data. Any JSON Schema the community's validator compiles; this specification does not constrain its members. Absent means the type is registered with no schema constraint.\",\n      \"title\": \"CredentialSchema\",\n      \"type\": \"object\"\n    },\n    \"CredentialTypeUri\": {\n      \"description\": \"A credential type URI — the W3C `type` value or the SD-JWT-VC `vct` a credential of this type carries. The registry's primary key, compared as an exact string after surrounding whitespace is trimmed. Bounded at 512 bytes because it keys the community's storage.\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"title\": \"CredentialTypeUri\",\n      \"type\": \"string\"\n    },\n    \"DtgType\": {\n      \"description\": \"The DTG credential catalog type the entry binds to, e.g. `MembershipCredential`, `AuthorityCredential` or `StatementCredential`. Absent for a community-defined type outside the DTG catalog. A statement type is identified by its predicate, not by a subtype: every DTG statement is a `StatementCredential`, and which statements a community accepts is the set of predicates it registers with vtc/endorsement-types/register.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^[A-Za-z][A-Za-z0-9]*$\",\n      \"title\": \"DtgType\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"schema\": {\n          \"$ref\": \"#/$defs/SchemaEntry\"\n        }\n      },\n      \"required\": [\n        \"schema\"\n      ],\n      \"title\": \"VTC Schemas — Register — response payload\",\n      \"type\": \"object\"\n    },\n    \"SchemaDescription\": {\n      \"description\": \"An administrator's description of the entry, shown in administration surfaces. Free text written by the registering administrator and read by other administrators; untrusted, attributed to `createdByDid` wherever it is rendered, and never read by the community's own logic.\",\n      \"maxLength\": 1024,\n      \"title\": \"SchemaDescription\",\n      \"type\": \"string\"\n    },\n    \"SchemaEntry\": {\n      \"additionalProperties\": false,\n      \"description\": \"One registered credential type, as the community stores it.\",\n      \"properties\": {\n        \"createdAt\": {\n          \"description\": \"When this entry was last registered. Registering an existing type replaces the entry, so this is the time of the latest registration, not the first.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"createdByDid\": {\n          \"description\": \"The administrator who last registered the entry.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"credentialSchema\": {\n          \"$ref\": \"#/$defs/CredentialSchema\"\n        },\n        \"description\": {\n          \"$ref\": \"#/$defs/SchemaDescription\"\n        },\n        \"dtgType\": {\n          \"$ref\": \"#/$defs/DtgType\"\n        },\n        \"kind\": {\n          \"$ref\": \"#/$defs/SchemaKind\"\n        },\n        \"typeUri\": {\n          \"$ref\": \"#/$defs/CredentialTypeUri\"\n        }\n      },\n      \"required\": [\n        \"typeUri\",\n        \"kind\",\n        \"createdAt\",\n        \"createdByDid\"\n      ],\n      \"title\": \"SchemaEntry\",\n      \"type\": \"object\"\n    },\n    \"SchemaKind\": {\n      \"description\": \"Which half of the registry an entry is on. `issues`: the community mints credentials of this type, and issuance refuses a type not registered as `issues`. `accepts`: the community recognises credentials of this type as evidence, and an Accepts criterion may reference only a registered type.\",\n      \"enum\": [\n        \"issues\",\n        \"accepts\"\n      ],\n      \"title\": \"SchemaKind\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/schemas/register/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Register a credential type in the community's schema registry, or replace the registration of one already there. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"credentialSchema\": {\n      \"$ref\": \"#/$defs/CredentialSchema\"\n    },\n    \"description\": {\n      \"$ref\": \"#/$defs/SchemaDescription\"\n    },\n    \"dtgType\": {\n      \"$ref\": \"#/$defs/DtgType\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"kind\": {\n      \"$ref\": \"#/$defs/SchemaKind\"\n    },\n    \"typeUri\": {\n      \"$ref\": \"#/$defs/CredentialTypeUri\"\n    }\n  },\n  \"required\": [\n    \"typeUri\",\n    \"kind\"\n  ],\n  \"title\": \"VTC Schemas — Register — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"CredentialSchema\":{\"additionalProperties\":true,\"description\":\"A JSON Schema (the W3C `credentialSchema` a credential of this type must conform to), carried as data. Any JSON Schema the community's validator compiles; this specification does not constrain its members. Absent means the type is registered with no schema constraint.\",\"title\":\"CredentialSchema\",\"type\":\"object\"},\"CredentialTypeUri\":{\"description\":\"A credential type URI — the W3C `type` value or the SD-JWT-VC `vct` a credential of this type carries. The registry's primary key, compared as an exact string after surrounding whitespace is trimmed. Bounded at 512 bytes because it keys the community's storage.\",\"maxLength\":512,\"minLength\":1,\"title\":\"CredentialTypeUri\",\"type\":\"string\"},\"DtgType\":{\"description\":\"The DTG credential catalog type the entry binds to, e.g. `MembershipCredential`, `AuthorityCredential` or `StatementCredential`. Absent for a community-defined type outside the DTG catalog. A statement type is identified by its predicate, not by a subtype: every DTG statement is a `StatementCredential`, and which statements a community accepts is the set of predicates it registers with vtc/endorsement-types/register.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^[A-Za-z][A-Za-z0-9]*$\",\"title\":\"DtgType\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"schema\":{\"$ref\":\"#/$defs/SchemaEntry\"}},\"required\":[\"schema\"],\"title\":\"VTC Schemas — Register — response payload\",\"type\":\"object\"},\"SchemaDescription\":{\"description\":\"An administrator's description of the entry, shown in administration surfaces. Free text written by the registering administrator and read by other administrators; untrusted, attributed to `createdByDid` wherever it is rendered, and never read by the community's own logic.\",\"maxLength\":1024,\"title\":\"SchemaDescription\",\"type\":\"string\"},\"SchemaEntry\":{\"additionalProperties\":false,\"description\":\"One registered credential type, as the community stores it.\",\"properties\":{\"createdAt\":{\"description\":\"When this entry was last registered. Registering an existing type replaces the entry, so this is the time of the latest registration, not the first.\",\"format\":\"date-time\",\"type\":\"string\"},\"createdByDid\":{\"description\":\"The administrator who last registered the entry.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"credentialSchema\":{\"$ref\":\"#/$defs/CredentialSchema\"},\"description\":{\"$ref\":\"#/$defs/SchemaDescription\"},\"dtgType\":{\"$ref\":\"#/$defs/DtgType\"},\"kind\":{\"$ref\":\"#/$defs/SchemaKind\"},\"typeUri\":{\"$ref\":\"#/$defs/CredentialTypeUri\"}},\"required\":[\"typeUri\",\"kind\",\"createdAt\",\"createdByDid\"],\"title\":\"SchemaEntry\",\"type\":\"object\"},\"SchemaKind\":{\"description\":\"Which half of the registry an entry is on. `issues`: the community mints credentials of this type, and issuance refuses a type not registered as `issues`. `accepts`: the community recognises credentials of this type as evidence, and an Accepts criterion may reference only a registered type.\",\"enum\":[\"issues\",\"accepts\"],\"title\":\"SchemaKind\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/vtc/schemas/register/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Register a credential type in the community's schema registry, or replace the registration of one already there. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"credentialSchema\":{\"$ref\":\"#/$defs/CredentialSchema\"},\"description\":{\"$ref\":\"#/$defs/SchemaDescription\"},\"dtgType\":{\"$ref\":\"#/$defs/DtgType\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"kind\":{\"$ref\":\"#/$defs/SchemaKind\"},\"typeUri\":{\"$ref\":\"#/$defs/CredentialTypeUri\"}},\"required\":[\"typeUri\",\"kind\"],\"title\":\"VTC Schemas — Register — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1054,7 +855,7 @@ impl crate::Payload for Response {
     const MAX_DOCUMENT_BYTES: Option<usize> = Some(327680usize);
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CredentialSchema\": {\n      \"additionalProperties\": true,\n      \"description\": \"A JSON Schema (the W3C `credentialSchema` a credential of this type must conform to), carried as data. Any JSON Schema the community's validator compiles; this specification does not constrain its members. Absent means the type is registered with no schema constraint.\",\n      \"title\": \"CredentialSchema\",\n      \"type\": \"object\"\n    },\n    \"CredentialTypeUri\": {\n      \"description\": \"A credential type URI — the W3C `type` value or the SD-JWT-VC `vct` a credential of this type carries. The registry's primary key, compared as an exact string after surrounding whitespace is trimmed. Bounded at 512 bytes because it keys the community's storage.\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"title\": \"CredentialTypeUri\",\n      \"type\": \"string\"\n    },\n    \"DtgType\": {\n      \"description\": \"The DTG credential catalog type the entry binds to, e.g. `MembershipCredential`, `AuthorityCredential` or `StatementCredential`. Absent for a community-defined type outside the DTG catalog. A statement type is identified by its predicate, not by a subtype: every DTG statement is a `StatementCredential`, and which statements a community accepts is the set of predicates it registers with vtc/endorsement-types/register.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^[A-Za-z][A-Za-z0-9]*$\",\n      \"title\": \"DtgType\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"schema\": {\n          \"$ref\": \"#/$defs/SchemaEntry\"\n        }\n      },\n      \"required\": [\n        \"schema\"\n      ],\n      \"title\": \"VTC Schemas — Register — response payload\",\n      \"type\": \"object\"\n    },\n    \"SchemaDescription\": {\n      \"description\": \"An administrator's description of the entry, shown in administration surfaces. Free text written by the registering administrator and read by other administrators; untrusted, attributed to `createdByDid` wherever it is rendered, and never read by the community's own logic.\",\n      \"maxLength\": 1024,\n      \"title\": \"SchemaDescription\",\n      \"type\": \"string\"\n    },\n    \"SchemaEntry\": {\n      \"additionalProperties\": false,\n      \"description\": \"One registered credential type, as the community stores it.\",\n      \"properties\": {\n        \"createdAt\": {\n          \"description\": \"When this entry was last registered. Registering an existing type replaces the entry, so this is the time of the latest registration, not the first.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"createdByDid\": {\n          \"description\": \"The administrator who last registered the entry.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"credentialSchema\": {\n          \"$ref\": \"#/$defs/CredentialSchema\"\n        },\n        \"description\": {\n          \"$ref\": \"#/$defs/SchemaDescription\"\n        },\n        \"dtgType\": {\n          \"$ref\": \"#/$defs/DtgType\"\n        },\n        \"kind\": {\n          \"$ref\": \"#/$defs/SchemaKind\"\n        },\n        \"typeUri\": {\n          \"$ref\": \"#/$defs/CredentialTypeUri\"\n        }\n      },\n      \"required\": [\n        \"typeUri\",\n        \"kind\",\n        \"createdAt\",\n        \"createdByDid\"\n      ],\n      \"title\": \"SchemaEntry\",\n      \"type\": \"object\"\n    },\n    \"SchemaKind\": {\n      \"description\": \"Which half of the registry an entry is on. `issues`: the community mints credentials of this type, and issuance refuses a type not registered as `issues`. `accepts`: the community recognises credentials of this type as evidence, and an Accepts criterion may reference only a registered type.\",\n      \"enum\": [\n        \"issues\",\n        \"accepts\"\n      ],\n      \"title\": \"SchemaKind\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"CredentialSchema\":{\"additionalProperties\":true,\"description\":\"A JSON Schema (the W3C `credentialSchema` a credential of this type must conform to), carried as data. Any JSON Schema the community's validator compiles; this specification does not constrain its members. Absent means the type is registered with no schema constraint.\",\"title\":\"CredentialSchema\",\"type\":\"object\"},\"CredentialTypeUri\":{\"description\":\"A credential type URI — the W3C `type` value or the SD-JWT-VC `vct` a credential of this type carries. The registry's primary key, compared as an exact string after surrounding whitespace is trimmed. Bounded at 512 bytes because it keys the community's storage.\",\"maxLength\":512,\"minLength\":1,\"title\":\"CredentialTypeUri\",\"type\":\"string\"},\"DtgType\":{\"description\":\"The DTG credential catalog type the entry binds to, e.g. `MembershipCredential`, `AuthorityCredential` or `StatementCredential`. Absent for a community-defined type outside the DTG catalog. A statement type is identified by its predicate, not by a subtype: every DTG statement is a `StatementCredential`, and which statements a community accepts is the set of predicates it registers with vtc/endorsement-types/register.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^[A-Za-z][A-Za-z0-9]*$\",\"title\":\"DtgType\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"schema\":{\"$ref\":\"#/$defs/SchemaEntry\"}},\"required\":[\"schema\"],\"title\":\"VTC Schemas — Register — response payload\",\"type\":\"object\"},\"SchemaDescription\":{\"description\":\"An administrator's description of the entry, shown in administration surfaces. Free text written by the registering administrator and read by other administrators; untrusted, attributed to `createdByDid` wherever it is rendered, and never read by the community's own logic.\",\"maxLength\":1024,\"title\":\"SchemaDescription\",\"type\":\"string\"},\"SchemaEntry\":{\"additionalProperties\":false,\"description\":\"One registered credential type, as the community stores it.\",\"properties\":{\"createdAt\":{\"description\":\"When this entry was last registered. Registering an existing type replaces the entry, so this is the time of the latest registration, not the first.\",\"format\":\"date-time\",\"type\":\"string\"},\"createdByDid\":{\"description\":\"The administrator who last registered the entry.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"credentialSchema\":{\"$ref\":\"#/$defs/CredentialSchema\"},\"description\":{\"$ref\":\"#/$defs/SchemaDescription\"},\"dtgType\":{\"$ref\":\"#/$defs/DtgType\"},\"kind\":{\"$ref\":\"#/$defs/SchemaKind\"},\"typeUri\":{\"$ref\":\"#/$defs/CredentialTypeUri\"}},\"required\":[\"typeUri\",\"kind\",\"createdAt\",\"createdByDid\"],\"title\":\"SchemaEntry\",\"type\":\"object\"},\"SchemaKind\":{\"description\":\"Which half of the registry an entry is on. `issues`: the community mints credentials of this type, and issuance refuses a type not registered as `issues`. `accepts`: the community recognises credentials of this type as evidence, and an Accepts criterion may reference only a registered type.\",\"enum\":[\"issues\",\"accepts\"],\"title\":\"SchemaKind\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

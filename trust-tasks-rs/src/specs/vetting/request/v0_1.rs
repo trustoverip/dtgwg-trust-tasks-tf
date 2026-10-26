@@ -41,21 +41,6 @@ This definition constrains the *encoding only*. What the digest is computed over
 
 Restricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that "interoperability is not guaranteed between implementations using such values", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DigestMultibase",
-///  "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-///  "examples": [
-///    "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-///  ],
-///  "type": "string",
-///  "minLength": 16,
-///  "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DigestMultibase(::std::string::String);
@@ -124,76 +109,6 @@ impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
 }
 ///OPTIONAL. A W3C Verifiable Presentation by which the vetter shows the applicant that it currently holds the community's vetter role. Bound to this request by `nonce` (the vetting/request document's `id`, which the applicant chose) and to this applicant by `domain` (its `joinDid`), so it cannot be replayed to another request or another applicant. The applicant's check is advisory; the community evaluates eligibility again, authoritatively, when it decides. Members other than those defined here are permitted, as the VC data model allows.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "EligibilityPresentation",
-///  "description": "OPTIONAL. A W3C Verifiable Presentation by which the vetter shows the applicant that it currently holds the community's vetter role. Bound to this request by `nonce` (the vetting/request document's `id`, which the applicant chose) and to this applicant by `domain` (its `joinDid`), so it cannot be replayed to another request or another applicant. The applicant's check is advisory; the community evaluates eligibility again, authoritatively, when it decides. Members other than those defined here are permitted, as the VC data model allows.",
-///  "type": "object",
-///  "required": [
-///    "@context",
-///    "domain",
-///    "holder",
-///    "nonce",
-///    "proof",
-///    "type",
-///    "verifiableCredential"
-///  ],
-///  "properties": {
-///    "@context": {
-///      "description": "JSON-LD contexts. The first item MUST be `https://www.w3.org/ns/credentials/v2` (stated here rather than as `prefixItems`, which the Rust generator cannot express).",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "maxLength": 2048,
-///        "minLength": 1
-///      },
-///      "minItems": 1
-///    },
-///    "domain": {
-///      "description": "The applicant's `joinDid` from that request.",
-///      "type": "string",
-///      "pattern": "^did:"
-///    },
-///    "holder": {
-///      "description": "The vetter's DID — the response's `issuer`.",
-///      "type": "string",
-///      "pattern": "^did:"
-///    },
-///    "nonce": {
-///      "description": "The `id` of the vetting/request document this responds to.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    },
-///    "proof": {
-///      "$ref": "#/definitions/EligibilityPresentationProof"
-///    },
-///    "type": {
-///      "description": "MUST include `VerifiablePresentation` (stated here rather than as `contains`, which the Rust generator cannot express).",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "maxLength": 128,
-///        "minLength": 1
-///      },
-///      "minItems": 1,
-///      "uniqueItems": true
-///    },
-///    "verifiableCredential": {
-///      "description": "Credentials presented (opaque here). MUST include the vetter role credential: a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community, whose `credentialSubject.id` is `holder`, whose `authority.scope` is the community's DID, and whose `authority.actions` include `role:<role>` for the manifest's `eligibleVetters.role` — see vtc/vetting/vetters/grant/0.1. MAY include others, such as the membership credential.",
-///      "type": "array",
-///      "items": {
-///        "type": "object"
-///      },
-///      "minItems": 1
-///    }
-///  },
-///  "additionalProperties": true
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[non_exhaustive]
 pub struct EligibilityPresentation {
@@ -222,16 +137,6 @@ impl EligibilityPresentation {
 }
 ///`EligibilityPresentationContextItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct EligibilityPresentationContextItem(::std::string::String);
@@ -294,16 +199,6 @@ impl<'de> ::serde::Deserialize<'de> for EligibilityPresentationContextItem {
 }
 ///The applicant's `joinDid` from that request.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The applicant's `joinDid` from that request.",
-///  "type": "string",
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct EligibilityPresentationDomain(::std::string::String);
@@ -365,16 +260,6 @@ impl<'de> ::serde::Deserialize<'de> for EligibilityPresentationDomain {
 }
 ///The vetter's DID — the response's `issuer`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The vetter's DID — the response's `issuer`.",
-///  "type": "string",
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct EligibilityPresentationHolder(::std::string::String);
@@ -436,17 +321,6 @@ impl<'de> ::serde::Deserialize<'de> for EligibilityPresentationHolder {
 }
 ///The `id` of the vetting/request document this responds to.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The `id` of the vetting/request document this responds to.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct EligibilityPresentationNonce(::std::string::String);
@@ -509,54 +383,6 @@ impl<'de> ::serde::Deserialize<'de> for EligibilityPresentationNonce {
 }
 ///A W3C Data Integrity proof by `holder` over the presentation, `nonce` and `domain` included.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "EligibilityPresentationProof",
-///  "description": "A W3C Data Integrity proof by `holder` over the presentation, `nonce` and `domain` included.",
-///  "type": "object",
-///  "required": [
-///    "cryptosuite",
-///    "proofPurpose",
-///    "proofValue",
-///    "type",
-///    "verificationMethod"
-///  ],
-///  "properties": {
-///    "created": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "cryptosuite": {
-///      "description": "e.g. `eddsa-jcs-2022`.",
-///      "type": "string",
-///      "maxLength": 64,
-///      "minLength": 1,
-///      "pattern": "^[a-z0-9-]+$"
-///    },
-///    "proofPurpose": {
-///      "type": "string",
-///      "const": "authentication"
-///    },
-///    "proofValue": {
-///      "type": "string",
-///      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///    },
-///    "type": {
-///      "type": "string",
-///      "const": "DataIntegrityProof"
-///    },
-///    "verificationMethod": {
-///      "description": "A verification method of `holder`, authorized for `authentication`.",
-///      "type": "string",
-///      "pattern": "^did:"
-///    }
-///  },
-///  "additionalProperties": true
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[non_exhaustive]
 pub struct EligibilityPresentationProof {
@@ -581,18 +407,6 @@ impl EligibilityPresentationProof {
 }
 ///e.g. `eddsa-jcs-2022`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "e.g. `eddsa-jcs-2022`.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1,
-///  "pattern": "^[a-z0-9-]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct EligibilityPresentationProofCryptosuite(::std::string::String);
@@ -660,15 +474,6 @@ impl<'de> ::serde::Deserialize<'de> for EligibilityPresentationProofCryptosuite 
 }
 ///`EligibilityPresentationProofProofValue`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct EligibilityPresentationProofProofValue(::std::string::String);
@@ -732,16 +537,6 @@ impl<'de> ::serde::Deserialize<'de> for EligibilityPresentationProofProofValue {
 }
 ///A verification method of `holder`, authorized for `authentication`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "A verification method of `holder`, authorized for `authentication`.",
-///  "type": "string",
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct EligibilityPresentationProofVerificationMethod(::std::string::String);
@@ -809,16 +604,6 @@ impl<'de> ::serde::Deserialize<'de> for EligibilityPresentationProofVerification
 }
 ///`EligibilityPresentationTypeItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct EligibilityPresentationTypeItem(::std::string::String);
@@ -881,21 +666,6 @@ impl<'de> ::serde::Deserialize<'de> for EligibilityPresentationTypeItem {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -917,15 +687,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -989,84 +750,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///An applicant asks one vetter to vet them for one community. The applicant is the document's issuer, and `joinDid` repeats that DID: it is the DID the applicant is applying with, and every card and statement that follows names it. Carries a ticket the vetter issued or an introduction, never both. The vetter's response accepts the request and proves the vetter is currently eligible to vet for that community.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vetting/request/0.1",
-///  "title": "Payload",
-///  "description": "An applicant asks one vetter to vet them for one community. The applicant is the document's issuer, and `joinDid` repeats that DID: it is the DID the applicant is applying with, and every card and statement that follows names it. Carries a ticket the vetter issued or an introduction, never both. The vetter's response accepts the request and proves the vetter is currently eligible to vet for that community.",
-///  "type": "object",
-///  "required": [
-///    "community",
-///    "joinDid"
-///  ],
-///  "properties": {
-///    "availability": {
-///      "description": "OPTIONAL applicant-authored free text on when they can meet. Scheduling is out of band; this is a hint, attributed to the applicant.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "community": {
-///      "description": "The community the applicant is applying to and asks to be vetted for.",
-///      "type": "string",
-///      "pattern": "^did:"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "introduction": {
-///      "description": "A verifiable invitation credential for `community` whose subject is the applicant's DID, issued by the community or a member (opaque here). An alternative to a ticket for vetters who accept introductions.",
-///      "type": "object"
-///    },
-///    "joinDid": {
-///      "description": "The DID the applicant will join the community with. MUST equal the document's `issuer`. Every card and statement this request leads to names it, and it is the holder of the presentation the applicant eventually submits.",
-///      "type": "string",
-///      "pattern": "^did:"
-///    },
-///    "languages": {
-///      "description": "BCP 47 language tags the applicant can hold a session in, most preferred first.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "maxLength": 35,
-///        "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{1,8})*$"
-///      },
-///      "maxItems": 16,
-///      "uniqueItems": true
-///    },
-///    "message": {
-///      "description": "OPTIONAL applicant-authored text for the vetter — typically how they know each other. Untrusted: read by the vetter, attributed to the applicant on every surface that renders it, never shown to the community.",
-///      "type": "string",
-///      "maxLength": 1000,
-///      "minLength": 1
-///    },
-///    "preferredMethod": {
-///      "description": "The method the applicant would prefer. A preference: the vetter chooses the session's method.",
-///      "$ref": "#/definitions/VettingMethod"
-///    },
-///    "requirementsDigest": {
-///      "description": "The `requirementsDigest` of the community's manifest criterion the applicant is gathering for, recorded when the application started. RECOMMENDED; a community that publishes no digest leaves the applicant nothing to cite.",
-///      "$ref": "#/definitions/DigestMultibase"
-///    },
-///    "ticket": {
-///      "$ref": "#/definitions/Ticket"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "dependentSchemas": {
-///    "ticket": {
-///      "not": {
-///        "required": [
-///          "introduction"
-///        ]
-///      }
-///    }
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1114,17 +797,6 @@ impl Payload {
 }
 ///OPTIONAL applicant-authored free text on when they can meet. Scheduling is out of band; this is a hint, attributed to the applicant.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "OPTIONAL applicant-authored free text on when they can meet. Scheduling is out of band; this is a hint, attributed to the applicant.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadAvailability(::std::string::String);
@@ -1187,16 +859,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadAvailability {
 }
 ///The community the applicant is applying to and asks to be vetted for.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The community the applicant is applying to and asks to be vetted for.",
-///  "type": "string",
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadCommunity(::std::string::String);
@@ -1258,16 +920,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCommunity {
 }
 ///The DID the applicant will join the community with. MUST equal the document's `issuer`. Every card and statement this request leads to names it, and it is the holder of the presentation the applicant eventually submits.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The DID the applicant will join the community with. MUST equal the document's `issuer`. Every card and statement this request leads to names it, and it is the holder of the presentation the applicant eventually submits.",
-///  "type": "string",
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadJoinDid(::std::string::String);
@@ -1329,16 +981,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadJoinDid {
 }
 ///`PayloadLanguagesItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 35,
-///  "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{1,8})*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadLanguagesItem(::std::string::String);
@@ -1405,17 +1047,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadLanguagesItem {
 }
 ///OPTIONAL applicant-authored text for the vetter — typically how they know each other. Untrusted: read by the vetter, attributed to the applicant on every surface that renders it, never shown to the community.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "OPTIONAL applicant-authored text for the vetter — typically how they know each other. Untrusted: read by the vetter, attributed to the applicant on every surface that renders it, never shown to the community.",
-///  "type": "string",
-///  "maxLength": 1000,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadMessage(::std::string::String);
@@ -1478,33 +1109,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadMessage {
 }
 ///`QrTicket`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "QrTicket",
-///  "type": "object",
-///  "required": [
-///    "secret",
-///    "ticketId"
-///  ],
-///  "properties": {
-///    "secret": {
-///      "description": "32 random bytes, base64url without padding.",
-///      "type": "string",
-///      "pattern": "^[A-Za-z0-9_-]{43}$"
-///    },
-///    "ticketId": {
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1,
-///      "pattern": "^[A-Za-z0-9._:-]+$"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1521,16 +1125,6 @@ impl QrTicket {
 }
 ///32 random bytes, base64url without padding.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "32 random bytes, base64url without padding.",
-///  "type": "string",
-///  "pattern": "^[A-Za-z0-9_-]{43}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct QrTicketSecret(::std::string::String);
@@ -1592,17 +1186,6 @@ impl<'de> ::serde::Deserialize<'de> for QrTicketSecret {
 }
 ///`QrTicketTicketId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1,
-///  "pattern": "^[A-Za-z0-9._:-]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct QrTicketTicketId(::std::string::String);
@@ -1670,50 +1253,6 @@ impl<'de> ::serde::Deserialize<'de> for QrTicketTicketId {
 }
 ///The vetter accepts the request. A refusal is a trust-task-error, never a response document.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The vetter accepts the request. A refusal is a trust-task-error, never a response document.",
-///  "type": "object",
-///  "required": [
-///    "requestId"
-///  ],
-///  "properties": {
-///    "acceptsDocumentation": {
-///      "description": "RECOMMENDED. What this vetter will rely on, so the applicant brings it — the vetter's own choice. `none` means the vetter attests from prior acquaintance.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/VettingDocumentation"
-///      },
-///      "minItems": 1,
-///      "uniqueItems": true
-///    },
-///    "eligibilityVp": {
-///      "$ref": "#/definitions/EligibilityPresentation"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "requestId": {
-///      "description": "The vetter's handle for this accepted request, carried by the session and any decline.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "sessionHint": {
-///      "description": "OPTIONAL vetter-authored free text on how and when the session will happen. Attributed to the vetter.",
-///      "type": "string",
-///      "maxLength": 500,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1751,17 +1290,6 @@ impl Response {
 }
 ///The vetter's handle for this accepted request, carried by the session and any decline.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The vetter's handle for this accepted request, carried by the session and any decline.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseRequestId(::std::string::String);
@@ -1824,17 +1352,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseRequestId {
 }
 ///OPTIONAL vetter-authored free text on how and when the session will happen. Attributed to the vetter.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "OPTIONAL vetter-authored free text on how and when the session will happen. Attributed to the vetter.",
-///  "type": "string",
-///  "maxLength": 500,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseSessionHint(::std::string::String);
@@ -1897,26 +1414,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseSessionHint {
 }
 ///`ShortCodeTicket`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ShortCodeTicket",
-///  "type": "object",
-///  "required": [
-///    "code"
-///  ],
-///  "properties": {
-///    "code": {
-///      "description": "Eight Crockford base32 characters, grouped four and four (40 bits). A secret the vetter handed over; not derived from anything.",
-///      "type": "string",
-///      "pattern": "^[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}$"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1931,16 +1428,6 @@ impl ShortCodeTicket {
 }
 ///Eight Crockford base32 characters, grouped four and four (40 bits). A secret the vetter handed over; not derived from anything.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Eight Crockford base32 characters, grouped four and four (40 bits). A secret the vetter handed over; not derived from anything.",
-///  "type": "string",
-///  "pattern": "^[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ShortCodeTicketCode(::std::string::String);
@@ -2006,23 +1493,6 @@ impl<'de> ::serde::Deserialize<'de> for ShortCodeTicketCode {
 }
 ///A ticket the vetter issued: the short code a person reads or types, or the full-entropy QR form.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ticket",
-///  "description": "A ticket the vetter issued: the short code a person reads or types, or the full-entropy QR form.",
-///  "oneOf": [
-///    {
-///      "$ref": "#/definitions/ShortCodeTicket"
-///    },
-///    {
-///      "$ref": "#/definitions/QrTicket"
-///    }
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged)]
 #[non_exhaustive]
@@ -2042,19 +1512,6 @@ impl ::std::convert::From<QrTicket> for Ticket {
 }
 ///A class of documentation, named in lowerCamelCase. Open rather than enumerated, because what documentation a vetter accepts is each vetter's own choice. Well-known values: `passport`, `nationalId`, `driverLicence`, and `none` — the vetter will attest without a document, which is the `priorAcquaintance` case. Only the class ever travels — never a document number, an image, an issuing authority or an expiry date. `none` states a policy (what a vetter accepts); a record of what was relied on expresses 'no document' as an empty list instead.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "VettingDocumentation",
-///  "description": "A class of documentation, named in lowerCamelCase. Open rather than enumerated, because what documentation a vetter accepts is each vetter's own choice. Well-known values: `passport`, `nationalId`, `driverLicence`, and `none` — the vetter will attest without a document, which is the `priorAcquaintance` case. Only the class ever travels — never a document number, an image, an issuing authority or an expiry date. `none` states a policy (what a vetter accepts); a record of what was relied on expresses 'no document' as an empty list instead.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1,
-///  "pattern": "^[a-z][a-zA-Z0-9]*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct VettingDocumentation(::std::string::String);
@@ -2122,21 +1579,6 @@ impl<'de> ::serde::Deserialize<'de> for VettingDocumentation {
 }
 ///How the vetter established that the person they checked is the person controlling the applicant's DID. `inPerson` — both people were physically together. `video` — a live, two-way video call. `priorAcquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "VettingMethod",
-///  "description": "How the vetter established that the person they checked is the person controlling the applicant's DID. `inPerson` — both people were physically together. `video` — a live, two-way video call. `priorAcquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy.",
-///  "type": "string",
-///  "enum": [
-///    "inPerson",
-///    "video",
-///    "priorAcquaintance"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -2847,7 +2289,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"EligibilityPresentation\": {\n      \"additionalProperties\": true,\n      \"description\": \"OPTIONAL. A W3C Verifiable Presentation by which the vetter shows the applicant that it currently holds the community's vetter role. Bound to this request by `nonce` (the vetting/request document's `id`, which the applicant chose) and to this applicant by `domain` (its `joinDid`), so it cannot be replayed to another request or another applicant. The applicant's check is advisory; the community evaluates eligibility again, authoritatively, when it decides. Members other than those defined here are permitted, as the VC data model allows.\",\n      \"properties\": {\n        \"@context\": {\n          \"description\": \"JSON-LD contexts. The first item MUST be `https://www.w3.org/ns/credentials/v2` (stated here rather than as `prefixItems`, which the Rust generator cannot express).\",\n          \"items\": {\n            \"maxLength\": 2048,\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"domain\": {\n          \"description\": \"The applicant's `joinDid` from that request.\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"holder\": {\n          \"description\": \"The vetter's DID — the response's `issuer`.\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"nonce\": {\n          \"description\": \"The `id` of the vetting/request document this responds to.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"proof\": {\n          \"$ref\": \"#/$defs/EligibilityPresentationProof\"\n        },\n        \"type\": {\n          \"description\": \"MUST include `VerifiablePresentation` (stated here rather than as `contains`, which the Rust generator cannot express).\",\n          \"items\": {\n            \"maxLength\": 128,\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"verifiableCredential\": {\n          \"description\": \"Credentials presented (opaque here). MUST include the vetter role credential: a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community, whose `credentialSubject.id` is `holder`, whose `authority.scope` is the community's DID, and whose `authority.actions` include `role:<role>` for the manifest's `eligibleVetters.role` — see vtc/vetting/vetters/grant/0.1. MAY include others, such as the membership credential.\",\n          \"items\": {\n            \"type\": \"object\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"@context\",\n        \"type\",\n        \"holder\",\n        \"verifiableCredential\",\n        \"nonce\",\n        \"domain\",\n        \"proof\"\n      ],\n      \"title\": \"EligibilityPresentation\",\n      \"type\": \"object\"\n    },\n    \"EligibilityPresentationProof\": {\n      \"additionalProperties\": true,\n      \"description\": \"A W3C Data Integrity proof by `holder` over the presentation, `nonce` and `domain` included.\",\n      \"properties\": {\n        \"created\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"cryptosuite\": {\n          \"description\": \"e.g. `eddsa-jcs-2022`.\",\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"pattern\": \"^[a-z0-9-]+$\",\n          \"type\": \"string\"\n        },\n        \"proofPurpose\": {\n          \"const\": \"authentication\",\n          \"type\": \"string\"\n        },\n        \"proofValue\": {\n          \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n          \"type\": \"string\"\n        },\n        \"type\": {\n          \"const\": \"DataIntegrityProof\",\n          \"type\": \"string\"\n        },\n        \"verificationMethod\": {\n          \"description\": \"A verification method of `holder`, authorized for `authentication`.\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"type\",\n        \"cryptosuite\",\n        \"verificationMethod\",\n        \"proofPurpose\",\n        \"proofValue\"\n      ],\n      \"title\": \"EligibilityPresentationProof\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"QrTicket\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"secret\": {\n          \"description\": \"32 random bytes, base64url without padding.\",\n          \"pattern\": \"^[A-Za-z0-9_-]{43}$\",\n          \"type\": \"string\"\n        },\n        \"ticketId\": {\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"pattern\": \"^[A-Za-z0-9._:-]+$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"ticketId\",\n        \"secret\"\n      ],\n      \"title\": \"QrTicket\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The vetter accepts the request. A refusal is a trust-task-error, never a response document.\",\n      \"properties\": {\n        \"acceptsDocumentation\": {\n          \"description\": \"RECOMMENDED. What this vetter will rely on, so the applicant brings it — the vetter's own choice. `none` means the vetter attests from prior acquaintance.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/VettingDocumentation\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"eligibilityVp\": {\n          \"$ref\": \"#/$defs/EligibilityPresentation\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"requestId\": {\n          \"description\": \"The vetter's handle for this accepted request, carried by the session and any decline.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"sessionHint\": {\n          \"description\": \"OPTIONAL vetter-authored free text on how and when the session will happen. Attributed to the vetter.\",\n          \"maxLength\": 500,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"requestId\"\n      ],\n      \"title\": \"Vetting Request — response payload\",\n      \"type\": \"object\"\n    },\n    \"ShortCodeTicket\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"code\": {\n          \"description\": \"Eight Crockford base32 characters, grouped four and four (40 bits). A secret the vetter handed over; not derived from anything.\",\n          \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"code\"\n      ],\n      \"title\": \"ShortCodeTicket\",\n      \"type\": \"object\"\n    },\n    \"Ticket\": {\n      \"description\": \"A ticket the vetter issued: the short code a person reads or types, or the full-entropy QR form.\",\n      \"oneOf\": [\n        {\n          \"$ref\": \"#/$defs/ShortCodeTicket\"\n        },\n        {\n          \"$ref\": \"#/$defs/QrTicket\"\n        }\n      ],\n      \"title\": \"Ticket\"\n    },\n    \"VettingDocumentation\": {\n      \"description\": \"A class of documentation, named in lowerCamelCase. Open rather than enumerated, because what documentation a vetter accepts is each vetter's own choice. Well-known values: `passport`, `nationalId`, `driverLicence`, and `none` — the vetter will attest without a document, which is the `priorAcquaintance` case. Only the class ever travels — never a document number, an image, an issuing authority or an expiry date. `none` states a policy (what a vetter accepts); a record of what was relied on expresses 'no document' as an empty list instead.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z][a-zA-Z0-9]*$\",\n      \"title\": \"VettingDocumentation\",\n      \"type\": \"string\"\n    },\n    \"VettingMethod\": {\n      \"description\": \"How the vetter established that the person they checked is the person controlling the applicant's DID. `inPerson` — both people were physically together. `video` — a live, two-way video call. `priorAcquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy.\",\n      \"enum\": [\n        \"inPerson\",\n        \"video\",\n        \"priorAcquaintance\"\n      ],\n      \"title\": \"VettingMethod\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vetting/request/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"dependentSchemas\": {\n    \"ticket\": {\n      \"not\": {\n        \"required\": [\n          \"introduction\"\n        ]\n      }\n    }\n  },\n  \"description\": \"An applicant asks one vetter to vet them for one community. The applicant is the document's issuer, and `joinDid` repeats that DID: it is the DID the applicant is applying with, and every card and statement that follows names it. Carries a ticket the vetter issued or an introduction, never both. The vetter's response accepts the request and proves the vetter is currently eligible to vet for that community.\",\n  \"properties\": {\n    \"availability\": {\n      \"description\": \"OPTIONAL applicant-authored free text on when they can meet. Scheduling is out of band; this is a hint, attributed to the applicant.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"community\": {\n      \"description\": \"The community the applicant is applying to and asks to be vetted for.\",\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"introduction\": {\n      \"description\": \"A verifiable invitation credential for `community` whose subject is the applicant's DID, issued by the community or a member (opaque here). An alternative to a ticket for vetters who accept introductions.\",\n      \"type\": \"object\"\n    },\n    \"joinDid\": {\n      \"description\": \"The DID the applicant will join the community with. MUST equal the document's `issuer`. Every card and statement this request leads to names it, and it is the holder of the presentation the applicant eventually submits.\",\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    },\n    \"languages\": {\n      \"description\": \"BCP 47 language tags the applicant can hold a session in, most preferred first.\",\n      \"items\": {\n        \"maxLength\": 35,\n        \"pattern\": \"^[A-Za-z]{2,3}(-[A-Za-z0-9]{1,8})*$\",\n        \"type\": \"string\"\n      },\n      \"maxItems\": 16,\n      \"type\": \"array\",\n      \"uniqueItems\": true\n    },\n    \"message\": {\n      \"description\": \"OPTIONAL applicant-authored text for the vetter — typically how they know each other. Untrusted: read by the vetter, attributed to the applicant on every surface that renders it, never shown to the community.\",\n      \"maxLength\": 1000,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"preferredMethod\": {\n      \"$ref\": \"#/$defs/VettingMethod\",\n      \"description\": \"The method the applicant would prefer. A preference: the vetter chooses the session's method.\"\n    },\n    \"requirementsDigest\": {\n      \"$ref\": \"#/$defs/DigestMultibase\",\n      \"description\": \"The `requirementsDigest` of the community's manifest criterion the applicant is gathering for, recorded when the application started. RECOMMENDED; a community that publishes no digest leaves the applicant nothing to cite.\"\n    },\n    \"ticket\": {\n      \"$ref\": \"#/$defs/Ticket\"\n    }\n  },\n  \"required\": [\n    \"community\",\n    \"joinDid\"\n  ],\n  \"title\": \"Vetting Request — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"EligibilityPresentation\":{\"additionalProperties\":true,\"description\":\"OPTIONAL. A W3C Verifiable Presentation by which the vetter shows the applicant that it currently holds the community's vetter role. Bound to this request by `nonce` (the vetting/request document's `id`, which the applicant chose) and to this applicant by `domain` (its `joinDid`), so it cannot be replayed to another request or another applicant. The applicant's check is advisory; the community evaluates eligibility again, authoritatively, when it decides. Members other than those defined here are permitted, as the VC data model allows.\",\"properties\":{\"@context\":{\"description\":\"JSON-LD contexts. The first item MUST be `https://www.w3.org/ns/credentials/v2` (stated here rather than as `prefixItems`, which the Rust generator cannot express).\",\"items\":{\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"},\"domain\":{\"description\":\"The applicant's `joinDid` from that request.\",\"pattern\":\"^did:\",\"type\":\"string\"},\"holder\":{\"description\":\"The vetter's DID — the response's `issuer`.\",\"pattern\":\"^did:\",\"type\":\"string\"},\"nonce\":{\"description\":\"The `id` of the vetting/request document this responds to.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"proof\":{\"$ref\":\"#/$defs/EligibilityPresentationProof\"},\"type\":{\"description\":\"MUST include `VerifiablePresentation` (stated here rather than as `contains`, which the Rust generator cannot express).\",\"items\":{\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"verifiableCredential\":{\"description\":\"Credentials presented (opaque here). MUST include the vetter role credential: a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community, whose `credentialSubject.id` is `holder`, whose `authority.scope` is the community's DID, and whose `authority.actions` include `role:<role>` for the manifest's `eligibleVetters.role` — see vtc/vetting/vetters/grant/0.1. MAY include others, such as the membership credential.\",\"items\":{\"type\":\"object\"},\"minItems\":1,\"type\":\"array\"}},\"required\":[\"@context\",\"type\",\"holder\",\"verifiableCredential\",\"nonce\",\"domain\",\"proof\"],\"title\":\"EligibilityPresentation\",\"type\":\"object\"},\"EligibilityPresentationProof\":{\"additionalProperties\":true,\"description\":\"A W3C Data Integrity proof by `holder` over the presentation, `nonce` and `domain` included.\",\"properties\":{\"created\":{\"format\":\"date-time\",\"type\":\"string\"},\"cryptosuite\":{\"description\":\"e.g. `eddsa-jcs-2022`.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9-]+$\",\"type\":\"string\"},\"proofPurpose\":{\"const\":\"authentication\",\"type\":\"string\"},\"proofValue\":{\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"type\":{\"const\":\"DataIntegrityProof\",\"type\":\"string\"},\"verificationMethod\":{\"description\":\"A verification method of `holder`, authorized for `authentication`.\",\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"type\",\"cryptosuite\",\"verificationMethod\",\"proofPurpose\",\"proofValue\"],\"title\":\"EligibilityPresentationProof\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"QrTicket\":{\"additionalProperties\":false,\"properties\":{\"secret\":{\"description\":\"32 random bytes, base64url without padding.\",\"pattern\":\"^[A-Za-z0-9_-]{43}$\",\"type\":\"string\"},\"ticketId\":{\"maxLength\":128,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9._:-]+$\",\"type\":\"string\"}},\"required\":[\"ticketId\",\"secret\"],\"title\":\"QrTicket\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The vetter accepts the request. A refusal is a trust-task-error, never a response document.\",\"properties\":{\"acceptsDocumentation\":{\"description\":\"RECOMMENDED. What this vetter will rely on, so the applicant brings it — the vetter's own choice. `none` means the vetter attests from prior acquaintance.\",\"items\":{\"$ref\":\"#/$defs/VettingDocumentation\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"eligibilityVp\":{\"$ref\":\"#/$defs/EligibilityPresentation\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"requestId\":{\"description\":\"The vetter's handle for this accepted request, carried by the session and any decline.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"sessionHint\":{\"description\":\"OPTIONAL vetter-authored free text on how and when the session will happen. Attributed to the vetter.\",\"maxLength\":500,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"requestId\"],\"title\":\"Vetting Request — response payload\",\"type\":\"object\"},\"ShortCodeTicket\":{\"additionalProperties\":false,\"properties\":{\"code\":{\"description\":\"Eight Crockford base32 characters, grouped four and four (40 bits). A secret the vetter handed over; not derived from anything.\",\"pattern\":\"^[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}$\",\"type\":\"string\"}},\"required\":[\"code\"],\"title\":\"ShortCodeTicket\",\"type\":\"object\"},\"Ticket\":{\"description\":\"A ticket the vetter issued: the short code a person reads or types, or the full-entropy QR form.\",\"oneOf\":[{\"$ref\":\"#/$defs/ShortCodeTicket\"},{\"$ref\":\"#/$defs/QrTicket\"}],\"title\":\"Ticket\"},\"VettingDocumentation\":{\"description\":\"A class of documentation, named in lowerCamelCase. Open rather than enumerated, because what documentation a vetter accepts is each vetter's own choice. Well-known values: `passport`, `nationalId`, `driverLicence`, and `none` — the vetter will attest without a document, which is the `priorAcquaintance` case. Only the class ever travels — never a document number, an image, an issuing authority or an expiry date. `none` states a policy (what a vetter accepts); a record of what was relied on expresses 'no document' as an empty list instead.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z][a-zA-Z0-9]*$\",\"title\":\"VettingDocumentation\",\"type\":\"string\"},\"VettingMethod\":{\"description\":\"How the vetter established that the person they checked is the person controlling the applicant's DID. `inPerson` — both people were physically together. `video` — a live, two-way video call. `priorAcquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy.\",\"enum\":[\"inPerson\",\"video\",\"priorAcquaintance\"],\"title\":\"VettingMethod\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/vetting/request/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"dependentSchemas\":{\"ticket\":{\"not\":{\"required\":[\"introduction\"]}}},\"description\":\"An applicant asks one vetter to vet them for one community. The applicant is the document's issuer, and `joinDid` repeats that DID: it is the DID the applicant is applying with, and every card and statement that follows names it. Carries a ticket the vetter issued or an introduction, never both. The vetter's response accepts the request and proves the vetter is currently eligible to vet for that community.\",\"properties\":{\"availability\":{\"description\":\"OPTIONAL applicant-authored free text on when they can meet. Scheduling is out of band; this is a hint, attributed to the applicant.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"community\":{\"description\":\"The community the applicant is applying to and asks to be vetted for.\",\"pattern\":\"^did:\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"introduction\":{\"description\":\"A verifiable invitation credential for `community` whose subject is the applicant's DID, issued by the community or a member (opaque here). An alternative to a ticket for vetters who accept introductions.\",\"type\":\"object\"},\"joinDid\":{\"description\":\"The DID the applicant will join the community with. MUST equal the document's `issuer`. Every card and statement this request leads to names it, and it is the holder of the presentation the applicant eventually submits.\",\"pattern\":\"^did:\",\"type\":\"string\"},\"languages\":{\"description\":\"BCP 47 language tags the applicant can hold a session in, most preferred first.\",\"items\":{\"maxLength\":35,\"pattern\":\"^[A-Za-z]{2,3}(-[A-Za-z0-9]{1,8})*$\",\"type\":\"string\"},\"maxItems\":16,\"type\":\"array\",\"uniqueItems\":true},\"message\":{\"description\":\"OPTIONAL applicant-authored text for the vetter — typically how they know each other. Untrusted: read by the vetter, attributed to the applicant on every surface that renders it, never shown to the community.\",\"maxLength\":1000,\"minLength\":1,\"type\":\"string\"},\"preferredMethod\":{\"$ref\":\"#/$defs/VettingMethod\",\"description\":\"The method the applicant would prefer. A preference: the vetter chooses the session's method.\"},\"requirementsDigest\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"The `requirementsDigest` of the community's manifest criterion the applicant is gathering for, recorded when the application started. RECOMMENDED; a community that publishes no digest leaves the applicant nothing to cite.\"},\"ticket\":{\"$ref\":\"#/$defs/Ticket\"}},\"required\":[\"community\",\"joinDid\"],\"title\":\"Vetting Request — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -2856,7 +2298,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"EligibilityPresentation\": {\n      \"additionalProperties\": true,\n      \"description\": \"OPTIONAL. A W3C Verifiable Presentation by which the vetter shows the applicant that it currently holds the community's vetter role. Bound to this request by `nonce` (the vetting/request document's `id`, which the applicant chose) and to this applicant by `domain` (its `joinDid`), so it cannot be replayed to another request or another applicant. The applicant's check is advisory; the community evaluates eligibility again, authoritatively, when it decides. Members other than those defined here are permitted, as the VC data model allows.\",\n      \"properties\": {\n        \"@context\": {\n          \"description\": \"JSON-LD contexts. The first item MUST be `https://www.w3.org/ns/credentials/v2` (stated here rather than as `prefixItems`, which the Rust generator cannot express).\",\n          \"items\": {\n            \"maxLength\": 2048,\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"domain\": {\n          \"description\": \"The applicant's `joinDid` from that request.\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"holder\": {\n          \"description\": \"The vetter's DID — the response's `issuer`.\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"nonce\": {\n          \"description\": \"The `id` of the vetting/request document this responds to.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"proof\": {\n          \"$ref\": \"#/$defs/EligibilityPresentationProof\"\n        },\n        \"type\": {\n          \"description\": \"MUST include `VerifiablePresentation` (stated here rather than as `contains`, which the Rust generator cannot express).\",\n          \"items\": {\n            \"maxLength\": 128,\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"verifiableCredential\": {\n          \"description\": \"Credentials presented (opaque here). MUST include the vetter role credential: a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community, whose `credentialSubject.id` is `holder`, whose `authority.scope` is the community's DID, and whose `authority.actions` include `role:<role>` for the manifest's `eligibleVetters.role` — see vtc/vetting/vetters/grant/0.1. MAY include others, such as the membership credential.\",\n          \"items\": {\n            \"type\": \"object\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"@context\",\n        \"type\",\n        \"holder\",\n        \"verifiableCredential\",\n        \"nonce\",\n        \"domain\",\n        \"proof\"\n      ],\n      \"title\": \"EligibilityPresentation\",\n      \"type\": \"object\"\n    },\n    \"EligibilityPresentationProof\": {\n      \"additionalProperties\": true,\n      \"description\": \"A W3C Data Integrity proof by `holder` over the presentation, `nonce` and `domain` included.\",\n      \"properties\": {\n        \"created\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"cryptosuite\": {\n          \"description\": \"e.g. `eddsa-jcs-2022`.\",\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"pattern\": \"^[a-z0-9-]+$\",\n          \"type\": \"string\"\n        },\n        \"proofPurpose\": {\n          \"const\": \"authentication\",\n          \"type\": \"string\"\n        },\n        \"proofValue\": {\n          \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n          \"type\": \"string\"\n        },\n        \"type\": {\n          \"const\": \"DataIntegrityProof\",\n          \"type\": \"string\"\n        },\n        \"verificationMethod\": {\n          \"description\": \"A verification method of `holder`, authorized for `authentication`.\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"type\",\n        \"cryptosuite\",\n        \"verificationMethod\",\n        \"proofPurpose\",\n        \"proofValue\"\n      ],\n      \"title\": \"EligibilityPresentationProof\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"QrTicket\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"secret\": {\n          \"description\": \"32 random bytes, base64url without padding.\",\n          \"pattern\": \"^[A-Za-z0-9_-]{43}$\",\n          \"type\": \"string\"\n        },\n        \"ticketId\": {\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"pattern\": \"^[A-Za-z0-9._:-]+$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"ticketId\",\n        \"secret\"\n      ],\n      \"title\": \"QrTicket\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The vetter accepts the request. A refusal is a trust-task-error, never a response document.\",\n      \"properties\": {\n        \"acceptsDocumentation\": {\n          \"description\": \"RECOMMENDED. What this vetter will rely on, so the applicant brings it — the vetter's own choice. `none` means the vetter attests from prior acquaintance.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/VettingDocumentation\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"eligibilityVp\": {\n          \"$ref\": \"#/$defs/EligibilityPresentation\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"requestId\": {\n          \"description\": \"The vetter's handle for this accepted request, carried by the session and any decline.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"sessionHint\": {\n          \"description\": \"OPTIONAL vetter-authored free text on how and when the session will happen. Attributed to the vetter.\",\n          \"maxLength\": 500,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"requestId\"\n      ],\n      \"title\": \"Vetting Request — response payload\",\n      \"type\": \"object\"\n    },\n    \"ShortCodeTicket\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"code\": {\n          \"description\": \"Eight Crockford base32 characters, grouped four and four (40 bits). A secret the vetter handed over; not derived from anything.\",\n          \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"code\"\n      ],\n      \"title\": \"ShortCodeTicket\",\n      \"type\": \"object\"\n    },\n    \"Ticket\": {\n      \"description\": \"A ticket the vetter issued: the short code a person reads or types, or the full-entropy QR form.\",\n      \"oneOf\": [\n        {\n          \"$ref\": \"#/$defs/ShortCodeTicket\"\n        },\n        {\n          \"$ref\": \"#/$defs/QrTicket\"\n        }\n      ],\n      \"title\": \"Ticket\"\n    },\n    \"VettingDocumentation\": {\n      \"description\": \"A class of documentation, named in lowerCamelCase. Open rather than enumerated, because what documentation a vetter accepts is each vetter's own choice. Well-known values: `passport`, `nationalId`, `driverLicence`, and `none` — the vetter will attest without a document, which is the `priorAcquaintance` case. Only the class ever travels — never a document number, an image, an issuing authority or an expiry date. `none` states a policy (what a vetter accepts); a record of what was relied on expresses 'no document' as an empty list instead.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z][a-zA-Z0-9]*$\",\n      \"title\": \"VettingDocumentation\",\n      \"type\": \"string\"\n    },\n    \"VettingMethod\": {\n      \"description\": \"How the vetter established that the person they checked is the person controlling the applicant's DID. `inPerson` — both people were physically together. `video` — a live, two-way video call. `priorAcquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy.\",\n      \"enum\": [\n        \"inPerson\",\n        \"video\",\n        \"priorAcquaintance\"\n      ],\n      \"title\": \"VettingMethod\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"EligibilityPresentation\":{\"additionalProperties\":true,\"description\":\"OPTIONAL. A W3C Verifiable Presentation by which the vetter shows the applicant that it currently holds the community's vetter role. Bound to this request by `nonce` (the vetting/request document's `id`, which the applicant chose) and to this applicant by `domain` (its `joinDid`), so it cannot be replayed to another request or another applicant. The applicant's check is advisory; the community evaluates eligibility again, authoritatively, when it decides. Members other than those defined here are permitted, as the VC data model allows.\",\"properties\":{\"@context\":{\"description\":\"JSON-LD contexts. The first item MUST be `https://www.w3.org/ns/credentials/v2` (stated here rather than as `prefixItems`, which the Rust generator cannot express).\",\"items\":{\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"},\"domain\":{\"description\":\"The applicant's `joinDid` from that request.\",\"pattern\":\"^did:\",\"type\":\"string\"},\"holder\":{\"description\":\"The vetter's DID — the response's `issuer`.\",\"pattern\":\"^did:\",\"type\":\"string\"},\"nonce\":{\"description\":\"The `id` of the vetting/request document this responds to.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"proof\":{\"$ref\":\"#/$defs/EligibilityPresentationProof\"},\"type\":{\"description\":\"MUST include `VerifiablePresentation` (stated here rather than as `contains`, which the Rust generator cannot express).\",\"items\":{\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"verifiableCredential\":{\"description\":\"Credentials presented (opaque here). MUST include the vetter role credential: a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community, whose `credentialSubject.id` is `holder`, whose `authority.scope` is the community's DID, and whose `authority.actions` include `role:<role>` for the manifest's `eligibleVetters.role` — see vtc/vetting/vetters/grant/0.1. MAY include others, such as the membership credential.\",\"items\":{\"type\":\"object\"},\"minItems\":1,\"type\":\"array\"}},\"required\":[\"@context\",\"type\",\"holder\",\"verifiableCredential\",\"nonce\",\"domain\",\"proof\"],\"title\":\"EligibilityPresentation\",\"type\":\"object\"},\"EligibilityPresentationProof\":{\"additionalProperties\":true,\"description\":\"A W3C Data Integrity proof by `holder` over the presentation, `nonce` and `domain` included.\",\"properties\":{\"created\":{\"format\":\"date-time\",\"type\":\"string\"},\"cryptosuite\":{\"description\":\"e.g. `eddsa-jcs-2022`.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9-]+$\",\"type\":\"string\"},\"proofPurpose\":{\"const\":\"authentication\",\"type\":\"string\"},\"proofValue\":{\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"type\":{\"const\":\"DataIntegrityProof\",\"type\":\"string\"},\"verificationMethod\":{\"description\":\"A verification method of `holder`, authorized for `authentication`.\",\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"type\",\"cryptosuite\",\"verificationMethod\",\"proofPurpose\",\"proofValue\"],\"title\":\"EligibilityPresentationProof\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"QrTicket\":{\"additionalProperties\":false,\"properties\":{\"secret\":{\"description\":\"32 random bytes, base64url without padding.\",\"pattern\":\"^[A-Za-z0-9_-]{43}$\",\"type\":\"string\"},\"ticketId\":{\"maxLength\":128,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9._:-]+$\",\"type\":\"string\"}},\"required\":[\"ticketId\",\"secret\"],\"title\":\"QrTicket\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The vetter accepts the request. A refusal is a trust-task-error, never a response document.\",\"properties\":{\"acceptsDocumentation\":{\"description\":\"RECOMMENDED. What this vetter will rely on, so the applicant brings it — the vetter's own choice. `none` means the vetter attests from prior acquaintance.\",\"items\":{\"$ref\":\"#/$defs/VettingDocumentation\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"eligibilityVp\":{\"$ref\":\"#/$defs/EligibilityPresentation\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"requestId\":{\"description\":\"The vetter's handle for this accepted request, carried by the session and any decline.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"sessionHint\":{\"description\":\"OPTIONAL vetter-authored free text on how and when the session will happen. Attributed to the vetter.\",\"maxLength\":500,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"requestId\"],\"title\":\"Vetting Request — response payload\",\"type\":\"object\"},\"ShortCodeTicket\":{\"additionalProperties\":false,\"properties\":{\"code\":{\"description\":\"Eight Crockford base32 characters, grouped four and four (40 bits). A secret the vetter handed over; not derived from anything.\",\"pattern\":\"^[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}$\",\"type\":\"string\"}},\"required\":[\"code\"],\"title\":\"ShortCodeTicket\",\"type\":\"object\"},\"Ticket\":{\"description\":\"A ticket the vetter issued: the short code a person reads or types, or the full-entropy QR form.\",\"oneOf\":[{\"$ref\":\"#/$defs/ShortCodeTicket\"},{\"$ref\":\"#/$defs/QrTicket\"}],\"title\":\"Ticket\"},\"VettingDocumentation\":{\"description\":\"A class of documentation, named in lowerCamelCase. Open rather than enumerated, because what documentation a vetter accepts is each vetter's own choice. Well-known values: `passport`, `nationalId`, `driverLicence`, and `none` — the vetter will attest without a document, which is the `priorAcquaintance` case. Only the class ever travels — never a document number, an image, an issuing authority or an expiry date. `none` states a policy (what a vetter accepts); a record of what was relied on expresses 'no document' as an empty list instead.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z][a-zA-Z0-9]*$\",\"title\":\"VettingDocumentation\",\"type\":\"string\"},\"VettingMethod\":{\"description\":\"How the vetter established that the person they checked is the person controlling the applicant's DID. `inPerson` — both people were physically together. `video` — a live, two-way video call. `priorAcquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy.\",\"enum\":[\"inPerson\",\"video\",\"priorAcquaintance\"],\"title\":\"VettingMethod\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

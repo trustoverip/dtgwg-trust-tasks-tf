@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,38 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/rooms/offers/accept/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "roomId"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "keyPackage": {
-///      "description": "On an `attributed` or `private` room, the caller's MLS KeyPackage for this room, base64url without padding, as their key holder minted it with rooms/keys/key-package against the offer's invitation. Absent on an `open` room, which has no group.",
-///      "type": "string",
-///      "maxLength": 65536,
-///      "minLength": 1,
-///      "pattern": "^[A-Za-z0-9_-]+$"
-///    },
-///    "roomId": {
-///      "description": "The room's identifier: its DID.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -198,18 +142,6 @@ impl Payload {
 }
 ///On an `attributed` or `private` room, the caller's MLS KeyPackage for this room, base64url without padding, as their key holder minted it with rooms/keys/key-package against the offer's invitation. Absent on an `open` room, which has no group.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "On an `attributed` or `private` room, the caller's MLS KeyPackage for this room, base64url without padding, as their key holder minted it with rooms/keys/key-package against the offer's invitation. Absent on an `open` room, which has no group.",
-///  "type": "string",
-///  "maxLength": 65536,
-///  "minLength": 1,
-///  "pattern": "^[A-Za-z0-9_-]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadKeyPackage(::std::string::String);
@@ -277,17 +209,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadKeyPackage {
 }
 ///The room's identifier: its DID.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The room's identifier: its DID.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadRoomId(::std::string::String);
@@ -350,54 +271,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRoomId {
 }
 ///Success response to vtc/rooms/offers/accept. Type https://trusttasks.org/spec/vtc/rooms/offers/accept/0.1#response. The caller is admitted; on a sealed tier, with the Welcome to deliver to their own key holder.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to vtc/rooms/offers/accept. Type https://trusttasks.org/spec/vtc/rooms/offers/accept/0.1#response. The caller is admitted; on a sealed tier, with the Welcome to deliver to their own key holder.",
-///  "type": "object",
-///  "required": [
-///    "epoch",
-///    "roomId",
-///    "state"
-///  ],
-///  "properties": {
-///    "epoch": {
-///      "description": "The room epoch the caller joins at.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "ratchetTree": {
-///      "description": "The group's ratchet tree, where the Welcome does not carry it. Passed to rooms/keys/welcome unchanged.",
-///      "type": "string",
-///      "minLength": 1,
-///      "pattern": "^[A-Za-z0-9_-]+$"
-///    },
-///    "roomId": {
-///      "description": "The room's identifier: its DID.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    },
-///    "state": {
-///      "const": "admitted"
-///    },
-///    "welcome": {
-///      "description": "On a sealed tier, the MLS Welcome sealed to the caller's KeyPackage, for the caller to hand their own key holder with rooms/keys/welcome. Opens nothing for anyone else.",
-///      "type": "string",
-///      "minLength": 1,
-///      "pattern": "^[A-Za-z0-9_-]+$"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -428,17 +301,6 @@ impl Response {
 }
 ///The group's ratchet tree, where the Welcome does not carry it. Passed to rooms/keys/welcome unchanged.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The group's ratchet tree, where the Welcome does not carry it. Passed to rooms/keys/welcome unchanged.",
-///  "type": "string",
-///  "minLength": 1,
-///  "pattern": "^[A-Za-z0-9_-]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseRatchetTree(::std::string::String);
@@ -503,17 +365,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseRatchetTree {
 }
 ///The room's identifier: its DID.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The room's identifier: its DID.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseRoomId(::std::string::String);
@@ -576,17 +427,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseRoomId {
 }
 ///On a sealed tier, the MLS Welcome sealed to the caller's KeyPackage, for the caller to hand their own key holder with rooms/keys/welcome. Opens nothing for anyone else.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "On a sealed tier, the MLS Welcome sealed to the caller's KeyPackage, for the caller to hand their own key holder with rooms/keys/welcome. Opens nothing for anyone else.",
-///  "type": "string",
-///  "minLength": 1,
-///  "pattern": "^[A-Za-z0-9_-]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseWelcome(::std::string::String);
@@ -841,7 +681,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vtc/rooms/offers/accept. Type https://trusttasks.org/spec/vtc/rooms/offers/accept/0.1#response. The caller is admitted; on a sealed tier, with the Welcome to deliver to their own key holder.\",\n      \"properties\": {\n        \"epoch\": {\n          \"description\": \"The room epoch the caller joins at.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"ratchetTree\": {\n          \"description\": \"The group's ratchet tree, where the Welcome does not carry it. Passed to rooms/keys/welcome unchanged.\",\n          \"minLength\": 1,\n          \"pattern\": \"^[A-Za-z0-9_-]+$\",\n          \"type\": \"string\"\n        },\n        \"roomId\": {\n          \"description\": \"The room's identifier: its DID.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"state\": {\n          \"const\": \"admitted\"\n        },\n        \"welcome\": {\n          \"description\": \"On a sealed tier, the MLS Welcome sealed to the caller's KeyPackage, for the caller to hand their own key holder with rooms/keys/welcome. Opens nothing for anyone else.\",\n          \"minLength\": 1,\n          \"pattern\": \"^[A-Za-z0-9_-]+$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"state\",\n        \"epoch\"\n      ],\n      \"title\": \"VTC Rooms Offers Accept — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/rooms/offers/accept/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"keyPackage\": {\n      \"description\": \"On an `attributed` or `private` room, the caller's MLS KeyPackage for this room, base64url without padding, as their key holder minted it with rooms/keys/key-package against the offer's invitation. Absent on an `open` room, which has no group.\",\n      \"maxLength\": 65536,\n      \"minLength\": 1,\n      \"pattern\": \"^[A-Za-z0-9_-]+$\",\n      \"type\": \"string\"\n    },\n    \"roomId\": {\n      \"description\": \"The room's identifier: its DID.\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"roomId\"\n  ],\n  \"title\": \"VTC Rooms Offers Accept — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vtc/rooms/offers/accept. Type https://trusttasks.org/spec/vtc/rooms/offers/accept/0.1#response. The caller is admitted; on a sealed tier, with the Welcome to deliver to their own key holder.\",\"properties\":{\"epoch\":{\"description\":\"The room epoch the caller joins at.\",\"minimum\":1,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"ratchetTree\":{\"description\":\"The group's ratchet tree, where the Welcome does not carry it. Passed to rooms/keys/welcome unchanged.\",\"minLength\":1,\"pattern\":\"^[A-Za-z0-9_-]+$\",\"type\":\"string\"},\"roomId\":{\"description\":\"The room's identifier: its DID.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"state\":{\"const\":\"admitted\"},\"welcome\":{\"description\":\"On a sealed tier, the MLS Welcome sealed to the caller's KeyPackage, for the caller to hand their own key holder with rooms/keys/welcome. Opens nothing for anyone else.\",\"minLength\":1,\"pattern\":\"^[A-Za-z0-9_-]+$\",\"type\":\"string\"}},\"required\":[\"roomId\",\"state\",\"epoch\"],\"title\":\"VTC Rooms Offers Accept — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/rooms/offers/accept/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keyPackage\":{\"description\":\"On an `attributed` or `private` room, the caller's MLS KeyPackage for this room, base64url without padding, as their key holder minted it with rooms/keys/key-package against the offer's invitation. Absent on an `open` room, which has no group.\",\"maxLength\":65536,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9_-]+$\",\"type\":\"string\"},\"roomId\":{\"description\":\"The room's identifier: its DID.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"roomId\"],\"title\":\"VTC Rooms Offers Accept — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -851,7 +691,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vtc/rooms/offers/accept. Type https://trusttasks.org/spec/vtc/rooms/offers/accept/0.1#response. The caller is admitted; on a sealed tier, with the Welcome to deliver to their own key holder.\",\n      \"properties\": {\n        \"epoch\": {\n          \"description\": \"The room epoch the caller joins at.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"ratchetTree\": {\n          \"description\": \"The group's ratchet tree, where the Welcome does not carry it. Passed to rooms/keys/welcome unchanged.\",\n          \"minLength\": 1,\n          \"pattern\": \"^[A-Za-z0-9_-]+$\",\n          \"type\": \"string\"\n        },\n        \"roomId\": {\n          \"description\": \"The room's identifier: its DID.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"state\": {\n          \"const\": \"admitted\"\n        },\n        \"welcome\": {\n          \"description\": \"On a sealed tier, the MLS Welcome sealed to the caller's KeyPackage, for the caller to hand their own key holder with rooms/keys/welcome. Opens nothing for anyone else.\",\n          \"minLength\": 1,\n          \"pattern\": \"^[A-Za-z0-9_-]+$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"state\",\n        \"epoch\"\n      ],\n      \"title\": \"VTC Rooms Offers Accept — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vtc/rooms/offers/accept. Type https://trusttasks.org/spec/vtc/rooms/offers/accept/0.1#response. The caller is admitted; on a sealed tier, with the Welcome to deliver to their own key holder.\",\"properties\":{\"epoch\":{\"description\":\"The room epoch the caller joins at.\",\"minimum\":1,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"ratchetTree\":{\"description\":\"The group's ratchet tree, where the Welcome does not carry it. Passed to rooms/keys/welcome unchanged.\",\"minLength\":1,\"pattern\":\"^[A-Za-z0-9_-]+$\",\"type\":\"string\"},\"roomId\":{\"description\":\"The room's identifier: its DID.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"state\":{\"const\":\"admitted\"},\"welcome\":{\"description\":\"On a sealed tier, the MLS Welcome sealed to the caller's KeyPackage, for the caller to hand their own key holder with rooms/keys/welcome. Opens nothing for anyone else.\",\"minLength\":1,\"pattern\":\"^[A-Za-z0-9_-]+$\",\"type\":\"string\"}},\"required\":[\"roomId\",\"state\",\"epoch\"],\"title\":\"VTC Rooms Offers Accept — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

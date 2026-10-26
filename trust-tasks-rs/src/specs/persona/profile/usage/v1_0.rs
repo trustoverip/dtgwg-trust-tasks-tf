@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -147,52 +123,6 @@ A tagged object rather than a bare list of contexts, deliberately: an empty list
 
 A context-local face has no reach: it lives in its context and is worn there by construction.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "FaceReach",
-///  "description": "Where a pool face may be worn. `anywhere` is the default and what an absent member means. `only` names the contexts it may be worn in, and a maintainer MUST refuse to wear it in any other (persona/binding/set `outsideReach`).\n\nA tagged object rather than a bare list of contexts, deliberately: an empty list has been read as both 'unrestricted' and 'nowhere' in this family's neighbours, and a shape where the two cannot be confused is worth more than one where they must be remembered. So `only` requires at least one context, and 'nowhere' is not a reach — it is a retired face.\n\nA context-local face has no reach: it lives in its context and is worn there by construction.",
-///  "oneOf": [
-///    {
-///      "type": "object",
-///      "required": [
-///        "kind"
-///      ],
-///      "properties": {
-///        "kind": {
-///          "const": "anywhere"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "type": "object",
-///      "required": [
-///        "contextIds",
-///        "kind"
-///      ],
-///      "properties": {
-///        "contextIds": {
-///          "type": "array",
-///          "items": {
-///            "type": "string",
-///            "minLength": 1
-///          },
-///          "maxItems": 256,
-///          "minItems": 1,
-///          "uniqueItems": true
-///        },
-///        "kind": {
-///          "const": "only"
-///        }
-///      },
-///      "additionalProperties": false
-///    }
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(tag = "kind", content = "contextIds")]
 #[non_exhaustive]
@@ -209,15 +139,6 @@ impl ::std::convert::From<Vec<FaceReachContextIdsItem>> for FaceReach {
 }
 ///`FaceReachContextIdsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct FaceReachContextIdsItem(::std::string::String);
@@ -277,34 +198,6 @@ impl<'de> ::serde::Deserialize<'de> for FaceReachContextIdsItem {
 }
 ///Where one face is worn now: every context and persona wearing it. The answer a holder needs to audit a face's reach, and to see the contexts a face is part of before changing or retiring it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/persona/profile/usage/1.0",
-///  "title": "Payload",
-///  "description": "Where one face is worn now: every context and persona wearing it. The answer a holder needs to audit a face's reach, and to see the contexts a face is part of before changing or retiring it.",
-///  "type": "object",
-///  "required": [
-///    "profileId"
-///  ],
-///  "properties": {
-///    "contextId": {
-///      "description": "The context of a context-local face. Omit for a pool face.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "profileId": {
-///      "$ref": "#/definitions/Ulid"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -328,16 +221,6 @@ impl Payload {
 }
 ///The context of a context-local face. Omit for a pool face.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The context of a context-local face. Omit for a pool face.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadContextId(::std::string::String);
@@ -397,66 +280,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
 }
 ///Success response to persona/profile/usage. Type https://trusttasks.org/spec/persona/profile/usage/1.0#response. An empty `usage` is a face worn nowhere — a normal state, not an error.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to persona/profile/usage. Type https://trusttasks.org/spec/persona/profile/usage/1.0#response. An empty `usage` is a face worn nowhere — a normal state, not an error.",
-///  "type": "object",
-///  "required": [
-///    "profileId",
-///    "usage"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "profileId": {
-///      "$ref": "#/definitions/Ulid"
-///    },
-///    "reach": {
-///      "description": "The face's reach, so the answer and the allow-list it is audited against arrive together. Absent for a context-local face.",
-///      "$ref": "#/definitions/FaceReach"
-///    },
-///    "usage": {
-///      "type": "array",
-///      "items": {
-///        "type": "object",
-///        "required": [
-///          "boundAt",
-///          "contextId",
-///          "personaDid"
-///        ],
-///        "properties": {
-///          "boundAt": {
-///            "type": "string",
-///            "format": "date-time"
-///          },
-///          "contextId": {
-///            "type": "string",
-///            "minLength": 1
-///          },
-///          "personaDid": {
-///            "type": "string",
-///            "minLength": 1
-///          },
-///          "until": {
-///            "description": "When wearing it here ends on its own. Absent when it lasts until changed.",
-///            "type": "string",
-///            "format": "date-time"
-///          }
-///        },
-///        "additionalProperties": false
-///      },
-///      "maxItems": 1024
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -477,39 +300,6 @@ impl Response {
 }
 ///`ResponseUsageItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "boundAt",
-///    "contextId",
-///    "personaDid"
-///  ],
-///  "properties": {
-///    "boundAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "contextId": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "personaDid": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "until": {
-///      "description": "When wearing it here ends on its own. Absent when it lasts until changed.",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -531,15 +321,6 @@ impl ResponseUsageItem {
 }
 ///`ResponseUsageItemContextId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseUsageItemContextId(::std::string::String);
@@ -599,15 +380,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseUsageItemContextId {
 }
 ///`ResponseUsageItemPersonaDid`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseUsageItemPersonaDid(::std::string::String);
@@ -667,17 +439,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseUsageItemPersonaDid {
 }
 ///A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ulid",
-///  "description": "A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.",
-///  "type": "string",
-///  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Ulid(::std::string::String);
@@ -986,14 +747,14 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/persona/profile/usage/1.0";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"FaceReach\": {\n      \"description\": \"Where a pool face may be worn. `anywhere` is the default and what an absent member means. `only` names the contexts it may be worn in, and a maintainer MUST refuse to wear it in any other (persona/binding/set `outsideReach`).\\n\\nA tagged object rather than a bare list of contexts, deliberately: an empty list has been read as both 'unrestricted' and 'nowhere' in this family's neighbours, and a shape where the two cannot be confused is worth more than one where they must be remembered. So `only` requires at least one context, and 'nowhere' is not a reach — it is a retired face.\\n\\nA context-local face has no reach: it lives in its context and is worn there by construction.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"anywhere\"\n            }\n          },\n          \"required\": [\n            \"kind\"\n          ],\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"contextIds\": {\n              \"items\": {\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"maxItems\": 256,\n              \"minItems\": 1,\n              \"type\": \"array\",\n              \"uniqueItems\": true\n            },\n            \"kind\": {\n              \"const\": \"only\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"contextIds\"\n          ],\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"FaceReach\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/profile/usage. Type https://trusttasks.org/spec/persona/profile/usage/1.0#response. An empty `usage` is a face worn nowhere — a normal state, not an error.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"profileId\": {\n          \"$ref\": \"#/$defs/Ulid\"\n        },\n        \"reach\": {\n          \"$ref\": \"#/$defs/FaceReach\",\n          \"description\": \"The face's reach, so the answer and the allow-list it is audited against arrive together. Absent for a context-local face.\"\n        },\n        \"usage\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"boundAt\": {\n                \"format\": \"date-time\",\n                \"type\": \"string\"\n              },\n              \"contextId\": {\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"personaDid\": {\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"until\": {\n                \"description\": \"When wearing it here ends on its own. Absent when it lasts until changed.\",\n                \"format\": \"date-time\",\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"contextId\",\n              \"personaDid\",\n              \"boundAt\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 1024,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"profileId\",\n        \"usage\"\n      ],\n      \"title\": \"Persona Profile Usage — response payload\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/persona/profile/usage/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Where one face is worn now: every context and persona wearing it. The answer a holder needs to audit a face's reach, and to see the contexts a face is part of before changing or retiring it.\",\n  \"properties\": {\n    \"contextId\": {\n      \"description\": \"The context of a context-local face. Omit for a pool face.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"profileId\": {\n      \"$ref\": \"#/$defs/Ulid\"\n    }\n  },\n  \"required\": [\n    \"profileId\"\n  ],\n  \"title\": \"Persona Profile Usage — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"FaceReach\":{\"description\":\"Where a pool face may be worn. `anywhere` is the default and what an absent member means. `only` names the contexts it may be worn in, and a maintainer MUST refuse to wear it in any other (persona/binding/set `outsideReach`).\\n\\nA tagged object rather than a bare list of contexts, deliberately: an empty list has been read as both 'unrestricted' and 'nowhere' in this family's neighbours, and a shape where the two cannot be confused is worth more than one where they must be remembered. So `only` requires at least one context, and 'nowhere' is not a reach — it is a retired face.\\n\\nA context-local face has no reach: it lives in its context and is worn there by construction.\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"kind\":{\"const\":\"anywhere\"}},\"required\":[\"kind\"],\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"contextIds\":{\"items\":{\"minLength\":1,\"type\":\"string\"},\"maxItems\":256,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"kind\":{\"const\":\"only\"}},\"required\":[\"kind\",\"contextIds\"],\"type\":\"object\"}],\"title\":\"FaceReach\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to persona/profile/usage. Type https://trusttasks.org/spec/persona/profile/usage/1.0#response. An empty `usage` is a face worn nowhere — a normal state, not an error.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"profileId\":{\"$ref\":\"#/$defs/Ulid\"},\"reach\":{\"$ref\":\"#/$defs/FaceReach\",\"description\":\"The face's reach, so the answer and the allow-list it is audited against arrive together. Absent for a context-local face.\"},\"usage\":{\"items\":{\"additionalProperties\":false,\"properties\":{\"boundAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"contextId\":{\"minLength\":1,\"type\":\"string\"},\"personaDid\":{\"minLength\":1,\"type\":\"string\"},\"until\":{\"description\":\"When wearing it here ends on its own. Absent when it lasts until changed.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"contextId\",\"personaDid\",\"boundAt\"],\"type\":\"object\"},\"maxItems\":1024,\"type\":\"array\"}},\"required\":[\"profileId\",\"usage\"],\"title\":\"Persona Profile Usage — response payload\",\"type\":\"object\"},\"Ulid\":{\"description\":\"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\"pattern\":\"^[0-9A-HJKMNP-TV-Z]{26}$\",\"title\":\"Ulid\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/persona/profile/usage/1.0\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Where one face is worn now: every context and persona wearing it. The answer a holder needs to audit a face's reach, and to see the contexts a face is part of before changing or retiring it.\",\"properties\":{\"contextId\":{\"description\":\"The context of a context-local face. Omit for a pool face.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"profileId\":{\"$ref\":\"#/$defs/Ulid\"}},\"required\":[\"profileId\"],\"title\":\"Persona Profile Usage — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/persona/profile/usage/1.0#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"FaceReach\": {\n      \"description\": \"Where a pool face may be worn. `anywhere` is the default and what an absent member means. `only` names the contexts it may be worn in, and a maintainer MUST refuse to wear it in any other (persona/binding/set `outsideReach`).\\n\\nA tagged object rather than a bare list of contexts, deliberately: an empty list has been read as both 'unrestricted' and 'nowhere' in this family's neighbours, and a shape where the two cannot be confused is worth more than one where they must be remembered. So `only` requires at least one context, and 'nowhere' is not a reach — it is a retired face.\\n\\nA context-local face has no reach: it lives in its context and is worn there by construction.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"anywhere\"\n            }\n          },\n          \"required\": [\n            \"kind\"\n          ],\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"contextIds\": {\n              \"items\": {\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"maxItems\": 256,\n              \"minItems\": 1,\n              \"type\": \"array\",\n              \"uniqueItems\": true\n            },\n            \"kind\": {\n              \"const\": \"only\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"contextIds\"\n          ],\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"FaceReach\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/profile/usage. Type https://trusttasks.org/spec/persona/profile/usage/1.0#response. An empty `usage` is a face worn nowhere — a normal state, not an error.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"profileId\": {\n          \"$ref\": \"#/$defs/Ulid\"\n        },\n        \"reach\": {\n          \"$ref\": \"#/$defs/FaceReach\",\n          \"description\": \"The face's reach, so the answer and the allow-list it is audited against arrive together. Absent for a context-local face.\"\n        },\n        \"usage\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"boundAt\": {\n                \"format\": \"date-time\",\n                \"type\": \"string\"\n              },\n              \"contextId\": {\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"personaDid\": {\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"until\": {\n                \"description\": \"When wearing it here ends on its own. Absent when it lasts until changed.\",\n                \"format\": \"date-time\",\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"contextId\",\n              \"personaDid\",\n              \"boundAt\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 1024,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"profileId\",\n        \"usage\"\n      ],\n      \"title\": \"Persona Profile Usage — response payload\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"FaceReach\":{\"description\":\"Where a pool face may be worn. `anywhere` is the default and what an absent member means. `only` names the contexts it may be worn in, and a maintainer MUST refuse to wear it in any other (persona/binding/set `outsideReach`).\\n\\nA tagged object rather than a bare list of contexts, deliberately: an empty list has been read as both 'unrestricted' and 'nowhere' in this family's neighbours, and a shape where the two cannot be confused is worth more than one where they must be remembered. So `only` requires at least one context, and 'nowhere' is not a reach — it is a retired face.\\n\\nA context-local face has no reach: it lives in its context and is worn there by construction.\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"kind\":{\"const\":\"anywhere\"}},\"required\":[\"kind\"],\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"contextIds\":{\"items\":{\"minLength\":1,\"type\":\"string\"},\"maxItems\":256,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"kind\":{\"const\":\"only\"}},\"required\":[\"kind\",\"contextIds\"],\"type\":\"object\"}],\"title\":\"FaceReach\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to persona/profile/usage. Type https://trusttasks.org/spec/persona/profile/usage/1.0#response. An empty `usage` is a face worn nowhere — a normal state, not an error.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"profileId\":{\"$ref\":\"#/$defs/Ulid\"},\"reach\":{\"$ref\":\"#/$defs/FaceReach\",\"description\":\"The face's reach, so the answer and the allow-list it is audited against arrive together. Absent for a context-local face.\"},\"usage\":{\"items\":{\"additionalProperties\":false,\"properties\":{\"boundAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"contextId\":{\"minLength\":1,\"type\":\"string\"},\"personaDid\":{\"minLength\":1,\"type\":\"string\"},\"until\":{\"description\":\"When wearing it here ends on its own. Absent when it lasts until changed.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"contextId\",\"personaDid\",\"boundAt\"],\"type\":\"object\"},\"maxItems\":1024,\"type\":\"array\"}},\"required\":[\"profileId\",\"usage\"],\"title\":\"Persona Profile Usage — response payload\",\"type\":\"object\"},\"Ulid\":{\"description\":\"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\"pattern\":\"^[0-9A-HJKMNP-TV-Z]{26}$\",\"title\":\"Ulid\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

@@ -34,70 +34,6 @@ pub mod error {
 }
 ///An applicant engine as the VTA holds it, without its key.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ApplicationSummary",
-///  "description": "An applicant engine as the VTA holds it, without its key.",
-///  "type": "object",
-///  "required": [
-///    "applicationId",
-///    "attestations",
-///    "community",
-///    "contextId",
-///    "createdAt",
-///    "id",
-///    "joinDid",
-///    "suite"
-///  ],
-///  "properties": {
-///    "applicationId": {
-///      "description": "The VTA's handle for this application. Opaque; never sent to the community.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "attestations": {
-///      "description": "The metadata of each attestation held, in the order received. Metadata names no vetter.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/StatementMeta"
-///      }
-///    },
-///    "community": {
-///      "description": "The community's DID.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "contextId": {
-///      "description": "The context the application's key is derived in.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "createdAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "id": {
-///      "description": "The applicant's PCS identifier: what a vetter attests to, carried in a vetting/request's `ext`.",
-///      "$ref": "#/definitions/Multibase"
-///    },
-///    "joinDid": {
-///      "description": "The DID the application joins as.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "suite": {
-///      "type": "string",
-///      "maxLength": 64,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -128,17 +64,6 @@ impl ApplicationSummary {
 }
 ///The VTA's handle for this application. Opaque; never sent to the community.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The VTA's handle for this application. Opaque; never sent to the community.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ApplicationSummaryApplicationId(::std::string::String);
@@ -201,16 +126,6 @@ impl<'de> ::serde::Deserialize<'de> for ApplicationSummaryApplicationId {
 }
 ///The community's DID.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The community's DID.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ApplicationSummaryCommunity(::std::string::String);
@@ -270,16 +185,6 @@ impl<'de> ::serde::Deserialize<'de> for ApplicationSummaryCommunity {
 }
 ///The context the application's key is derived in.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The context the application's key is derived in.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ApplicationSummaryContextId(::std::string::String);
@@ -339,16 +244,6 @@ impl<'de> ::serde::Deserialize<'de> for ApplicationSummaryContextId {
 }
 ///The DID the application joins as.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The DID the application joins as.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ApplicationSummaryJoinDid(::std::string::String);
@@ -408,16 +303,6 @@ impl<'de> ::serde::Deserialize<'de> for ApplicationSummaryJoinDid {
 }
 ///`ApplicationSummarySuite`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ApplicationSummarySuite(::std::string::String);
@@ -480,16 +365,6 @@ impl<'de> ::serde::Deserialize<'de> for ApplicationSummarySuite {
 }
 ///The community's hidden-vetting parameters exactly as its join manifest publishes them, under the criterion's `vetting.ext`. The caller copies them in verbatim on every call that needs them, because the community rotates labels and the engine keeps no copy of its own: a stale copy costs the caller a refused proof, never a mistaken one.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "CommunityParameters",
-///  "description": "The community's hidden-vetting parameters exactly as its join manifest publishes them, under the criterion's `vetting.ext`. The caller copies them in verbatim on every call that needs them, because the community rotates labels and the engine keeps no copy of its own: a stale copy costs the caller a refused proof, never a mistaken one.",
-///  "$ref": "#/definitions/PublishedConfig"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct CommunityParameters(pub PublishedConfig);
@@ -511,21 +386,6 @@ impl ::std::convert::From<PublishedConfig> for CommunityParameters {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -547,15 +407,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -619,17 +470,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A binary value, multibase base58btc over the suite's canonical encoding.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Multibase",
-///  "description": "A binary value, multibase base58btc over the suite's canonical encoding.",
-///  "type": "string",
-///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Multibase(::std::string::String);
@@ -693,48 +533,6 @@ impl<'de> ::serde::Deserialize<'de> for Multibase {
 }
 ///An applicant's client asks its VTA to start a hidden-vetting application: the VTA derives a fresh PCS key for it, keeps the key, and returns the PCS identifier vetters attest to.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/pcs/applications/create/0.1",
-///  "title": "Payload",
-///  "description": "An applicant's client asks its VTA to start a hidden-vetting application: the VTA derives a fresh PCS key for it, keeps the key, and returns the PCS identifier vetters attest to.",
-///  "type": "object",
-///  "required": [
-///    "community",
-///    "contextId",
-///    "joinDid",
-///    "parameters"
-///  ],
-///  "properties": {
-///    "community": {
-///      "description": "The community's DID: the helper whose parameters the engine runs under.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "contextId": {
-///      "description": "The context the engine belongs to. Its key is derived from this context's base.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "joinDid": {
-///      "description": "The DID the applicant joins the community as. Bound into the proof, so the proof cannot be carried to another join.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "parameters": {
-///      "description": "The community's published hidden-vetting parameters, copied verbatim from its join manifest.",
-///      "$ref": "#/definitions/CommunityParameters"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -759,16 +557,6 @@ impl Payload {
 }
 ///The community's DID: the helper whose parameters the engine runs under.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The community's DID: the helper whose parameters the engine runs under.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadCommunity(::std::string::String);
@@ -828,16 +616,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCommunity {
 }
 ///The context the engine belongs to. Its key is derived from this context's base.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The context the engine belongs to. Its key is derived from this context's base.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadContextId(::std::string::String);
@@ -897,16 +675,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
 }
 ///The DID the applicant joins the community as. Bound into the proof, so the proof cannot be carried to another join.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The DID the applicant joins the community as. Bound into the proof, so the proof cannot be carried to another join.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadJoinDid(::std::string::String);
@@ -966,71 +734,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadJoinDid {
 }
 ///The parameters exactly as they now appear in this community's join manifest, under vetting.ext. What an applicant and a vetter read.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "PublishedConfig",
-///  "description": "The parameters exactly as they now appear in this community's join manifest, under vetting.ext. What an applicant and a vetter read.",
-///  "type": "object",
-///  "required": [
-///    "dripPerTick",
-///    "events",
-///    "helperKey",
-///    "suite",
-///    "tickLength",
-///    "tokenKey",
-///    "tokenLabels",
-///    "vetterLabels"
-///  ],
-///  "properties": {
-///    "dripPerTick": {
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "events": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/PublishedEvent"
-///      }
-///    },
-///    "helperKey": {
-///      "description": "The helper verification key, multibase — named for its role on the wire rather than for hvk.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "suite": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "tickLength": {
-///      "$ref": "#/definitions/TickLength"
-///    },
-///    "tokenKey": {
-///      "description": "The token verification key, multibase — named for its role on the wire rather than for tvk.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "tokenLabels": {
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "minLength": 1
-///      }
-///    },
-///    "vetterLabels": {
-///      "description": "Class labels published whole, e.g. vetter/2026-09 — a request names one of these, not the bare period.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "minLength": 1
-///      }
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1060,16 +763,6 @@ impl PublishedConfig {
 }
 ///The helper verification key, multibase — named for its role on the wire rather than for hvk.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The helper verification key, multibase — named for its role on the wire rather than for hvk.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PublishedConfigHelperKey(::std::string::String);
@@ -1129,15 +822,6 @@ impl<'de> ::serde::Deserialize<'de> for PublishedConfigHelperKey {
 }
 ///`PublishedConfigSuite`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PublishedConfigSuite(::std::string::String);
@@ -1197,16 +881,6 @@ impl<'de> ::serde::Deserialize<'de> for PublishedConfigSuite {
 }
 ///The token verification key, multibase — named for its role on the wire rather than for tvk.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The token verification key, multibase — named for its role on the wire rather than for tvk.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PublishedConfigTokenKey(::std::string::String);
@@ -1266,15 +940,6 @@ impl<'de> ::serde::Deserialize<'de> for PublishedConfigTokenKey {
 }
 ///`PublishedConfigTokenLabelsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PublishedConfigTokenLabelsItem(::std::string::String);
@@ -1334,15 +999,6 @@ impl<'de> ::serde::Deserialize<'de> for PublishedConfigTokenLabelsItem {
 }
 ///`PublishedConfigVetterLabelsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PublishedConfigVetterLabelsItem(::std::string::String);
@@ -1402,48 +1058,6 @@ impl<'de> ::serde::Deserialize<'de> for PublishedConfigVetterLabelsItem {
 }
 ///The published shape drops approvedBy and graceDays: who approved is the community's own record, and a vetter is told closesAfter when its request is approved rather than being handed the raw grace period here.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "PublishedEvent",
-///  "description": "The published shape drops approvedBy and graceDays: who approved is the community's own record, and a vetter is told closesAfter when its request is approved rather than being handed the raw grace period here.",
-///  "type": "object",
-///  "required": [
-///    "endDate",
-///    "eventId",
-///    "groupFloor",
-///    "startDate",
-///    "tiers"
-///  ],
-///  "properties": {
-///    "endDate": {
-///      "type": "string",
-///      "format": "date"
-///    },
-///    "eventId": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "groupFloor": {
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "startDate": {
-///      "type": "string",
-///      "format": "date"
-///    },
-///    "tiers": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Tier"
-///      }
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1465,15 +1079,6 @@ impl PublishedEvent {
 }
 ///`PublishedEventEventId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PublishedEventEventId(::std::string::String);
@@ -1533,28 +1138,6 @@ impl<'de> ::serde::Deserialize<'de> for PublishedEventEventId {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "application"
-///  ],
-///  "properties": {
-///    "application": {
-///      "$ref": "#/definitions/ApplicationSummary"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1570,106 +1153,6 @@ impl Response {
 }
 ///What a Vetting Statement would have said, minus its issuer.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "What a Vetting Statement would have said, minus its issuer.",
-///  "type": "object",
-///  "required": [
-///    "cardDigestMultibase",
-///    "claimsVerified",
-///    "community",
-///    "declaredRelationship",
-///    "identityCommitment",
-///    "livenessConfirmed",
-///    "method",
-///    "requirementsDigest",
-///    "tokenLabel",
-///    "tokenSerial",
-///    "validFrom",
-///    "validUntil"
-///  ],
-///  "properties": {
-///    "cardDigestMultibase": {
-///      "description": "Digest of that card, as the vetter verified it.",
-///      "type": "string",
-///      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///    },
-///    "claimsVerified": {
-///      "description": "The claim types the vetter checked.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "minLength": 1
-///      },
-///      "minItems": 1
-///    },
-///    "community": {
-///      "description": "The community this attestation is for. An attestation is not portable between communities.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "declaredRelationship": {
-///      "description": "The relationship the vetter declared, which the community's independence rules count.",
-///      "type": "string",
-///      "enum": [
-///        "none",
-///        "family",
-///        "sameEmployer",
-///        "closeFriend",
-///        "other"
-///      ]
-///    },
-///    "identityCommitment": {
-///      "description": "The commitment on the Vetting Card the applicant showed. Consistency across attestations is what stops two applicants pooling them.",
-///      "type": "string",
-///      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///    },
-///    "livenessConfirmed": {
-///      "description": "Whether the vetter confirmed a live person.",
-///      "type": "boolean"
-///    },
-///    "method": {
-///      "description": "How the vetter met the applicant.",
-///      "type": "string",
-///      "enum": [
-///        "inPerson",
-///        "video",
-///        "priorAcquaintance"
-///      ]
-///    },
-///    "requirementsDigest": {
-///      "description": "The digest of the criterion's requirements as the vetter read them.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "tokenLabel": {
-///      "description": "The token label spent, repeated inside the bound facts so it cannot be swapped in transit.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "tokenSerial": {
-///      "description": "The token serial spent, likewise bound.",
-///      "type": "string",
-///      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///    },
-///    "validFrom": {
-///      "description": "A DATE, never a timestamp: an exact time would let a community line an attestation up with a vetter's activity, which undoes the proof without touching it.",
-///      "type": "string",
-///      "format": "date"
-///    },
-///    "validUntil": {
-///      "description": "A date, for the same reason.",
-///      "type": "string",
-///      "format": "date"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1716,16 +1199,6 @@ impl StatementMeta {
 }
 ///Digest of that card, as the vetter verified it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Digest of that card, as the vetter verified it.",
-///  "type": "string",
-///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct StatementMetaCardDigestMultibase(::std::string::String);
@@ -1789,15 +1262,6 @@ impl<'de> ::serde::Deserialize<'de> for StatementMetaCardDigestMultibase {
 }
 ///`StatementMetaClaimsVerifiedItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct StatementMetaClaimsVerifiedItem(::std::string::String);
@@ -1857,16 +1321,6 @@ impl<'de> ::serde::Deserialize<'de> for StatementMetaClaimsVerifiedItem {
 }
 ///The community this attestation is for. An attestation is not portable between communities.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The community this attestation is for. An attestation is not portable between communities.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct StatementMetaCommunity(::std::string::String);
@@ -1926,22 +1380,6 @@ impl<'de> ::serde::Deserialize<'de> for StatementMetaCommunity {
 }
 ///The relationship the vetter declared, which the community's independence rules count.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The relationship the vetter declared, which the community's independence rules count.",
-///  "type": "string",
-///  "enum": [
-///    "none",
-///    "family",
-///    "sameEmployer",
-///    "closeFriend",
-///    "other"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -2015,16 +1453,6 @@ impl ::std::convert::TryFrom<::std::string::String> for StatementMetaDeclaredRel
 }
 ///The commitment on the Vetting Card the applicant showed. Consistency across attestations is what stops two applicants pooling them.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The commitment on the Vetting Card the applicant showed. Consistency across attestations is what stops two applicants pooling them.",
-///  "type": "string",
-///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct StatementMetaIdentityCommitment(::std::string::String);
@@ -2088,20 +1516,6 @@ impl<'de> ::serde::Deserialize<'de> for StatementMetaIdentityCommitment {
 }
 ///How the vetter met the applicant.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "How the vetter met the applicant.",
-///  "type": "string",
-///  "enum": [
-///    "inPerson",
-///    "video",
-///    "priorAcquaintance"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -2167,16 +1581,6 @@ impl ::std::convert::TryFrom<::std::string::String> for StatementMetaMethod {
 }
 ///The digest of the criterion's requirements as the vetter read them.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The digest of the criterion's requirements as the vetter read them.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct StatementMetaRequirementsDigest(::std::string::String);
@@ -2236,17 +1640,6 @@ impl<'de> ::serde::Deserialize<'de> for StatementMetaRequirementsDigest {
 }
 ///The token label spent, repeated inside the bound facts so it cannot be swapped in transit.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The token label spent, repeated inside the bound facts so it cannot be swapped in transit.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct StatementMetaTokenLabel(::std::string::String);
@@ -2309,16 +1702,6 @@ impl<'de> ::serde::Deserialize<'de> for StatementMetaTokenLabel {
 }
 ///The token serial spent, likewise bound.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The token serial spent, likewise bound.",
-///  "type": "string",
-///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct StatementMetaTokenSerial(::std::string::String);
@@ -2382,17 +1765,6 @@ impl<'de> ::serde::Deserialize<'de> for StatementMetaTokenSerial {
 }
 ///The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "TickLength",
-///  "description": "The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`).",
-///  "type": "string",
-///  "pattern": "^P(?:\\d+D(?:T\\d+H)?|T\\d+H)$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct TickLength(::std::string::String);
@@ -2456,32 +1828,6 @@ impl<'de> ::serde::Deserialize<'de> for TickLength {
 }
 ///`Tier`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Tier",
-///  "type": "object",
-///  "required": [
-///    "dripPerTick",
-///    "name"
-///  ],
-///  "properties": {
-///    "dripPerTick": {
-///      "description": "How many tokens a tick under this tier yields.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "name": {
-///      "description": "How the menu names it: desk, busy-desk.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -2499,16 +1845,6 @@ impl Tier {
 }
 ///How the menu names it: desk, busy-desk.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "How the menu names it: desk, busy-desk.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct TierName(::std::string::String);
@@ -3361,7 +2697,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ApplicationSummary\": {\n      \"additionalProperties\": false,\n      \"description\": \"An applicant engine as the VTA holds it, without its key.\",\n      \"properties\": {\n        \"applicationId\": {\n          \"description\": \"The VTA's handle for this application. Opaque; never sent to the community.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"attestations\": {\n          \"description\": \"The metadata of each attestation held, in the order received. Metadata names no vetter.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/StatementMeta\"\n          },\n          \"type\": \"array\"\n        },\n        \"community\": {\n          \"description\": \"The community's DID.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"contextId\": {\n          \"description\": \"The context the application's key is derived in.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"id\": {\n          \"$ref\": \"#/$defs/Multibase\",\n          \"description\": \"The applicant's PCS identifier: what a vetter attests to, carried in a vetting/request's `ext`.\"\n        },\n        \"joinDid\": {\n          \"description\": \"The DID the application joins as.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"suite\": {\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"applicationId\",\n        \"contextId\",\n        \"community\",\n        \"joinDid\",\n        \"suite\",\n        \"id\",\n        \"attestations\",\n        \"createdAt\"\n      ],\n      \"title\": \"ApplicationSummary\",\n      \"type\": \"object\"\n    },\n    \"CommunityParameters\": {\n      \"$ref\": \"#/$defs/PublishedConfig\",\n      \"description\": \"The community's hidden-vetting parameters exactly as its join manifest publishes them, under the criterion's `vetting.ext`. The caller copies them in verbatim on every call that needs them, because the community rotates labels and the engine keeps no copy of its own: a stale copy costs the caller a refused proof, never a mistaken one.\",\n      \"title\": \"CommunityParameters\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Multibase\": {\n      \"description\": \"A binary value, multibase base58btc over the suite's canonical encoding.\",\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"Multibase\",\n      \"type\": \"string\"\n    },\n    \"PublishedConfig\": {\n      \"additionalProperties\": false,\n      \"description\": \"The parameters exactly as they now appear in this community's join manifest, under vetting.ext. What an applicant and a vetter read.\",\n      \"properties\": {\n        \"dripPerTick\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"events\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/PublishedEvent\"\n          },\n          \"type\": \"array\"\n        },\n        \"helperKey\": {\n          \"description\": \"The helper verification key, multibase — named for its role on the wire rather than for hvk.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"suite\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tickLength\": {\n          \"$ref\": \"#/$defs/TickLength\"\n        },\n        \"tokenKey\": {\n          \"description\": \"The token verification key, multibase — named for its role on the wire rather than for tvk.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tokenLabels\": {\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"vetterLabels\": {\n          \"description\": \"Class labels published whole, e.g. vetter/2026-09 — a request names one of these, not the bare period.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"suite\",\n        \"helperKey\",\n        \"tokenKey\",\n        \"vetterLabels\",\n        \"tokenLabels\",\n        \"dripPerTick\",\n        \"tickLength\",\n        \"events\"\n      ],\n      \"title\": \"PublishedConfig\",\n      \"type\": \"object\"\n    },\n    \"PublishedEvent\": {\n      \"additionalProperties\": false,\n      \"description\": \"The published shape drops approvedBy and graceDays: who approved is the community's own record, and a vetter is told closesAfter when its request is approved rather than being handed the raw grace period here.\",\n      \"properties\": {\n        \"endDate\": {\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"eventId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"groupFloor\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"startDate\": {\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"tiers\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Tier\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"eventId\",\n        \"startDate\",\n        \"endDate\",\n        \"groupFloor\",\n        \"tiers\"\n      ],\n      \"title\": \"PublishedEvent\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"application\": {\n          \"$ref\": \"#/$defs/ApplicationSummary\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"application\"\n      ],\n      \"title\": \"VTA PCS — Applications — Create — response payload\",\n      \"type\": \"object\"\n    },\n    \"StatementMeta\": {\n      \"additionalProperties\": false,\n      \"description\": \"What a Vetting Statement would have said, minus its issuer.\",\n      \"properties\": {\n        \"cardDigestMultibase\": {\n          \"description\": \"Digest of that card, as the vetter verified it.\",\n          \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n          \"type\": \"string\"\n        },\n        \"claimsVerified\": {\n          \"description\": \"The claim types the vetter checked.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"community\": {\n          \"description\": \"The community this attestation is for. An attestation is not portable between communities.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"declaredRelationship\": {\n          \"description\": \"The relationship the vetter declared, which the community's independence rules count.\",\n          \"enum\": [\n            \"none\",\n            \"family\",\n            \"sameEmployer\",\n            \"closeFriend\",\n            \"other\"\n          ],\n          \"type\": \"string\"\n        },\n        \"identityCommitment\": {\n          \"description\": \"The commitment on the Vetting Card the applicant showed. Consistency across attestations is what stops two applicants pooling them.\",\n          \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n          \"type\": \"string\"\n        },\n        \"livenessConfirmed\": {\n          \"description\": \"Whether the vetter confirmed a live person.\",\n          \"type\": \"boolean\"\n        },\n        \"method\": {\n          \"description\": \"How the vetter met the applicant.\",\n          \"enum\": [\n            \"inPerson\",\n            \"video\",\n            \"priorAcquaintance\"\n          ],\n          \"type\": \"string\"\n        },\n        \"requirementsDigest\": {\n          \"description\": \"The digest of the criterion's requirements as the vetter read them.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tokenLabel\": {\n          \"description\": \"The token label spent, repeated inside the bound facts so it cannot be swapped in transit.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tokenSerial\": {\n          \"description\": \"The token serial spent, likewise bound.\",\n          \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n          \"type\": \"string\"\n        },\n        \"validFrom\": {\n          \"description\": \"A DATE, never a timestamp: an exact time would let a community line an attestation up with a vetter's activity, which undoes the proof without touching it.\",\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"validUntil\": {\n          \"description\": \"A date, for the same reason.\",\n          \"format\": \"date\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"community\",\n        \"requirementsDigest\",\n        \"method\",\n        \"claimsVerified\",\n        \"livenessConfirmed\",\n        \"declaredRelationship\",\n        \"identityCommitment\",\n        \"cardDigestMultibase\",\n        \"validFrom\",\n        \"validUntil\",\n        \"tokenLabel\",\n        \"tokenSerial\"\n      ],\n      \"type\": \"object\"\n    },\n    \"TickLength\": {\n      \"description\": \"The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`).\",\n      \"pattern\": \"^P(?:\\\\d+D(?:T\\\\d+H)?|T\\\\d+H)$\",\n      \"title\": \"TickLength\",\n      \"type\": \"string\"\n    },\n    \"Tier\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"dripPerTick\": {\n          \"description\": \"How many tokens a tick under this tier yields.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"name\": {\n          \"description\": \"How the menu names it: desk, busy-desk.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"name\",\n        \"dripPerTick\"\n      ],\n      \"title\": \"Tier\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/pcs/applications/create/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"An applicant's client asks its VTA to start a hidden-vetting application: the VTA derives a fresh PCS key for it, keeps the key, and returns the PCS identifier vetters attest to.\",\n  \"properties\": {\n    \"community\": {\n      \"description\": \"The community's DID: the helper whose parameters the engine runs under.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"contextId\": {\n      \"description\": \"The context the engine belongs to. Its key is derived from this context's base.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"joinDid\": {\n      \"description\": \"The DID the applicant joins the community as. Bound into the proof, so the proof cannot be carried to another join.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"parameters\": {\n      \"$ref\": \"#/$defs/CommunityParameters\",\n      \"description\": \"The community's published hidden-vetting parameters, copied verbatim from its join manifest.\"\n    }\n  },\n  \"required\": [\n    \"contextId\",\n    \"community\",\n    \"joinDid\",\n    \"parameters\"\n  ],\n  \"title\": \"VTA PCS — Applications — Create — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"ApplicationSummary\":{\"additionalProperties\":false,\"description\":\"An applicant engine as the VTA holds it, without its key.\",\"properties\":{\"applicationId\":{\"description\":\"The VTA's handle for this application. Opaque; never sent to the community.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"attestations\":{\"description\":\"The metadata of each attestation held, in the order received. Metadata names no vetter.\",\"items\":{\"$ref\":\"#/$defs/StatementMeta\"},\"type\":\"array\"},\"community\":{\"description\":\"The community's DID.\",\"minLength\":1,\"type\":\"string\"},\"contextId\":{\"description\":\"The context the application's key is derived in.\",\"minLength\":1,\"type\":\"string\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"id\":{\"$ref\":\"#/$defs/Multibase\",\"description\":\"The applicant's PCS identifier: what a vetter attests to, carried in a vetting/request's `ext`.\"},\"joinDid\":{\"description\":\"The DID the application joins as.\",\"minLength\":1,\"type\":\"string\"},\"suite\":{\"maxLength\":64,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"applicationId\",\"contextId\",\"community\",\"joinDid\",\"suite\",\"id\",\"attestations\",\"createdAt\"],\"title\":\"ApplicationSummary\",\"type\":\"object\"},\"CommunityParameters\":{\"$ref\":\"#/$defs/PublishedConfig\",\"description\":\"The community's hidden-vetting parameters exactly as its join manifest publishes them, under the criterion's `vetting.ext`. The caller copies them in verbatim on every call that needs them, because the community rotates labels and the engine keeps no copy of its own: a stale copy costs the caller a refused proof, never a mistaken one.\",\"title\":\"CommunityParameters\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Multibase\":{\"description\":\"A binary value, multibase base58btc over the suite's canonical encoding.\",\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"Multibase\",\"type\":\"string\"},\"PublishedConfig\":{\"additionalProperties\":false,\"description\":\"The parameters exactly as they now appear in this community's join manifest, under vetting.ext. What an applicant and a vetter read.\",\"properties\":{\"dripPerTick\":{\"minimum\":1,\"type\":\"integer\"},\"events\":{\"items\":{\"$ref\":\"#/$defs/PublishedEvent\"},\"type\":\"array\"},\"helperKey\":{\"description\":\"The helper verification key, multibase — named for its role on the wire rather than for hvk.\",\"minLength\":1,\"type\":\"string\"},\"suite\":{\"minLength\":1,\"type\":\"string\"},\"tickLength\":{\"$ref\":\"#/$defs/TickLength\"},\"tokenKey\":{\"description\":\"The token verification key, multibase — named for its role on the wire rather than for tvk.\",\"minLength\":1,\"type\":\"string\"},\"tokenLabels\":{\"items\":{\"minLength\":1,\"type\":\"string\"},\"type\":\"array\"},\"vetterLabels\":{\"description\":\"Class labels published whole, e.g. vetter/2026-09 — a request names one of these, not the bare period.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"suite\",\"helperKey\",\"tokenKey\",\"vetterLabels\",\"tokenLabels\",\"dripPerTick\",\"tickLength\",\"events\"],\"title\":\"PublishedConfig\",\"type\":\"object\"},\"PublishedEvent\":{\"additionalProperties\":false,\"description\":\"The published shape drops approvedBy and graceDays: who approved is the community's own record, and a vetter is told closesAfter when its request is approved rather than being handed the raw grace period here.\",\"properties\":{\"endDate\":{\"format\":\"date\",\"type\":\"string\"},\"eventId\":{\"minLength\":1,\"type\":\"string\"},\"groupFloor\":{\"minimum\":1,\"type\":\"integer\"},\"startDate\":{\"format\":\"date\",\"type\":\"string\"},\"tiers\":{\"items\":{\"$ref\":\"#/$defs/Tier\"},\"type\":\"array\"}},\"required\":[\"eventId\",\"startDate\",\"endDate\",\"groupFloor\",\"tiers\"],\"title\":\"PublishedEvent\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"application\":{\"$ref\":\"#/$defs/ApplicationSummary\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"application\"],\"title\":\"VTA PCS — Applications — Create — response payload\",\"type\":\"object\"},\"StatementMeta\":{\"additionalProperties\":false,\"description\":\"What a Vetting Statement would have said, minus its issuer.\",\"properties\":{\"cardDigestMultibase\":{\"description\":\"Digest of that card, as the vetter verified it.\",\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"claimsVerified\":{\"description\":\"The claim types the vetter checked.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"},\"community\":{\"description\":\"The community this attestation is for. An attestation is not portable between communities.\",\"minLength\":1,\"type\":\"string\"},\"declaredRelationship\":{\"description\":\"The relationship the vetter declared, which the community's independence rules count.\",\"enum\":[\"none\",\"family\",\"sameEmployer\",\"closeFriend\",\"other\"],\"type\":\"string\"},\"identityCommitment\":{\"description\":\"The commitment on the Vetting Card the applicant showed. Consistency across attestations is what stops two applicants pooling them.\",\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"livenessConfirmed\":{\"description\":\"Whether the vetter confirmed a live person.\",\"type\":\"boolean\"},\"method\":{\"description\":\"How the vetter met the applicant.\",\"enum\":[\"inPerson\",\"video\",\"priorAcquaintance\"],\"type\":\"string\"},\"requirementsDigest\":{\"description\":\"The digest of the criterion's requirements as the vetter read them.\",\"minLength\":1,\"type\":\"string\"},\"tokenLabel\":{\"description\":\"The token label spent, repeated inside the bound facts so it cannot be swapped in transit.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"tokenSerial\":{\"description\":\"The token serial spent, likewise bound.\",\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"validFrom\":{\"description\":\"A DATE, never a timestamp: an exact time would let a community line an attestation up with a vetter's activity, which undoes the proof without touching it.\",\"format\":\"date\",\"type\":\"string\"},\"validUntil\":{\"description\":\"A date, for the same reason.\",\"format\":\"date\",\"type\":\"string\"}},\"required\":[\"community\",\"requirementsDigest\",\"method\",\"claimsVerified\",\"livenessConfirmed\",\"declaredRelationship\",\"identityCommitment\",\"cardDigestMultibase\",\"validFrom\",\"validUntil\",\"tokenLabel\",\"tokenSerial\"],\"type\":\"object\"},\"TickLength\":{\"description\":\"The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`).\",\"pattern\":\"^P(?:\\\\d+D(?:T\\\\d+H)?|T\\\\d+H)$\",\"title\":\"TickLength\",\"type\":\"string\"},\"Tier\":{\"additionalProperties\":false,\"properties\":{\"dripPerTick\":{\"description\":\"How many tokens a tick under this tier yields.\",\"minimum\":1,\"type\":\"integer\"},\"name\":{\"description\":\"How the menu names it: desk, busy-desk.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"name\",\"dripPerTick\"],\"title\":\"Tier\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vta/pcs/applications/create/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"An applicant's client asks its VTA to start a hidden-vetting application: the VTA derives a fresh PCS key for it, keeps the key, and returns the PCS identifier vetters attest to.\",\"properties\":{\"community\":{\"description\":\"The community's DID: the helper whose parameters the engine runs under.\",\"minLength\":1,\"type\":\"string\"},\"contextId\":{\"description\":\"The context the engine belongs to. Its key is derived from this context's base.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"joinDid\":{\"description\":\"The DID the applicant joins the community as. Bound into the proof, so the proof cannot be carried to another join.\",\"minLength\":1,\"type\":\"string\"},\"parameters\":{\"$ref\":\"#/$defs/CommunityParameters\",\"description\":\"The community's published hidden-vetting parameters, copied verbatim from its join manifest.\"}},\"required\":[\"contextId\",\"community\",\"joinDid\",\"parameters\"],\"title\":\"VTA PCS — Applications — Create — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -3370,7 +2706,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ApplicationSummary\": {\n      \"additionalProperties\": false,\n      \"description\": \"An applicant engine as the VTA holds it, without its key.\",\n      \"properties\": {\n        \"applicationId\": {\n          \"description\": \"The VTA's handle for this application. Opaque; never sent to the community.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"attestations\": {\n          \"description\": \"The metadata of each attestation held, in the order received. Metadata names no vetter.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/StatementMeta\"\n          },\n          \"type\": \"array\"\n        },\n        \"community\": {\n          \"description\": \"The community's DID.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"contextId\": {\n          \"description\": \"The context the application's key is derived in.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"id\": {\n          \"$ref\": \"#/$defs/Multibase\",\n          \"description\": \"The applicant's PCS identifier: what a vetter attests to, carried in a vetting/request's `ext`.\"\n        },\n        \"joinDid\": {\n          \"description\": \"The DID the application joins as.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"suite\": {\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"applicationId\",\n        \"contextId\",\n        \"community\",\n        \"joinDid\",\n        \"suite\",\n        \"id\",\n        \"attestations\",\n        \"createdAt\"\n      ],\n      \"title\": \"ApplicationSummary\",\n      \"type\": \"object\"\n    },\n    \"CommunityParameters\": {\n      \"$ref\": \"#/$defs/PublishedConfig\",\n      \"description\": \"The community's hidden-vetting parameters exactly as its join manifest publishes them, under the criterion's `vetting.ext`. The caller copies them in verbatim on every call that needs them, because the community rotates labels and the engine keeps no copy of its own: a stale copy costs the caller a refused proof, never a mistaken one.\",\n      \"title\": \"CommunityParameters\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Multibase\": {\n      \"description\": \"A binary value, multibase base58btc over the suite's canonical encoding.\",\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"Multibase\",\n      \"type\": \"string\"\n    },\n    \"PublishedConfig\": {\n      \"additionalProperties\": false,\n      \"description\": \"The parameters exactly as they now appear in this community's join manifest, under vetting.ext. What an applicant and a vetter read.\",\n      \"properties\": {\n        \"dripPerTick\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"events\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/PublishedEvent\"\n          },\n          \"type\": \"array\"\n        },\n        \"helperKey\": {\n          \"description\": \"The helper verification key, multibase — named for its role on the wire rather than for hvk.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"suite\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tickLength\": {\n          \"$ref\": \"#/$defs/TickLength\"\n        },\n        \"tokenKey\": {\n          \"description\": \"The token verification key, multibase — named for its role on the wire rather than for tvk.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tokenLabels\": {\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"vetterLabels\": {\n          \"description\": \"Class labels published whole, e.g. vetter/2026-09 — a request names one of these, not the bare period.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"suite\",\n        \"helperKey\",\n        \"tokenKey\",\n        \"vetterLabels\",\n        \"tokenLabels\",\n        \"dripPerTick\",\n        \"tickLength\",\n        \"events\"\n      ],\n      \"title\": \"PublishedConfig\",\n      \"type\": \"object\"\n    },\n    \"PublishedEvent\": {\n      \"additionalProperties\": false,\n      \"description\": \"The published shape drops approvedBy and graceDays: who approved is the community's own record, and a vetter is told closesAfter when its request is approved rather than being handed the raw grace period here.\",\n      \"properties\": {\n        \"endDate\": {\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"eventId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"groupFloor\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"startDate\": {\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"tiers\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Tier\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"eventId\",\n        \"startDate\",\n        \"endDate\",\n        \"groupFloor\",\n        \"tiers\"\n      ],\n      \"title\": \"PublishedEvent\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"application\": {\n          \"$ref\": \"#/$defs/ApplicationSummary\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"application\"\n      ],\n      \"title\": \"VTA PCS — Applications — Create — response payload\",\n      \"type\": \"object\"\n    },\n    \"StatementMeta\": {\n      \"additionalProperties\": false,\n      \"description\": \"What a Vetting Statement would have said, minus its issuer.\",\n      \"properties\": {\n        \"cardDigestMultibase\": {\n          \"description\": \"Digest of that card, as the vetter verified it.\",\n          \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n          \"type\": \"string\"\n        },\n        \"claimsVerified\": {\n          \"description\": \"The claim types the vetter checked.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"community\": {\n          \"description\": \"The community this attestation is for. An attestation is not portable between communities.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"declaredRelationship\": {\n          \"description\": \"The relationship the vetter declared, which the community's independence rules count.\",\n          \"enum\": [\n            \"none\",\n            \"family\",\n            \"sameEmployer\",\n            \"closeFriend\",\n            \"other\"\n          ],\n          \"type\": \"string\"\n        },\n        \"identityCommitment\": {\n          \"description\": \"The commitment on the Vetting Card the applicant showed. Consistency across attestations is what stops two applicants pooling them.\",\n          \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n          \"type\": \"string\"\n        },\n        \"livenessConfirmed\": {\n          \"description\": \"Whether the vetter confirmed a live person.\",\n          \"type\": \"boolean\"\n        },\n        \"method\": {\n          \"description\": \"How the vetter met the applicant.\",\n          \"enum\": [\n            \"inPerson\",\n            \"video\",\n            \"priorAcquaintance\"\n          ],\n          \"type\": \"string\"\n        },\n        \"requirementsDigest\": {\n          \"description\": \"The digest of the criterion's requirements as the vetter read them.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tokenLabel\": {\n          \"description\": \"The token label spent, repeated inside the bound facts so it cannot be swapped in transit.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tokenSerial\": {\n          \"description\": \"The token serial spent, likewise bound.\",\n          \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n          \"type\": \"string\"\n        },\n        \"validFrom\": {\n          \"description\": \"A DATE, never a timestamp: an exact time would let a community line an attestation up with a vetter's activity, which undoes the proof without touching it.\",\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"validUntil\": {\n          \"description\": \"A date, for the same reason.\",\n          \"format\": \"date\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"community\",\n        \"requirementsDigest\",\n        \"method\",\n        \"claimsVerified\",\n        \"livenessConfirmed\",\n        \"declaredRelationship\",\n        \"identityCommitment\",\n        \"cardDigestMultibase\",\n        \"validFrom\",\n        \"validUntil\",\n        \"tokenLabel\",\n        \"tokenSerial\"\n      ],\n      \"type\": \"object\"\n    },\n    \"TickLength\": {\n      \"description\": \"The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`).\",\n      \"pattern\": \"^P(?:\\\\d+D(?:T\\\\d+H)?|T\\\\d+H)$\",\n      \"title\": \"TickLength\",\n      \"type\": \"string\"\n    },\n    \"Tier\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"dripPerTick\": {\n          \"description\": \"How many tokens a tick under this tier yields.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"name\": {\n          \"description\": \"How the menu names it: desk, busy-desk.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"name\",\n        \"dripPerTick\"\n      ],\n      \"title\": \"Tier\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"ApplicationSummary\":{\"additionalProperties\":false,\"description\":\"An applicant engine as the VTA holds it, without its key.\",\"properties\":{\"applicationId\":{\"description\":\"The VTA's handle for this application. Opaque; never sent to the community.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"attestations\":{\"description\":\"The metadata of each attestation held, in the order received. Metadata names no vetter.\",\"items\":{\"$ref\":\"#/$defs/StatementMeta\"},\"type\":\"array\"},\"community\":{\"description\":\"The community's DID.\",\"minLength\":1,\"type\":\"string\"},\"contextId\":{\"description\":\"The context the application's key is derived in.\",\"minLength\":1,\"type\":\"string\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"id\":{\"$ref\":\"#/$defs/Multibase\",\"description\":\"The applicant's PCS identifier: what a vetter attests to, carried in a vetting/request's `ext`.\"},\"joinDid\":{\"description\":\"The DID the application joins as.\",\"minLength\":1,\"type\":\"string\"},\"suite\":{\"maxLength\":64,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"applicationId\",\"contextId\",\"community\",\"joinDid\",\"suite\",\"id\",\"attestations\",\"createdAt\"],\"title\":\"ApplicationSummary\",\"type\":\"object\"},\"CommunityParameters\":{\"$ref\":\"#/$defs/PublishedConfig\",\"description\":\"The community's hidden-vetting parameters exactly as its join manifest publishes them, under the criterion's `vetting.ext`. The caller copies them in verbatim on every call that needs them, because the community rotates labels and the engine keeps no copy of its own: a stale copy costs the caller a refused proof, never a mistaken one.\",\"title\":\"CommunityParameters\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Multibase\":{\"description\":\"A binary value, multibase base58btc over the suite's canonical encoding.\",\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"Multibase\",\"type\":\"string\"},\"PublishedConfig\":{\"additionalProperties\":false,\"description\":\"The parameters exactly as they now appear in this community's join manifest, under vetting.ext. What an applicant and a vetter read.\",\"properties\":{\"dripPerTick\":{\"minimum\":1,\"type\":\"integer\"},\"events\":{\"items\":{\"$ref\":\"#/$defs/PublishedEvent\"},\"type\":\"array\"},\"helperKey\":{\"description\":\"The helper verification key, multibase — named for its role on the wire rather than for hvk.\",\"minLength\":1,\"type\":\"string\"},\"suite\":{\"minLength\":1,\"type\":\"string\"},\"tickLength\":{\"$ref\":\"#/$defs/TickLength\"},\"tokenKey\":{\"description\":\"The token verification key, multibase — named for its role on the wire rather than for tvk.\",\"minLength\":1,\"type\":\"string\"},\"tokenLabels\":{\"items\":{\"minLength\":1,\"type\":\"string\"},\"type\":\"array\"},\"vetterLabels\":{\"description\":\"Class labels published whole, e.g. vetter/2026-09 — a request names one of these, not the bare period.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"suite\",\"helperKey\",\"tokenKey\",\"vetterLabels\",\"tokenLabels\",\"dripPerTick\",\"tickLength\",\"events\"],\"title\":\"PublishedConfig\",\"type\":\"object\"},\"PublishedEvent\":{\"additionalProperties\":false,\"description\":\"The published shape drops approvedBy and graceDays: who approved is the community's own record, and a vetter is told closesAfter when its request is approved rather than being handed the raw grace period here.\",\"properties\":{\"endDate\":{\"format\":\"date\",\"type\":\"string\"},\"eventId\":{\"minLength\":1,\"type\":\"string\"},\"groupFloor\":{\"minimum\":1,\"type\":\"integer\"},\"startDate\":{\"format\":\"date\",\"type\":\"string\"},\"tiers\":{\"items\":{\"$ref\":\"#/$defs/Tier\"},\"type\":\"array\"}},\"required\":[\"eventId\",\"startDate\",\"endDate\",\"groupFloor\",\"tiers\"],\"title\":\"PublishedEvent\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"application\":{\"$ref\":\"#/$defs/ApplicationSummary\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"application\"],\"title\":\"VTA PCS — Applications — Create — response payload\",\"type\":\"object\"},\"StatementMeta\":{\"additionalProperties\":false,\"description\":\"What a Vetting Statement would have said, minus its issuer.\",\"properties\":{\"cardDigestMultibase\":{\"description\":\"Digest of that card, as the vetter verified it.\",\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"claimsVerified\":{\"description\":\"The claim types the vetter checked.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"},\"community\":{\"description\":\"The community this attestation is for. An attestation is not portable between communities.\",\"minLength\":1,\"type\":\"string\"},\"declaredRelationship\":{\"description\":\"The relationship the vetter declared, which the community's independence rules count.\",\"enum\":[\"none\",\"family\",\"sameEmployer\",\"closeFriend\",\"other\"],\"type\":\"string\"},\"identityCommitment\":{\"description\":\"The commitment on the Vetting Card the applicant showed. Consistency across attestations is what stops two applicants pooling them.\",\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"livenessConfirmed\":{\"description\":\"Whether the vetter confirmed a live person.\",\"type\":\"boolean\"},\"method\":{\"description\":\"How the vetter met the applicant.\",\"enum\":[\"inPerson\",\"video\",\"priorAcquaintance\"],\"type\":\"string\"},\"requirementsDigest\":{\"description\":\"The digest of the criterion's requirements as the vetter read them.\",\"minLength\":1,\"type\":\"string\"},\"tokenLabel\":{\"description\":\"The token label spent, repeated inside the bound facts so it cannot be swapped in transit.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"tokenSerial\":{\"description\":\"The token serial spent, likewise bound.\",\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"validFrom\":{\"description\":\"A DATE, never a timestamp: an exact time would let a community line an attestation up with a vetter's activity, which undoes the proof without touching it.\",\"format\":\"date\",\"type\":\"string\"},\"validUntil\":{\"description\":\"A date, for the same reason.\",\"format\":\"date\",\"type\":\"string\"}},\"required\":[\"community\",\"requirementsDigest\",\"method\",\"claimsVerified\",\"livenessConfirmed\",\"declaredRelationship\",\"identityCommitment\",\"cardDigestMultibase\",\"validFrom\",\"validUntil\",\"tokenLabel\",\"tokenSerial\"],\"type\":\"object\"},\"TickLength\":{\"description\":\"The length of one tick of the drip, as an ISO 8601 duration in days and/or hours — at least `PT1H`. A label's tick `t` is the window starting `t` tick lengths after the label's start (`vtc/vetting/vetters/pcs-tokens`).\",\"pattern\":\"^P(?:\\\\d+D(?:T\\\\d+H)?|T\\\\d+H)$\",\"title\":\"TickLength\",\"type\":\"string\"},\"Tier\":{\"additionalProperties\":false,\"properties\":{\"dripPerTick\":{\"description\":\"How many tokens a tick under this tier yields.\",\"minimum\":1,\"type\":\"integer\"},\"name\":{\"description\":\"How the menu names it: desk, busy-desk.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"name\",\"dripPerTick\"],\"title\":\"Tier\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

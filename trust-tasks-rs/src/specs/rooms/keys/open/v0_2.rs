@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,69 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///An agent asks the party holding its principal's room keys to open one sealed record. The key never crosses to the agent: this is a decryption oracle, not a key-release call.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/rooms/keys/open/0.2",
-///  "title": "Payload",
-///  "description": "An agent asks the party holding its principal's room keys to open one sealed record. The key never crosses to the agent: this is a decryption oracle, not a key-release call.",
-///  "type": "object",
-///  "required": [
-///    "key",
-///    "roomId",
-///    "sealed",
-///    "version"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "key": {
-///      "description": "The record's key within the room.",
-///      "type": "string",
-///      "maxLength": 512
-///    },
-///    "roomId": {
-///      "description": "The room the record belongs to. Part of the record's associated data, so a caller naming the wrong room gets an authentication failure rather than someone else's plaintext.",
-///      "type": "string"
-///    },
-///    "sealed": {
-///      "description": "The sealed record exactly as the host returned it.",
-///      "type": "object",
-///      "required": [
-///        "ciphertext",
-///        "epoch",
-///        "nonce"
-///      ],
-///      "properties": {
-///        "ciphertext": {
-///          "description": "base64url.",
-///          "type": "string"
-///        },
-///        "epoch": {
-///          "description": "The epoch it was sealed under. The oracle refuses an epoch it holds no key for rather than guessing.",
-///          "type": "integer",
-///          "minimum": 1.0
-///        },
-///        "nonce": {
-///          "description": "base64url.",
-///          "type": "string"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    "version": {
-///      "description": "The record's version. Bound into the associated data, so a record served at a different version does not open.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -228,16 +141,6 @@ impl Payload {
 }
 ///The record's key within the room.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The record's key within the room.",
-///  "type": "string",
-///  "maxLength": 512
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadKey(::std::string::String);
@@ -297,36 +200,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadKey {
 }
 ///The sealed record exactly as the host returned it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The sealed record exactly as the host returned it.",
-///  "type": "object",
-///  "required": [
-///    "ciphertext",
-///    "epoch",
-///    "nonce"
-///  ],
-///  "properties": {
-///    "ciphertext": {
-///      "description": "base64url.",
-///      "type": "string"
-///    },
-///    "epoch": {
-///      "description": "The epoch it was sealed under. The oracle refuses an epoch it holds no key for rather than guessing.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "nonce": {
-///      "description": "base64url.",
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -345,30 +218,6 @@ impl PayloadSealed {
 }
 ///Success response to rooms/keys/open. Type https://trusttasks.org/spec/rooms/keys/open/0.2#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to rooms/keys/open. Type https://trusttasks.org/spec/rooms/keys/open/0.2#response.",
-///  "type": "object",
-///  "required": [
-///    "plaintext"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "plaintext": {
-///      "description": "The opened record, base64url. The only thing that crosses back — never the key.",
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -606,7 +455,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/keys/open. Type https://trusttasks.org/spec/rooms/keys/open/0.2#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"plaintext\": {\n          \"description\": \"The opened record, base64url. The only thing that crosses back — never the key.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"plaintext\"\n      ],\n      \"title\": \"Rooms Keys Open — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/rooms/keys/open/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"An agent asks the party holding its principal's room keys to open one sealed record. The key never crosses to the agent: this is a decryption oracle, not a key-release call.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"key\": {\n      \"description\": \"The record's key within the room.\",\n      \"maxLength\": 512,\n      \"type\": \"string\"\n    },\n    \"roomId\": {\n      \"description\": \"The room the record belongs to. Part of the record's associated data, so a caller naming the wrong room gets an authentication failure rather than someone else's plaintext.\",\n      \"type\": \"string\"\n    },\n    \"sealed\": {\n      \"additionalProperties\": false,\n      \"description\": \"The sealed record exactly as the host returned it.\",\n      \"properties\": {\n        \"ciphertext\": {\n          \"description\": \"base64url.\",\n          \"type\": \"string\"\n        },\n        \"epoch\": {\n          \"description\": \"The epoch it was sealed under. The oracle refuses an epoch it holds no key for rather than guessing.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"nonce\": {\n          \"description\": \"base64url.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"ciphertext\",\n        \"nonce\",\n        \"epoch\"\n      ],\n      \"type\": \"object\"\n    },\n    \"version\": {\n      \"description\": \"The record's version. Bound into the associated data, so a record served at a different version does not open.\",\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"roomId\",\n    \"key\",\n    \"version\",\n    \"sealed\"\n  ],\n  \"title\": \"Rooms Keys Open — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to rooms/keys/open. Type https://trusttasks.org/spec/rooms/keys/open/0.2#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"plaintext\":{\"description\":\"The opened record, base64url. The only thing that crosses back — never the key.\",\"type\":\"string\"}},\"required\":[\"plaintext\"],\"title\":\"Rooms Keys Open — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/rooms/keys/open/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"An agent asks the party holding its principal's room keys to open one sealed record. The key never crosses to the agent: this is a decryption oracle, not a key-release call.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"key\":{\"description\":\"The record's key within the room.\",\"maxLength\":512,\"type\":\"string\"},\"roomId\":{\"description\":\"The room the record belongs to. Part of the record's associated data, so a caller naming the wrong room gets an authentication failure rather than someone else's plaintext.\",\"type\":\"string\"},\"sealed\":{\"additionalProperties\":false,\"description\":\"The sealed record exactly as the host returned it.\",\"properties\":{\"ciphertext\":{\"description\":\"base64url.\",\"type\":\"string\"},\"epoch\":{\"description\":\"The epoch it was sealed under. The oracle refuses an epoch it holds no key for rather than guessing.\",\"minimum\":1,\"type\":\"integer\"},\"nonce\":{\"description\":\"base64url.\",\"type\":\"string\"}},\"required\":[\"ciphertext\",\"nonce\",\"epoch\"],\"type\":\"object\"},\"version\":{\"description\":\"The record's version. Bound into the associated data, so a record served at a different version does not open.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"roomId\",\"key\",\"version\",\"sealed\"],\"title\":\"Rooms Keys Open — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -615,7 +464,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/keys/open. Type https://trusttasks.org/spec/rooms/keys/open/0.2#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"plaintext\": {\n          \"description\": \"The opened record, base64url. The only thing that crosses back — never the key.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"plaintext\"\n      ],\n      \"title\": \"Rooms Keys Open — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to rooms/keys/open. Type https://trusttasks.org/spec/rooms/keys/open/0.2#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"plaintext\":{\"description\":\"The opened record, base64url. The only thing that crosses back — never the key.\",\"type\":\"string\"}},\"required\":[\"plaintext\"],\"title\":\"Rooms Keys Open — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

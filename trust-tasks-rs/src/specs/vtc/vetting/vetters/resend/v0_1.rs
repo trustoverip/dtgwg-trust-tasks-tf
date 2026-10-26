@@ -35,21 +35,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -71,15 +56,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -143,23 +119,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A vetter asks the community to deliver their live vetter role credential again, over credential-exchange/issue. The request names nothing: it always concerns the sender's own grant. The community issues nothing new and returns the delivered credential's `id` and `validUntil`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/vetting/vetters/resend/0.1",
-///  "title": "Payload",
-///  "description": "A vetter asks the community to deliver their live vetter role credential again, over credential-exchange/issue. The request names nothing: it always concerns the sender's own grant. The community issues nothing new and returns the delivered credential's `id` and `validUntil`.",
-///  "type": "object",
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -182,36 +141,6 @@ impl Payload {
 }
 ///The credential the community delivered again.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The credential the community delivered again.",
-///  "type": "object",
-///  "required": [
-///    "credentialId",
-///    "validUntil"
-///  ],
-///  "properties": {
-///    "credentialId": {
-///      "description": "The `id` of the vetter role credential delivered — the same `credentialId` vtc/vetting/vetters/grant returned.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1,
-///      "pattern": "^[a-zA-Z][a-zA-Z0-9+.-]*:\\S+$"
-///    },
-///    "validUntil": {
-///      "description": "That credential's `validUntil`.",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -231,18 +160,6 @@ impl Response {
 }
 ///The `id` of the vetter role credential delivered — the same `credentialId` vtc/vetting/vetters/grant returned.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The `id` of the vetter role credential delivered — the same `credentialId` vtc/vetting/vetters/grant returned.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1,
-///  "pattern": "^[a-zA-Z][a-zA-Z0-9+.-]*:\\S+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseCredentialId(::std::string::String);
@@ -405,7 +322,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The credential the community delivered again.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"description\": \"The `id` of the vetter role credential delivered — the same `credentialId` vtc/vetting/vetters/grant returned.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"pattern\": \"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+$\",\n          \"type\": \"string\"\n        },\n        \"validUntil\": {\n          \"description\": \"That credential's `validUntil`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialId\",\n        \"validUntil\"\n      ],\n      \"title\": \"VTC Vetting — Vetters Resend — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/vetting/vetters/resend/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A vetter asks the community to deliver their live vetter role credential again, over credential-exchange/issue. The request names nothing: it always concerns the sender's own grant. The community issues nothing new and returns the delivered credential's `id` and `validUntil`.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"title\": \"VTC Vetting — Vetters Resend — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The credential the community delivered again.\",\"properties\":{\"credentialId\":{\"description\":\"The `id` of the vetter role credential delivered — the same `credentialId` vtc/vetting/vetters/grant returned.\",\"maxLength\":512,\"minLength\":1,\"pattern\":\"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+$\",\"type\":\"string\"},\"validUntil\":{\"description\":\"That credential's `validUntil`.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"credentialId\",\"validUntil\"],\"title\":\"VTC Vetting — Vetters Resend — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/vetting/vetters/resend/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A vetter asks the community to deliver their live vetter role credential again, over credential-exchange/issue. The request names nothing: it always concerns the sender's own grant. The community issues nothing new and returns the delivered credential's `id` and `validUntil`.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"title\":\"VTC Vetting — Vetters Resend — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -414,7 +331,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The credential the community delivered again.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"description\": \"The `id` of the vetter role credential delivered — the same `credentialId` vtc/vetting/vetters/grant returned.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"pattern\": \"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+$\",\n          \"type\": \"string\"\n        },\n        \"validUntil\": {\n          \"description\": \"That credential's `validUntil`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialId\",\n        \"validUntil\"\n      ],\n      \"title\": \"VTC Vetting — Vetters Resend — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The credential the community delivered again.\",\"properties\":{\"credentialId\":{\"description\":\"The `id` of the vetter role credential delivered — the same `credentialId` vtc/vetting/vetters/grant returned.\",\"maxLength\":512,\"minLength\":1,\"pattern\":\"^[a-zA-Z][a-zA-Z0-9+.-]*:\\\\S+$\",\"type\":\"string\"},\"validUntil\":{\"description\":\"That credential's `validUntil`.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"credentialId\",\"validUntil\"],\"title\":\"VTC Vetting — Vetters Resend — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

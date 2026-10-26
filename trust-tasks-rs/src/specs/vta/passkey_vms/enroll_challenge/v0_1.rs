@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,38 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Request a fresh WebAuthn registration challenge for adding a passkey verificationMethod to a VTA-managed DID. Step 1 of the two-step enrolment ceremony (challenge → submit). The producer must hold the admin role on the target DID's context.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/passkey-vms/enroll-challenge/0.1",
-///  "title": "Payload",
-///  "description": "Request a fresh WebAuthn registration challenge for adding a passkey verificationMethod to a VTA-managed DID. Step 1 of the two-step enrolment ceremony (challenge → submit). The producer must hold the admin role on the target DID's context.",
-///  "type": "object",
-///  "required": [
-///    "did"
-///  ],
-///  "properties": {
-///    "did": {
-///      "description": "The DID the new passkey verificationMethod will be added to. The producer MUST hold the admin role on this DID's context.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "label": {
-///      "description": "Optional operator-supplied label for the new passkey (e.g. \"MacBook Touch ID\"). Carried through to the WebAuthn user name and, if the ceremony completes, to the published verificationMethod.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -194,16 +138,6 @@ impl Payload {
 }
 ///The DID the new passkey verificationMethod will be added to. The producer MUST hold the admin role on this DID's context.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The DID the new passkey verificationMethod will be added to. The producer MUST hold the admin role on this DID's context.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadDid(::std::string::String);
@@ -263,17 +197,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDid {
 }
 ///Optional operator-supplied label for the new passkey (e.g. "MacBook Touch ID"). Carried through to the WebAuthn user name and, if the ceremony completes, to the published verificationMethod.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Optional operator-supplied label for the new passkey (e.g. \"MacBook Touch ID\"). Carried through to the WebAuthn user name and, if the ceremony completes, to the published verificationMethod.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadLabel(::std::string::String);
@@ -336,76 +259,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadLabel {
 }
 ///The server-issued WebAuthn registration challenge. All byte-valued fields are base64url-encoded (no padding); the browser passes the decoded bytes to navigator.credentials.create.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The server-issued WebAuthn registration challenge. All byte-valued fields are base64url-encoded (no padding); the browser passes the decoded bytes to navigator.credentials.create.",
-///  "type": "object",
-///  "required": [
-///    "ceremonyId",
-///    "challenge",
-///    "rpId",
-///    "rpName",
-///    "userDisplayName",
-///    "userHandle",
-///    "userName"
-///  ],
-///  "properties": {
-///    "ceremonyId": {
-///      "description": "Opaque server-side ceremony id. The producer MUST echo this back in the vta/passkey-vms/enroll-submit request. Binds the challenge, the target DID, and the eventual submission together.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "challenge": {
-///      "description": "WebAuthn challenge (base64url, no padding; at least 32 random bytes).",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "rpId": {
-///      "description": "WebAuthn Relying-Party identifier — a DNS name that matches the origin the browser is served from.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "rpName": {
-///      "description": "Human-readable Relying-Party name.",
-///      "type": "string",
-///      "maxLength": 64,
-///      "minLength": 1
-///    },
-///    "timeoutMs": {
-///      "description": "Suggested ceremony timeout in milliseconds. Advisory; the authenticator and browser apply their own limits.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "userDisplayName": {
-///      "description": "WebAuthn user display name.",
-///      "type": "string",
-///      "maxLength": 64,
-///      "minLength": 1
-///    },
-///    "userHandle": {
-///      "description": "Stable WebAuthn user handle (base64url). Opaque to the client; the VTA derives a per-DID handle.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "userName": {
-///      "description": "WebAuthn user name (e.g. the DID or the operator-supplied label).",
-///      "type": "string",
-///      "maxLength": 64,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -448,16 +301,6 @@ impl Response {
 }
 ///Opaque server-side ceremony id. The producer MUST echo this back in the vta/passkey-vms/enroll-submit request. Binds the challenge, the target DID, and the eventual submission together.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Opaque server-side ceremony id. The producer MUST echo this back in the vta/passkey-vms/enroll-submit request. Binds the challenge, the target DID, and the eventual submission together.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseCeremonyId(::std::string::String);
@@ -517,16 +360,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseCeremonyId {
 }
 ///WebAuthn challenge (base64url, no padding; at least 32 random bytes).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "WebAuthn challenge (base64url, no padding; at least 32 random bytes).",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseChallenge(::std::string::String);
@@ -586,16 +419,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseChallenge {
 }
 ///WebAuthn Relying-Party identifier — a DNS name that matches the origin the browser is served from.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "WebAuthn Relying-Party identifier — a DNS name that matches the origin the browser is served from.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseRpId(::std::string::String);
@@ -655,17 +478,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseRpId {
 }
 ///Human-readable Relying-Party name.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Human-readable Relying-Party name.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseRpName(::std::string::String);
@@ -728,17 +540,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseRpName {
 }
 ///WebAuthn user display name.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "WebAuthn user display name.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseUserDisplayName(::std::string::String);
@@ -801,16 +602,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseUserDisplayName {
 }
 ///Stable WebAuthn user handle (base64url). Opaque to the client; the VTA derives a per-DID handle.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Stable WebAuthn user handle (base64url). Opaque to the client; the VTA derives a per-DID handle.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseUserHandle(::std::string::String);
@@ -870,17 +661,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseUserHandle {
 }
 ///WebAuthn user name (e.g. the DID or the operator-supplied label).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "WebAuthn user name (e.g. the DID or the operator-supplied label).",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseUserName(::std::string::String);
@@ -1170,7 +950,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The server-issued WebAuthn registration challenge. All byte-valued fields are base64url-encoded (no padding); the browser passes the decoded bytes to navigator.credentials.create.\",\n      \"properties\": {\n        \"ceremonyId\": {\n          \"description\": \"Opaque server-side ceremony id. The producer MUST echo this back in the vta/passkey-vms/enroll-submit request. Binds the challenge, the target DID, and the eventual submission together.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"challenge\": {\n          \"description\": \"WebAuthn challenge (base64url, no padding; at least 32 random bytes).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"rpId\": {\n          \"description\": \"WebAuthn Relying-Party identifier — a DNS name that matches the origin the browser is served from.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"rpName\": {\n          \"description\": \"Human-readable Relying-Party name.\",\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"timeoutMs\": {\n          \"description\": \"Suggested ceremony timeout in milliseconds. Advisory; the authenticator and browser apply their own limits.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"userDisplayName\": {\n          \"description\": \"WebAuthn user display name.\",\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"userHandle\": {\n          \"description\": \"Stable WebAuthn user handle (base64url). Opaque to the client; the VTA derives a per-DID handle.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"userName\": {\n          \"description\": \"WebAuthn user name (e.g. the DID or the operator-supplied label).\",\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"ceremonyId\",\n        \"challenge\",\n        \"rpId\",\n        \"rpName\",\n        \"userHandle\",\n        \"userName\",\n        \"userDisplayName\"\n      ],\n      \"title\": \"VTA Passkey-VM Enroll Challenge — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/passkey-vms/enroll-challenge/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Request a fresh WebAuthn registration challenge for adding a passkey verificationMethod to a VTA-managed DID. Step 1 of the two-step enrolment ceremony (challenge → submit). The producer must hold the admin role on the target DID's context.\",\n  \"properties\": {\n    \"did\": {\n      \"description\": \"The DID the new passkey verificationMethod will be added to. The producer MUST hold the admin role on this DID's context.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"label\": {\n      \"description\": \"Optional operator-supplied label for the new passkey (e.g. \\\"MacBook Touch ID\\\"). Carried through to the WebAuthn user name and, if the ceremony completes, to the published verificationMethod.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"did\"\n  ],\n  \"title\": \"VTA Passkey-VM Enroll Challenge — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The server-issued WebAuthn registration challenge. All byte-valued fields are base64url-encoded (no padding); the browser passes the decoded bytes to navigator.credentials.create.\",\"properties\":{\"ceremonyId\":{\"description\":\"Opaque server-side ceremony id. The producer MUST echo this back in the vta/passkey-vms/enroll-submit request. Binds the challenge, the target DID, and the eventual submission together.\",\"minLength\":1,\"type\":\"string\"},\"challenge\":{\"description\":\"WebAuthn challenge (base64url, no padding; at least 32 random bytes).\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"rpId\":{\"description\":\"WebAuthn Relying-Party identifier — a DNS name that matches the origin the browser is served from.\",\"minLength\":1,\"type\":\"string\"},\"rpName\":{\"description\":\"Human-readable Relying-Party name.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"timeoutMs\":{\"description\":\"Suggested ceremony timeout in milliseconds. Advisory; the authenticator and browser apply their own limits.\",\"minimum\":0,\"type\":\"integer\"},\"userDisplayName\":{\"description\":\"WebAuthn user display name.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"userHandle\":{\"description\":\"Stable WebAuthn user handle (base64url). Opaque to the client; the VTA derives a per-DID handle.\",\"minLength\":1,\"type\":\"string\"},\"userName\":{\"description\":\"WebAuthn user name (e.g. the DID or the operator-supplied label).\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"ceremonyId\",\"challenge\",\"rpId\",\"rpName\",\"userHandle\",\"userName\",\"userDisplayName\"],\"title\":\"VTA Passkey-VM Enroll Challenge — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vta/passkey-vms/enroll-challenge/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Request a fresh WebAuthn registration challenge for adding a passkey verificationMethod to a VTA-managed DID. Step 1 of the two-step enrolment ceremony (challenge → submit). The producer must hold the admin role on the target DID's context.\",\"properties\":{\"did\":{\"description\":\"The DID the new passkey verificationMethod will be added to. The producer MUST hold the admin role on this DID's context.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"label\":{\"description\":\"Optional operator-supplied label for the new passkey (e.g. \\\"MacBook Touch ID\\\"). Carried through to the WebAuthn user name and, if the ceremony completes, to the published verificationMethod.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"did\"],\"title\":\"VTA Passkey-VM Enroll Challenge — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1179,7 +959,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The server-issued WebAuthn registration challenge. All byte-valued fields are base64url-encoded (no padding); the browser passes the decoded bytes to navigator.credentials.create.\",\n      \"properties\": {\n        \"ceremonyId\": {\n          \"description\": \"Opaque server-side ceremony id. The producer MUST echo this back in the vta/passkey-vms/enroll-submit request. Binds the challenge, the target DID, and the eventual submission together.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"challenge\": {\n          \"description\": \"WebAuthn challenge (base64url, no padding; at least 32 random bytes).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"rpId\": {\n          \"description\": \"WebAuthn Relying-Party identifier — a DNS name that matches the origin the browser is served from.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"rpName\": {\n          \"description\": \"Human-readable Relying-Party name.\",\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"timeoutMs\": {\n          \"description\": \"Suggested ceremony timeout in milliseconds. Advisory; the authenticator and browser apply their own limits.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"userDisplayName\": {\n          \"description\": \"WebAuthn user display name.\",\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"userHandle\": {\n          \"description\": \"Stable WebAuthn user handle (base64url). Opaque to the client; the VTA derives a per-DID handle.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"userName\": {\n          \"description\": \"WebAuthn user name (e.g. the DID or the operator-supplied label).\",\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"ceremonyId\",\n        \"challenge\",\n        \"rpId\",\n        \"rpName\",\n        \"userHandle\",\n        \"userName\",\n        \"userDisplayName\"\n      ],\n      \"title\": \"VTA Passkey-VM Enroll Challenge — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The server-issued WebAuthn registration challenge. All byte-valued fields are base64url-encoded (no padding); the browser passes the decoded bytes to navigator.credentials.create.\",\"properties\":{\"ceremonyId\":{\"description\":\"Opaque server-side ceremony id. The producer MUST echo this back in the vta/passkey-vms/enroll-submit request. Binds the challenge, the target DID, and the eventual submission together.\",\"minLength\":1,\"type\":\"string\"},\"challenge\":{\"description\":\"WebAuthn challenge (base64url, no padding; at least 32 random bytes).\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"rpId\":{\"description\":\"WebAuthn Relying-Party identifier — a DNS name that matches the origin the browser is served from.\",\"minLength\":1,\"type\":\"string\"},\"rpName\":{\"description\":\"Human-readable Relying-Party name.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"timeoutMs\":{\"description\":\"Suggested ceremony timeout in milliseconds. Advisory; the authenticator and browser apply their own limits.\",\"minimum\":0,\"type\":\"integer\"},\"userDisplayName\":{\"description\":\"WebAuthn user display name.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"userHandle\":{\"description\":\"Stable WebAuthn user handle (base64url). Opaque to the client; the VTA derives a per-DID handle.\",\"minLength\":1,\"type\":\"string\"},\"userName\":{\"description\":\"WebAuthn user name (e.g. the DID or the operator-supplied label).\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"ceremonyId\",\"challenge\",\"rpId\",\"rpName\",\"userHandle\",\"userName\",\"userDisplayName\"],\"title\":\"VTA Passkey-VM Enroll Challenge — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

@@ -41,21 +41,6 @@ This definition constrains the *encoding only*. What the digest is computed over
 
 Restricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that "interoperability is not guaranteed between implementations using such values", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DigestMultibase",
-///  "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-///  "examples": [
-///    "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-///  ],
-///  "type": "string",
-///  "minLength": 16,
-///  "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DigestMultibase(::std::string::String);
@@ -124,21 +109,6 @@ impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -160,15 +130,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -232,21 +193,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///What a member of a community-owned room may do there. `admin` is not among them: minting epochs, admitting and removing members are the community's, as the room's owner, and are exercised through the vtc/rooms/community/* tasks rather than by any member's credential. `curate` is not implied by `write`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "MemberAction",
-///  "description": "What a member of a community-owned room may do there. `admin` is not among them: minting epochs, admitting and removing members are the community's, as the room's owner, and are exercised through the vtc/rooms/community/* tasks rather than by any member's credential. `curate` is not implied by `write`.",
-///  "type": "string",
-///  "enum": [
-///    "read",
-///    "write",
-///    "curate"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -312,22 +258,6 @@ impl ::std::convert::TryFrom<::std::string::String> for MemberAction {
 }
 ///The actions granted, at least one. An empty list confers nothing rather than everything, and a schema that allowed it would make the more dangerous reading available to a careless consumer.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "MemberActions",
-///  "description": "The actions granted, at least one. An empty list confers nothing rather than everything, and a schema that allowed it would make the more dangerous reading available to a careless consumer.",
-///  "type": "array",
-///  "items": {
-///    "$ref": "#/definitions/MemberAction"
-///  },
-///  "maxItems": 3,
-///  "minItems": 1,
-///  "uniqueItems": true
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct MemberActions(pub Vec<MemberAction>);
@@ -349,21 +279,6 @@ impl ::std::convert::From<Vec<MemberAction>> for MemberActions {
 }
 ///Where an admission stands. `offered`: credentials issued and waiting for the member to collect and accept them. `admitted`: accepted — on a sealed tier, the member is in the room's group. `removed`: an administrator removed them; on a sealed tier the room has advanced past them.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "MemberState",
-///  "description": "Where an admission stands. `offered`: credentials issued and waiting for the member to collect and accept them. `admitted`: accepted — on a sealed tier, the member is in the room's group. `removed`: an administrator removed them; on a sealed tier the room has advanced past them.",
-///  "type": "string",
-///  "enum": [
-///    "offered",
-///    "admitted",
-///    "removed"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -429,41 +344,6 @@ impl ::std::convert::TryFrom<::std::string::String> for MemberState {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/rooms/community/members/remove/0.2",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "member",
-///    "reason",
-///    "roomId"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "member": {
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    },
-///    "reason": {
-///      "$ref": "#/definitions/Reason"
-///    },
-///    "roomId": {
-///      "description": "The room's identifier: its DID.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -483,16 +363,6 @@ impl Payload {
 }
 ///`PayloadMember`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadMember(::std::string::String);
@@ -557,17 +427,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadMember {
 }
 ///The room's identifier: its DID.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The room's identifier: its DID.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadRoomId(::std::string::String);
@@ -630,18 +489,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRoomId {
 }
 ///Why the administrator is making this change. Recorded with it in the audit trail. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Reason",
-///  "description": "Why the administrator is making this change. Recorded with it in the audit trail. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.",
-///  "type": "string",
-///  "maxLength": 500,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Reason(::std::string::String);
@@ -704,43 +551,6 @@ impl<'de> ::serde::Deserialize<'de> for Reason {
 }
 ///Success response to vtc/rooms/community/members/remove. Type https://trusttasks.org/spec/vtc/rooms/community/members/remove/0.2#response. The member as recorded, in state `removed`; on `open` and `attributed` rooms the revocation list in force at the room's host, from which the member's credentials are refused; and on a sealed tier the epoch the room advanced to.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to vtc/rooms/community/members/remove. Type https://trusttasks.org/spec/vtc/rooms/community/members/remove/0.2#response. The member as recorded, in state `removed`; on `open` and `attributed` rooms the revocation list in force at the room's host, from which the member's credentials are refused; and on a sealed tier the epoch the room advanced to.",
-///  "type": "object",
-///  "required": [
-///    "member"
-///  ],
-///  "properties": {
-///    "epoch": {
-///      "description": "On a sealed tier, the room epoch after the removal.",
-///      "type": "integer",
-///      "minimum": 2.0
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "member": {
-///      "$ref": "#/definitions/RoomMember"
-///    },
-///    "revocation": {
-///      "description": "On an `open` or `attributed` room: the room's revocation list carrying the withdrawal, as the room's host accepted it. From then on the host refuses every credential the room issued the member before `revokedAt`. Absent on a `private` room, where a member cannot be withdrawn one at a time and their credentials are honoured until `member.validUntil`.",
-///      "$ref": "#/definitions/RevocationHead"
-///    },
-///    "revokedAt": {
-///      "description": "Present with `revocation`: the withdrawal's time.",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -769,32 +579,6 @@ impl Response {
 }
 ///Which `RevocationList` a party holds, without its entries: comparable between the room's key holder and a host, and between two hosts, without disclosing whom the room withdrew.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RevocationHead",
-///  "description": "Which `RevocationList` a party holds, without its entries: comparable between the room's key holder and a host, and between two hosts, without disclosing whom the room withdrew.",
-///  "type": "object",
-///  "required": [
-///    "digest",
-///    "sequence"
-///  ],
-///  "properties": {
-///    "digest": {
-///      "description": "SHA-256 multihash of the list's RFC 8785 (JCS) canonicalization, `proof` included. Two parties holding one sequence with different digests have been given two lists the room signed at one sequence.",
-///      "$ref": "#/definitions/DigestMultibase"
-///    },
-///    "sequence": {
-///      "description": "The list's `sequence`.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -811,54 +595,6 @@ impl RevocationHead {
 }
 ///One party the community admitted to a room it owns, or offered admission to.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RoomMember",
-///  "description": "One party the community admitted to a room it owns, or offered admission to.",
-///  "type": "object",
-///  "required": [
-///    "actions",
-///    "member",
-///    "offeredAt",
-///    "state",
-///    "validUntil"
-///  ],
-///  "properties": {
-///    "actions": {
-///      "$ref": "#/definitions/MemberActions"
-///    },
-///    "admittedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "member": {
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    },
-///    "offeredAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "removedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "state": {
-///      "$ref": "#/definitions/MemberState"
-///    },
-///    "validUntil": {
-///      "description": "When the member's authority credential expires.",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -891,16 +627,6 @@ impl RoomMember {
 }
 ///`RoomMemberMember`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RoomMemberMember(::std::string::String);
@@ -1345,7 +1071,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"MemberAction\": {\n      \"description\": \"What a member of a community-owned room may do there. `admin` is not among them: minting epochs, admitting and removing members are the community's, as the room's owner, and are exercised through the vtc/rooms/community/* tasks rather than by any member's credential. `curate` is not implied by `write`.\",\n      \"enum\": [\n        \"read\",\n        \"write\",\n        \"curate\"\n      ],\n      \"title\": \"MemberAction\",\n      \"type\": \"string\"\n    },\n    \"MemberActions\": {\n      \"description\": \"The actions granted, at least one. An empty list confers nothing rather than everything, and a schema that allowed it would make the more dangerous reading available to a careless consumer.\",\n      \"items\": {\n        \"$ref\": \"#/$defs/MemberAction\"\n      },\n      \"maxItems\": 3,\n      \"minItems\": 1,\n      \"title\": \"MemberActions\",\n      \"type\": \"array\",\n      \"uniqueItems\": true\n    },\n    \"MemberState\": {\n      \"description\": \"Where an admission stands. `offered`: credentials issued and waiting for the member to collect and accept them. `admitted`: accepted — on a sealed tier, the member is in the room's group. `removed`: an administrator removed them; on a sealed tier the room has advanced past them.\",\n      \"enum\": [\n        \"offered\",\n        \"admitted\",\n        \"removed\"\n      ],\n      \"title\": \"MemberState\",\n      \"type\": \"string\"\n    },\n    \"Reason\": {\n      \"description\": \"Why the administrator is making this change. Recorded with it in the audit trail. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.\",\n      \"maxLength\": 500,\n      \"minLength\": 1,\n      \"title\": \"Reason\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vtc/rooms/community/members/remove. Type https://trusttasks.org/spec/vtc/rooms/community/members/remove/0.2#response. The member as recorded, in state `removed`; on `open` and `attributed` rooms the revocation list in force at the room's host, from which the member's credentials are refused; and on a sealed tier the epoch the room advanced to.\",\n      \"properties\": {\n        \"epoch\": {\n          \"description\": \"On a sealed tier, the room epoch after the removal.\",\n          \"minimum\": 2,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"member\": {\n          \"$ref\": \"#/$defs/RoomMember\"\n        },\n        \"revocation\": {\n          \"$ref\": \"#/$defs/RevocationHead\",\n          \"description\": \"On an `open` or `attributed` room: the room's revocation list carrying the withdrawal, as the room's host accepted it. From then on the host refuses every credential the room issued the member before `revokedAt`. Absent on a `private` room, where a member cannot be withdrawn one at a time and their credentials are honoured until `member.validUntil`.\"\n        },\n        \"revokedAt\": {\n          \"description\": \"Present with `revocation`: the withdrawal's time.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"member\"\n      ],\n      \"title\": \"VTC Rooms Community Members Remove — response payload\",\n      \"type\": \"object\"\n    },\n    \"RevocationHead\": {\n      \"additionalProperties\": false,\n      \"description\": \"Which `RevocationList` a party holds, without its entries: comparable between the room's key holder and a host, and between two hosts, without disclosing whom the room withdrew.\",\n      \"properties\": {\n        \"digest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"SHA-256 multihash of the list's RFC 8785 (JCS) canonicalization, `proof` included. Two parties holding one sequence with different digests have been given two lists the room signed at one sequence.\"\n        },\n        \"sequence\": {\n          \"description\": \"The list's `sequence`.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"sequence\",\n        \"digest\"\n      ],\n      \"title\": \"RevocationHead\",\n      \"type\": \"object\"\n    },\n    \"RoomMember\": {\n      \"additionalProperties\": false,\n      \"description\": \"One party the community admitted to a room it owns, or offered admission to.\",\n      \"properties\": {\n        \"actions\": {\n          \"$ref\": \"#/$defs/MemberActions\"\n        },\n        \"admittedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"member\": {\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"offeredAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"removedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"state\": {\n          \"$ref\": \"#/$defs/MemberState\"\n        },\n        \"validUntil\": {\n          \"description\": \"When the member's authority credential expires.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"member\",\n        \"actions\",\n        \"validUntil\",\n        \"state\",\n        \"offeredAt\"\n      ],\n      \"title\": \"RoomMember\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/rooms/community/members/remove/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"member\": {\n      \"maxLength\": 2048,\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    },\n    \"reason\": {\n      \"$ref\": \"#/$defs/Reason\"\n    },\n    \"roomId\": {\n      \"description\": \"The room's identifier: its DID.\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"roomId\",\n    \"member\",\n    \"reason\"\n  ],\n  \"title\": \"VTC Rooms Community Members Remove — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"MemberAction\":{\"description\":\"What a member of a community-owned room may do there. `admin` is not among them: minting epochs, admitting and removing members are the community's, as the room's owner, and are exercised through the vtc/rooms/community/* tasks rather than by any member's credential. `curate` is not implied by `write`.\",\"enum\":[\"read\",\"write\",\"curate\"],\"title\":\"MemberAction\",\"type\":\"string\"},\"MemberActions\":{\"description\":\"The actions granted, at least one. An empty list confers nothing rather than everything, and a schema that allowed it would make the more dangerous reading available to a careless consumer.\",\"items\":{\"$ref\":\"#/$defs/MemberAction\"},\"maxItems\":3,\"minItems\":1,\"title\":\"MemberActions\",\"type\":\"array\",\"uniqueItems\":true},\"MemberState\":{\"description\":\"Where an admission stands. `offered`: credentials issued and waiting for the member to collect and accept them. `admitted`: accepted — on a sealed tier, the member is in the room's group. `removed`: an administrator removed them; on a sealed tier the room has advanced past them.\",\"enum\":[\"offered\",\"admitted\",\"removed\"],\"title\":\"MemberState\",\"type\":\"string\"},\"Reason\":{\"description\":\"Why the administrator is making this change. Recorded with it in the audit trail. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.\",\"maxLength\":500,\"minLength\":1,\"title\":\"Reason\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vtc/rooms/community/members/remove. Type https://trusttasks.org/spec/vtc/rooms/community/members/remove/0.2#response. The member as recorded, in state `removed`; on `open` and `attributed` rooms the revocation list in force at the room's host, from which the member's credentials are refused; and on a sealed tier the epoch the room advanced to.\",\"properties\":{\"epoch\":{\"description\":\"On a sealed tier, the room epoch after the removal.\",\"minimum\":2,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"member\":{\"$ref\":\"#/$defs/RoomMember\"},\"revocation\":{\"$ref\":\"#/$defs/RevocationHead\",\"description\":\"On an `open` or `attributed` room: the room's revocation list carrying the withdrawal, as the room's host accepted it. From then on the host refuses every credential the room issued the member before `revokedAt`. Absent on a `private` room, where a member cannot be withdrawn one at a time and their credentials are honoured until `member.validUntil`.\"},\"revokedAt\":{\"description\":\"Present with `revocation`: the withdrawal's time.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"member\"],\"title\":\"VTC Rooms Community Members Remove — response payload\",\"type\":\"object\"},\"RevocationHead\":{\"additionalProperties\":false,\"description\":\"Which `RevocationList` a party holds, without its entries: comparable between the room's key holder and a host, and between two hosts, without disclosing whom the room withdrew.\",\"properties\":{\"digest\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"SHA-256 multihash of the list's RFC 8785 (JCS) canonicalization, `proof` included. Two parties holding one sequence with different digests have been given two lists the room signed at one sequence.\"},\"sequence\":{\"description\":\"The list's `sequence`.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"sequence\",\"digest\"],\"title\":\"RevocationHead\",\"type\":\"object\"},\"RoomMember\":{\"additionalProperties\":false,\"description\":\"One party the community admitted to a room it owns, or offered admission to.\",\"properties\":{\"actions\":{\"$ref\":\"#/$defs/MemberActions\"},\"admittedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"member\":{\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"offeredAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"removedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"state\":{\"$ref\":\"#/$defs/MemberState\"},\"validUntil\":{\"description\":\"When the member's authority credential expires.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"member\",\"actions\",\"validUntil\",\"state\",\"offeredAt\"],\"title\":\"RoomMember\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/rooms/community/members/remove/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"member\":{\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"reason\":{\"$ref\":\"#/$defs/Reason\"},\"roomId\":{\"description\":\"The room's identifier: its DID.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"roomId\",\"member\",\"reason\"],\"title\":\"VTC Rooms Community Members Remove — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1355,7 +1081,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"MemberAction\": {\n      \"description\": \"What a member of a community-owned room may do there. `admin` is not among them: minting epochs, admitting and removing members are the community's, as the room's owner, and are exercised through the vtc/rooms/community/* tasks rather than by any member's credential. `curate` is not implied by `write`.\",\n      \"enum\": [\n        \"read\",\n        \"write\",\n        \"curate\"\n      ],\n      \"title\": \"MemberAction\",\n      \"type\": \"string\"\n    },\n    \"MemberActions\": {\n      \"description\": \"The actions granted, at least one. An empty list confers nothing rather than everything, and a schema that allowed it would make the more dangerous reading available to a careless consumer.\",\n      \"items\": {\n        \"$ref\": \"#/$defs/MemberAction\"\n      },\n      \"maxItems\": 3,\n      \"minItems\": 1,\n      \"title\": \"MemberActions\",\n      \"type\": \"array\",\n      \"uniqueItems\": true\n    },\n    \"MemberState\": {\n      \"description\": \"Where an admission stands. `offered`: credentials issued and waiting for the member to collect and accept them. `admitted`: accepted — on a sealed tier, the member is in the room's group. `removed`: an administrator removed them; on a sealed tier the room has advanced past them.\",\n      \"enum\": [\n        \"offered\",\n        \"admitted\",\n        \"removed\"\n      ],\n      \"title\": \"MemberState\",\n      \"type\": \"string\"\n    },\n    \"Reason\": {\n      \"description\": \"Why the administrator is making this change. Recorded with it in the audit trail. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.\",\n      \"maxLength\": 500,\n      \"minLength\": 1,\n      \"title\": \"Reason\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vtc/rooms/community/members/remove. Type https://trusttasks.org/spec/vtc/rooms/community/members/remove/0.2#response. The member as recorded, in state `removed`; on `open` and `attributed` rooms the revocation list in force at the room's host, from which the member's credentials are refused; and on a sealed tier the epoch the room advanced to.\",\n      \"properties\": {\n        \"epoch\": {\n          \"description\": \"On a sealed tier, the room epoch after the removal.\",\n          \"minimum\": 2,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"member\": {\n          \"$ref\": \"#/$defs/RoomMember\"\n        },\n        \"revocation\": {\n          \"$ref\": \"#/$defs/RevocationHead\",\n          \"description\": \"On an `open` or `attributed` room: the room's revocation list carrying the withdrawal, as the room's host accepted it. From then on the host refuses every credential the room issued the member before `revokedAt`. Absent on a `private` room, where a member cannot be withdrawn one at a time and their credentials are honoured until `member.validUntil`.\"\n        },\n        \"revokedAt\": {\n          \"description\": \"Present with `revocation`: the withdrawal's time.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"member\"\n      ],\n      \"title\": \"VTC Rooms Community Members Remove — response payload\",\n      \"type\": \"object\"\n    },\n    \"RevocationHead\": {\n      \"additionalProperties\": false,\n      \"description\": \"Which `RevocationList` a party holds, without its entries: comparable between the room's key holder and a host, and between two hosts, without disclosing whom the room withdrew.\",\n      \"properties\": {\n        \"digest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"SHA-256 multihash of the list's RFC 8785 (JCS) canonicalization, `proof` included. Two parties holding one sequence with different digests have been given two lists the room signed at one sequence.\"\n        },\n        \"sequence\": {\n          \"description\": \"The list's `sequence`.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"sequence\",\n        \"digest\"\n      ],\n      \"title\": \"RevocationHead\",\n      \"type\": \"object\"\n    },\n    \"RoomMember\": {\n      \"additionalProperties\": false,\n      \"description\": \"One party the community admitted to a room it owns, or offered admission to.\",\n      \"properties\": {\n        \"actions\": {\n          \"$ref\": \"#/$defs/MemberActions\"\n        },\n        \"admittedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"member\": {\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"offeredAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"removedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"state\": {\n          \"$ref\": \"#/$defs/MemberState\"\n        },\n        \"validUntil\": {\n          \"description\": \"When the member's authority credential expires.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"member\",\n        \"actions\",\n        \"validUntil\",\n        \"state\",\n        \"offeredAt\"\n      ],\n      \"title\": \"RoomMember\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"MemberAction\":{\"description\":\"What a member of a community-owned room may do there. `admin` is not among them: minting epochs, admitting and removing members are the community's, as the room's owner, and are exercised through the vtc/rooms/community/* tasks rather than by any member's credential. `curate` is not implied by `write`.\",\"enum\":[\"read\",\"write\",\"curate\"],\"title\":\"MemberAction\",\"type\":\"string\"},\"MemberActions\":{\"description\":\"The actions granted, at least one. An empty list confers nothing rather than everything, and a schema that allowed it would make the more dangerous reading available to a careless consumer.\",\"items\":{\"$ref\":\"#/$defs/MemberAction\"},\"maxItems\":3,\"minItems\":1,\"title\":\"MemberActions\",\"type\":\"array\",\"uniqueItems\":true},\"MemberState\":{\"description\":\"Where an admission stands. `offered`: credentials issued and waiting for the member to collect and accept them. `admitted`: accepted — on a sealed tier, the member is in the room's group. `removed`: an administrator removed them; on a sealed tier the room has advanced past them.\",\"enum\":[\"offered\",\"admitted\",\"removed\"],\"title\":\"MemberState\",\"type\":\"string\"},\"Reason\":{\"description\":\"Why the administrator is making this change. Recorded with it in the audit trail. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.\",\"maxLength\":500,\"minLength\":1,\"title\":\"Reason\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vtc/rooms/community/members/remove. Type https://trusttasks.org/spec/vtc/rooms/community/members/remove/0.2#response. The member as recorded, in state `removed`; on `open` and `attributed` rooms the revocation list in force at the room's host, from which the member's credentials are refused; and on a sealed tier the epoch the room advanced to.\",\"properties\":{\"epoch\":{\"description\":\"On a sealed tier, the room epoch after the removal.\",\"minimum\":2,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"member\":{\"$ref\":\"#/$defs/RoomMember\"},\"revocation\":{\"$ref\":\"#/$defs/RevocationHead\",\"description\":\"On an `open` or `attributed` room: the room's revocation list carrying the withdrawal, as the room's host accepted it. From then on the host refuses every credential the room issued the member before `revokedAt`. Absent on a `private` room, where a member cannot be withdrawn one at a time and their credentials are honoured until `member.validUntil`.\"},\"revokedAt\":{\"description\":\"Present with `revocation`: the withdrawal's time.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"member\"],\"title\":\"VTC Rooms Community Members Remove — response payload\",\"type\":\"object\"},\"RevocationHead\":{\"additionalProperties\":false,\"description\":\"Which `RevocationList` a party holds, without its entries: comparable between the room's key holder and a host, and between two hosts, without disclosing whom the room withdrew.\",\"properties\":{\"digest\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"SHA-256 multihash of the list's RFC 8785 (JCS) canonicalization, `proof` included. Two parties holding one sequence with different digests have been given two lists the room signed at one sequence.\"},\"sequence\":{\"description\":\"The list's `sequence`.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"sequence\",\"digest\"],\"title\":\"RevocationHead\",\"type\":\"object\"},\"RoomMember\":{\"additionalProperties\":false,\"description\":\"One party the community admitted to a room it owns, or offered admission to.\",\"properties\":{\"actions\":{\"$ref\":\"#/$defs/MemberActions\"},\"admittedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"member\":{\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"offeredAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"removedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"state\":{\"$ref\":\"#/$defs/MemberState\"},\"validUntil\":{\"description\":\"When the member's authority credential expires.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"member\",\"actions\",\"validUntil\",\"state\",\"offeredAt\"],\"title\":\"RoomMember\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

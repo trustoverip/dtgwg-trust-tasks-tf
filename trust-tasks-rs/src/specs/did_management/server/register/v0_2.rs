@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,63 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/did-management/server/register/0.2",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "did",
-///    "instanceId",
-///    "publicUrl",
-///    "servedDomains"
-///  ],
-///  "properties": {
-///    "did": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "enabledMethods": {
-///      "description": "DID methods the server is willing to host (e.g. ['webvh', 'web']). Omit to default to ['webvh'].",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "minLength": 1
-///      }
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "instanceId": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "label": {
-///      "type": "string",
-///      "maxLength": 256
-///    },
-///    "protocolVersion": {
-///      "description": "Wire-protocol revision the server speaks (e.g. '1.0'). Omit to default to '1.0'.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "publicUrl": {
-///      "type": "string",
-///      "format": "uri"
-///    },
-///    "servedDomains": {
-///      "type": "array",
-///      "items": {
-///        "type": "string"
-///      }
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -236,15 +155,6 @@ impl Payload {
 }
 ///`PayloadDid`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadDid(::std::string::String);
@@ -304,15 +214,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDid {
 }
 ///`PayloadEnabledMethodsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadEnabledMethodsItem(::std::string::String);
@@ -372,15 +273,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadEnabledMethodsItem {
 }
 ///`PayloadInstanceId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadInstanceId(::std::string::String);
@@ -440,15 +332,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadInstanceId {
 }
 ///`PayloadLabel`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 256
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadLabel(::std::string::String);
@@ -508,16 +391,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadLabel {
 }
 ///Wire-protocol revision the server speaks (e.g. '1.0'). Omit to default to '1.0'.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Wire-protocol revision the server speaks (e.g. '1.0'). Omit to default to '1.0'.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadProtocolVersion(::std::string::String);
@@ -577,37 +450,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadProtocolVersion {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "accepted",
-///    "instanceId",
-///    "lastSeenAt"
-///  ],
-///  "properties": {
-///    "accepted": {
-///      "type": "boolean"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "instanceId": {
-///      "type": "string"
-///    },
-///    "lastSeenAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -860,7 +702,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"accepted\": {\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"instanceId\": {\n          \"type\": \"string\"\n        },\n        \"lastSeenAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"instanceId\",\n        \"accepted\",\n        \"lastSeenAt\"\n      ],\n      \"title\": \"Server Register — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/did-management/server/register/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"did\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"enabledMethods\": {\n      \"description\": \"DID methods the server is willing to host (e.g. ['webvh', 'web']). Omit to default to ['webvh'].\",\n      \"items\": {\n        \"minLength\": 1,\n        \"type\": \"string\"\n      },\n      \"type\": \"array\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"instanceId\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"label\": {\n      \"maxLength\": 256,\n      \"type\": \"string\"\n    },\n    \"protocolVersion\": {\n      \"description\": \"Wire-protocol revision the server speaks (e.g. '1.0'). Omit to default to '1.0'.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"publicUrl\": {\n      \"format\": \"uri\",\n      \"type\": \"string\"\n    },\n    \"servedDomains\": {\n      \"items\": {\n        \"type\": \"string\"\n      },\n      \"type\": \"array\"\n    }\n  },\n  \"required\": [\n    \"instanceId\",\n    \"did\",\n    \"publicUrl\",\n    \"servedDomains\"\n  ],\n  \"title\": \"Server Register — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"accepted\":{\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"instanceId\":{\"type\":\"string\"},\"lastSeenAt\":{\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"instanceId\",\"accepted\",\"lastSeenAt\"],\"title\":\"Server Register — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/did-management/server/register/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"did\":{\"minLength\":1,\"type\":\"string\"},\"enabledMethods\":{\"description\":\"DID methods the server is willing to host (e.g. ['webvh', 'web']). Omit to default to ['webvh'].\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"instanceId\":{\"minLength\":1,\"type\":\"string\"},\"label\":{\"maxLength\":256,\"type\":\"string\"},\"protocolVersion\":{\"description\":\"Wire-protocol revision the server speaks (e.g. '1.0'). Omit to default to '1.0'.\",\"minLength\":1,\"type\":\"string\"},\"publicUrl\":{\"format\":\"uri\",\"type\":\"string\"},\"servedDomains\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"instanceId\",\"did\",\"publicUrl\",\"servedDomains\"],\"title\":\"Server Register — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -869,7 +711,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"accepted\": {\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"instanceId\": {\n          \"type\": \"string\"\n        },\n        \"lastSeenAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"instanceId\",\n        \"accepted\",\n        \"lastSeenAt\"\n      ],\n      \"title\": \"Server Register — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"accepted\":{\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"instanceId\":{\"type\":\"string\"},\"lastSeenAt\":{\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"instanceId\",\"accepted\",\"lastSeenAt\"],\"title\":\"Server Register — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

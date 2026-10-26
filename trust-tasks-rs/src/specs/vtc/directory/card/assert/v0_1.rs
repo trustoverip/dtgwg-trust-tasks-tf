@@ -34,55 +34,6 @@ pub mod error {
 }
 ///A content-addressed image held in the community's blob store — an avatar or an `image` field. At most 256 KiB, images only, re-encoded by the community on upload (vtc/directory/images/upload: metadata stripped, dimensions capped) so its digest does not link the member across communities. A viewer reads the bytes with vtc/directory/images/get, which answers only where the same projection shows the value. `url` and `urlExpiresAt` MAY appear in a projection: a short-lived URL the community checks against the same projection, so a member-only image is never a public URL. A community that does not offer one leaves both out.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "CardBlobRef",
-///  "description": "A content-addressed image held in the community's blob store — an avatar or an `image` field. At most 256 KiB, images only, re-encoded by the community on upload (vtc/directory/images/upload: metadata stripped, dimensions capped) so its digest does not link the member across communities. A viewer reads the bytes with vtc/directory/images/get, which answers only where the same projection shows the value. `url` and `urlExpiresAt` MAY appear in a projection: a short-lived URL the community checks against the same projection, so a member-only image is never a public URL. A community that does not offer one leaves both out.",
-///  "type": "object",
-///  "required": [
-///    "mediaType",
-///    "sha256"
-///  ],
-///  "properties": {
-///    "mediaType": {
-///      "description": "Media type of the stored bytes.",
-///      "type": "string",
-///      "enum": [
-///        "image/png",
-///        "image/jpeg",
-///        "image/webp",
-///        "image/avif"
-///      ]
-///    },
-///    "sha256": {
-///      "description": "Lowercase hex SHA-256 of the stored, re-encoded bytes.",
-///      "type": "string",
-///      "pattern": "^[0-9a-f]{64}$"
-///    },
-///    "size": {
-///      "description": "Size in bytes of the stored bytes.",
-///      "type": "integer",
-///      "maximum": 262144.0,
-///      "minimum": 1.0
-///    },
-///    "url": {
-///      "description": "Projection only: a URL the viewer can fetch the image from until `urlExpiresAt`.",
-///      "type": "string",
-///      "format": "uri",
-///      "maxLength": 2048
-///    },
-///    "urlExpiresAt": {
-///      "description": "Projection only: when `url` stops working.",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -113,21 +64,6 @@ impl CardBlobRef {
 }
 ///Media type of the stored bytes.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Media type of the stored bytes.",
-///  "type": "string",
-///  "enum": [
-///    "image/png",
-///    "image/jpeg",
-///    "image/webp",
-///    "image/avif"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -197,16 +133,6 @@ impl ::std::convert::TryFrom<::std::string::String> for CardBlobRefMediaType {
 }
 ///Lowercase hex SHA-256 of the stored, re-encoded bytes.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Lowercase hex SHA-256 of the stored, re-encoded bytes.",
-///  "type": "string",
-///  "pattern": "^[0-9a-f]{64}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CardBlobRefSha256(::std::string::String);
@@ -268,17 +194,6 @@ impl<'de> ::serde::Deserialize<'de> for CardBlobRefSha256 {
 }
 ///Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "EntryId",
-///  "description": "Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.",
-///  "type": "string",
-///  "pattern": "^dir_[A-Za-z0-9_-]{16,64}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct EntryId(::std::string::String);
@@ -342,21 +257,6 @@ impl<'de> ::serde::Deserialize<'de> for EntryId {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -378,15 +278,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -450,19 +341,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Identifier of a directory field. A key with no `.` is a BASE field, the same in every community: `displayName`, `nickname`, `avatar`, `pronouns`, `bio`, `links` (written by the member) and `role`, `joinedAt`, `did`, `personhood` (derived from the community's own records, never stored on a card). A community-defined field MUST use a reverse-DNS key (`org.example.employer`), so a base key never collides with one, and a key is never reused with a different meaning once defined.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "FieldKey",
-///  "description": "Identifier of a directory field. A key with no `.` is a BASE field, the same in every community: `displayName`, `nickname`, `avatar`, `pronouns`, `bio`, `links` (written by the member) and `role`, `joinedAt`, `did`, `personhood` (derived from the community's own records, never stored on a card). A community-defined field MUST use a reverse-DNS key (`org.example.employer`), so a base key never collides with one, and a key is never reused with a different meaning once defined.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1,
-///  "pattern": "^([a-z][a-z0-9-]*\\.)*[a-z][a-zA-Z0-9]{0,63}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct FieldKey(::std::string::String);
@@ -534,38 +412,6 @@ impl<'de> ::serde::Deserialize<'de> for FieldKey {
 }
 ///The value of one field. Which shape a field takes is fixed by its definition's `type`: text-like types (`text`, `longText`, `url`, `email`, `phone`, `enum`, `date` as YYYY-MM-DD, `country` as ISO 3166-1 alpha-2, `did`) are strings; `multiEnum` and the base field `links` are arrays of strings; `image` and the base field `avatar` are a `CardBlobRef`; `claim` is a `VerifiedValue`; the derived base field `personhood` is a boolean.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "FieldValue",
-///  "description": "The value of one field. Which shape a field takes is fixed by its definition's `type`: text-like types (`text`, `longText`, `url`, `email`, `phone`, `enum`, `date` as YYYY-MM-DD, `country` as ISO 3166-1 alpha-2, `did`) are strings; `multiEnum` and the base field `links` are arrays of strings; `image` and the base field `avatar` are a `CardBlobRef`; `claim` is a `VerifiedValue`; the derived base field `personhood` is a boolean.",
-///  "anyOf": [
-///    {
-///      "type": "string",
-///      "maxLength": 2000
-///    },
-///    {
-///      "type": "boolean"
-///    },
-///    {
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "maxLength": 500
-///      },
-///      "maxItems": 32
-///    },
-///    {
-///      "$ref": "#/definitions/CardBlobRef"
-///    },
-///    {
-///      "$ref": "#/definitions/VerifiedValue"
-///    }
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged)]
 #[non_exhaustive]
@@ -603,15 +449,6 @@ impl ::std::convert::From<VerifiedValue> for FieldValue {
 }
 ///`FieldValueArrayItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 500
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct FieldValueArrayItem(::std::string::String);
@@ -671,15 +508,6 @@ impl<'de> ::serde::Deserialize<'de> for FieldValueArrayItem {
 }
 ///`FieldValueString`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 2000
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct FieldValueString(::std::string::String);
@@ -739,56 +567,6 @@ impl<'de> ::serde::Deserialize<'de> for FieldValueString {
 }
 ///An administrator writes the values of admin-sourced directory fields on a member's card — the facts the community asserts about a member, which the member reads and cannot change. The outer document members are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/directory/card/assert/0.1",
-///  "title": "Payload",
-///  "description": "An administrator writes the values of admin-sourced directory fields on a member's card — the facts the community asserts about a member, which the member reads and cannot change. The outer document members are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "entryId",
-///    "reason",
-///    "values"
-///  ],
-///  "properties": {
-///    "entryId": {
-///      "$ref": "#/definitions/EntryId"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "reason": {
-///      "description": "Why, recorded with the change and shown to anyone who must approve it.",
-///      "type": "string",
-///      "maxLength": 1024,
-///      "minLength": 1
-///    },
-///    "values": {
-///      "description": "Values to set, keyed by `admin`-sourced field; `null` clears one.",
-///      "type": "object",
-///      "maxProperties": 64,
-///      "minProperties": 1,
-///      "additionalProperties": {
-///        "anyOf": [
-///          {
-///            "$ref": "#/definitions/FieldValue"
-///          },
-///          {
-///            "type": "null"
-///          }
-///        ]
-///      },
-///      "propertyNames": {
-///        "$ref": "#/definitions/FieldKey"
-///      }
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -809,17 +587,6 @@ impl Payload {
 }
 ///Why, recorded with the change and shown to anyone who must approve it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Why, recorded with the change and shown to anyone who must approve it.",
-///  "type": "string",
-///  "maxLength": 1024,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadReason(::std::string::String);
@@ -882,43 +649,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 }
 ///The success response to a vtc/directory/card/assert/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/card/assert/0.1#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The success response to a vtc/directory/card/assert/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/card/assert/0.1#response.",
-///  "type": "object",
-///  "required": [
-///    "entryId",
-///    "revision",
-///    "written"
-///  ],
-///  "properties": {
-///    "entryId": {
-///      "$ref": "#/definitions/EntryId"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "revision": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "written": {
-///      "description": "The fields written or cleared.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/FieldKey"
-///      },
-///      "maxItems": 64
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -938,61 +668,6 @@ impl Response {
 }
 ///The value of a `credential`-sourced field: a claim the member disclosed from a credential they presented, with the issuer that attests it. A verified value always names its issuer, and a self-asserted value is never shaped as one. The community keeps only the disclosed claim and these facts about it — never the presentation.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "VerifiedValue",
-///  "description": "The value of a `credential`-sourced field: a claim the member disclosed from a credential they presented, with the issuer that attests it. A verified value always names its issuer, and a self-asserted value is never shaped as one. The community keeps only the disclosed claim and these facts about it — never the presentation.",
-///  "type": "object",
-///  "required": [
-///    "issuer",
-///    "value",
-///    "verifiedAt"
-///  ],
-///  "properties": {
-///    "credentialType": {
-///      "description": "The most specific `type` of the credential the claim came from.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "issuer": {
-///      "description": "DID of the credential's issuer, shown as the field's verification badge.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    },
-///    "validUntil": {
-///      "description": "When the credential expires, where it does. The community withdraws the value once it passes.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "value": {
-///      "description": "The disclosed claim value.",
-///      "anyOf": [
-///        {
-///          "type": "string",
-///          "maxLength": 2000
-///        },
-///        {
-///          "type": "boolean"
-///        },
-///        {
-///          "type": "number"
-///        }
-///      ]
-///    },
-///    "verifiedAt": {
-///      "description": "When the community verified the presentation.",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1026,17 +701,6 @@ impl VerifiedValue {
 }
 ///The most specific `type` of the credential the claim came from.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The most specific `type` of the credential the claim came from.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct VerifiedValueCredentialType(::std::string::String);
@@ -1099,17 +763,6 @@ impl<'de> ::serde::Deserialize<'de> for VerifiedValueCredentialType {
 }
 ///DID of the credential's issuer, shown as the field's verification badge.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "DID of the credential's issuer, shown as the field's verification badge.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct VerifiedValueIssuer(::std::string::String);
@@ -1174,26 +827,6 @@ impl<'de> ::serde::Deserialize<'de> for VerifiedValueIssuer {
 }
 ///The disclosed claim value.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The disclosed claim value.",
-///  "anyOf": [
-///    {
-///      "type": "string",
-///      "maxLength": 2000
-///    },
-///    {
-///      "type": "boolean"
-///    },
-///    {
-///      "type": "number"
-///    }
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged)]
 #[non_exhaustive]
@@ -1264,15 +897,6 @@ impl ::std::convert::From<f64> for VerifiedValueValue {
 }
 ///`VerifiedValueValueString`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 2000
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct VerifiedValueValueString(::std::string::String);
@@ -1719,7 +1343,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CardBlobRef\": {\n      \"additionalProperties\": false,\n      \"description\": \"A content-addressed image held in the community's blob store — an avatar or an `image` field. At most 256 KiB, images only, re-encoded by the community on upload (vtc/directory/images/upload: metadata stripped, dimensions capped) so its digest does not link the member across communities. A viewer reads the bytes with vtc/directory/images/get, which answers only where the same projection shows the value. `url` and `urlExpiresAt` MAY appear in a projection: a short-lived URL the community checks against the same projection, so a member-only image is never a public URL. A community that does not offer one leaves both out.\",\n      \"properties\": {\n        \"mediaType\": {\n          \"description\": \"Media type of the stored bytes.\",\n          \"enum\": [\n            \"image/png\",\n            \"image/jpeg\",\n            \"image/webp\",\n            \"image/avif\"\n          ],\n          \"type\": \"string\"\n        },\n        \"sha256\": {\n          \"description\": \"Lowercase hex SHA-256 of the stored, re-encoded bytes.\",\n          \"pattern\": \"^[0-9a-f]{64}$\",\n          \"type\": \"string\"\n        },\n        \"size\": {\n          \"description\": \"Size in bytes of the stored bytes.\",\n          \"maximum\": 262144,\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"url\": {\n          \"description\": \"Projection only: a URL the viewer can fetch the image from until `urlExpiresAt`.\",\n          \"format\": \"uri\",\n          \"maxLength\": 2048,\n          \"type\": \"string\"\n        },\n        \"urlExpiresAt\": {\n          \"description\": \"Projection only: when `url` stops working.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"sha256\",\n        \"mediaType\"\n      ],\n      \"title\": \"CardBlobRef\",\n      \"type\": \"object\"\n    },\n    \"EntryId\": {\n      \"description\": \"Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.\",\n      \"pattern\": \"^dir_[A-Za-z0-9_-]{16,64}$\",\n      \"title\": \"EntryId\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"FieldKey\": {\n      \"description\": \"Identifier of a directory field. A key with no `.` is a BASE field, the same in every community: `displayName`, `nickname`, `avatar`, `pronouns`, `bio`, `links` (written by the member) and `role`, `joinedAt`, `did`, `personhood` (derived from the community's own records, never stored on a card). A community-defined field MUST use a reverse-DNS key (`org.example.employer`), so a base key never collides with one, and a key is never reused with a different meaning once defined.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^([a-z][a-z0-9-]*\\\\.)*[a-z][a-zA-Z0-9]{0,63}$\",\n      \"title\": \"FieldKey\",\n      \"type\": \"string\"\n    },\n    \"FieldValue\": {\n      \"anyOf\": [\n        {\n          \"maxLength\": 2000,\n          \"type\": \"string\"\n        },\n        {\n          \"type\": \"boolean\"\n        },\n        {\n          \"items\": {\n            \"maxLength\": 500,\n            \"type\": \"string\"\n          },\n          \"maxItems\": 32,\n          \"type\": \"array\"\n        },\n        {\n          \"$ref\": \"#/$defs/CardBlobRef\"\n        },\n        {\n          \"$ref\": \"#/$defs/VerifiedValue\"\n        }\n      ],\n      \"description\": \"The value of one field. Which shape a field takes is fixed by its definition's `type`: text-like types (`text`, `longText`, `url`, `email`, `phone`, `enum`, `date` as YYYY-MM-DD, `country` as ISO 3166-1 alpha-2, `did`) are strings; `multiEnum` and the base field `links` are arrays of strings; `image` and the base field `avatar` are a `CardBlobRef`; `claim` is a `VerifiedValue`; the derived base field `personhood` is a boolean.\",\n      \"title\": \"FieldValue\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a vtc/directory/card/assert/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/card/assert/0.1#response.\",\n      \"properties\": {\n        \"entryId\": {\n          \"$ref\": \"#/$defs/EntryId\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"revision\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"written\": {\n          \"description\": \"The fields written or cleared.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/FieldKey\"\n          },\n          \"maxItems\": 64,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"entryId\",\n        \"written\",\n        \"revision\"\n      ],\n      \"title\": \"VTC Directory — Card — Assert — response payload\",\n      \"type\": \"object\"\n    },\n    \"VerifiedValue\": {\n      \"additionalProperties\": false,\n      \"description\": \"The value of a `credential`-sourced field: a claim the member disclosed from a credential they presented, with the issuer that attests it. A verified value always names its issuer, and a self-asserted value is never shaped as one. The community keeps only the disclosed claim and these facts about it — never the presentation.\",\n      \"properties\": {\n        \"credentialType\": {\n          \"description\": \"The most specific `type` of the credential the claim came from.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issuer\": {\n          \"description\": \"DID of the credential's issuer, shown as the field's verification badge.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"validUntil\": {\n          \"description\": \"When the credential expires, where it does. The community withdraws the value once it passes.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"value\": {\n          \"anyOf\": [\n            {\n              \"maxLength\": 2000,\n              \"type\": \"string\"\n            },\n            {\n              \"type\": \"boolean\"\n            },\n            {\n              \"type\": \"number\"\n            }\n          ],\n          \"description\": \"The disclosed claim value.\"\n        },\n        \"verifiedAt\": {\n          \"description\": \"When the community verified the presentation.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"value\",\n        \"issuer\",\n        \"verifiedAt\"\n      ],\n      \"title\": \"VerifiedValue\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/directory/card/assert/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"An administrator writes the values of admin-sourced directory fields on a member's card — the facts the community asserts about a member, which the member reads and cannot change. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"entryId\": {\n      \"$ref\": \"#/$defs/EntryId\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"reason\": {\n      \"description\": \"Why, recorded with the change and shown to anyone who must approve it.\",\n      \"maxLength\": 1024,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"values\": {\n      \"additionalProperties\": {\n        \"anyOf\": [\n          {\n            \"$ref\": \"#/$defs/FieldValue\"\n          },\n          {\n            \"type\": \"null\"\n          }\n        ]\n      },\n      \"description\": \"Values to set, keyed by `admin`-sourced field; `null` clears one.\",\n      \"maxProperties\": 64,\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"$ref\": \"#/$defs/FieldKey\"\n      },\n      \"type\": \"object\"\n    }\n  },\n  \"required\": [\n    \"entryId\",\n    \"values\",\n    \"reason\"\n  ],\n  \"title\": \"VTC Directory — Card — Assert — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"CardBlobRef\":{\"additionalProperties\":false,\"description\":\"A content-addressed image held in the community's blob store — an avatar or an `image` field. At most 256 KiB, images only, re-encoded by the community on upload (vtc/directory/images/upload: metadata stripped, dimensions capped) so its digest does not link the member across communities. A viewer reads the bytes with vtc/directory/images/get, which answers only where the same projection shows the value. `url` and `urlExpiresAt` MAY appear in a projection: a short-lived URL the community checks against the same projection, so a member-only image is never a public URL. A community that does not offer one leaves both out.\",\"properties\":{\"mediaType\":{\"description\":\"Media type of the stored bytes.\",\"enum\":[\"image/png\",\"image/jpeg\",\"image/webp\",\"image/avif\"],\"type\":\"string\"},\"sha256\":{\"description\":\"Lowercase hex SHA-256 of the stored, re-encoded bytes.\",\"pattern\":\"^[0-9a-f]{64}$\",\"type\":\"string\"},\"size\":{\"description\":\"Size in bytes of the stored bytes.\",\"maximum\":262144,\"minimum\":1,\"type\":\"integer\"},\"url\":{\"description\":\"Projection only: a URL the viewer can fetch the image from until `urlExpiresAt`.\",\"format\":\"uri\",\"maxLength\":2048,\"type\":\"string\"},\"urlExpiresAt\":{\"description\":\"Projection only: when `url` stops working.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"sha256\",\"mediaType\"],\"title\":\"CardBlobRef\",\"type\":\"object\"},\"EntryId\":{\"description\":\"Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.\",\"pattern\":\"^dir_[A-Za-z0-9_-]{16,64}$\",\"title\":\"EntryId\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"FieldKey\":{\"description\":\"Identifier of a directory field. A key with no `.` is a BASE field, the same in every community: `displayName`, `nickname`, `avatar`, `pronouns`, `bio`, `links` (written by the member) and `role`, `joinedAt`, `did`, `personhood` (derived from the community's own records, never stored on a card). A community-defined field MUST use a reverse-DNS key (`org.example.employer`), so a base key never collides with one, and a key is never reused with a different meaning once defined.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^([a-z][a-z0-9-]*\\\\.)*[a-z][a-zA-Z0-9]{0,63}$\",\"title\":\"FieldKey\",\"type\":\"string\"},\"FieldValue\":{\"anyOf\":[{\"maxLength\":2000,\"type\":\"string\"},{\"type\":\"boolean\"},{\"items\":{\"maxLength\":500,\"type\":\"string\"},\"maxItems\":32,\"type\":\"array\"},{\"$ref\":\"#/$defs/CardBlobRef\"},{\"$ref\":\"#/$defs/VerifiedValue\"}],\"description\":\"The value of one field. Which shape a field takes is fixed by its definition's `type`: text-like types (`text`, `longText`, `url`, `email`, `phone`, `enum`, `date` as YYYY-MM-DD, `country` as ISO 3166-1 alpha-2, `did`) are strings; `multiEnum` and the base field `links` are arrays of strings; `image` and the base field `avatar` are a `CardBlobRef`; `claim` is a `VerifiedValue`; the derived base field `personhood` is a boolean.\",\"title\":\"FieldValue\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vtc/directory/card/assert/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/card/assert/0.1#response.\",\"properties\":{\"entryId\":{\"$ref\":\"#/$defs/EntryId\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"revision\":{\"minimum\":0,\"type\":\"integer\"},\"written\":{\"description\":\"The fields written or cleared.\",\"items\":{\"$ref\":\"#/$defs/FieldKey\"},\"maxItems\":64,\"type\":\"array\"}},\"required\":[\"entryId\",\"written\",\"revision\"],\"title\":\"VTC Directory — Card — Assert — response payload\",\"type\":\"object\"},\"VerifiedValue\":{\"additionalProperties\":false,\"description\":\"The value of a `credential`-sourced field: a claim the member disclosed from a credential they presented, with the issuer that attests it. A verified value always names its issuer, and a self-asserted value is never shaped as one. The community keeps only the disclosed claim and these facts about it — never the presentation.\",\"properties\":{\"credentialType\":{\"description\":\"The most specific `type` of the credential the claim came from.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"issuer\":{\"description\":\"DID of the credential's issuer, shown as the field's verification badge.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"validUntil\":{\"description\":\"When the credential expires, where it does. The community withdraws the value once it passes.\",\"format\":\"date-time\",\"type\":\"string\"},\"value\":{\"anyOf\":[{\"maxLength\":2000,\"type\":\"string\"},{\"type\":\"boolean\"},{\"type\":\"number\"}],\"description\":\"The disclosed claim value.\"},\"verifiedAt\":{\"description\":\"When the community verified the presentation.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"value\",\"issuer\",\"verifiedAt\"],\"title\":\"VerifiedValue\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/directory/card/assert/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"An administrator writes the values of admin-sourced directory fields on a member's card — the facts the community asserts about a member, which the member reads and cannot change. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"entryId\":{\"$ref\":\"#/$defs/EntryId\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"reason\":{\"description\":\"Why, recorded with the change and shown to anyone who must approve it.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"},\"values\":{\"additionalProperties\":{\"anyOf\":[{\"$ref\":\"#/$defs/FieldValue\"},{\"type\":\"null\"}]},\"description\":\"Values to set, keyed by `admin`-sourced field; `null` clears one.\",\"maxProperties\":64,\"minProperties\":1,\"propertyNames\":{\"$ref\":\"#/$defs/FieldKey\"},\"type\":\"object\"}},\"required\":[\"entryId\",\"values\",\"reason\"],\"title\":\"VTC Directory — Card — Assert — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1729,7 +1353,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CardBlobRef\": {\n      \"additionalProperties\": false,\n      \"description\": \"A content-addressed image held in the community's blob store — an avatar or an `image` field. At most 256 KiB, images only, re-encoded by the community on upload (vtc/directory/images/upload: metadata stripped, dimensions capped) so its digest does not link the member across communities. A viewer reads the bytes with vtc/directory/images/get, which answers only where the same projection shows the value. `url` and `urlExpiresAt` MAY appear in a projection: a short-lived URL the community checks against the same projection, so a member-only image is never a public URL. A community that does not offer one leaves both out.\",\n      \"properties\": {\n        \"mediaType\": {\n          \"description\": \"Media type of the stored bytes.\",\n          \"enum\": [\n            \"image/png\",\n            \"image/jpeg\",\n            \"image/webp\",\n            \"image/avif\"\n          ],\n          \"type\": \"string\"\n        },\n        \"sha256\": {\n          \"description\": \"Lowercase hex SHA-256 of the stored, re-encoded bytes.\",\n          \"pattern\": \"^[0-9a-f]{64}$\",\n          \"type\": \"string\"\n        },\n        \"size\": {\n          \"description\": \"Size in bytes of the stored bytes.\",\n          \"maximum\": 262144,\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"url\": {\n          \"description\": \"Projection only: a URL the viewer can fetch the image from until `urlExpiresAt`.\",\n          \"format\": \"uri\",\n          \"maxLength\": 2048,\n          \"type\": \"string\"\n        },\n        \"urlExpiresAt\": {\n          \"description\": \"Projection only: when `url` stops working.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"sha256\",\n        \"mediaType\"\n      ],\n      \"title\": \"CardBlobRef\",\n      \"type\": \"object\"\n    },\n    \"EntryId\": {\n      \"description\": \"Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.\",\n      \"pattern\": \"^dir_[A-Za-z0-9_-]{16,64}$\",\n      \"title\": \"EntryId\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"FieldKey\": {\n      \"description\": \"Identifier of a directory field. A key with no `.` is a BASE field, the same in every community: `displayName`, `nickname`, `avatar`, `pronouns`, `bio`, `links` (written by the member) and `role`, `joinedAt`, `did`, `personhood` (derived from the community's own records, never stored on a card). A community-defined field MUST use a reverse-DNS key (`org.example.employer`), so a base key never collides with one, and a key is never reused with a different meaning once defined.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^([a-z][a-z0-9-]*\\\\.)*[a-z][a-zA-Z0-9]{0,63}$\",\n      \"title\": \"FieldKey\",\n      \"type\": \"string\"\n    },\n    \"FieldValue\": {\n      \"anyOf\": [\n        {\n          \"maxLength\": 2000,\n          \"type\": \"string\"\n        },\n        {\n          \"type\": \"boolean\"\n        },\n        {\n          \"items\": {\n            \"maxLength\": 500,\n            \"type\": \"string\"\n          },\n          \"maxItems\": 32,\n          \"type\": \"array\"\n        },\n        {\n          \"$ref\": \"#/$defs/CardBlobRef\"\n        },\n        {\n          \"$ref\": \"#/$defs/VerifiedValue\"\n        }\n      ],\n      \"description\": \"The value of one field. Which shape a field takes is fixed by its definition's `type`: text-like types (`text`, `longText`, `url`, `email`, `phone`, `enum`, `date` as YYYY-MM-DD, `country` as ISO 3166-1 alpha-2, `did`) are strings; `multiEnum` and the base field `links` are arrays of strings; `image` and the base field `avatar` are a `CardBlobRef`; `claim` is a `VerifiedValue`; the derived base field `personhood` is a boolean.\",\n      \"title\": \"FieldValue\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a vtc/directory/card/assert/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/card/assert/0.1#response.\",\n      \"properties\": {\n        \"entryId\": {\n          \"$ref\": \"#/$defs/EntryId\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"revision\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"written\": {\n          \"description\": \"The fields written or cleared.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/FieldKey\"\n          },\n          \"maxItems\": 64,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"entryId\",\n        \"written\",\n        \"revision\"\n      ],\n      \"title\": \"VTC Directory — Card — Assert — response payload\",\n      \"type\": \"object\"\n    },\n    \"VerifiedValue\": {\n      \"additionalProperties\": false,\n      \"description\": \"The value of a `credential`-sourced field: a claim the member disclosed from a credential they presented, with the issuer that attests it. A verified value always names its issuer, and a self-asserted value is never shaped as one. The community keeps only the disclosed claim and these facts about it — never the presentation.\",\n      \"properties\": {\n        \"credentialType\": {\n          \"description\": \"The most specific `type` of the credential the claim came from.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issuer\": {\n          \"description\": \"DID of the credential's issuer, shown as the field's verification badge.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"validUntil\": {\n          \"description\": \"When the credential expires, where it does. The community withdraws the value once it passes.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"value\": {\n          \"anyOf\": [\n            {\n              \"maxLength\": 2000,\n              \"type\": \"string\"\n            },\n            {\n              \"type\": \"boolean\"\n            },\n            {\n              \"type\": \"number\"\n            }\n          ],\n          \"description\": \"The disclosed claim value.\"\n        },\n        \"verifiedAt\": {\n          \"description\": \"When the community verified the presentation.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"value\",\n        \"issuer\",\n        \"verifiedAt\"\n      ],\n      \"title\": \"VerifiedValue\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"CardBlobRef\":{\"additionalProperties\":false,\"description\":\"A content-addressed image held in the community's blob store — an avatar or an `image` field. At most 256 KiB, images only, re-encoded by the community on upload (vtc/directory/images/upload: metadata stripped, dimensions capped) so its digest does not link the member across communities. A viewer reads the bytes with vtc/directory/images/get, which answers only where the same projection shows the value. `url` and `urlExpiresAt` MAY appear in a projection: a short-lived URL the community checks against the same projection, so a member-only image is never a public URL. A community that does not offer one leaves both out.\",\"properties\":{\"mediaType\":{\"description\":\"Media type of the stored bytes.\",\"enum\":[\"image/png\",\"image/jpeg\",\"image/webp\",\"image/avif\"],\"type\":\"string\"},\"sha256\":{\"description\":\"Lowercase hex SHA-256 of the stored, re-encoded bytes.\",\"pattern\":\"^[0-9a-f]{64}$\",\"type\":\"string\"},\"size\":{\"description\":\"Size in bytes of the stored bytes.\",\"maximum\":262144,\"minimum\":1,\"type\":\"integer\"},\"url\":{\"description\":\"Projection only: a URL the viewer can fetch the image from until `urlExpiresAt`.\",\"format\":\"uri\",\"maxLength\":2048,\"type\":\"string\"},\"urlExpiresAt\":{\"description\":\"Projection only: when `url` stops working.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"sha256\",\"mediaType\"],\"title\":\"CardBlobRef\",\"type\":\"object\"},\"EntryId\":{\"description\":\"Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.\",\"pattern\":\"^dir_[A-Za-z0-9_-]{16,64}$\",\"title\":\"EntryId\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"FieldKey\":{\"description\":\"Identifier of a directory field. A key with no `.` is a BASE field, the same in every community: `displayName`, `nickname`, `avatar`, `pronouns`, `bio`, `links` (written by the member) and `role`, `joinedAt`, `did`, `personhood` (derived from the community's own records, never stored on a card). A community-defined field MUST use a reverse-DNS key (`org.example.employer`), so a base key never collides with one, and a key is never reused with a different meaning once defined.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^([a-z][a-z0-9-]*\\\\.)*[a-z][a-zA-Z0-9]{0,63}$\",\"title\":\"FieldKey\",\"type\":\"string\"},\"FieldValue\":{\"anyOf\":[{\"maxLength\":2000,\"type\":\"string\"},{\"type\":\"boolean\"},{\"items\":{\"maxLength\":500,\"type\":\"string\"},\"maxItems\":32,\"type\":\"array\"},{\"$ref\":\"#/$defs/CardBlobRef\"},{\"$ref\":\"#/$defs/VerifiedValue\"}],\"description\":\"The value of one field. Which shape a field takes is fixed by its definition's `type`: text-like types (`text`, `longText`, `url`, `email`, `phone`, `enum`, `date` as YYYY-MM-DD, `country` as ISO 3166-1 alpha-2, `did`) are strings; `multiEnum` and the base field `links` are arrays of strings; `image` and the base field `avatar` are a `CardBlobRef`; `claim` is a `VerifiedValue`; the derived base field `personhood` is a boolean.\",\"title\":\"FieldValue\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vtc/directory/card/assert/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/card/assert/0.1#response.\",\"properties\":{\"entryId\":{\"$ref\":\"#/$defs/EntryId\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"revision\":{\"minimum\":0,\"type\":\"integer\"},\"written\":{\"description\":\"The fields written or cleared.\",\"items\":{\"$ref\":\"#/$defs/FieldKey\"},\"maxItems\":64,\"type\":\"array\"}},\"required\":[\"entryId\",\"written\",\"revision\"],\"title\":\"VTC Directory — Card — Assert — response payload\",\"type\":\"object\"},\"VerifiedValue\":{\"additionalProperties\":false,\"description\":\"The value of a `credential`-sourced field: a claim the member disclosed from a credential they presented, with the issuer that attests it. A verified value always names its issuer, and a self-asserted value is never shaped as one. The community keeps only the disclosed claim and these facts about it — never the presentation.\",\"properties\":{\"credentialType\":{\"description\":\"The most specific `type` of the credential the claim came from.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"issuer\":{\"description\":\"DID of the credential's issuer, shown as the field's verification badge.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"validUntil\":{\"description\":\"When the credential expires, where it does. The community withdraws the value once it passes.\",\"format\":\"date-time\",\"type\":\"string\"},\"value\":{\"anyOf\":[{\"maxLength\":2000,\"type\":\"string\"},{\"type\":\"boolean\"},{\"type\":\"number\"}],\"description\":\"The disclosed claim value.\"},\"verifiedAt\":{\"description\":\"When the community verified the presentation.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"value\",\"issuer\",\"verifiedAt\"],\"title\":\"VerifiedValue\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

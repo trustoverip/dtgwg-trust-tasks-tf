@@ -34,20 +34,6 @@ pub mod error {
 }
 ///The identity a did:webvh log is presented as. `webvh` is `did:webvh:<scid>:<host>[:<path>]`. `scid` is `did:scid:vh:1:<scid>`, verified by the same log and located by `?src=<host>[/<path>]`; it requires the alias in `alsoKnownAs`. In a request, absent means the VTA applies its configuration (`webvh` unless configured otherwise); in a response, the form the VTA applied, and `did` is in that form.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DidMethod",
-///  "description": "The identity a did:webvh log is presented as. `webvh` is `did:webvh:<scid>:<host>[:<path>]`. `scid` is `did:scid:vh:1:<scid>`, verified by the same log and located by `?src=<host>[/<path>]`; it requires the alias in `alsoKnownAs`. In a request, absent means the VTA applies its configuration (`webvh` unless configured otherwise); in a response, the form the VTA applied, and `did` is in that form.",
-///  "type": "string",
-///  "enum": [
-///    "webvh",
-///    "scid"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -109,21 +95,6 @@ impl ::std::convert::TryFrom<::std::string::String> for DidMethod {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -145,15 +116,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -217,122 +179,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Mint a did:webvh: the VTA generates the keys, writes the log's first entry, and either hands it to a hosting server or returns it for the caller to serve.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/webvh/dids/create/1.2",
-///  "title": "Payload",
-///  "description": "Mint a did:webvh: the VTA generates the keys, writes the log's first entry, and either hands it to a hosting server or returns it for the caller to serve.",
-///  "type": "object",
-///  "required": [
-///    "contextId"
-///  ],
-///  "properties": {
-///    "addMediatorService": {
-///      "description": "Add a DIDComm mediator service entry to the document.",
-///      "type": "boolean"
-///    },
-///    "addTspService": {
-///      "description": "Add a TSP transport service entry to the document.",
-///      "type": "boolean"
-///    },
-///    "additionalServices": {
-///      "description": "Further service entries, verbatim.",
-///      "type": "array",
-///      "items": {
-///        "type": "object"
-///      }
-///    },
-///    "contextId": {
-///      "description": "Context the DID belongs to. Its keys are minted here, and deleting the context destroys the DID.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "didDocument": {
-///      "description": "A DID document to publish rather than one the VTA composes.",
-///      "type": "object"
-///    },
-///    "didLog": {
-///      "description": "An existing log to adopt, for importing a DID minted elsewhere.",
-///      "type": "string"
-///    },
-///    "didMethod": {
-///      "$ref": "#/definitions/DidMethod"
-///    },
-///    "domain": {
-///      "description": "Hosting domain to publish under, when the server serves more than one.",
-///      "type": "string"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "kaKeyId": {
-///      "description": "Existing key-agreement key to publish. Absent mints a new one.",
-///      "type": "string"
-///    },
-///    "label": {
-///      "type": "string",
-///      "maxLength": 256
-///    },
-///    "path": {
-///      "description": "Explicit path label under the host. Shorthand for pathMode `explicit`; supplying both is an error.",
-///      "type": "string"
-///    },
-///    "pathMode": {
-///      "description": "How the path under the host is chosen. Absent means `autoAssign`.",
-///      "$ref": "#/definitions/WebvhPathMode"
-///    },
-///    "portable": {
-///      "description": "Whether this DID may later move to another domain and keep its identity. **Fixed at creation** — portability is committed in the first log entry and cannot be added afterwards. A DID created non-portable is tied to where it was published for its whole life.",
-///      "default": false,
-///      "type": "boolean"
-///    },
-///    "preRotationCount": {
-///      "description": "How many successor keys to commit in advance. **`0` disables pre-rotation**, which means a compromise of the current key cannot be recovered from by rotating: the successor was never committed, so a thief can rotate to their own key as convincingly as the owner can.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "scidAlsoKnownAs": {
-///      "description": "Whether the first log entry lists the `did:scid:vh:1` DID URL of the new log (with `src`) in `alsoKnownAs`, linking the two forms as one subject. Absent means the VTA applies its configuration, which defaults to `true`. `false` with `didMethod` `scid` is refused.",
-///      "type": "boolean"
-///    },
-///    "serverId": {
-///      "description": "Hosting server to publish through. Absent means **serverless**: the caller serves the log itself at `url`, and the VTA holds no hosting registration for it.",
-///      "type": "string"
-///    },
-///    "setPrimary": {
-///      "description": "Make this the context's primary DID.",
-///      "type": "boolean"
-///    },
-///    "signingKeyId": {
-///      "description": "Existing key to sign log entries with. Absent mints a new one.",
-///      "type": "string"
-///    },
-///    "template": {
-///      "description": "DID template to render the document from (see vta/did-templates/*).",
-///      "type": "string"
-///    },
-///    "templateContext": {
-///      "description": "Context whose templates to resolve `template` against. Absent uses the global scope, which is a different namespace and may hold a different template of the same name.",
-///      "type": "string"
-///    },
-///    "templateVars": {
-///      "description": "Variables for the template's placeholders.",
-///      "type": "object",
-///      "additionalProperties": {
-///        "type": "string"
-///      }
-///    },
-///    "url": {
-///      "description": "Where the log will be served, for the serverless case. The DID's identity derives from this location, so changing it later is only possible for a `portable` DID.",
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -472,16 +318,6 @@ impl Payload {
 }
 ///Context the DID belongs to. Its keys are minted here, and deleting the context destroys the DID.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Context the DID belongs to. Its keys are minted here, and deleting the context destroys the DID.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadContextId(::std::string::String);
@@ -541,15 +377,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
 }
 ///`PayloadLabel`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 256
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadLabel(::std::string::String);
@@ -609,102 +436,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadLabel {
 }
 ///Success response to vta/webvh/dids/create. Type https://trusttasks.org/spec/vta/webvh/dids/create/1.2#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to vta/webvh/dids/create. Type https://trusttasks.org/spec/vta/webvh/dids/create/1.2#response.",
-///  "type": "object",
-///  "required": [
-///    "contextId",
-///    "createdAt",
-///    "did",
-///    "didMethod",
-///    "kaKeyId",
-///    "portable",
-///    "preRotationKeyCount",
-///    "scid",
-///    "scidAlsoKnownAs",
-///    "scidDidUrl",
-///    "serverless",
-///    "signingKeyId",
-///    "webvhDid"
-///  ],
-///  "properties": {
-///    "contextId": {
-///      "type": "string"
-///    },
-///    "createdAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "did": {
-///      "description": "The new identity, in the form `didMethod` names: the did:webvh DID, or the bare `did:scid:vh:1:<scid>` DID.",
-///      "type": "string"
-///    },
-///    "didDocument": {
-///      "description": "The published document, when the VTA composed one.",
-///      "type": "object"
-///    },
-///    "didMethod": {
-///      "$ref": "#/definitions/DidMethod"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "kaKeyId": {
-///      "type": "string"
-///    },
-///    "logEntry": {
-///      "description": "The log's first entry. For a serverless DID this is what the caller must serve — the DID does not resolve until they do.",
-///      "type": "string"
-///    },
-///    "mnemonic": {
-///      "description": "The hosting server's handle for the record. Absent for a serverless DID.",
-///      "type": "string"
-///    },
-///    "portable": {
-///      "type": "boolean"
-///    },
-///    "preRotationKeyCount": {
-///      "description": "Successor keys committed. `0` means pre-rotation is off for this DID.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "scid": {
-///      "description": "Self-certifying identifier committing to the log's first entry.",
-///      "type": "string"
-///    },
-///    "scidAlsoKnownAs": {
-///      "description": "Whether the first log entry lists `scidDidUrl` in `alsoKnownAs`.",
-///      "type": "boolean"
-///    },
-///    "scidDidUrl": {
-///      "description": "The `did:scid:vh:1:<scid>?src=<source>` DID URL of the log: the did:scid DID with the locator a recipient needs to resolve it. A producer gives this out, rather than the bare DID, wherever the recipient may not hold a source.",
-///      "type": "string"
-///    },
-///    "serverId": {
-///      "description": "The hosting server the DID was published through. Absent exactly when `serverless` is true.",
-///      "type": "string"
-///    },
-///    "serverless": {
-///      "description": "True when no hosting server was published to: the VTA holds the log, and the DID does not resolve until the caller serves `logEntry` at the DID's URL. Stated, rather than left to be inferred from an absent `serverId`, so a client can refuse to rely on a DID nobody serves.",
-///      "type": "boolean"
-///    },
-///    "signingKeyId": {
-///      "type": "string"
-///    },
-///    "webvhDid": {
-///      "description": "The did:webvh DID of the log. Equal to `did` when `didMethod` is `webvh`.",
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -772,58 +503,6 @@ impl Response {
 }
 ///Where under the host the DID is served. `wellKnown` puts it at the host root (`/.well-known/did.jsonl`) — at most one DID per host can hold that. `explicit` names the path. `autoAssign` lets the server allocate one.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "WebvhPathMode",
-///  "description": "Where under the host the DID is served. `wellKnown` puts it at the host root (`/.well-known/did.jsonl`) — at most one DID per host can hold that. `explicit` names the path. `autoAssign` lets the server allocate one.",
-///  "oneOf": [
-///    {
-///      "type": "object",
-///      "required": [
-///        "mode"
-///      ],
-///      "properties": {
-///        "mode": {
-///          "const": "wellKnown"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "type": "object",
-///      "required": [
-///        "mode",
-///        "path"
-///      ],
-///      "properties": {
-///        "mode": {
-///          "const": "explicit"
-///        },
-///        "path": {
-///          "type": "string",
-///          "minLength": 1
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "type": "object",
-///      "required": [
-///        "mode"
-///      ],
-///      "properties": {
-///        "mode": {
-///          "const": "autoAssign"
-///        }
-///      },
-///      "additionalProperties": false
-///    }
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(tag = "mode", content = "path")]
 #[non_exhaustive]
@@ -842,15 +521,6 @@ impl ::std::convert::From<WebvhPathModePath> for WebvhPathMode {
 }
 ///`WebvhPathModePath`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct WebvhPathModePath(::std::string::String);
@@ -1608,7 +1278,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DidMethod\": {\n      \"description\": \"The identity a did:webvh log is presented as. `webvh` is `did:webvh:<scid>:<host>[:<path>]`. `scid` is `did:scid:vh:1:<scid>`, verified by the same log and located by `?src=<host>[/<path>]`; it requires the alias in `alsoKnownAs`. In a request, absent means the VTA applies its configuration (`webvh` unless configured otherwise); in a response, the form the VTA applied, and `did` is in that form.\",\n      \"enum\": [\n        \"webvh\",\n        \"scid\"\n      ],\n      \"title\": \"DidMethod\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/webvh/dids/create. Type https://trusttasks.org/spec/vta/webvh/dids/create/1.2#response.\",\n      \"properties\": {\n        \"contextId\": {\n          \"type\": \"string\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"did\": {\n          \"description\": \"The new identity, in the form `didMethod` names: the did:webvh DID, or the bare `did:scid:vh:1:<scid>` DID.\",\n          \"type\": \"string\"\n        },\n        \"didDocument\": {\n          \"description\": \"The published document, when the VTA composed one.\",\n          \"type\": \"object\"\n        },\n        \"didMethod\": {\n          \"$ref\": \"#/$defs/DidMethod\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"kaKeyId\": {\n          \"type\": \"string\"\n        },\n        \"logEntry\": {\n          \"description\": \"The log's first entry. For a serverless DID this is what the caller must serve — the DID does not resolve until they do.\",\n          \"type\": \"string\"\n        },\n        \"mnemonic\": {\n          \"description\": \"The hosting server's handle for the record. Absent for a serverless DID.\",\n          \"type\": \"string\"\n        },\n        \"portable\": {\n          \"type\": \"boolean\"\n        },\n        \"preRotationKeyCount\": {\n          \"description\": \"Successor keys committed. `0` means pre-rotation is off for this DID.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"scid\": {\n          \"description\": \"Self-certifying identifier committing to the log's first entry.\",\n          \"type\": \"string\"\n        },\n        \"scidAlsoKnownAs\": {\n          \"description\": \"Whether the first log entry lists `scidDidUrl` in `alsoKnownAs`.\",\n          \"type\": \"boolean\"\n        },\n        \"scidDidUrl\": {\n          \"description\": \"The `did:scid:vh:1:<scid>?src=<source>` DID URL of the log: the did:scid DID with the locator a recipient needs to resolve it. A producer gives this out, rather than the bare DID, wherever the recipient may not hold a source.\",\n          \"type\": \"string\"\n        },\n        \"serverId\": {\n          \"description\": \"The hosting server the DID was published through. Absent exactly when `serverless` is true.\",\n          \"type\": \"string\"\n        },\n        \"serverless\": {\n          \"description\": \"True when no hosting server was published to: the VTA holds the log, and the DID does not resolve until the caller serves `logEntry` at the DID's URL. Stated, rather than left to be inferred from an absent `serverId`, so a client can refuse to rely on a DID nobody serves.\",\n          \"type\": \"boolean\"\n        },\n        \"signingKeyId\": {\n          \"type\": \"string\"\n        },\n        \"webvhDid\": {\n          \"description\": \"The did:webvh DID of the log. Equal to `did` when `didMethod` is `webvh`.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"contextId\",\n        \"serverless\",\n        \"scid\",\n        \"portable\",\n        \"signingKeyId\",\n        \"kaKeyId\",\n        \"preRotationKeyCount\",\n        \"createdAt\",\n        \"didMethod\",\n        \"scidAlsoKnownAs\",\n        \"webvhDid\",\n        \"scidDidUrl\"\n      ],\n      \"title\": \"VTA WebVH DIDs Create — response payload\",\n      \"type\": \"object\"\n    },\n    \"WebvhPathMode\": {\n      \"description\": \"Where under the host the DID is served. `wellKnown` puts it at the host root (`/.well-known/did.jsonl`) — at most one DID per host can hold that. `explicit` names the path. `autoAssign` lets the server allocate one.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"mode\": {\n              \"const\": \"wellKnown\"\n            }\n          },\n          \"required\": [\n            \"mode\"\n          ],\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"mode\": {\n              \"const\": \"explicit\"\n            },\n            \"path\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"mode\",\n            \"path\"\n          ],\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"mode\": {\n              \"const\": \"autoAssign\"\n            }\n          },\n          \"required\": [\n            \"mode\"\n          ],\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"WebvhPathMode\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/webvh/dids/create/1.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Mint a did:webvh: the VTA generates the keys, writes the log's first entry, and either hands it to a hosting server or returns it for the caller to serve.\",\n  \"properties\": {\n    \"addMediatorService\": {\n      \"description\": \"Add a DIDComm mediator service entry to the document.\",\n      \"type\": \"boolean\"\n    },\n    \"addTspService\": {\n      \"description\": \"Add a TSP transport service entry to the document.\",\n      \"type\": \"boolean\"\n    },\n    \"additionalServices\": {\n      \"description\": \"Further service entries, verbatim.\",\n      \"items\": {\n        \"type\": \"object\"\n      },\n      \"type\": \"array\"\n    },\n    \"contextId\": {\n      \"description\": \"Context the DID belongs to. Its keys are minted here, and deleting the context destroys the DID.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"didDocument\": {\n      \"description\": \"A DID document to publish rather than one the VTA composes.\",\n      \"type\": \"object\"\n    },\n    \"didLog\": {\n      \"description\": \"An existing log to adopt, for importing a DID minted elsewhere.\",\n      \"type\": \"string\"\n    },\n    \"didMethod\": {\n      \"$ref\": \"#/$defs/DidMethod\"\n    },\n    \"domain\": {\n      \"description\": \"Hosting domain to publish under, when the server serves more than one.\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"kaKeyId\": {\n      \"description\": \"Existing key-agreement key to publish. Absent mints a new one.\",\n      \"type\": \"string\"\n    },\n    \"label\": {\n      \"maxLength\": 256,\n      \"type\": \"string\"\n    },\n    \"path\": {\n      \"description\": \"Explicit path label under the host. Shorthand for pathMode `explicit`; supplying both is an error.\",\n      \"type\": \"string\"\n    },\n    \"pathMode\": {\n      \"$ref\": \"#/$defs/WebvhPathMode\",\n      \"description\": \"How the path under the host is chosen. Absent means `autoAssign`.\"\n    },\n    \"portable\": {\n      \"default\": false,\n      \"description\": \"Whether this DID may later move to another domain and keep its identity. **Fixed at creation** — portability is committed in the first log entry and cannot be added afterwards. A DID created non-portable is tied to where it was published for its whole life.\",\n      \"type\": \"boolean\"\n    },\n    \"preRotationCount\": {\n      \"description\": \"How many successor keys to commit in advance. **`0` disables pre-rotation**, which means a compromise of the current key cannot be recovered from by rotating: the successor was never committed, so a thief can rotate to their own key as convincingly as the owner can.\",\n      \"minimum\": 0,\n      \"type\": \"integer\"\n    },\n    \"scidAlsoKnownAs\": {\n      \"description\": \"Whether the first log entry lists the `did:scid:vh:1` DID URL of the new log (with `src`) in `alsoKnownAs`, linking the two forms as one subject. Absent means the VTA applies its configuration, which defaults to `true`. `false` with `didMethod` `scid` is refused.\",\n      \"type\": \"boolean\"\n    },\n    \"serverId\": {\n      \"description\": \"Hosting server to publish through. Absent means **serverless**: the caller serves the log itself at `url`, and the VTA holds no hosting registration for it.\",\n      \"type\": \"string\"\n    },\n    \"setPrimary\": {\n      \"description\": \"Make this the context's primary DID.\",\n      \"type\": \"boolean\"\n    },\n    \"signingKeyId\": {\n      \"description\": \"Existing key to sign log entries with. Absent mints a new one.\",\n      \"type\": \"string\"\n    },\n    \"template\": {\n      \"description\": \"DID template to render the document from (see vta/did-templates/*).\",\n      \"type\": \"string\"\n    },\n    \"templateContext\": {\n      \"description\": \"Context whose templates to resolve `template` against. Absent uses the global scope, which is a different namespace and may hold a different template of the same name.\",\n      \"type\": \"string\"\n    },\n    \"templateVars\": {\n      \"additionalProperties\": {\n        \"type\": \"string\"\n      },\n      \"description\": \"Variables for the template's placeholders.\",\n      \"type\": \"object\"\n    },\n    \"url\": {\n      \"description\": \"Where the log will be served, for the serverless case. The DID's identity derives from this location, so changing it later is only possible for a `portable` DID.\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"contextId\"\n  ],\n  \"title\": \"VTA WebVH DIDs Create — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"DidMethod\":{\"description\":\"The identity a did:webvh log is presented as. `webvh` is `did:webvh:<scid>:<host>[:<path>]`. `scid` is `did:scid:vh:1:<scid>`, verified by the same log and located by `?src=<host>[/<path>]`; it requires the alias in `alsoKnownAs`. In a request, absent means the VTA applies its configuration (`webvh` unless configured otherwise); in a response, the form the VTA applied, and `did` is in that form.\",\"enum\":[\"webvh\",\"scid\"],\"title\":\"DidMethod\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vta/webvh/dids/create. Type https://trusttasks.org/spec/vta/webvh/dids/create/1.2#response.\",\"properties\":{\"contextId\":{\"type\":\"string\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"did\":{\"description\":\"The new identity, in the form `didMethod` names: the did:webvh DID, or the bare `did:scid:vh:1:<scid>` DID.\",\"type\":\"string\"},\"didDocument\":{\"description\":\"The published document, when the VTA composed one.\",\"type\":\"object\"},\"didMethod\":{\"$ref\":\"#/$defs/DidMethod\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"kaKeyId\":{\"type\":\"string\"},\"logEntry\":{\"description\":\"The log's first entry. For a serverless DID this is what the caller must serve — the DID does not resolve until they do.\",\"type\":\"string\"},\"mnemonic\":{\"description\":\"The hosting server's handle for the record. Absent for a serverless DID.\",\"type\":\"string\"},\"portable\":{\"type\":\"boolean\"},\"preRotationKeyCount\":{\"description\":\"Successor keys committed. `0` means pre-rotation is off for this DID.\",\"minimum\":0,\"type\":\"integer\"},\"scid\":{\"description\":\"Self-certifying identifier committing to the log's first entry.\",\"type\":\"string\"},\"scidAlsoKnownAs\":{\"description\":\"Whether the first log entry lists `scidDidUrl` in `alsoKnownAs`.\",\"type\":\"boolean\"},\"scidDidUrl\":{\"description\":\"The `did:scid:vh:1:<scid>?src=<source>` DID URL of the log: the did:scid DID with the locator a recipient needs to resolve it. A producer gives this out, rather than the bare DID, wherever the recipient may not hold a source.\",\"type\":\"string\"},\"serverId\":{\"description\":\"The hosting server the DID was published through. Absent exactly when `serverless` is true.\",\"type\":\"string\"},\"serverless\":{\"description\":\"True when no hosting server was published to: the VTA holds the log, and the DID does not resolve until the caller serves `logEntry` at the DID's URL. Stated, rather than left to be inferred from an absent `serverId`, so a client can refuse to rely on a DID nobody serves.\",\"type\":\"boolean\"},\"signingKeyId\":{\"type\":\"string\"},\"webvhDid\":{\"description\":\"The did:webvh DID of the log. Equal to `did` when `didMethod` is `webvh`.\",\"type\":\"string\"}},\"required\":[\"did\",\"contextId\",\"serverless\",\"scid\",\"portable\",\"signingKeyId\",\"kaKeyId\",\"preRotationKeyCount\",\"createdAt\",\"didMethod\",\"scidAlsoKnownAs\",\"webvhDid\",\"scidDidUrl\"],\"title\":\"VTA WebVH DIDs Create — response payload\",\"type\":\"object\"},\"WebvhPathMode\":{\"description\":\"Where under the host the DID is served. `wellKnown` puts it at the host root (`/.well-known/did.jsonl`) — at most one DID per host can hold that. `explicit` names the path. `autoAssign` lets the server allocate one.\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"mode\":{\"const\":\"wellKnown\"}},\"required\":[\"mode\"],\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"mode\":{\"const\":\"explicit\"},\"path\":{\"minLength\":1,\"type\":\"string\"}},\"required\":[\"mode\",\"path\"],\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"mode\":{\"const\":\"autoAssign\"}},\"required\":[\"mode\"],\"type\":\"object\"}],\"title\":\"WebvhPathMode\"}},\"$id\":\"https://trusttasks.org/spec/vta/webvh/dids/create/1.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Mint a did:webvh: the VTA generates the keys, writes the log's first entry, and either hands it to a hosting server or returns it for the caller to serve.\",\"properties\":{\"addMediatorService\":{\"description\":\"Add a DIDComm mediator service entry to the document.\",\"type\":\"boolean\"},\"addTspService\":{\"description\":\"Add a TSP transport service entry to the document.\",\"type\":\"boolean\"},\"additionalServices\":{\"description\":\"Further service entries, verbatim.\",\"items\":{\"type\":\"object\"},\"type\":\"array\"},\"contextId\":{\"description\":\"Context the DID belongs to. Its keys are minted here, and deleting the context destroys the DID.\",\"minLength\":1,\"type\":\"string\"},\"didDocument\":{\"description\":\"A DID document to publish rather than one the VTA composes.\",\"type\":\"object\"},\"didLog\":{\"description\":\"An existing log to adopt, for importing a DID minted elsewhere.\",\"type\":\"string\"},\"didMethod\":{\"$ref\":\"#/$defs/DidMethod\"},\"domain\":{\"description\":\"Hosting domain to publish under, when the server serves more than one.\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"kaKeyId\":{\"description\":\"Existing key-agreement key to publish. Absent mints a new one.\",\"type\":\"string\"},\"label\":{\"maxLength\":256,\"type\":\"string\"},\"path\":{\"description\":\"Explicit path label under the host. Shorthand for pathMode `explicit`; supplying both is an error.\",\"type\":\"string\"},\"pathMode\":{\"$ref\":\"#/$defs/WebvhPathMode\",\"description\":\"How the path under the host is chosen. Absent means `autoAssign`.\"},\"portable\":{\"default\":false,\"description\":\"Whether this DID may later move to another domain and keep its identity. **Fixed at creation** — portability is committed in the first log entry and cannot be added afterwards. A DID created non-portable is tied to where it was published for its whole life.\",\"type\":\"boolean\"},\"preRotationCount\":{\"description\":\"How many successor keys to commit in advance. **`0` disables pre-rotation**, which means a compromise of the current key cannot be recovered from by rotating: the successor was never committed, so a thief can rotate to their own key as convincingly as the owner can.\",\"minimum\":0,\"type\":\"integer\"},\"scidAlsoKnownAs\":{\"description\":\"Whether the first log entry lists the `did:scid:vh:1` DID URL of the new log (with `src`) in `alsoKnownAs`, linking the two forms as one subject. Absent means the VTA applies its configuration, which defaults to `true`. `false` with `didMethod` `scid` is refused.\",\"type\":\"boolean\"},\"serverId\":{\"description\":\"Hosting server to publish through. Absent means **serverless**: the caller serves the log itself at `url`, and the VTA holds no hosting registration for it.\",\"type\":\"string\"},\"setPrimary\":{\"description\":\"Make this the context's primary DID.\",\"type\":\"boolean\"},\"signingKeyId\":{\"description\":\"Existing key to sign log entries with. Absent mints a new one.\",\"type\":\"string\"},\"template\":{\"description\":\"DID template to render the document from (see vta/did-templates/*).\",\"type\":\"string\"},\"templateContext\":{\"description\":\"Context whose templates to resolve `template` against. Absent uses the global scope, which is a different namespace and may hold a different template of the same name.\",\"type\":\"string\"},\"templateVars\":{\"additionalProperties\":{\"type\":\"string\"},\"description\":\"Variables for the template's placeholders.\",\"type\":\"object\"},\"url\":{\"description\":\"Where the log will be served, for the serverless case. The DID's identity derives from this location, so changing it later is only possible for a `portable` DID.\",\"type\":\"string\"}},\"required\":[\"contextId\"],\"title\":\"VTA WebVH DIDs Create — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1617,7 +1287,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DidMethod\": {\n      \"description\": \"The identity a did:webvh log is presented as. `webvh` is `did:webvh:<scid>:<host>[:<path>]`. `scid` is `did:scid:vh:1:<scid>`, verified by the same log and located by `?src=<host>[/<path>]`; it requires the alias in `alsoKnownAs`. In a request, absent means the VTA applies its configuration (`webvh` unless configured otherwise); in a response, the form the VTA applied, and `did` is in that form.\",\n      \"enum\": [\n        \"webvh\",\n        \"scid\"\n      ],\n      \"title\": \"DidMethod\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/webvh/dids/create. Type https://trusttasks.org/spec/vta/webvh/dids/create/1.2#response.\",\n      \"properties\": {\n        \"contextId\": {\n          \"type\": \"string\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"did\": {\n          \"description\": \"The new identity, in the form `didMethod` names: the did:webvh DID, or the bare `did:scid:vh:1:<scid>` DID.\",\n          \"type\": \"string\"\n        },\n        \"didDocument\": {\n          \"description\": \"The published document, when the VTA composed one.\",\n          \"type\": \"object\"\n        },\n        \"didMethod\": {\n          \"$ref\": \"#/$defs/DidMethod\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"kaKeyId\": {\n          \"type\": \"string\"\n        },\n        \"logEntry\": {\n          \"description\": \"The log's first entry. For a serverless DID this is what the caller must serve — the DID does not resolve until they do.\",\n          \"type\": \"string\"\n        },\n        \"mnemonic\": {\n          \"description\": \"The hosting server's handle for the record. Absent for a serverless DID.\",\n          \"type\": \"string\"\n        },\n        \"portable\": {\n          \"type\": \"boolean\"\n        },\n        \"preRotationKeyCount\": {\n          \"description\": \"Successor keys committed. `0` means pre-rotation is off for this DID.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"scid\": {\n          \"description\": \"Self-certifying identifier committing to the log's first entry.\",\n          \"type\": \"string\"\n        },\n        \"scidAlsoKnownAs\": {\n          \"description\": \"Whether the first log entry lists `scidDidUrl` in `alsoKnownAs`.\",\n          \"type\": \"boolean\"\n        },\n        \"scidDidUrl\": {\n          \"description\": \"The `did:scid:vh:1:<scid>?src=<source>` DID URL of the log: the did:scid DID with the locator a recipient needs to resolve it. A producer gives this out, rather than the bare DID, wherever the recipient may not hold a source.\",\n          \"type\": \"string\"\n        },\n        \"serverId\": {\n          \"description\": \"The hosting server the DID was published through. Absent exactly when `serverless` is true.\",\n          \"type\": \"string\"\n        },\n        \"serverless\": {\n          \"description\": \"True when no hosting server was published to: the VTA holds the log, and the DID does not resolve until the caller serves `logEntry` at the DID's URL. Stated, rather than left to be inferred from an absent `serverId`, so a client can refuse to rely on a DID nobody serves.\",\n          \"type\": \"boolean\"\n        },\n        \"signingKeyId\": {\n          \"type\": \"string\"\n        },\n        \"webvhDid\": {\n          \"description\": \"The did:webvh DID of the log. Equal to `did` when `didMethod` is `webvh`.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"contextId\",\n        \"serverless\",\n        \"scid\",\n        \"portable\",\n        \"signingKeyId\",\n        \"kaKeyId\",\n        \"preRotationKeyCount\",\n        \"createdAt\",\n        \"didMethod\",\n        \"scidAlsoKnownAs\",\n        \"webvhDid\",\n        \"scidDidUrl\"\n      ],\n      \"title\": \"VTA WebVH DIDs Create — response payload\",\n      \"type\": \"object\"\n    },\n    \"WebvhPathMode\": {\n      \"description\": \"Where under the host the DID is served. `wellKnown` puts it at the host root (`/.well-known/did.jsonl`) — at most one DID per host can hold that. `explicit` names the path. `autoAssign` lets the server allocate one.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"mode\": {\n              \"const\": \"wellKnown\"\n            }\n          },\n          \"required\": [\n            \"mode\"\n          ],\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"mode\": {\n              \"const\": \"explicit\"\n            },\n            \"path\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"mode\",\n            \"path\"\n          ],\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"mode\": {\n              \"const\": \"autoAssign\"\n            }\n          },\n          \"required\": [\n            \"mode\"\n          ],\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"WebvhPathMode\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"DidMethod\":{\"description\":\"The identity a did:webvh log is presented as. `webvh` is `did:webvh:<scid>:<host>[:<path>]`. `scid` is `did:scid:vh:1:<scid>`, verified by the same log and located by `?src=<host>[/<path>]`; it requires the alias in `alsoKnownAs`. In a request, absent means the VTA applies its configuration (`webvh` unless configured otherwise); in a response, the form the VTA applied, and `did` is in that form.\",\"enum\":[\"webvh\",\"scid\"],\"title\":\"DidMethod\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vta/webvh/dids/create. Type https://trusttasks.org/spec/vta/webvh/dids/create/1.2#response.\",\"properties\":{\"contextId\":{\"type\":\"string\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"did\":{\"description\":\"The new identity, in the form `didMethod` names: the did:webvh DID, or the bare `did:scid:vh:1:<scid>` DID.\",\"type\":\"string\"},\"didDocument\":{\"description\":\"The published document, when the VTA composed one.\",\"type\":\"object\"},\"didMethod\":{\"$ref\":\"#/$defs/DidMethod\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"kaKeyId\":{\"type\":\"string\"},\"logEntry\":{\"description\":\"The log's first entry. For a serverless DID this is what the caller must serve — the DID does not resolve until they do.\",\"type\":\"string\"},\"mnemonic\":{\"description\":\"The hosting server's handle for the record. Absent for a serverless DID.\",\"type\":\"string\"},\"portable\":{\"type\":\"boolean\"},\"preRotationKeyCount\":{\"description\":\"Successor keys committed. `0` means pre-rotation is off for this DID.\",\"minimum\":0,\"type\":\"integer\"},\"scid\":{\"description\":\"Self-certifying identifier committing to the log's first entry.\",\"type\":\"string\"},\"scidAlsoKnownAs\":{\"description\":\"Whether the first log entry lists `scidDidUrl` in `alsoKnownAs`.\",\"type\":\"boolean\"},\"scidDidUrl\":{\"description\":\"The `did:scid:vh:1:<scid>?src=<source>` DID URL of the log: the did:scid DID with the locator a recipient needs to resolve it. A producer gives this out, rather than the bare DID, wherever the recipient may not hold a source.\",\"type\":\"string\"},\"serverId\":{\"description\":\"The hosting server the DID was published through. Absent exactly when `serverless` is true.\",\"type\":\"string\"},\"serverless\":{\"description\":\"True when no hosting server was published to: the VTA holds the log, and the DID does not resolve until the caller serves `logEntry` at the DID's URL. Stated, rather than left to be inferred from an absent `serverId`, so a client can refuse to rely on a DID nobody serves.\",\"type\":\"boolean\"},\"signingKeyId\":{\"type\":\"string\"},\"webvhDid\":{\"description\":\"The did:webvh DID of the log. Equal to `did` when `didMethod` is `webvh`.\",\"type\":\"string\"}},\"required\":[\"did\",\"contextId\",\"serverless\",\"scid\",\"portable\",\"signingKeyId\",\"kaKeyId\",\"preRotationKeyCount\",\"createdAt\",\"didMethod\",\"scidAlsoKnownAs\",\"webvhDid\",\"scidDidUrl\"],\"title\":\"VTA WebVH DIDs Create — response payload\",\"type\":\"object\"},\"WebvhPathMode\":{\"description\":\"Where under the host the DID is served. `wellKnown` puts it at the host root (`/.well-known/did.jsonl`) — at most one DID per host can hold that. `explicit` names the path. `autoAssign` lets the server allocate one.\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"mode\":{\"const\":\"wellKnown\"}},\"required\":[\"mode\"],\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"mode\":{\"const\":\"explicit\"},\"path\":{\"minLength\":1,\"type\":\"string\"}},\"required\":[\"mode\",\"path\"],\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"mode\":{\"const\":\"autoAssign\"}},\"required\":[\"mode\"],\"type\":\"object\"}],\"title\":\"WebvhPathMode\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

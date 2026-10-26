@@ -34,23 +34,6 @@ pub mod error {
 }
 ///The control-plane account of a bundle transfer: which algorithm, on what terms, until when. Exactly one of the two shapes — they are mutually exclusive, since StreamDescriptor requires `transportUrl` and `transportToken` and forbids `chunks`, and ChunkedDescriptor requires `chunks` and forbids both.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "BundleDescriptor",
-///  "description": "The control-plane account of a bundle transfer: which algorithm, on what terms, until when. Exactly one of the two shapes — they are mutually exclusive, since StreamDescriptor requires `transportUrl` and `transportToken` and forbids `chunks`, and ChunkedDescriptor requires `chunks` and forbids both.",
-///  "oneOf": [
-///    {
-///      "$ref": "#/definitions/StreamDescriptor"
-///    },
-///    {
-///      "$ref": "#/definitions/ChunkedDescriptor"
-///    }
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged)]
 #[non_exhaustive]
@@ -70,17 +53,6 @@ impl ::std::convert::From<ChunkedDescriptor> for BundleDescriptor {
 }
 ///Handle for a bundle across its whole lifecycle. Recipient-generated and unguessable, which is what lets an unauthorized reference be answered as not-found without confirming existence. Opaque: a producer quotes what it was given and must not derive, guess or enumerate one.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "BundleId",
-///  "description": "Handle for a bundle across its whole lifecycle. Recipient-generated and unguessable, which is what lets an unauthorized reference be answered as not-found without confirming existence. Opaque: a producer quotes what it was given and must not derive, guess or enumerate one.",
-///  "type": "string",
-///  "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct BundleId(::std::string::String);
@@ -150,18 +122,6 @@ impl<'de> ::serde::Deserialize<'de> for BundleId {
 }
 ///Number of chunks in the bundle, equal to ceil(expectedSizeBytes / chunkSize). Bounded at 4096 so that the manifest itself — one digest per chunk — fits in the single document that carries it under the same message-size reasoning as a chunk.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ChunkCount",
-///  "description": "Number of chunks in the bundle, equal to ceil(expectedSizeBytes / chunkSize). Bounded at 4096 so that the manifest itself — one digest per chunk — fits in the single document that carries it under the same message-size reasoning as a chunk.",
-///  "type": "integer",
-///  "maximum": 4096.0,
-///  "minimum": 1.0
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct ChunkCount(pub ::std::num::NonZeroU64);
@@ -209,39 +169,6 @@ The terms of a `chunkedTrustTask` transfer, committed before any chunk moves. On
 
 Consistency rules JSON Schema cannot state: `chunkCount` MUST equal ceil(expectedSizeBytes / chunkSize) for the bundle the manifest describes, and `chunkDigests` MUST have exactly `chunkCount` items. A party receiving a manifest violating either MUST refuse it.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ChunkManifest",
-///  "description": "The terms of a `chunkedTrustTask` transfer, committed before any chunk moves. On export the recipient states them in the descriptor; on import the producer pre-commits them in the request and the recipient echoes them. Either way the manifest arrives in a document whose proof is REQUIRED, so the per-chunk digests are authenticated by the party that computed them and each chunk can be verified — and a single bad chunk re-fetched or refused — on arrival rather than only after reassembly.\n\nConsistency rules JSON Schema cannot state: `chunkCount` MUST equal ceil(expectedSizeBytes / chunkSize) for the bundle the manifest describes, and `chunkDigests` MUST have exactly `chunkCount` items. A party receiving a manifest violating either MUST refuse it.",
-///  "type": "object",
-///  "required": [
-///    "chunkCount",
-///    "chunkDigests",
-///    "chunkSize"
-///  ],
-///  "properties": {
-///    "chunkCount": {
-///      "$ref": "#/definitions/ChunkCount"
-///    },
-///    "chunkDigests": {
-///      "description": "Digest of each chunk's raw bytes (not of its base64url encoding), in index order. Compared as decoded multihash bytes, never as encoded strings. sha2-256 is RECOMMENDED and MUST be implemented by every party; a party that does not implement the hash a digest names MUST treat the manifest as unverifiable rather than skip the check.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/DigestMultibase"
-///      },
-///      "maxItems": 4096,
-///      "minItems": 1
-///    },
-///    "chunkSize": {
-///      "$ref": "#/definitions/ChunkSize"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -261,18 +188,6 @@ impl ChunkManifest {
 }
 ///Size in bytes of every chunk except the last, which carries the remainder and is between 1 and this value inclusive. The ceiling of 262144 (256 KiB) is normative and is derived in `vta/backup/initiate-export/1.1` under Chunked transfer: it is the largest power of two whose `get-chunk` or `put-chunk` document still fits a 1 MiB mediator message after base64url encoding of `data`, DIDComm authcrypt encoding, and two nested forward wrappers. The floor of 16384 keeps a 1 GiB bundle within `ChunkCount`'s ceiling at sizes a constrained transport can still choose.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ChunkSize",
-///  "description": "Size in bytes of every chunk except the last, which carries the remainder and is between 1 and this value inclusive. The ceiling of 262144 (256 KiB) is normative and is derived in `vta/backup/initiate-export/1.1` under Chunked transfer: it is the largest power of two whose `get-chunk` or `put-chunk` document still fits a 1 MiB mediator message after base64url encoding of `data`, DIDComm authcrypt encoding, and two nested forward wrappers. The floor of 16384 keeps a 1 GiB bundle within `ChunkCount`'s ceiling at sizes a constrained transport can still choose.",
-///  "type": "integer",
-///  "maximum": 262144.0,
-///  "minimum": 16384.0
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct ChunkSize(pub i64);
@@ -317,49 +232,6 @@ impl ::std::fmt::Display for ChunkSize {
 }
 ///A descriptor for the `chunkedTrustTask` algorithm. Carries no address and no bearer token: every chunk moves in a Trust Task document whose sender the transport authenticates, so possession of a token would add nothing and would be one more secret to leak.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ChunkedDescriptor",
-///  "description": "A descriptor for the `chunkedTrustTask` algorithm. Carries no address and no bearer token: every chunk moves in a Trust Task document whose sender the transport authenticates, so possession of a token would add nothing and would be one more secret to leak.",
-///  "type": "object",
-///  "required": [
-///    "algorithm",
-///    "bundleId",
-///    "chunks",
-///    "expectedSha256",
-///    "expectedSizeBytes",
-///    "expiresAt"
-///  ],
-///  "properties": {
-///    "algorithm": {
-///      "description": "Discriminates this shape from StreamDescriptor.",
-///      "type": "string",
-///      "enum": [
-///        "chunkedTrustTask"
-///      ]
-///    },
-///    "bundleId": {
-///      "$ref": "#/definitions/BundleId"
-///    },
-///    "chunks": {
-///      "$ref": "#/definitions/ChunkManifest"
-///    },
-///    "expectedSha256": {
-///      "$ref": "#/definitions/ExpectedSha256"
-///    },
-///    "expectedSizeBytes": {
-///      "$ref": "#/definitions/ExpectedSizeBytes"
-///    },
-///    "expiresAt": {
-///      "$ref": "#/definitions/ExpiresAt"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -383,18 +255,6 @@ impl ChunkedDescriptor {
 }
 ///Discriminates this shape from StreamDescriptor.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Discriminates this shape from StreamDescriptor.",
-///  "type": "string",
-///  "enum": [
-///    "chunkedTrustTask"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -459,21 +319,6 @@ This definition constrains the *encoding only*. What the digest is computed over
 
 Restricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that "interoperability is not guaranteed between implementations using such values", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DigestMultibase",
-///  "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-///  "examples": [
-///    "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-///  ],
-///  "type": "string",
-///  "minLength": 16,
-///  "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DigestMultibase(::std::string::String);
@@ -542,17 +387,6 @@ impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
 }
 ///Lowercase hex SHA-256 of the whole bundle's bytes. Kept in the hex form the 1.0 descriptor published rather than moved to DigestMultibase, because it is an unchanged member of an existing descriptor and re-encoding it would break every stream producer for no gain in what it checks. For a chunked transfer it is the check over the reassembled bundle, applied after every chunk has verified individually, so that a correct set of chunks assembled in the wrong order is still caught.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ExpectedSha256",
-///  "description": "Lowercase hex SHA-256 of the whole bundle's bytes. Kept in the hex form the 1.0 descriptor published rather than moved to DigestMultibase, because it is an unchanged member of an existing descriptor and re-encoding it would break every stream producer for no gain in what it checks. For a chunked transfer it is the check over the reassembled bundle, applied after every chunk has verified individually, so that a correct set of chunks assembled in the wrong order is still caught.",
-///  "type": "string",
-///  "pattern": "^[0-9a-f]{64}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExpectedSha256(::std::string::String);
@@ -614,17 +448,6 @@ impl<'de> ::serde::Deserialize<'de> for ExpectedSha256 {
 }
 ///Total byte count of the bundle. A zero-length bundle is not a degenerate success — nothing was serialized — so the floor is 1.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ExpectedSizeBytes",
-///  "description": "Total byte count of the bundle. A zero-length bundle is not a degenerate success — nothing was serialized — so the floor is 1.",
-///  "type": "integer",
-///  "minimum": 1.0
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct ExpectedSizeBytes(pub ::std::num::NonZeroU64);
@@ -669,17 +492,6 @@ impl ::std::fmt::Display for ExpectedSizeBytes {
 }
 ///After which the bundle is collected: staged bytes discarded, tokens and chunk requests refused. Short by design. For a chunked transfer a recipient may move it later as chunks are exchanged, never past its own ceiling — each chunk response reports the current value.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ExpiresAt",
-///  "description": "After which the bundle is collected: staged bytes discarded, tokens and chunk requests refused. Short by design. For a chunked transfer a recipient may move it later as chunks are exchanged, never past its own ceiling — each chunk response reports the current value.",
-///  "type": "string",
-///  "format": "date-time"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct ExpiresAt(pub ::chrono::DateTime<::chrono::offset::Utc>);
@@ -724,21 +536,6 @@ impl ::std::fmt::Display for ExpiresAt {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -760,15 +557,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -832,46 +620,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Asks the recipient to open a slot for an encrypted bundle the producer is about to upload — by an HTTPS address (`stream`) or chunk by chunk over Trust Task documents (`chunkedTrustTask`) — pre-committing the digest and size, and for a chunked upload the chunk manifest, so the transfer is verifiable. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/backup/initiate-import/1.1",
-///  "title": "Payload",
-///  "description": "Asks the recipient to open a slot for an encrypted bundle the producer is about to upload — by an HTTPS address (`stream`) or chunk by chunk over Trust Task documents (`chunkedTrustTask`) — pre-committing the digest and size, and for a chunked upload the chunk manifest, so the transfer is verifiable. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "expectedSha256",
-///    "expectedSizeBytes"
-///  ],
-///  "properties": {
-///    "algorithm": {
-///      "description": "Requested transport mechanism — how the bytes move, not how they are encrypted. This version defines `stream` (what an absent member means) and `chunkedTrustTask`. Deliberately not an enum, so a recipient offering more can be asked for it without a specification revision; one that does not implement the request refuses with unsupportedAlgorithm.",
-///      "type": "string",
-///      "maxLength": 64,
-///      "minLength": 1
-///    },
-///    "chunks": {
-///      "description": "The chunk manifest the upload will follow. REQUIRED when `algorithm` is `chunkedTrustTask` and forbidden otherwise — a rule over two members that this schema does not express; a recipient refuses a violation with invalidManifest. Pre-committed for the same reason the whole-bundle digest is: the recipient knows what each chunk must be before it receives any.",
-///      "$ref": "#/definitions/ChunkManifest"
-///    },
-///    "expectedSha256": {
-///      "description": "Lowercase hex SHA-256 of the whole bundle about to be uploaded, committed before the upload begins. The recipient refuses bytes that hash differently, which is what bounds the damage from a leaked write token or a substituted chunk. A wire-integrity check only: it says the bytes that arrived are the bytes that were sent, and nothing about whether they are worth applying.",
-///      "$ref": "#/definitions/ExpectedSha256"
-///    },
-///    "expectedSizeBytes": {
-///      "description": "Byte count of the upload. Lets the recipient size the slot and refuse a truncated or oversized transfer without hashing it first.",
-///      "$ref": "#/definitions/ExpectedSizeBytes"
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -899,17 +647,6 @@ impl Payload {
 }
 ///Requested transport mechanism — how the bytes move, not how they are encrypted. This version defines `stream` (what an absent member means) and `chunkedTrustTask`. Deliberately not an enum, so a recipient offering more can be asked for it without a specification revision; one that does not implement the request refuses with unsupportedAlgorithm.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Requested transport mechanism — how the bytes move, not how they are encrypted. This version defines `stream` (what an absent member means) and `chunkedTrustTask`. Deliberately not an enum, so a recipient offering more can be asked for it without a specification revision; one that does not implement the request refuses with unsupportedAlgorithm.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadAlgorithm(::std::string::String);
@@ -972,35 +709,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadAlgorithm {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "descriptor"
-///  ],
-///  "properties": {
-///    "completionHint": {
-///      "description": "Operator-facing text describing how to complete the upload. Advisory: a producer must not parse it or derive behaviour from it, and a recipient must not put a secret in it.",
-///      "type": "string",
-///      "maxLength": 1024
-///    },
-///    "descriptor": {
-///      "description": "Where or how to write the bytes, on what terms, and until when.",
-///      "$ref": "#/definitions/BundleDescriptor"
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1025,16 +733,6 @@ impl Response {
 }
 ///Operator-facing text describing how to complete the upload. Advisory: a producer must not parse it or derive behaviour from it, and a recipient must not put a secret in it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Operator-facing text describing how to complete the upload. Advisory: a producer must not parse it or derive behaviour from it, and a recipient must not put a secret in it.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseCompletionHint(::std::string::String);
@@ -1094,58 +792,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseCompletionHint {
 }
 ///A descriptor for a transfer that happens outside Trust Task documents, at an address the recipient publishes — the `stream` algorithm, and any other algorithm a recipient offers that is shaped as an address plus a bearer credential. Identical in members to the `vta/backup/*/1.0` descriptor.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "StreamDescriptor",
-///  "description": "A descriptor for a transfer that happens outside Trust Task documents, at an address the recipient publishes — the `stream` algorithm, and any other algorithm a recipient offers that is shaped as an address plus a bearer credential. Identical in members to the `vta/backup/*/1.0` descriptor.",
-///  "type": "object",
-///  "required": [
-///    "algorithm",
-///    "bundleId",
-///    "expectedSha256",
-///    "expectedSizeBytes",
-///    "expiresAt",
-///    "transportToken",
-///    "transportUrl"
-///  ],
-///  "properties": {
-///    "algorithm": {
-///      "description": "The mechanism in use. Never `chunkedTrustTask`, which has its own descriptor shape; a descriptor naming it with a transport address is malformed.",
-///      "type": "string",
-///      "maxLength": 64,
-///      "minLength": 1
-///    },
-///    "bundleId": {
-///      "$ref": "#/definitions/BundleId"
-///    },
-///    "expectedSha256": {
-///      "$ref": "#/definitions/ExpectedSha256"
-///    },
-///    "expectedSizeBytes": {
-///      "$ref": "#/definitions/ExpectedSizeBytes"
-///    },
-///    "expiresAt": {
-///      "$ref": "#/definitions/ExpiresAt"
-///    },
-///    "transportToken": {
-///      "description": "Bearer credential for transportUrl, presented in the X-Backup-Token header. Minted per bundle and never reused. A recipient should store only a hash of it, and should accept an export token once.",
-///      "type": "string",
-///      "maxLength": 1024,
-///      "minLength": 1
-///    },
-///    "transportUrl": {
-///      "description": "Where to fetch (export) or write (import) the bytes. A recipient with no address at which it is reachable cannot produce this and refuses with transportUnavailable rather than returning an unusable one. An import address is write-only: staged bytes are never served back from it.",
-///      "type": "string",
-///      "format": "uri",
-///      "maxLength": 2048
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1174,17 +820,6 @@ impl StreamDescriptor {
 }
 ///The mechanism in use. Never `chunkedTrustTask`, which has its own descriptor shape; a descriptor naming it with a transport address is malformed.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The mechanism in use. Never `chunkedTrustTask`, which has its own descriptor shape; a descriptor naming it with a transport address is malformed.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct StreamDescriptorAlgorithm(::std::string::String);
@@ -1247,17 +882,6 @@ impl<'de> ::serde::Deserialize<'de> for StreamDescriptorAlgorithm {
 }
 ///Bearer credential for transportUrl, presented in the X-Backup-Token header. Minted per bundle and never reused. A recipient should store only a hash of it, and should accept an export token once.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Bearer credential for transportUrl, presented in the X-Backup-Token header. Minted per bundle and never reused. A recipient should store only a hash of it, and should accept an export token once.",
-///  "type": "string",
-///  "maxLength": 1024,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct StreamDescriptorTransportToken(::std::string::String);
@@ -1800,7 +1424,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"BundleDescriptor\": {\n      \"description\": \"The control-plane account of a bundle transfer: which algorithm, on what terms, until when. Exactly one of the two shapes — they are mutually exclusive, since StreamDescriptor requires `transportUrl` and `transportToken` and forbids `chunks`, and ChunkedDescriptor requires `chunks` and forbids both.\",\n      \"oneOf\": [\n        {\n          \"$ref\": \"#/$defs/StreamDescriptor\"\n        },\n        {\n          \"$ref\": \"#/$defs/ChunkedDescriptor\"\n        }\n      ],\n      \"title\": \"BundleDescriptor\"\n    },\n    \"BundleId\": {\n      \"description\": \"Handle for a bundle across its whole lifecycle. Recipient-generated and unguessable, which is what lets an unauthorized reference be answered as not-found without confirming existence. Opaque: a producer quotes what it was given and must not derive, guess or enumerate one.\",\n      \"pattern\": \"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\n      \"title\": \"BundleId\",\n      \"type\": \"string\"\n    },\n    \"ChunkCount\": {\n      \"description\": \"Number of chunks in the bundle, equal to ceil(expectedSizeBytes / chunkSize). Bounded at 4096 so that the manifest itself — one digest per chunk — fits in the single document that carries it under the same message-size reasoning as a chunk.\",\n      \"maximum\": 4096,\n      \"minimum\": 1,\n      \"title\": \"ChunkCount\",\n      \"type\": \"integer\"\n    },\n    \"ChunkManifest\": {\n      \"additionalProperties\": false,\n      \"description\": \"The terms of a `chunkedTrustTask` transfer, committed before any chunk moves. On export the recipient states them in the descriptor; on import the producer pre-commits them in the request and the recipient echoes them. Either way the manifest arrives in a document whose proof is REQUIRED, so the per-chunk digests are authenticated by the party that computed them and each chunk can be verified — and a single bad chunk re-fetched or refused — on arrival rather than only after reassembly.\\n\\nConsistency rules JSON Schema cannot state: `chunkCount` MUST equal ceil(expectedSizeBytes / chunkSize) for the bundle the manifest describes, and `chunkDigests` MUST have exactly `chunkCount` items. A party receiving a manifest violating either MUST refuse it.\",\n      \"properties\": {\n        \"chunkCount\": {\n          \"$ref\": \"#/$defs/ChunkCount\"\n        },\n        \"chunkDigests\": {\n          \"description\": \"Digest of each chunk's raw bytes (not of its base64url encoding), in index order. Compared as decoded multihash bytes, never as encoded strings. sha2-256 is RECOMMENDED and MUST be implemented by every party; a party that does not implement the hash a digest names MUST treat the manifest as unverifiable rather than skip the check.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/DigestMultibase\"\n          },\n          \"maxItems\": 4096,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"chunkSize\": {\n          \"$ref\": \"#/$defs/ChunkSize\"\n        }\n      },\n      \"required\": [\n        \"chunkSize\",\n        \"chunkCount\",\n        \"chunkDigests\"\n      ],\n      \"title\": \"ChunkManifest\",\n      \"type\": \"object\"\n    },\n    \"ChunkSize\": {\n      \"description\": \"Size in bytes of every chunk except the last, which carries the remainder and is between 1 and this value inclusive. The ceiling of 262144 (256 KiB) is normative and is derived in `vta/backup/initiate-export/1.1` under Chunked transfer: it is the largest power of two whose `get-chunk` or `put-chunk` document still fits a 1 MiB mediator message after base64url encoding of `data`, DIDComm authcrypt encoding, and two nested forward wrappers. The floor of 16384 keeps a 1 GiB bundle within `ChunkCount`'s ceiling at sizes a constrained transport can still choose.\",\n      \"maximum\": 262144,\n      \"minimum\": 16384,\n      \"title\": \"ChunkSize\",\n      \"type\": \"integer\"\n    },\n    \"ChunkedDescriptor\": {\n      \"additionalProperties\": false,\n      \"description\": \"A descriptor for the `chunkedTrustTask` algorithm. Carries no address and no bearer token: every chunk moves in a Trust Task document whose sender the transport authenticates, so possession of a token would add nothing and would be one more secret to leak.\",\n      \"properties\": {\n        \"algorithm\": {\n          \"description\": \"Discriminates this shape from StreamDescriptor.\",\n          \"enum\": [\n            \"chunkedTrustTask\"\n          ],\n          \"type\": \"string\"\n        },\n        \"bundleId\": {\n          \"$ref\": \"#/$defs/BundleId\"\n        },\n        \"chunks\": {\n          \"$ref\": \"#/$defs/ChunkManifest\"\n        },\n        \"expectedSha256\": {\n          \"$ref\": \"#/$defs/ExpectedSha256\"\n        },\n        \"expectedSizeBytes\": {\n          \"$ref\": \"#/$defs/ExpectedSizeBytes\"\n        },\n        \"expiresAt\": {\n          \"$ref\": \"#/$defs/ExpiresAt\"\n        }\n      },\n      \"required\": [\n        \"bundleId\",\n        \"algorithm\",\n        \"chunks\",\n        \"expectedSha256\",\n        \"expectedSizeBytes\",\n        \"expiresAt\"\n      ],\n      \"title\": \"ChunkedDescriptor\",\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"ExpectedSha256\": {\n      \"description\": \"Lowercase hex SHA-256 of the whole bundle's bytes. Kept in the hex form the 1.0 descriptor published rather than moved to DigestMultibase, because it is an unchanged member of an existing descriptor and re-encoding it would break every stream producer for no gain in what it checks. For a chunked transfer it is the check over the reassembled bundle, applied after every chunk has verified individually, so that a correct set of chunks assembled in the wrong order is still caught.\",\n      \"pattern\": \"^[0-9a-f]{64}$\",\n      \"title\": \"ExpectedSha256\",\n      \"type\": \"string\"\n    },\n    \"ExpectedSizeBytes\": {\n      \"description\": \"Total byte count of the bundle. A zero-length bundle is not a degenerate success — nothing was serialized — so the floor is 1.\",\n      \"minimum\": 1,\n      \"title\": \"ExpectedSizeBytes\",\n      \"type\": \"integer\"\n    },\n    \"ExpiresAt\": {\n      \"description\": \"After which the bundle is collected: staged bytes discarded, tokens and chunk requests refused. Short by design. For a chunked transfer a recipient may move it later as chunks are exchanged, never past its own ceiling — each chunk response reports the current value.\",\n      \"format\": \"date-time\",\n      \"title\": \"ExpiresAt\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"completionHint\": {\n          \"description\": \"Operator-facing text describing how to complete the upload. Advisory: a producer must not parse it or derive behaviour from it, and a recipient must not put a secret in it.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"descriptor\": {\n          \"$ref\": \"#/$defs/BundleDescriptor\",\n          \"description\": \"Where or how to write the bytes, on what terms, and until when.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        }\n      },\n      \"required\": [\n        \"descriptor\"\n      ],\n      \"title\": \"VTA Backup Initiate Import — response payload\",\n      \"type\": \"object\"\n    },\n    \"StreamDescriptor\": {\n      \"additionalProperties\": false,\n      \"description\": \"A descriptor for a transfer that happens outside Trust Task documents, at an address the recipient publishes — the `stream` algorithm, and any other algorithm a recipient offers that is shaped as an address plus a bearer credential. Identical in members to the `vta/backup/*/1.0` descriptor.\",\n      \"properties\": {\n        \"algorithm\": {\n          \"description\": \"The mechanism in use. Never `chunkedTrustTask`, which has its own descriptor shape; a descriptor naming it with a transport address is malformed.\",\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"bundleId\": {\n          \"$ref\": \"#/$defs/BundleId\"\n        },\n        \"expectedSha256\": {\n          \"$ref\": \"#/$defs/ExpectedSha256\"\n        },\n        \"expectedSizeBytes\": {\n          \"$ref\": \"#/$defs/ExpectedSizeBytes\"\n        },\n        \"expiresAt\": {\n          \"$ref\": \"#/$defs/ExpiresAt\"\n        },\n        \"transportToken\": {\n          \"description\": \"Bearer credential for transportUrl, presented in the X-Backup-Token header. Minted per bundle and never reused. A recipient should store only a hash of it, and should accept an export token once.\",\n          \"maxLength\": 1024,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"transportUrl\": {\n          \"description\": \"Where to fetch (export) or write (import) the bytes. A recipient with no address at which it is reachable cannot produce this and refuses with transportUnavailable rather than returning an unusable one. An import address is write-only: staged bytes are never served back from it.\",\n          \"format\": \"uri\",\n          \"maxLength\": 2048,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"bundleId\",\n        \"algorithm\",\n        \"transportUrl\",\n        \"transportToken\",\n        \"expectedSha256\",\n        \"expectedSizeBytes\",\n        \"expiresAt\"\n      ],\n      \"title\": \"StreamDescriptor\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/backup/initiate-import/1.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Asks the recipient to open a slot for an encrypted bundle the producer is about to upload — by an HTTPS address (`stream`) or chunk by chunk over Trust Task documents (`chunkedTrustTask`) — pre-committing the digest and size, and for a chunked upload the chunk manifest, so the transfer is verifiable. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"algorithm\": {\n      \"description\": \"Requested transport mechanism — how the bytes move, not how they are encrypted. This version defines `stream` (what an absent member means) and `chunkedTrustTask`. Deliberately not an enum, so a recipient offering more can be asked for it without a specification revision; one that does not implement the request refuses with unsupportedAlgorithm.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"chunks\": {\n      \"$ref\": \"#/$defs/ChunkManifest\",\n      \"description\": \"The chunk manifest the upload will follow. REQUIRED when `algorithm` is `chunkedTrustTask` and forbidden otherwise — a rule over two members that this schema does not express; a recipient refuses a violation with invalidManifest. Pre-committed for the same reason the whole-bundle digest is: the recipient knows what each chunk must be before it receives any.\"\n    },\n    \"expectedSha256\": {\n      \"$ref\": \"#/$defs/ExpectedSha256\",\n      \"description\": \"Lowercase hex SHA-256 of the whole bundle about to be uploaded, committed before the upload begins. The recipient refuses bytes that hash differently, which is what bounds the damage from a leaked write token or a substituted chunk. A wire-integrity check only: it says the bytes that arrived are the bytes that were sent, and nothing about whether they are worth applying.\"\n    },\n    \"expectedSizeBytes\": {\n      \"$ref\": \"#/$defs/ExpectedSizeBytes\",\n      \"description\": \"Byte count of the upload. Lets the recipient size the slot and refuse a truncated or oversized transfer without hashing it first.\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    }\n  },\n  \"required\": [\n    \"expectedSha256\",\n    \"expectedSizeBytes\"\n  ],\n  \"title\": \"VTA Backup — Initiate Import — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"BundleDescriptor\":{\"description\":\"The control-plane account of a bundle transfer: which algorithm, on what terms, until when. Exactly one of the two shapes — they are mutually exclusive, since StreamDescriptor requires `transportUrl` and `transportToken` and forbids `chunks`, and ChunkedDescriptor requires `chunks` and forbids both.\",\"oneOf\":[{\"$ref\":\"#/$defs/StreamDescriptor\"},{\"$ref\":\"#/$defs/ChunkedDescriptor\"}],\"title\":\"BundleDescriptor\"},\"BundleId\":{\"description\":\"Handle for a bundle across its whole lifecycle. Recipient-generated and unguessable, which is what lets an unauthorized reference be answered as not-found without confirming existence. Opaque: a producer quotes what it was given and must not derive, guess or enumerate one.\",\"pattern\":\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"title\":\"BundleId\",\"type\":\"string\"},\"ChunkCount\":{\"description\":\"Number of chunks in the bundle, equal to ceil(expectedSizeBytes / chunkSize). Bounded at 4096 so that the manifest itself — one digest per chunk — fits in the single document that carries it under the same message-size reasoning as a chunk.\",\"maximum\":4096,\"minimum\":1,\"title\":\"ChunkCount\",\"type\":\"integer\"},\"ChunkManifest\":{\"additionalProperties\":false,\"description\":\"The terms of a `chunkedTrustTask` transfer, committed before any chunk moves. On export the recipient states them in the descriptor; on import the producer pre-commits them in the request and the recipient echoes them. Either way the manifest arrives in a document whose proof is REQUIRED, so the per-chunk digests are authenticated by the party that computed them and each chunk can be verified — and a single bad chunk re-fetched or refused — on arrival rather than only after reassembly.\\n\\nConsistency rules JSON Schema cannot state: `chunkCount` MUST equal ceil(expectedSizeBytes / chunkSize) for the bundle the manifest describes, and `chunkDigests` MUST have exactly `chunkCount` items. A party receiving a manifest violating either MUST refuse it.\",\"properties\":{\"chunkCount\":{\"$ref\":\"#/$defs/ChunkCount\"},\"chunkDigests\":{\"description\":\"Digest of each chunk's raw bytes (not of its base64url encoding), in index order. Compared as decoded multihash bytes, never as encoded strings. sha2-256 is RECOMMENDED and MUST be implemented by every party; a party that does not implement the hash a digest names MUST treat the manifest as unverifiable rather than skip the check.\",\"items\":{\"$ref\":\"#/$defs/DigestMultibase\"},\"maxItems\":4096,\"minItems\":1,\"type\":\"array\"},\"chunkSize\":{\"$ref\":\"#/$defs/ChunkSize\"}},\"required\":[\"chunkSize\",\"chunkCount\",\"chunkDigests\"],\"title\":\"ChunkManifest\",\"type\":\"object\"},\"ChunkSize\":{\"description\":\"Size in bytes of every chunk except the last, which carries the remainder and is between 1 and this value inclusive. The ceiling of 262144 (256 KiB) is normative and is derived in `vta/backup/initiate-export/1.1` under Chunked transfer: it is the largest power of two whose `get-chunk` or `put-chunk` document still fits a 1 MiB mediator message after base64url encoding of `data`, DIDComm authcrypt encoding, and two nested forward wrappers. The floor of 16384 keeps a 1 GiB bundle within `ChunkCount`'s ceiling at sizes a constrained transport can still choose.\",\"maximum\":262144,\"minimum\":16384,\"title\":\"ChunkSize\",\"type\":\"integer\"},\"ChunkedDescriptor\":{\"additionalProperties\":false,\"description\":\"A descriptor for the `chunkedTrustTask` algorithm. Carries no address and no bearer token: every chunk moves in a Trust Task document whose sender the transport authenticates, so possession of a token would add nothing and would be one more secret to leak.\",\"properties\":{\"algorithm\":{\"description\":\"Discriminates this shape from StreamDescriptor.\",\"enum\":[\"chunkedTrustTask\"],\"type\":\"string\"},\"bundleId\":{\"$ref\":\"#/$defs/BundleId\"},\"chunks\":{\"$ref\":\"#/$defs/ChunkManifest\"},\"expectedSha256\":{\"$ref\":\"#/$defs/ExpectedSha256\"},\"expectedSizeBytes\":{\"$ref\":\"#/$defs/ExpectedSizeBytes\"},\"expiresAt\":{\"$ref\":\"#/$defs/ExpiresAt\"}},\"required\":[\"bundleId\",\"algorithm\",\"chunks\",\"expectedSha256\",\"expectedSizeBytes\",\"expiresAt\"],\"title\":\"ChunkedDescriptor\",\"type\":\"object\"},\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"ExpectedSha256\":{\"description\":\"Lowercase hex SHA-256 of the whole bundle's bytes. Kept in the hex form the 1.0 descriptor published rather than moved to DigestMultibase, because it is an unchanged member of an existing descriptor and re-encoding it would break every stream producer for no gain in what it checks. For a chunked transfer it is the check over the reassembled bundle, applied after every chunk has verified individually, so that a correct set of chunks assembled in the wrong order is still caught.\",\"pattern\":\"^[0-9a-f]{64}$\",\"title\":\"ExpectedSha256\",\"type\":\"string\"},\"ExpectedSizeBytes\":{\"description\":\"Total byte count of the bundle. A zero-length bundle is not a degenerate success — nothing was serialized — so the floor is 1.\",\"minimum\":1,\"title\":\"ExpectedSizeBytes\",\"type\":\"integer\"},\"ExpiresAt\":{\"description\":\"After which the bundle is collected: staged bytes discarded, tokens and chunk requests refused. Short by design. For a chunked transfer a recipient may move it later as chunks are exchanged, never past its own ceiling — each chunk response reports the current value.\",\"format\":\"date-time\",\"title\":\"ExpiresAt\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"completionHint\":{\"description\":\"Operator-facing text describing how to complete the upload. Advisory: a producer must not parse it or derive behaviour from it, and a recipient must not put a secret in it.\",\"maxLength\":1024,\"type\":\"string\"},\"descriptor\":{\"$ref\":\"#/$defs/BundleDescriptor\",\"description\":\"Where or how to write the bytes, on what terms, and until when.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"}},\"required\":[\"descriptor\"],\"title\":\"VTA Backup Initiate Import — response payload\",\"type\":\"object\"},\"StreamDescriptor\":{\"additionalProperties\":false,\"description\":\"A descriptor for a transfer that happens outside Trust Task documents, at an address the recipient publishes — the `stream` algorithm, and any other algorithm a recipient offers that is shaped as an address plus a bearer credential. Identical in members to the `vta/backup/*/1.0` descriptor.\",\"properties\":{\"algorithm\":{\"description\":\"The mechanism in use. Never `chunkedTrustTask`, which has its own descriptor shape; a descriptor naming it with a transport address is malformed.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"bundleId\":{\"$ref\":\"#/$defs/BundleId\"},\"expectedSha256\":{\"$ref\":\"#/$defs/ExpectedSha256\"},\"expectedSizeBytes\":{\"$ref\":\"#/$defs/ExpectedSizeBytes\"},\"expiresAt\":{\"$ref\":\"#/$defs/ExpiresAt\"},\"transportToken\":{\"description\":\"Bearer credential for transportUrl, presented in the X-Backup-Token header. Minted per bundle and never reused. A recipient should store only a hash of it, and should accept an export token once.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"},\"transportUrl\":{\"description\":\"Where to fetch (export) or write (import) the bytes. A recipient with no address at which it is reachable cannot produce this and refuses with transportUnavailable rather than returning an unusable one. An import address is write-only: staged bytes are never served back from it.\",\"format\":\"uri\",\"maxLength\":2048,\"type\":\"string\"}},\"required\":[\"bundleId\",\"algorithm\",\"transportUrl\",\"transportToken\",\"expectedSha256\",\"expectedSizeBytes\",\"expiresAt\"],\"title\":\"StreamDescriptor\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vta/backup/initiate-import/1.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Asks the recipient to open a slot for an encrypted bundle the producer is about to upload — by an HTTPS address (`stream`) or chunk by chunk over Trust Task documents (`chunkedTrustTask`) — pre-committing the digest and size, and for a chunked upload the chunk manifest, so the transfer is verifiable. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"algorithm\":{\"description\":\"Requested transport mechanism — how the bytes move, not how they are encrypted. This version defines `stream` (what an absent member means) and `chunkedTrustTask`. Deliberately not an enum, so a recipient offering more can be asked for it without a specification revision; one that does not implement the request refuses with unsupportedAlgorithm.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"chunks\":{\"$ref\":\"#/$defs/ChunkManifest\",\"description\":\"The chunk manifest the upload will follow. REQUIRED when `algorithm` is `chunkedTrustTask` and forbidden otherwise — a rule over two members that this schema does not express; a recipient refuses a violation with invalidManifest. Pre-committed for the same reason the whole-bundle digest is: the recipient knows what each chunk must be before it receives any.\"},\"expectedSha256\":{\"$ref\":\"#/$defs/ExpectedSha256\",\"description\":\"Lowercase hex SHA-256 of the whole bundle about to be uploaded, committed before the upload begins. The recipient refuses bytes that hash differently, which is what bounds the damage from a leaked write token or a substituted chunk. A wire-integrity check only: it says the bytes that arrived are the bytes that were sent, and nothing about whether they are worth applying.\"},\"expectedSizeBytes\":{\"$ref\":\"#/$defs/ExpectedSizeBytes\",\"description\":\"Byte count of the upload. Lets the recipient size the slot and refuse a truncated or oversized transfer without hashing it first.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"}},\"required\":[\"expectedSha256\",\"expectedSizeBytes\"],\"title\":\"VTA Backup — Initiate Import — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1810,7 +1434,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"BundleDescriptor\": {\n      \"description\": \"The control-plane account of a bundle transfer: which algorithm, on what terms, until when. Exactly one of the two shapes — they are mutually exclusive, since StreamDescriptor requires `transportUrl` and `transportToken` and forbids `chunks`, and ChunkedDescriptor requires `chunks` and forbids both.\",\n      \"oneOf\": [\n        {\n          \"$ref\": \"#/$defs/StreamDescriptor\"\n        },\n        {\n          \"$ref\": \"#/$defs/ChunkedDescriptor\"\n        }\n      ],\n      \"title\": \"BundleDescriptor\"\n    },\n    \"BundleId\": {\n      \"description\": \"Handle for a bundle across its whole lifecycle. Recipient-generated and unguessable, which is what lets an unauthorized reference be answered as not-found without confirming existence. Opaque: a producer quotes what it was given and must not derive, guess or enumerate one.\",\n      \"pattern\": \"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\n      \"title\": \"BundleId\",\n      \"type\": \"string\"\n    },\n    \"ChunkCount\": {\n      \"description\": \"Number of chunks in the bundle, equal to ceil(expectedSizeBytes / chunkSize). Bounded at 4096 so that the manifest itself — one digest per chunk — fits in the single document that carries it under the same message-size reasoning as a chunk.\",\n      \"maximum\": 4096,\n      \"minimum\": 1,\n      \"title\": \"ChunkCount\",\n      \"type\": \"integer\"\n    },\n    \"ChunkManifest\": {\n      \"additionalProperties\": false,\n      \"description\": \"The terms of a `chunkedTrustTask` transfer, committed before any chunk moves. On export the recipient states them in the descriptor; on import the producer pre-commits them in the request and the recipient echoes them. Either way the manifest arrives in a document whose proof is REQUIRED, so the per-chunk digests are authenticated by the party that computed them and each chunk can be verified — and a single bad chunk re-fetched or refused — on arrival rather than only after reassembly.\\n\\nConsistency rules JSON Schema cannot state: `chunkCount` MUST equal ceil(expectedSizeBytes / chunkSize) for the bundle the manifest describes, and `chunkDigests` MUST have exactly `chunkCount` items. A party receiving a manifest violating either MUST refuse it.\",\n      \"properties\": {\n        \"chunkCount\": {\n          \"$ref\": \"#/$defs/ChunkCount\"\n        },\n        \"chunkDigests\": {\n          \"description\": \"Digest of each chunk's raw bytes (not of its base64url encoding), in index order. Compared as decoded multihash bytes, never as encoded strings. sha2-256 is RECOMMENDED and MUST be implemented by every party; a party that does not implement the hash a digest names MUST treat the manifest as unverifiable rather than skip the check.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/DigestMultibase\"\n          },\n          \"maxItems\": 4096,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"chunkSize\": {\n          \"$ref\": \"#/$defs/ChunkSize\"\n        }\n      },\n      \"required\": [\n        \"chunkSize\",\n        \"chunkCount\",\n        \"chunkDigests\"\n      ],\n      \"title\": \"ChunkManifest\",\n      \"type\": \"object\"\n    },\n    \"ChunkSize\": {\n      \"description\": \"Size in bytes of every chunk except the last, which carries the remainder and is between 1 and this value inclusive. The ceiling of 262144 (256 KiB) is normative and is derived in `vta/backup/initiate-export/1.1` under Chunked transfer: it is the largest power of two whose `get-chunk` or `put-chunk` document still fits a 1 MiB mediator message after base64url encoding of `data`, DIDComm authcrypt encoding, and two nested forward wrappers. The floor of 16384 keeps a 1 GiB bundle within `ChunkCount`'s ceiling at sizes a constrained transport can still choose.\",\n      \"maximum\": 262144,\n      \"minimum\": 16384,\n      \"title\": \"ChunkSize\",\n      \"type\": \"integer\"\n    },\n    \"ChunkedDescriptor\": {\n      \"additionalProperties\": false,\n      \"description\": \"A descriptor for the `chunkedTrustTask` algorithm. Carries no address and no bearer token: every chunk moves in a Trust Task document whose sender the transport authenticates, so possession of a token would add nothing and would be one more secret to leak.\",\n      \"properties\": {\n        \"algorithm\": {\n          \"description\": \"Discriminates this shape from StreamDescriptor.\",\n          \"enum\": [\n            \"chunkedTrustTask\"\n          ],\n          \"type\": \"string\"\n        },\n        \"bundleId\": {\n          \"$ref\": \"#/$defs/BundleId\"\n        },\n        \"chunks\": {\n          \"$ref\": \"#/$defs/ChunkManifest\"\n        },\n        \"expectedSha256\": {\n          \"$ref\": \"#/$defs/ExpectedSha256\"\n        },\n        \"expectedSizeBytes\": {\n          \"$ref\": \"#/$defs/ExpectedSizeBytes\"\n        },\n        \"expiresAt\": {\n          \"$ref\": \"#/$defs/ExpiresAt\"\n        }\n      },\n      \"required\": [\n        \"bundleId\",\n        \"algorithm\",\n        \"chunks\",\n        \"expectedSha256\",\n        \"expectedSizeBytes\",\n        \"expiresAt\"\n      ],\n      \"title\": \"ChunkedDescriptor\",\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"ExpectedSha256\": {\n      \"description\": \"Lowercase hex SHA-256 of the whole bundle's bytes. Kept in the hex form the 1.0 descriptor published rather than moved to DigestMultibase, because it is an unchanged member of an existing descriptor and re-encoding it would break every stream producer for no gain in what it checks. For a chunked transfer it is the check over the reassembled bundle, applied after every chunk has verified individually, so that a correct set of chunks assembled in the wrong order is still caught.\",\n      \"pattern\": \"^[0-9a-f]{64}$\",\n      \"title\": \"ExpectedSha256\",\n      \"type\": \"string\"\n    },\n    \"ExpectedSizeBytes\": {\n      \"description\": \"Total byte count of the bundle. A zero-length bundle is not a degenerate success — nothing was serialized — so the floor is 1.\",\n      \"minimum\": 1,\n      \"title\": \"ExpectedSizeBytes\",\n      \"type\": \"integer\"\n    },\n    \"ExpiresAt\": {\n      \"description\": \"After which the bundle is collected: staged bytes discarded, tokens and chunk requests refused. Short by design. For a chunked transfer a recipient may move it later as chunks are exchanged, never past its own ceiling — each chunk response reports the current value.\",\n      \"format\": \"date-time\",\n      \"title\": \"ExpiresAt\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"completionHint\": {\n          \"description\": \"Operator-facing text describing how to complete the upload. Advisory: a producer must not parse it or derive behaviour from it, and a recipient must not put a secret in it.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"descriptor\": {\n          \"$ref\": \"#/$defs/BundleDescriptor\",\n          \"description\": \"Where or how to write the bytes, on what terms, and until when.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        }\n      },\n      \"required\": [\n        \"descriptor\"\n      ],\n      \"title\": \"VTA Backup Initiate Import — response payload\",\n      \"type\": \"object\"\n    },\n    \"StreamDescriptor\": {\n      \"additionalProperties\": false,\n      \"description\": \"A descriptor for a transfer that happens outside Trust Task documents, at an address the recipient publishes — the `stream` algorithm, and any other algorithm a recipient offers that is shaped as an address plus a bearer credential. Identical in members to the `vta/backup/*/1.0` descriptor.\",\n      \"properties\": {\n        \"algorithm\": {\n          \"description\": \"The mechanism in use. Never `chunkedTrustTask`, which has its own descriptor shape; a descriptor naming it with a transport address is malformed.\",\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"bundleId\": {\n          \"$ref\": \"#/$defs/BundleId\"\n        },\n        \"expectedSha256\": {\n          \"$ref\": \"#/$defs/ExpectedSha256\"\n        },\n        \"expectedSizeBytes\": {\n          \"$ref\": \"#/$defs/ExpectedSizeBytes\"\n        },\n        \"expiresAt\": {\n          \"$ref\": \"#/$defs/ExpiresAt\"\n        },\n        \"transportToken\": {\n          \"description\": \"Bearer credential for transportUrl, presented in the X-Backup-Token header. Minted per bundle and never reused. A recipient should store only a hash of it, and should accept an export token once.\",\n          \"maxLength\": 1024,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"transportUrl\": {\n          \"description\": \"Where to fetch (export) or write (import) the bytes. A recipient with no address at which it is reachable cannot produce this and refuses with transportUnavailable rather than returning an unusable one. An import address is write-only: staged bytes are never served back from it.\",\n          \"format\": \"uri\",\n          \"maxLength\": 2048,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"bundleId\",\n        \"algorithm\",\n        \"transportUrl\",\n        \"transportToken\",\n        \"expectedSha256\",\n        \"expectedSizeBytes\",\n        \"expiresAt\"\n      ],\n      \"title\": \"StreamDescriptor\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"BundleDescriptor\":{\"description\":\"The control-plane account of a bundle transfer: which algorithm, on what terms, until when. Exactly one of the two shapes — they are mutually exclusive, since StreamDescriptor requires `transportUrl` and `transportToken` and forbids `chunks`, and ChunkedDescriptor requires `chunks` and forbids both.\",\"oneOf\":[{\"$ref\":\"#/$defs/StreamDescriptor\"},{\"$ref\":\"#/$defs/ChunkedDescriptor\"}],\"title\":\"BundleDescriptor\"},\"BundleId\":{\"description\":\"Handle for a bundle across its whole lifecycle. Recipient-generated and unguessable, which is what lets an unauthorized reference be answered as not-found without confirming existence. Opaque: a producer quotes what it was given and must not derive, guess or enumerate one.\",\"pattern\":\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"title\":\"BundleId\",\"type\":\"string\"},\"ChunkCount\":{\"description\":\"Number of chunks in the bundle, equal to ceil(expectedSizeBytes / chunkSize). Bounded at 4096 so that the manifest itself — one digest per chunk — fits in the single document that carries it under the same message-size reasoning as a chunk.\",\"maximum\":4096,\"minimum\":1,\"title\":\"ChunkCount\",\"type\":\"integer\"},\"ChunkManifest\":{\"additionalProperties\":false,\"description\":\"The terms of a `chunkedTrustTask` transfer, committed before any chunk moves. On export the recipient states them in the descriptor; on import the producer pre-commits them in the request and the recipient echoes them. Either way the manifest arrives in a document whose proof is REQUIRED, so the per-chunk digests are authenticated by the party that computed them and each chunk can be verified — and a single bad chunk re-fetched or refused — on arrival rather than only after reassembly.\\n\\nConsistency rules JSON Schema cannot state: `chunkCount` MUST equal ceil(expectedSizeBytes / chunkSize) for the bundle the manifest describes, and `chunkDigests` MUST have exactly `chunkCount` items. A party receiving a manifest violating either MUST refuse it.\",\"properties\":{\"chunkCount\":{\"$ref\":\"#/$defs/ChunkCount\"},\"chunkDigests\":{\"description\":\"Digest of each chunk's raw bytes (not of its base64url encoding), in index order. Compared as decoded multihash bytes, never as encoded strings. sha2-256 is RECOMMENDED and MUST be implemented by every party; a party that does not implement the hash a digest names MUST treat the manifest as unverifiable rather than skip the check.\",\"items\":{\"$ref\":\"#/$defs/DigestMultibase\"},\"maxItems\":4096,\"minItems\":1,\"type\":\"array\"},\"chunkSize\":{\"$ref\":\"#/$defs/ChunkSize\"}},\"required\":[\"chunkSize\",\"chunkCount\",\"chunkDigests\"],\"title\":\"ChunkManifest\",\"type\":\"object\"},\"ChunkSize\":{\"description\":\"Size in bytes of every chunk except the last, which carries the remainder and is between 1 and this value inclusive. The ceiling of 262144 (256 KiB) is normative and is derived in `vta/backup/initiate-export/1.1` under Chunked transfer: it is the largest power of two whose `get-chunk` or `put-chunk` document still fits a 1 MiB mediator message after base64url encoding of `data`, DIDComm authcrypt encoding, and two nested forward wrappers. The floor of 16384 keeps a 1 GiB bundle within `ChunkCount`'s ceiling at sizes a constrained transport can still choose.\",\"maximum\":262144,\"minimum\":16384,\"title\":\"ChunkSize\",\"type\":\"integer\"},\"ChunkedDescriptor\":{\"additionalProperties\":false,\"description\":\"A descriptor for the `chunkedTrustTask` algorithm. Carries no address and no bearer token: every chunk moves in a Trust Task document whose sender the transport authenticates, so possession of a token would add nothing and would be one more secret to leak.\",\"properties\":{\"algorithm\":{\"description\":\"Discriminates this shape from StreamDescriptor.\",\"enum\":[\"chunkedTrustTask\"],\"type\":\"string\"},\"bundleId\":{\"$ref\":\"#/$defs/BundleId\"},\"chunks\":{\"$ref\":\"#/$defs/ChunkManifest\"},\"expectedSha256\":{\"$ref\":\"#/$defs/ExpectedSha256\"},\"expectedSizeBytes\":{\"$ref\":\"#/$defs/ExpectedSizeBytes\"},\"expiresAt\":{\"$ref\":\"#/$defs/ExpiresAt\"}},\"required\":[\"bundleId\",\"algorithm\",\"chunks\",\"expectedSha256\",\"expectedSizeBytes\",\"expiresAt\"],\"title\":\"ChunkedDescriptor\",\"type\":\"object\"},\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"ExpectedSha256\":{\"description\":\"Lowercase hex SHA-256 of the whole bundle's bytes. Kept in the hex form the 1.0 descriptor published rather than moved to DigestMultibase, because it is an unchanged member of an existing descriptor and re-encoding it would break every stream producer for no gain in what it checks. For a chunked transfer it is the check over the reassembled bundle, applied after every chunk has verified individually, so that a correct set of chunks assembled in the wrong order is still caught.\",\"pattern\":\"^[0-9a-f]{64}$\",\"title\":\"ExpectedSha256\",\"type\":\"string\"},\"ExpectedSizeBytes\":{\"description\":\"Total byte count of the bundle. A zero-length bundle is not a degenerate success — nothing was serialized — so the floor is 1.\",\"minimum\":1,\"title\":\"ExpectedSizeBytes\",\"type\":\"integer\"},\"ExpiresAt\":{\"description\":\"After which the bundle is collected: staged bytes discarded, tokens and chunk requests refused. Short by design. For a chunked transfer a recipient may move it later as chunks are exchanged, never past its own ceiling — each chunk response reports the current value.\",\"format\":\"date-time\",\"title\":\"ExpiresAt\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"completionHint\":{\"description\":\"Operator-facing text describing how to complete the upload. Advisory: a producer must not parse it or derive behaviour from it, and a recipient must not put a secret in it.\",\"maxLength\":1024,\"type\":\"string\"},\"descriptor\":{\"$ref\":\"#/$defs/BundleDescriptor\",\"description\":\"Where or how to write the bytes, on what terms, and until when.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"}},\"required\":[\"descriptor\"],\"title\":\"VTA Backup Initiate Import — response payload\",\"type\":\"object\"},\"StreamDescriptor\":{\"additionalProperties\":false,\"description\":\"A descriptor for a transfer that happens outside Trust Task documents, at an address the recipient publishes — the `stream` algorithm, and any other algorithm a recipient offers that is shaped as an address plus a bearer credential. Identical in members to the `vta/backup/*/1.0` descriptor.\",\"properties\":{\"algorithm\":{\"description\":\"The mechanism in use. Never `chunkedTrustTask`, which has its own descriptor shape; a descriptor naming it with a transport address is malformed.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"bundleId\":{\"$ref\":\"#/$defs/BundleId\"},\"expectedSha256\":{\"$ref\":\"#/$defs/ExpectedSha256\"},\"expectedSizeBytes\":{\"$ref\":\"#/$defs/ExpectedSizeBytes\"},\"expiresAt\":{\"$ref\":\"#/$defs/ExpiresAt\"},\"transportToken\":{\"description\":\"Bearer credential for transportUrl, presented in the X-Backup-Token header. Minted per bundle and never reused. A recipient should store only a hash of it, and should accept an export token once.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"},\"transportUrl\":{\"description\":\"Where to fetch (export) or write (import) the bytes. A recipient with no address at which it is reachable cannot produce this and refuses with transportUnavailable rather than returning an unusable one. An import address is write-only: staged bytes are never served back from it.\",\"format\":\"uri\",\"maxLength\":2048,\"type\":\"string\"}},\"required\":[\"bundleId\",\"algorithm\",\"transportUrl\",\"transportToken\",\"expectedSha256\",\"expectedSizeBytes\",\"expiresAt\"],\"title\":\"StreamDescriptor\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

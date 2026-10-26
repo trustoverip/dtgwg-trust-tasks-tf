@@ -39,19 +39,6 @@ The token is the maintainer's own; no external vocabulary is primary. External v
 
 The `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ClaimType",
-///  "description": "The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\n\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\n\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1,
-///  "pattern": "^(x:)?[a-z][a-zA-Z0-9]*(\\.[a-z][a-zA-Z0-9]*)*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ClaimType(::std::string::String);
@@ -123,21 +110,6 @@ impl<'de> ::serde::Deserialize<'de> for ClaimType {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -159,15 +131,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -231,23 +194,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Serve the claim-type registry this agent resolves against. A client that cannot read the table has to ship a copy of it, and a copy is a re-sync obligation on every change.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/persona/claim-types/list/1.0",
-///  "title": "Payload",
-///  "description": "Serve the claim-type registry this agent resolves against. A client that cannot read the table has to ship a copy of it, and a copy is a re-sync obligation on every change.",
-///  "type": "object",
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -276,20 +222,6 @@ What it takes to let a value LEAVE. Distinct from `Sensitivity`, which governs s
 
 Absent means *not decided by the holder* and resolves from the claim-type registry, which defaults `payment.*` and `gov.*` to `stepUp`.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ReleaseRequirement",
-///  "description": "What it takes to let a value LEAVE. Distinct from `Sensitivity`, which governs showing it to the holder.\n\n`consent` is the ordinary gate: `persona/disclosure/preview` renders what would leave and `persona/disclosure/present` releases it, so a human sees it once.\n\n`stepUp` additionally requires a fresh authentication bound to THAT preview — not to the session. Without the binding, \"each time\" degrades into \"once per login\", which is the failure the requirement exists to prevent; the single-use `previewId` the preview already mints is what an implementation binds to. A maintainer MUST refuse `persona/disclosure/present` for a `stepUp` attribute when no such approval accompanies it.\n\nAbsent means *not decided by the holder* and resolves from the claim-type registry, which defaults `payment.*` and `gov.*` to `stepUp`.",
-///  "type": "string",
-///  "enum": [
-///    "consent",
-///    "stepUp"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -351,136 +283,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ReleaseRequirement {
 }
 ///Success response to persona/claim-types/list. Type https://trusttasks.org/spec/persona/claim-types/list/1.0#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to persona/claim-types/list. Type https://trusttasks.org/spec/persona/claim-types/list/1.0#response.",
-///  "type": "object",
-///  "required": [
-///    "entries",
-///    "registryVersion",
-///    "strictness",
-///    "unregistered"
-///  ],
-///  "properties": {
-///    "entries": {
-///      "description": "The registered tokens. Both exact tokens and family prefixes appear here, undistinguished: which one an entry is follows from whether a given token equals it or descends from it, and marking them would invite a client to walk only one kind.",
-///      "type": "array",
-///      "items": {
-///        "type": "object",
-///        "required": [
-///          "mask",
-///          "release",
-///          "sensitivity",
-///          "type"
-///        ],
-///        "properties": {
-///          "mask": {
-///            "description": "Mask style, independent of sensitivity: any style that is not `none` is masked on screen whatever the sensitivity. Named rather than enumerated inline so a maintainer may serve a style this version does not list; a client that does not recognise a style MUST treat it as `full` rather than as `none`.",
-///            "type": "string",
-///            "maxLength": 32
-///          },
-///          "minimumSet": {
-///            "description": "Marks a type a community may ask for without it being remarkable. The minimum set contains only normal-sensitivity, consent-release types; that is a rule rather than a coincidence.",
-///            "type": "boolean"
-///          },
-///          "oidc": {
-///            "description": "OIDC standard claims this type answers. A recorded mapping, applied at presentation — the token stays the maintainer's own and no external vocabulary is primary.",
-///            "type": "array",
-///            "items": {
-///              "type": "string",
-///              "maxLength": 64
-///            },
-///            "maxItems": 16
-///          },
-///          "release": {
-///            "$ref": "#/definitions/ReleaseRequirement"
-///          },
-///          "sensitivity": {
-///            "$ref": "#/definitions/Sensitivity"
-///          },
-///          "type": {
-///            "$ref": "#/definitions/ClaimType"
-///          }
-///        },
-///        "additionalProperties": false
-///      },
-///      "maxItems": 512
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "registryVersion": {
-///      "description": "Version of the core registry this agent implements — the version of _shared/claim-types.json, not of this task. A client caching the table keys the cache on this.",
-///      "type": "string",
-///      "maxLength": 32
-///    },
-///    "strictness": {
-///      "description": "Each axis ordered MOST PROTECTIVE FIRST. This is what makes rule 3 computable by a client: resolution takes the longest registered prefix and the unregistered floor and keeps whichever is more protective, which requires an ordering the client did not invent.",
-///      "type": "object",
-///      "required": [
-///        "mask",
-///        "release",
-///        "sensitivity"
-///      ],
-///      "properties": {
-///        "mask": {
-///          "type": "array",
-///          "items": {
-///            "type": "string",
-///            "maxLength": 32
-///          },
-///          "maxItems": 16
-///        },
-///        "release": {
-///          "type": "array",
-///          "items": {
-///            "type": "string",
-///            "maxLength": 32
-///          },
-///          "maxItems": 8
-///        },
-///        "sensitivity": {
-///          "type": "array",
-///          "items": {
-///            "type": "string",
-///            "maxLength": 32
-///          },
-///          "maxItems": 8
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    "unregistered": {
-///      "description": "The floor: what a token with no entry and no registered prefix resolves to. Served rather than assumed, because a client that hard-codes it cannot be tightened by a maintainer that raises it.",
-///      "type": "object",
-///      "required": [
-///        "mask",
-///        "release",
-///        "sensitivity"
-///      ],
-///      "properties": {
-///        "mask": {
-///          "type": "string",
-///          "maxLength": 32
-///        },
-///        "release": {
-///          "$ref": "#/definitions/ReleaseRequirement"
-///        },
-///        "sensitivity": {
-///          "$ref": "#/definitions/Sensitivity"
-///        }
-///      },
-///      "additionalProperties": false
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -502,50 +304,6 @@ impl Response {
 }
 ///`ResponseEntriesItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "mask",
-///    "release",
-///    "sensitivity",
-///    "type"
-///  ],
-///  "properties": {
-///    "mask": {
-///      "description": "Mask style, independent of sensitivity: any style that is not `none` is masked on screen whatever the sensitivity. Named rather than enumerated inline so a maintainer may serve a style this version does not list; a client that does not recognise a style MUST treat it as `full` rather than as `none`.",
-///      "type": "string",
-///      "maxLength": 32
-///    },
-///    "minimumSet": {
-///      "description": "Marks a type a community may ask for without it being remarkable. The minimum set contains only normal-sensitivity, consent-release types; that is a rule rather than a coincidence.",
-///      "type": "boolean"
-///    },
-///    "oidc": {
-///      "description": "OIDC standard claims this type answers. A recorded mapping, applied at presentation — the token stays the maintainer's own and no external vocabulary is primary.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "maxLength": 64
-///      },
-///      "maxItems": 16
-///    },
-///    "release": {
-///      "$ref": "#/definitions/ReleaseRequirement"
-///    },
-///    "sensitivity": {
-///      "$ref": "#/definitions/Sensitivity"
-///    },
-///    "type": {
-///      "$ref": "#/definitions/ClaimType"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -574,16 +332,6 @@ impl ResponseEntriesItem {
 }
 ///Mask style, independent of sensitivity: any style that is not `none` is masked on screen whatever the sensitivity. Named rather than enumerated inline so a maintainer may serve a style this version does not list; a client that does not recognise a style MUST treat it as `full` rather than as `none`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Mask style, independent of sensitivity: any style that is not `none` is masked on screen whatever the sensitivity. Named rather than enumerated inline so a maintainer may serve a style this version does not list; a client that does not recognise a style MUST treat it as `full` rather than as `none`.",
-///  "type": "string",
-///  "maxLength": 32
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseEntriesItemMask(::std::string::String);
@@ -643,15 +391,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseEntriesItemMask {
 }
 ///`ResponseEntriesItemOidcItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 64
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseEntriesItemOidcItem(::std::string::String);
@@ -711,16 +450,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseEntriesItemOidcItem {
 }
 ///Version of the core registry this agent implements — the version of _shared/claim-types.json, not of this task. A client caching the table keys the cache on this.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Version of the core registry this agent implements — the version of _shared/claim-types.json, not of this task. A client caching the table keys the cache on this.",
-///  "type": "string",
-///  "maxLength": 32
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseRegistryVersion(::std::string::String);
@@ -780,47 +509,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseRegistryVersion {
 }
 ///Each axis ordered MOST PROTECTIVE FIRST. This is what makes rule 3 computable by a client: resolution takes the longest registered prefix and the unregistered floor and keeps whichever is more protective, which requires an ordering the client did not invent.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Each axis ordered MOST PROTECTIVE FIRST. This is what makes rule 3 computable by a client: resolution takes the longest registered prefix and the unregistered floor and keeps whichever is more protective, which requires an ordering the client did not invent.",
-///  "type": "object",
-///  "required": [
-///    "mask",
-///    "release",
-///    "sensitivity"
-///  ],
-///  "properties": {
-///    "mask": {
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "maxLength": 32
-///      },
-///      "maxItems": 16
-///    },
-///    "release": {
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "maxLength": 32
-///      },
-///      "maxItems": 8
-///    },
-///    "sensitivity": {
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "maxLength": 32
-///      },
-///      "maxItems": 8
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -836,15 +524,6 @@ impl ResponseStrictness {
 }
 ///`ResponseStrictnessMaskItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 32
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseStrictnessMaskItem(::std::string::String);
@@ -904,15 +583,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseStrictnessMaskItem {
 }
 ///`ResponseStrictnessReleaseItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 32
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseStrictnessReleaseItem(::std::string::String);
@@ -972,15 +642,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseStrictnessReleaseItem {
 }
 ///`ResponseStrictnessSensitivityItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 32
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseStrictnessSensitivityItem(::std::string::String);
@@ -1040,33 +701,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseStrictnessSensitivityItem {
 }
 ///The floor: what a token with no entry and no registered prefix resolves to. Served rather than assumed, because a client that hard-codes it cannot be tightened by a maintainer that raises it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The floor: what a token with no entry and no registered prefix resolves to. Served rather than assumed, because a client that hard-codes it cannot be tightened by a maintainer that raises it.",
-///  "type": "object",
-///  "required": [
-///    "mask",
-///    "release",
-///    "sensitivity"
-///  ],
-///  "properties": {
-///    "mask": {
-///      "type": "string",
-///      "maxLength": 32
-///    },
-///    "release": {
-///      "$ref": "#/definitions/ReleaseRequirement"
-///    },
-///    "sensitivity": {
-///      "$ref": "#/definitions/Sensitivity"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1082,15 +716,6 @@ impl ResponseUnregistered {
 }
 ///`ResponseUnregisteredMask`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 32
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseUnregisteredMask(::std::string::String);
@@ -1155,20 +780,6 @@ Absent means *not decided by the holder*, not `normal`: a consumer resolves it f
 
 Distinct from how linkable the value is. A payment card is highly sensitive and barely linkable — every card number is unique, so knowing one tells a second verifier nothing about the first. Reading either as a proxy for the other produces a consumer that hides the wrong things.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Sensitivity",
-///  "description": "How carefully a value is shown TO ITS OWN HOLDER. `high` means a consumer masks it by default, reveals it one attribute at a time on a deliberate act, and — the half that is not cosmetic — omits it from a listing that did not ask for sensitive values.\n\nAbsent means *not decided by the holder*, not `normal`: a consumer resolves it from the claim-type registry (see CLAIM-TYPES.md §4), which is why this member is optional and why an unregistered token resolves conservatively rather than permissively.\n\nDistinct from how linkable the value is. A payment card is highly sensitive and barely linkable — every card number is unique, so knowing one tells a second verifier nothing about the first. Reading either as a proxy for the other produces a consumer that hides the wrong things.",
-///  "type": "string",
-///  "enum": [
-///    "normal",
-///    "high"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1626,7 +1237,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ClaimType\": {\n      \"description\": \"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\n      \"title\": \"ClaimType\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ReleaseRequirement\": {\n      \"description\": \"What it takes to let a value LEAVE. Distinct from `Sensitivity`, which governs showing it to the holder.\\n\\n`consent` is the ordinary gate: `persona/disclosure/preview` renders what would leave and `persona/disclosure/present` releases it, so a human sees it once.\\n\\n`stepUp` additionally requires a fresh authentication bound to THAT preview — not to the session. Without the binding, \\\"each time\\\" degrades into \\\"once per login\\\", which is the failure the requirement exists to prevent; the single-use `previewId` the preview already mints is what an implementation binds to. A maintainer MUST refuse `persona/disclosure/present` for a `stepUp` attribute when no such approval accompanies it.\\n\\nAbsent means *not decided by the holder* and resolves from the claim-type registry, which defaults `payment.*` and `gov.*` to `stepUp`.\",\n      \"enum\": [\n        \"consent\",\n        \"stepUp\"\n      ],\n      \"title\": \"ReleaseRequirement\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/claim-types/list. Type https://trusttasks.org/spec/persona/claim-types/list/1.0#response.\",\n      \"properties\": {\n        \"entries\": {\n          \"description\": \"The registered tokens. Both exact tokens and family prefixes appear here, undistinguished: which one an entry is follows from whether a given token equals it or descends from it, and marking them would invite a client to walk only one kind.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"mask\": {\n                \"description\": \"Mask style, independent of sensitivity: any style that is not `none` is masked on screen whatever the sensitivity. Named rather than enumerated inline so a maintainer may serve a style this version does not list; a client that does not recognise a style MUST treat it as `full` rather than as `none`.\",\n                \"maxLength\": 32,\n                \"type\": \"string\"\n              },\n              \"minimumSet\": {\n                \"description\": \"Marks a type a community may ask for without it being remarkable. The minimum set contains only normal-sensitivity, consent-release types; that is a rule rather than a coincidence.\",\n                \"type\": \"boolean\"\n              },\n              \"oidc\": {\n                \"description\": \"OIDC standard claims this type answers. A recorded mapping, applied at presentation — the token stays the maintainer's own and no external vocabulary is primary.\",\n                \"items\": {\n                  \"maxLength\": 64,\n                  \"type\": \"string\"\n                },\n                \"maxItems\": 16,\n                \"type\": \"array\"\n              },\n              \"release\": {\n                \"$ref\": \"#/$defs/ReleaseRequirement\"\n              },\n              \"sensitivity\": {\n                \"$ref\": \"#/$defs/Sensitivity\"\n              },\n              \"type\": {\n                \"$ref\": \"#/$defs/ClaimType\"\n              }\n            },\n            \"required\": [\n              \"type\",\n              \"sensitivity\",\n              \"release\",\n              \"mask\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 512,\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"registryVersion\": {\n          \"description\": \"Version of the core registry this agent implements — the version of _shared/claim-types.json, not of this task. A client caching the table keys the cache on this.\",\n          \"maxLength\": 32,\n          \"type\": \"string\"\n        },\n        \"strictness\": {\n          \"additionalProperties\": false,\n          \"description\": \"Each axis ordered MOST PROTECTIVE FIRST. This is what makes rule 3 computable by a client: resolution takes the longest registered prefix and the unregistered floor and keeps whichever is more protective, which requires an ordering the client did not invent.\",\n          \"properties\": {\n            \"mask\": {\n              \"items\": {\n                \"maxLength\": 32,\n                \"type\": \"string\"\n              },\n              \"maxItems\": 16,\n              \"type\": \"array\"\n            },\n            \"release\": {\n              \"items\": {\n                \"maxLength\": 32,\n                \"type\": \"string\"\n              },\n              \"maxItems\": 8,\n              \"type\": \"array\"\n            },\n            \"sensitivity\": {\n              \"items\": {\n                \"maxLength\": 32,\n                \"type\": \"string\"\n              },\n              \"maxItems\": 8,\n              \"type\": \"array\"\n            }\n          },\n          \"required\": [\n            \"sensitivity\",\n            \"release\",\n            \"mask\"\n          ],\n          \"type\": \"object\"\n        },\n        \"unregistered\": {\n          \"additionalProperties\": false,\n          \"description\": \"The floor: what a token with no entry and no registered prefix resolves to. Served rather than assumed, because a client that hard-codes it cannot be tightened by a maintainer that raises it.\",\n          \"properties\": {\n            \"mask\": {\n              \"maxLength\": 32,\n              \"type\": \"string\"\n            },\n            \"release\": {\n              \"$ref\": \"#/$defs/ReleaseRequirement\"\n            },\n            \"sensitivity\": {\n              \"$ref\": \"#/$defs/Sensitivity\"\n            }\n          },\n          \"required\": [\n            \"sensitivity\",\n            \"release\",\n            \"mask\"\n          ],\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"registryVersion\",\n        \"entries\",\n        \"unregistered\",\n        \"strictness\"\n      ],\n      \"title\": \"Persona Claim Types List — response payload\",\n      \"type\": \"object\"\n    },\n    \"Sensitivity\": {\n      \"description\": \"How carefully a value is shown TO ITS OWN HOLDER. `high` means a consumer masks it by default, reveals it one attribute at a time on a deliberate act, and — the half that is not cosmetic — omits it from a listing that did not ask for sensitive values.\\n\\nAbsent means *not decided by the holder*, not `normal`: a consumer resolves it from the claim-type registry (see CLAIM-TYPES.md §4), which is why this member is optional and why an unregistered token resolves conservatively rather than permissively.\\n\\nDistinct from how linkable the value is. A payment card is highly sensitive and barely linkable — every card number is unique, so knowing one tells a second verifier nothing about the first. Reading either as a proxy for the other produces a consumer that hides the wrong things.\",\n      \"enum\": [\n        \"normal\",\n        \"high\"\n      ],\n      \"title\": \"Sensitivity\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/persona/claim-types/list/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Serve the claim-type registry this agent resolves against. A client that cannot read the table has to ship a copy of it, and a copy is a re-sync obligation on every change.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"title\": \"Persona Claim Types List — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"ClaimType\":{\"description\":\"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\"title\":\"ClaimType\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ReleaseRequirement\":{\"description\":\"What it takes to let a value LEAVE. Distinct from `Sensitivity`, which governs showing it to the holder.\\n\\n`consent` is the ordinary gate: `persona/disclosure/preview` renders what would leave and `persona/disclosure/present` releases it, so a human sees it once.\\n\\n`stepUp` additionally requires a fresh authentication bound to THAT preview — not to the session. Without the binding, \\\"each time\\\" degrades into \\\"once per login\\\", which is the failure the requirement exists to prevent; the single-use `previewId` the preview already mints is what an implementation binds to. A maintainer MUST refuse `persona/disclosure/present` for a `stepUp` attribute when no such approval accompanies it.\\n\\nAbsent means *not decided by the holder* and resolves from the claim-type registry, which defaults `payment.*` and `gov.*` to `stepUp`.\",\"enum\":[\"consent\",\"stepUp\"],\"title\":\"ReleaseRequirement\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to persona/claim-types/list. Type https://trusttasks.org/spec/persona/claim-types/list/1.0#response.\",\"properties\":{\"entries\":{\"description\":\"The registered tokens. Both exact tokens and family prefixes appear here, undistinguished: which one an entry is follows from whether a given token equals it or descends from it, and marking them would invite a client to walk only one kind.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"mask\":{\"description\":\"Mask style, independent of sensitivity: any style that is not `none` is masked on screen whatever the sensitivity. Named rather than enumerated inline so a maintainer may serve a style this version does not list; a client that does not recognise a style MUST treat it as `full` rather than as `none`.\",\"maxLength\":32,\"type\":\"string\"},\"minimumSet\":{\"description\":\"Marks a type a community may ask for without it being remarkable. The minimum set contains only normal-sensitivity, consent-release types; that is a rule rather than a coincidence.\",\"type\":\"boolean\"},\"oidc\":{\"description\":\"OIDC standard claims this type answers. A recorded mapping, applied at presentation — the token stays the maintainer's own and no external vocabulary is primary.\",\"items\":{\"maxLength\":64,\"type\":\"string\"},\"maxItems\":16,\"type\":\"array\"},\"release\":{\"$ref\":\"#/$defs/ReleaseRequirement\"},\"sensitivity\":{\"$ref\":\"#/$defs/Sensitivity\"},\"type\":{\"$ref\":\"#/$defs/ClaimType\"}},\"required\":[\"type\",\"sensitivity\",\"release\",\"mask\"],\"type\":\"object\"},\"maxItems\":512,\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"registryVersion\":{\"description\":\"Version of the core registry this agent implements — the version of _shared/claim-types.json, not of this task. A client caching the table keys the cache on this.\",\"maxLength\":32,\"type\":\"string\"},\"strictness\":{\"additionalProperties\":false,\"description\":\"Each axis ordered MOST PROTECTIVE FIRST. This is what makes rule 3 computable by a client: resolution takes the longest registered prefix and the unregistered floor and keeps whichever is more protective, which requires an ordering the client did not invent.\",\"properties\":{\"mask\":{\"items\":{\"maxLength\":32,\"type\":\"string\"},\"maxItems\":16,\"type\":\"array\"},\"release\":{\"items\":{\"maxLength\":32,\"type\":\"string\"},\"maxItems\":8,\"type\":\"array\"},\"sensitivity\":{\"items\":{\"maxLength\":32,\"type\":\"string\"},\"maxItems\":8,\"type\":\"array\"}},\"required\":[\"sensitivity\",\"release\",\"mask\"],\"type\":\"object\"},\"unregistered\":{\"additionalProperties\":false,\"description\":\"The floor: what a token with no entry and no registered prefix resolves to. Served rather than assumed, because a client that hard-codes it cannot be tightened by a maintainer that raises it.\",\"properties\":{\"mask\":{\"maxLength\":32,\"type\":\"string\"},\"release\":{\"$ref\":\"#/$defs/ReleaseRequirement\"},\"sensitivity\":{\"$ref\":\"#/$defs/Sensitivity\"}},\"required\":[\"sensitivity\",\"release\",\"mask\"],\"type\":\"object\"}},\"required\":[\"registryVersion\",\"entries\",\"unregistered\",\"strictness\"],\"title\":\"Persona Claim Types List — response payload\",\"type\":\"object\"},\"Sensitivity\":{\"description\":\"How carefully a value is shown TO ITS OWN HOLDER. `high` means a consumer masks it by default, reveals it one attribute at a time on a deliberate act, and — the half that is not cosmetic — omits it from a listing that did not ask for sensitive values.\\n\\nAbsent means *not decided by the holder*, not `normal`: a consumer resolves it from the claim-type registry (see CLAIM-TYPES.md §4), which is why this member is optional and why an unregistered token resolves conservatively rather than permissively.\\n\\nDistinct from how linkable the value is. A payment card is highly sensitive and barely linkable — every card number is unique, so knowing one tells a second verifier nothing about the first. Reading either as a proxy for the other produces a consumer that hides the wrong things.\",\"enum\":[\"normal\",\"high\"],\"title\":\"Sensitivity\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/persona/claim-types/list/1.0\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Serve the claim-type registry this agent resolves against. A client that cannot read the table has to ship a copy of it, and a copy is a re-sync obligation on every change.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"title\":\"Persona Claim Types List — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1635,7 +1246,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ClaimType\": {\n      \"description\": \"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\n      \"title\": \"ClaimType\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ReleaseRequirement\": {\n      \"description\": \"What it takes to let a value LEAVE. Distinct from `Sensitivity`, which governs showing it to the holder.\\n\\n`consent` is the ordinary gate: `persona/disclosure/preview` renders what would leave and `persona/disclosure/present` releases it, so a human sees it once.\\n\\n`stepUp` additionally requires a fresh authentication bound to THAT preview — not to the session. Without the binding, \\\"each time\\\" degrades into \\\"once per login\\\", which is the failure the requirement exists to prevent; the single-use `previewId` the preview already mints is what an implementation binds to. A maintainer MUST refuse `persona/disclosure/present` for a `stepUp` attribute when no such approval accompanies it.\\n\\nAbsent means *not decided by the holder* and resolves from the claim-type registry, which defaults `payment.*` and `gov.*` to `stepUp`.\",\n      \"enum\": [\n        \"consent\",\n        \"stepUp\"\n      ],\n      \"title\": \"ReleaseRequirement\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/claim-types/list. Type https://trusttasks.org/spec/persona/claim-types/list/1.0#response.\",\n      \"properties\": {\n        \"entries\": {\n          \"description\": \"The registered tokens. Both exact tokens and family prefixes appear here, undistinguished: which one an entry is follows from whether a given token equals it or descends from it, and marking them would invite a client to walk only one kind.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"mask\": {\n                \"description\": \"Mask style, independent of sensitivity: any style that is not `none` is masked on screen whatever the sensitivity. Named rather than enumerated inline so a maintainer may serve a style this version does not list; a client that does not recognise a style MUST treat it as `full` rather than as `none`.\",\n                \"maxLength\": 32,\n                \"type\": \"string\"\n              },\n              \"minimumSet\": {\n                \"description\": \"Marks a type a community may ask for without it being remarkable. The minimum set contains only normal-sensitivity, consent-release types; that is a rule rather than a coincidence.\",\n                \"type\": \"boolean\"\n              },\n              \"oidc\": {\n                \"description\": \"OIDC standard claims this type answers. A recorded mapping, applied at presentation — the token stays the maintainer's own and no external vocabulary is primary.\",\n                \"items\": {\n                  \"maxLength\": 64,\n                  \"type\": \"string\"\n                },\n                \"maxItems\": 16,\n                \"type\": \"array\"\n              },\n              \"release\": {\n                \"$ref\": \"#/$defs/ReleaseRequirement\"\n              },\n              \"sensitivity\": {\n                \"$ref\": \"#/$defs/Sensitivity\"\n              },\n              \"type\": {\n                \"$ref\": \"#/$defs/ClaimType\"\n              }\n            },\n            \"required\": [\n              \"type\",\n              \"sensitivity\",\n              \"release\",\n              \"mask\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 512,\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"registryVersion\": {\n          \"description\": \"Version of the core registry this agent implements — the version of _shared/claim-types.json, not of this task. A client caching the table keys the cache on this.\",\n          \"maxLength\": 32,\n          \"type\": \"string\"\n        },\n        \"strictness\": {\n          \"additionalProperties\": false,\n          \"description\": \"Each axis ordered MOST PROTECTIVE FIRST. This is what makes rule 3 computable by a client: resolution takes the longest registered prefix and the unregistered floor and keeps whichever is more protective, which requires an ordering the client did not invent.\",\n          \"properties\": {\n            \"mask\": {\n              \"items\": {\n                \"maxLength\": 32,\n                \"type\": \"string\"\n              },\n              \"maxItems\": 16,\n              \"type\": \"array\"\n            },\n            \"release\": {\n              \"items\": {\n                \"maxLength\": 32,\n                \"type\": \"string\"\n              },\n              \"maxItems\": 8,\n              \"type\": \"array\"\n            },\n            \"sensitivity\": {\n              \"items\": {\n                \"maxLength\": 32,\n                \"type\": \"string\"\n              },\n              \"maxItems\": 8,\n              \"type\": \"array\"\n            }\n          },\n          \"required\": [\n            \"sensitivity\",\n            \"release\",\n            \"mask\"\n          ],\n          \"type\": \"object\"\n        },\n        \"unregistered\": {\n          \"additionalProperties\": false,\n          \"description\": \"The floor: what a token with no entry and no registered prefix resolves to. Served rather than assumed, because a client that hard-codes it cannot be tightened by a maintainer that raises it.\",\n          \"properties\": {\n            \"mask\": {\n              \"maxLength\": 32,\n              \"type\": \"string\"\n            },\n            \"release\": {\n              \"$ref\": \"#/$defs/ReleaseRequirement\"\n            },\n            \"sensitivity\": {\n              \"$ref\": \"#/$defs/Sensitivity\"\n            }\n          },\n          \"required\": [\n            \"sensitivity\",\n            \"release\",\n            \"mask\"\n          ],\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"registryVersion\",\n        \"entries\",\n        \"unregistered\",\n        \"strictness\"\n      ],\n      \"title\": \"Persona Claim Types List — response payload\",\n      \"type\": \"object\"\n    },\n    \"Sensitivity\": {\n      \"description\": \"How carefully a value is shown TO ITS OWN HOLDER. `high` means a consumer masks it by default, reveals it one attribute at a time on a deliberate act, and — the half that is not cosmetic — omits it from a listing that did not ask for sensitive values.\\n\\nAbsent means *not decided by the holder*, not `normal`: a consumer resolves it from the claim-type registry (see CLAIM-TYPES.md §4), which is why this member is optional and why an unregistered token resolves conservatively rather than permissively.\\n\\nDistinct from how linkable the value is. A payment card is highly sensitive and barely linkable — every card number is unique, so knowing one tells a second verifier nothing about the first. Reading either as a proxy for the other produces a consumer that hides the wrong things.\",\n      \"enum\": [\n        \"normal\",\n        \"high\"\n      ],\n      \"title\": \"Sensitivity\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"ClaimType\":{\"description\":\"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\"title\":\"ClaimType\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ReleaseRequirement\":{\"description\":\"What it takes to let a value LEAVE. Distinct from `Sensitivity`, which governs showing it to the holder.\\n\\n`consent` is the ordinary gate: `persona/disclosure/preview` renders what would leave and `persona/disclosure/present` releases it, so a human sees it once.\\n\\n`stepUp` additionally requires a fresh authentication bound to THAT preview — not to the session. Without the binding, \\\"each time\\\" degrades into \\\"once per login\\\", which is the failure the requirement exists to prevent; the single-use `previewId` the preview already mints is what an implementation binds to. A maintainer MUST refuse `persona/disclosure/present` for a `stepUp` attribute when no such approval accompanies it.\\n\\nAbsent means *not decided by the holder* and resolves from the claim-type registry, which defaults `payment.*` and `gov.*` to `stepUp`.\",\"enum\":[\"consent\",\"stepUp\"],\"title\":\"ReleaseRequirement\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to persona/claim-types/list. Type https://trusttasks.org/spec/persona/claim-types/list/1.0#response.\",\"properties\":{\"entries\":{\"description\":\"The registered tokens. Both exact tokens and family prefixes appear here, undistinguished: which one an entry is follows from whether a given token equals it or descends from it, and marking them would invite a client to walk only one kind.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"mask\":{\"description\":\"Mask style, independent of sensitivity: any style that is not `none` is masked on screen whatever the sensitivity. Named rather than enumerated inline so a maintainer may serve a style this version does not list; a client that does not recognise a style MUST treat it as `full` rather than as `none`.\",\"maxLength\":32,\"type\":\"string\"},\"minimumSet\":{\"description\":\"Marks a type a community may ask for without it being remarkable. The minimum set contains only normal-sensitivity, consent-release types; that is a rule rather than a coincidence.\",\"type\":\"boolean\"},\"oidc\":{\"description\":\"OIDC standard claims this type answers. A recorded mapping, applied at presentation — the token stays the maintainer's own and no external vocabulary is primary.\",\"items\":{\"maxLength\":64,\"type\":\"string\"},\"maxItems\":16,\"type\":\"array\"},\"release\":{\"$ref\":\"#/$defs/ReleaseRequirement\"},\"sensitivity\":{\"$ref\":\"#/$defs/Sensitivity\"},\"type\":{\"$ref\":\"#/$defs/ClaimType\"}},\"required\":[\"type\",\"sensitivity\",\"release\",\"mask\"],\"type\":\"object\"},\"maxItems\":512,\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"registryVersion\":{\"description\":\"Version of the core registry this agent implements — the version of _shared/claim-types.json, not of this task. A client caching the table keys the cache on this.\",\"maxLength\":32,\"type\":\"string\"},\"strictness\":{\"additionalProperties\":false,\"description\":\"Each axis ordered MOST PROTECTIVE FIRST. This is what makes rule 3 computable by a client: resolution takes the longest registered prefix and the unregistered floor and keeps whichever is more protective, which requires an ordering the client did not invent.\",\"properties\":{\"mask\":{\"items\":{\"maxLength\":32,\"type\":\"string\"},\"maxItems\":16,\"type\":\"array\"},\"release\":{\"items\":{\"maxLength\":32,\"type\":\"string\"},\"maxItems\":8,\"type\":\"array\"},\"sensitivity\":{\"items\":{\"maxLength\":32,\"type\":\"string\"},\"maxItems\":8,\"type\":\"array\"}},\"required\":[\"sensitivity\",\"release\",\"mask\"],\"type\":\"object\"},\"unregistered\":{\"additionalProperties\":false,\"description\":\"The floor: what a token with no entry and no registered prefix resolves to. Served rather than assumed, because a client that hard-codes it cannot be tightened by a maintainer that raises it.\",\"properties\":{\"mask\":{\"maxLength\":32,\"type\":\"string\"},\"release\":{\"$ref\":\"#/$defs/ReleaseRequirement\"},\"sensitivity\":{\"$ref\":\"#/$defs/Sensitivity\"}},\"required\":[\"sensitivity\",\"release\",\"mask\"],\"type\":\"object\"}},\"required\":[\"registryVersion\",\"entries\",\"unregistered\",\"strictness\"],\"title\":\"Persona Claim Types List — response payload\",\"type\":\"object\"},\"Sensitivity\":{\"description\":\"How carefully a value is shown TO ITS OWN HOLDER. `high` means a consumer masks it by default, reveals it one attribute at a time on a deliberate act, and — the half that is not cosmetic — omits it from a listing that did not ask for sensitive values.\\n\\nAbsent means *not decided by the holder*, not `normal`: a consumer resolves it from the claim-type registry (see CLAIM-TYPES.md §4), which is why this member is optional and why an unregistered token resolves conservatively rather than permissively.\\n\\nDistinct from how linkable the value is. A payment card is highly sensitive and barely linkable — every card number is unique, so knowing one tells a second verifier nothing about the first. Reading either as a proxy for the other produces a consumer that hides the wrong things.\",\"enum\":[\"normal\",\"high\"],\"title\":\"Sensitivity\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,106 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Set, change or remove the member's own personal label for one room they hold: its name, description, notes and tags, kept by their key holder for their eyes only. Each detail given replaces the stored one; a detail absent is unchanged; `removeX` removes one. At least one change is required (`minProperties` counts `roomId` and `member`; `ext` is not a change, which Recipient item 3 holds), and a detail cannot be both given and removed. Nothing here reaches the room, its host, its owner or a community. The outer document members are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/rooms/keys/label/0.1",
-///  "title": "Payload",
-///  "description": "Set, change or remove the member's own personal label for one room they hold: its name, description, notes and tags, kept by their key holder for their eyes only. Each detail given replaces the stored one; a detail absent is unchanged; `removeX` removes one. At least one change is required (`minProperties` counts `roomId` and `member`; `ext` is not a change, which Recipient item 3 holds), and a detail cannot be both given and removed. Nothing here reaches the room, its host, its owner or a community. The outer document members are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "minProperties": 3,
-///  "required": [
-///    "member",
-///    "roomId"
-///  ],
-///  "properties": {
-///    "description": {
-///      "description": "The member's new description, replacing any they had. Absent: unchanged.",
-///      "$ref": "#/definitions/PersonalLabelDescription"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "label": {
-///      "description": "The member's new name for the room, replacing any they had. Absent: unchanged.",
-///      "$ref": "#/definitions/PersonalLabelName"
-///    },
-///    "member": {
-///      "description": "The member whose label this is: the DID the room admitted, as rooms/keys/list 0.2 returns it beside the room. REQUIRED, never inferred, because a person holding one room as two personas keeps a label for each, and a label written under the wrong one is shown in the wrong context.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    },
-///    "notes": {
-///      "description": "The member's new notes, replacing any they had. Absent: unchanged.",
-///      "$ref": "#/definitions/PersonalLabelNotes"
-///    },
-///    "removeDescription": {
-///      "description": "Remove the member's description. Only `true` is accepted.",
-///      "type": "boolean",
-///      "const": true
-///    },
-///    "removeLabel": {
-///      "description": "Remove the member's name for the room. Only `true` is meaningful, so only `true` is accepted. A separate member rather than `label: null`, because a nullable optional member makes \"unchanged\" and \"remove\" the same value in libraries that map both to one absent option.",
-///      "type": "boolean",
-///      "const": true
-///    },
-///    "removeNotes": {
-///      "description": "Remove the member's notes. Only `true` is accepted.",
-///      "type": "boolean",
-///      "const": true
-///    },
-///    "removeTags": {
-///      "description": "Remove every tag. Only `true` is accepted.",
-///      "type": "boolean",
-///      "const": true
-///    },
-///    "roomId": {
-///      "description": "The room's identifier: its DID, as rooms/keys/list returns it.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    },
-///    "tags": {
-///      "description": "The member's tags, replacing the whole set. Absent: unchanged. Remove every tag with `removeTags`.",
-///      "$ref": "#/definitions/PersonalLabelTags"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "dependentSchemas": {
-///    "removeDescription": {
-///      "not": {
-///        "required": [
-///          "description"
-///        ]
-///      }
-///    },
-///    "removeLabel": {
-///      "not": {
-///        "required": [
-///          "label"
-///        ]
-///      }
-///    },
-///    "removeNotes": {
-///      "not": {
-///        "required": [
-///          "notes"
-///        ]
-///      }
-///    },
-///    "removeTags": {
-///      "not": {
-///        "required": [
-///          "tags"
-///        ]
-///      }
-///    }
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -301,17 +177,6 @@ impl Payload {
 }
 ///The member whose label this is: the DID the room admitted, as rooms/keys/list 0.2 returns it beside the room. REQUIRED, never inferred, because a person holding one room as two personas keeps a label for each, and a label written under the wrong one is shown in the wrong context.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The member whose label this is: the DID the room admitted, as rooms/keys/list 0.2 returns it beside the room. REQUIRED, never inferred, because a person holding one room as two personas keeps a label for each, and a label written under the wrong one is shown in the wrong context.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadMember(::std::string::String);
@@ -376,17 +241,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadMember {
 }
 ///The room's identifier: its DID, as rooms/keys/list returns it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The room's identifier: its DID, as rooms/keys/list returns it.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadRoomId(::std::string::String);
@@ -449,40 +303,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRoomId {
 }
 ///A member's personal label for one room, as their key holder keeps it: at least one detail (`minProperties` counts `updatedAt`), and when it last changed. A key holder that holds no detail for the room holds no label, and returns none — there is no empty label.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "PersonalLabel",
-///  "description": "A member's personal label for one room, as their key holder keeps it: at least one detail (`minProperties` counts `updatedAt`), and when it last changed. A key holder that holds no detail for the room holds no label, and returns none — there is no empty label.",
-///  "type": "object",
-///  "minProperties": 2,
-///  "required": [
-///    "updatedAt"
-///  ],
-///  "properties": {
-///    "description": {
-///      "$ref": "#/definitions/PersonalLabelDescription"
-///    },
-///    "label": {
-///      "$ref": "#/definitions/PersonalLabelName"
-///    },
-///    "notes": {
-///      "$ref": "#/definitions/PersonalLabelNotes"
-///    },
-///    "tags": {
-///      "$ref": "#/definitions/PersonalLabelTags"
-///    },
-///    "updatedAt": {
-///      "description": "When the label last changed, as the key holder recorded it. A request that changed nothing does not move it.",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -506,19 +326,6 @@ impl PersonalLabel {
 }
 ///What the room is to the member, in a sentence or a short paragraph. Line breaks and tabs are allowed; other control characters are not.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "PersonalLabelDescription",
-///  "description": "What the room is to the member, in a sentence or a short paragraph. Line breaks and tabs are allowed; other control characters are not.",
-///  "type": "string",
-///  "maxLength": 1000,
-///  "minLength": 1,
-///  "pattern": "^[^\\u0000-\\u0008\\u000B\\u000C\\u000E-\\u001F\\u007F]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PersonalLabelDescription(::std::string::String);
@@ -592,19 +399,6 @@ impl<'de> ::serde::Deserialize<'de> for PersonalLabelDescription {
 }
 ///The member's own name for the room, on one line: no control characters, line breaks included. Shown before every name a third party gave the room, because it is the only one nobody else wrote.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "PersonalLabelName",
-///  "description": "The member's own name for the room, on one line: no control characters, line breaks included. Shown before every name a third party gave the room, because it is the only one nobody else wrote.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1,
-///  "pattern": "^[^\\u0000-\\u001F\\u007F]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PersonalLabelName(::std::string::String);
@@ -674,19 +468,6 @@ impl<'de> ::serde::Deserialize<'de> for PersonalLabelName {
 }
 ///Longer free-form notes the member keeps about the room: who introduced them, what to look for in it, what they agreed there. Line breaks and tabs are allowed; other control characters are not.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "PersonalLabelNotes",
-///  "description": "Longer free-form notes the member keeps about the room: who introduced them, what to look for in it, what they agreed there. Line breaks and tabs are allowed; other control characters are not.",
-///  "type": "string",
-///  "maxLength": 4000,
-///  "minLength": 1,
-///  "pattern": "^[^\\u0000-\\u0008\\u000B\\u000C\\u000E-\\u001F\\u007F]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PersonalLabelNotes(::std::string::String);
@@ -760,19 +541,6 @@ impl<'de> ::serde::Deserialize<'de> for PersonalLabelNotes {
 }
 ///A word or short phrase the member files the room under, in any script, so their own surfaces can group and filter their rooms. Compared exactly, as a string: a key holder does not case-fold or normalise it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "PersonalLabelTag",
-///  "description": "A word or short phrase the member files the room under, in any script, so their own surfaces can group and filter their rooms. Compared exactly, as a string: a key holder does not case-fold or normalise it.",
-///  "type": "string",
-///  "maxLength": 32,
-///  "minLength": 1,
-///  "pattern": "^[^\\u0000-\\u001F\\u007F]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PersonalLabelTag(::std::string::String);
@@ -842,22 +610,6 @@ impl<'de> ::serde::Deserialize<'de> for PersonalLabelTag {
 }
 ///The member's tags for the room, one to sixteen, as a set: order carries no meaning. A room with no tags has no `tags` member, never an empty list, so there is one way to say "none".
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "PersonalLabelTags",
-///  "description": "The member's tags for the room, one to sixteen, as a set: order carries no meaning. A room with no tags has no `tags` member, never an empty list, so there is one way to say \"none\".",
-///  "type": "array",
-///  "items": {
-///    "$ref": "#/definitions/PersonalLabelTag"
-///  },
-///  "maxItems": 16,
-///  "minItems": 1,
-///  "uniqueItems": true
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct PersonalLabelTags(pub Vec<PersonalLabelTag>);
@@ -879,48 +631,6 @@ impl ::std::convert::From<Vec<PersonalLabelTag>> for PersonalLabelTags {
 }
 ///Success response to rooms/keys/label. Type https://trusttasks.org/spec/rooms/keys/label/0.1#response. The label as it now stands, and whether this request changed it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to rooms/keys/label. Type https://trusttasks.org/spec/rooms/keys/label/0.1#response. The label as it now stands, and whether this request changed it.",
-///  "type": "object",
-///  "required": [
-///    "changed",
-///    "member",
-///    "roomId"
-///  ],
-///  "properties": {
-///    "changed": {
-///      "description": "`false` when every value given already matched, and every detail named for removal was already absent: nothing was written and `updatedAt` did not move. A retried request answers `false`, which is what makes the task safe to repeat.",
-///      "type": "boolean"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "member": {
-///      "description": "Repeated from the request.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    },
-///    "personal": {
-///      "description": "The label as it now stands. Absent when no detail remains: removing the last one removes the label.",
-///      "$ref": "#/definitions/PersonalLabel"
-///    },
-///    "roomId": {
-///      "description": "Repeated from the request.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -945,17 +655,6 @@ impl Response {
 }
 ///Repeated from the request.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Repeated from the request.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseMember(::std::string::String);
@@ -1020,17 +719,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseMember {
 }
 ///Repeated from the request.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Repeated from the request.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseRoomId(::std::string::String);
@@ -1497,7 +1185,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"PersonalLabel\": {\n      \"additionalProperties\": false,\n      \"description\": \"A member's personal label for one room, as their key holder keeps it: at least one detail (`minProperties` counts `updatedAt`), and when it last changed. A key holder that holds no detail for the room holds no label, and returns none — there is no empty label.\",\n      \"minProperties\": 2,\n      \"properties\": {\n        \"description\": {\n          \"$ref\": \"#/$defs/PersonalLabelDescription\"\n        },\n        \"label\": {\n          \"$ref\": \"#/$defs/PersonalLabelName\"\n        },\n        \"notes\": {\n          \"$ref\": \"#/$defs/PersonalLabelNotes\"\n        },\n        \"tags\": {\n          \"$ref\": \"#/$defs/PersonalLabelTags\"\n        },\n        \"updatedAt\": {\n          \"description\": \"When the label last changed, as the key holder recorded it. A request that changed nothing does not move it.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"updatedAt\"\n      ],\n      \"title\": \"PersonalLabel\",\n      \"type\": \"object\"\n    },\n    \"PersonalLabelDescription\": {\n      \"description\": \"What the room is to the member, in a sentence or a short paragraph. Line breaks and tabs are allowed; other control characters are not.\",\n      \"maxLength\": 1000,\n      \"minLength\": 1,\n      \"pattern\": \"^[^\\\\u0000-\\\\u0008\\\\u000B\\\\u000C\\\\u000E-\\\\u001F\\\\u007F]+$\",\n      \"title\": \"PersonalLabelDescription\",\n      \"type\": \"string\"\n    },\n    \"PersonalLabelName\": {\n      \"description\": \"The member's own name for the room, on one line: no control characters, line breaks included. Shown before every name a third party gave the room, because it is the only one nobody else wrote.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^[^\\\\u0000-\\\\u001F\\\\u007F]+$\",\n      \"title\": \"PersonalLabelName\",\n      \"type\": \"string\"\n    },\n    \"PersonalLabelNotes\": {\n      \"description\": \"Longer free-form notes the member keeps about the room: who introduced them, what to look for in it, what they agreed there. Line breaks and tabs are allowed; other control characters are not.\",\n      \"maxLength\": 4000,\n      \"minLength\": 1,\n      \"pattern\": \"^[^\\\\u0000-\\\\u0008\\\\u000B\\\\u000C\\\\u000E-\\\\u001F\\\\u007F]+$\",\n      \"title\": \"PersonalLabelNotes\",\n      \"type\": \"string\"\n    },\n    \"PersonalLabelTag\": {\n      \"description\": \"A word or short phrase the member files the room under, in any script, so their own surfaces can group and filter their rooms. Compared exactly, as a string: a key holder does not case-fold or normalise it.\",\n      \"maxLength\": 32,\n      \"minLength\": 1,\n      \"pattern\": \"^[^\\\\u0000-\\\\u001F\\\\u007F]+$\",\n      \"title\": \"PersonalLabelTag\",\n      \"type\": \"string\"\n    },\n    \"PersonalLabelTags\": {\n      \"description\": \"The member's tags for the room, one to sixteen, as a set: order carries no meaning. A room with no tags has no `tags` member, never an empty list, so there is one way to say \\\"none\\\".\",\n      \"items\": {\n        \"$ref\": \"#/$defs/PersonalLabelTag\"\n      },\n      \"maxItems\": 16,\n      \"minItems\": 1,\n      \"title\": \"PersonalLabelTags\",\n      \"type\": \"array\",\n      \"uniqueItems\": true\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/keys/label. Type https://trusttasks.org/spec/rooms/keys/label/0.1#response. The label as it now stands, and whether this request changed it.\",\n      \"properties\": {\n        \"changed\": {\n          \"description\": \"`false` when every value given already matched, and every detail named for removal was already absent: nothing was written and `updatedAt` did not move. A retried request answers `false`, which is what makes the task safe to repeat.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"member\": {\n          \"description\": \"Repeated from the request.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"personal\": {\n          \"$ref\": \"#/$defs/PersonalLabel\",\n          \"description\": \"The label as it now stands. Absent when no detail remains: removing the last one removes the label.\"\n        },\n        \"roomId\": {\n          \"description\": \"Repeated from the request.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"member\",\n        \"changed\"\n      ],\n      \"title\": \"Rooms Keys Label — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/rooms/keys/label/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"dependentSchemas\": {\n    \"removeDescription\": {\n      \"not\": {\n        \"required\": [\n          \"description\"\n        ]\n      }\n    },\n    \"removeLabel\": {\n      \"not\": {\n        \"required\": [\n          \"label\"\n        ]\n      }\n    },\n    \"removeNotes\": {\n      \"not\": {\n        \"required\": [\n          \"notes\"\n        ]\n      }\n    },\n    \"removeTags\": {\n      \"not\": {\n        \"required\": [\n          \"tags\"\n        ]\n      }\n    }\n  },\n  \"description\": \"Set, change or remove the member's own personal label for one room they hold: its name, description, notes and tags, kept by their key holder for their eyes only. Each detail given replaces the stored one; a detail absent is unchanged; `removeX` removes one. At least one change is required (`minProperties` counts `roomId` and `member`; `ext` is not a change, which Recipient item 3 holds), and a detail cannot be both given and removed. Nothing here reaches the room, its host, its owner or a community. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"minProperties\": 3,\n  \"properties\": {\n    \"description\": {\n      \"$ref\": \"#/$defs/PersonalLabelDescription\",\n      \"description\": \"The member's new description, replacing any they had. Absent: unchanged.\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"label\": {\n      \"$ref\": \"#/$defs/PersonalLabelName\",\n      \"description\": \"The member's new name for the room, replacing any they had. Absent: unchanged.\"\n    },\n    \"member\": {\n      \"description\": \"The member whose label this is: the DID the room admitted, as rooms/keys/list 0.2 returns it beside the room. REQUIRED, never inferred, because a person holding one room as two personas keeps a label for each, and a label written under the wrong one is shown in the wrong context.\",\n      \"maxLength\": 2048,\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    },\n    \"notes\": {\n      \"$ref\": \"#/$defs/PersonalLabelNotes\",\n      \"description\": \"The member's new notes, replacing any they had. Absent: unchanged.\"\n    },\n    \"removeDescription\": {\n      \"const\": true,\n      \"description\": \"Remove the member's description. Only `true` is accepted.\",\n      \"type\": \"boolean\"\n    },\n    \"removeLabel\": {\n      \"const\": true,\n      \"description\": \"Remove the member's name for the room. Only `true` is meaningful, so only `true` is accepted. A separate member rather than `label: null`, because a nullable optional member makes \\\"unchanged\\\" and \\\"remove\\\" the same value in libraries that map both to one absent option.\",\n      \"type\": \"boolean\"\n    },\n    \"removeNotes\": {\n      \"const\": true,\n      \"description\": \"Remove the member's notes. Only `true` is accepted.\",\n      \"type\": \"boolean\"\n    },\n    \"removeTags\": {\n      \"const\": true,\n      \"description\": \"Remove every tag. Only `true` is accepted.\",\n      \"type\": \"boolean\"\n    },\n    \"roomId\": {\n      \"description\": \"The room's identifier: its DID, as rooms/keys/list returns it.\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"tags\": {\n      \"$ref\": \"#/$defs/PersonalLabelTags\",\n      \"description\": \"The member's tags, replacing the whole set. Absent: unchanged. Remove every tag with `removeTags`.\"\n    }\n  },\n  \"required\": [\n    \"roomId\",\n    \"member\"\n  ],\n  \"title\": \"Rooms Keys Label — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"PersonalLabel\":{\"additionalProperties\":false,\"description\":\"A member's personal label for one room, as their key holder keeps it: at least one detail (`minProperties` counts `updatedAt`), and when it last changed. A key holder that holds no detail for the room holds no label, and returns none — there is no empty label.\",\"minProperties\":2,\"properties\":{\"description\":{\"$ref\":\"#/$defs/PersonalLabelDescription\"},\"label\":{\"$ref\":\"#/$defs/PersonalLabelName\"},\"notes\":{\"$ref\":\"#/$defs/PersonalLabelNotes\"},\"tags\":{\"$ref\":\"#/$defs/PersonalLabelTags\"},\"updatedAt\":{\"description\":\"When the label last changed, as the key holder recorded it. A request that changed nothing does not move it.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"updatedAt\"],\"title\":\"PersonalLabel\",\"type\":\"object\"},\"PersonalLabelDescription\":{\"description\":\"What the room is to the member, in a sentence or a short paragraph. Line breaks and tabs are allowed; other control characters are not.\",\"maxLength\":1000,\"minLength\":1,\"pattern\":\"^[^\\\\u0000-\\\\u0008\\\\u000B\\\\u000C\\\\u000E-\\\\u001F\\\\u007F]+$\",\"title\":\"PersonalLabelDescription\",\"type\":\"string\"},\"PersonalLabelName\":{\"description\":\"The member's own name for the room, on one line: no control characters, line breaks included. Shown before every name a third party gave the room, because it is the only one nobody else wrote.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^[^\\\\u0000-\\\\u001F\\\\u007F]+$\",\"title\":\"PersonalLabelName\",\"type\":\"string\"},\"PersonalLabelNotes\":{\"description\":\"Longer free-form notes the member keeps about the room: who introduced them, what to look for in it, what they agreed there. Line breaks and tabs are allowed; other control characters are not.\",\"maxLength\":4000,\"minLength\":1,\"pattern\":\"^[^\\\\u0000-\\\\u0008\\\\u000B\\\\u000C\\\\u000E-\\\\u001F\\\\u007F]+$\",\"title\":\"PersonalLabelNotes\",\"type\":\"string\"},\"PersonalLabelTag\":{\"description\":\"A word or short phrase the member files the room under, in any script, so their own surfaces can group and filter their rooms. Compared exactly, as a string: a key holder does not case-fold or normalise it.\",\"maxLength\":32,\"minLength\":1,\"pattern\":\"^[^\\\\u0000-\\\\u001F\\\\u007F]+$\",\"title\":\"PersonalLabelTag\",\"type\":\"string\"},\"PersonalLabelTags\":{\"description\":\"The member's tags for the room, one to sixteen, as a set: order carries no meaning. A room with no tags has no `tags` member, never an empty list, so there is one way to say \\\"none\\\".\",\"items\":{\"$ref\":\"#/$defs/PersonalLabelTag\"},\"maxItems\":16,\"minItems\":1,\"title\":\"PersonalLabelTags\",\"type\":\"array\",\"uniqueItems\":true},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to rooms/keys/label. Type https://trusttasks.org/spec/rooms/keys/label/0.1#response. The label as it now stands, and whether this request changed it.\",\"properties\":{\"changed\":{\"description\":\"`false` when every value given already matched, and every detail named for removal was already absent: nothing was written and `updatedAt` did not move. A retried request answers `false`, which is what makes the task safe to repeat.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"member\":{\"description\":\"Repeated from the request.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"personal\":{\"$ref\":\"#/$defs/PersonalLabel\",\"description\":\"The label as it now stands. Absent when no detail remains: removing the last one removes the label.\"},\"roomId\":{\"description\":\"Repeated from the request.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"roomId\",\"member\",\"changed\"],\"title\":\"Rooms Keys Label — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/rooms/keys/label/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"dependentSchemas\":{\"removeDescription\":{\"not\":{\"required\":[\"description\"]}},\"removeLabel\":{\"not\":{\"required\":[\"label\"]}},\"removeNotes\":{\"not\":{\"required\":[\"notes\"]}},\"removeTags\":{\"not\":{\"required\":[\"tags\"]}}},\"description\":\"Set, change or remove the member's own personal label for one room they hold: its name, description, notes and tags, kept by their key holder for their eyes only. Each detail given replaces the stored one; a detail absent is unchanged; `removeX` removes one. At least one change is required (`minProperties` counts `roomId` and `member`; `ext` is not a change, which Recipient item 3 holds), and a detail cannot be both given and removed. Nothing here reaches the room, its host, its owner or a community. The outer document members are owned by the framework — SPEC §6.3.\",\"minProperties\":3,\"properties\":{\"description\":{\"$ref\":\"#/$defs/PersonalLabelDescription\",\"description\":\"The member's new description, replacing any they had. Absent: unchanged.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"label\":{\"$ref\":\"#/$defs/PersonalLabelName\",\"description\":\"The member's new name for the room, replacing any they had. Absent: unchanged.\"},\"member\":{\"description\":\"The member whose label this is: the DID the room admitted, as rooms/keys/list 0.2 returns it beside the room. REQUIRED, never inferred, because a person holding one room as two personas keeps a label for each, and a label written under the wrong one is shown in the wrong context.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"notes\":{\"$ref\":\"#/$defs/PersonalLabelNotes\",\"description\":\"The member's new notes, replacing any they had. Absent: unchanged.\"},\"removeDescription\":{\"const\":true,\"description\":\"Remove the member's description. Only `true` is accepted.\",\"type\":\"boolean\"},\"removeLabel\":{\"const\":true,\"description\":\"Remove the member's name for the room. Only `true` is meaningful, so only `true` is accepted. A separate member rather than `label: null`, because a nullable optional member makes \\\"unchanged\\\" and \\\"remove\\\" the same value in libraries that map both to one absent option.\",\"type\":\"boolean\"},\"removeNotes\":{\"const\":true,\"description\":\"Remove the member's notes. Only `true` is accepted.\",\"type\":\"boolean\"},\"removeTags\":{\"const\":true,\"description\":\"Remove every tag. Only `true` is accepted.\",\"type\":\"boolean\"},\"roomId\":{\"description\":\"The room's identifier: its DID, as rooms/keys/list returns it.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"tags\":{\"$ref\":\"#/$defs/PersonalLabelTags\",\"description\":\"The member's tags, replacing the whole set. Absent: unchanged. Remove every tag with `removeTags`.\"}},\"required\":[\"roomId\",\"member\"],\"title\":\"Rooms Keys Label — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1506,7 +1194,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"PersonalLabel\": {\n      \"additionalProperties\": false,\n      \"description\": \"A member's personal label for one room, as their key holder keeps it: at least one detail (`minProperties` counts `updatedAt`), and when it last changed. A key holder that holds no detail for the room holds no label, and returns none — there is no empty label.\",\n      \"minProperties\": 2,\n      \"properties\": {\n        \"description\": {\n          \"$ref\": \"#/$defs/PersonalLabelDescription\"\n        },\n        \"label\": {\n          \"$ref\": \"#/$defs/PersonalLabelName\"\n        },\n        \"notes\": {\n          \"$ref\": \"#/$defs/PersonalLabelNotes\"\n        },\n        \"tags\": {\n          \"$ref\": \"#/$defs/PersonalLabelTags\"\n        },\n        \"updatedAt\": {\n          \"description\": \"When the label last changed, as the key holder recorded it. A request that changed nothing does not move it.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"updatedAt\"\n      ],\n      \"title\": \"PersonalLabel\",\n      \"type\": \"object\"\n    },\n    \"PersonalLabelDescription\": {\n      \"description\": \"What the room is to the member, in a sentence or a short paragraph. Line breaks and tabs are allowed; other control characters are not.\",\n      \"maxLength\": 1000,\n      \"minLength\": 1,\n      \"pattern\": \"^[^\\\\u0000-\\\\u0008\\\\u000B\\\\u000C\\\\u000E-\\\\u001F\\\\u007F]+$\",\n      \"title\": \"PersonalLabelDescription\",\n      \"type\": \"string\"\n    },\n    \"PersonalLabelName\": {\n      \"description\": \"The member's own name for the room, on one line: no control characters, line breaks included. Shown before every name a third party gave the room, because it is the only one nobody else wrote.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^[^\\\\u0000-\\\\u001F\\\\u007F]+$\",\n      \"title\": \"PersonalLabelName\",\n      \"type\": \"string\"\n    },\n    \"PersonalLabelNotes\": {\n      \"description\": \"Longer free-form notes the member keeps about the room: who introduced them, what to look for in it, what they agreed there. Line breaks and tabs are allowed; other control characters are not.\",\n      \"maxLength\": 4000,\n      \"minLength\": 1,\n      \"pattern\": \"^[^\\\\u0000-\\\\u0008\\\\u000B\\\\u000C\\\\u000E-\\\\u001F\\\\u007F]+$\",\n      \"title\": \"PersonalLabelNotes\",\n      \"type\": \"string\"\n    },\n    \"PersonalLabelTag\": {\n      \"description\": \"A word or short phrase the member files the room under, in any script, so their own surfaces can group and filter their rooms. Compared exactly, as a string: a key holder does not case-fold or normalise it.\",\n      \"maxLength\": 32,\n      \"minLength\": 1,\n      \"pattern\": \"^[^\\\\u0000-\\\\u001F\\\\u007F]+$\",\n      \"title\": \"PersonalLabelTag\",\n      \"type\": \"string\"\n    },\n    \"PersonalLabelTags\": {\n      \"description\": \"The member's tags for the room, one to sixteen, as a set: order carries no meaning. A room with no tags has no `tags` member, never an empty list, so there is one way to say \\\"none\\\".\",\n      \"items\": {\n        \"$ref\": \"#/$defs/PersonalLabelTag\"\n      },\n      \"maxItems\": 16,\n      \"minItems\": 1,\n      \"title\": \"PersonalLabelTags\",\n      \"type\": \"array\",\n      \"uniqueItems\": true\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/keys/label. Type https://trusttasks.org/spec/rooms/keys/label/0.1#response. The label as it now stands, and whether this request changed it.\",\n      \"properties\": {\n        \"changed\": {\n          \"description\": \"`false` when every value given already matched, and every detail named for removal was already absent: nothing was written and `updatedAt` did not move. A retried request answers `false`, which is what makes the task safe to repeat.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"member\": {\n          \"description\": \"Repeated from the request.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"personal\": {\n          \"$ref\": \"#/$defs/PersonalLabel\",\n          \"description\": \"The label as it now stands. Absent when no detail remains: removing the last one removes the label.\"\n        },\n        \"roomId\": {\n          \"description\": \"Repeated from the request.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"member\",\n        \"changed\"\n      ],\n      \"title\": \"Rooms Keys Label — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"PersonalLabel\":{\"additionalProperties\":false,\"description\":\"A member's personal label for one room, as their key holder keeps it: at least one detail (`minProperties` counts `updatedAt`), and when it last changed. A key holder that holds no detail for the room holds no label, and returns none — there is no empty label.\",\"minProperties\":2,\"properties\":{\"description\":{\"$ref\":\"#/$defs/PersonalLabelDescription\"},\"label\":{\"$ref\":\"#/$defs/PersonalLabelName\"},\"notes\":{\"$ref\":\"#/$defs/PersonalLabelNotes\"},\"tags\":{\"$ref\":\"#/$defs/PersonalLabelTags\"},\"updatedAt\":{\"description\":\"When the label last changed, as the key holder recorded it. A request that changed nothing does not move it.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"updatedAt\"],\"title\":\"PersonalLabel\",\"type\":\"object\"},\"PersonalLabelDescription\":{\"description\":\"What the room is to the member, in a sentence or a short paragraph. Line breaks and tabs are allowed; other control characters are not.\",\"maxLength\":1000,\"minLength\":1,\"pattern\":\"^[^\\\\u0000-\\\\u0008\\\\u000B\\\\u000C\\\\u000E-\\\\u001F\\\\u007F]+$\",\"title\":\"PersonalLabelDescription\",\"type\":\"string\"},\"PersonalLabelName\":{\"description\":\"The member's own name for the room, on one line: no control characters, line breaks included. Shown before every name a third party gave the room, because it is the only one nobody else wrote.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^[^\\\\u0000-\\\\u001F\\\\u007F]+$\",\"title\":\"PersonalLabelName\",\"type\":\"string\"},\"PersonalLabelNotes\":{\"description\":\"Longer free-form notes the member keeps about the room: who introduced them, what to look for in it, what they agreed there. Line breaks and tabs are allowed; other control characters are not.\",\"maxLength\":4000,\"minLength\":1,\"pattern\":\"^[^\\\\u0000-\\\\u0008\\\\u000B\\\\u000C\\\\u000E-\\\\u001F\\\\u007F]+$\",\"title\":\"PersonalLabelNotes\",\"type\":\"string\"},\"PersonalLabelTag\":{\"description\":\"A word or short phrase the member files the room under, in any script, so their own surfaces can group and filter their rooms. Compared exactly, as a string: a key holder does not case-fold or normalise it.\",\"maxLength\":32,\"minLength\":1,\"pattern\":\"^[^\\\\u0000-\\\\u001F\\\\u007F]+$\",\"title\":\"PersonalLabelTag\",\"type\":\"string\"},\"PersonalLabelTags\":{\"description\":\"The member's tags for the room, one to sixteen, as a set: order carries no meaning. A room with no tags has no `tags` member, never an empty list, so there is one way to say \\\"none\\\".\",\"items\":{\"$ref\":\"#/$defs/PersonalLabelTag\"},\"maxItems\":16,\"minItems\":1,\"title\":\"PersonalLabelTags\",\"type\":\"array\",\"uniqueItems\":true},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to rooms/keys/label. Type https://trusttasks.org/spec/rooms/keys/label/0.1#response. The label as it now stands, and whether this request changed it.\",\"properties\":{\"changed\":{\"description\":\"`false` when every value given already matched, and every detail named for removal was already absent: nothing was written and `updatedAt` did not move. A retried request answers `false`, which is what makes the task safe to repeat.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"member\":{\"description\":\"Repeated from the request.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"personal\":{\"$ref\":\"#/$defs/PersonalLabel\",\"description\":\"The label as it now stands. Absent when no detail remains: removing the last one removes the label.\"},\"roomId\":{\"description\":\"Repeated from the request.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"roomId\",\"member\",\"changed\"],\"title\":\"Rooms Keys Label — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

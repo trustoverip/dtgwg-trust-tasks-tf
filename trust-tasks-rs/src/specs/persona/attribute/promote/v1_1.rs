@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,53 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Make values a context-local face carries reusable: each named entry's value becomes a pool attribute, and the face — which can no longer live inside one context once it references the pool — moves above contexts, keeping its id and staying worn wherever it was. One-way.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/persona/attribute/promote/1.1",
-///  "title": "Payload",
-///  "description": "Make values a context-local face carries reusable: each named entry's value becomes a pool attribute, and the face — which can no longer live inside one context once it references the pool — moves above contexts, keeping its id and staying worn wherever it was. One-way.",
-///  "type": "object",
-///  "required": [
-///    "contextId",
-///    "entries",
-///    "expectedVersion",
-///    "profileId"
-///  ],
-///  "properties": {
-///    "contextId": {
-///      "description": "The context the local face lives in.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "entries": {
-///      "description": "Zero-based positions, in the face's `entries`, of the values to promote. Positions are meaningful only against the version the producer read, which is why `expectedVersion` is required.",
-///      "type": "array",
-///      "items": {
-///        "type": "integer",
-///        "minimum": 0.0
-///      },
-///      "maxItems": 64,
-///      "minItems": 1,
-///      "uniqueItems": true
-///    },
-///    "expectedVersion": {
-///      "description": "The local face's version as the producer read it. Required: a position into a face edited since would promote a different value than the holder chose.",
-///      "$ref": "#/definitions/Version"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "profileId": {
-///      "description": "The context-local face.",
-///      "$ref": "#/definitions/Ulid"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -214,16 +143,6 @@ impl Payload {
 }
 ///The context the local face lives in.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The context the local face lives in.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadContextId(::std::string::String);
@@ -283,72 +202,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
 }
 ///Success response to persona/attribute/promote. Type https://trusttasks.org/spec/persona/attribute/promote/1.1#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to persona/attribute/promote. Type https://trusttasks.org/spec/persona/attribute/promote/1.1#response.",
-///  "type": "object",
-///  "required": [
-///    "profileId",
-///    "promoted",
-///    "version"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "profileId": {
-///      "description": "Unchanged: the face keeps its id. It is now read through persona/profile/get.",
-///      "$ref": "#/definitions/Ulid"
-///    },
-///    "promoted": {
-///      "description": "For each promoted position, in request order, the pool attribute the entry now references and whether this promote created it. `wasCreated: false` means the holder already kept exactly this value, and the face now shares it with whatever else presents it.",
-///      "type": "array",
-///      "items": {
-///        "type": "object",
-///        "required": [
-///          "attributeId",
-///          "entry",
-///          "wasCreated"
-///        ],
-///        "properties": {
-///          "attributeId": {
-///            "$ref": "#/definitions/Ulid"
-///          },
-///          "entry": {
-///            "type": "integer",
-///            "minimum": 0.0
-///          },
-///          "wasCreated": {
-///            "type": "boolean"
-///          }
-///        },
-///        "additionalProperties": false
-///      },
-///      "maxItems": 64,
-///      "minItems": 1
-///    },
-///    "reboundPersonaDids": {
-///      "description": "Personas in `contextId` that wore the local face and now wear it from the pool. What they present is unchanged. Absent when none did.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "minLength": 1
-///      },
-///      "maxItems": 256
-///    },
-///    "version": {
-///      "description": "The face's version in the pool.",
-///      "$ref": "#/definitions/Version"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -377,32 +230,6 @@ impl Response {
 }
 ///`ResponsePromotedItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "attributeId",
-///    "entry",
-///    "wasCreated"
-///  ],
-///  "properties": {
-///    "attributeId": {
-///      "$ref": "#/definitions/Ulid"
-///    },
-///    "entry": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "wasCreated": {
-///      "type": "boolean"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -420,15 +247,6 @@ impl ResponsePromotedItem {
 }
 ///`ResponseReboundPersonaDidsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseReboundPersonaDidsItem(::std::string::String);
@@ -488,17 +306,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseReboundPersonaDidsItem {
 }
 ///A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ulid",
-///  "description": "A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.",
-///  "type": "string",
-///  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Ulid(::std::string::String);
@@ -562,17 +369,6 @@ impl<'de> ::serde::Deserialize<'de> for Ulid {
 }
 ///A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Version",
-///  "description": "A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.",
-///  "type": "integer",
-///  "minimum": 1.0
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Version(pub ::std::num::NonZeroU64);
@@ -886,7 +682,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/attribute/promote. Type https://trusttasks.org/spec/persona/attribute/promote/1.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"profileId\": {\n          \"$ref\": \"#/$defs/Ulid\",\n          \"description\": \"Unchanged: the face keeps its id. It is now read through persona/profile/get.\"\n        },\n        \"promoted\": {\n          \"description\": \"For each promoted position, in request order, the pool attribute the entry now references and whether this promote created it. `wasCreated: false` means the holder already kept exactly this value, and the face now shares it with whatever else presents it.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"attributeId\": {\n                \"$ref\": \"#/$defs/Ulid\"\n              },\n              \"entry\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              },\n              \"wasCreated\": {\n                \"type\": \"boolean\"\n              }\n            },\n            \"required\": [\n              \"entry\",\n              \"attributeId\",\n              \"wasCreated\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"reboundPersonaDids\": {\n          \"description\": \"Personas in `contextId` that wore the local face and now wear it from the pool. What they present is unchanged. Absent when none did.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        },\n        \"version\": {\n          \"$ref\": \"#/$defs/Version\",\n          \"description\": \"The face's version in the pool.\"\n        }\n      },\n      \"required\": [\n        \"profileId\",\n        \"version\",\n        \"promoted\"\n      ],\n      \"title\": \"Persona Attribute Promote — response payload\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    },\n    \"Version\": {\n      \"description\": \"A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.\",\n      \"minimum\": 1,\n      \"title\": \"Version\",\n      \"type\": \"integer\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/persona/attribute/promote/1.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Make values a context-local face carries reusable: each named entry's value becomes a pool attribute, and the face — which can no longer live inside one context once it references the pool — moves above contexts, keeping its id and staying worn wherever it was. One-way.\",\n  \"properties\": {\n    \"contextId\": {\n      \"description\": \"The context the local face lives in.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"entries\": {\n      \"description\": \"Zero-based positions, in the face's `entries`, of the values to promote. Positions are meaningful only against the version the producer read, which is why `expectedVersion` is required.\",\n      \"items\": {\n        \"minimum\": 0,\n        \"type\": \"integer\"\n      },\n      \"maxItems\": 64,\n      \"minItems\": 1,\n      \"type\": \"array\",\n      \"uniqueItems\": true\n    },\n    \"expectedVersion\": {\n      \"$ref\": \"#/$defs/Version\",\n      \"description\": \"The local face's version as the producer read it. Required: a position into a face edited since would promote a different value than the holder chose.\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"profileId\": {\n      \"$ref\": \"#/$defs/Ulid\",\n      \"description\": \"The context-local face.\"\n    }\n  },\n  \"required\": [\n    \"contextId\",\n    \"profileId\",\n    \"entries\",\n    \"expectedVersion\"\n  ],\n  \"title\": \"Persona Attribute Promote — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to persona/attribute/promote. Type https://trusttasks.org/spec/persona/attribute/promote/1.1#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"profileId\":{\"$ref\":\"#/$defs/Ulid\",\"description\":\"Unchanged: the face keeps its id. It is now read through persona/profile/get.\"},\"promoted\":{\"description\":\"For each promoted position, in request order, the pool attribute the entry now references and whether this promote created it. `wasCreated: false` means the holder already kept exactly this value, and the face now shares it with whatever else presents it.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"attributeId\":{\"$ref\":\"#/$defs/Ulid\"},\"entry\":{\"minimum\":0,\"type\":\"integer\"},\"wasCreated\":{\"type\":\"boolean\"}},\"required\":[\"entry\",\"attributeId\",\"wasCreated\"],\"type\":\"object\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\"},\"reboundPersonaDids\":{\"description\":\"Personas in `contextId` that wore the local face and now wear it from the pool. What they present is unchanged. Absent when none did.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"maxItems\":256,\"type\":\"array\"},\"version\":{\"$ref\":\"#/$defs/Version\",\"description\":\"The face's version in the pool.\"}},\"required\":[\"profileId\",\"version\",\"promoted\"],\"title\":\"Persona Attribute Promote — response payload\",\"type\":\"object\"},\"Ulid\":{\"description\":\"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\"pattern\":\"^[0-9A-HJKMNP-TV-Z]{26}$\",\"title\":\"Ulid\",\"type\":\"string\"},\"Version\":{\"description\":\"A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.\",\"minimum\":1,\"title\":\"Version\",\"type\":\"integer\"}},\"$id\":\"https://trusttasks.org/spec/persona/attribute/promote/1.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Make values a context-local face carries reusable: each named entry's value becomes a pool attribute, and the face — which can no longer live inside one context once it references the pool — moves above contexts, keeping its id and staying worn wherever it was. One-way.\",\"properties\":{\"contextId\":{\"description\":\"The context the local face lives in.\",\"minLength\":1,\"type\":\"string\"},\"entries\":{\"description\":\"Zero-based positions, in the face's `entries`, of the values to promote. Positions are meaningful only against the version the producer read, which is why `expectedVersion` is required.\",\"items\":{\"minimum\":0,\"type\":\"integer\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"expectedVersion\":{\"$ref\":\"#/$defs/Version\",\"description\":\"The local face's version as the producer read it. Required: a position into a face edited since would promote a different value than the holder chose.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"profileId\":{\"$ref\":\"#/$defs/Ulid\",\"description\":\"The context-local face.\"}},\"required\":[\"contextId\",\"profileId\",\"entries\",\"expectedVersion\"],\"title\":\"Persona Attribute Promote — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -896,7 +692,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/attribute/promote. Type https://trusttasks.org/spec/persona/attribute/promote/1.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"profileId\": {\n          \"$ref\": \"#/$defs/Ulid\",\n          \"description\": \"Unchanged: the face keeps its id. It is now read through persona/profile/get.\"\n        },\n        \"promoted\": {\n          \"description\": \"For each promoted position, in request order, the pool attribute the entry now references and whether this promote created it. `wasCreated: false` means the holder already kept exactly this value, and the face now shares it with whatever else presents it.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"attributeId\": {\n                \"$ref\": \"#/$defs/Ulid\"\n              },\n              \"entry\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              },\n              \"wasCreated\": {\n                \"type\": \"boolean\"\n              }\n            },\n            \"required\": [\n              \"entry\",\n              \"attributeId\",\n              \"wasCreated\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"reboundPersonaDids\": {\n          \"description\": \"Personas in `contextId` that wore the local face and now wear it from the pool. What they present is unchanged. Absent when none did.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\"\n        },\n        \"version\": {\n          \"$ref\": \"#/$defs/Version\",\n          \"description\": \"The face's version in the pool.\"\n        }\n      },\n      \"required\": [\n        \"profileId\",\n        \"version\",\n        \"promoted\"\n      ],\n      \"title\": \"Persona Attribute Promote — response payload\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    },\n    \"Version\": {\n      \"description\": \"A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.\",\n      \"minimum\": 1,\n      \"title\": \"Version\",\n      \"type\": \"integer\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to persona/attribute/promote. Type https://trusttasks.org/spec/persona/attribute/promote/1.1#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"profileId\":{\"$ref\":\"#/$defs/Ulid\",\"description\":\"Unchanged: the face keeps its id. It is now read through persona/profile/get.\"},\"promoted\":{\"description\":\"For each promoted position, in request order, the pool attribute the entry now references and whether this promote created it. `wasCreated: false` means the holder already kept exactly this value, and the face now shares it with whatever else presents it.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"attributeId\":{\"$ref\":\"#/$defs/Ulid\"},\"entry\":{\"minimum\":0,\"type\":\"integer\"},\"wasCreated\":{\"type\":\"boolean\"}},\"required\":[\"entry\",\"attributeId\",\"wasCreated\"],\"type\":\"object\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\"},\"reboundPersonaDids\":{\"description\":\"Personas in `contextId` that wore the local face and now wear it from the pool. What they present is unchanged. Absent when none did.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"maxItems\":256,\"type\":\"array\"},\"version\":{\"$ref\":\"#/$defs/Version\",\"description\":\"The face's version in the pool.\"}},\"required\":[\"profileId\",\"version\",\"promoted\"],\"title\":\"Persona Attribute Promote — response payload\",\"type\":\"object\"},\"Ulid\":{\"description\":\"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\"pattern\":\"^[0-9A-HJKMNP-TV-Z]{26}$\",\"title\":\"Ulid\",\"type\":\"string\"},\"Version\":{\"description\":\"A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.\",\"minimum\":1,\"title\":\"Version\",\"type\":\"integer\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

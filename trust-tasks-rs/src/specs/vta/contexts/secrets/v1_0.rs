@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,31 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Names the trust context whose DID key material is being asked for. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/contexts/secrets/1.0",
-///  "title": "Payload",
-///  "description": "Names the trust context whose DID key material is being asked for. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "id"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "id": {
-///      "description": "Context id. For a nested context this is the full path (`parent/leaf`). Named `id` to match the rest of the `vta/contexts/*` family, where it always identifies the context being acted on.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -183,16 +134,6 @@ impl Payload {
 }
 ///Context id. For a nested context this is the full path (`parent/leaf`). Named `id` to match the rest of the `vta/contexts/*` family, where it always identifies the context being acted on.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Context id. For a nested context this is the full path (`parent/leaf`). Named `id` to match the rest of the `vta/contexts/*` family, where it always identifies the context being acted on.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadId(::std::string::String);
@@ -252,36 +193,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadId {
 }
 ///The context's DID and the private key material behind it, sufficient to operate as that DID and nothing more. Failures use trust-task-error, not this shape. Type https://trusttasks.org/spec/vta/contexts/secrets/1.0#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The context's DID and the private key material behind it, sufficient to operate as that DID and nothing more. Failures use trust-task-error, not this shape. Type https://trusttasks.org/spec/vta/contexts/secrets/1.0#response.",
-///  "type": "object",
-///  "required": [
-///    "did",
-///    "secrets"
-///  ],
-///  "properties": {
-///    "did": {
-///      "description": "The DID the returned secrets belong to — the DID recorded on the named context. Every `keyId` below is a verification method of this DID, so a consumer can check the two agree before installing anything.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "secrets": {
-///      "description": "One entry per verification method of `did` whose secret the recipient holds and is willing to release. MAY be empty: a context whose DID has no releasable key material is not an error, and a consumer that treats an empty array as a failure will misreport a context that is merely not provisioned yet.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/SecretEntry"
-///      }
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -298,16 +209,6 @@ impl Response {
 }
 ///The DID the returned secrets belong to — the DID recorded on the named context. Every `keyId` below is a verification method of this DID, so a consumer can check the two agree before installing anything.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The DID the returned secrets belong to — the DID recorded on the named context. Every `keyId` below is a verification method of this DID, so a consumer can check the two agree before installing anything.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseDid(::std::string::String);
@@ -367,43 +268,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseDid {
 }
 ///One private key, named by the verification method it backs.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Secret entry",
-///  "description": "One private key, named by the verification method it backs.",
-///  "type": "object",
-///  "required": [
-///    "keyId",
-///    "keyType",
-///    "privateKeyMultibase"
-///  ],
-///  "properties": {
-///    "keyId": {
-///      "description": "The verification method this key backs, as an absolute DID URL under the response's `did` (`{did}#key-0`). It is the DID document — not the recipient's own storage — that decides this name, so a consumer installs the key under a `kid` that an inbound message's recipient field will actually match.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "keyType": {
-///      "description": "What the key is for, and how to reconstruct it. `ed25519` signs, `x25519` is a key-agreement key and signs nothing, `p256` is an ECDSA key for ES256. Stated as well as encoded in `privateKeyMultibase` so a consumer can select a key by purpose without decoding every entry.",
-///      "type": "string",
-///      "enum": [
-///        "ed25519",
-///        "x25519",
-///        "p256"
-///      ]
-///    },
-///    "privateKeyMultibase": {
-///      "description": "The private key, multibase-encoded (Base58BTC, `z` prefix) over its multicodec-prefixed bytes — `0x1300` Ed25519, `0x1302` X25519, `0x1306` P-256. The multicodec prefix, not this member's position in the array, is what identifies the key material.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -425,16 +289,6 @@ impl SecretEntry {
 }
 ///The verification method this key backs, as an absolute DID URL under the response's `did` (`{did}#key-0`). It is the DID document — not the recipient's own storage — that decides this name, so a consumer installs the key under a `kid` that an inbound message's recipient field will actually match.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The verification method this key backs, as an absolute DID URL under the response's `did` (`{did}#key-0`). It is the DID document — not the recipient's own storage — that decides this name, so a consumer installs the key under a `kid` that an inbound message's recipient field will actually match.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct SecretEntryKeyId(::std::string::String);
@@ -494,20 +348,6 @@ impl<'de> ::serde::Deserialize<'de> for SecretEntryKeyId {
 }
 ///What the key is for, and how to reconstruct it. `ed25519` signs, `x25519` is a key-agreement key and signs nothing, `p256` is an ECDSA key for ES256. Stated as well as encoded in `privateKeyMultibase` so a consumer can select a key by purpose without decoding every entry.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "What the key is for, and how to reconstruct it. `ed25519` signs, `x25519` is a key-agreement key and signs nothing, `p256` is an ECDSA key for ES256. Stated as well as encoded in `privateKeyMultibase` so a consumer can select a key by purpose without decoding every entry.",
-///  "type": "string",
-///  "enum": [
-///    "ed25519",
-///    "x25519",
-///    "p256"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -573,16 +413,6 @@ impl ::std::convert::TryFrom<::std::string::String> for SecretEntryKeyType {
 }
 ///The private key, multibase-encoded (Base58BTC, `z` prefix) over its multicodec-prefixed bytes — `0x1300` Ed25519, `0x1302` X25519, `0x1306` P-256. The multicodec prefix, not this member's position in the array, is what identifies the key material.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The private key, multibase-encoded (Base58BTC, `z` prefix) over its multicodec-prefixed bytes — `0x1300` Ed25519, `0x1302` X25519, `0x1306` P-256. The multicodec prefix, not this member's position in the array, is what identifies the key material.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct SecretEntryPrivateKeyMultibase(::std::string::String);
@@ -824,7 +654,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The context's DID and the private key material behind it, sufficient to operate as that DID and nothing more. Failures use trust-task-error, not this shape. Type https://trusttasks.org/spec/vta/contexts/secrets/1.0#response.\",\n      \"properties\": {\n        \"did\": {\n          \"description\": \"The DID the returned secrets belong to — the DID recorded on the named context. Every `keyId` below is a verification method of this DID, so a consumer can check the two agree before installing anything.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"secrets\": {\n          \"description\": \"One entry per verification method of `did` whose secret the recipient holds and is willing to release. MAY be empty: a context whose DID has no releasable key material is not an error, and a consumer that treats an empty array as a failure will misreport a context that is merely not provisioned yet.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/SecretEntry\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"secrets\"\n      ],\n      \"title\": \"VTA Context Secrets — response payload\",\n      \"type\": \"object\"\n    },\n    \"SecretEntry\": {\n      \"additionalProperties\": false,\n      \"description\": \"One private key, named by the verification method it backs.\",\n      \"properties\": {\n        \"keyId\": {\n          \"description\": \"The verification method this key backs, as an absolute DID URL under the response's `did` (`{did}#key-0`). It is the DID document — not the recipient's own storage — that decides this name, so a consumer installs the key under a `kid` that an inbound message's recipient field will actually match.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"keyType\": {\n          \"description\": \"What the key is for, and how to reconstruct it. `ed25519` signs, `x25519` is a key-agreement key and signs nothing, `p256` is an ECDSA key for ES256. Stated as well as encoded in `privateKeyMultibase` so a consumer can select a key by purpose without decoding every entry.\",\n          \"enum\": [\n            \"ed25519\",\n            \"x25519\",\n            \"p256\"\n          ],\n          \"type\": \"string\"\n        },\n        \"privateKeyMultibase\": {\n          \"description\": \"The private key, multibase-encoded (Base58BTC, `z` prefix) over its multicodec-prefixed bytes — `0x1300` Ed25519, `0x1302` X25519, `0x1306` P-256. The multicodec prefix, not this member's position in the array, is what identifies the key material.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"keyId\",\n        \"keyType\",\n        \"privateKeyMultibase\"\n      ],\n      \"title\": \"Secret entry\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/contexts/secrets/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Names the trust context whose DID key material is being asked for. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"id\": {\n      \"description\": \"Context id. For a nested context this is the full path (`parent/leaf`). Named `id` to match the rest of the `vta/contexts/*` family, where it always identifies the context being acted on.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"id\"\n  ],\n  \"title\": \"VTA Context Secrets — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The context's DID and the private key material behind it, sufficient to operate as that DID and nothing more. Failures use trust-task-error, not this shape. Type https://trusttasks.org/spec/vta/contexts/secrets/1.0#response.\",\"properties\":{\"did\":{\"description\":\"The DID the returned secrets belong to — the DID recorded on the named context. Every `keyId` below is a verification method of this DID, so a consumer can check the two agree before installing anything.\",\"minLength\":1,\"type\":\"string\"},\"secrets\":{\"description\":\"One entry per verification method of `did` whose secret the recipient holds and is willing to release. MAY be empty: a context whose DID has no releasable key material is not an error, and a consumer that treats an empty array as a failure will misreport a context that is merely not provisioned yet.\",\"items\":{\"$ref\":\"#/$defs/SecretEntry\"},\"type\":\"array\"}},\"required\":[\"did\",\"secrets\"],\"title\":\"VTA Context Secrets — response payload\",\"type\":\"object\"},\"SecretEntry\":{\"additionalProperties\":false,\"description\":\"One private key, named by the verification method it backs.\",\"properties\":{\"keyId\":{\"description\":\"The verification method this key backs, as an absolute DID URL under the response's `did` (`{did}#key-0`). It is the DID document — not the recipient's own storage — that decides this name, so a consumer installs the key under a `kid` that an inbound message's recipient field will actually match.\",\"minLength\":1,\"type\":\"string\"},\"keyType\":{\"description\":\"What the key is for, and how to reconstruct it. `ed25519` signs, `x25519` is a key-agreement key and signs nothing, `p256` is an ECDSA key for ES256. Stated as well as encoded in `privateKeyMultibase` so a consumer can select a key by purpose without decoding every entry.\",\"enum\":[\"ed25519\",\"x25519\",\"p256\"],\"type\":\"string\"},\"privateKeyMultibase\":{\"description\":\"The private key, multibase-encoded (Base58BTC, `z` prefix) over its multicodec-prefixed bytes — `0x1300` Ed25519, `0x1302` X25519, `0x1306` P-256. The multicodec prefix, not this member's position in the array, is what identifies the key material.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"keyId\",\"keyType\",\"privateKeyMultibase\"],\"title\":\"Secret entry\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vta/contexts/secrets/1.0\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Names the trust context whose DID key material is being asked for. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"description\":\"Context id. For a nested context this is the full path (`parent/leaf`). Named `id` to match the rest of the `vta/contexts/*` family, where it always identifies the context being acted on.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\"],\"title\":\"VTA Context Secrets — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -833,7 +663,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The context's DID and the private key material behind it, sufficient to operate as that DID and nothing more. Failures use trust-task-error, not this shape. Type https://trusttasks.org/spec/vta/contexts/secrets/1.0#response.\",\n      \"properties\": {\n        \"did\": {\n          \"description\": \"The DID the returned secrets belong to — the DID recorded on the named context. Every `keyId` below is a verification method of this DID, so a consumer can check the two agree before installing anything.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"secrets\": {\n          \"description\": \"One entry per verification method of `did` whose secret the recipient holds and is willing to release. MAY be empty: a context whose DID has no releasable key material is not an error, and a consumer that treats an empty array as a failure will misreport a context that is merely not provisioned yet.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/SecretEntry\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"secrets\"\n      ],\n      \"title\": \"VTA Context Secrets — response payload\",\n      \"type\": \"object\"\n    },\n    \"SecretEntry\": {\n      \"additionalProperties\": false,\n      \"description\": \"One private key, named by the verification method it backs.\",\n      \"properties\": {\n        \"keyId\": {\n          \"description\": \"The verification method this key backs, as an absolute DID URL under the response's `did` (`{did}#key-0`). It is the DID document — not the recipient's own storage — that decides this name, so a consumer installs the key under a `kid` that an inbound message's recipient field will actually match.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"keyType\": {\n          \"description\": \"What the key is for, and how to reconstruct it. `ed25519` signs, `x25519` is a key-agreement key and signs nothing, `p256` is an ECDSA key for ES256. Stated as well as encoded in `privateKeyMultibase` so a consumer can select a key by purpose without decoding every entry.\",\n          \"enum\": [\n            \"ed25519\",\n            \"x25519\",\n            \"p256\"\n          ],\n          \"type\": \"string\"\n        },\n        \"privateKeyMultibase\": {\n          \"description\": \"The private key, multibase-encoded (Base58BTC, `z` prefix) over its multicodec-prefixed bytes — `0x1300` Ed25519, `0x1302` X25519, `0x1306` P-256. The multicodec prefix, not this member's position in the array, is what identifies the key material.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"keyId\",\n        \"keyType\",\n        \"privateKeyMultibase\"\n      ],\n      \"title\": \"Secret entry\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The context's DID and the private key material behind it, sufficient to operate as that DID and nothing more. Failures use trust-task-error, not this shape. Type https://trusttasks.org/spec/vta/contexts/secrets/1.0#response.\",\"properties\":{\"did\":{\"description\":\"The DID the returned secrets belong to — the DID recorded on the named context. Every `keyId` below is a verification method of this DID, so a consumer can check the two agree before installing anything.\",\"minLength\":1,\"type\":\"string\"},\"secrets\":{\"description\":\"One entry per verification method of `did` whose secret the recipient holds and is willing to release. MAY be empty: a context whose DID has no releasable key material is not an error, and a consumer that treats an empty array as a failure will misreport a context that is merely not provisioned yet.\",\"items\":{\"$ref\":\"#/$defs/SecretEntry\"},\"type\":\"array\"}},\"required\":[\"did\",\"secrets\"],\"title\":\"VTA Context Secrets — response payload\",\"type\":\"object\"},\"SecretEntry\":{\"additionalProperties\":false,\"description\":\"One private key, named by the verification method it backs.\",\"properties\":{\"keyId\":{\"description\":\"The verification method this key backs, as an absolute DID URL under the response's `did` (`{did}#key-0`). It is the DID document — not the recipient's own storage — that decides this name, so a consumer installs the key under a `kid` that an inbound message's recipient field will actually match.\",\"minLength\":1,\"type\":\"string\"},\"keyType\":{\"description\":\"What the key is for, and how to reconstruct it. `ed25519` signs, `x25519` is a key-agreement key and signs nothing, `p256` is an ECDSA key for ES256. Stated as well as encoded in `privateKeyMultibase` so a consumer can select a key by purpose without decoding every entry.\",\"enum\":[\"ed25519\",\"x25519\",\"p256\"],\"type\":\"string\"},\"privateKeyMultibase\":{\"description\":\"The private key, multibase-encoded (Base58BTC, `z` prefix) over its multicodec-prefixed bytes — `0x1300` Ed25519, `0x1302` X25519, `0x1306` P-256. The multicodec prefix, not this member's position in the array, is what identifies the key material.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"keyId\",\"keyType\",\"privateKeyMultibase\"],\"title\":\"Secret entry\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

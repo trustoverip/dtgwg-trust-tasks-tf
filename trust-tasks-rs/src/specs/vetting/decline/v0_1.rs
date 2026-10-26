@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,49 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A vetter tells an applicant it will not issue a Vetting Statement for an accepted request. The reason code is optional: a vetter never has to justify declining. Sent to the applicant only — never to the community.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vetting/decline/0.1",
-///  "title": "Payload",
-///  "description": "A vetter tells an applicant it will not issue a Vetting Statement for an accepted request. The reason code is optional: a vetter never has to justify declining. Sent to the applicant only — never to the community.",
-///  "type": "object",
-///  "required": [
-///    "requestId"
-///  ],
-///  "properties": {
-///    "code": {
-///      "description": "OPTIONAL. `couldNotVerify` — the vetter could not establish the claimed identity. `documentMismatch` — the documentation did not match the card or the person. `livenessFailed` — the match code could not be confirmed with the person. `notComfortable` — the vetter prefers not to attest. `other` — none of these.",
-///      "type": "string",
-///      "enum": [
-///        "couldNotVerify",
-///        "documentMismatch",
-///        "livenessFailed",
-///        "notComfortable",
-///        "other"
-///      ]
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "message": {
-///      "description": "OPTIONAL vetter-authored text for the applicant. Attributed to the vetter on every surface that renders it; read by the applicant only.",
-///      "type": "string",
-///      "maxLength": 500,
-///      "minLength": 1
-///    },
-///    "requestId": {
-///      "description": "The `requestId` from the vetter's acceptance of the applicant's vetting request.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -208,22 +141,6 @@ impl Payload {
 }
 ///OPTIONAL. `couldNotVerify` — the vetter could not establish the claimed identity. `documentMismatch` — the documentation did not match the card or the person. `livenessFailed` — the match code could not be confirmed with the person. `notComfortable` — the vetter prefers not to attest. `other` — none of these.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "OPTIONAL. `couldNotVerify` — the vetter could not establish the claimed identity. `documentMismatch` — the documentation did not match the card or the person. `livenessFailed` — the match code could not be confirmed with the person. `notComfortable` — the vetter prefers not to attest. `other` — none of these.",
-///  "type": "string",
-///  "enum": [
-///    "couldNotVerify",
-///    "documentMismatch",
-///    "livenessFailed",
-///    "notComfortable",
-///    "other"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -297,17 +214,6 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadCode {
 }
 ///OPTIONAL vetter-authored text for the applicant. Attributed to the vetter on every surface that renders it; read by the applicant only.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "OPTIONAL vetter-authored text for the applicant. Attributed to the vetter on every surface that renders it; read by the applicant only.",
-///  "type": "string",
-///  "maxLength": 500,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadMessage(::std::string::String);
@@ -370,17 +276,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadMessage {
 }
 ///The `requestId` from the vetter's acceptance of the applicant's vetting request.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The `requestId` from the vetter's acceptance of the applicant's vetting request.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadRequestId(::std::string::String);
@@ -534,7 +429,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vetting/decline/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A vetter tells an applicant it will not issue a Vetting Statement for an accepted request. The reason code is optional: a vetter never has to justify declining. Sent to the applicant only — never to the community.\",\n  \"properties\": {\n    \"code\": {\n      \"description\": \"OPTIONAL. `couldNotVerify` — the vetter could not establish the claimed identity. `documentMismatch` — the documentation did not match the card or the person. `livenessFailed` — the match code could not be confirmed with the person. `notComfortable` — the vetter prefers not to attest. `other` — none of these.\",\n      \"enum\": [\n        \"couldNotVerify\",\n        \"documentMismatch\",\n        \"livenessFailed\",\n        \"notComfortable\",\n        \"other\"\n      ],\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"message\": {\n      \"description\": \"OPTIONAL vetter-authored text for the applicant. Attributed to the vetter on every surface that renders it; read by the applicant only.\",\n      \"maxLength\": 500,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"requestId\": {\n      \"description\": \"The `requestId` from the vetter's acceptance of the applicant's vetting request.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"requestId\"\n  ],\n  \"title\": \"Vetting Decline — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vetting/decline/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A vetter tells an applicant it will not issue a Vetting Statement for an accepted request. The reason code is optional: a vetter never has to justify declining. Sent to the applicant only — never to the community.\",\"properties\":{\"code\":{\"description\":\"OPTIONAL. `couldNotVerify` — the vetter could not establish the claimed identity. `documentMismatch` — the documentation did not match the card or the person. `livenessFailed` — the match code could not be confirmed with the person. `notComfortable` — the vetter prefers not to attest. `other` — none of these.\",\"enum\":[\"couldNotVerify\",\"documentMismatch\",\"livenessFailed\",\"notComfortable\",\"other\"],\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"message\":{\"description\":\"OPTIONAL vetter-authored text for the applicant. Attributed to the vetter on every surface that renders it; read by the applicant only.\",\"maxLength\":500,\"minLength\":1,\"type\":\"string\"},\"requestId\":{\"description\":\"The `requestId` from the vetter's acceptance of the applicant's vetting request.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"requestId\"],\"title\":\"Vetting Decline — payload\",\"type\":\"object\"}\n",
     );
 }
 /// The earlier `MAJOR.MINOR` of this slug that this version declares it

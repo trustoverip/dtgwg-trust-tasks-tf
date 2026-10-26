@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,40 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///An invited party asks the agent that will hold its room keys for the MLS KeyPackage the room's owner adds to the group: the one it already holds for this room, member and invitation, or a new one. The private half stays with the agent; only the KeyPackage travels.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/rooms/keys/key-package/0.2",
-///  "title": "Payload",
-///  "description": "An invited party asks the agent that will hold its room keys for the MLS KeyPackage the room's owner adds to the group: the one it already holds for this room, member and invitation, or a new one. The private half stays with the agent; only the KeyPackage travels.",
-///  "type": "object",
-///  "required": [
-///    "invitation",
-///    "roomId"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "invitation": {
-///      "description": "The invitation credential (VIC) the room issued to the member, serialized per the governing profile. It authorizes the mint, names the member — its subject — and, with the room and the member, identifies the KeyPackage the recipient returns again while it is outstanding.",
-///      "type": "string",
-///      "maxLength": 65536,
-///      "minLength": 1
-///    },
-///    "roomId": {
-///      "description": "The room to mint a KeyPackage for. Scoped per room rather than reused across rooms: one KeyPackage presented to two rooms correlates a member across them, which is the linkage a `private` room exists to deny.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -196,17 +138,6 @@ impl Payload {
 }
 ///The invitation credential (VIC) the room issued to the member, serialized per the governing profile. It authorizes the mint, names the member — its subject — and, with the room and the member, identifies the KeyPackage the recipient returns again while it is outstanding.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The invitation credential (VIC) the room issued to the member, serialized per the governing profile. It authorizes the mint, names the member — its subject — and, with the room and the member, identifies the KeyPackage the recipient returns again while it is outstanding.",
-///  "type": "string",
-///  "maxLength": 65536,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadInvitation(::std::string::String);
@@ -269,17 +200,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadInvitation {
 }
 ///The room to mint a KeyPackage for. Scoped per room rather than reused across rooms: one KeyPackage presented to two rooms correlates a member across them, which is the linkage a `private` room exists to deny.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The room to mint a KeyPackage for. Scoped per room rather than reused across rooms: one KeyPackage presented to two rooms correlates a member across them, which is the linkage a `private` room exists to deny.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadRoomId(::std::string::String);
@@ -342,42 +262,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRoomId {
 }
 ///Success response to rooms/keys/key-package. Type https://trusttasks.org/spec/rooms/keys/key-package/0.2#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to rooms/keys/key-package. Type https://trusttasks.org/spec/rooms/keys/key-package/0.2#response.",
-///  "type": "object",
-///  "required": [
-///    "alreadyMinted",
-///    "expiresAt",
-///    "keyPackage"
-///  ],
-///  "properties": {
-///    "alreadyMinted": {
-///      "description": "`true` when the recipient returned a KeyPackage it had already minted for this room, member and invitation and still holds; `false` when it minted this one for this request.",
-///      "type": "boolean"
-///    },
-///    "expiresAt": {
-///      "description": "When the recipient stops holding the KeyPackage's private half. The same instant on every answer that returns the same KeyPackage: returning it again does not extend it.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "keyPackage": {
-///      "description": "The MLS KeyPackage, base64url. Public: it carries a signature key, an HPKE init key and the leaf's credential, and nothing that opens anything.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -401,16 +285,6 @@ impl Response {
 }
 ///The MLS KeyPackage, base64url. Public: it carries a signature key, an HPKE init key and the leaf's credential, and nothing that opens anything.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The MLS KeyPackage, base64url. Public: it carries a signature key, an HPKE init key and the leaf's credential, and nothing that opens anything.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseKeyPackage(::std::string::String);
@@ -624,7 +498,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/keys/key-package. Type https://trusttasks.org/spec/rooms/keys/key-package/0.2#response.\",\n      \"properties\": {\n        \"alreadyMinted\": {\n          \"description\": \"`true` when the recipient returned a KeyPackage it had already minted for this room, member and invitation and still holds; `false` when it minted this one for this request.\",\n          \"type\": \"boolean\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When the recipient stops holding the KeyPackage's private half. The same instant on every answer that returns the same KeyPackage: returning it again does not extend it.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"keyPackage\": {\n          \"description\": \"The MLS KeyPackage, base64url. Public: it carries a signature key, an HPKE init key and the leaf's credential, and nothing that opens anything.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"keyPackage\",\n        \"expiresAt\",\n        \"alreadyMinted\"\n      ],\n      \"title\": \"Rooms Keys Key-Package — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/rooms/keys/key-package/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"An invited party asks the agent that will hold its room keys for the MLS KeyPackage the room's owner adds to the group: the one it already holds for this room, member and invitation, or a new one. The private half stays with the agent; only the KeyPackage travels.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"invitation\": {\n      \"description\": \"The invitation credential (VIC) the room issued to the member, serialized per the governing profile. It authorizes the mint, names the member — its subject — and, with the room and the member, identifies the KeyPackage the recipient returns again while it is outstanding.\",\n      \"maxLength\": 65536,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"roomId\": {\n      \"description\": \"The room to mint a KeyPackage for. Scoped per room rather than reused across rooms: one KeyPackage presented to two rooms correlates a member across them, which is the linkage a `private` room exists to deny.\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"roomId\",\n    \"invitation\"\n  ],\n  \"title\": \"Rooms Keys Key-Package — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to rooms/keys/key-package. Type https://trusttasks.org/spec/rooms/keys/key-package/0.2#response.\",\"properties\":{\"alreadyMinted\":{\"description\":\"`true` when the recipient returned a KeyPackage it had already minted for this room, member and invitation and still holds; `false` when it minted this one for this request.\",\"type\":\"boolean\"},\"expiresAt\":{\"description\":\"When the recipient stops holding the KeyPackage's private half. The same instant on every answer that returns the same KeyPackage: returning it again does not extend it.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keyPackage\":{\"description\":\"The MLS KeyPackage, base64url. Public: it carries a signature key, an HPKE init key and the leaf's credential, and nothing that opens anything.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"keyPackage\",\"expiresAt\",\"alreadyMinted\"],\"title\":\"Rooms Keys Key-Package — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/rooms/keys/key-package/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"An invited party asks the agent that will hold its room keys for the MLS KeyPackage the room's owner adds to the group: the one it already holds for this room, member and invitation, or a new one. The private half stays with the agent; only the KeyPackage travels.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"invitation\":{\"description\":\"The invitation credential (VIC) the room issued to the member, serialized per the governing profile. It authorizes the mint, names the member — its subject — and, with the room and the member, identifies the KeyPackage the recipient returns again while it is outstanding.\",\"maxLength\":65536,\"minLength\":1,\"type\":\"string\"},\"roomId\":{\"description\":\"The room to mint a KeyPackage for. Scoped per room rather than reused across rooms: one KeyPackage presented to two rooms correlates a member across them, which is the linkage a `private` room exists to deny.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"roomId\",\"invitation\"],\"title\":\"Rooms Keys Key-Package — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -634,7 +508,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/keys/key-package. Type https://trusttasks.org/spec/rooms/keys/key-package/0.2#response.\",\n      \"properties\": {\n        \"alreadyMinted\": {\n          \"description\": \"`true` when the recipient returned a KeyPackage it had already minted for this room, member and invitation and still holds; `false` when it minted this one for this request.\",\n          \"type\": \"boolean\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When the recipient stops holding the KeyPackage's private half. The same instant on every answer that returns the same KeyPackage: returning it again does not extend it.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"keyPackage\": {\n          \"description\": \"The MLS KeyPackage, base64url. Public: it carries a signature key, an HPKE init key and the leaf's credential, and nothing that opens anything.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"keyPackage\",\n        \"expiresAt\",\n        \"alreadyMinted\"\n      ],\n      \"title\": \"Rooms Keys Key-Package — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to rooms/keys/key-package. Type https://trusttasks.org/spec/rooms/keys/key-package/0.2#response.\",\"properties\":{\"alreadyMinted\":{\"description\":\"`true` when the recipient returned a KeyPackage it had already minted for this room, member and invitation and still holds; `false` when it minted this one for this request.\",\"type\":\"boolean\"},\"expiresAt\":{\"description\":\"When the recipient stops holding the KeyPackage's private half. The same instant on every answer that returns the same KeyPackage: returning it again does not extend it.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keyPackage\":{\"description\":\"The MLS KeyPackage, base64url. Public: it carries a signature key, an HPKE init key and the leaf's credential, and nothing that opens anything.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"keyPackage\",\"expiresAt\",\"alreadyMinted\"],\"title\":\"Rooms Keys Key-Package — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

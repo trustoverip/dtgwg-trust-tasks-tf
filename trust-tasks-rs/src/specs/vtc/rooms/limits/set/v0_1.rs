@@ -34,39 +34,6 @@ pub mod error {
 }
 ///The limits a room is enforced against now, with where each scope's came from.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "EffectiveLimits",
-///  "description": "The limits a room is enforced against now, with where each scope's came from.",
-///  "type": "object",
-///  "required": [
-///    "limits",
-///    "memberSource",
-///    "roomSource"
-///  ],
-///  "properties": {
-///    "hostCeilingBytes": {
-///      "description": "The host-wide largest-file ceiling, which no room or member limit can exceed.",
-///      "type": "integer",
-///      "maximum": 1073741824.0,
-///      "minimum": 0.0
-///    },
-///    "limits": {
-///      "$ref": "#/definitions/RoomLimits"
-///    },
-///    "memberSource": {
-///      "$ref": "#/definitions/LimitSource"
-///    },
-///    "roomSource": {
-///      "$ref": "#/definitions/LimitSource"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -91,21 +58,6 @@ impl EffectiveLimits {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -127,15 +79,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -199,21 +142,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Where an effective limit came from. `policy`: the community's rooms policy at the room's creation. `override`: an administrator's vtc/rooms/limits/set. `default`: the community's configured defaults, where neither applies. The host-wide ceiling bounds all three.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "LimitSource",
-///  "description": "Where an effective limit came from. `policy`: the community's rooms policy at the room's creation. `override`: an administrator's vtc/rooms/limits/set. `default`: the community's configured defaults, where neither applies. The host-wide ceiling bounds all three.",
-///  "type": "string",
-///  "enum": [
-///    "policy",
-///    "override",
-///    "default"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -279,36 +207,6 @@ impl ::std::convert::TryFrom<::std::string::String> for LimitSource {
 }
 ///Which limits an override applies to. `room`: the room as a whole. `memberDefault`: every member of the room who has no override of their own. `member`: one named member — `member` is REQUIRED with this kind and forbidden with the others, a rule this schema does not express; a community refuses a violation with `malformedRequest`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "LimitTarget",
-///  "description": "Which limits an override applies to. `room`: the room as a whole. `memberDefault`: every member of the room who has no override of their own. `member`: one named member — `member` is REQUIRED with this kind and forbidden with the others, a rule this schema does not express; a community refuses a violation with `malformedRequest`.",
-///  "type": "object",
-///  "required": [
-///    "kind"
-///  ],
-///  "properties": {
-///    "kind": {
-///      "type": "string",
-///      "enum": [
-///        "room",
-///        "memberDefault",
-///        "member"
-///      ]
-///    },
-///    "member": {
-///      "description": "The member's DID: the subject at the root of the authority chains they present, which is what their uploads are charged to.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -325,19 +223,6 @@ impl LimitTarget {
 }
 ///`LimitTargetKind`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "enum": [
-///    "room",
-///    "memberDefault",
-///    "member"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -403,17 +288,6 @@ impl ::std::convert::TryFrom<::std::string::String> for LimitTargetKind {
 }
 ///The member's DID: the subject at the root of the authority chains they present, which is what their uploads are charged to.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The member's DID: the subject at the root of the authority chains they present, which is what their uploads are charged to.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct LimitTargetMember(::std::string::String);
@@ -478,55 +352,6 @@ impl<'de> ::serde::Deserialize<'de> for LimitTargetMember {
 }
 ///Override, or clear an override of, the limits one hosted room is enforced against: for the room, its members by default, or one member. The outer document members are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/rooms/limits/set/0.1",
-///  "title": "Payload",
-///  "description": "Override, or clear an override of, the limits one hosted room is enforced against: for the room, its members by default, or one member. The outer document members are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "reason",
-///    "roomId",
-///    "target"
-///  ],
-///  "properties": {
-///    "clear": {
-///      "description": "`true` removes the target's override, so the policy's or the community's default applies again. Exclusive with `limits`.",
-///      "type": "boolean"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "filesEnabled": {
-///      "description": "With a `room` target only: `false` refuses every new upload to the room; reads continue.",
-///      "type": "boolean"
-///    },
-///    "limits": {
-///      "description": "The override, replacing any previous one at this target wholesale.",
-///      "$ref": "#/definitions/ScopeLimits"
-///    },
-///    "reason": {
-///      "description": "Why the administrator is making this change. Recorded with the change in the audit trail and shown to approvers. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.",
-///      "type": "string",
-///      "maxLength": 500,
-///      "minLength": 1
-///    },
-///    "roomId": {
-///      "description": "The room's identifier, as its owner minted it.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    },
-///    "target": {
-///      "$ref": "#/definitions/LimitTarget"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -560,17 +385,6 @@ impl Payload {
 }
 ///Why the administrator is making this change. Recorded with the change in the audit trail and shown to approvers. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Why the administrator is making this change. Recorded with the change in the audit trail and shown to approvers. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.",
-///  "type": "string",
-///  "maxLength": 500,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadReason(::std::string::String);
@@ -633,17 +447,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 }
 ///The room's identifier, as its owner minted it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The room's identifier, as its owner minted it.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadRoomId(::std::string::String);
@@ -706,53 +509,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRoomId {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "limits",
-///    "overLimit",
-///    "roomId",
-///    "target",
-///    "usage"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "limits": {
-///      "$ref": "#/definitions/EffectiveLimits"
-///    },
-///    "overLimit": {
-///      "description": "True when `usage` already exceeds the new limits. New uploads at this scope are refused until it does not; nothing is deleted.",
-///      "type": "boolean"
-///    },
-///    "roomId": {
-///      "description": "The room's identifier, as its owner minted it.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    },
-///    "target": {
-///      "$ref": "#/definitions/LimitTarget"
-///    },
-///    "targetLimits": {
-///      "description": "With a `member` target: that member's effective limits after the change, override or not.",
-///      "$ref": "#/definitions/ScopeLimits"
-///    },
-///    "usage": {
-///      "description": "Current usage at the target scope: the room's for `room`, the named member's for `member`. For `memberDefault`, the room's.",
-///      "$ref": "#/definitions/Usage"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -784,17 +540,6 @@ impl Response {
 }
 ///The room's identifier, as its owner minted it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The room's identifier, as its owner minted it.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseRoomId(::std::string::String);
@@ -857,34 +602,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseRoomId {
 }
 ///How much a host is willing to store for one room, at the room and per member. A hosting decision, set by the host and never by anything in the room's credentials. An upload must fit every scope at once: the object against the smallest `maxFileBytes` that applies, and the member and the room with the file added.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RoomLimits",
-///  "description": "How much a host is willing to store for one room, at the room and per member. A hosting decision, set by the host and never by anything in the room's credentials. An upload must fit every scope at once: the object against the smallest `maxFileBytes` that applies, and the member and the room with the file added.",
-///  "type": "object",
-///  "required": [
-///    "filesEnabled"
-///  ],
-///  "properties": {
-///    "filesEnabled": {
-///      "description": "False refuses every rooms/blobs/* upload for the room. Reads of blobs already stored continue.",
-///      "type": "boolean"
-///    },
-///    "member": {
-///      "description": "Limits on each member's own uploads in this room, unless that member has an override. A member is the subject at the root of the authority chain they present, never the key that signed, so an agent acting on an attenuated chain spends its member's allowance. Not applied on a `private` room, where the host cannot tell members apart; the room and object limits still hold there.",
-///      "$ref": "#/definitions/ScopeLimits"
-///    },
-///    "room": {
-///      "description": "Limits on the room as a whole.",
-///      "$ref": "#/definitions/ScopeLimits"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -906,35 +623,6 @@ impl RoomLimits {
 }
 ///Limits at one scope. Every member is optional: an absent member means the scope sets no limit of that kind, and the next wider scope's limit, or the host's ceiling, governs. All sizes are ciphertext bytes.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ScopeLimits",
-///  "description": "Limits at one scope. Every member is optional: an absent member means the scope sets no limit of that kind, and the next wider scope's limit, or the host's ceiling, governs. All sizes are ciphertext bytes.",
-///  "type": "object",
-///  "properties": {
-///    "maxBytes": {
-///      "description": "The total size of the committed and reserved blobs the scope may hold.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "maxFileBytes": {
-///      "description": "The largest single blob the scope accepts. Never above 1 GiB, the transfer ceiling (BlobManifest).",
-///      "type": "integer",
-///      "maximum": 1073741824.0,
-///      "minimum": 0.0
-///    },
-///    "maxFiles": {
-///      "description": "The number of committed blobs the scope may hold. 0 refuses every upload at this scope.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -977,44 +665,6 @@ impl ScopeLimits {
 }
 ///What one scope holds now. Ciphertext bytes throughout.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Usage",
-///  "description": "What one scope holds now. Ciphertext bytes throughout.",
-///  "type": "object",
-///  "required": [
-///    "bytes",
-///    "files",
-///    "reservedBytes"
-///  ],
-///  "properties": {
-///    "bytes": {
-///      "description": "Their total size. A blob stops counting the moment it is orphaned (its last record dropped it or was retracted), not when the host finally deletes it, so a member who deletes a file has the room back at once.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "files": {
-///      "description": "Committed blobs that are not orphaned.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "reservedBytes": {
-///      "description": "Bytes reserved by uploads begun and not yet committed, aborted or expired. Counted against `maxBytes`, so two concurrent uploads cannot both fit under a limit only one of them fits.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "reservedFiles": {
-///      "description": "Uploads begun and not yet committed, aborted or expired. Counted against `maxFiles`.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1652,7 +1302,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"EffectiveLimits\": {\n      \"additionalProperties\": false,\n      \"description\": \"The limits a room is enforced against now, with where each scope's came from.\",\n      \"properties\": {\n        \"hostCeilingBytes\": {\n          \"description\": \"The host-wide largest-file ceiling, which no room or member limit can exceed.\",\n          \"maximum\": 1073741824,\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"limits\": {\n          \"$ref\": \"#/$defs/RoomLimits\"\n        },\n        \"memberSource\": {\n          \"$ref\": \"#/$defs/LimitSource\"\n        },\n        \"roomSource\": {\n          \"$ref\": \"#/$defs/LimitSource\"\n        }\n      },\n      \"required\": [\n        \"limits\",\n        \"roomSource\",\n        \"memberSource\"\n      ],\n      \"title\": \"EffectiveLimits\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"LimitSource\": {\n      \"description\": \"Where an effective limit came from. `policy`: the community's rooms policy at the room's creation. `override`: an administrator's vtc/rooms/limits/set. `default`: the community's configured defaults, where neither applies. The host-wide ceiling bounds all three.\",\n      \"enum\": [\n        \"policy\",\n        \"override\",\n        \"default\"\n      ],\n      \"title\": \"LimitSource\",\n      \"type\": \"string\"\n    },\n    \"LimitTarget\": {\n      \"additionalProperties\": false,\n      \"description\": \"Which limits an override applies to. `room`: the room as a whole. `memberDefault`: every member of the room who has no override of their own. `member`: one named member — `member` is REQUIRED with this kind and forbidden with the others, a rule this schema does not express; a community refuses a violation with `malformedRequest`.\",\n      \"properties\": {\n        \"kind\": {\n          \"enum\": [\n            \"room\",\n            \"memberDefault\",\n            \"member\"\n          ],\n          \"type\": \"string\"\n        },\n        \"member\": {\n          \"description\": \"The member's DID: the subject at the root of the authority chains they present, which is what their uploads are charged to.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\"\n      ],\n      \"title\": \"LimitTarget\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"limits\": {\n          \"$ref\": \"#/$defs/EffectiveLimits\"\n        },\n        \"overLimit\": {\n          \"description\": \"True when `usage` already exceeds the new limits. New uploads at this scope are refused until it does not; nothing is deleted.\",\n          \"type\": \"boolean\"\n        },\n        \"roomId\": {\n          \"description\": \"The room's identifier, as its owner minted it.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"target\": {\n          \"$ref\": \"#/$defs/LimitTarget\"\n        },\n        \"targetLimits\": {\n          \"$ref\": \"#/$defs/ScopeLimits\",\n          \"description\": \"With a `member` target: that member's effective limits after the change, override or not.\"\n        },\n        \"usage\": {\n          \"$ref\": \"#/$defs/Usage\",\n          \"description\": \"Current usage at the target scope: the room's for `room`, the named member's for `member`. For `memberDefault`, the room's.\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"target\",\n        \"limits\",\n        \"usage\",\n        \"overLimit\"\n      ],\n      \"title\": \"VTC Rooms — Limits — Set — response payload\",\n      \"type\": \"object\"\n    },\n    \"RoomLimits\": {\n      \"additionalProperties\": false,\n      \"description\": \"How much a host is willing to store for one room, at the room and per member. A hosting decision, set by the host and never by anything in the room's credentials. An upload must fit every scope at once: the object against the smallest `maxFileBytes` that applies, and the member and the room with the file added.\",\n      \"properties\": {\n        \"filesEnabled\": {\n          \"description\": \"False refuses every rooms/blobs/* upload for the room. Reads of blobs already stored continue.\",\n          \"type\": \"boolean\"\n        },\n        \"member\": {\n          \"$ref\": \"#/$defs/ScopeLimits\",\n          \"description\": \"Limits on each member's own uploads in this room, unless that member has an override. A member is the subject at the root of the authority chain they present, never the key that signed, so an agent acting on an attenuated chain spends its member's allowance. Not applied on a `private` room, where the host cannot tell members apart; the room and object limits still hold there.\"\n        },\n        \"room\": {\n          \"$ref\": \"#/$defs/ScopeLimits\",\n          \"description\": \"Limits on the room as a whole.\"\n        }\n      },\n      \"required\": [\n        \"filesEnabled\"\n      ],\n      \"title\": \"RoomLimits\",\n      \"type\": \"object\"\n    },\n    \"ScopeLimits\": {\n      \"additionalProperties\": false,\n      \"description\": \"Limits at one scope. Every member is optional: an absent member means the scope sets no limit of that kind, and the next wider scope's limit, or the host's ceiling, governs. All sizes are ciphertext bytes.\",\n      \"properties\": {\n        \"maxBytes\": {\n          \"description\": \"The total size of the committed and reserved blobs the scope may hold.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"maxFileBytes\": {\n          \"description\": \"The largest single blob the scope accepts. Never above 1 GiB, the transfer ceiling (BlobManifest).\",\n          \"maximum\": 1073741824,\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"maxFiles\": {\n          \"description\": \"The number of committed blobs the scope may hold. 0 refuses every upload at this scope.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"title\": \"ScopeLimits\",\n      \"type\": \"object\"\n    },\n    \"Usage\": {\n      \"additionalProperties\": false,\n      \"description\": \"What one scope holds now. Ciphertext bytes throughout.\",\n      \"properties\": {\n        \"bytes\": {\n          \"description\": \"Their total size. A blob stops counting the moment it is orphaned (its last record dropped it or was retracted), not when the host finally deletes it, so a member who deletes a file has the room back at once.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"files\": {\n          \"description\": \"Committed blobs that are not orphaned.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"reservedBytes\": {\n          \"description\": \"Bytes reserved by uploads begun and not yet committed, aborted or expired. Counted against `maxBytes`, so two concurrent uploads cannot both fit under a limit only one of them fits.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"reservedFiles\": {\n          \"description\": \"Uploads begun and not yet committed, aborted or expired. Counted against `maxFiles`.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"files\",\n        \"bytes\",\n        \"reservedBytes\"\n      ],\n      \"title\": \"Usage\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/rooms/limits/set/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Override, or clear an override of, the limits one hosted room is enforced against: for the room, its members by default, or one member. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"clear\": {\n      \"description\": \"`true` removes the target's override, so the policy's or the community's default applies again. Exclusive with `limits`.\",\n      \"type\": \"boolean\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"filesEnabled\": {\n      \"description\": \"With a `room` target only: `false` refuses every new upload to the room; reads continue.\",\n      \"type\": \"boolean\"\n    },\n    \"limits\": {\n      \"$ref\": \"#/$defs/ScopeLimits\",\n      \"description\": \"The override, replacing any previous one at this target wholesale.\"\n    },\n    \"reason\": {\n      \"description\": \"Why the administrator is making this change. Recorded with the change in the audit trail and shown to approvers. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.\",\n      \"maxLength\": 500,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"roomId\": {\n      \"description\": \"The room's identifier, as its owner minted it.\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"target\": {\n      \"$ref\": \"#/$defs/LimitTarget\"\n    }\n  },\n  \"required\": [\n    \"roomId\",\n    \"target\",\n    \"reason\"\n  ],\n  \"title\": \"VTC Rooms — Limits — Set — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"EffectiveLimits\":{\"additionalProperties\":false,\"description\":\"The limits a room is enforced against now, with where each scope's came from.\",\"properties\":{\"hostCeilingBytes\":{\"description\":\"The host-wide largest-file ceiling, which no room or member limit can exceed.\",\"maximum\":1073741824,\"minimum\":0,\"type\":\"integer\"},\"limits\":{\"$ref\":\"#/$defs/RoomLimits\"},\"memberSource\":{\"$ref\":\"#/$defs/LimitSource\"},\"roomSource\":{\"$ref\":\"#/$defs/LimitSource\"}},\"required\":[\"limits\",\"roomSource\",\"memberSource\"],\"title\":\"EffectiveLimits\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"LimitSource\":{\"description\":\"Where an effective limit came from. `policy`: the community's rooms policy at the room's creation. `override`: an administrator's vtc/rooms/limits/set. `default`: the community's configured defaults, where neither applies. The host-wide ceiling bounds all three.\",\"enum\":[\"policy\",\"override\",\"default\"],\"title\":\"LimitSource\",\"type\":\"string\"},\"LimitTarget\":{\"additionalProperties\":false,\"description\":\"Which limits an override applies to. `room`: the room as a whole. `memberDefault`: every member of the room who has no override of their own. `member`: one named member — `member` is REQUIRED with this kind and forbidden with the others, a rule this schema does not express; a community refuses a violation with `malformedRequest`.\",\"properties\":{\"kind\":{\"enum\":[\"room\",\"memberDefault\",\"member\"],\"type\":\"string\"},\"member\":{\"description\":\"The member's DID: the subject at the root of the authority chains they present, which is what their uploads are charged to.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"kind\"],\"title\":\"LimitTarget\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"limits\":{\"$ref\":\"#/$defs/EffectiveLimits\"},\"overLimit\":{\"description\":\"True when `usage` already exceeds the new limits. New uploads at this scope are refused until it does not; nothing is deleted.\",\"type\":\"boolean\"},\"roomId\":{\"description\":\"The room's identifier, as its owner minted it.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"target\":{\"$ref\":\"#/$defs/LimitTarget\"},\"targetLimits\":{\"$ref\":\"#/$defs/ScopeLimits\",\"description\":\"With a `member` target: that member's effective limits after the change, override or not.\"},\"usage\":{\"$ref\":\"#/$defs/Usage\",\"description\":\"Current usage at the target scope: the room's for `room`, the named member's for `member`. For `memberDefault`, the room's.\"}},\"required\":[\"roomId\",\"target\",\"limits\",\"usage\",\"overLimit\"],\"title\":\"VTC Rooms — Limits — Set — response payload\",\"type\":\"object\"},\"RoomLimits\":{\"additionalProperties\":false,\"description\":\"How much a host is willing to store for one room, at the room and per member. A hosting decision, set by the host and never by anything in the room's credentials. An upload must fit every scope at once: the object against the smallest `maxFileBytes` that applies, and the member and the room with the file added.\",\"properties\":{\"filesEnabled\":{\"description\":\"False refuses every rooms/blobs/* upload for the room. Reads of blobs already stored continue.\",\"type\":\"boolean\"},\"member\":{\"$ref\":\"#/$defs/ScopeLimits\",\"description\":\"Limits on each member's own uploads in this room, unless that member has an override. A member is the subject at the root of the authority chain they present, never the key that signed, so an agent acting on an attenuated chain spends its member's allowance. Not applied on a `private` room, where the host cannot tell members apart; the room and object limits still hold there.\"},\"room\":{\"$ref\":\"#/$defs/ScopeLimits\",\"description\":\"Limits on the room as a whole.\"}},\"required\":[\"filesEnabled\"],\"title\":\"RoomLimits\",\"type\":\"object\"},\"ScopeLimits\":{\"additionalProperties\":false,\"description\":\"Limits at one scope. Every member is optional: an absent member means the scope sets no limit of that kind, and the next wider scope's limit, or the host's ceiling, governs. All sizes are ciphertext bytes.\",\"properties\":{\"maxBytes\":{\"description\":\"The total size of the committed and reserved blobs the scope may hold.\",\"minimum\":0,\"type\":\"integer\"},\"maxFileBytes\":{\"description\":\"The largest single blob the scope accepts. Never above 1 GiB, the transfer ceiling (BlobManifest).\",\"maximum\":1073741824,\"minimum\":0,\"type\":\"integer\"},\"maxFiles\":{\"description\":\"The number of committed blobs the scope may hold. 0 refuses every upload at this scope.\",\"minimum\":0,\"type\":\"integer\"}},\"title\":\"ScopeLimits\",\"type\":\"object\"},\"Usage\":{\"additionalProperties\":false,\"description\":\"What one scope holds now. Ciphertext bytes throughout.\",\"properties\":{\"bytes\":{\"description\":\"Their total size. A blob stops counting the moment it is orphaned (its last record dropped it or was retracted), not when the host finally deletes it, so a member who deletes a file has the room back at once.\",\"minimum\":0,\"type\":\"integer\"},\"files\":{\"description\":\"Committed blobs that are not orphaned.\",\"minimum\":0,\"type\":\"integer\"},\"reservedBytes\":{\"description\":\"Bytes reserved by uploads begun and not yet committed, aborted or expired. Counted against `maxBytes`, so two concurrent uploads cannot both fit under a limit only one of them fits.\",\"minimum\":0,\"type\":\"integer\"},\"reservedFiles\":{\"description\":\"Uploads begun and not yet committed, aborted or expired. Counted against `maxFiles`.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"files\",\"bytes\",\"reservedBytes\"],\"title\":\"Usage\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/rooms/limits/set/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Override, or clear an override of, the limits one hosted room is enforced against: for the room, its members by default, or one member. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"clear\":{\"description\":\"`true` removes the target's override, so the policy's or the community's default applies again. Exclusive with `limits`.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"filesEnabled\":{\"description\":\"With a `room` target only: `false` refuses every new upload to the room; reads continue.\",\"type\":\"boolean\"},\"limits\":{\"$ref\":\"#/$defs/ScopeLimits\",\"description\":\"The override, replacing any previous one at this target wholesale.\"},\"reason\":{\"description\":\"Why the administrator is making this change. Recorded with the change in the audit trail and shown to approvers. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.\",\"maxLength\":500,\"minLength\":1,\"type\":\"string\"},\"roomId\":{\"description\":\"The room's identifier, as its owner minted it.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"target\":{\"$ref\":\"#/$defs/LimitTarget\"}},\"required\":[\"roomId\",\"target\",\"reason\"],\"title\":\"VTC Rooms — Limits — Set — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1661,7 +1311,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"EffectiveLimits\": {\n      \"additionalProperties\": false,\n      \"description\": \"The limits a room is enforced against now, with where each scope's came from.\",\n      \"properties\": {\n        \"hostCeilingBytes\": {\n          \"description\": \"The host-wide largest-file ceiling, which no room or member limit can exceed.\",\n          \"maximum\": 1073741824,\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"limits\": {\n          \"$ref\": \"#/$defs/RoomLimits\"\n        },\n        \"memberSource\": {\n          \"$ref\": \"#/$defs/LimitSource\"\n        },\n        \"roomSource\": {\n          \"$ref\": \"#/$defs/LimitSource\"\n        }\n      },\n      \"required\": [\n        \"limits\",\n        \"roomSource\",\n        \"memberSource\"\n      ],\n      \"title\": \"EffectiveLimits\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"LimitSource\": {\n      \"description\": \"Where an effective limit came from. `policy`: the community's rooms policy at the room's creation. `override`: an administrator's vtc/rooms/limits/set. `default`: the community's configured defaults, where neither applies. The host-wide ceiling bounds all three.\",\n      \"enum\": [\n        \"policy\",\n        \"override\",\n        \"default\"\n      ],\n      \"title\": \"LimitSource\",\n      \"type\": \"string\"\n    },\n    \"LimitTarget\": {\n      \"additionalProperties\": false,\n      \"description\": \"Which limits an override applies to. `room`: the room as a whole. `memberDefault`: every member of the room who has no override of their own. `member`: one named member — `member` is REQUIRED with this kind and forbidden with the others, a rule this schema does not express; a community refuses a violation with `malformedRequest`.\",\n      \"properties\": {\n        \"kind\": {\n          \"enum\": [\n            \"room\",\n            \"memberDefault\",\n            \"member\"\n          ],\n          \"type\": \"string\"\n        },\n        \"member\": {\n          \"description\": \"The member's DID: the subject at the root of the authority chains they present, which is what their uploads are charged to.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\"\n      ],\n      \"title\": \"LimitTarget\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"limits\": {\n          \"$ref\": \"#/$defs/EffectiveLimits\"\n        },\n        \"overLimit\": {\n          \"description\": \"True when `usage` already exceeds the new limits. New uploads at this scope are refused until it does not; nothing is deleted.\",\n          \"type\": \"boolean\"\n        },\n        \"roomId\": {\n          \"description\": \"The room's identifier, as its owner minted it.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"target\": {\n          \"$ref\": \"#/$defs/LimitTarget\"\n        },\n        \"targetLimits\": {\n          \"$ref\": \"#/$defs/ScopeLimits\",\n          \"description\": \"With a `member` target: that member's effective limits after the change, override or not.\"\n        },\n        \"usage\": {\n          \"$ref\": \"#/$defs/Usage\",\n          \"description\": \"Current usage at the target scope: the room's for `room`, the named member's for `member`. For `memberDefault`, the room's.\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"target\",\n        \"limits\",\n        \"usage\",\n        \"overLimit\"\n      ],\n      \"title\": \"VTC Rooms — Limits — Set — response payload\",\n      \"type\": \"object\"\n    },\n    \"RoomLimits\": {\n      \"additionalProperties\": false,\n      \"description\": \"How much a host is willing to store for one room, at the room and per member. A hosting decision, set by the host and never by anything in the room's credentials. An upload must fit every scope at once: the object against the smallest `maxFileBytes` that applies, and the member and the room with the file added.\",\n      \"properties\": {\n        \"filesEnabled\": {\n          \"description\": \"False refuses every rooms/blobs/* upload for the room. Reads of blobs already stored continue.\",\n          \"type\": \"boolean\"\n        },\n        \"member\": {\n          \"$ref\": \"#/$defs/ScopeLimits\",\n          \"description\": \"Limits on each member's own uploads in this room, unless that member has an override. A member is the subject at the root of the authority chain they present, never the key that signed, so an agent acting on an attenuated chain spends its member's allowance. Not applied on a `private` room, where the host cannot tell members apart; the room and object limits still hold there.\"\n        },\n        \"room\": {\n          \"$ref\": \"#/$defs/ScopeLimits\",\n          \"description\": \"Limits on the room as a whole.\"\n        }\n      },\n      \"required\": [\n        \"filesEnabled\"\n      ],\n      \"title\": \"RoomLimits\",\n      \"type\": \"object\"\n    },\n    \"ScopeLimits\": {\n      \"additionalProperties\": false,\n      \"description\": \"Limits at one scope. Every member is optional: an absent member means the scope sets no limit of that kind, and the next wider scope's limit, or the host's ceiling, governs. All sizes are ciphertext bytes.\",\n      \"properties\": {\n        \"maxBytes\": {\n          \"description\": \"The total size of the committed and reserved blobs the scope may hold.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"maxFileBytes\": {\n          \"description\": \"The largest single blob the scope accepts. Never above 1 GiB, the transfer ceiling (BlobManifest).\",\n          \"maximum\": 1073741824,\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"maxFiles\": {\n          \"description\": \"The number of committed blobs the scope may hold. 0 refuses every upload at this scope.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"title\": \"ScopeLimits\",\n      \"type\": \"object\"\n    },\n    \"Usage\": {\n      \"additionalProperties\": false,\n      \"description\": \"What one scope holds now. Ciphertext bytes throughout.\",\n      \"properties\": {\n        \"bytes\": {\n          \"description\": \"Their total size. A blob stops counting the moment it is orphaned (its last record dropped it or was retracted), not when the host finally deletes it, so a member who deletes a file has the room back at once.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"files\": {\n          \"description\": \"Committed blobs that are not orphaned.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"reservedBytes\": {\n          \"description\": \"Bytes reserved by uploads begun and not yet committed, aborted or expired. Counted against `maxBytes`, so two concurrent uploads cannot both fit under a limit only one of them fits.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"reservedFiles\": {\n          \"description\": \"Uploads begun and not yet committed, aborted or expired. Counted against `maxFiles`.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"files\",\n        \"bytes\",\n        \"reservedBytes\"\n      ],\n      \"title\": \"Usage\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"EffectiveLimits\":{\"additionalProperties\":false,\"description\":\"The limits a room is enforced against now, with where each scope's came from.\",\"properties\":{\"hostCeilingBytes\":{\"description\":\"The host-wide largest-file ceiling, which no room or member limit can exceed.\",\"maximum\":1073741824,\"minimum\":0,\"type\":\"integer\"},\"limits\":{\"$ref\":\"#/$defs/RoomLimits\"},\"memberSource\":{\"$ref\":\"#/$defs/LimitSource\"},\"roomSource\":{\"$ref\":\"#/$defs/LimitSource\"}},\"required\":[\"limits\",\"roomSource\",\"memberSource\"],\"title\":\"EffectiveLimits\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"LimitSource\":{\"description\":\"Where an effective limit came from. `policy`: the community's rooms policy at the room's creation. `override`: an administrator's vtc/rooms/limits/set. `default`: the community's configured defaults, where neither applies. The host-wide ceiling bounds all three.\",\"enum\":[\"policy\",\"override\",\"default\"],\"title\":\"LimitSource\",\"type\":\"string\"},\"LimitTarget\":{\"additionalProperties\":false,\"description\":\"Which limits an override applies to. `room`: the room as a whole. `memberDefault`: every member of the room who has no override of their own. `member`: one named member — `member` is REQUIRED with this kind and forbidden with the others, a rule this schema does not express; a community refuses a violation with `malformedRequest`.\",\"properties\":{\"kind\":{\"enum\":[\"room\",\"memberDefault\",\"member\"],\"type\":\"string\"},\"member\":{\"description\":\"The member's DID: the subject at the root of the authority chains they present, which is what their uploads are charged to.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"kind\"],\"title\":\"LimitTarget\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"limits\":{\"$ref\":\"#/$defs/EffectiveLimits\"},\"overLimit\":{\"description\":\"True when `usage` already exceeds the new limits. New uploads at this scope are refused until it does not; nothing is deleted.\",\"type\":\"boolean\"},\"roomId\":{\"description\":\"The room's identifier, as its owner minted it.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"target\":{\"$ref\":\"#/$defs/LimitTarget\"},\"targetLimits\":{\"$ref\":\"#/$defs/ScopeLimits\",\"description\":\"With a `member` target: that member's effective limits after the change, override or not.\"},\"usage\":{\"$ref\":\"#/$defs/Usage\",\"description\":\"Current usage at the target scope: the room's for `room`, the named member's for `member`. For `memberDefault`, the room's.\"}},\"required\":[\"roomId\",\"target\",\"limits\",\"usage\",\"overLimit\"],\"title\":\"VTC Rooms — Limits — Set — response payload\",\"type\":\"object\"},\"RoomLimits\":{\"additionalProperties\":false,\"description\":\"How much a host is willing to store for one room, at the room and per member. A hosting decision, set by the host and never by anything in the room's credentials. An upload must fit every scope at once: the object against the smallest `maxFileBytes` that applies, and the member and the room with the file added.\",\"properties\":{\"filesEnabled\":{\"description\":\"False refuses every rooms/blobs/* upload for the room. Reads of blobs already stored continue.\",\"type\":\"boolean\"},\"member\":{\"$ref\":\"#/$defs/ScopeLimits\",\"description\":\"Limits on each member's own uploads in this room, unless that member has an override. A member is the subject at the root of the authority chain they present, never the key that signed, so an agent acting on an attenuated chain spends its member's allowance. Not applied on a `private` room, where the host cannot tell members apart; the room and object limits still hold there.\"},\"room\":{\"$ref\":\"#/$defs/ScopeLimits\",\"description\":\"Limits on the room as a whole.\"}},\"required\":[\"filesEnabled\"],\"title\":\"RoomLimits\",\"type\":\"object\"},\"ScopeLimits\":{\"additionalProperties\":false,\"description\":\"Limits at one scope. Every member is optional: an absent member means the scope sets no limit of that kind, and the next wider scope's limit, or the host's ceiling, governs. All sizes are ciphertext bytes.\",\"properties\":{\"maxBytes\":{\"description\":\"The total size of the committed and reserved blobs the scope may hold.\",\"minimum\":0,\"type\":\"integer\"},\"maxFileBytes\":{\"description\":\"The largest single blob the scope accepts. Never above 1 GiB, the transfer ceiling (BlobManifest).\",\"maximum\":1073741824,\"minimum\":0,\"type\":\"integer\"},\"maxFiles\":{\"description\":\"The number of committed blobs the scope may hold. 0 refuses every upload at this scope.\",\"minimum\":0,\"type\":\"integer\"}},\"title\":\"ScopeLimits\",\"type\":\"object\"},\"Usage\":{\"additionalProperties\":false,\"description\":\"What one scope holds now. Ciphertext bytes throughout.\",\"properties\":{\"bytes\":{\"description\":\"Their total size. A blob stops counting the moment it is orphaned (its last record dropped it or was retracted), not when the host finally deletes it, so a member who deletes a file has the room back at once.\",\"minimum\":0,\"type\":\"integer\"},\"files\":{\"description\":\"Committed blobs that are not orphaned.\",\"minimum\":0,\"type\":\"integer\"},\"reservedBytes\":{\"description\":\"Bytes reserved by uploads begun and not yet committed, aborted or expired. Counted against `maxBytes`, so two concurrent uploads cannot both fit under a limit only one of them fits.\",\"minimum\":0,\"type\":\"integer\"},\"reservedFiles\":{\"description\":\"Uploads begun and not yet committed, aborted or expired. Counted against `maxFiles`.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"files\",\"bytes\",\"reservedBytes\"],\"title\":\"Usage\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

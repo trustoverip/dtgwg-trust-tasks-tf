@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,42 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/admin/invites/create/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "did"
-///  ],
-///  "properties": {
-///    "did": {
-///      "description": "Admin DID the install URL grants a passkey for.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "label": {
-///      "description": "Operator-facing note recorded against the invite.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "ttlSeconds": {
-///      "description": "Invite lifetime. Capped at 24 hours.",
-///      "type": "integer",
-///      "maximum": 86400.0,
-///      "minimum": 1.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -204,16 +144,6 @@ impl Payload {
 }
 ///Admin DID the install URL grants a passkey for.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Admin DID the install URL grants a passkey for.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadDid(::std::string::String);
@@ -273,17 +203,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDid {
 }
 ///Operator-facing note recorded against the invite.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Operator-facing note recorded against the invite.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadLabel(::std::string::String);
@@ -346,53 +265,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadLabel {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "aclEntryCreated",
-///    "claimCode",
-///    "expiresAt",
-///    "installUrl",
-///    "jti"
-///  ],
-///  "properties": {
-///    "aclEntryCreated": {
-///      "description": "True when the target DID had no ACL entry and one was created.",
-///      "type": "boolean"
-///    },
-///    "claimCode": {
-///      "description": "Secret that authorises the enrolment. Returned once.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "expiresAt": {
-///      "description": "When the invite lapses.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "installUrl": {
-///      "description": "One-shot enrolment URL. Returned once and never retrievable again.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "jti": {
-///      "description": "Invite identifier; the revoke target.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -421,16 +293,6 @@ impl Response {
 }
 ///Secret that authorises the enrolment. Returned once.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Secret that authorises the enrolment. Returned once.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseClaimCode(::std::string::String);
@@ -490,16 +352,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseClaimCode {
 }
 ///One-shot enrolment URL. Returned once and never retrievable again.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "One-shot enrolment URL. Returned once and never retrievable again.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseInstallUrl(::std::string::String);
@@ -559,16 +411,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseInstallUrl {
 }
 ///Invite identifier; the revoke target.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Invite identifier; the revoke target.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseJti(::std::string::String);
@@ -830,7 +672,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"aclEntryCreated\": {\n          \"description\": \"True when the target DID had no ACL entry and one was created.\",\n          \"type\": \"boolean\"\n        },\n        \"claimCode\": {\n          \"description\": \"Secret that authorises the enrolment. Returned once.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When the invite lapses.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"installUrl\": {\n          \"description\": \"One-shot enrolment URL. Returned once and never retrievable again.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"jti\": {\n          \"description\": \"Invite identifier; the revoke target.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"jti\",\n        \"installUrl\",\n        \"claimCode\",\n        \"expiresAt\",\n        \"aclEntryCreated\"\n      ],\n      \"title\": \"VTC Admin Invites Create — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/admin/invites/create/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"did\": {\n      \"description\": \"Admin DID the install URL grants a passkey for.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"label\": {\n      \"description\": \"Operator-facing note recorded against the invite.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ttlSeconds\": {\n      \"description\": \"Invite lifetime. Capped at 24 hours.\",\n      \"maximum\": 86400,\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"did\"\n  ],\n  \"title\": \"VTC Admin Invites Create — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"aclEntryCreated\":{\"description\":\"True when the target DID had no ACL entry and one was created.\",\"type\":\"boolean\"},\"claimCode\":{\"description\":\"Secret that authorises the enrolment. Returned once.\",\"minLength\":1,\"type\":\"string\"},\"expiresAt\":{\"description\":\"When the invite lapses.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"installUrl\":{\"description\":\"One-shot enrolment URL. Returned once and never retrievable again.\",\"minLength\":1,\"type\":\"string\"},\"jti\":{\"description\":\"Invite identifier; the revoke target.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"jti\",\"installUrl\",\"claimCode\",\"expiresAt\",\"aclEntryCreated\"],\"title\":\"VTC Admin Invites Create — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/admin/invites/create/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"did\":{\"description\":\"Admin DID the install URL grants a passkey for.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"label\":{\"description\":\"Operator-facing note recorded against the invite.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"ttlSeconds\":{\"description\":\"Invite lifetime. Capped at 24 hours.\",\"maximum\":86400,\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"did\"],\"title\":\"VTC Admin Invites Create — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -840,7 +682,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"aclEntryCreated\": {\n          \"description\": \"True when the target DID had no ACL entry and one was created.\",\n          \"type\": \"boolean\"\n        },\n        \"claimCode\": {\n          \"description\": \"Secret that authorises the enrolment. Returned once.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When the invite lapses.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"installUrl\": {\n          \"description\": \"One-shot enrolment URL. Returned once and never retrievable again.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"jti\": {\n          \"description\": \"Invite identifier; the revoke target.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"jti\",\n        \"installUrl\",\n        \"claimCode\",\n        \"expiresAt\",\n        \"aclEntryCreated\"\n      ],\n      \"title\": \"VTC Admin Invites Create — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"aclEntryCreated\":{\"description\":\"True when the target DID had no ACL entry and one was created.\",\"type\":\"boolean\"},\"claimCode\":{\"description\":\"Secret that authorises the enrolment. Returned once.\",\"minLength\":1,\"type\":\"string\"},\"expiresAt\":{\"description\":\"When the invite lapses.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"installUrl\":{\"description\":\"One-shot enrolment URL. Returned once and never retrievable again.\",\"minLength\":1,\"type\":\"string\"},\"jti\":{\"description\":\"Invite identifier; the revoke target.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"jti\",\"installUrl\",\"claimCode\",\"expiresAt\",\"aclEntryCreated\"],\"title\":\"VTC Admin Invites Create — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

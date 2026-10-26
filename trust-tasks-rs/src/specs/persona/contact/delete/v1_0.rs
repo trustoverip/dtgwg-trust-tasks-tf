@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,34 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Remove a contact and every revision of it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/persona/contact/delete/1.0",
-///  "title": "Payload",
-///  "description": "Remove a contact and every revision of it.",
-///  "type": "object",
-///  "required": [
-///    "contactId",
-///    "contextId"
-///  ],
-///  "properties": {
-///    "contactId": {
-///      "$ref": "#/definitions/Ulid"
-///    },
-///    "contextId": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -188,15 +136,6 @@ impl Payload {
 }
 ///`PayloadContextId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadContextId(::std::string::String);
@@ -256,43 +195,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
 }
 ///Success response to persona/contact/delete. Type https://trusttasks.org/spec/persona/contact/delete/1.0#response. Deleting an absent contact is a success carrying existed: false, which is what makes a repeated delete converge.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to persona/contact/delete. Type https://trusttasks.org/spec/persona/contact/delete/1.0#response. Deleting an absent contact is a success carrying existed: false, which is what makes a repeated delete converge.",
-///  "type": "object",
-///  "required": [
-///    "contactId",
-///    "existed"
-///  ],
-///  "properties": {
-///    "contactId": {
-///      "$ref": "#/definitions/Ulid"
-///    },
-///    "existed": {
-///      "type": "boolean"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "retainedForDisclosure": {
-///      "description": "Revisions NOT removed because a disclosure record still references them. A maintainer that keeps such revisions MUST report the count rather than let the holder believe the deletion was total — an incomplete erasure the holder thinks is complete is worse than one they know about.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "revisionsRemoved": {
-///      "description": "How many revisions went with it, so a holder deleting a long history is told the size of what they removed.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -324,17 +226,6 @@ impl Response {
 }
 ///A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ulid",
-///  "description": "A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.",
-///  "type": "string",
-///  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Ulid(::std::string::String);
@@ -566,7 +457,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/contact/delete. Type https://trusttasks.org/spec/persona/contact/delete/1.0#response. Deleting an absent contact is a success carrying existed: false, which is what makes a repeated delete converge.\",\n      \"properties\": {\n        \"contactId\": {\n          \"$ref\": \"#/$defs/Ulid\"\n        },\n        \"existed\": {\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"retainedForDisclosure\": {\n          \"description\": \"Revisions NOT removed because a disclosure record still references them. A maintainer that keeps such revisions MUST report the count rather than let the holder believe the deletion was total — an incomplete erasure the holder thinks is complete is worse than one they know about.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"revisionsRemoved\": {\n          \"description\": \"How many revisions went with it, so a holder deleting a long history is told the size of what they removed.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"contactId\",\n        \"existed\"\n      ],\n      \"title\": \"Persona Contact Delete — response payload\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/persona/contact/delete/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Remove a contact and every revision of it.\",\n  \"properties\": {\n    \"contactId\": {\n      \"$ref\": \"#/$defs/Ulid\"\n    },\n    \"contextId\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"required\": [\n    \"contextId\",\n    \"contactId\"\n  ],\n  \"title\": \"Persona Contact Delete — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to persona/contact/delete. Type https://trusttasks.org/spec/persona/contact/delete/1.0#response. Deleting an absent contact is a success carrying existed: false, which is what makes a repeated delete converge.\",\"properties\":{\"contactId\":{\"$ref\":\"#/$defs/Ulid\"},\"existed\":{\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"retainedForDisclosure\":{\"description\":\"Revisions NOT removed because a disclosure record still references them. A maintainer that keeps such revisions MUST report the count rather than let the holder believe the deletion was total — an incomplete erasure the holder thinks is complete is worse than one they know about.\",\"minimum\":0,\"type\":\"integer\"},\"revisionsRemoved\":{\"description\":\"How many revisions went with it, so a holder deleting a long history is told the size of what they removed.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"contactId\",\"existed\"],\"title\":\"Persona Contact Delete — response payload\",\"type\":\"object\"},\"Ulid\":{\"description\":\"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\"pattern\":\"^[0-9A-HJKMNP-TV-Z]{26}$\",\"title\":\"Ulid\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/persona/contact/delete/1.0\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Remove a contact and every revision of it.\",\"properties\":{\"contactId\":{\"$ref\":\"#/$defs/Ulid\"},\"contextId\":{\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"contextId\",\"contactId\"],\"title\":\"Persona Contact Delete — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -576,7 +467,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/contact/delete. Type https://trusttasks.org/spec/persona/contact/delete/1.0#response. Deleting an absent contact is a success carrying existed: false, which is what makes a repeated delete converge.\",\n      \"properties\": {\n        \"contactId\": {\n          \"$ref\": \"#/$defs/Ulid\"\n        },\n        \"existed\": {\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"retainedForDisclosure\": {\n          \"description\": \"Revisions NOT removed because a disclosure record still references them. A maintainer that keeps such revisions MUST report the count rather than let the holder believe the deletion was total — an incomplete erasure the holder thinks is complete is worse than one they know about.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"revisionsRemoved\": {\n          \"description\": \"How many revisions went with it, so a holder deleting a long history is told the size of what they removed.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"contactId\",\n        \"existed\"\n      ],\n      \"title\": \"Persona Contact Delete — response payload\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to persona/contact/delete. Type https://trusttasks.org/spec/persona/contact/delete/1.0#response. Deleting an absent contact is a success carrying existed: false, which is what makes a repeated delete converge.\",\"properties\":{\"contactId\":{\"$ref\":\"#/$defs/Ulid\"},\"existed\":{\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"retainedForDisclosure\":{\"description\":\"Revisions NOT removed because a disclosure record still references them. A maintainer that keeps such revisions MUST report the count rather than let the holder believe the deletion was total — an incomplete erasure the holder thinks is complete is worse than one they know about.\",\"minimum\":0,\"type\":\"integer\"},\"revisionsRemoved\":{\"description\":\"How many revisions went with it, so a holder deleting a long history is told the size of what they removed.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"contactId\",\"existed\"],\"title\":\"Persona Contact Delete — response payload\",\"type\":\"object\"},\"Ulid\":{\"description\":\"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\"pattern\":\"^[0-9A-HJKMNP-TV-Z]{26}$\",\"title\":\"Ulid\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

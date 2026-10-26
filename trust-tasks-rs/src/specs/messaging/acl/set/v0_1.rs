@@ -35,21 +35,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -71,15 +56,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -143,79 +119,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///The mediator's per-account access-control capability set, expressed as named booleans (the transport-agnostic form of the mediator's internal capability flags). On a set request, members omitted are left unchanged; a get/response carries the full realized set.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "MediatorAcl",
-///  "description": "The mediator's per-account access-control capability set, expressed as named booleans (the transport-agnostic form of the mediator's internal capability flags). On a set request, members omitted are left unchanged; a get/response carries the full realized set.",
-///  "type": "object",
-///  "properties": {
-///    "accessListMode": {
-///      "description": "How the account's access list is interpreted. `explicitAllow` = an allowlist (empty denies everyone); `explicitDeny` = a denylist (empty allows everyone).",
-///      "type": "string",
-///      "enum": [
-///        "explicitAllow",
-///        "explicitDeny"
-///      ]
-///    },
-///    "anonReceive": {
-///      "description": "Accepts anonymous (no authenticated sender) messages.",
-///      "type": "boolean"
-///    },
-///    "blocked": {
-///      "description": "The account is blocked from authenticating and transacting.",
-///      "type": "boolean"
-///    },
-///    "createInvites": {
-///      "description": "May create out-of-band invitations.",
-///      "type": "boolean"
-///    },
-///    "didcommEnabled": {
-///      "description": "The account accepts DIDComm-protocol delivery. Default true; set false for a TSP-only node.",
-///      "type": "boolean"
-///    },
-///    "local": {
-///      "description": "Messages for this account may be stored locally at this mediator for pickup.",
-///      "type": "boolean"
-///    },
-///    "receiveForwarded": {
-///      "description": "May be the next hop of a forwarded message.",
-///      "type": "boolean"
-///    },
-///    "receiveMessages": {
-///      "description": "May receive direct messages.",
-///      "type": "boolean"
-///    },
-///    "selfManageList": {
-///      "description": "May self-manage its own access list.",
-///      "type": "boolean"
-///    },
-///    "selfManageReceiveQueueLimit": {
-///      "description": "May self-manage its own receive-queue limit.",
-///      "type": "boolean"
-///    },
-///    "selfManageSendQueueLimit": {
-///      "description": "May self-manage its own send-queue limit.",
-///      "type": "boolean"
-///    },
-///    "sendForwarded": {
-///      "description": "May send routing/forward (relay) messages.",
-///      "type": "boolean"
-///    },
-///    "sendMessages": {
-///      "description": "May send direct messages through the mediator.",
-///      "type": "boolean"
-///    },
-///    "tspEnabled": {
-///      "description": "The account accepts TSP-protocol delivery. Default true; set false for a DIDComm-only node.",
-///      "type": "boolean"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -338,19 +241,6 @@ impl MediatorAcl {
 }
 ///How the account's access list is interpreted. `explicitAllow` = an allowlist (empty denies everyone); `explicitDeny` = a denylist (empty allows everyone).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "How the account's access list is interpreted. `explicitAllow` = an allowlist (empty denies everyone); `explicitDeny` = a denylist (empty allows everyone).",
-///  "type": "string",
-///  "enum": [
-///    "explicitAllow",
-///    "explicitDeny"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -412,35 +302,6 @@ impl ::std::convert::TryFrom<::std::string::String> for MediatorAclAccessListMod
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/messaging/acl/set/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "acl",
-///    "did"
-///  ],
-///  "properties": {
-///    "acl": {
-///      "description": "The capability members to apply. Members present are set; members omitted are left unchanged (partial update).",
-///      "$ref": "#/definitions/MediatorAcl"
-///    },
-///    "did": {
-///      "description": "The target account's DID whose capabilities are being set.",
-///      "$ref": "#/definitions/Vid"
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -461,36 +322,6 @@ impl Payload {
 }
 ///The success response to a messaging/acl/set request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/acl/set/0.1#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The success response to a messaging/acl/set request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/acl/set/0.1#response.",
-///  "type": "object",
-///  "required": [
-///    "acl",
-///    "did"
-///  ],
-///  "properties": {
-///    "acl": {
-///      "description": "The full realized capability set the mediator now holds for the account.",
-///      "$ref": "#/definitions/MediatorAcl"
-///    },
-///    "did": {
-///      "description": "The account whose ACL was set.",
-///      "$ref": "#/definitions/Vid"
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -511,17 +342,6 @@ impl Response {
 }
 ///A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Vid",
-///  "description": "A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Vid(::std::string::String);
@@ -947,7 +767,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"MediatorAcl\": {\n      \"additionalProperties\": false,\n      \"description\": \"The mediator's per-account access-control capability set, expressed as named booleans (the transport-agnostic form of the mediator's internal capability flags). On a set request, members omitted are left unchanged; a get/response carries the full realized set.\",\n      \"properties\": {\n        \"accessListMode\": {\n          \"description\": \"How the account's access list is interpreted. `explicitAllow` = an allowlist (empty denies everyone); `explicitDeny` = a denylist (empty allows everyone).\",\n          \"enum\": [\n            \"explicitAllow\",\n            \"explicitDeny\"\n          ],\n          \"type\": \"string\"\n        },\n        \"anonReceive\": {\n          \"description\": \"Accepts anonymous (no authenticated sender) messages.\",\n          \"type\": \"boolean\"\n        },\n        \"blocked\": {\n          \"description\": \"The account is blocked from authenticating and transacting.\",\n          \"type\": \"boolean\"\n        },\n        \"createInvites\": {\n          \"description\": \"May create out-of-band invitations.\",\n          \"type\": \"boolean\"\n        },\n        \"didcommEnabled\": {\n          \"description\": \"The account accepts DIDComm-protocol delivery. Default true; set false for a TSP-only node.\",\n          \"type\": \"boolean\"\n        },\n        \"local\": {\n          \"description\": \"Messages for this account may be stored locally at this mediator for pickup.\",\n          \"type\": \"boolean\"\n        },\n        \"receiveForwarded\": {\n          \"description\": \"May be the next hop of a forwarded message.\",\n          \"type\": \"boolean\"\n        },\n        \"receiveMessages\": {\n          \"description\": \"May receive direct messages.\",\n          \"type\": \"boolean\"\n        },\n        \"selfManageList\": {\n          \"description\": \"May self-manage its own access list.\",\n          \"type\": \"boolean\"\n        },\n        \"selfManageReceiveQueueLimit\": {\n          \"description\": \"May self-manage its own receive-queue limit.\",\n          \"type\": \"boolean\"\n        },\n        \"selfManageSendQueueLimit\": {\n          \"description\": \"May self-manage its own send-queue limit.\",\n          \"type\": \"boolean\"\n        },\n        \"sendForwarded\": {\n          \"description\": \"May send routing/forward (relay) messages.\",\n          \"type\": \"boolean\"\n        },\n        \"sendMessages\": {\n          \"description\": \"May send direct messages through the mediator.\",\n          \"type\": \"boolean\"\n        },\n        \"tspEnabled\": {\n          \"description\": \"The account accepts TSP-protocol delivery. Default true; set false for a DIDComm-only node.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"title\": \"MediatorAcl\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a messaging/acl/set request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/acl/set/0.1#response.\",\n      \"properties\": {\n        \"acl\": {\n          \"$ref\": \"#/$defs/MediatorAcl\",\n          \"description\": \"The full realized capability set the mediator now holds for the account.\"\n        },\n        \"did\": {\n          \"$ref\": \"#/$defs/Vid\",\n          \"description\": \"The account whose ACL was set.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"acl\"\n      ],\n      \"title\": \"Messaging Set ACL — response payload\",\n      \"type\": \"object\"\n    },\n    \"Vid\": {\n      \"description\": \"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\n      \"minLength\": 1,\n      \"title\": \"Vid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/messaging/acl/set/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"acl\": {\n      \"$ref\": \"#/$defs/MediatorAcl\",\n      \"description\": \"The capability members to apply. Members present are set; members omitted are left unchanged (partial update).\"\n    },\n    \"did\": {\n      \"$ref\": \"#/$defs/Vid\",\n      \"description\": \"The target account's DID whose capabilities are being set.\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    }\n  },\n  \"required\": [\n    \"did\",\n    \"acl\"\n  ],\n  \"title\": \"Messaging Set ACL — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"MediatorAcl\":{\"additionalProperties\":false,\"description\":\"The mediator's per-account access-control capability set, expressed as named booleans (the transport-agnostic form of the mediator's internal capability flags). On a set request, members omitted are left unchanged; a get/response carries the full realized set.\",\"properties\":{\"accessListMode\":{\"description\":\"How the account's access list is interpreted. `explicitAllow` = an allowlist (empty denies everyone); `explicitDeny` = a denylist (empty allows everyone).\",\"enum\":[\"explicitAllow\",\"explicitDeny\"],\"type\":\"string\"},\"anonReceive\":{\"description\":\"Accepts anonymous (no authenticated sender) messages.\",\"type\":\"boolean\"},\"blocked\":{\"description\":\"The account is blocked from authenticating and transacting.\",\"type\":\"boolean\"},\"createInvites\":{\"description\":\"May create out-of-band invitations.\",\"type\":\"boolean\"},\"didcommEnabled\":{\"description\":\"The account accepts DIDComm-protocol delivery. Default true; set false for a TSP-only node.\",\"type\":\"boolean\"},\"local\":{\"description\":\"Messages for this account may be stored locally at this mediator for pickup.\",\"type\":\"boolean\"},\"receiveForwarded\":{\"description\":\"May be the next hop of a forwarded message.\",\"type\":\"boolean\"},\"receiveMessages\":{\"description\":\"May receive direct messages.\",\"type\":\"boolean\"},\"selfManageList\":{\"description\":\"May self-manage its own access list.\",\"type\":\"boolean\"},\"selfManageReceiveQueueLimit\":{\"description\":\"May self-manage its own receive-queue limit.\",\"type\":\"boolean\"},\"selfManageSendQueueLimit\":{\"description\":\"May self-manage its own send-queue limit.\",\"type\":\"boolean\"},\"sendForwarded\":{\"description\":\"May send routing/forward (relay) messages.\",\"type\":\"boolean\"},\"sendMessages\":{\"description\":\"May send direct messages through the mediator.\",\"type\":\"boolean\"},\"tspEnabled\":{\"description\":\"The account accepts TSP-protocol delivery. Default true; set false for a DIDComm-only node.\",\"type\":\"boolean\"}},\"title\":\"MediatorAcl\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a messaging/acl/set request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/acl/set/0.1#response.\",\"properties\":{\"acl\":{\"$ref\":\"#/$defs/MediatorAcl\",\"description\":\"The full realized capability set the mediator now holds for the account.\"},\"did\":{\"$ref\":\"#/$defs/Vid\",\"description\":\"The account whose ACL was set.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"}},\"required\":[\"did\",\"acl\"],\"title\":\"Messaging Set ACL — response payload\",\"type\":\"object\"},\"Vid\":{\"description\":\"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\"minLength\":1,\"title\":\"Vid\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/messaging/acl/set/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"acl\":{\"$ref\":\"#/$defs/MediatorAcl\",\"description\":\"The capability members to apply. Members present are set; members omitted are left unchanged (partial update).\"},\"did\":{\"$ref\":\"#/$defs/Vid\",\"description\":\"The target account's DID whose capabilities are being set.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"}},\"required\":[\"did\",\"acl\"],\"title\":\"Messaging Set ACL — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -955,7 +775,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"MediatorAcl\": {\n      \"additionalProperties\": false,\n      \"description\": \"The mediator's per-account access-control capability set, expressed as named booleans (the transport-agnostic form of the mediator's internal capability flags). On a set request, members omitted are left unchanged; a get/response carries the full realized set.\",\n      \"properties\": {\n        \"accessListMode\": {\n          \"description\": \"How the account's access list is interpreted. `explicitAllow` = an allowlist (empty denies everyone); `explicitDeny` = a denylist (empty allows everyone).\",\n          \"enum\": [\n            \"explicitAllow\",\n            \"explicitDeny\"\n          ],\n          \"type\": \"string\"\n        },\n        \"anonReceive\": {\n          \"description\": \"Accepts anonymous (no authenticated sender) messages.\",\n          \"type\": \"boolean\"\n        },\n        \"blocked\": {\n          \"description\": \"The account is blocked from authenticating and transacting.\",\n          \"type\": \"boolean\"\n        },\n        \"createInvites\": {\n          \"description\": \"May create out-of-band invitations.\",\n          \"type\": \"boolean\"\n        },\n        \"didcommEnabled\": {\n          \"description\": \"The account accepts DIDComm-protocol delivery. Default true; set false for a TSP-only node.\",\n          \"type\": \"boolean\"\n        },\n        \"local\": {\n          \"description\": \"Messages for this account may be stored locally at this mediator for pickup.\",\n          \"type\": \"boolean\"\n        },\n        \"receiveForwarded\": {\n          \"description\": \"May be the next hop of a forwarded message.\",\n          \"type\": \"boolean\"\n        },\n        \"receiveMessages\": {\n          \"description\": \"May receive direct messages.\",\n          \"type\": \"boolean\"\n        },\n        \"selfManageList\": {\n          \"description\": \"May self-manage its own access list.\",\n          \"type\": \"boolean\"\n        },\n        \"selfManageReceiveQueueLimit\": {\n          \"description\": \"May self-manage its own receive-queue limit.\",\n          \"type\": \"boolean\"\n        },\n        \"selfManageSendQueueLimit\": {\n          \"description\": \"May self-manage its own send-queue limit.\",\n          \"type\": \"boolean\"\n        },\n        \"sendForwarded\": {\n          \"description\": \"May send routing/forward (relay) messages.\",\n          \"type\": \"boolean\"\n        },\n        \"sendMessages\": {\n          \"description\": \"May send direct messages through the mediator.\",\n          \"type\": \"boolean\"\n        },\n        \"tspEnabled\": {\n          \"description\": \"The account accepts TSP-protocol delivery. Default true; set false for a DIDComm-only node.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"title\": \"MediatorAcl\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a messaging/acl/set request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/acl/set/0.1#response.\",\n      \"properties\": {\n        \"acl\": {\n          \"$ref\": \"#/$defs/MediatorAcl\",\n          \"description\": \"The full realized capability set the mediator now holds for the account.\"\n        },\n        \"did\": {\n          \"$ref\": \"#/$defs/Vid\",\n          \"description\": \"The account whose ACL was set.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"acl\"\n      ],\n      \"title\": \"Messaging Set ACL — response payload\",\n      \"type\": \"object\"\n    },\n    \"Vid\": {\n      \"description\": \"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\n      \"minLength\": 1,\n      \"title\": \"Vid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"MediatorAcl\":{\"additionalProperties\":false,\"description\":\"The mediator's per-account access-control capability set, expressed as named booleans (the transport-agnostic form of the mediator's internal capability flags). On a set request, members omitted are left unchanged; a get/response carries the full realized set.\",\"properties\":{\"accessListMode\":{\"description\":\"How the account's access list is interpreted. `explicitAllow` = an allowlist (empty denies everyone); `explicitDeny` = a denylist (empty allows everyone).\",\"enum\":[\"explicitAllow\",\"explicitDeny\"],\"type\":\"string\"},\"anonReceive\":{\"description\":\"Accepts anonymous (no authenticated sender) messages.\",\"type\":\"boolean\"},\"blocked\":{\"description\":\"The account is blocked from authenticating and transacting.\",\"type\":\"boolean\"},\"createInvites\":{\"description\":\"May create out-of-band invitations.\",\"type\":\"boolean\"},\"didcommEnabled\":{\"description\":\"The account accepts DIDComm-protocol delivery. Default true; set false for a TSP-only node.\",\"type\":\"boolean\"},\"local\":{\"description\":\"Messages for this account may be stored locally at this mediator for pickup.\",\"type\":\"boolean\"},\"receiveForwarded\":{\"description\":\"May be the next hop of a forwarded message.\",\"type\":\"boolean\"},\"receiveMessages\":{\"description\":\"May receive direct messages.\",\"type\":\"boolean\"},\"selfManageList\":{\"description\":\"May self-manage its own access list.\",\"type\":\"boolean\"},\"selfManageReceiveQueueLimit\":{\"description\":\"May self-manage its own receive-queue limit.\",\"type\":\"boolean\"},\"selfManageSendQueueLimit\":{\"description\":\"May self-manage its own send-queue limit.\",\"type\":\"boolean\"},\"sendForwarded\":{\"description\":\"May send routing/forward (relay) messages.\",\"type\":\"boolean\"},\"sendMessages\":{\"description\":\"May send direct messages through the mediator.\",\"type\":\"boolean\"},\"tspEnabled\":{\"description\":\"The account accepts TSP-protocol delivery. Default true; set false for a DIDComm-only node.\",\"type\":\"boolean\"}},\"title\":\"MediatorAcl\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a messaging/acl/set request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/acl/set/0.1#response.\",\"properties\":{\"acl\":{\"$ref\":\"#/$defs/MediatorAcl\",\"description\":\"The full realized capability set the mediator now holds for the account.\"},\"did\":{\"$ref\":\"#/$defs/Vid\",\"description\":\"The account whose ACL was set.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"}},\"required\":[\"did\",\"acl\"],\"title\":\"Messaging Set ACL — response payload\",\"type\":\"object\"},\"Vid\":{\"description\":\"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\"minLength\":1,\"title\":\"Vid\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

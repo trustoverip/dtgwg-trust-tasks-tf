@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,67 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A community tells a member it removed them, on whose authority, when, and why. Unsolicited: unlike vtc/members/self-remove-receipt this answers no request from the member, because the member did not ask.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/members/removal-notice/0.1",
-///  "title": "Payload",
-///  "description": "A community tells a member it removed them, on whose authority, when, and why. Unsolicited: unlike vtc/members/self-remove-receipt this answers no request from the member, because the member did not ask.",
-///  "type": "object",
-///  "required": [
-///    "code",
-///    "decidedAt",
-///    "decidedBy",
-///    "did",
-///    "disposition"
-///  ],
-///  "properties": {
-///    "code": {
-///      "description": "Which removal happened. `adminRemoved` is a policy-governed removal by an administrator; `purged` is a forceful super-administrator deletion that skips the removal policy. The two differ in what recourse a member has, which is why they are distinguishable rather than a single `removed`.",
-///      "type": "string",
-///      "enum": [
-///        "adminRemoved",
-///        "purged"
-///      ]
-///    },
-///    "decidedAt": {
-///      "description": "When the removal took effect. Distinct from the notice's own `issuedAt`, which may be much later if the member was offline — and it is the decision, not the delivery, that a member or a third party needs to place in time.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "decidedBy": {
-///      "description": "DID of the administrator who decided. Names the deciding authority rather than the community, because 'the community removed me' is not answerable and 'this administrator removed me' is. The community itself is the document's `issuer`.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "did": {
-///      "description": "The removed member's DID — the notice's recipient. Carried in the payload as well as the envelope so that a forwarded notice, detached from its transport, still names its subject.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "disposition": {
-///      "description": "How the member's published record was handled. Always concrete — a community resolves any `policydefault` preference before sending, since a notice naming an unresolved default tells the member nothing about their own record.",
-///      "type": "string",
-///      "enum": [
-///        "purge",
-///        "tombstone",
-///        "historical"
-///      ]
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "reason": {
-///      "description": "The operator's stated reason, verbatim. OPTIONAL because a community may remove without giving one — but omitting it and sending an empty string are different claims, and a community that has a reason SHOULD send it. This is the member's only account of why.",
-///      "type": "string",
-///      "maxLength": 1024
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -232,19 +147,6 @@ impl Payload {
 }
 ///Which removal happened. `adminRemoved` is a policy-governed removal by an administrator; `purged` is a forceful super-administrator deletion that skips the removal policy. The two differ in what recourse a member has, which is why they are distinguishable rather than a single `removed`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Which removal happened. `adminRemoved` is a policy-governed removal by an administrator; `purged` is a forceful super-administrator deletion that skips the removal policy. The two differ in what recourse a member has, which is why they are distinguishable rather than a single `removed`.",
-///  "type": "string",
-///  "enum": [
-///    "adminRemoved",
-///    "purged"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -306,16 +208,6 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadCode {
 }
 ///DID of the administrator who decided. Names the deciding authority rather than the community, because 'the community removed me' is not answerable and 'this administrator removed me' is. The community itself is the document's `issuer`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "DID of the administrator who decided. Names the deciding authority rather than the community, because 'the community removed me' is not answerable and 'this administrator removed me' is. The community itself is the document's `issuer`.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadDecidedBy(::std::string::String);
@@ -375,16 +267,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDecidedBy {
 }
 ///The removed member's DID — the notice's recipient. Carried in the payload as well as the envelope so that a forwarded notice, detached from its transport, still names its subject.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The removed member's DID — the notice's recipient. Carried in the payload as well as the envelope so that a forwarded notice, detached from its transport, still names its subject.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadDid(::std::string::String);
@@ -444,20 +326,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDid {
 }
 ///How the member's published record was handled. Always concrete — a community resolves any `policydefault` preference before sending, since a notice naming an unresolved default tells the member nothing about their own record.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "How the member's published record was handled. Always concrete — a community resolves any `policydefault` preference before sending, since a notice naming an unresolved default tells the member nothing about their own record.",
-///  "type": "string",
-///  "enum": [
-///    "purge",
-///    "tombstone",
-///    "historical"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -523,16 +391,6 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadDisposition {
 }
 ///The operator's stated reason, verbatim. OPTIONAL because a community may remove without giving one — but omitting it and sending an empty string are different claims, and a community that has a reason SHOULD send it. This is the member's only account of why.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The operator's stated reason, verbatim. OPTIONAL because a community may remove without giving one — but omitting it and sending an empty string are different claims, and a community that has a reason SHOULD send it. This is the member's only account of why.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadReason(::std::string::String);
@@ -724,7 +582,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/members/removal-notice/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A community tells a member it removed them, on whose authority, when, and why. Unsolicited: unlike vtc/members/self-remove-receipt this answers no request from the member, because the member did not ask.\",\n  \"properties\": {\n    \"code\": {\n      \"description\": \"Which removal happened. `adminRemoved` is a policy-governed removal by an administrator; `purged` is a forceful super-administrator deletion that skips the removal policy. The two differ in what recourse a member has, which is why they are distinguishable rather than a single `removed`.\",\n      \"enum\": [\n        \"adminRemoved\",\n        \"purged\"\n      ],\n      \"type\": \"string\"\n    },\n    \"decidedAt\": {\n      \"description\": \"When the removal took effect. Distinct from the notice's own `issuedAt`, which may be much later if the member was offline — and it is the decision, not the delivery, that a member or a third party needs to place in time.\",\n      \"format\": \"date-time\",\n      \"type\": \"string\"\n    },\n    \"decidedBy\": {\n      \"description\": \"DID of the administrator who decided. Names the deciding authority rather than the community, because 'the community removed me' is not answerable and 'this administrator removed me' is. The community itself is the document's `issuer`.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"did\": {\n      \"description\": \"The removed member's DID — the notice's recipient. Carried in the payload as well as the envelope so that a forwarded notice, detached from its transport, still names its subject.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"disposition\": {\n      \"description\": \"How the member's published record was handled. Always concrete — a community resolves any `policydefault` preference before sending, since a notice naming an unresolved default tells the member nothing about their own record.\",\n      \"enum\": [\n        \"purge\",\n        \"tombstone\",\n        \"historical\"\n      ],\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"reason\": {\n      \"description\": \"The operator's stated reason, verbatim. OPTIONAL because a community may remove without giving one — but omitting it and sending an empty string are different claims, and a community that has a reason SHOULD send it. This is the member's only account of why.\",\n      \"maxLength\": 1024,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"did\",\n    \"code\",\n    \"disposition\",\n    \"decidedAt\",\n    \"decidedBy\"\n  ],\n  \"title\": \"VTC Members Removal Notice — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/members/removal-notice/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A community tells a member it removed them, on whose authority, when, and why. Unsolicited: unlike vtc/members/self-remove-receipt this answers no request from the member, because the member did not ask.\",\"properties\":{\"code\":{\"description\":\"Which removal happened. `adminRemoved` is a policy-governed removal by an administrator; `purged` is a forceful super-administrator deletion that skips the removal policy. The two differ in what recourse a member has, which is why they are distinguishable rather than a single `removed`.\",\"enum\":[\"adminRemoved\",\"purged\"],\"type\":\"string\"},\"decidedAt\":{\"description\":\"When the removal took effect. Distinct from the notice's own `issuedAt`, which may be much later if the member was offline — and it is the decision, not the delivery, that a member or a third party needs to place in time.\",\"format\":\"date-time\",\"type\":\"string\"},\"decidedBy\":{\"description\":\"DID of the administrator who decided. Names the deciding authority rather than the community, because 'the community removed me' is not answerable and 'this administrator removed me' is. The community itself is the document's `issuer`.\",\"minLength\":1,\"type\":\"string\"},\"did\":{\"description\":\"The removed member's DID — the notice's recipient. Carried in the payload as well as the envelope so that a forwarded notice, detached from its transport, still names its subject.\",\"minLength\":1,\"type\":\"string\"},\"disposition\":{\"description\":\"How the member's published record was handled. Always concrete — a community resolves any `policydefault` preference before sending, since a notice naming an unresolved default tells the member nothing about their own record.\",\"enum\":[\"purge\",\"tombstone\",\"historical\"],\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"reason\":{\"description\":\"The operator's stated reason, verbatim. OPTIONAL because a community may remove without giving one — but omitting it and sending an empty string are different claims, and a community that has a reason SHOULD send it. This is the member's only account of why.\",\"maxLength\":1024,\"type\":\"string\"}},\"required\":[\"did\",\"code\",\"disposition\",\"decidedAt\",\"decidedBy\"],\"title\":\"VTC Members Removal Notice — payload\",\"type\":\"object\"}\n",
     );
 }
 /// The earlier `MAJOR.MINOR` of this slug that this version declares it

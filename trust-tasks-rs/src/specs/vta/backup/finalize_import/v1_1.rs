@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,45 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Supplies the password for an uploaded bundle and asks the recipient to decrypt it and adopt what is inside, or to rehearse that without committing. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/backup/finalize-import/1.1",
-///  "title": "Payload",
-///  "description": "Supplies the password for an uploaded bundle and asks the recipient to decrypt it and adopt what is inside, or to rehearse that without committing. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "bundleId",
-///    "password"
-///  ],
-///  "properties": {
-///    "bundleId": {
-///      "description": "Handle from the initiate-import descriptor. Opaque: a producer quotes what it was given and must not derive, guess or enumerate one.",
-///      "type": "string",
-///      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-///    },
-///    "confirm": {
-///      "description": "True commits and replaces the agent's state; false rehearses and mutates nothing. Absent means true — stated in prose rather than as a schema `default` on purpose, because a materialised default makes an omitted member indistinguishable from a deliberate one, and this is the member separating a rehearsal from an irreversible replacement. See Defaulting.",
-///      "type": "boolean"
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "password": {
-///      "description": "Key-derivation input that unlocks the bundle. Supplied here rather than at initiate-import so the key never travels alongside the slot holding the ciphertext. `writeOnly` is the machine-readable form of the rule in Data carried: this member goes in and never comes back, so a generated client must not surface it in a response type, and a recipient must never log, echo or persist it.",
-///      "writeOnly": true,
-///      "type": "string",
-///      "maxLength": 1024,
-///      "minLength": 15,
-///      "$comment": "No example value anywhere in this directory: a specimen password is the one thing implementers copy. minLength mirrors the export floor so a bundle that could be created can be read back."
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -204,16 +141,6 @@ impl Payload {
 }
 ///Handle from the initiate-import descriptor. Opaque: a producer quotes what it was given and must not derive, guess or enumerate one.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Handle from the initiate-import descriptor. Opaque: a producer quotes what it was given and must not derive, guess or enumerate one.",
-///  "type": "string",
-///  "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadBundleId(::std::string::String);
@@ -283,19 +210,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadBundleId {
 }
 ///Key-derivation input that unlocks the bundle. Supplied here rather than at initiate-import so the key never travels alongside the slot holding the ciphertext. `writeOnly` is the machine-readable form of the rule in Data carried: this member goes in and never comes back, so a generated client must not surface it in a response type, and a recipient must never log, echo or persist it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Key-derivation input that unlocks the bundle. Supplied here rather than at initiate-import so the key never travels alongside the slot holding the ciphertext. `writeOnly` is the machine-readable form of the rule in Data carried: this member goes in and never comes back, so a generated client must not surface it in a response type, and a recipient must never log, echo or persist it.",
-///  "writeOnly": true,
-///  "type": "string",
-///  "maxLength": 1024,
-///  "minLength": 15,
-///  "$comment": "No example value anywhere in this directory: a specimen password is the one thing implementers copy. minLength mirrors the export floor so a bundle that could be created can be read back."
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadPassword(::std::string::String);
@@ -358,81 +272,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPassword {
 }
 ///Counts and a status, never contents. This document is the operator-held record of a replacement the agent's own trail no longer describes.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Counts and a status, never contents. This document is the operator-held record of a replacement the agent's own trail no longer describes.",
-///  "type": "object",
-///  "required": [
-///    "aclCount",
-///    "auditCount",
-///    "bundleId",
-///    "contextCount",
-///    "keyCount",
-///    "status"
-///  ],
-///  "properties": {
-///    "aclCount": {
-///      "description": "How many access-control entries the bundle holds. A count, not an inventory — enough to recognise a bundle as plausibly the right one, and not enough to learn what is in it.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "auditCount": {
-///      "description": "How many audit entries the bundle holds. Zero for a bundle exported without its trail, which is a legitimate outcome and not a sign of a truncated bundle.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "bundleId": {
-///      "description": "Echoed so the response stands alone as a record.",
-///      "type": "string",
-///      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-///    },
-///    "contextCount": {
-///      "description": "How many trust contexts the bundle holds. A count, not an inventory — enough to recognise a bundle as plausibly the right one, and not enough to learn what is in it.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "importedSecretCount": {
-///      "description": "How many secrets the bundle holds. A count, not an inventory — enough to recognise a bundle as plausibly the right one, and not enough to learn what is in it.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "keyCount": {
-///      "description": "How many keys the bundle holds. A count, not an inventory — enough to recognise a bundle as plausibly the right one, and not enough to learn what is in it.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "message": {
-///      "description": "Operator-facing text elaborating on the outcome. Advisory: a producer must not parse it or derive behaviour from it, and a recipient must not put bundle contents or a secret in it.",
-///      "type": "string",
-///      "maxLength": 1024
-///    },
-///    "sourceDid": {
-///      "description": "Identifier of the agent the bundle was exported from. The one identifier a preview returns, because the common import error is a valid bundle from the wrong agent and this is what shows it. Absent where the bundle does not record one.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1
-///    },
-///    "status": {
-///      "description": "Which the recipient did. Reported rather than left to be inferred from the request, so that a response is complete evidence on its own: `committed` says the agent was replaced, `preview` says it was not.",
-///      "type": "string",
-///      "enum": [
-///        "preview",
-///        "committed"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -482,16 +321,6 @@ impl Response {
 }
 ///Echoed so the response stands alone as a record.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Echoed so the response stands alone as a record.",
-///  "type": "string",
-///  "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseBundleId(::std::string::String);
@@ -561,16 +390,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseBundleId {
 }
 ///Operator-facing text elaborating on the outcome. Advisory: a producer must not parse it or derive behaviour from it, and a recipient must not put bundle contents or a secret in it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Operator-facing text elaborating on the outcome. Advisory: a producer must not parse it or derive behaviour from it, and a recipient must not put bundle contents or a secret in it.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseMessage(::std::string::String);
@@ -630,17 +449,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseMessage {
 }
 ///Identifier of the agent the bundle was exported from. The one identifier a preview returns, because the common import error is a valid bundle from the wrong agent and this is what shows it. Absent where the bundle does not record one.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Identifier of the agent the bundle was exported from. The one identifier a preview returns, because the common import error is a valid bundle from the wrong agent and this is what shows it. Absent where the bundle does not record one.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseSourceDid(::std::string::String);
@@ -703,19 +511,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseSourceDid {
 }
 ///Which the recipient did. Reported rather than left to be inferred from the request, so that a response is complete evidence on its own: `committed` says the agent was replaced, `preview` says it was not.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Which the recipient did. Reported rather than left to be inferred from the request, so that a response is complete evidence on its own: `committed` says the agent was replaced, `preview` says it was not.",
-///  "type": "string",
-///  "enum": [
-///    "preview",
-///    "committed"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1035,7 +830,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Counts and a status, never contents. This document is the operator-held record of a replacement the agent's own trail no longer describes.\",\n      \"properties\": {\n        \"aclCount\": {\n          \"description\": \"How many access-control entries the bundle holds. A count, not an inventory — enough to recognise a bundle as plausibly the right one, and not enough to learn what is in it.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"auditCount\": {\n          \"description\": \"How many audit entries the bundle holds. Zero for a bundle exported without its trail, which is a legitimate outcome and not a sign of a truncated bundle.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"bundleId\": {\n          \"description\": \"Echoed so the response stands alone as a record.\",\n          \"pattern\": \"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\n          \"type\": \"string\"\n        },\n        \"contextCount\": {\n          \"description\": \"How many trust contexts the bundle holds. A count, not an inventory — enough to recognise a bundle as plausibly the right one, and not enough to learn what is in it.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"importedSecretCount\": {\n          \"description\": \"How many secrets the bundle holds. A count, not an inventory — enough to recognise a bundle as plausibly the right one, and not enough to learn what is in it.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"keyCount\": {\n          \"description\": \"How many keys the bundle holds. A count, not an inventory — enough to recognise a bundle as plausibly the right one, and not enough to learn what is in it.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"message\": {\n          \"description\": \"Operator-facing text elaborating on the outcome. Advisory: a producer must not parse it or derive behaviour from it, and a recipient must not put bundle contents or a secret in it.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"sourceDid\": {\n          \"description\": \"Identifier of the agent the bundle was exported from. The one identifier a preview returns, because the common import error is a valid bundle from the wrong agent and this is what shows it. Absent where the bundle does not record one.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"description\": \"Which the recipient did. Reported rather than left to be inferred from the request, so that a response is complete evidence on its own: `committed` says the agent was replaced, `preview` says it was not.\",\n          \"enum\": [\n            \"preview\",\n            \"committed\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"bundleId\",\n        \"status\",\n        \"keyCount\",\n        \"aclCount\",\n        \"contextCount\",\n        \"auditCount\"\n      ],\n      \"title\": \"VTA Backup Finalize Import — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/backup/finalize-import/1.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Supplies the password for an uploaded bundle and asks the recipient to decrypt it and adopt what is inside, or to rehearse that without committing. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"bundleId\": {\n      \"description\": \"Handle from the initiate-import descriptor. Opaque: a producer quotes what it was given and must not derive, guess or enumerate one.\",\n      \"pattern\": \"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\n      \"type\": \"string\"\n    },\n    \"confirm\": {\n      \"description\": \"True commits and replaces the agent's state; false rehearses and mutates nothing. Absent means true — stated in prose rather than as a schema `default` on purpose, because a materialised default makes an omitted member indistinguishable from a deliberate one, and this is the member separating a rehearsal from an irreversible replacement. See Defaulting.\",\n      \"type\": \"boolean\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"password\": {\n      \"$comment\": \"No example value anywhere in this directory: a specimen password is the one thing implementers copy. minLength mirrors the export floor so a bundle that could be created can be read back.\",\n      \"description\": \"Key-derivation input that unlocks the bundle. Supplied here rather than at initiate-import so the key never travels alongside the slot holding the ciphertext. `writeOnly` is the machine-readable form of the rule in Data carried: this member goes in and never comes back, so a generated client must not surface it in a response type, and a recipient must never log, echo or persist it.\",\n      \"maxLength\": 1024,\n      \"minLength\": 15,\n      \"type\": \"string\",\n      \"writeOnly\": true\n    }\n  },\n  \"required\": [\n    \"bundleId\",\n    \"password\"\n  ],\n  \"title\": \"VTA Backup — Finalize Import — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Counts and a status, never contents. This document is the operator-held record of a replacement the agent's own trail no longer describes.\",\"properties\":{\"aclCount\":{\"description\":\"How many access-control entries the bundle holds. A count, not an inventory — enough to recognise a bundle as plausibly the right one, and not enough to learn what is in it.\",\"minimum\":0,\"type\":\"integer\"},\"auditCount\":{\"description\":\"How many audit entries the bundle holds. Zero for a bundle exported without its trail, which is a legitimate outcome and not a sign of a truncated bundle.\",\"minimum\":0,\"type\":\"integer\"},\"bundleId\":{\"description\":\"Echoed so the response stands alone as a record.\",\"pattern\":\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":\"string\"},\"contextCount\":{\"description\":\"How many trust contexts the bundle holds. A count, not an inventory — enough to recognise a bundle as plausibly the right one, and not enough to learn what is in it.\",\"minimum\":0,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"importedSecretCount\":{\"description\":\"How many secrets the bundle holds. A count, not an inventory — enough to recognise a bundle as plausibly the right one, and not enough to learn what is in it.\",\"minimum\":0,\"type\":\"integer\"},\"keyCount\":{\"description\":\"How many keys the bundle holds. A count, not an inventory — enough to recognise a bundle as plausibly the right one, and not enough to learn what is in it.\",\"minimum\":0,\"type\":\"integer\"},\"message\":{\"description\":\"Operator-facing text elaborating on the outcome. Advisory: a producer must not parse it or derive behaviour from it, and a recipient must not put bundle contents or a secret in it.\",\"maxLength\":1024,\"type\":\"string\"},\"sourceDid\":{\"description\":\"Identifier of the agent the bundle was exported from. The one identifier a preview returns, because the common import error is a valid bundle from the wrong agent and this is what shows it. Absent where the bundle does not record one.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"status\":{\"description\":\"Which the recipient did. Reported rather than left to be inferred from the request, so that a response is complete evidence on its own: `committed` says the agent was replaced, `preview` says it was not.\",\"enum\":[\"preview\",\"committed\"],\"type\":\"string\"}},\"required\":[\"bundleId\",\"status\",\"keyCount\",\"aclCount\",\"contextCount\",\"auditCount\"],\"title\":\"VTA Backup Finalize Import — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vta/backup/finalize-import/1.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Supplies the password for an uploaded bundle and asks the recipient to decrypt it and adopt what is inside, or to rehearse that without committing. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"bundleId\":{\"description\":\"Handle from the initiate-import descriptor. Opaque: a producer quotes what it was given and must not derive, guess or enumerate one.\",\"pattern\":\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":\"string\"},\"confirm\":{\"description\":\"True commits and replaces the agent's state; false rehearses and mutates nothing. Absent means true — stated in prose rather than as a schema `default` on purpose, because a materialised default makes an omitted member indistinguishable from a deliberate one, and this is the member separating a rehearsal from an irreversible replacement. See Defaulting.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"password\":{\"$comment\":\"No example value anywhere in this directory: a specimen password is the one thing implementers copy. minLength mirrors the export floor so a bundle that could be created can be read back.\",\"description\":\"Key-derivation input that unlocks the bundle. Supplied here rather than at initiate-import so the key never travels alongside the slot holding the ciphertext. `writeOnly` is the machine-readable form of the rule in Data carried: this member goes in and never comes back, so a generated client must not surface it in a response type, and a recipient must never log, echo or persist it.\",\"maxLength\":1024,\"minLength\":15,\"type\":\"string\",\"writeOnly\":true}},\"required\":[\"bundleId\",\"password\"],\"title\":\"VTA Backup — Finalize Import — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1045,7 +840,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Counts and a status, never contents. This document is the operator-held record of a replacement the agent's own trail no longer describes.\",\n      \"properties\": {\n        \"aclCount\": {\n          \"description\": \"How many access-control entries the bundle holds. A count, not an inventory — enough to recognise a bundle as plausibly the right one, and not enough to learn what is in it.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"auditCount\": {\n          \"description\": \"How many audit entries the bundle holds. Zero for a bundle exported without its trail, which is a legitimate outcome and not a sign of a truncated bundle.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"bundleId\": {\n          \"description\": \"Echoed so the response stands alone as a record.\",\n          \"pattern\": \"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\n          \"type\": \"string\"\n        },\n        \"contextCount\": {\n          \"description\": \"How many trust contexts the bundle holds. A count, not an inventory — enough to recognise a bundle as plausibly the right one, and not enough to learn what is in it.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"importedSecretCount\": {\n          \"description\": \"How many secrets the bundle holds. A count, not an inventory — enough to recognise a bundle as plausibly the right one, and not enough to learn what is in it.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"keyCount\": {\n          \"description\": \"How many keys the bundle holds. A count, not an inventory — enough to recognise a bundle as plausibly the right one, and not enough to learn what is in it.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"message\": {\n          \"description\": \"Operator-facing text elaborating on the outcome. Advisory: a producer must not parse it or derive behaviour from it, and a recipient must not put bundle contents or a secret in it.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"sourceDid\": {\n          \"description\": \"Identifier of the agent the bundle was exported from. The one identifier a preview returns, because the common import error is a valid bundle from the wrong agent and this is what shows it. Absent where the bundle does not record one.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"description\": \"Which the recipient did. Reported rather than left to be inferred from the request, so that a response is complete evidence on its own: `committed` says the agent was replaced, `preview` says it was not.\",\n          \"enum\": [\n            \"preview\",\n            \"committed\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"bundleId\",\n        \"status\",\n        \"keyCount\",\n        \"aclCount\",\n        \"contextCount\",\n        \"auditCount\"\n      ],\n      \"title\": \"VTA Backup Finalize Import — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Counts and a status, never contents. This document is the operator-held record of a replacement the agent's own trail no longer describes.\",\"properties\":{\"aclCount\":{\"description\":\"How many access-control entries the bundle holds. A count, not an inventory — enough to recognise a bundle as plausibly the right one, and not enough to learn what is in it.\",\"minimum\":0,\"type\":\"integer\"},\"auditCount\":{\"description\":\"How many audit entries the bundle holds. Zero for a bundle exported without its trail, which is a legitimate outcome and not a sign of a truncated bundle.\",\"minimum\":0,\"type\":\"integer\"},\"bundleId\":{\"description\":\"Echoed so the response stands alone as a record.\",\"pattern\":\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":\"string\"},\"contextCount\":{\"description\":\"How many trust contexts the bundle holds. A count, not an inventory — enough to recognise a bundle as plausibly the right one, and not enough to learn what is in it.\",\"minimum\":0,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"importedSecretCount\":{\"description\":\"How many secrets the bundle holds. A count, not an inventory — enough to recognise a bundle as plausibly the right one, and not enough to learn what is in it.\",\"minimum\":0,\"type\":\"integer\"},\"keyCount\":{\"description\":\"How many keys the bundle holds. A count, not an inventory — enough to recognise a bundle as plausibly the right one, and not enough to learn what is in it.\",\"minimum\":0,\"type\":\"integer\"},\"message\":{\"description\":\"Operator-facing text elaborating on the outcome. Advisory: a producer must not parse it or derive behaviour from it, and a recipient must not put bundle contents or a secret in it.\",\"maxLength\":1024,\"type\":\"string\"},\"sourceDid\":{\"description\":\"Identifier of the agent the bundle was exported from. The one identifier a preview returns, because the common import error is a valid bundle from the wrong agent and this is what shows it. Absent where the bundle does not record one.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"status\":{\"description\":\"Which the recipient did. Reported rather than left to be inferred from the request, so that a response is complete evidence on its own: `committed` says the agent was replaced, `preview` says it was not.\",\"enum\":[\"preview\",\"committed\"],\"type\":\"string\"}},\"required\":[\"bundleId\",\"status\",\"keyCount\",\"aclCount\",\"contextCount\",\"auditCount\"],\"title\":\"VTA Backup Finalize Import — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

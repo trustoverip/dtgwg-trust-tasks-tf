@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,42 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/policy/activate/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "id",
-///    "purpose"
-///  ],
-///  "properties": {
-///    "contextId": {
-///      "description": "Optional trust context the activation is scoped to, for a maintainer that partitions its active-policy map per context. Omitted = the maintainer's default (single-context) scope.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "id": {
-///      "description": "The id of the policy module to make active for `purpose`.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "purpose": {
-///      "description": "The decision slot this policy becomes authoritative for. At most one policy is active per (contextId, purpose) at a time; activating this one deactivates whatever was active before. An opaque maintainer-scoped string — the framework does not enumerate its values, so each maintainer defines its own set (e.g. a community governance stage such as `join` or `removal`).",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -203,16 +143,6 @@ impl Payload {
 }
 ///Optional trust context the activation is scoped to, for a maintainer that partitions its active-policy map per context. Omitted = the maintainer's default (single-context) scope.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Optional trust context the activation is scoped to, for a maintainer that partitions its active-policy map per context. Omitted = the maintainer's default (single-context) scope.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadContextId(::std::string::String);
@@ -272,16 +202,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
 }
 ///The id of the policy module to make active for `purpose`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The id of the policy module to make active for `purpose`.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadId(::std::string::String);
@@ -341,17 +261,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadId {
 }
 ///The decision slot this policy becomes authoritative for. At most one policy is active per (contextId, purpose) at a time; activating this one deactivates whatever was active before. An opaque maintainer-scoped string — the framework does not enumerate its values, so each maintainer defines its own set (e.g. a community governance stage such as `join` or `removal`).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The decision slot this policy becomes authoritative for. At most one policy is active per (contextId, purpose) at a time; activating this one deactivates whatever was active before. An opaque maintainer-scoped string — the framework does not enumerate its values, so each maintainer defines its own set (e.g. a community governance stage such as `join` or `removal`).",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadPurpose(::std::string::String);
@@ -414,49 +323,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPurpose {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "activated",
-///    "purpose"
-///  ],
-///  "properties": {
-///    "activated": {
-///      "description": "The id now active for `purpose` — equal to the request `id`.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "contextId": {
-///      "description": "Echoed from the request when it was supplied.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "previousPolicyId": {
-///      "description": "The policy id that was active for this (contextId, purpose) immediately before, deactivated by this call. `null` when no policy was active — the first activation for the slot. Recorded so an operator can roll back to the prior policy and so the audit trail links the displacement.",
-///      "type": [
-///        "string",
-///        "null"
-///      ]
-///    },
-///    "purpose": {
-///      "description": "Echoed from the request.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -489,16 +355,6 @@ impl Response {
 }
 ///The id now active for `purpose` — equal to the request `id`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The id now active for `purpose` — equal to the request `id`.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseActivated(::std::string::String);
@@ -558,16 +414,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseActivated {
 }
 ///Echoed from the request when it was supplied.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Echoed from the request when it was supplied.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseContextId(::std::string::String);
@@ -627,17 +473,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseContextId {
 }
 ///Echoed from the request.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Echoed from the request.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponsePurpose(::std::string::String);
@@ -890,7 +725,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"activated\": {\n          \"description\": \"The id now active for `purpose` — equal to the request `id`.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"contextId\": {\n          \"description\": \"Echoed from the request when it was supplied.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"previousPolicyId\": {\n          \"description\": \"The policy id that was active for this (contextId, purpose) immediately before, deactivated by this call. `null` when no policy was active — the first activation for the slot. Recorded so an operator can roll back to the prior policy and so the audit trail links the displacement.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"purpose\": {\n          \"description\": \"Echoed from the request.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"activated\",\n        \"purpose\"\n      ],\n      \"title\": \"Policy Activate — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/policy/activate/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"contextId\": {\n      \"description\": \"Optional trust context the activation is scoped to, for a maintainer that partitions its active-policy map per context. Omitted = the maintainer's default (single-context) scope.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"id\": {\n      \"description\": \"The id of the policy module to make active for `purpose`.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"purpose\": {\n      \"description\": \"The decision slot this policy becomes authoritative for. At most one policy is active per (contextId, purpose) at a time; activating this one deactivates whatever was active before. An opaque maintainer-scoped string — the framework does not enumerate its values, so each maintainer defines its own set (e.g. a community governance stage such as `join` or `removal`).\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"id\",\n    \"purpose\"\n  ],\n  \"title\": \"Policy Activate — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"activated\":{\"description\":\"The id now active for `purpose` — equal to the request `id`.\",\"minLength\":1,\"type\":\"string\"},\"contextId\":{\"description\":\"Echoed from the request when it was supplied.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"previousPolicyId\":{\"description\":\"The policy id that was active for this (contextId, purpose) immediately before, deactivated by this call. `null` when no policy was active — the first activation for the slot. Recorded so an operator can roll back to the prior policy and so the audit trail links the displacement.\",\"type\":[\"string\",\"null\"]},\"purpose\":{\"description\":\"Echoed from the request.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"activated\",\"purpose\"],\"title\":\"Policy Activate — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/policy/activate/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"contextId\":{\"description\":\"Optional trust context the activation is scoped to, for a maintainer that partitions its active-policy map per context. Omitted = the maintainer's default (single-context) scope.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"description\":\"The id of the policy module to make active for `purpose`.\",\"minLength\":1,\"type\":\"string\"},\"purpose\":{\"description\":\"The decision slot this policy becomes authoritative for. At most one policy is active per (contextId, purpose) at a time; activating this one deactivates whatever was active before. An opaque maintainer-scoped string — the framework does not enumerate its values, so each maintainer defines its own set (e.g. a community governance stage such as `join` or `removal`).\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\",\"purpose\"],\"title\":\"Policy Activate — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -899,7 +734,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"activated\": {\n          \"description\": \"The id now active for `purpose` — equal to the request `id`.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"contextId\": {\n          \"description\": \"Echoed from the request when it was supplied.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"previousPolicyId\": {\n          \"description\": \"The policy id that was active for this (contextId, purpose) immediately before, deactivated by this call. `null` when no policy was active — the first activation for the slot. Recorded so an operator can roll back to the prior policy and so the audit trail links the displacement.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"purpose\": {\n          \"description\": \"Echoed from the request.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"activated\",\n        \"purpose\"\n      ],\n      \"title\": \"Policy Activate — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"activated\":{\"description\":\"The id now active for `purpose` — equal to the request `id`.\",\"minLength\":1,\"type\":\"string\"},\"contextId\":{\"description\":\"Echoed from the request when it was supplied.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"previousPolicyId\":{\"description\":\"The policy id that was active for this (contextId, purpose) immediately before, deactivated by this call. `null` when no policy was active — the first activation for the slot. Recorded so an operator can roll back to the prior policy and so the audit trail links the displacement.\",\"type\":[\"string\",\"null\"]},\"purpose\":{\"description\":\"Echoed from the request.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"activated\",\"purpose\"],\"title\":\"Policy Activate — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

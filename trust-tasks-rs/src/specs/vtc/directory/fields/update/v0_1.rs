@@ -37,23 +37,6 @@ Who may see a directory field, ordered from narrowest to widest. `admins`: holde
 
 `groups` and `connections` are not a chain: a viewer sees a field when they satisfy the audience the subject chose for it or any wider audience. Every audience includes the administrators, and the subject always sees their own whole card. There is no `onlyMe`: a value nobody else should see is not directory data.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Audience",
-///  "description": "Who may see a directory field, ordered from narrowest to widest. `admins`: holders of `vtc.directory.admin` (and, for derived fields, `vtc.members.manage`). `groups`: members who share at least one community group with the subject (narrowed to the groups the subject names in `groupAudience`, where it names any). `connections`: members holding an attributed, in-force verified relationship with the subject at the community. `members`: every active member. `public`: anyone, and what the member's signed public card carries outside the community.\n\n`groups` and `connections` are not a chain: a viewer sees a field when they satisfy the audience the subject chose for it or any wider audience. Every audience includes the administrators, and the subject always sees their own whole card. There is no `onlyMe`: a value nobody else should see is not directory data.",
-///  "type": "string",
-///  "enum": [
-///    "admins",
-///    "groups",
-///    "connections",
-///    "members",
-///    "public"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -127,46 +110,6 @@ impl ::std::convert::TryFrom<::std::string::String> for Audience {
 }
 ///Which claim a `claim` field accepts, from which credentials and issuers.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ClaimSelector",
-///  "description": "Which claim a `claim` field accepts, from which credentials and issuers.",
-///  "type": "object",
-///  "required": [
-///    "claimPath",
-///    "credentialType"
-///  ],
-///  "properties": {
-///    "claimPath": {
-///      "description": "JSON Pointer (RFC 6901) to the claim within `credentialSubject`.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "credentialType": {
-///      "description": "A `type` the presented credential MUST carry.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "issuers": {
-///      "description": "Issuers the community accepts for this field. Absent: the community's trusted issuers for the credential type, as its own policy decides.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "maxLength": 2048,
-///        "pattern": "^did:"
-///      },
-///      "maxItems": 32,
-///      "uniqueItems": true
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -188,17 +131,6 @@ impl ClaimSelector {
 }
 ///JSON Pointer (RFC 6901) to the claim within `credentialSubject`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "JSON Pointer (RFC 6901) to the claim within `credentialSubject`.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ClaimSelectorClaimPath(::std::string::String);
@@ -261,17 +193,6 @@ impl<'de> ::serde::Deserialize<'de> for ClaimSelectorClaimPath {
 }
 ///A `type` the presented credential MUST carry.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "A `type` the presented credential MUST carry.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ClaimSelectorCredentialType(::std::string::String);
@@ -334,16 +255,6 @@ impl<'de> ::serde::Deserialize<'de> for ClaimSelectorCredentialType {
 }
 ///`ClaimSelectorIssuersItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ClaimSelectorIssuersItem(::std::string::String);
@@ -408,35 +319,6 @@ impl<'de> ::serde::Deserialize<'de> for ClaimSelectorIssuersItem {
 }
 ///`EnumOption`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "EnumOption",
-///  "type": "object",
-///  "required": [
-///    "label",
-///    "value"
-///  ],
-///  "properties": {
-///    "label": {
-///      "description": "What a reader is shown for it.",
-///      "type": "string",
-///      "maxLength": 64,
-///      "minLength": 1
-///    },
-///    "value": {
-///      "description": "The stored value.",
-///      "type": "string",
-///      "maxLength": 64,
-///      "minLength": 1,
-///      "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -453,17 +335,6 @@ impl EnumOption {
 }
 ///What a reader is shown for it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "What a reader is shown for it.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct EnumOptionLabel(::std::string::String);
@@ -526,18 +397,6 @@ impl<'de> ::serde::Deserialize<'de> for EnumOptionLabel {
 }
 ///The stored value.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The stored value.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1,
-///  "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct EnumOptionValue(::std::string::String);
@@ -607,21 +466,6 @@ impl<'de> ::serde::Deserialize<'de> for EnumOptionValue {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -643,15 +487,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -715,60 +550,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Per-type constraints. A member that does not apply to the field's type is refused by the community with `valueInvalid` when the definition is written.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "FieldConstraints",
-///  "description": "Per-type constraints. A member that does not apply to the field's type is refused by the community with `valueInvalid` when the definition is written.",
-///  "type": "object",
-///  "properties": {
-///    "claim": {
-///      "$ref": "#/definitions/ClaimSelector"
-///    },
-///    "maxDate": {
-///      "type": "string",
-///      "format": "date"
-///    },
-///    "maxItems": {
-///      "type": "integer",
-///      "maximum": 32.0,
-///      "minimum": 1.0
-///    },
-///    "maxLength": {
-///      "type": "integer",
-///      "maximum": 2000.0,
-///      "minimum": 1.0
-///    },
-///    "minDate": {
-///      "type": "string",
-///      "format": "date"
-///    },
-///    "minLength": {
-///      "type": "integer",
-///      "maximum": 2000.0,
-///      "minimum": 0.0
-///    },
-///    "options": {
-///      "description": "The permitted values of an `enum` or `multiEnum` field.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/EnumOption"
-///      },
-///      "maxItems": 128,
-///      "minItems": 1
-///    },
-///    "pattern": {
-///      "description": "ECMA-262 regular expression a text value MUST match.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -833,17 +614,6 @@ impl FieldConstraints {
 }
 ///ECMA-262 regular expression a text value MUST match.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "ECMA-262 regular expression a text value MUST match.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct FieldConstraintsPattern(::std::string::String);
@@ -906,102 +676,6 @@ impl<'de> ::serde::Deserialize<'de> for FieldConstraintsPattern {
 }
 ///One field of the community's directory schema, as the community holds it. The audience order `admins` < `groups`/`connections` < `members` < `public` applies to `ceiling` and `defaultVisibility`; `defaultVisibility` is never wider than `ceiling`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "FieldDefinition",
-///  "description": "One field of the community's directory schema, as the community holds it. The audience order `admins` < `groups`/`connections` < `members` < `public` applies to `ceiling` and `defaultVisibility`; `defaultVisibility` is never wider than `ceiling`.",
-///  "type": "object",
-///  "required": [
-///    "base",
-///    "ceiling",
-///    "defaultVisibility",
-///    "facet",
-///    "key",
-///    "label",
-///    "order",
-///    "required",
-///    "searchable",
-///    "source",
-///    "state",
-///    "type"
-///  ],
-///  "properties": {
-///    "base": {
-///      "description": "`true` for a base field, present in every community; `false` for a field this community defined.",
-///      "type": "boolean"
-///    },
-///    "ceiling": {
-///      "$ref": "#/definitions/Audience"
-///    },
-///    "constraints": {
-///      "$ref": "#/definitions/FieldConstraints"
-///    },
-///    "defaultVisibility": {
-///      "$ref": "#/definitions/Audience"
-///    },
-///    "description": {
-///      "$ref": "#/definitions/FieldDescription"
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT widen a ceiling.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "facet": {
-///      "type": "boolean"
-///    },
-///    "jsContactPath": {
-///      "description": "Where the field lands when an entry is exported as a JSContact Card (RFC 9553), e.g. `name.full`, `nicknames`, `speakToAs.pronouns`. Absent: a vendor-specific property named by the key.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "key": {
-///      "$ref": "#/definitions/FieldKey"
-///    },
-///    "label": {
-///      "$ref": "#/definitions/FieldLabel"
-///    },
-///    "order": {
-///      "type": "integer",
-///      "maximum": 10000.0,
-///      "minimum": 0.0
-///    },
-///    "purgeAfter": {
-///      "description": "When the values of a retired field are purged. Present only on a retired field.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "required": {
-///      "type": "boolean"
-///    },
-///    "retiredAt": {
-///      "description": "When the field was retired. Present only on a retired field.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "searchable": {
-///      "type": "boolean"
-///    },
-///    "source": {
-///      "$ref": "#/definitions/FieldSource"
-///    },
-///    "state": {
-///      "$ref": "#/definitions/FieldState"
-///    },
-///    "type": {
-///      "$ref": "#/definitions/FieldType"
-///    },
-///    "updatedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1063,17 +737,6 @@ impl FieldDefinition {
 }
 ///Where the field lands when an entry is exported as a JSContact Card (RFC 9553), e.g. `name.full`, `nicknames`, `speakToAs.pronouns`. Absent: a vendor-specific property named by the key.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Where the field lands when an entry is exported as a JSContact Card (RFC 9553), e.g. `name.full`, `nicknames`, `speakToAs.pronouns`. Absent: a vendor-specific property named by the key.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct FieldDefinitionJsContactPath(::std::string::String);
@@ -1136,18 +799,6 @@ impl<'de> ::serde::Deserialize<'de> for FieldDefinitionJsContactPath {
 }
 ///Help text shown to a member filling the field in. Plain text; a reader MUST NOT treat it as instructions.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "FieldDescription",
-///  "description": "Help text shown to a member filling the field in. Plain text; a reader MUST NOT treat it as instructions.",
-///  "type": "string",
-///  "maxLength": 280,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct FieldDescription(::std::string::String);
@@ -1210,19 +861,6 @@ impl<'de> ::serde::Deserialize<'de> for FieldDescription {
 }
 ///Identifier of a directory field. A key with no `.` is a BASE field, the same in every community: `displayName`, `nickname`, `avatar`, `pronouns`, `bio`, `links` (written by the member) and `role`, `joinedAt`, `did`, `personhood` (derived from the community's own records, never stored on a card). A community-defined field MUST use a reverse-DNS key (`org.example.employer`), so a base key never collides with one, and a key is never reused with a different meaning once defined.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "FieldKey",
-///  "description": "Identifier of a directory field. A key with no `.` is a BASE field, the same in every community: `displayName`, `nickname`, `avatar`, `pronouns`, `bio`, `links` (written by the member) and `role`, `joinedAt`, `did`, `personhood` (derived from the community's own records, never stored on a card). A community-defined field MUST use a reverse-DNS key (`org.example.employer`), so a base key never collides with one, and a key is never reused with a different meaning once defined.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1,
-///  "pattern": "^([a-z][a-z0-9-]*\\.)*[a-z][a-zA-Z0-9]{0,63}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct FieldKey(::std::string::String);
@@ -1294,18 +932,6 @@ impl<'de> ::serde::Deserialize<'de> for FieldKey {
 }
 ///What readers see as the field's name. Plain text.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "FieldLabel",
-///  "description": "What readers see as the field's name. Plain text.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct FieldLabel(::std::string::String);
@@ -1368,22 +994,6 @@ impl<'de> ::serde::Deserialize<'de> for FieldLabel {
 }
 ///Who writes the value. `member`: self-asserted, through vtc/directory/card/update. `admin`: asserted by the community through vtc/directory/card/assert; the member reads it and cannot change it. `credential`: a claim the member discloses from a credential through vtc/directory/card/present, badged with its issuer. `derived`: a base field read from the community's own records (`role`, `joinedAt`, `did`, `personhood`) and never stored on a card. Each source is written only through its own path.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "FieldSource",
-///  "description": "Who writes the value. `member`: self-asserted, through vtc/directory/card/update. `admin`: asserted by the community through vtc/directory/card/assert; the member reads it and cannot change it. `credential`: a claim the member discloses from a credential through vtc/directory/card/present, badged with its issuer. `derived`: a base field read from the community's own records (`role`, `joinedAt`, `did`, `personhood`) and never stored on a card. Each source is written only through its own path.",
-///  "type": "string",
-///  "enum": [
-///    "member",
-///    "admin",
-///    "credential",
-///    "derived"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1453,21 +1063,6 @@ impl ::std::convert::TryFrom<::std::string::String> for FieldSource {
 }
 ///`active`: in use. `disabled`: a base field the community has switched off; hidden from every projection and re-enablable. `retired`: a community field withdrawn for good; hidden at once, its values purged after the community's retention period, and its key never reused.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "FieldState",
-///  "description": "`active`: in use. `disabled`: a base field the community has switched off; hidden from every projection and re-enablable. `retired`: a community field withdrawn for good; hidden at once, its values purged after the community's retention period, and its key never reused.",
-///  "type": "string",
-///  "enum": [
-///    "active",
-///    "disabled",
-///    "retired"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1533,30 +1128,6 @@ impl ::std::convert::TryFrom<::std::string::String> for FieldState {
 }
 ///The kind of value a field holds, which fixes its `FieldValue` shape. `did` holds a DID the member chooses to show (never their membership DID, which is the derived base field `did`). `claim` holds a `VerifiedValue` and requires `source: credential`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "FieldType",
-///  "description": "The kind of value a field holds, which fixes its `FieldValue` shape. `did` holds a DID the member chooses to show (never their membership DID, which is the derived base field `did`). `claim` holds a `VerifiedValue` and requires `source: credential`.",
-///  "type": "string",
-///  "enum": [
-///    "text",
-///    "longText",
-///    "url",
-///    "email",
-///    "phone",
-///    "enum",
-///    "multiEnum",
-///    "date",
-///    "country",
-///    "image",
-///    "did",
-///    "claim"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1658,69 +1229,6 @@ impl ::std::convert::TryFrom<::std::string::String> for FieldType {
 }
 ///An administrator changes a directory field's label, help text, constraints, order, ceiling or default visibility, or disables or re-enables a base field. The outer document members are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/directory/fields/update/0.1",
-///  "title": "Payload",
-///  "description": "An administrator changes a directory field's label, help text, constraints, order, ceiling or default visibility, or disables or re-enables a base field. The outer document members are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "key"
-///  ],
-///  "properties": {
-///    "ceiling": {
-///      "$ref": "#/definitions/Audience"
-///    },
-///    "constraints": {
-///      "description": "Replaces the constraints whole. Values already stored that no longer satisfy them stay until their writer next changes them; projections show them unchanged.",
-///      "$ref": "#/definitions/FieldConstraints"
-///    },
-///    "defaultVisibility": {
-///      "$ref": "#/definitions/Audience"
-///    },
-///    "description": {
-///      "$ref": "#/definitions/FieldDescription"
-///    },
-///    "enabled": {
-///      "description": "Base fields only: `false` disables the field (hidden from every projection, values kept), `true` re-enables it.",
-///      "type": "boolean"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "facet": {
-///      "type": "boolean"
-///    },
-///    "key": {
-///      "$ref": "#/definitions/FieldKey"
-///    },
-///    "label": {
-///      "$ref": "#/definitions/FieldLabel"
-///    },
-///    "order": {
-///      "type": "integer",
-///      "maximum": 10000.0,
-///      "minimum": 0.0
-///    },
-///    "reason": {
-///      "description": "Why, recorded with the change and shown to anyone who must approve it.",
-///      "type": "string",
-///      "maxLength": 1024,
-///      "minLength": 1
-///    },
-///    "required": {
-///      "type": "boolean"
-///    },
-///    "searchable": {
-///      "type": "boolean"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1765,17 +1273,6 @@ impl Payload {
 }
 ///Why, recorded with the change and shown to anyone who must approve it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Why, recorded with the change and shown to anyone who must approve it.",
-///  "type": "string",
-///  "maxLength": 1024,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadReason(::std::string::String);
@@ -1838,29 +1335,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 }
 ///The success response to a vtc/directory/fields/update/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/fields/update/0.1#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The success response to a vtc/directory/fields/update/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/fields/update/0.1#response.",
-///  "type": "object",
-///  "required": [
-///    "field"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "field": {
-///      "$ref": "#/definitions/FieldDefinition"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -2751,7 +2225,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Audience\": {\n      \"description\": \"Who may see a directory field, ordered from narrowest to widest. `admins`: holders of `vtc.directory.admin` (and, for derived fields, `vtc.members.manage`). `groups`: members who share at least one community group with the subject (narrowed to the groups the subject names in `groupAudience`, where it names any). `connections`: members holding an attributed, in-force verified relationship with the subject at the community. `members`: every active member. `public`: anyone, and what the member's signed public card carries outside the community.\\n\\n`groups` and `connections` are not a chain: a viewer sees a field when they satisfy the audience the subject chose for it or any wider audience. Every audience includes the administrators, and the subject always sees their own whole card. There is no `onlyMe`: a value nobody else should see is not directory data.\",\n      \"enum\": [\n        \"admins\",\n        \"groups\",\n        \"connections\",\n        \"members\",\n        \"public\"\n      ],\n      \"title\": \"Audience\",\n      \"type\": \"string\"\n    },\n    \"ClaimSelector\": {\n      \"additionalProperties\": false,\n      \"description\": \"Which claim a `claim` field accepts, from which credentials and issuers.\",\n      \"properties\": {\n        \"claimPath\": {\n          \"description\": \"JSON Pointer (RFC 6901) to the claim within `credentialSubject`.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"credentialType\": {\n          \"description\": \"A `type` the presented credential MUST carry.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issuers\": {\n          \"description\": \"Issuers the community accepts for this field. Absent: the community's trusted issuers for the credential type, as its own policy decides.\",\n          \"items\": {\n            \"maxLength\": 2048,\n            \"pattern\": \"^did:\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 32,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        }\n      },\n      \"required\": [\n        \"credentialType\",\n        \"claimPath\"\n      ],\n      \"title\": \"ClaimSelector\",\n      \"type\": \"object\"\n    },\n    \"EnumOption\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"label\": {\n          \"description\": \"What a reader is shown for it.\",\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"value\": {\n          \"description\": \"The stored value.\",\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"pattern\": \"^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"value\",\n        \"label\"\n      ],\n      \"title\": \"EnumOption\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"FieldConstraints\": {\n      \"additionalProperties\": false,\n      \"description\": \"Per-type constraints. A member that does not apply to the field's type is refused by the community with `valueInvalid` when the definition is written.\",\n      \"properties\": {\n        \"claim\": {\n          \"$ref\": \"#/$defs/ClaimSelector\"\n        },\n        \"maxDate\": {\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"maxItems\": {\n          \"maximum\": 32,\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"maxLength\": {\n          \"maximum\": 2000,\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"minDate\": {\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"minLength\": {\n          \"maximum\": 2000,\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"options\": {\n          \"description\": \"The permitted values of an `enum` or `multiEnum` field.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/EnumOption\"\n          },\n          \"maxItems\": 128,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"pattern\": {\n          \"description\": \"ECMA-262 regular expression a text value MUST match.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"title\": \"FieldConstraints\",\n      \"type\": \"object\"\n    },\n    \"FieldDefinition\": {\n      \"additionalProperties\": false,\n      \"description\": \"One field of the community's directory schema, as the community holds it. The audience order `admins` < `groups`/`connections` < `members` < `public` applies to `ceiling` and `defaultVisibility`; `defaultVisibility` is never wider than `ceiling`.\",\n      \"properties\": {\n        \"base\": {\n          \"description\": \"`true` for a base field, present in every community; `false` for a field this community defined.\",\n          \"type\": \"boolean\"\n        },\n        \"ceiling\": {\n          \"$ref\": \"#/$defs/Audience\"\n        },\n        \"constraints\": {\n          \"$ref\": \"#/$defs/FieldConstraints\"\n        },\n        \"defaultVisibility\": {\n          \"$ref\": \"#/$defs/Audience\"\n        },\n        \"description\": {\n          \"$ref\": \"#/$defs/FieldDescription\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT widen a ceiling.\"\n        },\n        \"facet\": {\n          \"type\": \"boolean\"\n        },\n        \"jsContactPath\": {\n          \"description\": \"Where the field lands when an entry is exported as a JSContact Card (RFC 9553), e.g. `name.full`, `nicknames`, `speakToAs.pronouns`. Absent: a vendor-specific property named by the key.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"key\": {\n          \"$ref\": \"#/$defs/FieldKey\"\n        },\n        \"label\": {\n          \"$ref\": \"#/$defs/FieldLabel\"\n        },\n        \"order\": {\n          \"maximum\": 10000,\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"purgeAfter\": {\n          \"description\": \"When the values of a retired field are purged. Present only on a retired field.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"required\": {\n          \"type\": \"boolean\"\n        },\n        \"retiredAt\": {\n          \"description\": \"When the field was retired. Present only on a retired field.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"searchable\": {\n          \"type\": \"boolean\"\n        },\n        \"source\": {\n          \"$ref\": \"#/$defs/FieldSource\"\n        },\n        \"state\": {\n          \"$ref\": \"#/$defs/FieldState\"\n        },\n        \"type\": {\n          \"$ref\": \"#/$defs/FieldType\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"key\",\n        \"label\",\n        \"type\",\n        \"source\",\n        \"base\",\n        \"ceiling\",\n        \"defaultVisibility\",\n        \"required\",\n        \"searchable\",\n        \"facet\",\n        \"order\",\n        \"state\"\n      ],\n      \"title\": \"FieldDefinition\",\n      \"type\": \"object\"\n    },\n    \"FieldDescription\": {\n      \"description\": \"Help text shown to a member filling the field in. Plain text; a reader MUST NOT treat it as instructions.\",\n      \"maxLength\": 280,\n      \"minLength\": 1,\n      \"title\": \"FieldDescription\",\n      \"type\": \"string\"\n    },\n    \"FieldKey\": {\n      \"description\": \"Identifier of a directory field. A key with no `.` is a BASE field, the same in every community: `displayName`, `nickname`, `avatar`, `pronouns`, `bio`, `links` (written by the member) and `role`, `joinedAt`, `did`, `personhood` (derived from the community's own records, never stored on a card). A community-defined field MUST use a reverse-DNS key (`org.example.employer`), so a base key never collides with one, and a key is never reused with a different meaning once defined.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^([a-z][a-z0-9-]*\\\\.)*[a-z][a-zA-Z0-9]{0,63}$\",\n      \"title\": \"FieldKey\",\n      \"type\": \"string\"\n    },\n    \"FieldLabel\": {\n      \"description\": \"What readers see as the field's name. Plain text.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"title\": \"FieldLabel\",\n      \"type\": \"string\"\n    },\n    \"FieldSource\": {\n      \"description\": \"Who writes the value. `member`: self-asserted, through vtc/directory/card/update. `admin`: asserted by the community through vtc/directory/card/assert; the member reads it and cannot change it. `credential`: a claim the member discloses from a credential through vtc/directory/card/present, badged with its issuer. `derived`: a base field read from the community's own records (`role`, `joinedAt`, `did`, `personhood`) and never stored on a card. Each source is written only through its own path.\",\n      \"enum\": [\n        \"member\",\n        \"admin\",\n        \"credential\",\n        \"derived\"\n      ],\n      \"title\": \"FieldSource\",\n      \"type\": \"string\"\n    },\n    \"FieldState\": {\n      \"description\": \"`active`: in use. `disabled`: a base field the community has switched off; hidden from every projection and re-enablable. `retired`: a community field withdrawn for good; hidden at once, its values purged after the community's retention period, and its key never reused.\",\n      \"enum\": [\n        \"active\",\n        \"disabled\",\n        \"retired\"\n      ],\n      \"title\": \"FieldState\",\n      \"type\": \"string\"\n    },\n    \"FieldType\": {\n      \"description\": \"The kind of value a field holds, which fixes its `FieldValue` shape. `did` holds a DID the member chooses to show (never their membership DID, which is the derived base field `did`). `claim` holds a `VerifiedValue` and requires `source: credential`.\",\n      \"enum\": [\n        \"text\",\n        \"longText\",\n        \"url\",\n        \"email\",\n        \"phone\",\n        \"enum\",\n        \"multiEnum\",\n        \"date\",\n        \"country\",\n        \"image\",\n        \"did\",\n        \"claim\"\n      ],\n      \"title\": \"FieldType\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a vtc/directory/fields/update/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/fields/update/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"field\": {\n          \"$ref\": \"#/$defs/FieldDefinition\"\n        }\n      },\n      \"required\": [\n        \"field\"\n      ],\n      \"title\": \"VTC Directory — Fields — Update — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/directory/fields/update/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"An administrator changes a directory field's label, help text, constraints, order, ceiling or default visibility, or disables or re-enables a base field. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"ceiling\": {\n      \"$ref\": \"#/$defs/Audience\"\n    },\n    \"constraints\": {\n      \"$ref\": \"#/$defs/FieldConstraints\",\n      \"description\": \"Replaces the constraints whole. Values already stored that no longer satisfy them stay until their writer next changes them; projections show them unchanged.\"\n    },\n    \"defaultVisibility\": {\n      \"$ref\": \"#/$defs/Audience\"\n    },\n    \"description\": {\n      \"$ref\": \"#/$defs/FieldDescription\"\n    },\n    \"enabled\": {\n      \"description\": \"Base fields only: `false` disables the field (hidden from every projection, values kept), `true` re-enables it.\",\n      \"type\": \"boolean\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"facet\": {\n      \"type\": \"boolean\"\n    },\n    \"key\": {\n      \"$ref\": \"#/$defs/FieldKey\"\n    },\n    \"label\": {\n      \"$ref\": \"#/$defs/FieldLabel\"\n    },\n    \"order\": {\n      \"maximum\": 10000,\n      \"minimum\": 0,\n      \"type\": \"integer\"\n    },\n    \"reason\": {\n      \"description\": \"Why, recorded with the change and shown to anyone who must approve it.\",\n      \"maxLength\": 1024,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"required\": {\n      \"type\": \"boolean\"\n    },\n    \"searchable\": {\n      \"type\": \"boolean\"\n    }\n  },\n  \"required\": [\n    \"key\"\n  ],\n  \"title\": \"VTC Directory — Fields — Update — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Audience\":{\"description\":\"Who may see a directory field, ordered from narrowest to widest. `admins`: holders of `vtc.directory.admin` (and, for derived fields, `vtc.members.manage`). `groups`: members who share at least one community group with the subject (narrowed to the groups the subject names in `groupAudience`, where it names any). `connections`: members holding an attributed, in-force verified relationship with the subject at the community. `members`: every active member. `public`: anyone, and what the member's signed public card carries outside the community.\\n\\n`groups` and `connections` are not a chain: a viewer sees a field when they satisfy the audience the subject chose for it or any wider audience. Every audience includes the administrators, and the subject always sees their own whole card. There is no `onlyMe`: a value nobody else should see is not directory data.\",\"enum\":[\"admins\",\"groups\",\"connections\",\"members\",\"public\"],\"title\":\"Audience\",\"type\":\"string\"},\"ClaimSelector\":{\"additionalProperties\":false,\"description\":\"Which claim a `claim` field accepts, from which credentials and issuers.\",\"properties\":{\"claimPath\":{\"description\":\"JSON Pointer (RFC 6901) to the claim within `credentialSubject`.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"credentialType\":{\"description\":\"A `type` the presented credential MUST carry.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"issuers\":{\"description\":\"Issuers the community accepts for this field. Absent: the community's trusted issuers for the credential type, as its own policy decides.\",\"items\":{\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"maxItems\":32,\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"credentialType\",\"claimPath\"],\"title\":\"ClaimSelector\",\"type\":\"object\"},\"EnumOption\":{\"additionalProperties\":false,\"properties\":{\"label\":{\"description\":\"What a reader is shown for it.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"value\":{\"description\":\"The stored value.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$\",\"type\":\"string\"}},\"required\":[\"value\",\"label\"],\"title\":\"EnumOption\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"FieldConstraints\":{\"additionalProperties\":false,\"description\":\"Per-type constraints. A member that does not apply to the field's type is refused by the community with `valueInvalid` when the definition is written.\",\"properties\":{\"claim\":{\"$ref\":\"#/$defs/ClaimSelector\"},\"maxDate\":{\"format\":\"date\",\"type\":\"string\"},\"maxItems\":{\"maximum\":32,\"minimum\":1,\"type\":\"integer\"},\"maxLength\":{\"maximum\":2000,\"minimum\":1,\"type\":\"integer\"},\"minDate\":{\"format\":\"date\",\"type\":\"string\"},\"minLength\":{\"maximum\":2000,\"minimum\":0,\"type\":\"integer\"},\"options\":{\"description\":\"The permitted values of an `enum` or `multiEnum` field.\",\"items\":{\"$ref\":\"#/$defs/EnumOption\"},\"maxItems\":128,\"minItems\":1,\"type\":\"array\"},\"pattern\":{\"description\":\"ECMA-262 regular expression a text value MUST match.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"}},\"title\":\"FieldConstraints\",\"type\":\"object\"},\"FieldDefinition\":{\"additionalProperties\":false,\"description\":\"One field of the community's directory schema, as the community holds it. The audience order `admins` < `groups`/`connections` < `members` < `public` applies to `ceiling` and `defaultVisibility`; `defaultVisibility` is never wider than `ceiling`.\",\"properties\":{\"base\":{\"description\":\"`true` for a base field, present in every community; `false` for a field this community defined.\",\"type\":\"boolean\"},\"ceiling\":{\"$ref\":\"#/$defs/Audience\"},\"constraints\":{\"$ref\":\"#/$defs/FieldConstraints\"},\"defaultVisibility\":{\"$ref\":\"#/$defs/Audience\"},\"description\":{\"$ref\":\"#/$defs/FieldDescription\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT widen a ceiling.\"},\"facet\":{\"type\":\"boolean\"},\"jsContactPath\":{\"description\":\"Where the field lands when an entry is exported as a JSContact Card (RFC 9553), e.g. `name.full`, `nicknames`, `speakToAs.pronouns`. Absent: a vendor-specific property named by the key.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"key\":{\"$ref\":\"#/$defs/FieldKey\"},\"label\":{\"$ref\":\"#/$defs/FieldLabel\"},\"order\":{\"maximum\":10000,\"minimum\":0,\"type\":\"integer\"},\"purgeAfter\":{\"description\":\"When the values of a retired field are purged. Present only on a retired field.\",\"format\":\"date-time\",\"type\":\"string\"},\"required\":{\"type\":\"boolean\"},\"retiredAt\":{\"description\":\"When the field was retired. Present only on a retired field.\",\"format\":\"date-time\",\"type\":\"string\"},\"searchable\":{\"type\":\"boolean\"},\"source\":{\"$ref\":\"#/$defs/FieldSource\"},\"state\":{\"$ref\":\"#/$defs/FieldState\"},\"type\":{\"$ref\":\"#/$defs/FieldType\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"key\",\"label\",\"type\",\"source\",\"base\",\"ceiling\",\"defaultVisibility\",\"required\",\"searchable\",\"facet\",\"order\",\"state\"],\"title\":\"FieldDefinition\",\"type\":\"object\"},\"FieldDescription\":{\"description\":\"Help text shown to a member filling the field in. Plain text; a reader MUST NOT treat it as instructions.\",\"maxLength\":280,\"minLength\":1,\"title\":\"FieldDescription\",\"type\":\"string\"},\"FieldKey\":{\"description\":\"Identifier of a directory field. A key with no `.` is a BASE field, the same in every community: `displayName`, `nickname`, `avatar`, `pronouns`, `bio`, `links` (written by the member) and `role`, `joinedAt`, `did`, `personhood` (derived from the community's own records, never stored on a card). A community-defined field MUST use a reverse-DNS key (`org.example.employer`), so a base key never collides with one, and a key is never reused with a different meaning once defined.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^([a-z][a-z0-9-]*\\\\.)*[a-z][a-zA-Z0-9]{0,63}$\",\"title\":\"FieldKey\",\"type\":\"string\"},\"FieldLabel\":{\"description\":\"What readers see as the field's name. Plain text.\",\"maxLength\":64,\"minLength\":1,\"title\":\"FieldLabel\",\"type\":\"string\"},\"FieldSource\":{\"description\":\"Who writes the value. `member`: self-asserted, through vtc/directory/card/update. `admin`: asserted by the community through vtc/directory/card/assert; the member reads it and cannot change it. `credential`: a claim the member discloses from a credential through vtc/directory/card/present, badged with its issuer. `derived`: a base field read from the community's own records (`role`, `joinedAt`, `did`, `personhood`) and never stored on a card. Each source is written only through its own path.\",\"enum\":[\"member\",\"admin\",\"credential\",\"derived\"],\"title\":\"FieldSource\",\"type\":\"string\"},\"FieldState\":{\"description\":\"`active`: in use. `disabled`: a base field the community has switched off; hidden from every projection and re-enablable. `retired`: a community field withdrawn for good; hidden at once, its values purged after the community's retention period, and its key never reused.\",\"enum\":[\"active\",\"disabled\",\"retired\"],\"title\":\"FieldState\",\"type\":\"string\"},\"FieldType\":{\"description\":\"The kind of value a field holds, which fixes its `FieldValue` shape. `did` holds a DID the member chooses to show (never their membership DID, which is the derived base field `did`). `claim` holds a `VerifiedValue` and requires `source: credential`.\",\"enum\":[\"text\",\"longText\",\"url\",\"email\",\"phone\",\"enum\",\"multiEnum\",\"date\",\"country\",\"image\",\"did\",\"claim\"],\"title\":\"FieldType\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vtc/directory/fields/update/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/fields/update/0.1#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"field\":{\"$ref\":\"#/$defs/FieldDefinition\"}},\"required\":[\"field\"],\"title\":\"VTC Directory — Fields — Update — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/directory/fields/update/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"An administrator changes a directory field's label, help text, constraints, order, ceiling or default visibility, or disables or re-enables a base field. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"ceiling\":{\"$ref\":\"#/$defs/Audience\"},\"constraints\":{\"$ref\":\"#/$defs/FieldConstraints\",\"description\":\"Replaces the constraints whole. Values already stored that no longer satisfy them stay until their writer next changes them; projections show them unchanged.\"},\"defaultVisibility\":{\"$ref\":\"#/$defs/Audience\"},\"description\":{\"$ref\":\"#/$defs/FieldDescription\"},\"enabled\":{\"description\":\"Base fields only: `false` disables the field (hidden from every projection, values kept), `true` re-enables it.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"facet\":{\"type\":\"boolean\"},\"key\":{\"$ref\":\"#/$defs/FieldKey\"},\"label\":{\"$ref\":\"#/$defs/FieldLabel\"},\"order\":{\"maximum\":10000,\"minimum\":0,\"type\":\"integer\"},\"reason\":{\"description\":\"Why, recorded with the change and shown to anyone who must approve it.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"},\"required\":{\"type\":\"boolean\"},\"searchable\":{\"type\":\"boolean\"}},\"required\":[\"key\"],\"title\":\"VTC Directory — Fields — Update — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -2761,7 +2235,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Audience\": {\n      \"description\": \"Who may see a directory field, ordered from narrowest to widest. `admins`: holders of `vtc.directory.admin` (and, for derived fields, `vtc.members.manage`). `groups`: members who share at least one community group with the subject (narrowed to the groups the subject names in `groupAudience`, where it names any). `connections`: members holding an attributed, in-force verified relationship with the subject at the community. `members`: every active member. `public`: anyone, and what the member's signed public card carries outside the community.\\n\\n`groups` and `connections` are not a chain: a viewer sees a field when they satisfy the audience the subject chose for it or any wider audience. Every audience includes the administrators, and the subject always sees their own whole card. There is no `onlyMe`: a value nobody else should see is not directory data.\",\n      \"enum\": [\n        \"admins\",\n        \"groups\",\n        \"connections\",\n        \"members\",\n        \"public\"\n      ],\n      \"title\": \"Audience\",\n      \"type\": \"string\"\n    },\n    \"ClaimSelector\": {\n      \"additionalProperties\": false,\n      \"description\": \"Which claim a `claim` field accepts, from which credentials and issuers.\",\n      \"properties\": {\n        \"claimPath\": {\n          \"description\": \"JSON Pointer (RFC 6901) to the claim within `credentialSubject`.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"credentialType\": {\n          \"description\": \"A `type` the presented credential MUST carry.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issuers\": {\n          \"description\": \"Issuers the community accepts for this field. Absent: the community's trusted issuers for the credential type, as its own policy decides.\",\n          \"items\": {\n            \"maxLength\": 2048,\n            \"pattern\": \"^did:\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 32,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        }\n      },\n      \"required\": [\n        \"credentialType\",\n        \"claimPath\"\n      ],\n      \"title\": \"ClaimSelector\",\n      \"type\": \"object\"\n    },\n    \"EnumOption\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"label\": {\n          \"description\": \"What a reader is shown for it.\",\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"value\": {\n          \"description\": \"The stored value.\",\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"pattern\": \"^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"value\",\n        \"label\"\n      ],\n      \"title\": \"EnumOption\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"FieldConstraints\": {\n      \"additionalProperties\": false,\n      \"description\": \"Per-type constraints. A member that does not apply to the field's type is refused by the community with `valueInvalid` when the definition is written.\",\n      \"properties\": {\n        \"claim\": {\n          \"$ref\": \"#/$defs/ClaimSelector\"\n        },\n        \"maxDate\": {\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"maxItems\": {\n          \"maximum\": 32,\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"maxLength\": {\n          \"maximum\": 2000,\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"minDate\": {\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"minLength\": {\n          \"maximum\": 2000,\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"options\": {\n          \"description\": \"The permitted values of an `enum` or `multiEnum` field.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/EnumOption\"\n          },\n          \"maxItems\": 128,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"pattern\": {\n          \"description\": \"ECMA-262 regular expression a text value MUST match.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"title\": \"FieldConstraints\",\n      \"type\": \"object\"\n    },\n    \"FieldDefinition\": {\n      \"additionalProperties\": false,\n      \"description\": \"One field of the community's directory schema, as the community holds it. The audience order `admins` < `groups`/`connections` < `members` < `public` applies to `ceiling` and `defaultVisibility`; `defaultVisibility` is never wider than `ceiling`.\",\n      \"properties\": {\n        \"base\": {\n          \"description\": \"`true` for a base field, present in every community; `false` for a field this community defined.\",\n          \"type\": \"boolean\"\n        },\n        \"ceiling\": {\n          \"$ref\": \"#/$defs/Audience\"\n        },\n        \"constraints\": {\n          \"$ref\": \"#/$defs/FieldConstraints\"\n        },\n        \"defaultVisibility\": {\n          \"$ref\": \"#/$defs/Audience\"\n        },\n        \"description\": {\n          \"$ref\": \"#/$defs/FieldDescription\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT widen a ceiling.\"\n        },\n        \"facet\": {\n          \"type\": \"boolean\"\n        },\n        \"jsContactPath\": {\n          \"description\": \"Where the field lands when an entry is exported as a JSContact Card (RFC 9553), e.g. `name.full`, `nicknames`, `speakToAs.pronouns`. Absent: a vendor-specific property named by the key.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"key\": {\n          \"$ref\": \"#/$defs/FieldKey\"\n        },\n        \"label\": {\n          \"$ref\": \"#/$defs/FieldLabel\"\n        },\n        \"order\": {\n          \"maximum\": 10000,\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"purgeAfter\": {\n          \"description\": \"When the values of a retired field are purged. Present only on a retired field.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"required\": {\n          \"type\": \"boolean\"\n        },\n        \"retiredAt\": {\n          \"description\": \"When the field was retired. Present only on a retired field.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"searchable\": {\n          \"type\": \"boolean\"\n        },\n        \"source\": {\n          \"$ref\": \"#/$defs/FieldSource\"\n        },\n        \"state\": {\n          \"$ref\": \"#/$defs/FieldState\"\n        },\n        \"type\": {\n          \"$ref\": \"#/$defs/FieldType\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"key\",\n        \"label\",\n        \"type\",\n        \"source\",\n        \"base\",\n        \"ceiling\",\n        \"defaultVisibility\",\n        \"required\",\n        \"searchable\",\n        \"facet\",\n        \"order\",\n        \"state\"\n      ],\n      \"title\": \"FieldDefinition\",\n      \"type\": \"object\"\n    },\n    \"FieldDescription\": {\n      \"description\": \"Help text shown to a member filling the field in. Plain text; a reader MUST NOT treat it as instructions.\",\n      \"maxLength\": 280,\n      \"minLength\": 1,\n      \"title\": \"FieldDescription\",\n      \"type\": \"string\"\n    },\n    \"FieldKey\": {\n      \"description\": \"Identifier of a directory field. A key with no `.` is a BASE field, the same in every community: `displayName`, `nickname`, `avatar`, `pronouns`, `bio`, `links` (written by the member) and `role`, `joinedAt`, `did`, `personhood` (derived from the community's own records, never stored on a card). A community-defined field MUST use a reverse-DNS key (`org.example.employer`), so a base key never collides with one, and a key is never reused with a different meaning once defined.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^([a-z][a-z0-9-]*\\\\.)*[a-z][a-zA-Z0-9]{0,63}$\",\n      \"title\": \"FieldKey\",\n      \"type\": \"string\"\n    },\n    \"FieldLabel\": {\n      \"description\": \"What readers see as the field's name. Plain text.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"title\": \"FieldLabel\",\n      \"type\": \"string\"\n    },\n    \"FieldSource\": {\n      \"description\": \"Who writes the value. `member`: self-asserted, through vtc/directory/card/update. `admin`: asserted by the community through vtc/directory/card/assert; the member reads it and cannot change it. `credential`: a claim the member discloses from a credential through vtc/directory/card/present, badged with its issuer. `derived`: a base field read from the community's own records (`role`, `joinedAt`, `did`, `personhood`) and never stored on a card. Each source is written only through its own path.\",\n      \"enum\": [\n        \"member\",\n        \"admin\",\n        \"credential\",\n        \"derived\"\n      ],\n      \"title\": \"FieldSource\",\n      \"type\": \"string\"\n    },\n    \"FieldState\": {\n      \"description\": \"`active`: in use. `disabled`: a base field the community has switched off; hidden from every projection and re-enablable. `retired`: a community field withdrawn for good; hidden at once, its values purged after the community's retention period, and its key never reused.\",\n      \"enum\": [\n        \"active\",\n        \"disabled\",\n        \"retired\"\n      ],\n      \"title\": \"FieldState\",\n      \"type\": \"string\"\n    },\n    \"FieldType\": {\n      \"description\": \"The kind of value a field holds, which fixes its `FieldValue` shape. `did` holds a DID the member chooses to show (never their membership DID, which is the derived base field `did`). `claim` holds a `VerifiedValue` and requires `source: credential`.\",\n      \"enum\": [\n        \"text\",\n        \"longText\",\n        \"url\",\n        \"email\",\n        \"phone\",\n        \"enum\",\n        \"multiEnum\",\n        \"date\",\n        \"country\",\n        \"image\",\n        \"did\",\n        \"claim\"\n      ],\n      \"title\": \"FieldType\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a vtc/directory/fields/update/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/fields/update/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"field\": {\n          \"$ref\": \"#/$defs/FieldDefinition\"\n        }\n      },\n      \"required\": [\n        \"field\"\n      ],\n      \"title\": \"VTC Directory — Fields — Update — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Audience\":{\"description\":\"Who may see a directory field, ordered from narrowest to widest. `admins`: holders of `vtc.directory.admin` (and, for derived fields, `vtc.members.manage`). `groups`: members who share at least one community group with the subject (narrowed to the groups the subject names in `groupAudience`, where it names any). `connections`: members holding an attributed, in-force verified relationship with the subject at the community. `members`: every active member. `public`: anyone, and what the member's signed public card carries outside the community.\\n\\n`groups` and `connections` are not a chain: a viewer sees a field when they satisfy the audience the subject chose for it or any wider audience. Every audience includes the administrators, and the subject always sees their own whole card. There is no `onlyMe`: a value nobody else should see is not directory data.\",\"enum\":[\"admins\",\"groups\",\"connections\",\"members\",\"public\"],\"title\":\"Audience\",\"type\":\"string\"},\"ClaimSelector\":{\"additionalProperties\":false,\"description\":\"Which claim a `claim` field accepts, from which credentials and issuers.\",\"properties\":{\"claimPath\":{\"description\":\"JSON Pointer (RFC 6901) to the claim within `credentialSubject`.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"credentialType\":{\"description\":\"A `type` the presented credential MUST carry.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"issuers\":{\"description\":\"Issuers the community accepts for this field. Absent: the community's trusted issuers for the credential type, as its own policy decides.\",\"items\":{\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"maxItems\":32,\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"credentialType\",\"claimPath\"],\"title\":\"ClaimSelector\",\"type\":\"object\"},\"EnumOption\":{\"additionalProperties\":false,\"properties\":{\"label\":{\"description\":\"What a reader is shown for it.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"value\":{\"description\":\"The stored value.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$\",\"type\":\"string\"}},\"required\":[\"value\",\"label\"],\"title\":\"EnumOption\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"FieldConstraints\":{\"additionalProperties\":false,\"description\":\"Per-type constraints. A member that does not apply to the field's type is refused by the community with `valueInvalid` when the definition is written.\",\"properties\":{\"claim\":{\"$ref\":\"#/$defs/ClaimSelector\"},\"maxDate\":{\"format\":\"date\",\"type\":\"string\"},\"maxItems\":{\"maximum\":32,\"minimum\":1,\"type\":\"integer\"},\"maxLength\":{\"maximum\":2000,\"minimum\":1,\"type\":\"integer\"},\"minDate\":{\"format\":\"date\",\"type\":\"string\"},\"minLength\":{\"maximum\":2000,\"minimum\":0,\"type\":\"integer\"},\"options\":{\"description\":\"The permitted values of an `enum` or `multiEnum` field.\",\"items\":{\"$ref\":\"#/$defs/EnumOption\"},\"maxItems\":128,\"minItems\":1,\"type\":\"array\"},\"pattern\":{\"description\":\"ECMA-262 regular expression a text value MUST match.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"}},\"title\":\"FieldConstraints\",\"type\":\"object\"},\"FieldDefinition\":{\"additionalProperties\":false,\"description\":\"One field of the community's directory schema, as the community holds it. The audience order `admins` < `groups`/`connections` < `members` < `public` applies to `ceiling` and `defaultVisibility`; `defaultVisibility` is never wider than `ceiling`.\",\"properties\":{\"base\":{\"description\":\"`true` for a base field, present in every community; `false` for a field this community defined.\",\"type\":\"boolean\"},\"ceiling\":{\"$ref\":\"#/$defs/Audience\"},\"constraints\":{\"$ref\":\"#/$defs/FieldConstraints\"},\"defaultVisibility\":{\"$ref\":\"#/$defs/Audience\"},\"description\":{\"$ref\":\"#/$defs/FieldDescription\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT widen a ceiling.\"},\"facet\":{\"type\":\"boolean\"},\"jsContactPath\":{\"description\":\"Where the field lands when an entry is exported as a JSContact Card (RFC 9553), e.g. `name.full`, `nicknames`, `speakToAs.pronouns`. Absent: a vendor-specific property named by the key.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"key\":{\"$ref\":\"#/$defs/FieldKey\"},\"label\":{\"$ref\":\"#/$defs/FieldLabel\"},\"order\":{\"maximum\":10000,\"minimum\":0,\"type\":\"integer\"},\"purgeAfter\":{\"description\":\"When the values of a retired field are purged. Present only on a retired field.\",\"format\":\"date-time\",\"type\":\"string\"},\"required\":{\"type\":\"boolean\"},\"retiredAt\":{\"description\":\"When the field was retired. Present only on a retired field.\",\"format\":\"date-time\",\"type\":\"string\"},\"searchable\":{\"type\":\"boolean\"},\"source\":{\"$ref\":\"#/$defs/FieldSource\"},\"state\":{\"$ref\":\"#/$defs/FieldState\"},\"type\":{\"$ref\":\"#/$defs/FieldType\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"key\",\"label\",\"type\",\"source\",\"base\",\"ceiling\",\"defaultVisibility\",\"required\",\"searchable\",\"facet\",\"order\",\"state\"],\"title\":\"FieldDefinition\",\"type\":\"object\"},\"FieldDescription\":{\"description\":\"Help text shown to a member filling the field in. Plain text; a reader MUST NOT treat it as instructions.\",\"maxLength\":280,\"minLength\":1,\"title\":\"FieldDescription\",\"type\":\"string\"},\"FieldKey\":{\"description\":\"Identifier of a directory field. A key with no `.` is a BASE field, the same in every community: `displayName`, `nickname`, `avatar`, `pronouns`, `bio`, `links` (written by the member) and `role`, `joinedAt`, `did`, `personhood` (derived from the community's own records, never stored on a card). A community-defined field MUST use a reverse-DNS key (`org.example.employer`), so a base key never collides with one, and a key is never reused with a different meaning once defined.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^([a-z][a-z0-9-]*\\\\.)*[a-z][a-zA-Z0-9]{0,63}$\",\"title\":\"FieldKey\",\"type\":\"string\"},\"FieldLabel\":{\"description\":\"What readers see as the field's name. Plain text.\",\"maxLength\":64,\"minLength\":1,\"title\":\"FieldLabel\",\"type\":\"string\"},\"FieldSource\":{\"description\":\"Who writes the value. `member`: self-asserted, through vtc/directory/card/update. `admin`: asserted by the community through vtc/directory/card/assert; the member reads it and cannot change it. `credential`: a claim the member discloses from a credential through vtc/directory/card/present, badged with its issuer. `derived`: a base field read from the community's own records (`role`, `joinedAt`, `did`, `personhood`) and never stored on a card. Each source is written only through its own path.\",\"enum\":[\"member\",\"admin\",\"credential\",\"derived\"],\"title\":\"FieldSource\",\"type\":\"string\"},\"FieldState\":{\"description\":\"`active`: in use. `disabled`: a base field the community has switched off; hidden from every projection and re-enablable. `retired`: a community field withdrawn for good; hidden at once, its values purged after the community's retention period, and its key never reused.\",\"enum\":[\"active\",\"disabled\",\"retired\"],\"title\":\"FieldState\",\"type\":\"string\"},\"FieldType\":{\"description\":\"The kind of value a field holds, which fixes its `FieldValue` shape. `did` holds a DID the member chooses to show (never their membership DID, which is the derived base field `did`). `claim` holds a `VerifiedValue` and requires `source: credential`.\",\"enum\":[\"text\",\"longText\",\"url\",\"email\",\"phone\",\"enum\",\"multiEnum\",\"date\",\"country\",\"image\",\"did\",\"claim\"],\"title\":\"FieldType\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vtc/directory/fields/update/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/fields/update/0.1#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"field\":{\"$ref\":\"#/$defs/FieldDefinition\"}},\"required\":[\"field\"],\"title\":\"VTC Directory — Fields — Update — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

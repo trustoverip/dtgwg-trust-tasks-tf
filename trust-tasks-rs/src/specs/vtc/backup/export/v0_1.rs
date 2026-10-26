@@ -34,72 +34,6 @@ pub mod error {
 }
 ///Unencrypted metadata plus the encrypted payload. The KDF and cipher parameters travel in the clear so a reader can decrypt without knowing this specification's defaults.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "BackupEnvelope",
-///  "description": "Unencrypted metadata plus the encrypted payload. The KDF and cipher parameters travel in the clear so a reader can decrypt without knowing this specification's defaults.",
-///  "type": "object",
-///  "required": [
-///    "ciphertext",
-///    "createdAt",
-///    "encryption",
-///    "format",
-///    "includesAudit",
-///    "kdf",
-///    "sourceVersion",
-///    "version"
-///  ],
-///  "properties": {
-///    "ciphertext": {
-///      "description": "base64url(AEAD(JSON(payload))).",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "createdAt": {
-///      "description": "When the export was taken.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "encryption": {
-///      "$ref": "#/definitions/EncryptionParams"
-///    },
-///    "format": {
-///      "description": "Envelope format tag, e.g. `vtc-backup-v1`.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "includesAudit": {
-///      "description": "Whether the audit log and its signed checkpoints are inside `ciphertext`.",
-///      "type": "boolean"
-///    },
-///    "kdf": {
-///      "$ref": "#/definitions/KdfParams"
-///    },
-///    "sourceDid": {
-///      "description": "DID of the community exported from, when it has one. An import cross-checks this against the running community.",
-///      "type": [
-///        "string",
-///        "null"
-///      ]
-///    },
-///    "sourceVersion": {
-///      "description": "Version of the software that produced the envelope.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "version": {
-///      "description": "Envelope schema version.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "backupEnvelope"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -136,16 +70,6 @@ impl BackupEnvelope {
 }
 ///base64url(AEAD(JSON(payload))).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "base64url(AEAD(JSON(payload))).",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct BackupEnvelopeCiphertext(::std::string::String);
@@ -205,16 +129,6 @@ impl<'de> ::serde::Deserialize<'de> for BackupEnvelopeCiphertext {
 }
 ///Envelope format tag, e.g. `vtc-backup-v1`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Envelope format tag, e.g. `vtc-backup-v1`.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct BackupEnvelopeFormat(::std::string::String);
@@ -274,16 +188,6 @@ impl<'de> ::serde::Deserialize<'de> for BackupEnvelopeFormat {
 }
 ///Version of the software that produced the envelope.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Version of the software that produced the envelope.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct BackupEnvelopeSourceVersion(::std::string::String);
@@ -343,33 +247,6 @@ impl<'de> ::serde::Deserialize<'de> for BackupEnvelopeSourceVersion {
 }
 ///`EncryptionParams`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "EncryptionParams",
-///  "type": "object",
-///  "required": [
-///    "algorithm",
-///    "nonce"
-///  ],
-///  "properties": {
-///    "algorithm": {
-///      "description": "AEAD identifier, e.g. `aes-256-gcm`.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "nonce": {
-///      "description": "base64url, 12 bytes.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "encryptionParams"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -386,16 +263,6 @@ impl EncryptionParams {
 }
 ///AEAD identifier, e.g. `aes-256-gcm`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "AEAD identifier, e.g. `aes-256-gcm`.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct EncryptionParamsAlgorithm(::std::string::String);
@@ -455,16 +322,6 @@ impl<'de> ::serde::Deserialize<'de> for EncryptionParamsAlgorithm {
 }
 ///base64url, 12 bytes.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "base64url, 12 bytes.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct EncryptionParamsNonce(::std::string::String);
@@ -524,21 +381,6 @@ impl<'de> ::serde::Deserialize<'de> for EncryptionParamsNonce {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -560,15 +402,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -632,51 +465,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`KdfParams`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "KdfParams",
-///  "type": "object",
-///  "required": [
-///    "algorithm",
-///    "mCost",
-///    "pCost",
-///    "salt",
-///    "tCost"
-///  ],
-///  "properties": {
-///    "algorithm": {
-///      "description": "KDF identifier, e.g. `argon2id`.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "mCost": {
-///      "description": "Argon2id memory cost (KiB).",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "pCost": {
-///      "description": "Argon2id parallelism.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "salt": {
-///      "description": "base64url, 32 bytes.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "tCost": {
-///      "description": "Argon2id time cost (iterations).",
-///      "type": "integer",
-///      "minimum": 1.0
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "kdfParams"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -702,16 +490,6 @@ impl KdfParams {
 }
 ///KDF identifier, e.g. `argon2id`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "KDF identifier, e.g. `argon2id`.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct KdfParamsAlgorithm(::std::string::String);
@@ -771,16 +549,6 @@ impl<'de> ::serde::Deserialize<'de> for KdfParamsAlgorithm {
 }
 ///base64url, 32 bytes.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "base64url, 32 bytes.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct KdfParamsSalt(::std::string::String);
@@ -840,35 +608,6 @@ impl<'de> ::serde::Deserialize<'de> for KdfParamsSalt {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/backup/export/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "password"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "includeAudit": {
-///      "description": "Include the audit log and its signed checkpoints. Off by default: the log is large and carries plaintext DIDs.",
-///      "default": false,
-///      "type": "boolean"
-///    },
-///    "password": {
-///      "description": "Argon2id passphrase the envelope is encrypted under. Minimum 12 characters; the consumer rejects shorter.",
-///      "type": "string",
-///      "minLength": 12
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -888,16 +627,6 @@ impl Payload {
 }
 ///Argon2id passphrase the envelope is encrypted under. Minimum 12 characters; the consumer rejects shorter.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Argon2id passphrase the envelope is encrypted under. Minimum 12 characters; the consumer rejects shorter.",
-///  "type": "string",
-///  "minLength": 12
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadPassword(::std::string::String);
@@ -957,29 +686,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPassword {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "envelope"
-///  ],
-///  "properties": {
-///    "envelope": {
-///      "description": "The encrypted full-state backup.",
-///      "$ref": "#/definitions/BackupEnvelope"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1428,7 +1134,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"BackupEnvelope\": {\n      \"$anchor\": \"backupEnvelope\",\n      \"additionalProperties\": false,\n      \"description\": \"Unencrypted metadata plus the encrypted payload. The KDF and cipher parameters travel in the clear so a reader can decrypt without knowing this specification's defaults.\",\n      \"properties\": {\n        \"ciphertext\": {\n          \"description\": \"base64url(AEAD(JSON(payload))).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"createdAt\": {\n          \"description\": \"When the export was taken.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"encryption\": {\n          \"$ref\": \"#/$defs/EncryptionParams\"\n        },\n        \"format\": {\n          \"description\": \"Envelope format tag, e.g. `vtc-backup-v1`.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"includesAudit\": {\n          \"description\": \"Whether the audit log and its signed checkpoints are inside `ciphertext`.\",\n          \"type\": \"boolean\"\n        },\n        \"kdf\": {\n          \"$ref\": \"#/$defs/KdfParams\"\n        },\n        \"sourceDid\": {\n          \"description\": \"DID of the community exported from, when it has one. An import cross-checks this against the running community.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"sourceVersion\": {\n          \"description\": \"Version of the software that produced the envelope.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"description\": \"Envelope schema version.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"version\",\n        \"format\",\n        \"createdAt\",\n        \"sourceVersion\",\n        \"kdf\",\n        \"encryption\",\n        \"includesAudit\",\n        \"ciphertext\"\n      ],\n      \"title\": \"BackupEnvelope\",\n      \"type\": \"object\"\n    },\n    \"EncryptionParams\": {\n      \"$anchor\": \"encryptionParams\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"algorithm\": {\n          \"description\": \"AEAD identifier, e.g. `aes-256-gcm`.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"nonce\": {\n          \"description\": \"base64url, 12 bytes.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"algorithm\",\n        \"nonce\"\n      ],\n      \"title\": \"EncryptionParams\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"KdfParams\": {\n      \"$anchor\": \"kdfParams\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"algorithm\": {\n          \"description\": \"KDF identifier, e.g. `argon2id`.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"mCost\": {\n          \"description\": \"Argon2id memory cost (KiB).\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"pCost\": {\n          \"description\": \"Argon2id parallelism.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"salt\": {\n          \"description\": \"base64url, 32 bytes.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tCost\": {\n          \"description\": \"Argon2id time cost (iterations).\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"algorithm\",\n        \"salt\",\n        \"mCost\",\n        \"tCost\",\n        \"pCost\"\n      ],\n      \"title\": \"KdfParams\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"envelope\": {\n          \"$ref\": \"#/$defs/BackupEnvelope\",\n          \"description\": \"The encrypted full-state backup.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"envelope\"\n      ],\n      \"title\": \"VTC Backup Export — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/backup/export/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"includeAudit\": {\n      \"default\": false,\n      \"description\": \"Include the audit log and its signed checkpoints. Off by default: the log is large and carries plaintext DIDs.\",\n      \"type\": \"boolean\"\n    },\n    \"password\": {\n      \"description\": \"Argon2id passphrase the envelope is encrypted under. Minimum 12 characters; the consumer rejects shorter.\",\n      \"minLength\": 12,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"password\"\n  ],\n  \"title\": \"VTC Backup Export — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"BackupEnvelope\":{\"$anchor\":\"backupEnvelope\",\"additionalProperties\":false,\"description\":\"Unencrypted metadata plus the encrypted payload. The KDF and cipher parameters travel in the clear so a reader can decrypt without knowing this specification's defaults.\",\"properties\":{\"ciphertext\":{\"description\":\"base64url(AEAD(JSON(payload))).\",\"minLength\":1,\"type\":\"string\"},\"createdAt\":{\"description\":\"When the export was taken.\",\"format\":\"date-time\",\"type\":\"string\"},\"encryption\":{\"$ref\":\"#/$defs/EncryptionParams\"},\"format\":{\"description\":\"Envelope format tag, e.g. `vtc-backup-v1`.\",\"minLength\":1,\"type\":\"string\"},\"includesAudit\":{\"description\":\"Whether the audit log and its signed checkpoints are inside `ciphertext`.\",\"type\":\"boolean\"},\"kdf\":{\"$ref\":\"#/$defs/KdfParams\"},\"sourceDid\":{\"description\":\"DID of the community exported from, when it has one. An import cross-checks this against the running community.\",\"type\":[\"string\",\"null\"]},\"sourceVersion\":{\"description\":\"Version of the software that produced the envelope.\",\"minLength\":1,\"type\":\"string\"},\"version\":{\"description\":\"Envelope schema version.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"version\",\"format\",\"createdAt\",\"sourceVersion\",\"kdf\",\"encryption\",\"includesAudit\",\"ciphertext\"],\"title\":\"BackupEnvelope\",\"type\":\"object\"},\"EncryptionParams\":{\"$anchor\":\"encryptionParams\",\"additionalProperties\":false,\"properties\":{\"algorithm\":{\"description\":\"AEAD identifier, e.g. `aes-256-gcm`.\",\"minLength\":1,\"type\":\"string\"},\"nonce\":{\"description\":\"base64url, 12 bytes.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"algorithm\",\"nonce\"],\"title\":\"EncryptionParams\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"KdfParams\":{\"$anchor\":\"kdfParams\",\"additionalProperties\":false,\"properties\":{\"algorithm\":{\"description\":\"KDF identifier, e.g. `argon2id`.\",\"minLength\":1,\"type\":\"string\"},\"mCost\":{\"description\":\"Argon2id memory cost (KiB).\",\"minimum\":1,\"type\":\"integer\"},\"pCost\":{\"description\":\"Argon2id parallelism.\",\"minimum\":1,\"type\":\"integer\"},\"salt\":{\"description\":\"base64url, 32 bytes.\",\"minLength\":1,\"type\":\"string\"},\"tCost\":{\"description\":\"Argon2id time cost (iterations).\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"algorithm\",\"salt\",\"mCost\",\"tCost\",\"pCost\"],\"title\":\"KdfParams\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"envelope\":{\"$ref\":\"#/$defs/BackupEnvelope\",\"description\":\"The encrypted full-state backup.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"envelope\"],\"title\":\"VTC Backup Export — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/backup/export/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"includeAudit\":{\"default\":false,\"description\":\"Include the audit log and its signed checkpoints. Off by default: the log is large and carries plaintext DIDs.\",\"type\":\"boolean\"},\"password\":{\"description\":\"Argon2id passphrase the envelope is encrypted under. Minimum 12 characters; the consumer rejects shorter.\",\"minLength\":12,\"type\":\"string\"}},\"required\":[\"password\"],\"title\":\"VTC Backup Export — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1437,7 +1143,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"BackupEnvelope\": {\n      \"$anchor\": \"backupEnvelope\",\n      \"additionalProperties\": false,\n      \"description\": \"Unencrypted metadata plus the encrypted payload. The KDF and cipher parameters travel in the clear so a reader can decrypt without knowing this specification's defaults.\",\n      \"properties\": {\n        \"ciphertext\": {\n          \"description\": \"base64url(AEAD(JSON(payload))).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"createdAt\": {\n          \"description\": \"When the export was taken.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"encryption\": {\n          \"$ref\": \"#/$defs/EncryptionParams\"\n        },\n        \"format\": {\n          \"description\": \"Envelope format tag, e.g. `vtc-backup-v1`.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"includesAudit\": {\n          \"description\": \"Whether the audit log and its signed checkpoints are inside `ciphertext`.\",\n          \"type\": \"boolean\"\n        },\n        \"kdf\": {\n          \"$ref\": \"#/$defs/KdfParams\"\n        },\n        \"sourceDid\": {\n          \"description\": \"DID of the community exported from, when it has one. An import cross-checks this against the running community.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"sourceVersion\": {\n          \"description\": \"Version of the software that produced the envelope.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"description\": \"Envelope schema version.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"version\",\n        \"format\",\n        \"createdAt\",\n        \"sourceVersion\",\n        \"kdf\",\n        \"encryption\",\n        \"includesAudit\",\n        \"ciphertext\"\n      ],\n      \"title\": \"BackupEnvelope\",\n      \"type\": \"object\"\n    },\n    \"EncryptionParams\": {\n      \"$anchor\": \"encryptionParams\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"algorithm\": {\n          \"description\": \"AEAD identifier, e.g. `aes-256-gcm`.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"nonce\": {\n          \"description\": \"base64url, 12 bytes.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"algorithm\",\n        \"nonce\"\n      ],\n      \"title\": \"EncryptionParams\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"KdfParams\": {\n      \"$anchor\": \"kdfParams\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"algorithm\": {\n          \"description\": \"KDF identifier, e.g. `argon2id`.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"mCost\": {\n          \"description\": \"Argon2id memory cost (KiB).\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"pCost\": {\n          \"description\": \"Argon2id parallelism.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"salt\": {\n          \"description\": \"base64url, 32 bytes.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tCost\": {\n          \"description\": \"Argon2id time cost (iterations).\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"algorithm\",\n        \"salt\",\n        \"mCost\",\n        \"tCost\",\n        \"pCost\"\n      ],\n      \"title\": \"KdfParams\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"envelope\": {\n          \"$ref\": \"#/$defs/BackupEnvelope\",\n          \"description\": \"The encrypted full-state backup.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"envelope\"\n      ],\n      \"title\": \"VTC Backup Export — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"BackupEnvelope\":{\"$anchor\":\"backupEnvelope\",\"additionalProperties\":false,\"description\":\"Unencrypted metadata plus the encrypted payload. The KDF and cipher parameters travel in the clear so a reader can decrypt without knowing this specification's defaults.\",\"properties\":{\"ciphertext\":{\"description\":\"base64url(AEAD(JSON(payload))).\",\"minLength\":1,\"type\":\"string\"},\"createdAt\":{\"description\":\"When the export was taken.\",\"format\":\"date-time\",\"type\":\"string\"},\"encryption\":{\"$ref\":\"#/$defs/EncryptionParams\"},\"format\":{\"description\":\"Envelope format tag, e.g. `vtc-backup-v1`.\",\"minLength\":1,\"type\":\"string\"},\"includesAudit\":{\"description\":\"Whether the audit log and its signed checkpoints are inside `ciphertext`.\",\"type\":\"boolean\"},\"kdf\":{\"$ref\":\"#/$defs/KdfParams\"},\"sourceDid\":{\"description\":\"DID of the community exported from, when it has one. An import cross-checks this against the running community.\",\"type\":[\"string\",\"null\"]},\"sourceVersion\":{\"description\":\"Version of the software that produced the envelope.\",\"minLength\":1,\"type\":\"string\"},\"version\":{\"description\":\"Envelope schema version.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"version\",\"format\",\"createdAt\",\"sourceVersion\",\"kdf\",\"encryption\",\"includesAudit\",\"ciphertext\"],\"title\":\"BackupEnvelope\",\"type\":\"object\"},\"EncryptionParams\":{\"$anchor\":\"encryptionParams\",\"additionalProperties\":false,\"properties\":{\"algorithm\":{\"description\":\"AEAD identifier, e.g. `aes-256-gcm`.\",\"minLength\":1,\"type\":\"string\"},\"nonce\":{\"description\":\"base64url, 12 bytes.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"algorithm\",\"nonce\"],\"title\":\"EncryptionParams\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"KdfParams\":{\"$anchor\":\"kdfParams\",\"additionalProperties\":false,\"properties\":{\"algorithm\":{\"description\":\"KDF identifier, e.g. `argon2id`.\",\"minLength\":1,\"type\":\"string\"},\"mCost\":{\"description\":\"Argon2id memory cost (KiB).\",\"minimum\":1,\"type\":\"integer\"},\"pCost\":{\"description\":\"Argon2id parallelism.\",\"minimum\":1,\"type\":\"integer\"},\"salt\":{\"description\":\"base64url, 32 bytes.\",\"minLength\":1,\"type\":\"string\"},\"tCost\":{\"description\":\"Argon2id time cost (iterations).\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"algorithm\",\"salt\",\"mCost\",\"tCost\",\"pCost\"],\"title\":\"KdfParams\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"envelope\":{\"$ref\":\"#/$defs/BackupEnvelope\",\"description\":\"The encrypted full-state backup.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"envelope\"],\"title\":\"VTC Backup Export — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

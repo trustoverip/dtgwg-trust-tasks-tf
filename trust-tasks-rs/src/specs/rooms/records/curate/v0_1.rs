@@ -39,40 +39,6 @@ What a party presents to act on a room. Carries the whole authority chain: a hos
 
 **A chain that verifies may still be revoked.** A host that has accepted a `RevocationList` for the room (`rooms/revocations/put`) MUST, from the moment it accepted it, refuse every presentation in which the membership credential or any link of `authority` is revoked by that list, under every task and every version of every task it serves for the room. A chain from which any link is revoked is refused whole: a credential delegated from a revoked one confers nothing, however it was attenuated. The refusal is the same `permissionDenied` as any other failed presentation.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "AuthorityPresentation",
-///  "description": "What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier. A host MUST bind the presenter to the chain's leaf. A chain that verifies is evidence that authority was conferred on somebody; it is not evidence that the party presenting it is that somebody. The leaf's subject MUST equal the party the host authenticated for this request — an identity the transport established or a document `proof` proved, never one named in a payload. A host that omits this check authorizes every captured presentation, and the omission is silent, because the chain still verifies.\n\n**Every credential is its issuer's attestation, and only its issuer's.** For the membership credential and for every link of `authority`, a host MUST verify the credential's `proof` with a key that the credential's own `issuer` lists for `assertionMethod` in its DID document, and MUST refuse a credential whose proof names a verification method that is not its issuer's. A proof that verifies under some other party's key is that party's statement, not the issuer's, and confers nothing. The same binding holds for every other document a room signs, such as a `RevocationList`.\n\n**A chain that verifies may still be revoked.** A host that has accepted a `RevocationList` for the room (`rooms/revocations/put`) MUST, from the moment it accepted it, refuse every presentation in which the membership credential or any link of `authority` is revoked by that list, under every task and every version of every task it serves for the room. A chain from which any link is revoked is refused whole: a credential delegated from a revoked one confers nothing, however it was attenuated. The refusal is the same `permissionDenied` as any other failed presentation.",
-///  "type": "object",
-///  "required": [
-///    "authority",
-///    "membership"
-///  ],
-///  "properties": {
-///    "authority": {
-///      "description": "The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent.",
-///      "type": "array",
-///      "items": {
-///        "type": "string"
-///      },
-///      "maxItems": 8,
-///      "minItems": 1
-///    },
-///    "membership": {
-///      "description": "The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile.",
-///      "type": "string"
-///    },
-///    "subjectBinding": {
-///      "description": "REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this.",
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -96,21 +62,6 @@ impl AuthorityPresentation {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -132,15 +83,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -204,65 +146,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A member curates a record: demotes it, retracts it, restores it from demotion, or pins it. Distinct from `rooms/records/put`, which replaces content — curation changes a record's standing in the room without a member having to rewrite it, and `curate` is a separate authority action so a community can grant one without the other.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/rooms/records/curate/0.1",
-///  "title": "Payload",
-///  "description": "A member curates a record: demotes it, retracts it, restores it from demotion, or pins it. Distinct from `rooms/records/put`, which replaces content — curation changes a record's standing in the room without a member having to rewrite it, and `curate` is a separate authority action so a community can grant one without the other.",
-///  "type": "object",
-///  "required": [
-///    "key",
-///    "presentation",
-///    "roomId"
-///  ],
-///  "properties": {
-///    "expectedVersion": {
-///      "description": "Optional precondition: the record's current version. Curation assigns a new version — a demotion other members must converge on is a change like any other — so a caller that read a record before deciding to curate it can require that nothing has replaced it since.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "key": {
-///      "description": "The record to curate.",
-///      "type": "string",
-///      "maxLength": 512
-///    },
-///    "pinned": {
-///      "description": "Whether the record is pinned. Orthogonal to `status` — a pinned record is still active, deprecated or retracted — because pinning answers 'what matters here' and status answers 'is this still current'. Omit to leave unchanged.",
-///      "type": "boolean"
-///    },
-///    "presentation": {
-///      "description": "Must confer the `curate` action at this room's scope. Deliberately not implied by `write`: curation is judgement over what a room's shared knowledge is worth, which is a different grant from the ability to add to it.",
-///      "$ref": "#/definitions/AuthorityPresentation"
-///    },
-///    "reason": {
-///      "description": "Why, for the room's audit trail. A retraction without a reason is the one a member cannot interpret later.",
-///      "type": "string",
-///      "maxLength": 512
-///    },
-///    "roomId": {
-///      "description": "The room's identifier. A host verifies the presentation against credentials issued by this identifier, never against a member list of its own.",
-///      "type": "string"
-///    },
-///    "status": {
-///      "description": "The standing to move the record to. `deprecated` demotes it — the body is retained and a recalling agent MUST treat it as demoted rather than hidden. `retracted` is a tombstone: the body is dropped and the key, version and epoch remain so incremental sync converges. `active` restores a `deprecated` record; it MUST NOT be accepted for a `retracted` one, whose body is already gone and cannot be restored by a status change.",
-///      "type": "string",
-///      "enum": [
-///        "active",
-///        "deprecated",
-///        "retracted"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -301,16 +184,6 @@ impl Payload {
 }
 ///The record to curate.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The record to curate.",
-///  "type": "string",
-///  "maxLength": 512
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadKey(::std::string::String);
@@ -370,16 +243,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadKey {
 }
 ///Why, for the room's audit trail. A retraction without a reason is the one a member cannot interpret later.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Why, for the room's audit trail. A retraction without a reason is the one a member cannot interpret later.",
-///  "type": "string",
-///  "maxLength": 512
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadReason(::std::string::String);
@@ -439,20 +302,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 }
 ///The standing to move the record to. `deprecated` demotes it — the body is retained and a recalling agent MUST treat it as demoted rather than hidden. `retracted` is a tombstone: the body is dropped and the key, version and epoch remain so incremental sync converges. `active` restores a `deprecated` record; it MUST NOT be accepted for a `retracted` one, whose body is already gone and cannot be restored by a status change.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The standing to move the record to. `deprecated` demotes it — the body is retained and a recalling agent MUST treat it as demoted rather than hidden. `retracted` is a tombstone: the body is dropped and the key, version and epoch remain so incremental sync converges. `active` restores a `deprecated` record; it MUST NOT be accepted for a `retracted` one, whose body is already gone and cannot be restored by a status change.",
-///  "type": "string",
-///  "enum": [
-///    "active",
-///    "deprecated",
-///    "retracted"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -518,50 +367,6 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadStatus {
 }
 ///Success response to rooms/records/curate. Type https://trusttasks.org/spec/rooms/records/curate/0.1#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to rooms/records/curate. Type https://trusttasks.org/spec/rooms/records/curate/0.1#response.",
-///  "type": "object",
-///  "required": [
-///    "key",
-///    "status",
-///    "version"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "key": {
-///      "description": "The record curated.",
-///      "type": "string"
-///    },
-///    "pinned": {
-///      "description": "Whether the record is pinned after the operation.",
-///      "type": "boolean"
-///    },
-///    "status": {
-///      "description": "The record's standing after the operation.",
-///      "type": "string",
-///      "enum": [
-///        "active",
-///        "deprecated",
-///        "retracted"
-///      ]
-///    },
-///    "version": {
-///      "description": "The version the curation assigned. A caller syncing on `sinceVersion` sees the change at this version.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -585,20 +390,6 @@ impl Response {
 }
 ///The record's standing after the operation.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The record's standing after the operation.",
-///  "type": "string",
-///  "enum": [
-///    "active",
-///    "deprecated",
-///    "retracted"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -982,7 +773,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AuthorityPresentation\": {\n      \"additionalProperties\": false,\n      \"description\": \"What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier. A host MUST bind the presenter to the chain's leaf. A chain that verifies is evidence that authority was conferred on somebody; it is not evidence that the party presenting it is that somebody. The leaf's subject MUST equal the party the host authenticated for this request — an identity the transport established or a document `proof` proved, never one named in a payload. A host that omits this check authorizes every captured presentation, and the omission is silent, because the chain still verifies.\\n\\n**Every credential is its issuer's attestation, and only its issuer's.** For the membership credential and for every link of `authority`, a host MUST verify the credential's `proof` with a key that the credential's own `issuer` lists for `assertionMethod` in its DID document, and MUST refuse a credential whose proof names a verification method that is not its issuer's. A proof that verifies under some other party's key is that party's statement, not the issuer's, and confers nothing. The same binding holds for every other document a room signs, such as a `RevocationList`.\\n\\n**A chain that verifies may still be revoked.** A host that has accepted a `RevocationList` for the room (`rooms/revocations/put`) MUST, from the moment it accepted it, refuse every presentation in which the membership credential or any link of `authority` is revoked by that list, under every task and every version of every task it serves for the room. A chain from which any link is revoked is refused whole: a credential delegated from a revoked one confers nothing, however it was attenuated. The refusal is the same `permissionDenied` as any other failed presentation.\",\n      \"properties\": {\n        \"authority\": {\n          \"description\": \"The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"maxItems\": 8,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"membership\": {\n          \"description\": \"The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile.\",\n          \"type\": \"string\"\n        },\n        \"subjectBinding\": {\n          \"description\": \"REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"membership\",\n        \"authority\"\n      ],\n      \"title\": \"AuthorityPresentation\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/records/curate. Type https://trusttasks.org/spec/rooms/records/curate/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"key\": {\n          \"description\": \"The record curated.\",\n          \"type\": \"string\"\n        },\n        \"pinned\": {\n          \"description\": \"Whether the record is pinned after the operation.\",\n          \"type\": \"boolean\"\n        },\n        \"status\": {\n          \"description\": \"The record's standing after the operation.\",\n          \"enum\": [\n            \"active\",\n            \"deprecated\",\n            \"retracted\"\n          ],\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"description\": \"The version the curation assigned. A caller syncing on `sinceVersion` sees the change at this version.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"key\",\n        \"version\",\n        \"status\"\n      ],\n      \"title\": \"Rooms Records Curate — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/rooms/records/curate/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"anyOf\": [\n    {\n      \"required\": [\n        \"status\"\n      ]\n    },\n    {\n      \"required\": [\n        \"pinned\"\n      ]\n    }\n  ],\n  \"description\": \"A member curates a record: demotes it, retracts it, restores it from demotion, or pins it. Distinct from `rooms/records/put`, which replaces content — curation changes a record's standing in the room without a member having to rewrite it, and `curate` is a separate authority action so a community can grant one without the other.\",\n  \"properties\": {\n    \"expectedVersion\": {\n      \"description\": \"Optional precondition: the record's current version. Curation assigns a new version — a demotion other members must converge on is a change like any other — so a caller that read a record before deciding to curate it can require that nothing has replaced it since.\",\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"key\": {\n      \"description\": \"The record to curate.\",\n      \"maxLength\": 512,\n      \"type\": \"string\"\n    },\n    \"pinned\": {\n      \"description\": \"Whether the record is pinned. Orthogonal to `status` — a pinned record is still active, deprecated or retracted — because pinning answers 'what matters here' and status answers 'is this still current'. Omit to leave unchanged.\",\n      \"type\": \"boolean\"\n    },\n    \"presentation\": {\n      \"$ref\": \"#/$defs/AuthorityPresentation\",\n      \"description\": \"Must confer the `curate` action at this room's scope. Deliberately not implied by `write`: curation is judgement over what a room's shared knowledge is worth, which is a different grant from the ability to add to it.\"\n    },\n    \"reason\": {\n      \"description\": \"Why, for the room's audit trail. A retraction without a reason is the one a member cannot interpret later.\",\n      \"maxLength\": 512,\n      \"type\": \"string\"\n    },\n    \"roomId\": {\n      \"description\": \"The room's identifier. A host verifies the presentation against credentials issued by this identifier, never against a member list of its own.\",\n      \"type\": \"string\"\n    },\n    \"status\": {\n      \"description\": \"The standing to move the record to. `deprecated` demotes it — the body is retained and a recalling agent MUST treat it as demoted rather than hidden. `retracted` is a tombstone: the body is dropped and the key, version and epoch remain so incremental sync converges. `active` restores a `deprecated` record; it MUST NOT be accepted for a `retracted` one, whose body is already gone and cannot be restored by a status change.\",\n      \"enum\": [\n        \"active\",\n        \"deprecated\",\n        \"retracted\"\n      ],\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"roomId\",\n    \"key\",\n    \"presentation\"\n  ],\n  \"title\": \"Rooms Records Curate — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"AuthorityPresentation\":{\"additionalProperties\":false,\"description\":\"What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier. A host MUST bind the presenter to the chain's leaf. A chain that verifies is evidence that authority was conferred on somebody; it is not evidence that the party presenting it is that somebody. The leaf's subject MUST equal the party the host authenticated for this request — an identity the transport established or a document `proof` proved, never one named in a payload. A host that omits this check authorizes every captured presentation, and the omission is silent, because the chain still verifies.\\n\\n**Every credential is its issuer's attestation, and only its issuer's.** For the membership credential and for every link of `authority`, a host MUST verify the credential's `proof` with a key that the credential's own `issuer` lists for `assertionMethod` in its DID document, and MUST refuse a credential whose proof names a verification method that is not its issuer's. A proof that verifies under some other party's key is that party's statement, not the issuer's, and confers nothing. The same binding holds for every other document a room signs, such as a `RevocationList`.\\n\\n**A chain that verifies may still be revoked.** A host that has accepted a `RevocationList` for the room (`rooms/revocations/put`) MUST, from the moment it accepted it, refuse every presentation in which the membership credential or any link of `authority` is revoked by that list, under every task and every version of every task it serves for the room. A chain from which any link is revoked is refused whole: a credential delegated from a revoked one confers nothing, however it was attenuated. The refusal is the same `permissionDenied` as any other failed presentation.\",\"properties\":{\"authority\":{\"description\":\"The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent.\",\"items\":{\"type\":\"string\"},\"maxItems\":8,\"minItems\":1,\"type\":\"array\"},\"membership\":{\"description\":\"The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile.\",\"type\":\"string\"},\"subjectBinding\":{\"description\":\"REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this.\",\"type\":\"string\"}},\"required\":[\"membership\",\"authority\"],\"title\":\"AuthorityPresentation\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to rooms/records/curate. Type https://trusttasks.org/spec/rooms/records/curate/0.1#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"key\":{\"description\":\"The record curated.\",\"type\":\"string\"},\"pinned\":{\"description\":\"Whether the record is pinned after the operation.\",\"type\":\"boolean\"},\"status\":{\"description\":\"The record's standing after the operation.\",\"enum\":[\"active\",\"deprecated\",\"retracted\"],\"type\":\"string\"},\"version\":{\"description\":\"The version the curation assigned. A caller syncing on `sinceVersion` sees the change at this version.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"key\",\"version\",\"status\"],\"title\":\"Rooms Records Curate — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/rooms/records/curate/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"anyOf\":[{\"required\":[\"status\"]},{\"required\":[\"pinned\"]}],\"description\":\"A member curates a record: demotes it, retracts it, restores it from demotion, or pins it. Distinct from `rooms/records/put`, which replaces content — curation changes a record's standing in the room without a member having to rewrite it, and `curate` is a separate authority action so a community can grant one without the other.\",\"properties\":{\"expectedVersion\":{\"description\":\"Optional precondition: the record's current version. Curation assigns a new version — a demotion other members must converge on is a change like any other — so a caller that read a record before deciding to curate it can require that nothing has replaced it since.\",\"minimum\":1,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"key\":{\"description\":\"The record to curate.\",\"maxLength\":512,\"type\":\"string\"},\"pinned\":{\"description\":\"Whether the record is pinned. Orthogonal to `status` — a pinned record is still active, deprecated or retracted — because pinning answers 'what matters here' and status answers 'is this still current'. Omit to leave unchanged.\",\"type\":\"boolean\"},\"presentation\":{\"$ref\":\"#/$defs/AuthorityPresentation\",\"description\":\"Must confer the `curate` action at this room's scope. Deliberately not implied by `write`: curation is judgement over what a room's shared knowledge is worth, which is a different grant from the ability to add to it.\"},\"reason\":{\"description\":\"Why, for the room's audit trail. A retraction without a reason is the one a member cannot interpret later.\",\"maxLength\":512,\"type\":\"string\"},\"roomId\":{\"description\":\"The room's identifier. A host verifies the presentation against credentials issued by this identifier, never against a member list of its own.\",\"type\":\"string\"},\"status\":{\"description\":\"The standing to move the record to. `deprecated` demotes it — the body is retained and a recalling agent MUST treat it as demoted rather than hidden. `retracted` is a tombstone: the body is dropped and the key, version and epoch remain so incremental sync converges. `active` restores a `deprecated` record; it MUST NOT be accepted for a `retracted` one, whose body is already gone and cannot be restored by a status change.\",\"enum\":[\"active\",\"deprecated\",\"retracted\"],\"type\":\"string\"}},\"required\":[\"roomId\",\"key\",\"presentation\"],\"title\":\"Rooms Records Curate — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -991,7 +782,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AuthorityPresentation\": {\n      \"additionalProperties\": false,\n      \"description\": \"What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier. A host MUST bind the presenter to the chain's leaf. A chain that verifies is evidence that authority was conferred on somebody; it is not evidence that the party presenting it is that somebody. The leaf's subject MUST equal the party the host authenticated for this request — an identity the transport established or a document `proof` proved, never one named in a payload. A host that omits this check authorizes every captured presentation, and the omission is silent, because the chain still verifies.\\n\\n**Every credential is its issuer's attestation, and only its issuer's.** For the membership credential and for every link of `authority`, a host MUST verify the credential's `proof` with a key that the credential's own `issuer` lists for `assertionMethod` in its DID document, and MUST refuse a credential whose proof names a verification method that is not its issuer's. A proof that verifies under some other party's key is that party's statement, not the issuer's, and confers nothing. The same binding holds for every other document a room signs, such as a `RevocationList`.\\n\\n**A chain that verifies may still be revoked.** A host that has accepted a `RevocationList` for the room (`rooms/revocations/put`) MUST, from the moment it accepted it, refuse every presentation in which the membership credential or any link of `authority` is revoked by that list, under every task and every version of every task it serves for the room. A chain from which any link is revoked is refused whole: a credential delegated from a revoked one confers nothing, however it was attenuated. The refusal is the same `permissionDenied` as any other failed presentation.\",\n      \"properties\": {\n        \"authority\": {\n          \"description\": \"The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"maxItems\": 8,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"membership\": {\n          \"description\": \"The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile.\",\n          \"type\": \"string\"\n        },\n        \"subjectBinding\": {\n          \"description\": \"REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"membership\",\n        \"authority\"\n      ],\n      \"title\": \"AuthorityPresentation\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/records/curate. Type https://trusttasks.org/spec/rooms/records/curate/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"key\": {\n          \"description\": \"The record curated.\",\n          \"type\": \"string\"\n        },\n        \"pinned\": {\n          \"description\": \"Whether the record is pinned after the operation.\",\n          \"type\": \"boolean\"\n        },\n        \"status\": {\n          \"description\": \"The record's standing after the operation.\",\n          \"enum\": [\n            \"active\",\n            \"deprecated\",\n            \"retracted\"\n          ],\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"description\": \"The version the curation assigned. A caller syncing on `sinceVersion` sees the change at this version.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"key\",\n        \"version\",\n        \"status\"\n      ],\n      \"title\": \"Rooms Records Curate — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"AuthorityPresentation\":{\"additionalProperties\":false,\"description\":\"What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier. A host MUST bind the presenter to the chain's leaf. A chain that verifies is evidence that authority was conferred on somebody; it is not evidence that the party presenting it is that somebody. The leaf's subject MUST equal the party the host authenticated for this request — an identity the transport established or a document `proof` proved, never one named in a payload. A host that omits this check authorizes every captured presentation, and the omission is silent, because the chain still verifies.\\n\\n**Every credential is its issuer's attestation, and only its issuer's.** For the membership credential and for every link of `authority`, a host MUST verify the credential's `proof` with a key that the credential's own `issuer` lists for `assertionMethod` in its DID document, and MUST refuse a credential whose proof names a verification method that is not its issuer's. A proof that verifies under some other party's key is that party's statement, not the issuer's, and confers nothing. The same binding holds for every other document a room signs, such as a `RevocationList`.\\n\\n**A chain that verifies may still be revoked.** A host that has accepted a `RevocationList` for the room (`rooms/revocations/put`) MUST, from the moment it accepted it, refuse every presentation in which the membership credential or any link of `authority` is revoked by that list, under every task and every version of every task it serves for the room. A chain from which any link is revoked is refused whole: a credential delegated from a revoked one confers nothing, however it was attenuated. The refusal is the same `permissionDenied` as any other failed presentation.\",\"properties\":{\"authority\":{\"description\":\"The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent.\",\"items\":{\"type\":\"string\"},\"maxItems\":8,\"minItems\":1,\"type\":\"array\"},\"membership\":{\"description\":\"The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile.\",\"type\":\"string\"},\"subjectBinding\":{\"description\":\"REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this.\",\"type\":\"string\"}},\"required\":[\"membership\",\"authority\"],\"title\":\"AuthorityPresentation\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to rooms/records/curate. Type https://trusttasks.org/spec/rooms/records/curate/0.1#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"key\":{\"description\":\"The record curated.\",\"type\":\"string\"},\"pinned\":{\"description\":\"Whether the record is pinned after the operation.\",\"type\":\"boolean\"},\"status\":{\"description\":\"The record's standing after the operation.\",\"enum\":[\"active\",\"deprecated\",\"retracted\"],\"type\":\"string\"},\"version\":{\"description\":\"The version the curation assigned. A caller syncing on `sinceVersion` sees the change at this version.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"key\",\"version\",\"status\"],\"title\":\"Rooms Records Curate — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

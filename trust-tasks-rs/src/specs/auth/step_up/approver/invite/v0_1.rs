@@ -35,18 +35,6 @@ pub mod error {
 }
 ///A human-readable name for where the approver lives — e.g. `Browser plugin — work laptop`. Chosen by the subject (or suggested by an inviter), untrusted, and attributed to its author wherever it is rendered. Absent rather than invented when none was chosen.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ApproverLabel",
-///  "description": "A human-readable name for where the approver lives — e.g. `Browser plugin — work laptop`. Chosen by the subject (or suggested by an inviter), untrusted, and attributed to its author wherever it is rendered. Absent rather than invented when none was chosen.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ApproverLabel(::std::string::String);
@@ -109,21 +97,6 @@ impl<'de> ::serde::Deserialize<'de> for ApproverLabel {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -145,15 +118,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -217,42 +181,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///An administrator asks the relying party for a single-use invite, redeemed by the invited subject with a separately delivered claim code, to bind a step-up approver to that subject. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/auth/step-up/approver/invite/0.1",
-///  "title": "Payload",
-///  "description": "An administrator asks the relying party for a single-use invite, redeemed by the invited subject with a separately delivered claim code, to bind a step-up approver to that subject. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "subject"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "label": {
-///      "description": "A suggested label for the approver. The subject MAY override it at redeem/finish.",
-///      "$ref": "#/definitions/ApproverLabel"
-///    },
-///    "subject": {
-///      "description": "The DID invited to bind a step-up approver. MUST be a subject the relying party recognises, and MUST NOT be the administrator issuing the invite.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 5,
-///      "pattern": "^did:"
-///    },
-///    "ttl": {
-///      "description": "Seconds the invite stays redeemable. Default 900 (15 minutes). The relying party refuses more than 86400 (24 hours), or more than its own lower cap, with `ttlTooLong`.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -276,18 +204,6 @@ impl Payload {
 }
 ///The DID invited to bind a step-up approver. MUST be a subject the relying party recognises, and MUST NOT be the administrator issuing the invite.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The DID invited to bind a step-up approver. MUST be a subject the relying party recognises, and MUST NOT be the administrator issuing the invite.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 5,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadSubject(::std::string::String);
@@ -355,51 +271,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubject {
 }
 ///The issued invite. The claim code is returned only here.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The issued invite. The claim code is returned only here.",
-///  "type": "object",
-///  "required": [
-///    "claimCode",
-///    "expiresAt",
-///    "inviteId",
-///    "url"
-///  ],
-///  "properties": {
-///    "claimCode": {
-///      "description": "A short code (≥40 bits) the invited subject types at redemption, returned exactly once. Delivered by the administrator over a different channel from `url`. The relying party stores only a slow hash of it.",
-///      "type": "string",
-///      "maxLength": 64,
-///      "minLength": 8
-///    },
-///    "expiresAt": {
-///      "description": "When the invite stops being redeemable.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "inviteId": {
-///      "description": "The relying party's identifier for the invite, for audit and administration. Not a redemption factor: it is neither the token nor derivable from it.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "url": {
-///      "description": "Where the invited subject redeems the invite. Carries the single-use token (≥128 bits). MUST NOT carry the claim code.",
-///      "type": "string",
-///      "format": "uri"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -426,17 +297,6 @@ impl Response {
 }
 ///A short code (≥40 bits) the invited subject types at redemption, returned exactly once. Delivered by the administrator over a different channel from `url`. The relying party stores only a slow hash of it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "A short code (≥40 bits) the invited subject types at redemption, returned exactly once. Delivered by the administrator over a different channel from `url`. The relying party stores only a slow hash of it.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 8
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseClaimCode(::std::string::String);
@@ -499,17 +359,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseClaimCode {
 }
 ///The relying party's identifier for the invite, for audit and administration. Not a redemption factor: it is neither the token nor derivable from it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The relying party's identifier for the invite, for audit and administration. Not a redemption factor: it is neither the token nor derivable from it.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseInviteId(::std::string::String);
@@ -760,7 +609,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ApproverLabel\": {\n      \"description\": \"A human-readable name for where the approver lives — e.g. `Browser plugin — work laptop`. Chosen by the subject (or suggested by an inviter), untrusted, and attributed to its author wherever it is rendered. Absent rather than invented when none was chosen.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"title\": \"ApproverLabel\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The issued invite. The claim code is returned only here.\",\n      \"properties\": {\n        \"claimCode\": {\n          \"description\": \"A short code (≥40 bits) the invited subject types at redemption, returned exactly once. Delivered by the administrator over a different channel from `url`. The relying party stores only a slow hash of it.\",\n          \"maxLength\": 64,\n          \"minLength\": 8,\n          \"type\": \"string\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When the invite stops being redeemable.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"inviteId\": {\n          \"description\": \"The relying party's identifier for the invite, for audit and administration. Not a redemption factor: it is neither the token nor derivable from it.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"url\": {\n          \"description\": \"Where the invited subject redeems the invite. Carries the single-use token (≥128 bits). MUST NOT carry the claim code.\",\n          \"format\": \"uri\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"inviteId\",\n        \"url\",\n        \"claimCode\",\n        \"expiresAt\"\n      ],\n      \"title\": \"Auth — Step-up Approver Invite — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/auth/step-up/approver/invite/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"An administrator asks the relying party for a single-use invite, redeemed by the invited subject with a separately delivered claim code, to bind a step-up approver to that subject. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"label\": {\n      \"$ref\": \"#/$defs/ApproverLabel\",\n      \"description\": \"A suggested label for the approver. The subject MAY override it at redeem/finish.\"\n    },\n    \"subject\": {\n      \"description\": \"The DID invited to bind a step-up approver. MUST be a subject the relying party recognises, and MUST NOT be the administrator issuing the invite.\",\n      \"maxLength\": 2048,\n      \"minLength\": 5,\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    },\n    \"ttl\": {\n      \"description\": \"Seconds the invite stays redeemable. Default 900 (15 minutes). The relying party refuses more than 86400 (24 hours), or more than its own lower cap, with `ttlTooLong`.\",\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"subject\"\n  ],\n  \"title\": \"Auth — Step-up Approver Invite — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"ApproverLabel\":{\"description\":\"A human-readable name for where the approver lives — e.g. `Browser plugin — work laptop`. Chosen by the subject (or suggested by an inviter), untrusted, and attributed to its author wherever it is rendered. Absent rather than invented when none was chosen.\",\"maxLength\":64,\"minLength\":1,\"title\":\"ApproverLabel\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The issued invite. The claim code is returned only here.\",\"properties\":{\"claimCode\":{\"description\":\"A short code (≥40 bits) the invited subject types at redemption, returned exactly once. Delivered by the administrator over a different channel from `url`. The relying party stores only a slow hash of it.\",\"maxLength\":64,\"minLength\":8,\"type\":\"string\"},\"expiresAt\":{\"description\":\"When the invite stops being redeemable.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"inviteId\":{\"description\":\"The relying party's identifier for the invite, for audit and administration. Not a redemption factor: it is neither the token nor derivable from it.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"url\":{\"description\":\"Where the invited subject redeems the invite. Carries the single-use token (≥128 bits). MUST NOT carry the claim code.\",\"format\":\"uri\",\"type\":\"string\"}},\"required\":[\"inviteId\",\"url\",\"claimCode\",\"expiresAt\"],\"title\":\"Auth — Step-up Approver Invite — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/auth/step-up/approver/invite/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"An administrator asks the relying party for a single-use invite, redeemed by the invited subject with a separately delivered claim code, to bind a step-up approver to that subject. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"label\":{\"$ref\":\"#/$defs/ApproverLabel\",\"description\":\"A suggested label for the approver. The subject MAY override it at redeem/finish.\"},\"subject\":{\"description\":\"The DID invited to bind a step-up approver. MUST be a subject the relying party recognises, and MUST NOT be the administrator issuing the invite.\",\"maxLength\":2048,\"minLength\":5,\"pattern\":\"^did:\",\"type\":\"string\"},\"ttl\":{\"description\":\"Seconds the invite stays redeemable. Default 900 (15 minutes). The relying party refuses more than 86400 (24 hours), or more than its own lower cap, with `ttlTooLong`.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"subject\"],\"title\":\"Auth — Step-up Approver Invite — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -770,7 +619,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ApproverLabel\": {\n      \"description\": \"A human-readable name for where the approver lives — e.g. `Browser plugin — work laptop`. Chosen by the subject (or suggested by an inviter), untrusted, and attributed to its author wherever it is rendered. Absent rather than invented when none was chosen.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"title\": \"ApproverLabel\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The issued invite. The claim code is returned only here.\",\n      \"properties\": {\n        \"claimCode\": {\n          \"description\": \"A short code (≥40 bits) the invited subject types at redemption, returned exactly once. Delivered by the administrator over a different channel from `url`. The relying party stores only a slow hash of it.\",\n          \"maxLength\": 64,\n          \"minLength\": 8,\n          \"type\": \"string\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When the invite stops being redeemable.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"inviteId\": {\n          \"description\": \"The relying party's identifier for the invite, for audit and administration. Not a redemption factor: it is neither the token nor derivable from it.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"url\": {\n          \"description\": \"Where the invited subject redeems the invite. Carries the single-use token (≥128 bits). MUST NOT carry the claim code.\",\n          \"format\": \"uri\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"inviteId\",\n        \"url\",\n        \"claimCode\",\n        \"expiresAt\"\n      ],\n      \"title\": \"Auth — Step-up Approver Invite — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"ApproverLabel\":{\"description\":\"A human-readable name for where the approver lives — e.g. `Browser plugin — work laptop`. Chosen by the subject (or suggested by an inviter), untrusted, and attributed to its author wherever it is rendered. Absent rather than invented when none was chosen.\",\"maxLength\":64,\"minLength\":1,\"title\":\"ApproverLabel\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The issued invite. The claim code is returned only here.\",\"properties\":{\"claimCode\":{\"description\":\"A short code (≥40 bits) the invited subject types at redemption, returned exactly once. Delivered by the administrator over a different channel from `url`. The relying party stores only a slow hash of it.\",\"maxLength\":64,\"minLength\":8,\"type\":\"string\"},\"expiresAt\":{\"description\":\"When the invite stops being redeemable.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"inviteId\":{\"description\":\"The relying party's identifier for the invite, for audit and administration. Not a redemption factor: it is neither the token nor derivable from it.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"url\":{\"description\":\"Where the invited subject redeems the invite. Carries the single-use token (≥128 bits). MUST NOT carry the claim code.\",\"format\":\"uri\",\"type\":\"string\"}},\"required\":[\"inviteId\",\"url\",\"claimCode\",\"expiresAt\"],\"title\":\"Auth — Step-up Approver Invite — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

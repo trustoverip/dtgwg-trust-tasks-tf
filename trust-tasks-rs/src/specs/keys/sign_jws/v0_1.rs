@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,69 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A request for a compact JWS (RFC 7515) made with a key the custodian holds. The producer supplies the protected header members it wants and the payload; the custodian sets `alg` from the key, serialises both itself, and signs the JWS signing input with no framing of its own. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/keys/sign-jws/0.1",
-///  "title": "Payload",
-///  "description": "A request for a compact JWS (RFC 7515) made with a key the custodian holds. The producer supplies the protected header members it wants and the payload; the custodian sets `alg` from the key, serialises both itself, and signs the JWS signing input with no framing of its own. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "oneOf": [
-///    {
-///      "not": {
-///        "required": [
-///          "payloadBase64Url"
-///        ]
-///      },
-///      "required": [
-///        "payload"
-///      ]
-///    },
-///    {
-///      "not": {
-///        "required": [
-///          "payload"
-///        ]
-///      },
-///      "required": [
-///        "payloadBase64Url"
-///      ]
-///    }
-///  ],
-///  "required": [
-///    "keyId"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "header": {
-///      "description": "Protected header members the producer wants in the JWS — `typ`, `kid`, `x5c`, `cty`, or a profile's own (swiyu's `profile_version`). Member names and values are JOSE's and the profile's, carried verbatim. The custodian adds `alg` itself and refuses `alg`, `crit`, `b64`, `jwk`, `jku` and `x5u` (see the specification's Conformance section). Absent means a header of `alg` alone.",
-///      "type": "object",
-///      "maxProperties": 32
-///    },
-///    "keyId": {
-///      "description": "Identifier of the key to sign with, as `keys/show` describes it. The key MUST be `active` and of a type with a JOSE signature algorithm.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "payload": {
-///      "description": "The JWS payload, as a JSON object — for an OpenID4VP request object or any other JWT, its claims set. The custodian serialises it (RFC 8785) and base64url-encodes the result. Exactly one of `payload` and `payloadBase64Url` is present.",
-///      "type": "object"
-///    },
-///    "payloadBase64Url": {
-///      "description": "The JWS payload as bytes, for a payload that is not a JSON object, base64url-encoded without padding. The custodian uses this string as the payload segment unchanged, after checking it is the canonical encoding of the bytes it decodes to. Exactly one of `payload` and `payloadBase64Url` is present.",
-///      "type": "string",
-///      "minLength": 2,
-///      "pattern": "^[A-Za-z0-9_-]+$"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged, deny_unknown_fields)]
 #[non_exhaustive]
@@ -239,16 +152,6 @@ pub enum Payload {
 }
 ///Identifier of the key to sign with, as `keys/show` describes it. The key MUST be `active` and of a type with a JOSE signature algorithm.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Identifier of the key to sign with, as `keys/show` describes it. The key MUST be `active` and of a type with a JOSE signature algorithm.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadVariant0KeyId(::std::string::String);
@@ -308,16 +211,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadVariant0KeyId {
 }
 ///Identifier of the key to sign with, as `keys/show` describes it. The key MUST be `active` and of a type with a JOSE signature algorithm.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Identifier of the key to sign with, as `keys/show` describes it. The key MUST be `active` and of a type with a JOSE signature algorithm.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadVariant1KeyId(::std::string::String);
@@ -377,17 +270,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadVariant1KeyId {
 }
 ///The JWS payload as bytes, for a payload that is not a JSON object, base64url-encoded without padding. The custodian uses this string as the payload segment unchanged, after checking it is the canonical encoding of the bytes it decodes to. Exactly one of `payload` and `payloadBase64Url` is present.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The JWS payload as bytes, for a payload that is not a JSON object, base64url-encoded without padding. The custodian uses this string as the payload segment unchanged, after checking it is the canonical encoding of the bytes it decodes to. Exactly one of `payload` and `payloadBase64Url` is present.",
-///  "type": "string",
-///  "minLength": 2,
-///  "pattern": "^[A-Za-z0-9_-]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadVariant1PayloadBase64Url(::std::string::String);
@@ -452,48 +334,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadVariant1PayloadBase64Url {
 }
 ///The success response to a keys/sign-jws request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/sign-jws/0.1#response. Failures use trust-task-error, not this shape.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The success response to a keys/sign-jws request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/sign-jws/0.1#response. Failures use trust-task-error, not this shape.",
-///  "type": "object",
-///  "required": [
-///    "alg",
-///    "jws",
-///    "keyId"
-///  ],
-///  "properties": {
-///    "alg": {
-///      "description": "The JOSE algorithm the custodian chose from the key's type and wrote into the header: `EdDSA` for `ed25519`, `ES256` for `p256`, `ES256K` for a secp256k1 key, `ML-DSA-44` and `ML-DSA-65` for `mldsa44` and `mldsa65`. Externally owned, carried verbatim.",
-///      "type": "string",
-///      "enum": [
-///        "EdDSA",
-///        "ES256",
-///        "ES256K",
-///        "ML-DSA-44",
-///        "ML-DSA-65"
-///      ]
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "jws": {
-///      "description": "The JWS in compact serialisation: BASE64URL(header) '.' BASE64URL(payload) '.' BASE64URL(signature), unpadded. For ECDSA the signature is the fixed-width `r || s` of RFC 7518 §3.4, not DER.",
-///      "type": "string",
-///      "pattern": "^[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$"
-///    },
-///    "keyId": {
-///      "description": "The key that produced the signature. Echoed so a response separated from its request is still attributable.",
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -515,22 +355,6 @@ impl Response {
 }
 ///The JOSE algorithm the custodian chose from the key's type and wrote into the header: `EdDSA` for `ed25519`, `ES256` for `p256`, `ES256K` for a secp256k1 key, `ML-DSA-44` and `ML-DSA-65` for `mldsa44` and `mldsa65`. Externally owned, carried verbatim.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The JOSE algorithm the custodian chose from the key's type and wrote into the header: `EdDSA` for `ed25519`, `ES256` for `p256`, `ES256K` for a secp256k1 key, `ML-DSA-44` and `ML-DSA-65` for `mldsa44` and `mldsa65`. Externally owned, carried verbatim.",
-///  "type": "string",
-///  "enum": [
-///    "EdDSA",
-///    "ES256",
-///    "ES256K",
-///    "ML-DSA-44",
-///    "ML-DSA-65"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -604,16 +428,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseAlg {
 }
 ///The JWS in compact serialisation: BASE64URL(header) '.' BASE64URL(payload) '.' BASE64URL(signature), unpadded. For ECDSA the signature is the fixed-width `r || s` of RFC 7518 §3.4, not DER.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The JWS in compact serialisation: BASE64URL(header) '.' BASE64URL(payload) '.' BASE64URL(signature), unpadded. For ECDSA the signature is the fixed-width `r || s` of RFC 7518 §3.4, not DER.",
-///  "type": "string",
-///  "pattern": "^[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseJws(::std::string::String);
@@ -768,7 +582,7 @@ impl crate::Payload for Payload {
     const MAX_DOCUMENT_BYTES: Option<usize> = Some(65536usize);
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a keys/sign-jws request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/sign-jws/0.1#response. Failures use trust-task-error, not this shape.\",\n      \"properties\": {\n        \"alg\": {\n          \"description\": \"The JOSE algorithm the custodian chose from the key's type and wrote into the header: `EdDSA` for `ed25519`, `ES256` for `p256`, `ES256K` for a secp256k1 key, `ML-DSA-44` and `ML-DSA-65` for `mldsa44` and `mldsa65`. Externally owned, carried verbatim.\",\n          \"enum\": [\n            \"EdDSA\",\n            \"ES256\",\n            \"ES256K\",\n            \"ML-DSA-44\",\n            \"ML-DSA-65\"\n          ],\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"jws\": {\n          \"description\": \"The JWS in compact serialisation: BASE64URL(header) '.' BASE64URL(payload) '.' BASE64URL(signature), unpadded. For ECDSA the signature is the fixed-width `r || s` of RFC 7518 §3.4, not DER.\",\n          \"pattern\": \"^[A-Za-z0-9_-]+\\\\.[A-Za-z0-9_-]+\\\\.[A-Za-z0-9_-]+$\",\n          \"type\": \"string\"\n        },\n        \"keyId\": {\n          \"description\": \"The key that produced the signature. Echoed so a response separated from its request is still attributable.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"keyId\",\n        \"alg\",\n        \"jws\"\n      ],\n      \"title\": \"Keys — Sign JWS — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/keys/sign-jws/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A request for a compact JWS (RFC 7515) made with a key the custodian holds. The producer supplies the protected header members it wants and the payload; the custodian sets `alg` from the key, serialises both itself, and signs the JWS signing input with no framing of its own. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\n  \"oneOf\": [\n    {\n      \"not\": {\n        \"required\": [\n          \"payloadBase64Url\"\n        ]\n      },\n      \"required\": [\n        \"payload\"\n      ]\n    },\n    {\n      \"not\": {\n        \"required\": [\n          \"payload\"\n        ]\n      },\n      \"required\": [\n        \"payloadBase64Url\"\n      ]\n    }\n  ],\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"header\": {\n      \"description\": \"Protected header members the producer wants in the JWS — `typ`, `kid`, `x5c`, `cty`, or a profile's own (swiyu's `profile_version`). Member names and values are JOSE's and the profile's, carried verbatim. The custodian adds `alg` itself and refuses `alg`, `crit`, `b64`, `jwk`, `jku` and `x5u` (see the specification's Conformance section). Absent means a header of `alg` alone.\",\n      \"maxProperties\": 32,\n      \"type\": \"object\"\n    },\n    \"keyId\": {\n      \"description\": \"Identifier of the key to sign with, as `keys/show` describes it. The key MUST be `active` and of a type with a JOSE signature algorithm.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"payload\": {\n      \"description\": \"The JWS payload, as a JSON object — for an OpenID4VP request object or any other JWT, its claims set. The custodian serialises it (RFC 8785) and base64url-encodes the result. Exactly one of `payload` and `payloadBase64Url` is present.\",\n      \"type\": \"object\"\n    },\n    \"payloadBase64Url\": {\n      \"description\": \"The JWS payload as bytes, for a payload that is not a JSON object, base64url-encoded without padding. The custodian uses this string as the payload segment unchanged, after checking it is the canonical encoding of the bytes it decodes to. Exactly one of `payload` and `payloadBase64Url` is present.\",\n      \"minLength\": 2,\n      \"pattern\": \"^[A-Za-z0-9_-]+$\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"keyId\"\n  ],\n  \"title\": \"Keys — Sign JWS — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a keys/sign-jws request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/sign-jws/0.1#response. Failures use trust-task-error, not this shape.\",\"properties\":{\"alg\":{\"description\":\"The JOSE algorithm the custodian chose from the key's type and wrote into the header: `EdDSA` for `ed25519`, `ES256` for `p256`, `ES256K` for a secp256k1 key, `ML-DSA-44` and `ML-DSA-65` for `mldsa44` and `mldsa65`. Externally owned, carried verbatim.\",\"enum\":[\"EdDSA\",\"ES256\",\"ES256K\",\"ML-DSA-44\",\"ML-DSA-65\"],\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"jws\":{\"description\":\"The JWS in compact serialisation: BASE64URL(header) '.' BASE64URL(payload) '.' BASE64URL(signature), unpadded. For ECDSA the signature is the fixed-width `r || s` of RFC 7518 §3.4, not DER.\",\"pattern\":\"^[A-Za-z0-9_-]+\\\\.[A-Za-z0-9_-]+\\\\.[A-Za-z0-9_-]+$\",\"type\":\"string\"},\"keyId\":{\"description\":\"The key that produced the signature. Echoed so a response separated from its request is still attributable.\",\"type\":\"string\"}},\"required\":[\"keyId\",\"alg\",\"jws\"],\"title\":\"Keys — Sign JWS — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/keys/sign-jws/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A request for a compact JWS (RFC 7515) made with a key the custodian holds. The producer supplies the protected header members it wants and the payload; the custodian sets `alg` from the key, serialises both itself, and signs the JWS signing input with no framing of its own. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"oneOf\":[{\"not\":{\"required\":[\"payloadBase64Url\"]},\"required\":[\"payload\"]},{\"not\":{\"required\":[\"payload\"]},\"required\":[\"payloadBase64Url\"]}],\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"header\":{\"description\":\"Protected header members the producer wants in the JWS — `typ`, `kid`, `x5c`, `cty`, or a profile's own (swiyu's `profile_version`). Member names and values are JOSE's and the profile's, carried verbatim. The custodian adds `alg` itself and refuses `alg`, `crit`, `b64`, `jwk`, `jku` and `x5u` (see the specification's Conformance section). Absent means a header of `alg` alone.\",\"maxProperties\":32,\"type\":\"object\"},\"keyId\":{\"description\":\"Identifier of the key to sign with, as `keys/show` describes it. The key MUST be `active` and of a type with a JOSE signature algorithm.\",\"minLength\":1,\"type\":\"string\"},\"payload\":{\"description\":\"The JWS payload, as a JSON object — for an OpenID4VP request object or any other JWT, its claims set. The custodian serialises it (RFC 8785) and base64url-encodes the result. Exactly one of `payload` and `payloadBase64Url` is present.\",\"type\":\"object\"},\"payloadBase64Url\":{\"description\":\"The JWS payload as bytes, for a payload that is not a JSON object, base64url-encoded without padding. The custodian uses this string as the payload segment unchanged, after checking it is the canonical encoding of the bytes it decodes to. Exactly one of `payload` and `payloadBase64Url` is present.\",\"minLength\":2,\"pattern\":\"^[A-Za-z0-9_-]+$\",\"type\":\"string\"}},\"required\":[\"keyId\"],\"title\":\"Keys — Sign JWS — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -777,7 +591,7 @@ impl crate::Payload for Response {
     const MAX_DOCUMENT_BYTES: Option<usize> = Some(131072usize);
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a keys/sign-jws request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/sign-jws/0.1#response. Failures use trust-task-error, not this shape.\",\n      \"properties\": {\n        \"alg\": {\n          \"description\": \"The JOSE algorithm the custodian chose from the key's type and wrote into the header: `EdDSA` for `ed25519`, `ES256` for `p256`, `ES256K` for a secp256k1 key, `ML-DSA-44` and `ML-DSA-65` for `mldsa44` and `mldsa65`. Externally owned, carried verbatim.\",\n          \"enum\": [\n            \"EdDSA\",\n            \"ES256\",\n            \"ES256K\",\n            \"ML-DSA-44\",\n            \"ML-DSA-65\"\n          ],\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"jws\": {\n          \"description\": \"The JWS in compact serialisation: BASE64URL(header) '.' BASE64URL(payload) '.' BASE64URL(signature), unpadded. For ECDSA the signature is the fixed-width `r || s` of RFC 7518 §3.4, not DER.\",\n          \"pattern\": \"^[A-Za-z0-9_-]+\\\\.[A-Za-z0-9_-]+\\\\.[A-Za-z0-9_-]+$\",\n          \"type\": \"string\"\n        },\n        \"keyId\": {\n          \"description\": \"The key that produced the signature. Echoed so a response separated from its request is still attributable.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"keyId\",\n        \"alg\",\n        \"jws\"\n      ],\n      \"title\": \"Keys — Sign JWS — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a keys/sign-jws request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/sign-jws/0.1#response. Failures use trust-task-error, not this shape.\",\"properties\":{\"alg\":{\"description\":\"The JOSE algorithm the custodian chose from the key's type and wrote into the header: `EdDSA` for `ed25519`, `ES256` for `p256`, `ES256K` for a secp256k1 key, `ML-DSA-44` and `ML-DSA-65` for `mldsa44` and `mldsa65`. Externally owned, carried verbatim.\",\"enum\":[\"EdDSA\",\"ES256\",\"ES256K\",\"ML-DSA-44\",\"ML-DSA-65\"],\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"jws\":{\"description\":\"The JWS in compact serialisation: BASE64URL(header) '.' BASE64URL(payload) '.' BASE64URL(signature), unpadded. For ECDSA the signature is the fixed-width `r || s` of RFC 7518 §3.4, not DER.\",\"pattern\":\"^[A-Za-z0-9_-]+\\\\.[A-Za-z0-9_-]+\\\\.[A-Za-z0-9_-]+$\",\"type\":\"string\"},\"keyId\":{\"description\":\"The key that produced the signature. Echoed so a response separated from its request is still attributable.\",\"type\":\"string\"}},\"required\":[\"keyId\",\"alg\",\"jws\"],\"title\":\"Keys — Sign JWS — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

@@ -35,21 +35,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -71,15 +56,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -143,46 +119,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/install/claim/finish/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "didBindingSignature",
-///    "installToken",
-///    "registrationId",
-///    "webauthnResponse"
-///  ],
-///  "properties": {
-///    "didBindingSignature": {
-///      "description": "Base64url-no-pad 64-byte Ed25519 signature over the didBindingChallenge.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "installToken": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "registrationId": {
-///      "description": "From claim/start.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "webauthnResponse": {
-///      "description": "RegisterPublicKeyCredential from navigator.credentials.create() (opaque here).",
-///      "type": "object"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -209,16 +145,6 @@ impl Payload {
 }
 ///Base64url-no-pad 64-byte Ed25519 signature over the didBindingChallenge.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Base64url-no-pad 64-byte Ed25519 signature over the didBindingChallenge.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadDidBindingSignature(::std::string::String);
@@ -278,15 +204,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDidBindingSignature {
 }
 ///`PayloadInstallToken`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadInstallToken(::std::string::String);
@@ -346,16 +263,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadInstallToken {
 }
 ///From claim/start.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "From claim/start.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadRegistrationId(::std::string::String);
@@ -415,36 +322,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRegistrationId {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "adminDid",
-///    "setupSessionToken"
-///  ],
-///  "properties": {
-///    "adminDid": {
-///      "description": "Candidate admin DID derived from the passkey's Ed25519 public key.",
-///      "type": "string",
-///      "pattern": "^did:key:z"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "setupSessionToken": {
-///      "description": "EdDSA JWT (aud=vtc-install-session, 5min TTL) consumed by admin/bootstrap.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -466,16 +343,6 @@ impl Response {
 }
 ///Candidate admin DID derived from the passkey's Ed25519 public key.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Candidate admin DID derived from the passkey's Ed25519 public key.",
-///  "type": "string",
-///  "pattern": "^did:key:z"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseAdminDid(::std::string::String);
@@ -537,16 +404,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseAdminDid {
 }
 ///EdDSA JWT (aud=vtc-install-session, 5min TTL) consumed by admin/bootstrap.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "EdDSA JWT (aud=vtc-install-session, 5min TTL) consumed by admin/bootstrap.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseSetupSessionToken(::std::string::String);
@@ -780,7 +637,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/install/claim/finish/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"adminDid\": {\n          \"description\": \"Candidate admin DID derived from the passkey's Ed25519 public key.\",\n          \"pattern\": \"^did:key:z\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"setupSessionToken\": {\n          \"description\": \"EdDSA JWT (aud=vtc-install-session, 5min TTL) consumed by admin/bootstrap.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"adminDid\",\n        \"setupSessionToken\"\n      ],\n      \"title\": \"VTC Install Claim Finish — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/install/claim/finish/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"didBindingSignature\": {\n      \"description\": \"Base64url-no-pad 64-byte Ed25519 signature over the didBindingChallenge.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"installToken\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"registrationId\": {\n      \"description\": \"From claim/start.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"webauthnResponse\": {\n      \"description\": \"RegisterPublicKeyCredential from navigator.credentials.create() (opaque here).\",\n      \"type\": \"object\"\n    }\n  },\n  \"required\": [\n    \"installToken\",\n    \"registrationId\",\n    \"webauthnResponse\",\n    \"didBindingSignature\"\n  ],\n  \"title\": \"VTC Install Claim Finish — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"adminDid\":{\"description\":\"Candidate admin DID derived from the passkey's Ed25519 public key.\",\"pattern\":\"^did:key:z\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"setupSessionToken\":{\"description\":\"EdDSA JWT (aud=vtc-install-session, 5min TTL) consumed by admin/bootstrap.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"adminDid\",\"setupSessionToken\"],\"title\":\"VTC Install Claim Finish — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/install/claim/finish/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"didBindingSignature\":{\"description\":\"Base64url-no-pad 64-byte Ed25519 signature over the didBindingChallenge.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"installToken\":{\"minLength\":1,\"type\":\"string\"},\"registrationId\":{\"description\":\"From claim/start.\",\"minLength\":1,\"type\":\"string\"},\"webauthnResponse\":{\"description\":\"RegisterPublicKeyCredential from navigator.credentials.create() (opaque here).\",\"type\":\"object\"}},\"required\":[\"installToken\",\"registrationId\",\"webauthnResponse\",\"didBindingSignature\"],\"title\":\"VTC Install Claim Finish — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -788,7 +645,7 @@ impl crate::Payload for Response {
         "https://trusttasks.org/spec/vtc/install/claim/finish/0.1#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"adminDid\": {\n          \"description\": \"Candidate admin DID derived from the passkey's Ed25519 public key.\",\n          \"pattern\": \"^did:key:z\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"setupSessionToken\": {\n          \"description\": \"EdDSA JWT (aud=vtc-install-session, 5min TTL) consumed by admin/bootstrap.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"adminDid\",\n        \"setupSessionToken\"\n      ],\n      \"title\": \"VTC Install Claim Finish — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"adminDid\":{\"description\":\"Candidate admin DID derived from the passkey's Ed25519 public key.\",\"pattern\":\"^did:key:z\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"setupSessionToken\":{\"description\":\"EdDSA JWT (aud=vtc-install-session, 5min TTL) consumed by admin/bootstrap.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"adminDid\",\"setupSessionToken\"],\"title\":\"VTC Install Claim Finish — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

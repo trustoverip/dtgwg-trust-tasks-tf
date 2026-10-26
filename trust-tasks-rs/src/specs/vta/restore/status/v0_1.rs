@@ -34,21 +34,6 @@ pub mod error {
 }
 ///The kind of deployment an agent's state lives in, as a backup restore classifies it: plain (an unencrypted store), hardened (the store encrypted under a key derived from the agent's seed), or tee (seed and signing keys sealed to an attested trusted execution environment).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DeploymentEnvironment",
-///  "description": "The kind of deployment an agent's state lives in, as a backup restore classifies it: plain (an unencrypted store), hardened (the store encrypted under a key derived from the agent's seed), or tee (seed and signing keys sealed to an attested trusted execution environment).",
-///  "type": "string",
-///  "enum": [
-///    "plain",
-///    "hardened",
-///    "tee"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -114,21 +99,6 @@ impl ::std::convert::TryFrom<::std::string::String> for DeploymentEnvironment {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -150,15 +120,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -222,24 +183,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///An administrator asks a Verifiable Trust Agent whether its current state derives from a backup restore, and which software version it runs. The payload carries nothing. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/restore/status/0.1",
-///  "title": "Payload",
-///  "description": "An administrator asks a Verifiable Trust Agent whether its current state derives from a backup restore, and which software version it runs. The payload carries nothing. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -262,42 +205,6 @@ impl Payload {
 }
 ///Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/restore/status/0.1#response. Failures use trust-task-error, not this shape.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/restore/status/0.1#response. Failures use trust-task-error, not this shape.",
-///  "type": "object",
-///  "required": [
-///    "restored",
-///    "version"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "restore": {
-///      "description": "The restore the agent's current state derives from. Present exactly when `restored` is true.",
-///      "$ref": "#/definitions/RestoreRecord"
-///    },
-///    "restored": {
-///      "description": "Whether the agent's current state derives from a backup restore. Always present, so 'not restored' is stated rather than inferred from an absent member. True exactly when `restore` is present.",
-///      "type": "boolean"
-///    },
-///    "version": {
-///      "description": "The agent's software version, as its build reports it.",
-///      "type": "string",
-///      "maxLength": 64,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -320,17 +227,6 @@ impl Response {
 }
 ///The agent's software version, as its build reports it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The agent's software version, as its build reports it.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseVersion(::std::string::String);
@@ -393,73 +289,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseVersion {
 }
 ///The backup restore the agent's current state derives from (VTI-VTA-051). `sourceEnvironment` is the kind of deployment the backup was taken from, present when the backup records it; `targetEnvironment` is the kind the restore was applied to — this agent's.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RestoreRecord",
-///  "description": "The backup restore the agent's current state derives from (VTI-VTA-051). `sourceEnvironment` is the kind of deployment the backup was taken from, present when the backup records it; `targetEnvironment` is the kind the restore was applied to — this agent's.",
-///  "type": "object",
-///  "required": [
-///    "appliedAt",
-///    "stagedAt",
-///    "stagedBy",
-///    "targetEnvironment"
-///  ],
-///  "properties": {
-///    "appliedAt": {
-///      "description": "When the restored state was applied — the boot at which it replaced the agent's previous state.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "hostedDidsDetached": {
-///      "description": "DIDs whose hosting registrations the restore detached because it replaced a different identity; each must be registered with its host again. Absent when none were.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "maxLength": 2048,
-///        "pattern": "^did:"
-///      },
-///      "maxItems": 10000
-///    },
-///    "internalKeysLost": {
-///      "description": "Identifiers of keys whose records came back without their material: keys the agent generated internally and never exports, so no backup carries them. Absent when none were lost.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "maxLength": 256,
-///        "minLength": 1
-///      },
-///      "maxItems": 10000
-///    },
-///    "sourceDid": {
-///      "description": "The DID of the agent the backup was taken from, when the backup records one. Differs from the responding agent's own DID when a restore replaced its identity.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    },
-///    "sourceEnvironment": {
-///      "$ref": "#/definitions/DeploymentEnvironment"
-///    },
-///    "stagedAt": {
-///      "description": "When the restore was committed and staged for the next boot.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "stagedBy": {
-///      "description": "The DID of the administrator who committed the restore.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    },
-///    "targetEnvironment": {
-///      "$ref": "#/definitions/DeploymentEnvironment"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -510,16 +339,6 @@ impl RestoreRecord {
 }
 ///`RestoreRecordHostedDidsDetachedItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RestoreRecordHostedDidsDetachedItem(::std::string::String);
@@ -584,16 +403,6 @@ impl<'de> ::serde::Deserialize<'de> for RestoreRecordHostedDidsDetachedItem {
 }
 ///`RestoreRecordInternalKeysLostItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RestoreRecordInternalKeysLostItem(::std::string::String);
@@ -656,17 +465,6 @@ impl<'de> ::serde::Deserialize<'de> for RestoreRecordInternalKeysLostItem {
 }
 ///The DID of the agent the backup was taken from, when the backup records one. Differs from the responding agent's own DID when a restore replaced its identity.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The DID of the agent the backup was taken from, when the backup records one. Differs from the responding agent's own DID when a restore replaced its identity.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RestoreRecordSourceDid(::std::string::String);
@@ -731,17 +529,6 @@ impl<'de> ::serde::Deserialize<'de> for RestoreRecordSourceDid {
 }
 ///The DID of the administrator who committed the restore.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The DID of the administrator who committed the restore.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RestoreRecordStagedBy(::std::string::String);
@@ -1083,7 +870,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DeploymentEnvironment\": {\n      \"description\": \"The kind of deployment an agent's state lives in, as a backup restore classifies it: plain (an unencrypted store), hardened (the store encrypted under a key derived from the agent's seed), or tee (seed and signing keys sealed to an attested trusted execution environment).\",\n      \"enum\": [\n        \"plain\",\n        \"hardened\",\n        \"tee\"\n      ],\n      \"title\": \"DeploymentEnvironment\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/restore/status/0.1#response. Failures use trust-task-error, not this shape.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"restore\": {\n          \"$ref\": \"#/$defs/RestoreRecord\",\n          \"description\": \"The restore the agent's current state derives from. Present exactly when `restored` is true.\"\n        },\n        \"restored\": {\n          \"description\": \"Whether the agent's current state derives from a backup restore. Always present, so 'not restored' is stated rather than inferred from an absent member. True exactly when `restore` is present.\",\n          \"type\": \"boolean\"\n        },\n        \"version\": {\n          \"description\": \"The agent's software version, as its build reports it.\",\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"version\",\n        \"restored\"\n      ],\n      \"title\": \"VTA Restore Status — response payload\",\n      \"type\": \"object\"\n    },\n    \"RestoreRecord\": {\n      \"additionalProperties\": false,\n      \"description\": \"The backup restore the agent's current state derives from (VTI-VTA-051). `sourceEnvironment` is the kind of deployment the backup was taken from, present when the backup records it; `targetEnvironment` is the kind the restore was applied to — this agent's.\",\n      \"properties\": {\n        \"appliedAt\": {\n          \"description\": \"When the restored state was applied — the boot at which it replaced the agent's previous state.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"hostedDidsDetached\": {\n          \"description\": \"DIDs whose hosting registrations the restore detached because it replaced a different identity; each must be registered with its host again. Absent when none were.\",\n          \"items\": {\n            \"maxLength\": 2048,\n            \"pattern\": \"^did:\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 10000,\n          \"type\": \"array\"\n        },\n        \"internalKeysLost\": {\n          \"description\": \"Identifiers of keys whose records came back without their material: keys the agent generated internally and never exports, so no backup carries them. Absent when none were lost.\",\n          \"items\": {\n            \"maxLength\": 256,\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"maxItems\": 10000,\n          \"type\": \"array\"\n        },\n        \"sourceDid\": {\n          \"description\": \"The DID of the agent the backup was taken from, when the backup records one. Differs from the responding agent's own DID when a restore replaced its identity.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"sourceEnvironment\": {\n          \"$ref\": \"#/$defs/DeploymentEnvironment\"\n        },\n        \"stagedAt\": {\n          \"description\": \"When the restore was committed and staged for the next boot.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"stagedBy\": {\n          \"description\": \"The DID of the administrator who committed the restore.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"targetEnvironment\": {\n          \"$ref\": \"#/$defs/DeploymentEnvironment\"\n        }\n      },\n      \"required\": [\n        \"appliedAt\",\n        \"stagedAt\",\n        \"stagedBy\",\n        \"targetEnvironment\"\n      ],\n      \"title\": \"RestoreRecord\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/restore/status/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"An administrator asks a Verifiable Trust Agent whether its current state derives from a backup restore, and which software version it runs. The payload carries nothing. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    }\n  },\n  \"title\": \"VTA Restore — Status — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"DeploymentEnvironment\":{\"description\":\"The kind of deployment an agent's state lives in, as a backup restore classifies it: plain (an unencrypted store), hardened (the store encrypted under a key derived from the agent's seed), or tee (seed and signing keys sealed to an attested trusted execution environment).\",\"enum\":[\"plain\",\"hardened\",\"tee\"],\"title\":\"DeploymentEnvironment\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/restore/status/0.1#response. Failures use trust-task-error, not this shape.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"restore\":{\"$ref\":\"#/$defs/RestoreRecord\",\"description\":\"The restore the agent's current state derives from. Present exactly when `restored` is true.\"},\"restored\":{\"description\":\"Whether the agent's current state derives from a backup restore. Always present, so 'not restored' is stated rather than inferred from an absent member. True exactly when `restore` is present.\",\"type\":\"boolean\"},\"version\":{\"description\":\"The agent's software version, as its build reports it.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"version\",\"restored\"],\"title\":\"VTA Restore Status — response payload\",\"type\":\"object\"},\"RestoreRecord\":{\"additionalProperties\":false,\"description\":\"The backup restore the agent's current state derives from (VTI-VTA-051). `sourceEnvironment` is the kind of deployment the backup was taken from, present when the backup records it; `targetEnvironment` is the kind the restore was applied to — this agent's.\",\"properties\":{\"appliedAt\":{\"description\":\"When the restored state was applied — the boot at which it replaced the agent's previous state.\",\"format\":\"date-time\",\"type\":\"string\"},\"hostedDidsDetached\":{\"description\":\"DIDs whose hosting registrations the restore detached because it replaced a different identity; each must be registered with its host again. Absent when none were.\",\"items\":{\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"maxItems\":10000,\"type\":\"array\"},\"internalKeysLost\":{\"description\":\"Identifiers of keys whose records came back without their material: keys the agent generated internally and never exports, so no backup carries them. Absent when none were lost.\",\"items\":{\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"maxItems\":10000,\"type\":\"array\"},\"sourceDid\":{\"description\":\"The DID of the agent the backup was taken from, when the backup records one. Differs from the responding agent's own DID when a restore replaced its identity.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"sourceEnvironment\":{\"$ref\":\"#/$defs/DeploymentEnvironment\"},\"stagedAt\":{\"description\":\"When the restore was committed and staged for the next boot.\",\"format\":\"date-time\",\"type\":\"string\"},\"stagedBy\":{\"description\":\"The DID of the administrator who committed the restore.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"targetEnvironment\":{\"$ref\":\"#/$defs/DeploymentEnvironment\"}},\"required\":[\"appliedAt\",\"stagedAt\",\"stagedBy\",\"targetEnvironment\"],\"title\":\"RestoreRecord\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vta/restore/status/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"An administrator asks a Verifiable Trust Agent whether its current state derives from a backup restore, and which software version it runs. The payload carries nothing. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"}},\"title\":\"VTA Restore — Status — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1092,7 +879,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DeploymentEnvironment\": {\n      \"description\": \"The kind of deployment an agent's state lives in, as a backup restore classifies it: plain (an unencrypted store), hardened (the store encrypted under a key derived from the agent's seed), or tee (seed and signing keys sealed to an attested trusted execution environment).\",\n      \"enum\": [\n        \"plain\",\n        \"hardened\",\n        \"tee\"\n      ],\n      \"title\": \"DeploymentEnvironment\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/restore/status/0.1#response. Failures use trust-task-error, not this shape.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"restore\": {\n          \"$ref\": \"#/$defs/RestoreRecord\",\n          \"description\": \"The restore the agent's current state derives from. Present exactly when `restored` is true.\"\n        },\n        \"restored\": {\n          \"description\": \"Whether the agent's current state derives from a backup restore. Always present, so 'not restored' is stated rather than inferred from an absent member. True exactly when `restore` is present.\",\n          \"type\": \"boolean\"\n        },\n        \"version\": {\n          \"description\": \"The agent's software version, as its build reports it.\",\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"version\",\n        \"restored\"\n      ],\n      \"title\": \"VTA Restore Status — response payload\",\n      \"type\": \"object\"\n    },\n    \"RestoreRecord\": {\n      \"additionalProperties\": false,\n      \"description\": \"The backup restore the agent's current state derives from (VTI-VTA-051). `sourceEnvironment` is the kind of deployment the backup was taken from, present when the backup records it; `targetEnvironment` is the kind the restore was applied to — this agent's.\",\n      \"properties\": {\n        \"appliedAt\": {\n          \"description\": \"When the restored state was applied — the boot at which it replaced the agent's previous state.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"hostedDidsDetached\": {\n          \"description\": \"DIDs whose hosting registrations the restore detached because it replaced a different identity; each must be registered with its host again. Absent when none were.\",\n          \"items\": {\n            \"maxLength\": 2048,\n            \"pattern\": \"^did:\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 10000,\n          \"type\": \"array\"\n        },\n        \"internalKeysLost\": {\n          \"description\": \"Identifiers of keys whose records came back without their material: keys the agent generated internally and never exports, so no backup carries them. Absent when none were lost.\",\n          \"items\": {\n            \"maxLength\": 256,\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"maxItems\": 10000,\n          \"type\": \"array\"\n        },\n        \"sourceDid\": {\n          \"description\": \"The DID of the agent the backup was taken from, when the backup records one. Differs from the responding agent's own DID when a restore replaced its identity.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"sourceEnvironment\": {\n          \"$ref\": \"#/$defs/DeploymentEnvironment\"\n        },\n        \"stagedAt\": {\n          \"description\": \"When the restore was committed and staged for the next boot.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"stagedBy\": {\n          \"description\": \"The DID of the administrator who committed the restore.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"targetEnvironment\": {\n          \"$ref\": \"#/$defs/DeploymentEnvironment\"\n        }\n      },\n      \"required\": [\n        \"appliedAt\",\n        \"stagedAt\",\n        \"stagedBy\",\n        \"targetEnvironment\"\n      ],\n      \"title\": \"RestoreRecord\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"DeploymentEnvironment\":{\"description\":\"The kind of deployment an agent's state lives in, as a backup restore classifies it: plain (an unencrypted store), hardened (the store encrypted under a key derived from the agent's seed), or tee (seed and signing keys sealed to an attested trusted execution environment).\",\"enum\":[\"plain\",\"hardened\",\"tee\"],\"title\":\"DeploymentEnvironment\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/restore/status/0.1#response. Failures use trust-task-error, not this shape.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"restore\":{\"$ref\":\"#/$defs/RestoreRecord\",\"description\":\"The restore the agent's current state derives from. Present exactly when `restored` is true.\"},\"restored\":{\"description\":\"Whether the agent's current state derives from a backup restore. Always present, so 'not restored' is stated rather than inferred from an absent member. True exactly when `restore` is present.\",\"type\":\"boolean\"},\"version\":{\"description\":\"The agent's software version, as its build reports it.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"version\",\"restored\"],\"title\":\"VTA Restore Status — response payload\",\"type\":\"object\"},\"RestoreRecord\":{\"additionalProperties\":false,\"description\":\"The backup restore the agent's current state derives from (VTI-VTA-051). `sourceEnvironment` is the kind of deployment the backup was taken from, present when the backup records it; `targetEnvironment` is the kind the restore was applied to — this agent's.\",\"properties\":{\"appliedAt\":{\"description\":\"When the restored state was applied — the boot at which it replaced the agent's previous state.\",\"format\":\"date-time\",\"type\":\"string\"},\"hostedDidsDetached\":{\"description\":\"DIDs whose hosting registrations the restore detached because it replaced a different identity; each must be registered with its host again. Absent when none were.\",\"items\":{\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"maxItems\":10000,\"type\":\"array\"},\"internalKeysLost\":{\"description\":\"Identifiers of keys whose records came back without their material: keys the agent generated internally and never exports, so no backup carries them. Absent when none were lost.\",\"items\":{\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"maxItems\":10000,\"type\":\"array\"},\"sourceDid\":{\"description\":\"The DID of the agent the backup was taken from, when the backup records one. Differs from the responding agent's own DID when a restore replaced its identity.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"sourceEnvironment\":{\"$ref\":\"#/$defs/DeploymentEnvironment\"},\"stagedAt\":{\"description\":\"When the restore was committed and staged for the next boot.\",\"format\":\"date-time\",\"type\":\"string\"},\"stagedBy\":{\"description\":\"The DID of the administrator who committed the restore.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"targetEnvironment\":{\"$ref\":\"#/$defs/DeploymentEnvironment\"}},\"required\":[\"appliedAt\",\"stagedAt\",\"stagedBy\",\"targetEnvironment\"],\"title\":\"RestoreRecord\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

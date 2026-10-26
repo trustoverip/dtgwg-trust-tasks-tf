@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,46 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/rooms/owner/issue-membership/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "roomId",
-///    "signingKeyId",
-///    "subject"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "roomId": {
-///      "description": "The room whose identity issues this credential. The recipient MUST hold a signing key for it — it is signing AS the room, not as itself.",
-///      "type": "string"
-///    },
-///    "signingKeyId": {
-///      "description": "Which held key signs. Named explicitly rather than looked up from `roomId`, because nothing maps a DID to a key it was minted with and inventing that mapping would add a lifecycle to get wrong. A key that is not the room's produces a credential that fails to verify against the room's DID document — loud, and at the first use rather than later.",
-///      "type": "string",
-///      "maxLength": 256
-///    },
-///    "subject": {
-///      "description": "The member this admits. Membership is an explicit set of parties, never a role — a room that admitted a role would be a room whose membership its host could compute.",
-///      "type": "string"
-///    },
-///    "validUntil": {
-///      "description": "When membership lapses. Absent means it does not, and removal is then an epoch advance rather than an expiry — see `rooms/epoch/mint`.",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -212,16 +148,6 @@ impl Payload {
 }
 ///Which held key signs. Named explicitly rather than looked up from `roomId`, because nothing maps a DID to a key it was minted with and inventing that mapping would add a lifecycle to get wrong. A key that is not the room's produces a credential that fails to verify against the room's DID document — loud, and at the first use rather than later.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Which held key signs. Named explicitly rather than looked up from `roomId`, because nothing maps a DID to a key it was minted with and inventing that mapping would add a lifecycle to get wrong. A key that is not the room's produces a credential that fails to verify against the room's DID document — loud, and at the first use rather than later.",
-///  "type": "string",
-///  "maxLength": 256
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadSigningKeyId(::std::string::String);
@@ -281,35 +207,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSigningKeyId {
 }
 ///Success response to rooms/owner/issue-membership. Type https://trusttasks.org/spec/rooms/owner/issue-membership/0.1#response. The signed VMC naming the member.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to rooms/owner/issue-membership. Type https://trusttasks.org/spec/rooms/owner/issue-membership/0.1#response. The signed VMC naming the member.",
-///  "type": "object",
-///  "required": [
-///    "credential",
-///    "credentialId"
-///  ],
-///  "properties": {
-///    "credential": {
-///      "description": "The signed Verifiable Membership Credential, serialised, for delivery to the member.",
-///      "type": "string"
-///    },
-///    "credentialId": {
-///      "description": "Its `id`, which is how a re-send is told from a renewal.",
-///      "type": "string"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -501,7 +398,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/owner/issue-membership. Type https://trusttasks.org/spec/rooms/owner/issue-membership/0.1#response. The signed VMC naming the member.\",\n      \"properties\": {\n        \"credential\": {\n          \"description\": \"The signed Verifiable Membership Credential, serialised, for delivery to the member.\",\n          \"type\": \"string\"\n        },\n        \"credentialId\": {\n          \"description\": \"Its `id`, which is how a re-send is told from a renewal.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"credential\",\n        \"credentialId\"\n      ],\n      \"title\": \"Rooms Owner Issue Membership — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/rooms/owner/issue-membership/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"roomId\": {\n      \"description\": \"The room whose identity issues this credential. The recipient MUST hold a signing key for it — it is signing AS the room, not as itself.\",\n      \"type\": \"string\"\n    },\n    \"signingKeyId\": {\n      \"description\": \"Which held key signs. Named explicitly rather than looked up from `roomId`, because nothing maps a DID to a key it was minted with and inventing that mapping would add a lifecycle to get wrong. A key that is not the room's produces a credential that fails to verify against the room's DID document — loud, and at the first use rather than later.\",\n      \"maxLength\": 256,\n      \"type\": \"string\"\n    },\n    \"subject\": {\n      \"description\": \"The member this admits. Membership is an explicit set of parties, never a role — a room that admitted a role would be a room whose membership its host could compute.\",\n      \"type\": \"string\"\n    },\n    \"validUntil\": {\n      \"description\": \"When membership lapses. Absent means it does not, and removal is then an epoch advance rather than an expiry — see `rooms/epoch/mint`.\",\n      \"format\": \"date-time\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"roomId\",\n    \"signingKeyId\",\n    \"subject\"\n  ],\n  \"title\": \"Rooms Owner Issue Membership — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to rooms/owner/issue-membership. Type https://trusttasks.org/spec/rooms/owner/issue-membership/0.1#response. The signed VMC naming the member.\",\"properties\":{\"credential\":{\"description\":\"The signed Verifiable Membership Credential, serialised, for delivery to the member.\",\"type\":\"string\"},\"credentialId\":{\"description\":\"Its `id`, which is how a re-send is told from a renewal.\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"credential\",\"credentialId\"],\"title\":\"Rooms Owner Issue Membership — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/rooms/owner/issue-membership/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"roomId\":{\"description\":\"The room whose identity issues this credential. The recipient MUST hold a signing key for it — it is signing AS the room, not as itself.\",\"type\":\"string\"},\"signingKeyId\":{\"description\":\"Which held key signs. Named explicitly rather than looked up from `roomId`, because nothing maps a DID to a key it was minted with and inventing that mapping would add a lifecycle to get wrong. A key that is not the room's produces a credential that fails to verify against the room's DID document — loud, and at the first use rather than later.\",\"maxLength\":256,\"type\":\"string\"},\"subject\":{\"description\":\"The member this admits. Membership is an explicit set of parties, never a role — a room that admitted a role would be a room whose membership its host could compute.\",\"type\":\"string\"},\"validUntil\":{\"description\":\"When membership lapses. Absent means it does not, and removal is then an epoch advance rather than an expiry — see `rooms/epoch/mint`.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"roomId\",\"signingKeyId\",\"subject\"],\"title\":\"Rooms Owner Issue Membership — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -511,7 +408,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/owner/issue-membership. Type https://trusttasks.org/spec/rooms/owner/issue-membership/0.1#response. The signed VMC naming the member.\",\n      \"properties\": {\n        \"credential\": {\n          \"description\": \"The signed Verifiable Membership Credential, serialised, for delivery to the member.\",\n          \"type\": \"string\"\n        },\n        \"credentialId\": {\n          \"description\": \"Its `id`, which is how a re-send is told from a renewal.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"credential\",\n        \"credentialId\"\n      ],\n      \"title\": \"Rooms Owner Issue Membership — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to rooms/owner/issue-membership. Type https://trusttasks.org/spec/rooms/owner/issue-membership/0.1#response. The signed VMC naming the member.\",\"properties\":{\"credential\":{\"description\":\"The signed Verifiable Membership Credential, serialised, for delivery to the member.\",\"type\":\"string\"},\"credentialId\":{\"description\":\"Its `id`, which is how a re-send is told from a renewal.\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"credential\",\"credentialId\"],\"title\":\"Rooms Owner Issue Membership — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

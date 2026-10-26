@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,37 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/did-management/agent-name/resolve/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "dids"
-///  ],
-///  "properties": {
-///    "dids": {
-///      "description": "The DIDs whose served names are wanted.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "maxLength": 2048,
-///        "minLength": 1
-///      },
-///      "maxItems": 100,
-///      "minItems": 1,
-///      "uniqueItems": true
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -189,16 +134,6 @@ impl Payload {
 }
 ///`PayloadDidsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadDidsItem(::std::string::String);
@@ -261,50 +196,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDidsItem {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "entries"
-///  ],
-///  "properties": {
-///    "entries": {
-///      "description": "One entry per requested DID that the caller may read and that serves at least one name, in request order. A DID that is not hosted here, that the caller may not read, or that serves no name is absent — the three are indistinguishable.",
-///      "type": "array",
-///      "items": {
-///        "type": "object",
-///        "required": [
-///          "did",
-///          "names"
-///        ],
-///        "properties": {
-///          "did": {
-///            "type": "string"
-///          },
-///          "names": {
-///            "description": "Served (enabled) agent names as `{domain}/@{name}` addresses. Parked names are not served and are not listed; did-management/agent-name/list shows them to the owner.",
-///            "type": "array",
-///            "items": {
-///              "type": "string"
-///            },
-///            "minItems": 1
-///          }
-///        },
-///        "additionalProperties": false
-///      }
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -321,32 +212,6 @@ impl Response {
 }
 ///`ResponseEntriesItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "did",
-///    "names"
-///  ],
-///  "properties": {
-///    "did": {
-///      "type": "string"
-///    },
-///    "names": {
-///      "description": "Served (enabled) agent names as `{domain}/@{name}` addresses. Parked names are not served and are not listed; did-management/agent-name/list shows them to the owner.",
-///      "type": "array",
-///      "items": {
-///        "type": "string"
-///      },
-///      "minItems": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -530,7 +395,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"entries\": {\n          \"description\": \"One entry per requested DID that the caller may read and that serves at least one name, in request order. A DID that is not hosted here, that the caller may not read, or that serves no name is absent — the three are indistinguishable.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"did\": {\n                \"type\": \"string\"\n              },\n              \"names\": {\n                \"description\": \"Served (enabled) agent names as `{domain}/@{name}` addresses. Parked names are not served and are not listed; did-management/agent-name/list shows them to the owner.\",\n                \"items\": {\n                  \"type\": \"string\"\n                },\n                \"minItems\": 1,\n                \"type\": \"array\"\n              }\n            },\n            \"required\": [\n              \"did\",\n              \"names\"\n            ],\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"entries\"\n      ],\n      \"title\": \"Agent Name Resolve — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/did-management/agent-name/resolve/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"dids\": {\n      \"description\": \"The DIDs whose served names are wanted.\",\n      \"items\": {\n        \"maxLength\": 2048,\n        \"minLength\": 1,\n        \"type\": \"string\"\n      },\n      \"maxItems\": 100,\n      \"minItems\": 1,\n      \"type\": \"array\",\n      \"uniqueItems\": true\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"required\": [\n    \"dids\"\n  ],\n  \"title\": \"Agent Name Resolve — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"entries\":{\"description\":\"One entry per requested DID that the caller may read and that serves at least one name, in request order. A DID that is not hosted here, that the caller may not read, or that serves no name is absent — the three are indistinguishable.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"did\":{\"type\":\"string\"},\"names\":{\"description\":\"Served (enabled) agent names as `{domain}/@{name}` addresses. Parked names are not served and are not listed; did-management/agent-name/list shows them to the owner.\",\"items\":{\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"}},\"required\":[\"did\",\"names\"],\"type\":\"object\"},\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"entries\"],\"title\":\"Agent Name Resolve — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/did-management/agent-name/resolve/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"dids\":{\"description\":\"The DIDs whose served names are wanted.\",\"items\":{\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"maxItems\":100,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"dids\"],\"title\":\"Agent Name Resolve — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -539,7 +404,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"entries\": {\n          \"description\": \"One entry per requested DID that the caller may read and that serves at least one name, in request order. A DID that is not hosted here, that the caller may not read, or that serves no name is absent — the three are indistinguishable.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"did\": {\n                \"type\": \"string\"\n              },\n              \"names\": {\n                \"description\": \"Served (enabled) agent names as `{domain}/@{name}` addresses. Parked names are not served and are not listed; did-management/agent-name/list shows them to the owner.\",\n                \"items\": {\n                  \"type\": \"string\"\n                },\n                \"minItems\": 1,\n                \"type\": \"array\"\n              }\n            },\n            \"required\": [\n              \"did\",\n              \"names\"\n            ],\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"entries\"\n      ],\n      \"title\": \"Agent Name Resolve — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"entries\":{\"description\":\"One entry per requested DID that the caller may read and that serves at least one name, in request order. A DID that is not hosted here, that the caller may not read, or that serves no name is absent — the three are indistinguishable.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"did\":{\"type\":\"string\"},\"names\":{\"description\":\"Served (enabled) agent names as `{domain}/@{name}` addresses. Parked names are not served and are not listed; did-management/agent-name/list shows them to the owner.\",\"items\":{\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"}},\"required\":[\"did\",\"names\"],\"type\":\"object\"},\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"entries\"],\"title\":\"Agent Name Resolve — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

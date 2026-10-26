@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,60 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/rooms/owner/group/add/0.3",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "host",
-///    "keyPackage",
-///    "member",
-///    "roomId"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "host": {
-///      "description": "The room's host, as a DID: where the room's epoch advances. Named by the caller because the recipient holds key custody, not a hosting register.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    },
-///    "keyPackage": {
-///      "description": "The newcomer's MLS KeyPackage, base64url without padding, as rooms/keys/key-package returned it.",
-///      "type": "string",
-///      "maxLength": 65536,
-///      "minLength": 1,
-///      "pattern": "^[A-Za-z0-9_-]+$"
-///    },
-///    "member": {
-///      "description": "The DID being admitted. The KeyPackage's leaf credential MUST identify it; one that names anyone else is refused, so an owner never admits a party other than the one they meant.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    },
-///    "reason": {
-///      "description": "Why, carried to the host's epoch advance. Untrusted and attributed to its author: it MUST NOT carry personal data or a credential.",
-///      "type": "string",
-///      "maxLength": 500,
-///      "minLength": 1
-///    },
-///    "roomId": {
-///      "description": "The room whose group admits a member. The recipient MUST hold its group.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -224,17 +146,6 @@ impl Payload {
 }
 ///The room's host, as a DID: where the room's epoch advances. Named by the caller because the recipient holds key custody, not a hosting register.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The room's host, as a DID: where the room's epoch advances. Named by the caller because the recipient holds key custody, not a hosting register.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadHost(::std::string::String);
@@ -299,18 +210,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadHost {
 }
 ///The newcomer's MLS KeyPackage, base64url without padding, as rooms/keys/key-package returned it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The newcomer's MLS KeyPackage, base64url without padding, as rooms/keys/key-package returned it.",
-///  "type": "string",
-///  "maxLength": 65536,
-///  "minLength": 1,
-///  "pattern": "^[A-Za-z0-9_-]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadKeyPackage(::std::string::String);
@@ -378,17 +277,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadKeyPackage {
 }
 ///The DID being admitted. The KeyPackage's leaf credential MUST identify it; one that names anyone else is refused, so an owner never admits a party other than the one they meant.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The DID being admitted. The KeyPackage's leaf credential MUST identify it; one that names anyone else is refused, so an owner never admits a party other than the one they meant.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadMember(::std::string::String);
@@ -453,17 +341,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadMember {
 }
 ///Why, carried to the host's epoch advance. Untrusted and attributed to its author: it MUST NOT carry personal data or a credential.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Why, carried to the host's epoch advance. Untrusted and attributed to its author: it MUST NOT carry personal data or a credential.",
-///  "type": "string",
-///  "maxLength": 500,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadReason(::std::string::String);
@@ -526,17 +403,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 }
 ///The room whose group admits a member. The recipient MUST hold its group.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The room whose group admits a member. The recipient MUST hold its group.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadRoomId(::std::string::String);
@@ -599,58 +465,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRoomId {
 }
 ///Success response to rooms/owner/group/add. Type https://trusttasks.org/spec/rooms/owner/group/add/0.3#response. The room's new epoch, and the Welcome for the caller to deliver to the newcomer's key holder with rooms/keys/welcome.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to rooms/owner/group/add. Type https://trusttasks.org/spec/rooms/owner/group/add/0.3#response. The room's new epoch, and the Welcome for the caller to deliver to the newcomer's key holder with rooms/keys/welcome.",
-///  "type": "object",
-///  "required": [
-///    "epoch",
-///    "member",
-///    "roomId",
-///    "welcome"
-///  ],
-///  "properties": {
-///    "epoch": {
-///      "description": "The room epoch after the admission, as the host recorded it.",
-///      "type": "integer",
-///      "minimum": 2.0
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "member": {
-///      "description": "Who was admitted.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    },
-///    "ratchetTree": {
-///      "description": "The group's ratchet tree, base64url, where the Welcome does not carry it as an extension. Passed to rooms/keys/welcome unchanged.",
-///      "type": "string",
-///      "minLength": 1,
-///      "pattern": "^[A-Za-z0-9_-]+$"
-///    },
-///    "roomId": {
-///      "description": "The room.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    },
-///    "welcome": {
-///      "description": "The MLS Welcome, base64url, sealed to the newcomer's KeyPackage. For rooms/keys/welcome; never through the host.",
-///      "type": "string",
-///      "minLength": 1,
-///      "pattern": "^[A-Za-z0-9_-]+$"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -681,17 +495,6 @@ impl Response {
 }
 ///Who was admitted.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Who was admitted.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseMember(::std::string::String);
@@ -756,17 +559,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseMember {
 }
 ///The group's ratchet tree, base64url, where the Welcome does not carry it as an extension. Passed to rooms/keys/welcome unchanged.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The group's ratchet tree, base64url, where the Welcome does not carry it as an extension. Passed to rooms/keys/welcome unchanged.",
-///  "type": "string",
-///  "minLength": 1,
-///  "pattern": "^[A-Za-z0-9_-]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseRatchetTree(::std::string::String);
@@ -831,17 +623,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseRatchetTree {
 }
 ///The room.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The room.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseRoomId(::std::string::String);
@@ -904,17 +685,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseRoomId {
 }
 ///The MLS Welcome, base64url, sealed to the newcomer's KeyPackage. For rooms/keys/welcome; never through the host.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The MLS Welcome, base64url, sealed to the newcomer's KeyPackage. For rooms/keys/welcome; never through the host.",
-///  "type": "string",
-///  "minLength": 1,
-///  "pattern": "^[A-Za-z0-9_-]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseWelcome(::std::string::String);
@@ -1208,7 +978,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/owner/group/add. Type https://trusttasks.org/spec/rooms/owner/group/add/0.3#response. The room's new epoch, and the Welcome for the caller to deliver to the newcomer's key holder with rooms/keys/welcome.\",\n      \"properties\": {\n        \"epoch\": {\n          \"description\": \"The room epoch after the admission, as the host recorded it.\",\n          \"minimum\": 2,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"member\": {\n          \"description\": \"Who was admitted.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"ratchetTree\": {\n          \"description\": \"The group's ratchet tree, base64url, where the Welcome does not carry it as an extension. Passed to rooms/keys/welcome unchanged.\",\n          \"minLength\": 1,\n          \"pattern\": \"^[A-Za-z0-9_-]+$\",\n          \"type\": \"string\"\n        },\n        \"roomId\": {\n          \"description\": \"The room.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"welcome\": {\n          \"description\": \"The MLS Welcome, base64url, sealed to the newcomer's KeyPackage. For rooms/keys/welcome; never through the host.\",\n          \"minLength\": 1,\n          \"pattern\": \"^[A-Za-z0-9_-]+$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"member\",\n        \"epoch\",\n        \"welcome\"\n      ],\n      \"title\": \"Rooms Owner Group Add — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/rooms/owner/group/add/0.3\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"host\": {\n      \"description\": \"The room's host, as a DID: where the room's epoch advances. Named by the caller because the recipient holds key custody, not a hosting register.\",\n      \"maxLength\": 2048,\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    },\n    \"keyPackage\": {\n      \"description\": \"The newcomer's MLS KeyPackage, base64url without padding, as rooms/keys/key-package returned it.\",\n      \"maxLength\": 65536,\n      \"minLength\": 1,\n      \"pattern\": \"^[A-Za-z0-9_-]+$\",\n      \"type\": \"string\"\n    },\n    \"member\": {\n      \"description\": \"The DID being admitted. The KeyPackage's leaf credential MUST identify it; one that names anyone else is refused, so an owner never admits a party other than the one they meant.\",\n      \"maxLength\": 2048,\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    },\n    \"reason\": {\n      \"description\": \"Why, carried to the host's epoch advance. Untrusted and attributed to its author: it MUST NOT carry personal data or a credential.\",\n      \"maxLength\": 500,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"roomId\": {\n      \"description\": \"The room whose group admits a member. The recipient MUST hold its group.\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"roomId\",\n    \"host\",\n    \"member\",\n    \"keyPackage\"\n  ],\n  \"title\": \"Rooms Owner Group Add — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to rooms/owner/group/add. Type https://trusttasks.org/spec/rooms/owner/group/add/0.3#response. The room's new epoch, and the Welcome for the caller to deliver to the newcomer's key holder with rooms/keys/welcome.\",\"properties\":{\"epoch\":{\"description\":\"The room epoch after the admission, as the host recorded it.\",\"minimum\":2,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"member\":{\"description\":\"Who was admitted.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"ratchetTree\":{\"description\":\"The group's ratchet tree, base64url, where the Welcome does not carry it as an extension. Passed to rooms/keys/welcome unchanged.\",\"minLength\":1,\"pattern\":\"^[A-Za-z0-9_-]+$\",\"type\":\"string\"},\"roomId\":{\"description\":\"The room.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"welcome\":{\"description\":\"The MLS Welcome, base64url, sealed to the newcomer's KeyPackage. For rooms/keys/welcome; never through the host.\",\"minLength\":1,\"pattern\":\"^[A-Za-z0-9_-]+$\",\"type\":\"string\"}},\"required\":[\"roomId\",\"member\",\"epoch\",\"welcome\"],\"title\":\"Rooms Owner Group Add — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/rooms/owner/group/add/0.3\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"host\":{\"description\":\"The room's host, as a DID: where the room's epoch advances. Named by the caller because the recipient holds key custody, not a hosting register.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"keyPackage\":{\"description\":\"The newcomer's MLS KeyPackage, base64url without padding, as rooms/keys/key-package returned it.\",\"maxLength\":65536,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9_-]+$\",\"type\":\"string\"},\"member\":{\"description\":\"The DID being admitted. The KeyPackage's leaf credential MUST identify it; one that names anyone else is refused, so an owner never admits a party other than the one they meant.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"reason\":{\"description\":\"Why, carried to the host's epoch advance. Untrusted and attributed to its author: it MUST NOT carry personal data or a credential.\",\"maxLength\":500,\"minLength\":1,\"type\":\"string\"},\"roomId\":{\"description\":\"The room whose group admits a member. The recipient MUST hold its group.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"roomId\",\"host\",\"member\",\"keyPackage\"],\"title\":\"Rooms Owner Group Add — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1217,7 +987,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/owner/group/add. Type https://trusttasks.org/spec/rooms/owner/group/add/0.3#response. The room's new epoch, and the Welcome for the caller to deliver to the newcomer's key holder with rooms/keys/welcome.\",\n      \"properties\": {\n        \"epoch\": {\n          \"description\": \"The room epoch after the admission, as the host recorded it.\",\n          \"minimum\": 2,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"member\": {\n          \"description\": \"Who was admitted.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"ratchetTree\": {\n          \"description\": \"The group's ratchet tree, base64url, where the Welcome does not carry it as an extension. Passed to rooms/keys/welcome unchanged.\",\n          \"minLength\": 1,\n          \"pattern\": \"^[A-Za-z0-9_-]+$\",\n          \"type\": \"string\"\n        },\n        \"roomId\": {\n          \"description\": \"The room.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"welcome\": {\n          \"description\": \"The MLS Welcome, base64url, sealed to the newcomer's KeyPackage. For rooms/keys/welcome; never through the host.\",\n          \"minLength\": 1,\n          \"pattern\": \"^[A-Za-z0-9_-]+$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"member\",\n        \"epoch\",\n        \"welcome\"\n      ],\n      \"title\": \"Rooms Owner Group Add — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to rooms/owner/group/add. Type https://trusttasks.org/spec/rooms/owner/group/add/0.3#response. The room's new epoch, and the Welcome for the caller to deliver to the newcomer's key holder with rooms/keys/welcome.\",\"properties\":{\"epoch\":{\"description\":\"The room epoch after the admission, as the host recorded it.\",\"minimum\":2,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"member\":{\"description\":\"Who was admitted.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"ratchetTree\":{\"description\":\"The group's ratchet tree, base64url, where the Welcome does not carry it as an extension. Passed to rooms/keys/welcome unchanged.\",\"minLength\":1,\"pattern\":\"^[A-Za-z0-9_-]+$\",\"type\":\"string\"},\"roomId\":{\"description\":\"The room.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"welcome\":{\"description\":\"The MLS Welcome, base64url, sealed to the newcomer's KeyPackage. For rooms/keys/welcome; never through the host.\",\"minLength\":1,\"pattern\":\"^[A-Za-z0-9_-]+$\",\"type\":\"string\"}},\"required\":[\"roomId\",\"member\",\"epoch\",\"welcome\"],\"title\":\"Rooms Owner Group Add — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

@@ -34,19 +34,6 @@ pub mod error {
 }
 ///A step-up approver, as an Ed25519 `did:key` (`z6Mk…`). `did:key` only, because its document is a function of the key and resolves with no network, so verifying an approver's statement never depends on a fetch, and a key whose DID document could be rewritten after enrolment would not be the key that was enrolled. Distinct from the subject's DID, from every verification method in the subject's DID document, and from every key the subject can sign operations with at the relying party.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ApproverDid",
-///  "description": "A step-up approver, as an Ed25519 `did:key` (`z6Mk…`). `did:key` only, because its document is a function of the key and resolves with no network, so verifying an approver's statement never depends on a fetch, and a key whose DID document could be rewritten after enrolment would not be the key that was enrolled. Distinct from the subject's DID, from every verification method in the subject's DID document, and from every key the subject can sign operations with at the relying party.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 16,
-///  "pattern": "^did:key:z6Mk[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ApproverDid(::std::string::String);
@@ -116,18 +103,6 @@ impl<'de> ::serde::Deserialize<'de> for ApproverDid {
 }
 ///A human-readable name for where the approver lives — e.g. `Browser plugin — work laptop`. Chosen by the subject (or suggested by an inviter), untrusted, and attributed to its author wherever it is rendered. Absent rather than invented when none was chosen.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ApproverLabel",
-///  "description": "A human-readable name for where the approver lives — e.g. `Browser plugin — work laptop`. Chosen by the subject (or suggested by an inviter), untrusted, and attributed to its author wherever it is rendered. Absent rather than invented when none was chosen.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ApproverLabel(::std::string::String);
@@ -190,17 +165,6 @@ impl<'de> ::serde::Deserialize<'de> for ApproverLabel {
 }
 ///A complete, signed auth/step-up/approver/attest/0.1 Trust Task document — envelope, payload and proof — issued by the approver. Deliberately an open object here rather than a typed one: the consumer verifies it as a document in its own right (envelope, proof and payload against that specification's schemas), and verifies its proof over the members exactly as received, which a binding that narrowed it to a typed struct and re-serialised it could silently break.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "AttestStatement",
-///  "description": "A complete, signed auth/step-up/approver/attest/0.1 Trust Task document — envelope, payload and proof — issued by the approver. Deliberately an open object here rather than a typed one: the consumer verifies it as a document in its own right (envelope, proof and payload against that specification's schemas), and verifies its proof over the members exactly as received, which a binding that narrowed it to a typed struct and re-serialised it could silently break.",
-///  "type": "object",
-///  "minProperties": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct AttestStatement(pub ::serde_json::Map<::std::string::String, ::serde_json::Value>);
@@ -226,21 +190,6 @@ impl ::std::convert::From<::serde_json::Map<::std::string::String, ::serde_json:
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -262,15 +211,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -334,45 +274,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Complete first-administrator enrolment under a DID the founder already controls: the document is signed by the DID the install token names, verified against its live document, and carries the founder's step-up approver's enrolment statement over the claim's challenge. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/install/claim/finish/0.3",
-///  "title": "Payload",
-///  "description": "Complete first-administrator enrolment under a DID the founder already controls: the document is signed by the DID the install token names, verified against its live document, and carries the founder's step-up approver's enrolment statement over the claim's challenge. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "approverDid",
-///    "claimId",
-///    "statement"
-///  ],
-///  "properties": {
-///    "approverDid": {
-///      "description": "The founder's step-up approver. MUST equal the statement's issuer.",
-///      "$ref": "#/definitions/ApproverDid"
-///    },
-///    "claimId": {
-///      "description": "From claim/start 0.3, echoed verbatim. Also the `boundTo` of the statement.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "label": {
-///      "$ref": "#/definitions/ApproverLabel"
-///    },
-///    "statement": {
-///      "description": "The approver's complete, signed auth/step-up/approver/attest/0.1 document with `purpose: enrol`, `boundTo` equal to `claimId`, over the start's `challenge`. Verified as received.",
-///      "$ref": "#/definitions/AttestStatement"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -397,17 +298,6 @@ impl Payload {
 }
 ///From claim/start 0.3, echoed verbatim. Also the `boundTo` of the statement.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "From claim/start 0.3, echoed verbatim. Also the `boundTo` of the statement.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadClaimId(::std::string::String);
@@ -470,38 +360,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadClaimId {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "adminDid",
-///    "setupSessionToken"
-///  ],
-///  "properties": {
-///    "adminDid": {
-///      "description": "The founder's DID — the DID the install token named and the claim was signed by — which vtc/admin/bootstrap writes as the first administrator.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 5,
-///      "pattern": "^did:"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "setupSessionToken": {
-///      "description": "EdDSA JWT (aud=vtc-install-session, 5min TTL) consumed by vtc/admin/bootstrap. The approver binding takes effect when it is consumed.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -522,18 +380,6 @@ impl Response {
 }
 ///The founder's DID — the DID the install token named and the claim was signed by — which vtc/admin/bootstrap writes as the first administrator.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The founder's DID — the DID the install token named and the claim was signed by — which vtc/admin/bootstrap writes as the first administrator.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 5,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseAdminDid(::std::string::String);
@@ -601,16 +447,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseAdminDid {
 }
 ///EdDSA JWT (aud=vtc-install-session, 5min TTL) consumed by vtc/admin/bootstrap. The approver binding takes effect when it is consumed.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "EdDSA JWT (aud=vtc-install-session, 5min TTL) consumed by vtc/admin/bootstrap. The approver binding takes effect when it is consumed.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseSetupSessionToken(::std::string::String);
@@ -841,7 +677,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ApproverDid\": {\n      \"description\": \"A step-up approver, as an Ed25519 `did:key` (`z6Mk…`). `did:key` only, because its document is a function of the key and resolves with no network, so verifying an approver's statement never depends on a fetch, and a key whose DID document could be rewritten after enrolment would not be the key that was enrolled. Distinct from the subject's DID, from every verification method in the subject's DID document, and from every key the subject can sign operations with at the relying party.\",\n      \"maxLength\": 128,\n      \"minLength\": 16,\n      \"pattern\": \"^did:key:z6Mk[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"ApproverDid\",\n      \"type\": \"string\"\n    },\n    \"ApproverLabel\": {\n      \"description\": \"A human-readable name for where the approver lives — e.g. `Browser plugin — work laptop`. Chosen by the subject (or suggested by an inviter), untrusted, and attributed to its author wherever it is rendered. Absent rather than invented when none was chosen.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"title\": \"ApproverLabel\",\n      \"type\": \"string\"\n    },\n    \"AttestStatement\": {\n      \"description\": \"A complete, signed auth/step-up/approver/attest/0.1 Trust Task document — envelope, payload and proof — issued by the approver. Deliberately an open object here rather than a typed one: the consumer verifies it as a document in its own right (envelope, proof and payload against that specification's schemas), and verifies its proof over the members exactly as received, which a binding that narrowed it to a typed struct and re-serialised it could silently break.\",\n      \"minProperties\": 1,\n      \"title\": \"AttestStatement\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"adminDid\": {\n          \"description\": \"The founder's DID — the DID the install token named and the claim was signed by — which vtc/admin/bootstrap writes as the first administrator.\",\n          \"maxLength\": 2048,\n          \"minLength\": 5,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"setupSessionToken\": {\n          \"description\": \"EdDSA JWT (aud=vtc-install-session, 5min TTL) consumed by vtc/admin/bootstrap. The approver binding takes effect when it is consumed.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"adminDid\",\n        \"setupSessionToken\"\n      ],\n      \"title\": \"VTC Install Claim Finish — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/install/claim/finish/0.3\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Complete first-administrator enrolment under a DID the founder already controls: the document is signed by the DID the install token names, verified against its live document, and carries the founder's step-up approver's enrolment statement over the claim's challenge. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"approverDid\": {\n      \"$ref\": \"#/$defs/ApproverDid\",\n      \"description\": \"The founder's step-up approver. MUST equal the statement's issuer.\"\n    },\n    \"claimId\": {\n      \"description\": \"From claim/start 0.3, echoed verbatim. Also the `boundTo` of the statement.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"label\": {\n      \"$ref\": \"#/$defs/ApproverLabel\"\n    },\n    \"statement\": {\n      \"$ref\": \"#/$defs/AttestStatement\",\n      \"description\": \"The approver's complete, signed auth/step-up/approver/attest/0.1 document with `purpose: enrol`, `boundTo` equal to `claimId`, over the start's `challenge`. Verified as received.\"\n    }\n  },\n  \"required\": [\n    \"claimId\",\n    \"approverDid\",\n    \"statement\"\n  ],\n  \"title\": \"VTC Install Claim Finish — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"ApproverDid\":{\"description\":\"A step-up approver, as an Ed25519 `did:key` (`z6Mk…`). `did:key` only, because its document is a function of the key and resolves with no network, so verifying an approver's statement never depends on a fetch, and a key whose DID document could be rewritten after enrolment would not be the key that was enrolled. Distinct from the subject's DID, from every verification method in the subject's DID document, and from every key the subject can sign operations with at the relying party.\",\"maxLength\":128,\"minLength\":16,\"pattern\":\"^did:key:z6Mk[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"ApproverDid\",\"type\":\"string\"},\"ApproverLabel\":{\"description\":\"A human-readable name for where the approver lives — e.g. `Browser plugin — work laptop`. Chosen by the subject (or suggested by an inviter), untrusted, and attributed to its author wherever it is rendered. Absent rather than invented when none was chosen.\",\"maxLength\":64,\"minLength\":1,\"title\":\"ApproverLabel\",\"type\":\"string\"},\"AttestStatement\":{\"description\":\"A complete, signed auth/step-up/approver/attest/0.1 Trust Task document — envelope, payload and proof — issued by the approver. Deliberately an open object here rather than a typed one: the consumer verifies it as a document in its own right (envelope, proof and payload against that specification's schemas), and verifies its proof over the members exactly as received, which a binding that narrowed it to a typed struct and re-serialised it could silently break.\",\"minProperties\":1,\"title\":\"AttestStatement\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"adminDid\":{\"description\":\"The founder's DID — the DID the install token named and the claim was signed by — which vtc/admin/bootstrap writes as the first administrator.\",\"maxLength\":2048,\"minLength\":5,\"pattern\":\"^did:\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"setupSessionToken\":{\"description\":\"EdDSA JWT (aud=vtc-install-session, 5min TTL) consumed by vtc/admin/bootstrap. The approver binding takes effect when it is consumed.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"adminDid\",\"setupSessionToken\"],\"title\":\"VTC Install Claim Finish — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/install/claim/finish/0.3\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Complete first-administrator enrolment under a DID the founder already controls: the document is signed by the DID the install token names, verified against its live document, and carries the founder's step-up approver's enrolment statement over the claim's challenge. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"approverDid\":{\"$ref\":\"#/$defs/ApproverDid\",\"description\":\"The founder's step-up approver. MUST equal the statement's issuer.\"},\"claimId\":{\"description\":\"From claim/start 0.3, echoed verbatim. Also the `boundTo` of the statement.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"label\":{\"$ref\":\"#/$defs/ApproverLabel\"},\"statement\":{\"$ref\":\"#/$defs/AttestStatement\",\"description\":\"The approver's complete, signed auth/step-up/approver/attest/0.1 document with `purpose: enrol`, `boundTo` equal to `claimId`, over the start's `challenge`. Verified as received.\"}},\"required\":[\"claimId\",\"approverDid\",\"statement\"],\"title\":\"VTC Install Claim Finish — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -851,7 +687,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ApproverDid\": {\n      \"description\": \"A step-up approver, as an Ed25519 `did:key` (`z6Mk…`). `did:key` only, because its document is a function of the key and resolves with no network, so verifying an approver's statement never depends on a fetch, and a key whose DID document could be rewritten after enrolment would not be the key that was enrolled. Distinct from the subject's DID, from every verification method in the subject's DID document, and from every key the subject can sign operations with at the relying party.\",\n      \"maxLength\": 128,\n      \"minLength\": 16,\n      \"pattern\": \"^did:key:z6Mk[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"ApproverDid\",\n      \"type\": \"string\"\n    },\n    \"ApproverLabel\": {\n      \"description\": \"A human-readable name for where the approver lives — e.g. `Browser plugin — work laptop`. Chosen by the subject (or suggested by an inviter), untrusted, and attributed to its author wherever it is rendered. Absent rather than invented when none was chosen.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"title\": \"ApproverLabel\",\n      \"type\": \"string\"\n    },\n    \"AttestStatement\": {\n      \"description\": \"A complete, signed auth/step-up/approver/attest/0.1 Trust Task document — envelope, payload and proof — issued by the approver. Deliberately an open object here rather than a typed one: the consumer verifies it as a document in its own right (envelope, proof and payload against that specification's schemas), and verifies its proof over the members exactly as received, which a binding that narrowed it to a typed struct and re-serialised it could silently break.\",\n      \"minProperties\": 1,\n      \"title\": \"AttestStatement\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"adminDid\": {\n          \"description\": \"The founder's DID — the DID the install token named and the claim was signed by — which vtc/admin/bootstrap writes as the first administrator.\",\n          \"maxLength\": 2048,\n          \"minLength\": 5,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"setupSessionToken\": {\n          \"description\": \"EdDSA JWT (aud=vtc-install-session, 5min TTL) consumed by vtc/admin/bootstrap. The approver binding takes effect when it is consumed.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"adminDid\",\n        \"setupSessionToken\"\n      ],\n      \"title\": \"VTC Install Claim Finish — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"ApproverDid\":{\"description\":\"A step-up approver, as an Ed25519 `did:key` (`z6Mk…`). `did:key` only, because its document is a function of the key and resolves with no network, so verifying an approver's statement never depends on a fetch, and a key whose DID document could be rewritten after enrolment would not be the key that was enrolled. Distinct from the subject's DID, from every verification method in the subject's DID document, and from every key the subject can sign operations with at the relying party.\",\"maxLength\":128,\"minLength\":16,\"pattern\":\"^did:key:z6Mk[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"ApproverDid\",\"type\":\"string\"},\"ApproverLabel\":{\"description\":\"A human-readable name for where the approver lives — e.g. `Browser plugin — work laptop`. Chosen by the subject (or suggested by an inviter), untrusted, and attributed to its author wherever it is rendered. Absent rather than invented when none was chosen.\",\"maxLength\":64,\"minLength\":1,\"title\":\"ApproverLabel\",\"type\":\"string\"},\"AttestStatement\":{\"description\":\"A complete, signed auth/step-up/approver/attest/0.1 Trust Task document — envelope, payload and proof — issued by the approver. Deliberately an open object here rather than a typed one: the consumer verifies it as a document in its own right (envelope, proof and payload against that specification's schemas), and verifies its proof over the members exactly as received, which a binding that narrowed it to a typed struct and re-serialised it could silently break.\",\"minProperties\":1,\"title\":\"AttestStatement\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"adminDid\":{\"description\":\"The founder's DID — the DID the install token named and the claim was signed by — which vtc/admin/bootstrap writes as the first administrator.\",\"maxLength\":2048,\"minLength\":5,\"pattern\":\"^did:\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"setupSessionToken\":{\"description\":\"EdDSA JWT (aud=vtc-install-session, 5min TTL) consumed by vtc/admin/bootstrap. The approver binding takes effect when it is consumed.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"adminDid\",\"setupSessionToken\"],\"title\":\"VTC Install Claim Finish — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

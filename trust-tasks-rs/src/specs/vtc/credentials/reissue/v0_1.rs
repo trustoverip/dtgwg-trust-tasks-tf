@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,58 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Ask a VTC to re-sign its status lists and re-issue the attestation artefacts still in force that an attestation key revoked for compromise signed, under the community's current attestation key. Re-sending the same request returns the progress of the job it started.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/credentials/reissue/0.1",
-///  "title": "Payload",
-///  "description": "Ask a VTC to re-sign its status lists and re-issue the attestation artefacts still in force that an attestation key revoked for compromise signed, under the community's current attestation key. Re-sending the same request returns the progress of the job it started.",
-///  "type": "object",
-///  "required": [
-///    "cause"
-///  ],
-///  "properties": {
-///    "cause": {
-///      "description": "The revocation that requires re-issuance. The VTC MUST verify it against its own DID's key roles (vta/webvh/dids/keys/list) rather than trust it.",
-///      "type": "object",
-///      "required": [
-///        "verificationMethod"
-///      ],
-///      "properties": {
-///        "rotationId": {
-///          "description": "The VTA's rotation record (`kind: compromise`) for the revocation, when known.",
-///          "type": "string",
-///          "minLength": 1
-///        },
-///        "verificationMethod": {
-///          "description": "The attestation key of the community's DID that was revoked for compromise.",
-///          "type": "string",
-///          "minLength": 1
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    "dryRun": {
-///      "description": "Report what would be re-signed and re-issued, without doing it. Absent reads as false.",
-///      "type": "boolean"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "scope": {
-///      "description": "`all` (the default) re-signs status lists first and then re-issues artefacts. `statusListsOnly` re-signs status lists and stops — for an operator who must restore status checking within minutes and schedule the rest.",
-///      "type": "string",
-///      "enum": [
-///        "all",
-///        "statusListsOnly"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -219,31 +143,6 @@ impl Payload {
 }
 ///The revocation that requires re-issuance. The VTC MUST verify it against its own DID's key roles (vta/webvh/dids/keys/list) rather than trust it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The revocation that requires re-issuance. The VTC MUST verify it against its own DID's key roles (vta/webvh/dids/keys/list) rather than trust it.",
-///  "type": "object",
-///  "required": [
-///    "verificationMethod"
-///  ],
-///  "properties": {
-///    "rotationId": {
-///      "description": "The VTA's rotation record (`kind: compromise`) for the revocation, when known.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "verificationMethod": {
-///      "description": "The attestation key of the community's DID that was revoked for compromise.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -266,16 +165,6 @@ impl PayloadCause {
 }
 ///The VTA's rotation record (`kind: compromise`) for the revocation, when known.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The VTA's rotation record (`kind: compromise`) for the revocation, when known.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadCauseRotationId(::std::string::String);
@@ -335,16 +224,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCauseRotationId {
 }
 ///The attestation key of the community's DID that was revoked for compromise.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The attestation key of the community's DID that was revoked for compromise.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadCauseVerificationMethod(::std::string::String);
@@ -404,19 +283,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCauseVerificationMethod {
 }
 ///`all` (the default) re-signs status lists first and then re-issues artefacts. `statusListsOnly` re-signs status lists and stops — for an operator who must restore status checking within minutes and schedule the rest.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`all` (the default) re-signs status lists first and then re-issues artefacts. `statusListsOnly` re-signs status lists and stops — for an operator who must restore status checking within minutes and schedule the rest.",
-///  "type": "string",
-///  "enum": [
-///    "all",
-///    "statusListsOnly"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -478,40 +344,6 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadScope {
 }
 ///`Progress`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ReissueProgress",
-///  "type": "object",
-///  "required": [
-///    "done",
-///    "failed",
-///    "total"
-///  ],
-///  "properties": {
-///    "done": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "failed": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "total": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "undeliverable": {
-///      "description": "Artefacts re-issued but not yet delivered to their holder — the holder is offline or unreachable. They are held for the holder's next renewal or contact.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -530,62 +362,6 @@ impl Progress {
 }
 ///Success response. Type https://trusttasks.org/spec/vtc/credentials/reissue/0.1#response. Counts only — never a list of members or credentials.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response. Type https://trusttasks.org/spec/vtc/credentials/reissue/0.1#response. Counts only — never a list of members or credentials.",
-///  "type": "object",
-///  "required": [
-///    "artefacts",
-///    "dryRun",
-///    "jobId",
-///    "state",
-///    "statusLists"
-///  ],
-///  "properties": {
-///    "artefacts": {
-///      "$ref": "#/definitions/Progress"
-///    },
-///    "dryRun": {
-///      "type": "boolean"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "jobId": {
-///      "description": "The job this cause started. The same cause always names the same job.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "signedWith": {
-///      "description": "The attestation keys (verification methods) the new signatures are made with.",
-///      "type": "array",
-///      "items": {
-///        "type": "string"
-///      }
-///    },
-///    "state": {
-///      "description": "`planned` — a dry run. `running` — status lists are being re-signed. `statusListsDone` — every status list is re-signed; artefacts are being re-issued (or, for `statusListsOnly`, the job is done). `completed` — everything in scope is re-signed and re-issued. `failed` — the job stopped; `artefacts.failed` and the audit trail say where.",
-///      "type": "string",
-///      "enum": [
-///        "planned",
-///        "running",
-///        "statusListsDone",
-///        "completed",
-///        "failed"
-///      ]
-///    },
-///    "statusLists": {
-///      "$ref": "#/definitions/Progress"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -617,16 +393,6 @@ impl Response {
 }
 ///The job this cause started. The same cause always names the same job.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The job this cause started. The same cause always names the same job.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseJobId(::std::string::String);
@@ -686,22 +452,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseJobId {
 }
 ///`planned` — a dry run. `running` — status lists are being re-signed. `statusListsDone` — every status list is re-signed; artefacts are being re-issued (or, for `statusListsOnly`, the job is done). `completed` — everything in scope is re-signed and re-issued. `failed` — the job stopped; `artefacts.failed` and the audit trail say where.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`planned` — a dry run. `running` — status lists are being re-signed. `statusListsDone` — every status list is re-signed; artefacts are being re-issued (or, for `statusListsOnly`, the job is done). `completed` — everything in scope is re-signed and re-issued. `failed` — the job stopped; `artefacts.failed` and the audit trail say where.",
-///  "type": "string",
-///  "enum": [
-///    "planned",
-///    "running",
-///    "statusListsDone",
-///    "completed",
-///    "failed"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1126,7 +876,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Progress\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"done\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"failed\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"total\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"undeliverable\": {\n          \"description\": \"Artefacts re-issued but not yet delivered to their holder — the holder is offline or unreachable. They are held for the holder's next renewal or contact.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"total\",\n        \"done\",\n        \"failed\"\n      ],\n      \"title\": \"ReissueProgress\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response. Type https://trusttasks.org/spec/vtc/credentials/reissue/0.1#response. Counts only — never a list of members or credentials.\",\n      \"properties\": {\n        \"artefacts\": {\n          \"$ref\": \"#/$defs/Progress\"\n        },\n        \"dryRun\": {\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"jobId\": {\n          \"description\": \"The job this cause started. The same cause always names the same job.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"signedWith\": {\n          \"description\": \"The attestation keys (verification methods) the new signatures are made with.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"state\": {\n          \"description\": \"`planned` — a dry run. `running` — status lists are being re-signed. `statusListsDone` — every status list is re-signed; artefacts are being re-issued (or, for `statusListsOnly`, the job is done). `completed` — everything in scope is re-signed and re-issued. `failed` — the job stopped; `artefacts.failed` and the audit trail say where.\",\n          \"enum\": [\n            \"planned\",\n            \"running\",\n            \"statusListsDone\",\n            \"completed\",\n            \"failed\"\n          ],\n          \"type\": \"string\"\n        },\n        \"statusLists\": {\n          \"$ref\": \"#/$defs/Progress\"\n        }\n      },\n      \"required\": [\n        \"jobId\",\n        \"state\",\n        \"dryRun\",\n        \"statusLists\",\n        \"artefacts\"\n      ],\n      \"title\": \"VTC Credentials Reissue — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/credentials/reissue/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Ask a VTC to re-sign its status lists and re-issue the attestation artefacts still in force that an attestation key revoked for compromise signed, under the community's current attestation key. Re-sending the same request returns the progress of the job it started.\",\n  \"properties\": {\n    \"cause\": {\n      \"additionalProperties\": false,\n      \"description\": \"The revocation that requires re-issuance. The VTC MUST verify it against its own DID's key roles (vta/webvh/dids/keys/list) rather than trust it.\",\n      \"properties\": {\n        \"rotationId\": {\n          \"description\": \"The VTA's rotation record (`kind: compromise`) for the revocation, when known.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"verificationMethod\": {\n          \"description\": \"The attestation key of the community's DID that was revoked for compromise.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"verificationMethod\"\n      ],\n      \"type\": \"object\"\n    },\n    \"dryRun\": {\n      \"description\": \"Report what would be re-signed and re-issued, without doing it. Absent reads as false.\",\n      \"type\": \"boolean\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"scope\": {\n      \"description\": \"`all` (the default) re-signs status lists first and then re-issues artefacts. `statusListsOnly` re-signs status lists and stops — for an operator who must restore status checking within minutes and schedule the rest.\",\n      \"enum\": [\n        \"all\",\n        \"statusListsOnly\"\n      ],\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"cause\"\n  ],\n  \"title\": \"VTC Credentials Reissue — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Progress\":{\"additionalProperties\":false,\"properties\":{\"done\":{\"minimum\":0,\"type\":\"integer\"},\"failed\":{\"minimum\":0,\"type\":\"integer\"},\"total\":{\"minimum\":0,\"type\":\"integer\"},\"undeliverable\":{\"description\":\"Artefacts re-issued but not yet delivered to their holder — the holder is offline or unreachable. They are held for the holder's next renewal or contact.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"total\",\"done\",\"failed\"],\"title\":\"ReissueProgress\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response. Type https://trusttasks.org/spec/vtc/credentials/reissue/0.1#response. Counts only — never a list of members or credentials.\",\"properties\":{\"artefacts\":{\"$ref\":\"#/$defs/Progress\"},\"dryRun\":{\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"jobId\":{\"description\":\"The job this cause started. The same cause always names the same job.\",\"minLength\":1,\"type\":\"string\"},\"signedWith\":{\"description\":\"The attestation keys (verification methods) the new signatures are made with.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"state\":{\"description\":\"`planned` — a dry run. `running` — status lists are being re-signed. `statusListsDone` — every status list is re-signed; artefacts are being re-issued (or, for `statusListsOnly`, the job is done). `completed` — everything in scope is re-signed and re-issued. `failed` — the job stopped; `artefacts.failed` and the audit trail say where.\",\"enum\":[\"planned\",\"running\",\"statusListsDone\",\"completed\",\"failed\"],\"type\":\"string\"},\"statusLists\":{\"$ref\":\"#/$defs/Progress\"}},\"required\":[\"jobId\",\"state\",\"dryRun\",\"statusLists\",\"artefacts\"],\"title\":\"VTC Credentials Reissue — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/credentials/reissue/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Ask a VTC to re-sign its status lists and re-issue the attestation artefacts still in force that an attestation key revoked for compromise signed, under the community's current attestation key. Re-sending the same request returns the progress of the job it started.\",\"properties\":{\"cause\":{\"additionalProperties\":false,\"description\":\"The revocation that requires re-issuance. The VTC MUST verify it against its own DID's key roles (vta/webvh/dids/keys/list) rather than trust it.\",\"properties\":{\"rotationId\":{\"description\":\"The VTA's rotation record (`kind: compromise`) for the revocation, when known.\",\"minLength\":1,\"type\":\"string\"},\"verificationMethod\":{\"description\":\"The attestation key of the community's DID that was revoked for compromise.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"verificationMethod\"],\"type\":\"object\"},\"dryRun\":{\"description\":\"Report what would be re-signed and re-issued, without doing it. Absent reads as false.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"scope\":{\"description\":\"`all` (the default) re-signs status lists first and then re-issues artefacts. `statusListsOnly` re-signs status lists and stops — for an operator who must restore status checking within minutes and schedule the rest.\",\"enum\":[\"all\",\"statusListsOnly\"],\"type\":\"string\"}},\"required\":[\"cause\"],\"title\":\"VTC Credentials Reissue — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1136,7 +886,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Progress\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"done\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"failed\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"total\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"undeliverable\": {\n          \"description\": \"Artefacts re-issued but not yet delivered to their holder — the holder is offline or unreachable. They are held for the holder's next renewal or contact.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"total\",\n        \"done\",\n        \"failed\"\n      ],\n      \"title\": \"ReissueProgress\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response. Type https://trusttasks.org/spec/vtc/credentials/reissue/0.1#response. Counts only — never a list of members or credentials.\",\n      \"properties\": {\n        \"artefacts\": {\n          \"$ref\": \"#/$defs/Progress\"\n        },\n        \"dryRun\": {\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"jobId\": {\n          \"description\": \"The job this cause started. The same cause always names the same job.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"signedWith\": {\n          \"description\": \"The attestation keys (verification methods) the new signatures are made with.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"state\": {\n          \"description\": \"`planned` — a dry run. `running` — status lists are being re-signed. `statusListsDone` — every status list is re-signed; artefacts are being re-issued (or, for `statusListsOnly`, the job is done). `completed` — everything in scope is re-signed and re-issued. `failed` — the job stopped; `artefacts.failed` and the audit trail say where.\",\n          \"enum\": [\n            \"planned\",\n            \"running\",\n            \"statusListsDone\",\n            \"completed\",\n            \"failed\"\n          ],\n          \"type\": \"string\"\n        },\n        \"statusLists\": {\n          \"$ref\": \"#/$defs/Progress\"\n        }\n      },\n      \"required\": [\n        \"jobId\",\n        \"state\",\n        \"dryRun\",\n        \"statusLists\",\n        \"artefacts\"\n      ],\n      \"title\": \"VTC Credentials Reissue — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Progress\":{\"additionalProperties\":false,\"properties\":{\"done\":{\"minimum\":0,\"type\":\"integer\"},\"failed\":{\"minimum\":0,\"type\":\"integer\"},\"total\":{\"minimum\":0,\"type\":\"integer\"},\"undeliverable\":{\"description\":\"Artefacts re-issued but not yet delivered to their holder — the holder is offline or unreachable. They are held for the holder's next renewal or contact.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"total\",\"done\",\"failed\"],\"title\":\"ReissueProgress\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response. Type https://trusttasks.org/spec/vtc/credentials/reissue/0.1#response. Counts only — never a list of members or credentials.\",\"properties\":{\"artefacts\":{\"$ref\":\"#/$defs/Progress\"},\"dryRun\":{\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"jobId\":{\"description\":\"The job this cause started. The same cause always names the same job.\",\"minLength\":1,\"type\":\"string\"},\"signedWith\":{\"description\":\"The attestation keys (verification methods) the new signatures are made with.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"state\":{\"description\":\"`planned` — a dry run. `running` — status lists are being re-signed. `statusListsDone` — every status list is re-signed; artefacts are being re-issued (or, for `statusListsOnly`, the job is done). `completed` — everything in scope is re-signed and re-issued. `failed` — the job stopped; `artefacts.failed` and the audit trail say where.\",\"enum\":[\"planned\",\"running\",\"statusListsDone\",\"completed\",\"failed\"],\"type\":\"string\"},\"statusLists\":{\"$ref\":\"#/$defs/Progress\"}},\"required\":[\"jobId\",\"state\",\"dryRun\",\"statusLists\",\"artefacts\"],\"title\":\"VTC Credentials Reissue — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

@@ -35,21 +35,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -71,15 +56,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -143,38 +119,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/policy/list/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "properties": {
-///    "contextId": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "cursor": {
-///      "type": "string"
-///    },
-///    "enabledOnly": {
-///      "default": false,
-///      "type": "boolean"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "pageSize": {
-///      "type": "integer",
-///      "maximum": 1000.0,
-///      "minimum": 1.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -217,15 +161,6 @@ impl Payload {
 }
 ///`PayloadContextId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadContextId(::std::string::String);
@@ -285,78 +220,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
 }
 ///`PolicyModule`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "PolicyModule",
-///  "type": "object",
-///  "required": [
-///    "createdAt",
-///    "id",
-///    "module",
-///    "name",
-///    "updatedAt",
-///    "version"
-///  ],
-///  "properties": {
-///    "appliesTo": {
-///      "description": "List of trust contexts this policy applies to. Empty array = applies to all contexts (the default policy).",
-///      "type": "array",
-///      "items": {
-///        "type": "string"
-///      },
-///      "uniqueItems": true
-///    },
-///    "createdAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "description": {
-///      "type": "string",
-///      "maxLength": 1024
-///    },
-///    "enabled": {
-///      "default": true,
-///      "type": "boolean"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "id": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "module": {
-///      "description": "Rego source code. The maintainer's evaluator entry point is the package's `decision` rule, returning a PolicyDecision.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "name": {
-///      "description": "Human-readable name (e.g. \"default vault policy\", \"bank-site step-up\").",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "priority": {
-///      "description": "When multiple policies match a request, evaluation order is by priority descending. The first to return a non-`null` decision wins.",
-///      "type": "integer",
-///      "maximum": 1000.0,
-///      "minimum": 0.0
-///    },
-///    "updatedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "version": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -395,15 +258,6 @@ impl PolicyModule {
 }
 ///`PolicyModuleDescription`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PolicyModuleDescription(::std::string::String);
@@ -463,15 +317,6 @@ impl<'de> ::serde::Deserialize<'de> for PolicyModuleDescription {
 }
 ///`PolicyModuleId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PolicyModuleId(::std::string::String);
@@ -531,16 +376,6 @@ impl<'de> ::serde::Deserialize<'de> for PolicyModuleId {
 }
 ///Rego source code. The maintainer's evaluator entry point is the package's `decision` rule, returning a PolicyDecision.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Rego source code. The maintainer's evaluator entry point is the package's `decision` rule, returning a PolicyDecision.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PolicyModuleModule(::std::string::String);
@@ -600,17 +435,6 @@ impl<'de> ::serde::Deserialize<'de> for PolicyModuleModule {
 }
 ///Human-readable name (e.g. "default vault policy", "bank-site step-up").
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Human-readable name (e.g. \"default vault policy\", \"bank-site step-up\").",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PolicyModuleName(::std::string::String);
@@ -673,38 +497,6 @@ impl<'de> ::serde::Deserialize<'de> for PolicyModuleName {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "policies",
-///    "truncated"
-///  ],
-///  "properties": {
-///    "cursor": {
-///      "type": "string"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "policies": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/PolicyModule"
-///      }
-///    },
-///    "truncated": {
-///      "type": "boolean"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1110,14 +902,14 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/policy/list/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"PolicyModule\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"appliesTo\": {\n          \"description\": \"List of trust contexts this policy applies to. Empty array = applies to all contexts (the default policy).\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"enabled\": {\n          \"default\": true,\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"id\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"module\": {\n          \"description\": \"Rego source code. The maintainer's evaluator entry point is the package's `decision` rule, returning a PolicyDecision.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"name\": {\n          \"description\": \"Human-readable name (e.g. \\\"default vault policy\\\", \\\"bank-site step-up\\\").\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"priority\": {\n          \"description\": \"When multiple policies match a request, evaluation order is by priority descending. The first to return a non-`null` decision wins.\",\n          \"maximum\": 1000,\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"name\",\n        \"module\",\n        \"version\",\n        \"createdAt\",\n        \"updatedAt\"\n      ],\n      \"title\": \"PolicyModule\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"cursor\": {\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"policies\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/PolicyModule\"\n          },\n          \"type\": \"array\"\n        },\n        \"truncated\": {\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"policies\",\n        \"truncated\"\n      ],\n      \"title\": \"Policy List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/policy/list/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"contextId\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"cursor\": {\n      \"type\": \"string\"\n    },\n    \"enabledOnly\": {\n      \"default\": false,\n      \"type\": \"boolean\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"pageSize\": {\n      \"maximum\": 1000,\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    }\n  },\n  \"title\": \"Policy List — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"PolicyModule\":{\"additionalProperties\":false,\"properties\":{\"appliesTo\":{\"description\":\"List of trust contexts this policy applies to. Empty array = applies to all contexts (the default policy).\",\"items\":{\"type\":\"string\"},\"type\":\"array\",\"uniqueItems\":true},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"description\":{\"maxLength\":1024,\"type\":\"string\"},\"enabled\":{\"default\":true,\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"minLength\":1,\"type\":\"string\"},\"module\":{\"description\":\"Rego source code. The maintainer's evaluator entry point is the package's `decision` rule, returning a PolicyDecision.\",\"minLength\":1,\"type\":\"string\"},\"name\":{\"description\":\"Human-readable name (e.g. \\\"default vault policy\\\", \\\"bank-site step-up\\\").\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"priority\":{\"description\":\"When multiple policies match a request, evaluation order is by priority descending. The first to return a non-`null` decision wins.\",\"maximum\":1000,\"minimum\":0,\"type\":\"integer\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"version\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"id\",\"name\",\"module\",\"version\",\"createdAt\",\"updatedAt\"],\"title\":\"PolicyModule\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"cursor\":{\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"policies\":{\"items\":{\"$ref\":\"#/$defs/PolicyModule\"},\"type\":\"array\"},\"truncated\":{\"type\":\"boolean\"}},\"required\":[\"policies\",\"truncated\"],\"title\":\"Policy List — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/policy/list/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"contextId\":{\"minLength\":1,\"type\":\"string\"},\"cursor\":{\"type\":\"string\"},\"enabledOnly\":{\"default\":false,\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"pageSize\":{\"maximum\":1000,\"minimum\":1,\"type\":\"integer\"}},\"title\":\"Policy List — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/policy/list/0.1#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"PolicyModule\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"appliesTo\": {\n          \"description\": \"List of trust contexts this policy applies to. Empty array = applies to all contexts (the default policy).\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"enabled\": {\n          \"default\": true,\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"id\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"module\": {\n          \"description\": \"Rego source code. The maintainer's evaluator entry point is the package's `decision` rule, returning a PolicyDecision.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"name\": {\n          \"description\": \"Human-readable name (e.g. \\\"default vault policy\\\", \\\"bank-site step-up\\\").\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"priority\": {\n          \"description\": \"When multiple policies match a request, evaluation order is by priority descending. The first to return a non-`null` decision wins.\",\n          \"maximum\": 1000,\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"name\",\n        \"module\",\n        \"version\",\n        \"createdAt\",\n        \"updatedAt\"\n      ],\n      \"title\": \"PolicyModule\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"cursor\": {\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"policies\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/PolicyModule\"\n          },\n          \"type\": \"array\"\n        },\n        \"truncated\": {\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"policies\",\n        \"truncated\"\n      ],\n      \"title\": \"Policy List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"PolicyModule\":{\"additionalProperties\":false,\"properties\":{\"appliesTo\":{\"description\":\"List of trust contexts this policy applies to. Empty array = applies to all contexts (the default policy).\",\"items\":{\"type\":\"string\"},\"type\":\"array\",\"uniqueItems\":true},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"description\":{\"maxLength\":1024,\"type\":\"string\"},\"enabled\":{\"default\":true,\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"minLength\":1,\"type\":\"string\"},\"module\":{\"description\":\"Rego source code. The maintainer's evaluator entry point is the package's `decision` rule, returning a PolicyDecision.\",\"minLength\":1,\"type\":\"string\"},\"name\":{\"description\":\"Human-readable name (e.g. \\\"default vault policy\\\", \\\"bank-site step-up\\\").\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"priority\":{\"description\":\"When multiple policies match a request, evaluation order is by priority descending. The first to return a non-`null` decision wins.\",\"maximum\":1000,\"minimum\":0,\"type\":\"integer\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"version\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"id\",\"name\",\"module\",\"version\",\"createdAt\",\"updatedAt\"],\"title\":\"PolicyModule\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"cursor\":{\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"policies\":{\"items\":{\"$ref\":\"#/$defs/PolicyModule\"},\"type\":\"array\"},\"truncated\":{\"type\":\"boolean\"}},\"required\":[\"policies\",\"truncated\"],\"title\":\"Policy List — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

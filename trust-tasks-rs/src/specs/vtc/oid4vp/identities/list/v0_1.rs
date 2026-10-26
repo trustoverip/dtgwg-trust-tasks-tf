@@ -34,40 +34,6 @@ pub mod error {
 }
 ///One attestation about the verifier that every request object carries in `verifier_info`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Attestation",
-///  "description": "One attestation about the verifier that every request object carries in `verifier_info`.",
-///  "type": "object",
-///  "required": [
-///    "kind"
-///  ],
-///  "properties": {
-///    "expiresAt": {
-///      "description": "When it expires, if it says; null when it carries no expiry the maintainer reads.",
-///      "type": [
-///        "string",
-///        "null"
-///      ],
-///      "format": "date-time"
-///    },
-///    "kind": {
-///      "description": "Which attestation it is, as tabled in the specification.",
-///      "type": "string",
-///      "enum": [
-///        "identityTrustStatement",
-///        "protectedVerificationAuthorization",
-///        "registrationCertificate",
-///        "other"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -89,21 +55,6 @@ impl Attestation {
 }
 ///Which attestation it is, as tabled in the specification.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Which attestation it is, as tabled in the specification.",
-///  "type": "string",
-///  "enum": [
-///    "identityTrustStatement",
-///    "protectedVerificationAuthorization",
-///    "registrationCertificate",
-///    "other"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -175,47 +126,6 @@ impl ::std::convert::TryFrom<::std::string::String> for AttestationKind {
 }
 ///An X.509-identified verifier's access certificate: the leaf of the chain it sends wallets as `x5c`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Certificate",
-///  "description": "An X.509-identified verifier's access certificate: the leaf of the chain it sends wallets as `x5c`.",
-///  "type": "object",
-///  "required": [
-///    "chainLength",
-///    "notAfter",
-///    "notBefore"
-///  ],
-///  "properties": {
-///    "chainLength": {
-///      "description": "Certificates in the chain, leaf included.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "issuer": {
-///      "description": "The leaf's issuer distinguished name, as RFC 4514 renders it.",
-///      "type": "string",
-///      "maxLength": 1024
-///    },
-///    "notAfter": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "notBefore": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "subject": {
-///      "description": "The leaf's subject distinguished name, as RFC 4514 renders it.",
-///      "type": "string",
-///      "maxLength": 1024
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -241,16 +151,6 @@ impl Certificate {
 }
 ///The leaf's issuer distinguished name, as RFC 4514 renders it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The leaf's issuer distinguished name, as RFC 4514 renders it.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CertificateIssuer(::std::string::String);
@@ -310,16 +210,6 @@ impl<'de> ::serde::Deserialize<'de> for CertificateIssuer {
 }
 ///The leaf's subject distinguished name, as RFC 4514 renders it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The leaf's subject distinguished name, as RFC 4514 renders it.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CertificateSubject(::std::string::String);
@@ -379,21 +269,6 @@ impl<'de> ::serde::Deserialize<'de> for CertificateSubject {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -415,15 +290,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -487,103 +353,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///One verifier identity, described by what is public about it. The signing key's private half, and where a remote custodian keeps it, are never returned.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Identity",
-///  "description": "One verifier identity, described by what is public about it. The signing key's private half, and where a remote custodian keeps it, are never returned.",
-///  "type": "object",
-///  "required": [
-///    "attestations",
-///    "custody",
-///    "id",
-///    "installedAt",
-///    "isDefault",
-///    "kind",
-///    "problems",
-///    "usable"
-///  ],
-///  "properties": {
-///    "attestations": {
-///      "description": "What every request object carries in `verifier_info`, in the order it carries them. Empty when it carries none.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Attestation"
-///      }
-///    },
-///    "certificate": {
-///      "description": "The access certificate, for an `eudi` identity that has one.",
-///      "$ref": "#/definitions/Certificate"
-///    },
-///    "clientId": {
-///      "description": "The OpenID4VP client identifier wallets see, prefix included. Null while an `eudi` identity has no certificate.",
-///      "type": [
-///        "string",
-///        "null"
-///      ]
-///    },
-///    "custody": {
-///      "description": "Where the signing key is: `cached` by the community, kept by its `agent` (which signs every request object), or `invalid` when the record names neither or both.",
-///      "type": "string",
-///      "enum": [
-///        "cached",
-///        "agent",
-///        "invalid"
-///      ]
-///    },
-///    "did": {
-///      "description": "The identity's DID, for a `swiyu` identity.",
-///      "type": [
-///        "string",
-///        "null"
-///      ]
-///    },
-///    "id": {
-///      "description": "The administrator's name for the identity.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "installedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "isDefault": {
-///      "description": "Whether a session that names no client identifier prefix uses this identity.",
-///      "type": "boolean"
-///    },
-///    "keyId": {
-///      "description": "The verification method that signs request objects, for an identity known by a DID.",
-///      "type": [
-///        "string",
-///        "null"
-///      ]
-///    },
-///    "kind": {
-///      "description": "The wallet ecosystem it is known to: `swiyu` (a DID registered in the swiyu Base Registry) or `eudi` (an X.509 access certificate).",
-///      "type": "string",
-///      "enum": [
-///        "swiyu",
-///        "eudi"
-///      ]
-///    },
-///    "problems": {
-///      "description": "What is wrong with this identity. Empty when nothing is.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Problem"
-///      }
-///    },
-///    "usable": {
-///      "description": "Whether a session could be opened on this identity now: true exactly when no `error` problem applies to it, and none other than `defaultIdentityNotInstalled` applies to the community's verifier as a whole.",
-///      "type": "boolean"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -633,20 +402,6 @@ impl Identity {
 }
 ///Where the signing key is: `cached` by the community, kept by its `agent` (which signs every request object), or `invalid` when the record names neither or both.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Where the signing key is: `cached` by the community, kept by its `agent` (which signs every request object), or `invalid` when the record names neither or both.",
-///  "type": "string",
-///  "enum": [
-///    "cached",
-///    "agent",
-///    "invalid"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -712,17 +467,6 @@ impl ::std::convert::TryFrom<::std::string::String> for IdentityCustody {
 }
 ///The administrator's name for the identity.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The administrator's name for the identity.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct IdentityId(::std::string::String);
@@ -785,19 +529,6 @@ impl<'de> ::serde::Deserialize<'de> for IdentityId {
 }
 ///The wallet ecosystem it is known to: `swiyu` (a DID registered in the swiyu Base Registry) or `eudi` (an X.509 access certificate).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The wallet ecosystem it is known to: `swiyu` (a DID registered in the swiyu Base Registry) or `eudi` (an X.509 access certificate).",
-///  "type": "string",
-///  "enum": [
-///    "swiyu",
-///    "eudi"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -859,23 +590,6 @@ impl ::std::convert::TryFrom<::std::string::String> for IdentityKind {
 }
 ///An administrator reads the OpenID4VP verifier identities the community holds — the identities it presents to wallets that speak OpenID4VP and no Trust Task protocol — and, for each, whether it can open a presentation session now and what stands in the way. The outer document members are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/oid4vp/identities/list/0.1",
-///  "title": "Payload",
-///  "description": "An administrator reads the OpenID4VP verifier identities the community holds — the identities it presents to wallets that speak OpenID4VP and no Trust Task protocol — and, for each, whether it can open a presentation session now and what stands in the way. The outer document members are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -897,54 +611,6 @@ impl Payload {
 }
 ///One thing that stops, or will soon stop, a verifier identity or the community's verifier as a whole from serving wallets.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Problem",
-///  "description": "One thing that stops, or will soon stop, a verifier identity or the community's verifier as a whole from serving wallets.",
-///  "type": "object",
-///  "required": [
-///    "code",
-///    "severity"
-///  ],
-///  "properties": {
-///    "code": {
-///      "description": "What is wrong, as tabled in the specification.",
-///      "type": "string",
-///      "enum": [
-///        "keyCustodyInvalid",
-///        "signerNotLoaded",
-///        "agentLinkMissing",
-///        "certificateMissing",
-///        "certificateNotYetValid",
-///        "certificateExpired",
-///        "certificateExpiresSoon",
-///        "identityStatementMissing",
-///        "statementExpired",
-///        "statementExpiresSoon",
-///        "defaultIdentityNotInstalled",
-///        "noPublicUrl"
-///      ]
-///    },
-///    "detail": {
-///      "description": "Maintainer-authored prose for the administrator — what to run to fix it. Never parsed.",
-///      "type": "string",
-///      "maxLength": 1024
-///    },
-///    "severity": {
-///      "description": "`error`: sessions are refused, or wallets will refuse what the community sends, until it is fixed. `warning`: it works now and will not for long.",
-///      "type": "string",
-///      "enum": [
-///        "error",
-///        "warning"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -964,29 +630,6 @@ impl Problem {
 }
 ///What is wrong, as tabled in the specification.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "What is wrong, as tabled in the specification.",
-///  "type": "string",
-///  "enum": [
-///    "keyCustodyInvalid",
-///    "signerNotLoaded",
-///    "agentLinkMissing",
-///    "certificateMissing",
-///    "certificateNotYetValid",
-///    "certificateExpired",
-///    "certificateExpiresSoon",
-///    "identityStatementMissing",
-///    "statementExpired",
-///    "statementExpiresSoon",
-///    "defaultIdentityNotInstalled",
-///    "noPublicUrl"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1088,16 +731,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ProblemCode {
 }
 ///Maintainer-authored prose for the administrator — what to run to fix it. Never parsed.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Maintainer-authored prose for the administrator — what to run to fix it. Never parsed.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ProblemDetail(::std::string::String);
@@ -1157,19 +790,6 @@ impl<'de> ::serde::Deserialize<'de> for ProblemDetail {
 }
 ///`error`: sessions are refused, or wallets will refuse what the community sends, until it is fixed. `warning`: it works now and will not for long.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`error`: sessions are refused, or wallets will refuse what the community sends, until it is fixed. `warning`: it works now and will not for long.",
-///  "type": "string",
-///  "enum": [
-///    "error",
-///    "warning"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1231,47 +851,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ProblemSeverity {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "identities",
-///    "problems"
-///  ],
-///  "properties": {
-///    "defaultIdentity": {
-///      "description": "The identity the community is configured to use when a session names no client identifier prefix; null when none is configured, and the first usable identity is used.",
-///      "type": [
-///        "string",
-///        "null"
-///      ]
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "identities": {
-///      "description": "Every verifier identity the community holds, by `id`. Empty when it holds none.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Identity"
-///      }
-///    },
-///    "problems": {
-///      "description": "What is wrong with the community's verifier as a whole, rather than with one identity. Empty when nothing is.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Problem"
-///      }
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1856,7 +1435,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Attestation\": {\n      \"additionalProperties\": false,\n      \"description\": \"One attestation about the verifier that every request object carries in `verifier_info`.\",\n      \"properties\": {\n        \"expiresAt\": {\n          \"description\": \"When it expires, if it says; null when it carries no expiry the maintainer reads.\",\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"kind\": {\n          \"description\": \"Which attestation it is, as tabled in the specification.\",\n          \"enum\": [\n            \"identityTrustStatement\",\n            \"protectedVerificationAuthorization\",\n            \"registrationCertificate\",\n            \"other\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\"\n      ],\n      \"title\": \"Attestation\",\n      \"type\": \"object\"\n    },\n    \"Certificate\": {\n      \"additionalProperties\": false,\n      \"description\": \"An X.509-identified verifier's access certificate: the leaf of the chain it sends wallets as `x5c`.\",\n      \"properties\": {\n        \"chainLength\": {\n          \"description\": \"Certificates in the chain, leaf included.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"issuer\": {\n          \"description\": \"The leaf's issuer distinguished name, as RFC 4514 renders it.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"notAfter\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"notBefore\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"subject\": {\n          \"description\": \"The leaf's subject distinguished name, as RFC 4514 renders it.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"notBefore\",\n        \"notAfter\",\n        \"chainLength\"\n      ],\n      \"title\": \"Certificate\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Identity\": {\n      \"additionalProperties\": false,\n      \"description\": \"One verifier identity, described by what is public about it. The signing key's private half, and where a remote custodian keeps it, are never returned.\",\n      \"properties\": {\n        \"attestations\": {\n          \"description\": \"What every request object carries in `verifier_info`, in the order it carries them. Empty when it carries none.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Attestation\"\n          },\n          \"type\": \"array\"\n        },\n        \"certificate\": {\n          \"$ref\": \"#/$defs/Certificate\",\n          \"description\": \"The access certificate, for an `eudi` identity that has one.\"\n        },\n        \"clientId\": {\n          \"description\": \"The OpenID4VP client identifier wallets see, prefix included. Null while an `eudi` identity has no certificate.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"custody\": {\n          \"description\": \"Where the signing key is: `cached` by the community, kept by its `agent` (which signs every request object), or `invalid` when the record names neither or both.\",\n          \"enum\": [\n            \"cached\",\n            \"agent\",\n            \"invalid\"\n          ],\n          \"type\": \"string\"\n        },\n        \"did\": {\n          \"description\": \"The identity's DID, for a `swiyu` identity.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"id\": {\n          \"description\": \"The administrator's name for the identity.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"installedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"isDefault\": {\n          \"description\": \"Whether a session that names no client identifier prefix uses this identity.\",\n          \"type\": \"boolean\"\n        },\n        \"keyId\": {\n          \"description\": \"The verification method that signs request objects, for an identity known by a DID.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"kind\": {\n          \"description\": \"The wallet ecosystem it is known to: `swiyu` (a DID registered in the swiyu Base Registry) or `eudi` (an X.509 access certificate).\",\n          \"enum\": [\n            \"swiyu\",\n            \"eudi\"\n          ],\n          \"type\": \"string\"\n        },\n        \"problems\": {\n          \"description\": \"What is wrong with this identity. Empty when nothing is.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Problem\"\n          },\n          \"type\": \"array\"\n        },\n        \"usable\": {\n          \"description\": \"Whether a session could be opened on this identity now: true exactly when no `error` problem applies to it, and none other than `defaultIdentityNotInstalled` applies to the community's verifier as a whole.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"kind\",\n        \"custody\",\n        \"usable\",\n        \"isDefault\",\n        \"attestations\",\n        \"problems\",\n        \"installedAt\"\n      ],\n      \"title\": \"Identity\",\n      \"type\": \"object\"\n    },\n    \"Problem\": {\n      \"additionalProperties\": false,\n      \"description\": \"One thing that stops, or will soon stop, a verifier identity or the community's verifier as a whole from serving wallets.\",\n      \"properties\": {\n        \"code\": {\n          \"description\": \"What is wrong, as tabled in the specification.\",\n          \"enum\": [\n            \"keyCustodyInvalid\",\n            \"signerNotLoaded\",\n            \"agentLinkMissing\",\n            \"certificateMissing\",\n            \"certificateNotYetValid\",\n            \"certificateExpired\",\n            \"certificateExpiresSoon\",\n            \"identityStatementMissing\",\n            \"statementExpired\",\n            \"statementExpiresSoon\",\n            \"defaultIdentityNotInstalled\",\n            \"noPublicUrl\"\n          ],\n          \"type\": \"string\"\n        },\n        \"detail\": {\n          \"description\": \"Maintainer-authored prose for the administrator — what to run to fix it. Never parsed.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"severity\": {\n          \"description\": \"`error`: sessions are refused, or wallets will refuse what the community sends, until it is fixed. `warning`: it works now and will not for long.\",\n          \"enum\": [\n            \"error\",\n            \"warning\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"code\",\n        \"severity\"\n      ],\n      \"title\": \"Problem\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"defaultIdentity\": {\n          \"description\": \"The identity the community is configured to use when a session names no client identifier prefix; null when none is configured, and the first usable identity is used.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"identities\": {\n          \"description\": \"Every verifier identity the community holds, by `id`. Empty when it holds none.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Identity\"\n          },\n          \"type\": \"array\"\n        },\n        \"problems\": {\n          \"description\": \"What is wrong with the community's verifier as a whole, rather than with one identity. Empty when nothing is.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Problem\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"identities\",\n        \"problems\"\n      ],\n      \"title\": \"VTC OpenID4VP Verifier Identities List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/oid4vp/identities/list/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"An administrator reads the OpenID4VP verifier identities the community holds — the identities it presents to wallets that speak OpenID4VP and no Trust Task protocol — and, for each, whether it can open a presentation session now and what stands in the way. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"title\": \"VTC OpenID4VP Verifier Identities List — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Attestation\":{\"additionalProperties\":false,\"description\":\"One attestation about the verifier that every request object carries in `verifier_info`.\",\"properties\":{\"expiresAt\":{\"description\":\"When it expires, if it says; null when it carries no expiry the maintainer reads.\",\"format\":\"date-time\",\"type\":[\"string\",\"null\"]},\"kind\":{\"description\":\"Which attestation it is, as tabled in the specification.\",\"enum\":[\"identityTrustStatement\",\"protectedVerificationAuthorization\",\"registrationCertificate\",\"other\"],\"type\":\"string\"}},\"required\":[\"kind\"],\"title\":\"Attestation\",\"type\":\"object\"},\"Certificate\":{\"additionalProperties\":false,\"description\":\"An X.509-identified verifier's access certificate: the leaf of the chain it sends wallets as `x5c`.\",\"properties\":{\"chainLength\":{\"description\":\"Certificates in the chain, leaf included.\",\"minimum\":1,\"type\":\"integer\"},\"issuer\":{\"description\":\"The leaf's issuer distinguished name, as RFC 4514 renders it.\",\"maxLength\":1024,\"type\":\"string\"},\"notAfter\":{\"format\":\"date-time\",\"type\":\"string\"},\"notBefore\":{\"format\":\"date-time\",\"type\":\"string\"},\"subject\":{\"description\":\"The leaf's subject distinguished name, as RFC 4514 renders it.\",\"maxLength\":1024,\"type\":\"string\"}},\"required\":[\"notBefore\",\"notAfter\",\"chainLength\"],\"title\":\"Certificate\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Identity\":{\"additionalProperties\":false,\"description\":\"One verifier identity, described by what is public about it. The signing key's private half, and where a remote custodian keeps it, are never returned.\",\"properties\":{\"attestations\":{\"description\":\"What every request object carries in `verifier_info`, in the order it carries them. Empty when it carries none.\",\"items\":{\"$ref\":\"#/$defs/Attestation\"},\"type\":\"array\"},\"certificate\":{\"$ref\":\"#/$defs/Certificate\",\"description\":\"The access certificate, for an `eudi` identity that has one.\"},\"clientId\":{\"description\":\"The OpenID4VP client identifier wallets see, prefix included. Null while an `eudi` identity has no certificate.\",\"type\":[\"string\",\"null\"]},\"custody\":{\"description\":\"Where the signing key is: `cached` by the community, kept by its `agent` (which signs every request object), or `invalid` when the record names neither or both.\",\"enum\":[\"cached\",\"agent\",\"invalid\"],\"type\":\"string\"},\"did\":{\"description\":\"The identity's DID, for a `swiyu` identity.\",\"type\":[\"string\",\"null\"]},\"id\":{\"description\":\"The administrator's name for the identity.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"installedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"isDefault\":{\"description\":\"Whether a session that names no client identifier prefix uses this identity.\",\"type\":\"boolean\"},\"keyId\":{\"description\":\"The verification method that signs request objects, for an identity known by a DID.\",\"type\":[\"string\",\"null\"]},\"kind\":{\"description\":\"The wallet ecosystem it is known to: `swiyu` (a DID registered in the swiyu Base Registry) or `eudi` (an X.509 access certificate).\",\"enum\":[\"swiyu\",\"eudi\"],\"type\":\"string\"},\"problems\":{\"description\":\"What is wrong with this identity. Empty when nothing is.\",\"items\":{\"$ref\":\"#/$defs/Problem\"},\"type\":\"array\"},\"usable\":{\"description\":\"Whether a session could be opened on this identity now: true exactly when no `error` problem applies to it, and none other than `defaultIdentityNotInstalled` applies to the community's verifier as a whole.\",\"type\":\"boolean\"}},\"required\":[\"id\",\"kind\",\"custody\",\"usable\",\"isDefault\",\"attestations\",\"problems\",\"installedAt\"],\"title\":\"Identity\",\"type\":\"object\"},\"Problem\":{\"additionalProperties\":false,\"description\":\"One thing that stops, or will soon stop, a verifier identity or the community's verifier as a whole from serving wallets.\",\"properties\":{\"code\":{\"description\":\"What is wrong, as tabled in the specification.\",\"enum\":[\"keyCustodyInvalid\",\"signerNotLoaded\",\"agentLinkMissing\",\"certificateMissing\",\"certificateNotYetValid\",\"certificateExpired\",\"certificateExpiresSoon\",\"identityStatementMissing\",\"statementExpired\",\"statementExpiresSoon\",\"defaultIdentityNotInstalled\",\"noPublicUrl\"],\"type\":\"string\"},\"detail\":{\"description\":\"Maintainer-authored prose for the administrator — what to run to fix it. Never parsed.\",\"maxLength\":1024,\"type\":\"string\"},\"severity\":{\"description\":\"`error`: sessions are refused, or wallets will refuse what the community sends, until it is fixed. `warning`: it works now and will not for long.\",\"enum\":[\"error\",\"warning\"],\"type\":\"string\"}},\"required\":[\"code\",\"severity\"],\"title\":\"Problem\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"defaultIdentity\":{\"description\":\"The identity the community is configured to use when a session names no client identifier prefix; null when none is configured, and the first usable identity is used.\",\"type\":[\"string\",\"null\"]},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"identities\":{\"description\":\"Every verifier identity the community holds, by `id`. Empty when it holds none.\",\"items\":{\"$ref\":\"#/$defs/Identity\"},\"type\":\"array\"},\"problems\":{\"description\":\"What is wrong with the community's verifier as a whole, rather than with one identity. Empty when nothing is.\",\"items\":{\"$ref\":\"#/$defs/Problem\"},\"type\":\"array\"}},\"required\":[\"identities\",\"problems\"],\"title\":\"VTC OpenID4VP Verifier Identities List — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/oid4vp/identities/list/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"An administrator reads the OpenID4VP verifier identities the community holds — the identities it presents to wallets that speak OpenID4VP and no Trust Task protocol — and, for each, whether it can open a presentation session now and what stands in the way. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"title\":\"VTC OpenID4VP Verifier Identities List — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1865,7 +1444,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Attestation\": {\n      \"additionalProperties\": false,\n      \"description\": \"One attestation about the verifier that every request object carries in `verifier_info`.\",\n      \"properties\": {\n        \"expiresAt\": {\n          \"description\": \"When it expires, if it says; null when it carries no expiry the maintainer reads.\",\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"kind\": {\n          \"description\": \"Which attestation it is, as tabled in the specification.\",\n          \"enum\": [\n            \"identityTrustStatement\",\n            \"protectedVerificationAuthorization\",\n            \"registrationCertificate\",\n            \"other\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\"\n      ],\n      \"title\": \"Attestation\",\n      \"type\": \"object\"\n    },\n    \"Certificate\": {\n      \"additionalProperties\": false,\n      \"description\": \"An X.509-identified verifier's access certificate: the leaf of the chain it sends wallets as `x5c`.\",\n      \"properties\": {\n        \"chainLength\": {\n          \"description\": \"Certificates in the chain, leaf included.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"issuer\": {\n          \"description\": \"The leaf's issuer distinguished name, as RFC 4514 renders it.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"notAfter\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"notBefore\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"subject\": {\n          \"description\": \"The leaf's subject distinguished name, as RFC 4514 renders it.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"notBefore\",\n        \"notAfter\",\n        \"chainLength\"\n      ],\n      \"title\": \"Certificate\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Identity\": {\n      \"additionalProperties\": false,\n      \"description\": \"One verifier identity, described by what is public about it. The signing key's private half, and where a remote custodian keeps it, are never returned.\",\n      \"properties\": {\n        \"attestations\": {\n          \"description\": \"What every request object carries in `verifier_info`, in the order it carries them. Empty when it carries none.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Attestation\"\n          },\n          \"type\": \"array\"\n        },\n        \"certificate\": {\n          \"$ref\": \"#/$defs/Certificate\",\n          \"description\": \"The access certificate, for an `eudi` identity that has one.\"\n        },\n        \"clientId\": {\n          \"description\": \"The OpenID4VP client identifier wallets see, prefix included. Null while an `eudi` identity has no certificate.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"custody\": {\n          \"description\": \"Where the signing key is: `cached` by the community, kept by its `agent` (which signs every request object), or `invalid` when the record names neither or both.\",\n          \"enum\": [\n            \"cached\",\n            \"agent\",\n            \"invalid\"\n          ],\n          \"type\": \"string\"\n        },\n        \"did\": {\n          \"description\": \"The identity's DID, for a `swiyu` identity.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"id\": {\n          \"description\": \"The administrator's name for the identity.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"installedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"isDefault\": {\n          \"description\": \"Whether a session that names no client identifier prefix uses this identity.\",\n          \"type\": \"boolean\"\n        },\n        \"keyId\": {\n          \"description\": \"The verification method that signs request objects, for an identity known by a DID.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"kind\": {\n          \"description\": \"The wallet ecosystem it is known to: `swiyu` (a DID registered in the swiyu Base Registry) or `eudi` (an X.509 access certificate).\",\n          \"enum\": [\n            \"swiyu\",\n            \"eudi\"\n          ],\n          \"type\": \"string\"\n        },\n        \"problems\": {\n          \"description\": \"What is wrong with this identity. Empty when nothing is.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Problem\"\n          },\n          \"type\": \"array\"\n        },\n        \"usable\": {\n          \"description\": \"Whether a session could be opened on this identity now: true exactly when no `error` problem applies to it, and none other than `defaultIdentityNotInstalled` applies to the community's verifier as a whole.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"kind\",\n        \"custody\",\n        \"usable\",\n        \"isDefault\",\n        \"attestations\",\n        \"problems\",\n        \"installedAt\"\n      ],\n      \"title\": \"Identity\",\n      \"type\": \"object\"\n    },\n    \"Problem\": {\n      \"additionalProperties\": false,\n      \"description\": \"One thing that stops, or will soon stop, a verifier identity or the community's verifier as a whole from serving wallets.\",\n      \"properties\": {\n        \"code\": {\n          \"description\": \"What is wrong, as tabled in the specification.\",\n          \"enum\": [\n            \"keyCustodyInvalid\",\n            \"signerNotLoaded\",\n            \"agentLinkMissing\",\n            \"certificateMissing\",\n            \"certificateNotYetValid\",\n            \"certificateExpired\",\n            \"certificateExpiresSoon\",\n            \"identityStatementMissing\",\n            \"statementExpired\",\n            \"statementExpiresSoon\",\n            \"defaultIdentityNotInstalled\",\n            \"noPublicUrl\"\n          ],\n          \"type\": \"string\"\n        },\n        \"detail\": {\n          \"description\": \"Maintainer-authored prose for the administrator — what to run to fix it. Never parsed.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"severity\": {\n          \"description\": \"`error`: sessions are refused, or wallets will refuse what the community sends, until it is fixed. `warning`: it works now and will not for long.\",\n          \"enum\": [\n            \"error\",\n            \"warning\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"code\",\n        \"severity\"\n      ],\n      \"title\": \"Problem\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"defaultIdentity\": {\n          \"description\": \"The identity the community is configured to use when a session names no client identifier prefix; null when none is configured, and the first usable identity is used.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"identities\": {\n          \"description\": \"Every verifier identity the community holds, by `id`. Empty when it holds none.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Identity\"\n          },\n          \"type\": \"array\"\n        },\n        \"problems\": {\n          \"description\": \"What is wrong with the community's verifier as a whole, rather than with one identity. Empty when nothing is.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Problem\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"identities\",\n        \"problems\"\n      ],\n      \"title\": \"VTC OpenID4VP Verifier Identities List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Attestation\":{\"additionalProperties\":false,\"description\":\"One attestation about the verifier that every request object carries in `verifier_info`.\",\"properties\":{\"expiresAt\":{\"description\":\"When it expires, if it says; null when it carries no expiry the maintainer reads.\",\"format\":\"date-time\",\"type\":[\"string\",\"null\"]},\"kind\":{\"description\":\"Which attestation it is, as tabled in the specification.\",\"enum\":[\"identityTrustStatement\",\"protectedVerificationAuthorization\",\"registrationCertificate\",\"other\"],\"type\":\"string\"}},\"required\":[\"kind\"],\"title\":\"Attestation\",\"type\":\"object\"},\"Certificate\":{\"additionalProperties\":false,\"description\":\"An X.509-identified verifier's access certificate: the leaf of the chain it sends wallets as `x5c`.\",\"properties\":{\"chainLength\":{\"description\":\"Certificates in the chain, leaf included.\",\"minimum\":1,\"type\":\"integer\"},\"issuer\":{\"description\":\"The leaf's issuer distinguished name, as RFC 4514 renders it.\",\"maxLength\":1024,\"type\":\"string\"},\"notAfter\":{\"format\":\"date-time\",\"type\":\"string\"},\"notBefore\":{\"format\":\"date-time\",\"type\":\"string\"},\"subject\":{\"description\":\"The leaf's subject distinguished name, as RFC 4514 renders it.\",\"maxLength\":1024,\"type\":\"string\"}},\"required\":[\"notBefore\",\"notAfter\",\"chainLength\"],\"title\":\"Certificate\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Identity\":{\"additionalProperties\":false,\"description\":\"One verifier identity, described by what is public about it. The signing key's private half, and where a remote custodian keeps it, are never returned.\",\"properties\":{\"attestations\":{\"description\":\"What every request object carries in `verifier_info`, in the order it carries them. Empty when it carries none.\",\"items\":{\"$ref\":\"#/$defs/Attestation\"},\"type\":\"array\"},\"certificate\":{\"$ref\":\"#/$defs/Certificate\",\"description\":\"The access certificate, for an `eudi` identity that has one.\"},\"clientId\":{\"description\":\"The OpenID4VP client identifier wallets see, prefix included. Null while an `eudi` identity has no certificate.\",\"type\":[\"string\",\"null\"]},\"custody\":{\"description\":\"Where the signing key is: `cached` by the community, kept by its `agent` (which signs every request object), or `invalid` when the record names neither or both.\",\"enum\":[\"cached\",\"agent\",\"invalid\"],\"type\":\"string\"},\"did\":{\"description\":\"The identity's DID, for a `swiyu` identity.\",\"type\":[\"string\",\"null\"]},\"id\":{\"description\":\"The administrator's name for the identity.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"installedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"isDefault\":{\"description\":\"Whether a session that names no client identifier prefix uses this identity.\",\"type\":\"boolean\"},\"keyId\":{\"description\":\"The verification method that signs request objects, for an identity known by a DID.\",\"type\":[\"string\",\"null\"]},\"kind\":{\"description\":\"The wallet ecosystem it is known to: `swiyu` (a DID registered in the swiyu Base Registry) or `eudi` (an X.509 access certificate).\",\"enum\":[\"swiyu\",\"eudi\"],\"type\":\"string\"},\"problems\":{\"description\":\"What is wrong with this identity. Empty when nothing is.\",\"items\":{\"$ref\":\"#/$defs/Problem\"},\"type\":\"array\"},\"usable\":{\"description\":\"Whether a session could be opened on this identity now: true exactly when no `error` problem applies to it, and none other than `defaultIdentityNotInstalled` applies to the community's verifier as a whole.\",\"type\":\"boolean\"}},\"required\":[\"id\",\"kind\",\"custody\",\"usable\",\"isDefault\",\"attestations\",\"problems\",\"installedAt\"],\"title\":\"Identity\",\"type\":\"object\"},\"Problem\":{\"additionalProperties\":false,\"description\":\"One thing that stops, or will soon stop, a verifier identity or the community's verifier as a whole from serving wallets.\",\"properties\":{\"code\":{\"description\":\"What is wrong, as tabled in the specification.\",\"enum\":[\"keyCustodyInvalid\",\"signerNotLoaded\",\"agentLinkMissing\",\"certificateMissing\",\"certificateNotYetValid\",\"certificateExpired\",\"certificateExpiresSoon\",\"identityStatementMissing\",\"statementExpired\",\"statementExpiresSoon\",\"defaultIdentityNotInstalled\",\"noPublicUrl\"],\"type\":\"string\"},\"detail\":{\"description\":\"Maintainer-authored prose for the administrator — what to run to fix it. Never parsed.\",\"maxLength\":1024,\"type\":\"string\"},\"severity\":{\"description\":\"`error`: sessions are refused, or wallets will refuse what the community sends, until it is fixed. `warning`: it works now and will not for long.\",\"enum\":[\"error\",\"warning\"],\"type\":\"string\"}},\"required\":[\"code\",\"severity\"],\"title\":\"Problem\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"defaultIdentity\":{\"description\":\"The identity the community is configured to use when a session names no client identifier prefix; null when none is configured, and the first usable identity is used.\",\"type\":[\"string\",\"null\"]},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"identities\":{\"description\":\"Every verifier identity the community holds, by `id`. Empty when it holds none.\",\"items\":{\"$ref\":\"#/$defs/Identity\"},\"type\":\"array\"},\"problems\":{\"description\":\"What is wrong with the community's verifier as a whole, rather than with one identity. Empty when nothing is.\",\"items\":{\"$ref\":\"#/$defs/Problem\"},\"type\":\"array\"}},\"required\":[\"identities\",\"problems\"],\"title\":\"VTC OpenID4VP Verifier Identities List — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

@@ -35,21 +35,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -71,15 +56,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -143,39 +119,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Rotate a did:webvh's signing keys by appending a log entry that moves to the pre-committed successor.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/webvh/dids/rotate-keys/1.0",
-///  "title": "Payload",
-///  "description": "Rotate a did:webvh's signing keys by appending a log entry that moves to the pre-committed successor.",
-///  "type": "object",
-///  "required": [
-///    "did"
-///  ],
-///  "properties": {
-///    "did": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "label": {
-///      "type": "string",
-///      "maxLength": 256
-///    },
-///    "preRotationCount": {
-///      "description": "Successors to commit for the next rotation. Absent keeps the DID's current setting. Setting it to `0` disables pre-rotation from here on, which forfeits the ability to recover from a future key compromise.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -201,15 +144,6 @@ impl Payload {
 }
 ///`PayloadDid`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadDid(::std::string::String);
@@ -269,15 +203,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDid {
 }
 ///`PayloadLabel`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 256
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadLabel(::std::string::String);
@@ -337,59 +262,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadLabel {
 }
 ///Success response to vta/webvh/dids/rotate-keys. Type https://trusttasks.org/spec/vta/webvh/dids/rotate-keys/1.0#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to vta/webvh/dids/rotate-keys. Type https://trusttasks.org/spec/vta/webvh/dids/rotate-keys/1.0#response.",
-///  "type": "object",
-///  "required": [
-///    "did",
-///    "newLogEntry",
-///    "newScid",
-///    "newVersionId",
-///    "preRotationKeyCount",
-///    "serverless",
-///    "updateKeysCount"
-///  ],
-///  "properties": {
-///    "did": {
-///      "type": "string"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "newLogEntry": {
-///      "description": "The appended entry.",
-///      "type": "string"
-///    },
-///    "newScid": {
-///      "description": "The DID's SCID. Unchanged by a rotation — a rotation appends to the log, it does not re-create it.",
-///      "type": "string"
-///    },
-///    "newVersionId": {
-///      "description": "Version id of the appended entry.",
-///      "type": "string"
-///    },
-///    "preRotationKeyCount": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "serverless": {
-///      "description": "True when no hosting server holds this DID. **The caller must publish `newLogEntry` themselves** — until they do, the rotation has happened in the VTA and nowhere else, and resolvers still see the old keys.",
-///      "type": "boolean"
-///    },
-///    "updateKeysCount": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -650,7 +522,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/webvh/dids/rotate-keys. Type https://trusttasks.org/spec/vta/webvh/dids/rotate-keys/1.0#response.\",\n      \"properties\": {\n        \"did\": {\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"newLogEntry\": {\n          \"description\": \"The appended entry.\",\n          \"type\": \"string\"\n        },\n        \"newScid\": {\n          \"description\": \"The DID's SCID. Unchanged by a rotation — a rotation appends to the log, it does not re-create it.\",\n          \"type\": \"string\"\n        },\n        \"newVersionId\": {\n          \"description\": \"Version id of the appended entry.\",\n          \"type\": \"string\"\n        },\n        \"preRotationKeyCount\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"serverless\": {\n          \"description\": \"True when no hosting server holds this DID. **The caller must publish `newLogEntry` themselves** — until they do, the rotation has happened in the VTA and nowhere else, and resolvers still see the old keys.\",\n          \"type\": \"boolean\"\n        },\n        \"updateKeysCount\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"newVersionId\",\n        \"newScid\",\n        \"newLogEntry\",\n        \"updateKeysCount\",\n        \"preRotationKeyCount\",\n        \"serverless\"\n      ],\n      \"title\": \"VTA WebVH DIDs Rotate-Keys — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/webvh/dids/rotate-keys/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Rotate a did:webvh's signing keys by appending a log entry that moves to the pre-committed successor.\",\n  \"properties\": {\n    \"did\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"label\": {\n      \"maxLength\": 256,\n      \"type\": \"string\"\n    },\n    \"preRotationCount\": {\n      \"description\": \"Successors to commit for the next rotation. Absent keeps the DID's current setting. Setting it to `0` disables pre-rotation from here on, which forfeits the ability to recover from a future key compromise.\",\n      \"minimum\": 0,\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"did\"\n  ],\n  \"title\": \"VTA WebVH DIDs Rotate-Keys — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vta/webvh/dids/rotate-keys. Type https://trusttasks.org/spec/vta/webvh/dids/rotate-keys/1.0#response.\",\"properties\":{\"did\":{\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"newLogEntry\":{\"description\":\"The appended entry.\",\"type\":\"string\"},\"newScid\":{\"description\":\"The DID's SCID. Unchanged by a rotation — a rotation appends to the log, it does not re-create it.\",\"type\":\"string\"},\"newVersionId\":{\"description\":\"Version id of the appended entry.\",\"type\":\"string\"},\"preRotationKeyCount\":{\"minimum\":0,\"type\":\"integer\"},\"serverless\":{\"description\":\"True when no hosting server holds this DID. **The caller must publish `newLogEntry` themselves** — until they do, the rotation has happened in the VTA and nowhere else, and resolvers still see the old keys.\",\"type\":\"boolean\"},\"updateKeysCount\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"did\",\"newVersionId\",\"newScid\",\"newLogEntry\",\"updateKeysCount\",\"preRotationKeyCount\",\"serverless\"],\"title\":\"VTA WebVH DIDs Rotate-Keys — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vta/webvh/dids/rotate-keys/1.0\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Rotate a did:webvh's signing keys by appending a log entry that moves to the pre-committed successor.\",\"properties\":{\"did\":{\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"label\":{\"maxLength\":256,\"type\":\"string\"},\"preRotationCount\":{\"description\":\"Successors to commit for the next rotation. Absent keeps the DID's current setting. Setting it to `0` disables pre-rotation from here on, which forfeits the ability to recover from a future key compromise.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"did\"],\"title\":\"VTA WebVH DIDs Rotate-Keys — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -660,7 +532,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/webvh/dids/rotate-keys. Type https://trusttasks.org/spec/vta/webvh/dids/rotate-keys/1.0#response.\",\n      \"properties\": {\n        \"did\": {\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"newLogEntry\": {\n          \"description\": \"The appended entry.\",\n          \"type\": \"string\"\n        },\n        \"newScid\": {\n          \"description\": \"The DID's SCID. Unchanged by a rotation — a rotation appends to the log, it does not re-create it.\",\n          \"type\": \"string\"\n        },\n        \"newVersionId\": {\n          \"description\": \"Version id of the appended entry.\",\n          \"type\": \"string\"\n        },\n        \"preRotationKeyCount\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"serverless\": {\n          \"description\": \"True when no hosting server holds this DID. **The caller must publish `newLogEntry` themselves** — until they do, the rotation has happened in the VTA and nowhere else, and resolvers still see the old keys.\",\n          \"type\": \"boolean\"\n        },\n        \"updateKeysCount\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"newVersionId\",\n        \"newScid\",\n        \"newLogEntry\",\n        \"updateKeysCount\",\n        \"preRotationKeyCount\",\n        \"serverless\"\n      ],\n      \"title\": \"VTA WebVH DIDs Rotate-Keys — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vta/webvh/dids/rotate-keys. Type https://trusttasks.org/spec/vta/webvh/dids/rotate-keys/1.0#response.\",\"properties\":{\"did\":{\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"newLogEntry\":{\"description\":\"The appended entry.\",\"type\":\"string\"},\"newScid\":{\"description\":\"The DID's SCID. Unchanged by a rotation — a rotation appends to the log, it does not re-create it.\",\"type\":\"string\"},\"newVersionId\":{\"description\":\"Version id of the appended entry.\",\"type\":\"string\"},\"preRotationKeyCount\":{\"minimum\":0,\"type\":\"integer\"},\"serverless\":{\"description\":\"True when no hosting server holds this DID. **The caller must publish `newLogEntry` themselves** — until they do, the rotation has happened in the VTA and nowhere else, and resolvers still see the old keys.\",\"type\":\"boolean\"},\"updateKeysCount\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"did\",\"newVersionId\",\"newScid\",\"newLogEntry\",\"updateKeysCount\",\"preRotationKeyCount\",\"serverless\"],\"title\":\"VTA WebVH DIDs Rotate-Keys — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

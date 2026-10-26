@@ -37,83 +37,6 @@ A community profile as a portable export carries it — the mutable profile memb
 
 Distinct from `vtc/_shared/community`'s `CommunityProfile`, which is the update-facing view and deliberately omits `communityDid` so that a patch cannot re-point a community's identity. Here the DID is REQUIRED and is the whole point: it is what lets an importing community refuse a document taken from a different one. `registryStatus` is absent because trust-registry reachability is a property of a running maintainer, not of exported state.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "CommunityProfileSnapshot",
-///  "description": "A community profile as a portable export carries it — the mutable profile members plus the immutable identity they belong to.\n\nDistinct from `vtc/_shared/community`'s `CommunityProfile`, which is the update-facing view and deliberately omits `communityDid` so that a patch cannot re-point a community's identity. Here the DID is REQUIRED and is the whole point: it is what lets an importing community refuse a document taken from a different one. `registryStatus` is absent because trust-registry reachability is a property of a running maintainer, not of exported state.",
-///  "type": "object",
-///  "required": [
-///    "communityDid",
-///    "language",
-///    "name"
-///  ],
-///  "properties": {
-///    "communityDid": {
-///      "description": "DID of the community this document was taken from. Immutable, set at install.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "contactEmail": {
-///      "type": [
-///        "string",
-///        "null"
-///      ]
-///    },
-///    "createdAt": {
-///      "description": "When the community was created. Provenance only — an import never writes it.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "description": {
-///      "type": "string",
-///      "maxLength": 1024
-///    },
-///    "extensions": {
-///      "description": "Opaque community-defined extension bag.",
-///      "type": "object"
-///    },
-///    "language": {
-///      "description": "BCP 47 language tag.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "logoUrl": {
-///      "type": [
-///        "string",
-///        "null"
-///      ]
-///    },
-///    "name": {
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "personhood": {
-///      "description": "The community's published personhood position, carried so an export restores it. Governance state, not runtime state — unlike `registryStatus`, which is deliberately absent here because reachability belongs to a running maintainer rather than to exported state.",
-///      "$ref": "#/definitions/PersonhoodGovernance"
-///    },
-///    "publicUrl": {
-///      "type": [
-///        "string",
-///        "null"
-///      ]
-///    },
-///    "relationshipIdentifierDefault": {
-///      "description": "The community's declared relationship-identifier default, as defined on `CommunityProfile` in the `vtc/_shared/0.1/community` schema. Carried in a config export so a restore reproduces the declaration rather than silently reverting it to the implementation default.",
-///      "type": "string",
-///      "enum": [
-///        "attributed",
-///        "pairwise"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "communityProfileSnapshot"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -173,16 +96,6 @@ impl CommunityProfileSnapshot {
 }
 ///DID of the community this document was taken from. Immutable, set at install.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "DID of the community this document was taken from. Immutable, set at install.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CommunityProfileSnapshotCommunityDid(::std::string::String);
@@ -242,15 +155,6 @@ impl<'de> ::serde::Deserialize<'de> for CommunityProfileSnapshotCommunityDid {
 }
 ///`CommunityProfileSnapshotDescription`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CommunityProfileSnapshotDescription(::std::string::String);
@@ -310,16 +214,6 @@ impl<'de> ::serde::Deserialize<'de> for CommunityProfileSnapshotDescription {
 }
 ///BCP 47 language tag.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "BCP 47 language tag.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CommunityProfileSnapshotLanguage(::std::string::String);
@@ -379,16 +273,6 @@ impl<'de> ::serde::Deserialize<'de> for CommunityProfileSnapshotLanguage {
 }
 ///`CommunityProfileSnapshotName`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CommunityProfileSnapshotName(::std::string::String);
@@ -451,19 +335,6 @@ impl<'de> ::serde::Deserialize<'de> for CommunityProfileSnapshotName {
 }
 ///The community's declared relationship-identifier default, as defined on `CommunityProfile` in the `vtc/_shared/0.1/community` schema. Carried in a config export so a restore reproduces the declaration rather than silently reverting it to the implementation default.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The community's declared relationship-identifier default, as defined on `CommunityProfile` in the `vtc/_shared/0.1/community` schema. Carried in a config export so a restore reproduces the declaration rather than silently reverting it to the implementation default.",
-///  "type": "string",
-///  "enum": [
-///    "attributed",
-///    "pairwise"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -532,47 +403,6 @@ A community's portable configuration: its profile plus the configuration overrid
 
 This document is designed to survive a round-trip through a file. An operator exports it, keeps it, and feeds it back later — possibly to a different maintainer, possibly across a version boundary — so it is self-describing rather than relying on the Type URI of the envelope that happened to carry it.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ConfigExportDocument",
-///  "description": "A community's portable configuration: its profile plus the configuration overrides a maintainer stores for itself. Deliberately excludes per-host layers (environment variables, on-disk config files) — those describe where a maintainer runs, not what the community is, and carrying them would make an import overwrite the target host's own deployment settings.\n\nThis document is designed to survive a round-trip through a file. An operator exports it, keeps it, and feeds it back later — possibly to a different maintainer, possibly across a version boundary — so it is self-describing rather than relying on the Type URI of the envelope that happened to carry it.",
-///  "type": "object",
-///  "required": [
-///    "configOverrides",
-///    "exportedAt",
-///    "schemaVersion"
-///  ],
-///  "properties": {
-///    "communityProfile": {
-///      "description": "The community's profile at export time. Absent when the community has no profile yet — a maintainer exported before bootstrap.",
-///      "$ref": "#/definitions/CommunityProfileSnapshot"
-///    },
-///    "configOverrides": {
-///      "description": "Stored configuration overrides as `key → value`, keyed by the maintainer's own configuration registry (the same keys `config/show` and `config/patch` use). An empty object is valid and means no overrides are set.",
-///      "type": "object",
-///      "additionalProperties": true
-///    },
-///    "exportedAt": {
-///      "description": "When the export was taken. Provenance for the operator; a consumer does not act on it.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "schemaVersion": {
-///      "description": "Version of this document's own shape. Not redundant with the Type URI version: once the document is written to a file it is bare JSON with no envelope, and this is the only thing a later reader has to check it against. A consumer MUST reject a version it does not implement rather than guess.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "configExportDocument"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -606,34 +436,6 @@ One field an import would change, or did.
 
 `oldValue` is absent when the field is not currently set — no profile yet, or no stored override for that key. `newValue` is absent when the imported document omits the field, which means "leave the live value alone" rather than "clear it"; a caller that intends to clear a nullable member sends an explicit `null`, which appears here as `newValue: null`. The two are different requests and a consumer MUST NOT conflate them.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ConfigFieldChange",
-///  "description": "One field an import would change, or did.\n\n`oldValue` is absent when the field is not currently set — no profile yet, or no stored override for that key. `newValue` is absent when the imported document omits the field, which means \"leave the live value alone\" rather than \"clear it\"; a caller that intends to clear a nullable member sends an explicit `null`, which appears here as `newValue: null`. The two are different requests and a consumer MUST NOT conflate them.",
-///  "type": "object",
-///  "required": [
-///    "key"
-///  ],
-///  "properties": {
-///    "key": {
-///      "description": "The profile member or configuration key, e.g. `name` or `log.level`.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "newValue": {
-///      "description": "Value the imported document carries. Absent when the document omits the field."
-///    },
-///    "oldValue": {
-///      "description": "Value in force before the import. Absent when the field is unset."
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "configFieldChange"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -662,16 +464,6 @@ impl ConfigFieldChange {
 }
 ///The profile member or configuration key, e.g. `name` or `log.level`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The profile member or configuration key, e.g. `name` or `log.level`.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ConfigFieldChangeKey(::std::string::String);
@@ -731,21 +523,6 @@ impl<'de> ::serde::Deserialize<'de> for ConfigFieldChangeKey {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -767,15 +544,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -839,35 +607,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Apply a portable configuration document to this community, or preview what applying it would change. Defaults to a preview.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/config/import/0.1",
-///  "title": "Payload",
-///  "description": "Apply a portable configuration document to this community, or preview what applying it would change. Defaults to a preview.",
-///  "type": "object",
-///  "required": [
-///    "document"
-///  ],
-///  "properties": {
-///    "confirm": {
-///      "description": "`false` (default) previews: the diff is computed and returned, nothing is written. `true` applies it. The preview and the apply return the same shape, so an operator UX can render one and then re-submit.",
-///      "default": false,
-///      "type": "boolean"
-///    },
-///    "document": {
-///      "description": "The document returned by `vtc/config/export`.",
-///      "$ref": "#/definitions/ConfigExportDocument"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -892,43 +631,6 @@ DTG Credentials §Personhood Credentials places PHC status here rather than in t
 
 Every member is a declaration, not an enforcement: what a community actually accepts is decided by its own policy. Absent means the community has not published a position, which is not the same as asserting the negative.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "PersonhoodGovernance",
-///  "description": "A community's published position on personhood.\n\nDTG Credentials §Personhood Credentials places PHC status here rather than in the credential — \"PHC status is determined by governance and trust registries, not by credential structure\" — so a verifier deciding whether a VMC carries personhood weight reads this, not the credential's type array. §Governance Considerations item 1 makes the acceptable-IDVP list the community's to define and publish.\n\nEvery member is a declaration, not an enforcement: what a community actually accepts is decided by its own policy. Absent means the community has not published a position, which is not the same as asserting the negative.",
-///  "type": "object",
-///  "properties": {
-///    "acceptedIdvps": {
-///      "description": "DIDs of the identity-verification providers whose credentials this community accepts as personhood evidence: any W3C VC from a listed provider that meets the community's identity-proofing requirements. A community that checks its members' identity in person does not act as a provider to do so: it records each check as a `vetted/1` statement (`https://registry.trustoverip.org/dtg/vsc/vetted/1`) issued under its own DID through vtc/endorsements/issue, which its personhood policy may accept beside these credentials. Either is evidence only — personhood is the community's decision, recorded on the member's VMC. An empty list means no list has been published, not that everything is accepted.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "minLength": 1
-///      }
-///    },
-///    "governanceFrameworkUrl": {
-///      "description": "Where the governance framework these assertions refer to can be read.",
-///      "type": [
-///        "string",
-///        "null"
-///      ]
-///    },
-///    "realHuman": {
-///      "description": "Governance requires that members are real humans. Defaults to `false` when absent: a community that has not considered the question asserts nothing, which is the only safe default for a claim a verifier may rely on.",
-///      "type": "boolean"
-///    },
-///    "singleMembership": {
-///      "description": "Governance requires that each person holds at most one membership in **this** community. Per-community by definition — the glossary says \"exactly one membership in that VTC\" — so a single community can satisfy it without any network above it.",
-///      "type": "boolean"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "personhoodGovernance"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -979,15 +681,6 @@ impl PersonhoodGovernance {
 }
 ///`PersonhoodGovernanceAcceptedIdvpsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PersonhoodGovernanceAcceptedIdvpsItem(::std::string::String);
@@ -1047,34 +740,6 @@ impl<'de> ::serde::Deserialize<'de> for PersonhoodGovernanceAcceptedIdvpsItem {
 }
 ///A key a patch declined to apply, with the reason.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RejectedKey",
-///  "description": "A key a patch declined to apply, with the reason.",
-///  "type": "object",
-///  "required": [
-///    "key",
-///    "reason"
-///  ],
-///  "properties": {
-///    "key": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "reason": {
-///      "description": "Why the key was rejected — unknown key, wrong type, out-of-range, allowlist mismatch, etc.",
-///      "type": "string",
-///      "maxLength": 1024,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "rejectedKey"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1090,15 +755,6 @@ impl RejectedKey {
 }
 ///`RejectedKeyKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RejectedKeyKey(::std::string::String);
@@ -1158,17 +814,6 @@ impl<'de> ::serde::Deserialize<'de> for RejectedKeyKey {
 }
 ///Why the key was rejected — unknown key, wrong type, out-of-range, allowlist mismatch, etc.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Why the key was rejected — unknown key, wrong type, out-of-range, allowlist mismatch, etc.",
-///  "type": "string",
-///  "maxLength": 1024,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RejectedKeyReason(::std::string::String);
@@ -1231,66 +876,6 @@ impl<'de> ::serde::Deserialize<'de> for RejectedKeyReason {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "overrideChanges",
-///    "profileChanges",
-///    "rejected",
-///    "status"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "overrideChanges": {
-///      "description": "Configuration-override keys that differ from what is in force. Rejected keys are not listed here — they appear under `rejected`. On `imported` these are the changes that were written.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/ConfigFieldChange"
-///      }
-///    },
-///    "pendingRestart": {
-///      "description": "Applied keys whose new value takes effect only after a restart. Reported on a preview too, so an operator learns before confirming that the import implies downtime.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "minLength": 1
-///      },
-///      "uniqueItems": true
-///    },
-///    "profileChanges": {
-///      "description": "Community-profile members that differ from what is in force. Empty when the document omits `communityProfile`, or when nothing differs. On `imported` these are the changes that were written.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/ConfigFieldChange"
-///      }
-///    },
-///    "rejected": {
-///      "description": "Keys the consumer declined — unknown to its configuration registry, wrong type, out of range. Reported identically on preview and apply, so a preview surfaces every rejection before anything is written.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/RejectedKey"
-///      }
-///    },
-///    "status": {
-///      "description": "`preview` when `confirm` was not set; `imported` after the document was applied.",
-///      "type": "string",
-///      "enum": [
-///        "preview",
-///        "imported"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1322,15 +907,6 @@ impl Response {
 }
 ///`ResponsePendingRestartItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponsePendingRestartItem(::std::string::String);
@@ -1390,19 +966,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponsePendingRestartItem {
 }
 ///`preview` when `confirm` was not set; `imported` after the document was applied.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`preview` when `confirm` was not set; `imported` after the document was applied.",
-///  "type": "string",
-///  "enum": [
-///    "preview",
-///    "imported"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -2192,7 +1755,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CommunityProfileSnapshot\": {\n      \"$anchor\": \"communityProfileSnapshot\",\n      \"additionalProperties\": false,\n      \"description\": \"A community profile as a portable export carries it — the mutable profile members plus the immutable identity they belong to.\\n\\nDistinct from `vtc/_shared/community`'s `CommunityProfile`, which is the update-facing view and deliberately omits `communityDid` so that a patch cannot re-point a community's identity. Here the DID is REQUIRED and is the whole point: it is what lets an importing community refuse a document taken from a different one. `registryStatus` is absent because trust-registry reachability is a property of a running maintainer, not of exported state.\",\n      \"properties\": {\n        \"communityDid\": {\n          \"description\": \"DID of the community this document was taken from. Immutable, set at install.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"contactEmail\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"createdAt\": {\n          \"description\": \"When the community was created. Provenance only — an import never writes it.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"extensions\": {\n          \"description\": \"Opaque community-defined extension bag.\",\n          \"type\": \"object\"\n        },\n        \"language\": {\n          \"description\": \"BCP 47 language tag.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"logoUrl\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"name\": {\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"personhood\": {\n          \"$ref\": \"#/$defs/PersonhoodGovernance\",\n          \"description\": \"The community's published personhood position, carried so an export restores it. Governance state, not runtime state — unlike `registryStatus`, which is deliberately absent here because reachability belongs to a running maintainer rather than to exported state.\"\n        },\n        \"publicUrl\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"relationshipIdentifierDefault\": {\n          \"description\": \"The community's declared relationship-identifier default, as defined on `CommunityProfile` in the `vtc/_shared/0.1/community` schema. Carried in a config export so a restore reproduces the declaration rather than silently reverting it to the implementation default.\",\n          \"enum\": [\n            \"attributed\",\n            \"pairwise\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"communityDid\",\n        \"name\",\n        \"language\"\n      ],\n      \"title\": \"CommunityProfileSnapshot\",\n      \"type\": \"object\"\n    },\n    \"ConfigExportDocument\": {\n      \"$anchor\": \"configExportDocument\",\n      \"additionalProperties\": false,\n      \"description\": \"A community's portable configuration: its profile plus the configuration overrides a maintainer stores for itself. Deliberately excludes per-host layers (environment variables, on-disk config files) — those describe where a maintainer runs, not what the community is, and carrying them would make an import overwrite the target host's own deployment settings.\\n\\nThis document is designed to survive a round-trip through a file. An operator exports it, keeps it, and feeds it back later — possibly to a different maintainer, possibly across a version boundary — so it is self-describing rather than relying on the Type URI of the envelope that happened to carry it.\",\n      \"properties\": {\n        \"communityProfile\": {\n          \"$ref\": \"#/$defs/CommunityProfileSnapshot\",\n          \"description\": \"The community's profile at export time. Absent when the community has no profile yet — a maintainer exported before bootstrap.\"\n        },\n        \"configOverrides\": {\n          \"additionalProperties\": true,\n          \"description\": \"Stored configuration overrides as `key → value`, keyed by the maintainer's own configuration registry (the same keys `config/show` and `config/patch` use). An empty object is valid and means no overrides are set.\",\n          \"type\": \"object\"\n        },\n        \"exportedAt\": {\n          \"description\": \"When the export was taken. Provenance for the operator; a consumer does not act on it.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"schemaVersion\": {\n          \"description\": \"Version of this document's own shape. Not redundant with the Type URI version: once the document is written to a file it is bare JSON with no envelope, and this is the only thing a later reader has to check it against. A consumer MUST reject a version it does not implement rather than guess.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"schemaVersion\",\n        \"exportedAt\",\n        \"configOverrides\"\n      ],\n      \"title\": \"ConfigExportDocument\",\n      \"type\": \"object\"\n    },\n    \"ConfigFieldChange\": {\n      \"$anchor\": \"configFieldChange\",\n      \"additionalProperties\": false,\n      \"description\": \"One field an import would change, or did.\\n\\n`oldValue` is absent when the field is not currently set — no profile yet, or no stored override for that key. `newValue` is absent when the imported document omits the field, which means \\\"leave the live value alone\\\" rather than \\\"clear it\\\"; a caller that intends to clear a nullable member sends an explicit `null`, which appears here as `newValue: null`. The two are different requests and a consumer MUST NOT conflate them.\",\n      \"properties\": {\n        \"key\": {\n          \"description\": \"The profile member or configuration key, e.g. `name` or `log.level`.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"newValue\": {\n          \"description\": \"Value the imported document carries. Absent when the document omits the field.\"\n        },\n        \"oldValue\": {\n          \"description\": \"Value in force before the import. Absent when the field is unset.\"\n        }\n      },\n      \"required\": [\n        \"key\"\n      ],\n      \"title\": \"ConfigFieldChange\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"PersonhoodGovernance\": {\n      \"$anchor\": \"personhoodGovernance\",\n      \"additionalProperties\": false,\n      \"description\": \"A community's published position on personhood.\\n\\nDTG Credentials §Personhood Credentials places PHC status here rather than in the credential — \\\"PHC status is determined by governance and trust registries, not by credential structure\\\" — so a verifier deciding whether a VMC carries personhood weight reads this, not the credential's type array. §Governance Considerations item 1 makes the acceptable-IDVP list the community's to define and publish.\\n\\nEvery member is a declaration, not an enforcement: what a community actually accepts is decided by its own policy. Absent means the community has not published a position, which is not the same as asserting the negative.\",\n      \"properties\": {\n        \"acceptedIdvps\": {\n          \"description\": \"DIDs of the identity-verification providers whose credentials this community accepts as personhood evidence: any W3C VC from a listed provider that meets the community's identity-proofing requirements. A community that checks its members' identity in person does not act as a provider to do so: it records each check as a `vetted/1` statement (`https://registry.trustoverip.org/dtg/vsc/vetted/1`) issued under its own DID through vtc/endorsements/issue, which its personhood policy may accept beside these credentials. Either is evidence only — personhood is the community's decision, recorded on the member's VMC. An empty list means no list has been published, not that everything is accepted.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"governanceFrameworkUrl\": {\n          \"description\": \"Where the governance framework these assertions refer to can be read.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"realHuman\": {\n          \"description\": \"Governance requires that members are real humans. Defaults to `false` when absent: a community that has not considered the question asserts nothing, which is the only safe default for a claim a verifier may rely on.\",\n          \"type\": \"boolean\"\n        },\n        \"singleMembership\": {\n          \"description\": \"Governance requires that each person holds at most one membership in **this** community. Per-community by definition — the glossary says \\\"exactly one membership in that VTC\\\" — so a single community can satisfy it without any network above it.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"title\": \"PersonhoodGovernance\",\n      \"type\": \"object\"\n    },\n    \"RejectedKey\": {\n      \"$anchor\": \"rejectedKey\",\n      \"additionalProperties\": false,\n      \"description\": \"A key a patch declined to apply, with the reason.\",\n      \"properties\": {\n        \"key\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"reason\": {\n          \"description\": \"Why the key was rejected — unknown key, wrong type, out-of-range, allowlist mismatch, etc.\",\n          \"maxLength\": 1024,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"key\",\n        \"reason\"\n      ],\n      \"title\": \"RejectedKey\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"overrideChanges\": {\n          \"description\": \"Configuration-override keys that differ from what is in force. Rejected keys are not listed here — they appear under `rejected`. On `imported` these are the changes that were written.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/ConfigFieldChange\"\n          },\n          \"type\": \"array\"\n        },\n        \"pendingRestart\": {\n          \"description\": \"Applied keys whose new value takes effect only after a restart. Reported on a preview too, so an operator learns before confirming that the import implies downtime.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"profileChanges\": {\n          \"description\": \"Community-profile members that differ from what is in force. Empty when the document omits `communityProfile`, or when nothing differs. On `imported` these are the changes that were written.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/ConfigFieldChange\"\n          },\n          \"type\": \"array\"\n        },\n        \"rejected\": {\n          \"description\": \"Keys the consumer declined — unknown to its configuration registry, wrong type, out of range. Reported identically on preview and apply, so a preview surfaces every rejection before anything is written.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/RejectedKey\"\n          },\n          \"type\": \"array\"\n        },\n        \"status\": {\n          \"description\": \"`preview` when `confirm` was not set; `imported` after the document was applied.\",\n          \"enum\": [\n            \"preview\",\n            \"imported\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\",\n        \"profileChanges\",\n        \"overrideChanges\",\n        \"rejected\"\n      ],\n      \"title\": \"VTC Config Import — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/config/import/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Apply a portable configuration document to this community, or preview what applying it would change. Defaults to a preview.\",\n  \"properties\": {\n    \"confirm\": {\n      \"default\": false,\n      \"description\": \"`false` (default) previews: the diff is computed and returned, nothing is written. `true` applies it. The preview and the apply return the same shape, so an operator UX can render one and then re-submit.\",\n      \"type\": \"boolean\"\n    },\n    \"document\": {\n      \"$ref\": \"#/$defs/ConfigExportDocument\",\n      \"description\": \"The document returned by `vtc/config/export`.\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"required\": [\n    \"document\"\n  ],\n  \"title\": \"VTC Config Import — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"CommunityProfileSnapshot\":{\"$anchor\":\"communityProfileSnapshot\",\"additionalProperties\":false,\"description\":\"A community profile as a portable export carries it — the mutable profile members plus the immutable identity they belong to.\\n\\nDistinct from `vtc/_shared/community`'s `CommunityProfile`, which is the update-facing view and deliberately omits `communityDid` so that a patch cannot re-point a community's identity. Here the DID is REQUIRED and is the whole point: it is what lets an importing community refuse a document taken from a different one. `registryStatus` is absent because trust-registry reachability is a property of a running maintainer, not of exported state.\",\"properties\":{\"communityDid\":{\"description\":\"DID of the community this document was taken from. Immutable, set at install.\",\"minLength\":1,\"type\":\"string\"},\"contactEmail\":{\"type\":[\"string\",\"null\"]},\"createdAt\":{\"description\":\"When the community was created. Provenance only — an import never writes it.\",\"format\":\"date-time\",\"type\":\"string\"},\"description\":{\"maxLength\":1024,\"type\":\"string\"},\"extensions\":{\"description\":\"Opaque community-defined extension bag.\",\"type\":\"object\"},\"language\":{\"description\":\"BCP 47 language tag.\",\"minLength\":1,\"type\":\"string\"},\"logoUrl\":{\"type\":[\"string\",\"null\"]},\"name\":{\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"personhood\":{\"$ref\":\"#/$defs/PersonhoodGovernance\",\"description\":\"The community's published personhood position, carried so an export restores it. Governance state, not runtime state — unlike `registryStatus`, which is deliberately absent here because reachability belongs to a running maintainer rather than to exported state.\"},\"publicUrl\":{\"type\":[\"string\",\"null\"]},\"relationshipIdentifierDefault\":{\"description\":\"The community's declared relationship-identifier default, as defined on `CommunityProfile` in the `vtc/_shared/0.1/community` schema. Carried in a config export so a restore reproduces the declaration rather than silently reverting it to the implementation default.\",\"enum\":[\"attributed\",\"pairwise\"],\"type\":\"string\"}},\"required\":[\"communityDid\",\"name\",\"language\"],\"title\":\"CommunityProfileSnapshot\",\"type\":\"object\"},\"ConfigExportDocument\":{\"$anchor\":\"configExportDocument\",\"additionalProperties\":false,\"description\":\"A community's portable configuration: its profile plus the configuration overrides a maintainer stores for itself. Deliberately excludes per-host layers (environment variables, on-disk config files) — those describe where a maintainer runs, not what the community is, and carrying them would make an import overwrite the target host's own deployment settings.\\n\\nThis document is designed to survive a round-trip through a file. An operator exports it, keeps it, and feeds it back later — possibly to a different maintainer, possibly across a version boundary — so it is self-describing rather than relying on the Type URI of the envelope that happened to carry it.\",\"properties\":{\"communityProfile\":{\"$ref\":\"#/$defs/CommunityProfileSnapshot\",\"description\":\"The community's profile at export time. Absent when the community has no profile yet — a maintainer exported before bootstrap.\"},\"configOverrides\":{\"additionalProperties\":true,\"description\":\"Stored configuration overrides as `key → value`, keyed by the maintainer's own configuration registry (the same keys `config/show` and `config/patch` use). An empty object is valid and means no overrides are set.\",\"type\":\"object\"},\"exportedAt\":{\"description\":\"When the export was taken. Provenance for the operator; a consumer does not act on it.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"schemaVersion\":{\"description\":\"Version of this document's own shape. Not redundant with the Type URI version: once the document is written to a file it is bare JSON with no envelope, and this is the only thing a later reader has to check it against. A consumer MUST reject a version it does not implement rather than guess.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"schemaVersion\",\"exportedAt\",\"configOverrides\"],\"title\":\"ConfigExportDocument\",\"type\":\"object\"},\"ConfigFieldChange\":{\"$anchor\":\"configFieldChange\",\"additionalProperties\":false,\"description\":\"One field an import would change, or did.\\n\\n`oldValue` is absent when the field is not currently set — no profile yet, or no stored override for that key. `newValue` is absent when the imported document omits the field, which means \\\"leave the live value alone\\\" rather than \\\"clear it\\\"; a caller that intends to clear a nullable member sends an explicit `null`, which appears here as `newValue: null`. The two are different requests and a consumer MUST NOT conflate them.\",\"properties\":{\"key\":{\"description\":\"The profile member or configuration key, e.g. `name` or `log.level`.\",\"minLength\":1,\"type\":\"string\"},\"newValue\":{\"description\":\"Value the imported document carries. Absent when the document omits the field.\"},\"oldValue\":{\"description\":\"Value in force before the import. Absent when the field is unset.\"}},\"required\":[\"key\"],\"title\":\"ConfigFieldChange\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"PersonhoodGovernance\":{\"$anchor\":\"personhoodGovernance\",\"additionalProperties\":false,\"description\":\"A community's published position on personhood.\\n\\nDTG Credentials §Personhood Credentials places PHC status here rather than in the credential — \\\"PHC status is determined by governance and trust registries, not by credential structure\\\" — so a verifier deciding whether a VMC carries personhood weight reads this, not the credential's type array. §Governance Considerations item 1 makes the acceptable-IDVP list the community's to define and publish.\\n\\nEvery member is a declaration, not an enforcement: what a community actually accepts is decided by its own policy. Absent means the community has not published a position, which is not the same as asserting the negative.\",\"properties\":{\"acceptedIdvps\":{\"description\":\"DIDs of the identity-verification providers whose credentials this community accepts as personhood evidence: any W3C VC from a listed provider that meets the community's identity-proofing requirements. A community that checks its members' identity in person does not act as a provider to do so: it records each check as a `vetted/1` statement (`https://registry.trustoverip.org/dtg/vsc/vetted/1`) issued under its own DID through vtc/endorsements/issue, which its personhood policy may accept beside these credentials. Either is evidence only — personhood is the community's decision, recorded on the member's VMC. An empty list means no list has been published, not that everything is accepted.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"type\":\"array\"},\"governanceFrameworkUrl\":{\"description\":\"Where the governance framework these assertions refer to can be read.\",\"type\":[\"string\",\"null\"]},\"realHuman\":{\"description\":\"Governance requires that members are real humans. Defaults to `false` when absent: a community that has not considered the question asserts nothing, which is the only safe default for a claim a verifier may rely on.\",\"type\":\"boolean\"},\"singleMembership\":{\"description\":\"Governance requires that each person holds at most one membership in **this** community. Per-community by definition — the glossary says \\\"exactly one membership in that VTC\\\" — so a single community can satisfy it without any network above it.\",\"type\":\"boolean\"}},\"title\":\"PersonhoodGovernance\",\"type\":\"object\"},\"RejectedKey\":{\"$anchor\":\"rejectedKey\",\"additionalProperties\":false,\"description\":\"A key a patch declined to apply, with the reason.\",\"properties\":{\"key\":{\"minLength\":1,\"type\":\"string\"},\"reason\":{\"description\":\"Why the key was rejected — unknown key, wrong type, out-of-range, allowlist mismatch, etc.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"key\",\"reason\"],\"title\":\"RejectedKey\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"overrideChanges\":{\"description\":\"Configuration-override keys that differ from what is in force. Rejected keys are not listed here — they appear under `rejected`. On `imported` these are the changes that were written.\",\"items\":{\"$ref\":\"#/$defs/ConfigFieldChange\"},\"type\":\"array\"},\"pendingRestart\":{\"description\":\"Applied keys whose new value takes effect only after a restart. Reported on a preview too, so an operator learns before confirming that the import implies downtime.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"type\":\"array\",\"uniqueItems\":true},\"profileChanges\":{\"description\":\"Community-profile members that differ from what is in force. Empty when the document omits `communityProfile`, or when nothing differs. On `imported` these are the changes that were written.\",\"items\":{\"$ref\":\"#/$defs/ConfigFieldChange\"},\"type\":\"array\"},\"rejected\":{\"description\":\"Keys the consumer declined — unknown to its configuration registry, wrong type, out of range. Reported identically on preview and apply, so a preview surfaces every rejection before anything is written.\",\"items\":{\"$ref\":\"#/$defs/RejectedKey\"},\"type\":\"array\"},\"status\":{\"description\":\"`preview` when `confirm` was not set; `imported` after the document was applied.\",\"enum\":[\"preview\",\"imported\"],\"type\":\"string\"}},\"required\":[\"status\",\"profileChanges\",\"overrideChanges\",\"rejected\"],\"title\":\"VTC Config Import — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/config/import/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Apply a portable configuration document to this community, or preview what applying it would change. Defaults to a preview.\",\"properties\":{\"confirm\":{\"default\":false,\"description\":\"`false` (default) previews: the diff is computed and returned, nothing is written. `true` applies it. The preview and the apply return the same shape, so an operator UX can render one and then re-submit.\",\"type\":\"boolean\"},\"document\":{\"$ref\":\"#/$defs/ConfigExportDocument\",\"description\":\"The document returned by `vtc/config/export`.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"document\"],\"title\":\"VTC Config Import — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -2201,7 +1764,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CommunityProfileSnapshot\": {\n      \"$anchor\": \"communityProfileSnapshot\",\n      \"additionalProperties\": false,\n      \"description\": \"A community profile as a portable export carries it — the mutable profile members plus the immutable identity they belong to.\\n\\nDistinct from `vtc/_shared/community`'s `CommunityProfile`, which is the update-facing view and deliberately omits `communityDid` so that a patch cannot re-point a community's identity. Here the DID is REQUIRED and is the whole point: it is what lets an importing community refuse a document taken from a different one. `registryStatus` is absent because trust-registry reachability is a property of a running maintainer, not of exported state.\",\n      \"properties\": {\n        \"communityDid\": {\n          \"description\": \"DID of the community this document was taken from. Immutable, set at install.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"contactEmail\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"createdAt\": {\n          \"description\": \"When the community was created. Provenance only — an import never writes it.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"extensions\": {\n          \"description\": \"Opaque community-defined extension bag.\",\n          \"type\": \"object\"\n        },\n        \"language\": {\n          \"description\": \"BCP 47 language tag.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"logoUrl\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"name\": {\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"personhood\": {\n          \"$ref\": \"#/$defs/PersonhoodGovernance\",\n          \"description\": \"The community's published personhood position, carried so an export restores it. Governance state, not runtime state — unlike `registryStatus`, which is deliberately absent here because reachability belongs to a running maintainer rather than to exported state.\"\n        },\n        \"publicUrl\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"relationshipIdentifierDefault\": {\n          \"description\": \"The community's declared relationship-identifier default, as defined on `CommunityProfile` in the `vtc/_shared/0.1/community` schema. Carried in a config export so a restore reproduces the declaration rather than silently reverting it to the implementation default.\",\n          \"enum\": [\n            \"attributed\",\n            \"pairwise\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"communityDid\",\n        \"name\",\n        \"language\"\n      ],\n      \"title\": \"CommunityProfileSnapshot\",\n      \"type\": \"object\"\n    },\n    \"ConfigExportDocument\": {\n      \"$anchor\": \"configExportDocument\",\n      \"additionalProperties\": false,\n      \"description\": \"A community's portable configuration: its profile plus the configuration overrides a maintainer stores for itself. Deliberately excludes per-host layers (environment variables, on-disk config files) — those describe where a maintainer runs, not what the community is, and carrying them would make an import overwrite the target host's own deployment settings.\\n\\nThis document is designed to survive a round-trip through a file. An operator exports it, keeps it, and feeds it back later — possibly to a different maintainer, possibly across a version boundary — so it is self-describing rather than relying on the Type URI of the envelope that happened to carry it.\",\n      \"properties\": {\n        \"communityProfile\": {\n          \"$ref\": \"#/$defs/CommunityProfileSnapshot\",\n          \"description\": \"The community's profile at export time. Absent when the community has no profile yet — a maintainer exported before bootstrap.\"\n        },\n        \"configOverrides\": {\n          \"additionalProperties\": true,\n          \"description\": \"Stored configuration overrides as `key → value`, keyed by the maintainer's own configuration registry (the same keys `config/show` and `config/patch` use). An empty object is valid and means no overrides are set.\",\n          \"type\": \"object\"\n        },\n        \"exportedAt\": {\n          \"description\": \"When the export was taken. Provenance for the operator; a consumer does not act on it.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"schemaVersion\": {\n          \"description\": \"Version of this document's own shape. Not redundant with the Type URI version: once the document is written to a file it is bare JSON with no envelope, and this is the only thing a later reader has to check it against. A consumer MUST reject a version it does not implement rather than guess.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"schemaVersion\",\n        \"exportedAt\",\n        \"configOverrides\"\n      ],\n      \"title\": \"ConfigExportDocument\",\n      \"type\": \"object\"\n    },\n    \"ConfigFieldChange\": {\n      \"$anchor\": \"configFieldChange\",\n      \"additionalProperties\": false,\n      \"description\": \"One field an import would change, or did.\\n\\n`oldValue` is absent when the field is not currently set — no profile yet, or no stored override for that key. `newValue` is absent when the imported document omits the field, which means \\\"leave the live value alone\\\" rather than \\\"clear it\\\"; a caller that intends to clear a nullable member sends an explicit `null`, which appears here as `newValue: null`. The two are different requests and a consumer MUST NOT conflate them.\",\n      \"properties\": {\n        \"key\": {\n          \"description\": \"The profile member or configuration key, e.g. `name` or `log.level`.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"newValue\": {\n          \"description\": \"Value the imported document carries. Absent when the document omits the field.\"\n        },\n        \"oldValue\": {\n          \"description\": \"Value in force before the import. Absent when the field is unset.\"\n        }\n      },\n      \"required\": [\n        \"key\"\n      ],\n      \"title\": \"ConfigFieldChange\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"PersonhoodGovernance\": {\n      \"$anchor\": \"personhoodGovernance\",\n      \"additionalProperties\": false,\n      \"description\": \"A community's published position on personhood.\\n\\nDTG Credentials §Personhood Credentials places PHC status here rather than in the credential — \\\"PHC status is determined by governance and trust registries, not by credential structure\\\" — so a verifier deciding whether a VMC carries personhood weight reads this, not the credential's type array. §Governance Considerations item 1 makes the acceptable-IDVP list the community's to define and publish.\\n\\nEvery member is a declaration, not an enforcement: what a community actually accepts is decided by its own policy. Absent means the community has not published a position, which is not the same as asserting the negative.\",\n      \"properties\": {\n        \"acceptedIdvps\": {\n          \"description\": \"DIDs of the identity-verification providers whose credentials this community accepts as personhood evidence: any W3C VC from a listed provider that meets the community's identity-proofing requirements. A community that checks its members' identity in person does not act as a provider to do so: it records each check as a `vetted/1` statement (`https://registry.trustoverip.org/dtg/vsc/vetted/1`) issued under its own DID through vtc/endorsements/issue, which its personhood policy may accept beside these credentials. Either is evidence only — personhood is the community's decision, recorded on the member's VMC. An empty list means no list has been published, not that everything is accepted.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"governanceFrameworkUrl\": {\n          \"description\": \"Where the governance framework these assertions refer to can be read.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"realHuman\": {\n          \"description\": \"Governance requires that members are real humans. Defaults to `false` when absent: a community that has not considered the question asserts nothing, which is the only safe default for a claim a verifier may rely on.\",\n          \"type\": \"boolean\"\n        },\n        \"singleMembership\": {\n          \"description\": \"Governance requires that each person holds at most one membership in **this** community. Per-community by definition — the glossary says \\\"exactly one membership in that VTC\\\" — so a single community can satisfy it without any network above it.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"title\": \"PersonhoodGovernance\",\n      \"type\": \"object\"\n    },\n    \"RejectedKey\": {\n      \"$anchor\": \"rejectedKey\",\n      \"additionalProperties\": false,\n      \"description\": \"A key a patch declined to apply, with the reason.\",\n      \"properties\": {\n        \"key\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"reason\": {\n          \"description\": \"Why the key was rejected — unknown key, wrong type, out-of-range, allowlist mismatch, etc.\",\n          \"maxLength\": 1024,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"key\",\n        \"reason\"\n      ],\n      \"title\": \"RejectedKey\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"overrideChanges\": {\n          \"description\": \"Configuration-override keys that differ from what is in force. Rejected keys are not listed here — they appear under `rejected`. On `imported` these are the changes that were written.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/ConfigFieldChange\"\n          },\n          \"type\": \"array\"\n        },\n        \"pendingRestart\": {\n          \"description\": \"Applied keys whose new value takes effect only after a restart. Reported on a preview too, so an operator learns before confirming that the import implies downtime.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"profileChanges\": {\n          \"description\": \"Community-profile members that differ from what is in force. Empty when the document omits `communityProfile`, or when nothing differs. On `imported` these are the changes that were written.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/ConfigFieldChange\"\n          },\n          \"type\": \"array\"\n        },\n        \"rejected\": {\n          \"description\": \"Keys the consumer declined — unknown to its configuration registry, wrong type, out of range. Reported identically on preview and apply, so a preview surfaces every rejection before anything is written.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/RejectedKey\"\n          },\n          \"type\": \"array\"\n        },\n        \"status\": {\n          \"description\": \"`preview` when `confirm` was not set; `imported` after the document was applied.\",\n          \"enum\": [\n            \"preview\",\n            \"imported\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\",\n        \"profileChanges\",\n        \"overrideChanges\",\n        \"rejected\"\n      ],\n      \"title\": \"VTC Config Import — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"CommunityProfileSnapshot\":{\"$anchor\":\"communityProfileSnapshot\",\"additionalProperties\":false,\"description\":\"A community profile as a portable export carries it — the mutable profile members plus the immutable identity they belong to.\\n\\nDistinct from `vtc/_shared/community`'s `CommunityProfile`, which is the update-facing view and deliberately omits `communityDid` so that a patch cannot re-point a community's identity. Here the DID is REQUIRED and is the whole point: it is what lets an importing community refuse a document taken from a different one. `registryStatus` is absent because trust-registry reachability is a property of a running maintainer, not of exported state.\",\"properties\":{\"communityDid\":{\"description\":\"DID of the community this document was taken from. Immutable, set at install.\",\"minLength\":1,\"type\":\"string\"},\"contactEmail\":{\"type\":[\"string\",\"null\"]},\"createdAt\":{\"description\":\"When the community was created. Provenance only — an import never writes it.\",\"format\":\"date-time\",\"type\":\"string\"},\"description\":{\"maxLength\":1024,\"type\":\"string\"},\"extensions\":{\"description\":\"Opaque community-defined extension bag.\",\"type\":\"object\"},\"language\":{\"description\":\"BCP 47 language tag.\",\"minLength\":1,\"type\":\"string\"},\"logoUrl\":{\"type\":[\"string\",\"null\"]},\"name\":{\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"personhood\":{\"$ref\":\"#/$defs/PersonhoodGovernance\",\"description\":\"The community's published personhood position, carried so an export restores it. Governance state, not runtime state — unlike `registryStatus`, which is deliberately absent here because reachability belongs to a running maintainer rather than to exported state.\"},\"publicUrl\":{\"type\":[\"string\",\"null\"]},\"relationshipIdentifierDefault\":{\"description\":\"The community's declared relationship-identifier default, as defined on `CommunityProfile` in the `vtc/_shared/0.1/community` schema. Carried in a config export so a restore reproduces the declaration rather than silently reverting it to the implementation default.\",\"enum\":[\"attributed\",\"pairwise\"],\"type\":\"string\"}},\"required\":[\"communityDid\",\"name\",\"language\"],\"title\":\"CommunityProfileSnapshot\",\"type\":\"object\"},\"ConfigExportDocument\":{\"$anchor\":\"configExportDocument\",\"additionalProperties\":false,\"description\":\"A community's portable configuration: its profile plus the configuration overrides a maintainer stores for itself. Deliberately excludes per-host layers (environment variables, on-disk config files) — those describe where a maintainer runs, not what the community is, and carrying them would make an import overwrite the target host's own deployment settings.\\n\\nThis document is designed to survive a round-trip through a file. An operator exports it, keeps it, and feeds it back later — possibly to a different maintainer, possibly across a version boundary — so it is self-describing rather than relying on the Type URI of the envelope that happened to carry it.\",\"properties\":{\"communityProfile\":{\"$ref\":\"#/$defs/CommunityProfileSnapshot\",\"description\":\"The community's profile at export time. Absent when the community has no profile yet — a maintainer exported before bootstrap.\"},\"configOverrides\":{\"additionalProperties\":true,\"description\":\"Stored configuration overrides as `key → value`, keyed by the maintainer's own configuration registry (the same keys `config/show` and `config/patch` use). An empty object is valid and means no overrides are set.\",\"type\":\"object\"},\"exportedAt\":{\"description\":\"When the export was taken. Provenance for the operator; a consumer does not act on it.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"schemaVersion\":{\"description\":\"Version of this document's own shape. Not redundant with the Type URI version: once the document is written to a file it is bare JSON with no envelope, and this is the only thing a later reader has to check it against. A consumer MUST reject a version it does not implement rather than guess.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"schemaVersion\",\"exportedAt\",\"configOverrides\"],\"title\":\"ConfigExportDocument\",\"type\":\"object\"},\"ConfigFieldChange\":{\"$anchor\":\"configFieldChange\",\"additionalProperties\":false,\"description\":\"One field an import would change, or did.\\n\\n`oldValue` is absent when the field is not currently set — no profile yet, or no stored override for that key. `newValue` is absent when the imported document omits the field, which means \\\"leave the live value alone\\\" rather than \\\"clear it\\\"; a caller that intends to clear a nullable member sends an explicit `null`, which appears here as `newValue: null`. The two are different requests and a consumer MUST NOT conflate them.\",\"properties\":{\"key\":{\"description\":\"The profile member or configuration key, e.g. `name` or `log.level`.\",\"minLength\":1,\"type\":\"string\"},\"newValue\":{\"description\":\"Value the imported document carries. Absent when the document omits the field.\"},\"oldValue\":{\"description\":\"Value in force before the import. Absent when the field is unset.\"}},\"required\":[\"key\"],\"title\":\"ConfigFieldChange\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"PersonhoodGovernance\":{\"$anchor\":\"personhoodGovernance\",\"additionalProperties\":false,\"description\":\"A community's published position on personhood.\\n\\nDTG Credentials §Personhood Credentials places PHC status here rather than in the credential — \\\"PHC status is determined by governance and trust registries, not by credential structure\\\" — so a verifier deciding whether a VMC carries personhood weight reads this, not the credential's type array. §Governance Considerations item 1 makes the acceptable-IDVP list the community's to define and publish.\\n\\nEvery member is a declaration, not an enforcement: what a community actually accepts is decided by its own policy. Absent means the community has not published a position, which is not the same as asserting the negative.\",\"properties\":{\"acceptedIdvps\":{\"description\":\"DIDs of the identity-verification providers whose credentials this community accepts as personhood evidence: any W3C VC from a listed provider that meets the community's identity-proofing requirements. A community that checks its members' identity in person does not act as a provider to do so: it records each check as a `vetted/1` statement (`https://registry.trustoverip.org/dtg/vsc/vetted/1`) issued under its own DID through vtc/endorsements/issue, which its personhood policy may accept beside these credentials. Either is evidence only — personhood is the community's decision, recorded on the member's VMC. An empty list means no list has been published, not that everything is accepted.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"type\":\"array\"},\"governanceFrameworkUrl\":{\"description\":\"Where the governance framework these assertions refer to can be read.\",\"type\":[\"string\",\"null\"]},\"realHuman\":{\"description\":\"Governance requires that members are real humans. Defaults to `false` when absent: a community that has not considered the question asserts nothing, which is the only safe default for a claim a verifier may rely on.\",\"type\":\"boolean\"},\"singleMembership\":{\"description\":\"Governance requires that each person holds at most one membership in **this** community. Per-community by definition — the glossary says \\\"exactly one membership in that VTC\\\" — so a single community can satisfy it without any network above it.\",\"type\":\"boolean\"}},\"title\":\"PersonhoodGovernance\",\"type\":\"object\"},\"RejectedKey\":{\"$anchor\":\"rejectedKey\",\"additionalProperties\":false,\"description\":\"A key a patch declined to apply, with the reason.\",\"properties\":{\"key\":{\"minLength\":1,\"type\":\"string\"},\"reason\":{\"description\":\"Why the key was rejected — unknown key, wrong type, out-of-range, allowlist mismatch, etc.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"key\",\"reason\"],\"title\":\"RejectedKey\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"overrideChanges\":{\"description\":\"Configuration-override keys that differ from what is in force. Rejected keys are not listed here — they appear under `rejected`. On `imported` these are the changes that were written.\",\"items\":{\"$ref\":\"#/$defs/ConfigFieldChange\"},\"type\":\"array\"},\"pendingRestart\":{\"description\":\"Applied keys whose new value takes effect only after a restart. Reported on a preview too, so an operator learns before confirming that the import implies downtime.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"type\":\"array\",\"uniqueItems\":true},\"profileChanges\":{\"description\":\"Community-profile members that differ from what is in force. Empty when the document omits `communityProfile`, or when nothing differs. On `imported` these are the changes that were written.\",\"items\":{\"$ref\":\"#/$defs/ConfigFieldChange\"},\"type\":\"array\"},\"rejected\":{\"description\":\"Keys the consumer declined — unknown to its configuration registry, wrong type, out of range. Reported identically on preview and apply, so a preview surfaces every rejection before anything is written.\",\"items\":{\"$ref\":\"#/$defs/RejectedKey\"},\"type\":\"array\"},\"status\":{\"description\":\"`preview` when `confirm` was not set; `imported` after the document was applied.\",\"enum\":[\"preview\",\"imported\"],\"type\":\"string\"}},\"required\":[\"status\",\"profileChanges\",\"overrideChanges\",\"rejected\"],\"title\":\"VTC Config Import — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

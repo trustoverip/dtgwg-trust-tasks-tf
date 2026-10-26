@@ -35,21 +35,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -71,15 +56,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -143,21 +119,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///What a member of a community-owned room may do there. `admin` is not among them: minting epochs, admitting and removing members are the community's, as the room's owner, and are exercised through the vtc/rooms/community/* tasks rather than by any member's credential. `curate` is not implied by `write`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "MemberAction",
-///  "description": "What a member of a community-owned room may do there. `admin` is not among them: minting epochs, admitting and removing members are the community's, as the room's owner, and are exercised through the vtc/rooms/community/* tasks rather than by any member's credential. `curate` is not implied by `write`.",
-///  "type": "string",
-///  "enum": [
-///    "read",
-///    "write",
-///    "curate"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -223,22 +184,6 @@ impl ::std::convert::TryFrom<::std::string::String> for MemberAction {
 }
 ///The actions granted, at least one. An empty list confers nothing rather than everything, and a schema that allowed it would make the more dangerous reading available to a careless consumer.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "MemberActions",
-///  "description": "The actions granted, at least one. An empty list confers nothing rather than everything, and a schema that allowed it would make the more dangerous reading available to a careless consumer.",
-///  "type": "array",
-///  "items": {
-///    "$ref": "#/definitions/MemberAction"
-///  },
-///  "maxItems": 3,
-///  "minItems": 1,
-///  "uniqueItems": true
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct MemberActions(pub Vec<MemberAction>);
@@ -260,21 +205,6 @@ impl ::std::convert::From<Vec<MemberAction>> for MemberActions {
 }
 ///Where an admission stands. `offered`: credentials issued and waiting for the member to collect and accept them. `admitted`: accepted — on a sealed tier, the member is in the room's group. `removed`: an administrator removed them; on a sealed tier the room has advanced past them.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "MemberState",
-///  "description": "Where an admission stands. `offered`: credentials issued and waiting for the member to collect and accept them. `admitted`: accepted — on a sealed tier, the member is in the room's group. `removed`: an administrator removed them; on a sealed tier the room has advanced past them.",
-///  "type": "string",
-///  "enum": [
-///    "offered",
-///    "admitted",
-///    "removed"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -340,41 +270,6 @@ impl ::std::convert::TryFrom<::std::string::String> for MemberState {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/rooms/community/members/remove/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "member",
-///    "reason",
-///    "roomId"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "member": {
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    },
-///    "reason": {
-///      "$ref": "#/definitions/Reason"
-///    },
-///    "roomId": {
-///      "description": "The room's identifier: its DID.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -395,16 +290,6 @@ impl Payload {
 }
 ///`PayloadMember`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadMember(::std::string::String);
@@ -469,17 +354,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadMember {
 }
 ///The room's identifier: its DID.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The room's identifier: its DID.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadRoomId(::std::string::String);
@@ -542,18 +416,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRoomId {
 }
 ///Why the administrator is making this change. Recorded with it in the audit trail. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Reason",
-///  "description": "Why the administrator is making this change. Recorded with it in the audit trail. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.",
-///  "type": "string",
-///  "maxLength": 500,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Reason(::std::string::String);
@@ -616,34 +478,6 @@ impl<'de> ::serde::Deserialize<'de> for Reason {
 }
 ///Success response to vtc/rooms/community/members/remove. Type https://trusttasks.org/spec/vtc/rooms/community/members/remove/0.1#response. The member as recorded, in state `removed`, and on a sealed tier the epoch the room advanced to.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to vtc/rooms/community/members/remove. Type https://trusttasks.org/spec/vtc/rooms/community/members/remove/0.1#response. The member as recorded, in state `removed`, and on a sealed tier the epoch the room advanced to.",
-///  "type": "object",
-///  "required": [
-///    "member"
-///  ],
-///  "properties": {
-///    "epoch": {
-///      "description": "On a sealed tier, the room epoch after the removal.",
-///      "type": "integer",
-///      "minimum": 2.0
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "member": {
-///      "$ref": "#/definitions/RoomMember"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -663,54 +497,6 @@ impl Response {
 }
 ///One party the community admitted to a room it owns, or offered admission to.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RoomMember",
-///  "description": "One party the community admitted to a room it owns, or offered admission to.",
-///  "type": "object",
-///  "required": [
-///    "actions",
-///    "member",
-///    "offeredAt",
-///    "state",
-///    "validUntil"
-///  ],
-///  "properties": {
-///    "actions": {
-///      "$ref": "#/definitions/MemberActions"
-///    },
-///    "admittedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "member": {
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    },
-///    "offeredAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "removedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "state": {
-///      "$ref": "#/definitions/MemberState"
-///    },
-///    "validUntil": {
-///      "description": "When the member's authority credential expires.",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -743,16 +529,6 @@ impl RoomMember {
 }
 ///`RoomMemberMember`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RoomMemberMember(::std::string::String);
@@ -1107,7 +883,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"MemberAction\": {\n      \"description\": \"What a member of a community-owned room may do there. `admin` is not among them: minting epochs, admitting and removing members are the community's, as the room's owner, and are exercised through the vtc/rooms/community/* tasks rather than by any member's credential. `curate` is not implied by `write`.\",\n      \"enum\": [\n        \"read\",\n        \"write\",\n        \"curate\"\n      ],\n      \"title\": \"MemberAction\",\n      \"type\": \"string\"\n    },\n    \"MemberActions\": {\n      \"description\": \"The actions granted, at least one. An empty list confers nothing rather than everything, and a schema that allowed it would make the more dangerous reading available to a careless consumer.\",\n      \"items\": {\n        \"$ref\": \"#/$defs/MemberAction\"\n      },\n      \"maxItems\": 3,\n      \"minItems\": 1,\n      \"title\": \"MemberActions\",\n      \"type\": \"array\",\n      \"uniqueItems\": true\n    },\n    \"MemberState\": {\n      \"description\": \"Where an admission stands. `offered`: credentials issued and waiting for the member to collect and accept them. `admitted`: accepted — on a sealed tier, the member is in the room's group. `removed`: an administrator removed them; on a sealed tier the room has advanced past them.\",\n      \"enum\": [\n        \"offered\",\n        \"admitted\",\n        \"removed\"\n      ],\n      \"title\": \"MemberState\",\n      \"type\": \"string\"\n    },\n    \"Reason\": {\n      \"description\": \"Why the administrator is making this change. Recorded with it in the audit trail. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.\",\n      \"maxLength\": 500,\n      \"minLength\": 1,\n      \"title\": \"Reason\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vtc/rooms/community/members/remove. Type https://trusttasks.org/spec/vtc/rooms/community/members/remove/0.1#response. The member as recorded, in state `removed`, and on a sealed tier the epoch the room advanced to.\",\n      \"properties\": {\n        \"epoch\": {\n          \"description\": \"On a sealed tier, the room epoch after the removal.\",\n          \"minimum\": 2,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"member\": {\n          \"$ref\": \"#/$defs/RoomMember\"\n        }\n      },\n      \"required\": [\n        \"member\"\n      ],\n      \"title\": \"VTC Rooms Community Members Remove — response payload\",\n      \"type\": \"object\"\n    },\n    \"RoomMember\": {\n      \"additionalProperties\": false,\n      \"description\": \"One party the community admitted to a room it owns, or offered admission to.\",\n      \"properties\": {\n        \"actions\": {\n          \"$ref\": \"#/$defs/MemberActions\"\n        },\n        \"admittedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"member\": {\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"offeredAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"removedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"state\": {\n          \"$ref\": \"#/$defs/MemberState\"\n        },\n        \"validUntil\": {\n          \"description\": \"When the member's authority credential expires.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"member\",\n        \"actions\",\n        \"validUntil\",\n        \"state\",\n        \"offeredAt\"\n      ],\n      \"title\": \"RoomMember\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/rooms/community/members/remove/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"member\": {\n      \"maxLength\": 2048,\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    },\n    \"reason\": {\n      \"$ref\": \"#/$defs/Reason\"\n    },\n    \"roomId\": {\n      \"description\": \"The room's identifier: its DID.\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"roomId\",\n    \"member\",\n    \"reason\"\n  ],\n  \"title\": \"VTC Rooms Community Members Remove — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"MemberAction\":{\"description\":\"What a member of a community-owned room may do there. `admin` is not among them: minting epochs, admitting and removing members are the community's, as the room's owner, and are exercised through the vtc/rooms/community/* tasks rather than by any member's credential. `curate` is not implied by `write`.\",\"enum\":[\"read\",\"write\",\"curate\"],\"title\":\"MemberAction\",\"type\":\"string\"},\"MemberActions\":{\"description\":\"The actions granted, at least one. An empty list confers nothing rather than everything, and a schema that allowed it would make the more dangerous reading available to a careless consumer.\",\"items\":{\"$ref\":\"#/$defs/MemberAction\"},\"maxItems\":3,\"minItems\":1,\"title\":\"MemberActions\",\"type\":\"array\",\"uniqueItems\":true},\"MemberState\":{\"description\":\"Where an admission stands. `offered`: credentials issued and waiting for the member to collect and accept them. `admitted`: accepted — on a sealed tier, the member is in the room's group. `removed`: an administrator removed them; on a sealed tier the room has advanced past them.\",\"enum\":[\"offered\",\"admitted\",\"removed\"],\"title\":\"MemberState\",\"type\":\"string\"},\"Reason\":{\"description\":\"Why the administrator is making this change. Recorded with it in the audit trail. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.\",\"maxLength\":500,\"minLength\":1,\"title\":\"Reason\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vtc/rooms/community/members/remove. Type https://trusttasks.org/spec/vtc/rooms/community/members/remove/0.1#response. The member as recorded, in state `removed`, and on a sealed tier the epoch the room advanced to.\",\"properties\":{\"epoch\":{\"description\":\"On a sealed tier, the room epoch after the removal.\",\"minimum\":2,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"member\":{\"$ref\":\"#/$defs/RoomMember\"}},\"required\":[\"member\"],\"title\":\"VTC Rooms Community Members Remove — response payload\",\"type\":\"object\"},\"RoomMember\":{\"additionalProperties\":false,\"description\":\"One party the community admitted to a room it owns, or offered admission to.\",\"properties\":{\"actions\":{\"$ref\":\"#/$defs/MemberActions\"},\"admittedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"member\":{\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"offeredAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"removedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"state\":{\"$ref\":\"#/$defs/MemberState\"},\"validUntil\":{\"description\":\"When the member's authority credential expires.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"member\",\"actions\",\"validUntil\",\"state\",\"offeredAt\"],\"title\":\"RoomMember\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/rooms/community/members/remove/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"member\":{\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"reason\":{\"$ref\":\"#/$defs/Reason\"},\"roomId\":{\"description\":\"The room's identifier: its DID.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"roomId\",\"member\",\"reason\"],\"title\":\"VTC Rooms Community Members Remove — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1117,7 +893,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"MemberAction\": {\n      \"description\": \"What a member of a community-owned room may do there. `admin` is not among them: minting epochs, admitting and removing members are the community's, as the room's owner, and are exercised through the vtc/rooms/community/* tasks rather than by any member's credential. `curate` is not implied by `write`.\",\n      \"enum\": [\n        \"read\",\n        \"write\",\n        \"curate\"\n      ],\n      \"title\": \"MemberAction\",\n      \"type\": \"string\"\n    },\n    \"MemberActions\": {\n      \"description\": \"The actions granted, at least one. An empty list confers nothing rather than everything, and a schema that allowed it would make the more dangerous reading available to a careless consumer.\",\n      \"items\": {\n        \"$ref\": \"#/$defs/MemberAction\"\n      },\n      \"maxItems\": 3,\n      \"minItems\": 1,\n      \"title\": \"MemberActions\",\n      \"type\": \"array\",\n      \"uniqueItems\": true\n    },\n    \"MemberState\": {\n      \"description\": \"Where an admission stands. `offered`: credentials issued and waiting for the member to collect and accept them. `admitted`: accepted — on a sealed tier, the member is in the room's group. `removed`: an administrator removed them; on a sealed tier the room has advanced past them.\",\n      \"enum\": [\n        \"offered\",\n        \"admitted\",\n        \"removed\"\n      ],\n      \"title\": \"MemberState\",\n      \"type\": \"string\"\n    },\n    \"Reason\": {\n      \"description\": \"Why the administrator is making this change. Recorded with it in the audit trail. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.\",\n      \"maxLength\": 500,\n      \"minLength\": 1,\n      \"title\": \"Reason\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vtc/rooms/community/members/remove. Type https://trusttasks.org/spec/vtc/rooms/community/members/remove/0.1#response. The member as recorded, in state `removed`, and on a sealed tier the epoch the room advanced to.\",\n      \"properties\": {\n        \"epoch\": {\n          \"description\": \"On a sealed tier, the room epoch after the removal.\",\n          \"minimum\": 2,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"member\": {\n          \"$ref\": \"#/$defs/RoomMember\"\n        }\n      },\n      \"required\": [\n        \"member\"\n      ],\n      \"title\": \"VTC Rooms Community Members Remove — response payload\",\n      \"type\": \"object\"\n    },\n    \"RoomMember\": {\n      \"additionalProperties\": false,\n      \"description\": \"One party the community admitted to a room it owns, or offered admission to.\",\n      \"properties\": {\n        \"actions\": {\n          \"$ref\": \"#/$defs/MemberActions\"\n        },\n        \"admittedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"member\": {\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"offeredAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"removedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"state\": {\n          \"$ref\": \"#/$defs/MemberState\"\n        },\n        \"validUntil\": {\n          \"description\": \"When the member's authority credential expires.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"member\",\n        \"actions\",\n        \"validUntil\",\n        \"state\",\n        \"offeredAt\"\n      ],\n      \"title\": \"RoomMember\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"MemberAction\":{\"description\":\"What a member of a community-owned room may do there. `admin` is not among them: minting epochs, admitting and removing members are the community's, as the room's owner, and are exercised through the vtc/rooms/community/* tasks rather than by any member's credential. `curate` is not implied by `write`.\",\"enum\":[\"read\",\"write\",\"curate\"],\"title\":\"MemberAction\",\"type\":\"string\"},\"MemberActions\":{\"description\":\"The actions granted, at least one. An empty list confers nothing rather than everything, and a schema that allowed it would make the more dangerous reading available to a careless consumer.\",\"items\":{\"$ref\":\"#/$defs/MemberAction\"},\"maxItems\":3,\"minItems\":1,\"title\":\"MemberActions\",\"type\":\"array\",\"uniqueItems\":true},\"MemberState\":{\"description\":\"Where an admission stands. `offered`: credentials issued and waiting for the member to collect and accept them. `admitted`: accepted — on a sealed tier, the member is in the room's group. `removed`: an administrator removed them; on a sealed tier the room has advanced past them.\",\"enum\":[\"offered\",\"admitted\",\"removed\"],\"title\":\"MemberState\",\"type\":\"string\"},\"Reason\":{\"description\":\"Why the administrator is making this change. Recorded with it in the audit trail. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.\",\"maxLength\":500,\"minLength\":1,\"title\":\"Reason\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vtc/rooms/community/members/remove. Type https://trusttasks.org/spec/vtc/rooms/community/members/remove/0.1#response. The member as recorded, in state `removed`, and on a sealed tier the epoch the room advanced to.\",\"properties\":{\"epoch\":{\"description\":\"On a sealed tier, the room epoch after the removal.\",\"minimum\":2,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"member\":{\"$ref\":\"#/$defs/RoomMember\"}},\"required\":[\"member\"],\"title\":\"VTC Rooms Community Members Remove — response payload\",\"type\":\"object\"},\"RoomMember\":{\"additionalProperties\":false,\"description\":\"One party the community admitted to a room it owns, or offered admission to.\",\"properties\":{\"actions\":{\"$ref\":\"#/$defs/MemberActions\"},\"admittedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"member\":{\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"offeredAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"removedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"state\":{\"$ref\":\"#/$defs/MemberState\"},\"validUntil\":{\"description\":\"When the member's authority credential expires.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"member\",\"actions\",\"validUntil\",\"state\",\"offeredAt\"],\"title\":\"RoomMember\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

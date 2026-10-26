@@ -35,41 +35,6 @@ pub mod error {
 }
 ///Whether each step that turns commit trust on for a repository is in place, as last reported. A step that this forge's plan does not need reads `true`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Bootstrap",
-///  "description": "Whether each step that turns commit trust on for a repository is in place, as last reported. A step that this forge's plan does not need reads `true`.",
-///  "type": "object",
-///  "required": [
-///    "keyring",
-///    "requiredCheck",
-///    "variables",
-///    "workflow"
-///  ],
-///  "properties": {
-///    "keyring": {
-///      "description": "The exempt platform keyring for forge-signed merge commits is committed, or the forge's plan does not need one.",
-///      "type": "boolean"
-///    },
-///    "requiredCheck": {
-///      "description": "The forge refuses to merge into the default branch unless the verify-trust check passes, with no bypass, and a pull request cannot change what that check runs: an organisation-required workflow, code-owner review of workflow files, or protected workflow paths, as the forge allows.",
-///      "type": "boolean"
-///    },
-///    "variables": {
-///      "description": "The repository names the Trust Registry and this VTC as its trust anchors.",
-///      "type": "boolean"
-///    },
-///    "workflow": {
-///      "description": "The verify-trust check runs on the repository's pull requests — from a workflow committed to it, or, where the forge supports it, required on it from the namespace's own bridge-managed workflow repository at a pinned commit.",
-///      "type": "boolean"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -91,18 +56,6 @@ impl Bootstrap {
 }
 ///A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Did",
-///  "description": "A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:[a-z0-9]+:(?:(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})*:)*(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Did(::std::string::String);
@@ -176,52 +129,6 @@ impl<'de> ::serde::Deserialize<'de> for Did {
 }
 ///One difference between the forge's observed state and the VTC's projection of a repository.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DriftItem",
-///  "description": "One difference between the forge's observed state and the VTC's projection of a repository.",
-///  "type": "object",
-///  "required": [
-///    "resource",
-///    "type"
-///  ],
-///  "properties": {
-///    "account": {
-///      "description": "Whose role differs, for the three role types.",
-///      "$ref": "#/definitions/ForgeAccount"
-///    },
-///    "expected": {
-///      "description": "What the projection calls for, in the forge's own vocabulary. Absent when the projection calls for nothing.",
-///      "type": "string",
-///      "maxLength": 256
-///    },
-///    "observed": {
-///      "description": "What the forge shows, in the forge's own vocabulary (a role name such as `maintain`, a setting name). Absent when nothing is there.",
-///      "type": "string",
-///      "maxLength": 256
-///    },
-///    "resource": {
-///      "$ref": "#/definitions/RepoResource"
-///    },
-///    "type": {
-///      "description": "`roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.",
-///      "type": "string",
-///      "enum": [
-///        "roleAdded",
-///        "roleRemoved",
-///        "roleChanged",
-///        "requiredCheckMissing",
-///        "protectionWeakened",
-///        "bootstrapMissing"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -247,16 +154,6 @@ impl DriftItem {
 }
 ///What the projection calls for, in the forge's own vocabulary. Absent when the projection calls for nothing.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "What the projection calls for, in the forge's own vocabulary. Absent when the projection calls for nothing.",
-///  "type": "string",
-///  "maxLength": 256
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DriftItemExpected(::std::string::String);
@@ -316,16 +213,6 @@ impl<'de> ::serde::Deserialize<'de> for DriftItemExpected {
 }
 ///What the forge shows, in the forge's own vocabulary (a role name such as `maintain`, a setting name). Absent when nothing is there.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "What the forge shows, in the forge's own vocabulary (a role name such as `maintain`, a setting name). Absent when nothing is there.",
-///  "type": "string",
-///  "maxLength": 256
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DriftItemObserved(::std::string::String);
@@ -385,23 +272,6 @@ impl<'de> ::serde::Deserialize<'de> for DriftItemObserved {
 }
 ///`roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.",
-///  "type": "string",
-///  "enum": [
-///    "roleAdded",
-///    "roleRemoved",
-///    "roleChanged",
-///    "requiredCheckMissing",
-///    "protectionWeakened",
-///    "bootstrapMissing"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -479,21 +349,6 @@ impl ::std::convert::TryFrom<::std::string::String> for DriftItemType {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -515,15 +370,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -587,36 +433,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ForgeAccount",
-///  "description": "A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.",
-///  "type": "object",
-///  "required": [
-///    "forge",
-///    "id",
-///    "login"
-///  ],
-///  "properties": {
-///    "forge": {
-///      "$ref": "#/definitions/ForgeHost"
-///    },
-///    "id": {
-///      "$ref": "#/definitions/ForgeId"
-///    },
-///    "login": {
-///      "description": "The account's current login, as the forge reported it when last seen. Display only.",
-///      "type": "string",
-///      "maxLength": 100,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -633,17 +449,6 @@ impl ForgeAccount {
 }
 ///The account's current login, as the forge reported it when last seen. Display only.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The account's current login, as the forge reported it when last seen. Display only.",
-///  "type": "string",
-///  "maxLength": 100,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ForgeAccountLogin(::std::string::String);
@@ -706,19 +511,6 @@ impl<'de> ::serde::Deserialize<'de> for ForgeAccountLogin {
 }
 ///The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, or a self-hosted Forgejo instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ForgeHost",
-///  "description": "The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, or a self-hosted Forgejo instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.",
-///  "type": "string",
-///  "maxLength": 253,
-///  "minLength": 3,
-///  "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ForgeHost(::std::string::String);
@@ -794,18 +586,6 @@ impl<'de> ::serde::Deserialize<'de> for ForgeHost {
 }
 ///An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub and Forgejo ids are decimal integers written as strings (`"812736451"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ForgeId",
-///  "description": "An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub and Forgejo ids are decimal integers written as strings (`\"812736451\"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ForgeId(::std::string::String);
@@ -868,18 +648,6 @@ impl<'de> ::serde::Deserialize<'de> for ForgeId {
 }
 ///The VTC's opaque identifier for a namespace, assigned when it is bound. Stable for the life of the binding; never reused for another binding.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "NamespaceId",
-///  "description": "The VTC's opaque identifier for a namespace, assigned when it is bound. Stable for the life of the binding; never reused for another binding.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct NamespaceId(::std::string::String);
@@ -942,44 +710,6 @@ impl<'de> ::serde::Deserialize<'de> for NamespaceId {
 }
 ///A holder of `git.repo.create` on a namespace creates a repository in it and becomes its owner. The VTC reserves the name; a bridge creates the repository and turns commit trust on, or, where no bot can create repositories there, the response lists the steps a person must take.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/git-ns/repo/create/0.2",
-///  "title": "Payload",
-///  "description": "A holder of `git.repo.create` on a namespace creates a repository in it and becomes its owner. The VTC reserves the name; a bridge creates the repository and turns commit trust on, or, where no bot can create repositories there, the response lists the steps a person must take.",
-///  "type": "object",
-///  "required": [
-///    "name",
-///    "namespace",
-///    "visibility"
-///  ],
-///  "properties": {
-///    "description": {
-///      "description": "A one-line description for the forge's repository page.",
-///      "type": "string",
-///      "maxLength": 350
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "name": {
-///      "description": "The repository name, lowercased. The repository's resource is `<forge>/<owner>/<name>`.",
-///      "$ref": "#/definitions/Segment"
-///    },
-///    "namespace": {
-///      "description": "The namespace to create the repository in.",
-///      "$ref": "#/definitions/NamespaceId"
-///    },
-///    "visibility": {
-///      "$ref": "#/definitions/RepoVisibility"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1003,16 +733,6 @@ impl Payload {
 }
 ///A one-line description for the forge's repository page.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "A one-line description for the forge's repository page.",
-///  "type": "string",
-///  "maxLength": 350
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadDescription(::std::string::String);
@@ -1072,18 +792,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDescription {
 }
 ///A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo>`, lowercase.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RepoResource",
-///  "description": "A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo>`, lowercase.",
-///  "type": "string",
-///  "maxLength": 455,
-///  "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,99}/[a-z0-9_-][a-z0-9._-]{0,99}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RepoResource(::std::string::String);
@@ -1157,63 +865,6 @@ impl<'de> ::serde::Deserialize<'de> for RepoResource {
 }
 ///One repository as the VTC records it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RepoSummary",
-///  "description": "One repository as the VTC records it.",
-///  "type": "object",
-///  "required": [
-///    "bootstrap",
-///    "owners",
-///    "resource",
-///    "state",
-///    "sync",
-///    "visibility"
-///  ],
-///  "properties": {
-///    "bootstrap": {
-///      "$ref": "#/definitions/Bootstrap"
-///    },
-///    "forgeId": {
-///      "description": "The forge's repository id. Absent until the forge has confirmed the repository exists (a `pendingCreate` repository, or one adopted in bridge mode before the first inspection).",
-///      "$ref": "#/definitions/ForgeId"
-///    },
-///    "owners": {
-///      "description": "The DIDs holding `git.repo.own` on this repository by an explicit grant. Empty only for an `unmanaged` repository, and for an `orphaned` one whose ownership rests with the namespace admins by implication.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Did"
-///      },
-///      "uniqueItems": true
-///    },
-///    "resource": {
-///      "$ref": "#/definitions/RepoResource"
-///    },
-///    "state": {
-///      "description": "`pendingCreate` — the name is reserved and the repository is not yet confirmed on the forge. `active` — managed. `archived` — archived through git-ns/repo/archive; commit rights on it are revoked. `detached` — no longer governed: its namespace was unbound, or it moved outside the namespace. `orphaned` — its last owner left the community and ownership passed to the namespace admins, who have not yet named a new owner. `unmanaged` — it exists on the forge inside a bound namespace but was never created or adopted through the VTC.",
-///      "type": "string",
-///      "enum": [
-///        "pendingCreate",
-///        "active",
-///        "archived",
-///        "detached",
-///        "orphaned",
-///        "unmanaged"
-///      ]
-///    },
-///    "sync": {
-///      "$ref": "#/definitions/Sync"
-///    },
-///    "visibility": {
-///      "$ref": "#/definitions/RepoVisibility"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1241,23 +892,6 @@ impl RepoSummary {
 }
 ///`pendingCreate` — the name is reserved and the repository is not yet confirmed on the forge. `active` — managed. `archived` — archived through git-ns/repo/archive; commit rights on it are revoked. `detached` — no longer governed: its namespace was unbound, or it moved outside the namespace. `orphaned` — its last owner left the community and ownership passed to the namespace admins, who have not yet named a new owner. `unmanaged` — it exists on the forge inside a bound namespace but was never created or adopted through the VTC.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`pendingCreate` — the name is reserved and the repository is not yet confirmed on the forge. `active` — managed. `archived` — archived through git-ns/repo/archive; commit rights on it are revoked. `detached` — no longer governed: its namespace was unbound, or it moved outside the namespace. `orphaned` — its last owner left the community and ownership passed to the namespace admins, who have not yet named a new owner. `unmanaged` — it exists on the forge inside a bound namespace but was never created or adopted through the VTC.",
-///  "type": "string",
-///  "enum": [
-///    "pendingCreate",
-///    "active",
-///    "archived",
-///    "detached",
-///    "orphaned",
-///    "unmanaged"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1335,20 +969,6 @@ impl ::std::convert::TryFrom<::std::string::String> for RepoSummaryState {
 }
 ///Repository visibility on the forge.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RepoVisibility",
-///  "description": "Repository visibility on the forge.",
-///  "type": "string",
-///  "enum": [
-///    "public",
-///    "private"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1410,40 +1030,6 @@ impl ::std::convert::TryFrom<::std::string::String> for RepoVisibility {
 }
 ///The reserved repository, and the manual steps when a person must create it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The reserved repository, and the manual steps when a person must create it.",
-///  "type": "object",
-///  "required": [
-///    "repo"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "manualSteps": {
-///      "description": "Present when no bot can create repositories in this namespace (a manual-mode namespace, or a personal account): the steps, in order, that a person with forge access carries out. The repository becomes `active` when it is then adopted with git-ns/repo/adopt.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "maxLength": 2048,
-///        "minLength": 1
-///      },
-///      "minItems": 1
-///    },
-///    "repo": {
-///      "description": "The repository as recorded — normally `pendingCreate` at this point.",
-///      "$ref": "#/definitions/RepoSummary"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1468,16 +1054,6 @@ impl Response {
 }
 ///`ResponseManualStepsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseManualStepsItem(::std::string::String);
@@ -1540,19 +1116,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseManualStepsItem {
 }
 ///One lowercased owner or repository name. Forges compare these case-insensitively, so the wire form is always lowercase and a producer lowercases before sending. A leading `.` is refused, which rules out `.` and `..`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Segment",
-///  "description": "One lowercased owner or repository name. Forges compare these case-insensitively, so the wire form is always lowercase and a producer lowercases before sending. A leading `.` is refused, which rules out `.` and `..`.",
-///  "type": "string",
-///  "maxLength": 100,
-///  "minLength": 1,
-///  "pattern": "^[a-z0-9_-][a-z0-9._-]*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Segment(::std::string::String);
@@ -1622,45 +1185,6 @@ impl<'de> ::serde::Deserialize<'de> for Segment {
 }
 ///How the forge compares with the VTC's projection for one repository.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Sync",
-///  "description": "How the forge compares with the VTC's projection for one repository.",
-///  "type": "object",
-///  "required": [
-///    "drift",
-///    "state"
-///  ],
-///  "properties": {
-///    "checkedAt": {
-///      "description": "When the forge was last compared. Absent if never.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "drift": {
-///      "description": "Outstanding drift. Empty unless `state` is `drift`.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/DriftItem"
-///      }
-///    },
-///    "state": {
-///      "description": "`inSync` — the last comparison found no drift. `drift` — it found some, listed in `drift`. `pending` — a change has been sent to the forge and not yet confirmed. `unchecked` — nothing compares this repository (a manual-mode namespace).",
-///      "type": "string",
-///      "enum": [
-///        "inSync",
-///        "drift",
-///        "pending",
-///        "unchecked"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1684,21 +1208,6 @@ impl Sync {
 }
 ///`inSync` — the last comparison found no drift. `drift` — it found some, listed in `drift`. `pending` — a change has been sent to the forge and not yet confirmed. `unchecked` — nothing compares this repository (a manual-mode namespace).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`inSync` — the last comparison found no drift. `drift` — it found some, listed in `drift`. `pending` — a change has been sent to the forge and not yet confirmed. `unchecked` — nothing compares this repository (a manual-mode namespace).",
-///  "type": "string",
-///  "enum": [
-///    "inSync",
-///    "drift",
-///    "pending",
-///    "unchecked"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -2392,7 +1901,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Bootstrap\": {\n      \"additionalProperties\": false,\n      \"description\": \"Whether each step that turns commit trust on for a repository is in place, as last reported. A step that this forge's plan does not need reads `true`.\",\n      \"properties\": {\n        \"keyring\": {\n          \"description\": \"The exempt platform keyring for forge-signed merge commits is committed, or the forge's plan does not need one.\",\n          \"type\": \"boolean\"\n        },\n        \"requiredCheck\": {\n          \"description\": \"The forge refuses to merge into the default branch unless the verify-trust check passes, with no bypass, and a pull request cannot change what that check runs: an organisation-required workflow, code-owner review of workflow files, or protected workflow paths, as the forge allows.\",\n          \"type\": \"boolean\"\n        },\n        \"variables\": {\n          \"description\": \"The repository names the Trust Registry and this VTC as its trust anchors.\",\n          \"type\": \"boolean\"\n        },\n        \"workflow\": {\n          \"description\": \"The verify-trust check runs on the repository's pull requests — from a workflow committed to it, or, where the forge supports it, required on it from the namespace's own bridge-managed workflow repository at a pinned commit.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"workflow\",\n        \"keyring\",\n        \"variables\",\n        \"requiredCheck\"\n      ],\n      \"title\": \"Bootstrap\",\n      \"type\": \"object\"\n    },\n    \"Did\": {\n      \"description\": \"A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.\",\n      \"maxLength\": 2048,\n      \"pattern\": \"^did:[a-z0-9]+:(?:(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})*:)*(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})+$\",\n      \"title\": \"Did\",\n      \"type\": \"string\"\n    },\n    \"DriftItem\": {\n      \"additionalProperties\": false,\n      \"description\": \"One difference between the forge's observed state and the VTC's projection of a repository.\",\n      \"properties\": {\n        \"account\": {\n          \"$ref\": \"#/$defs/ForgeAccount\",\n          \"description\": \"Whose role differs, for the three role types.\"\n        },\n        \"expected\": {\n          \"description\": \"What the projection calls for, in the forge's own vocabulary. Absent when the projection calls for nothing.\",\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"observed\": {\n          \"description\": \"What the forge shows, in the forge's own vocabulary (a role name such as `maintain`, a setting name). Absent when nothing is there.\",\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"resource\": {\n          \"$ref\": \"#/$defs/RepoResource\"\n        },\n        \"type\": {\n          \"description\": \"`roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.\",\n          \"enum\": [\n            \"roleAdded\",\n            \"roleRemoved\",\n            \"roleChanged\",\n            \"requiredCheckMissing\",\n            \"protectionWeakened\",\n            \"bootstrapMissing\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"type\",\n        \"resource\"\n      ],\n      \"title\": \"DriftItem\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ForgeAccount\": {\n      \"additionalProperties\": false,\n      \"description\": \"A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.\",\n      \"properties\": {\n        \"forge\": {\n          \"$ref\": \"#/$defs/ForgeHost\"\n        },\n        \"id\": {\n          \"$ref\": \"#/$defs/ForgeId\"\n        },\n        \"login\": {\n          \"description\": \"The account's current login, as the forge reported it when last seen. Display only.\",\n          \"maxLength\": 100,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"forge\",\n        \"id\",\n        \"login\"\n      ],\n      \"title\": \"ForgeAccount\",\n      \"type\": \"object\"\n    },\n    \"ForgeHost\": {\n      \"description\": \"The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, or a self-hosted Forgejo instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.\",\n      \"maxLength\": 253,\n      \"minLength\": 3,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$\",\n      \"title\": \"ForgeHost\",\n      \"type\": \"string\"\n    },\n    \"ForgeId\": {\n      \"description\": \"An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub and Forgejo ids are decimal integers written as strings (`\\\"812736451\\\"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"title\": \"ForgeId\",\n      \"type\": \"string\"\n    },\n    \"NamespaceId\": {\n      \"description\": \"The VTC's opaque identifier for a namespace, assigned when it is bound. Stable for the life of the binding; never reused for another binding.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"title\": \"NamespaceId\",\n      \"type\": \"string\"\n    },\n    \"RepoResource\": {\n      \"description\": \"A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo>`, lowercase.\",\n      \"maxLength\": 455,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,99}/[a-z0-9_-][a-z0-9._-]{0,99}$\",\n      \"title\": \"RepoResource\",\n      \"type\": \"string\"\n    },\n    \"RepoSummary\": {\n      \"additionalProperties\": false,\n      \"description\": \"One repository as the VTC records it.\",\n      \"properties\": {\n        \"bootstrap\": {\n          \"$ref\": \"#/$defs/Bootstrap\"\n        },\n        \"forgeId\": {\n          \"$ref\": \"#/$defs/ForgeId\",\n          \"description\": \"The forge's repository id. Absent until the forge has confirmed the repository exists (a `pendingCreate` repository, or one adopted in bridge mode before the first inspection).\"\n        },\n        \"owners\": {\n          \"description\": \"The DIDs holding `git.repo.own` on this repository by an explicit grant. Empty only for an `unmanaged` repository, and for an `orphaned` one whose ownership rests with the namespace admins by implication.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Did\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"resource\": {\n          \"$ref\": \"#/$defs/RepoResource\"\n        },\n        \"state\": {\n          \"description\": \"`pendingCreate` — the name is reserved and the repository is not yet confirmed on the forge. `active` — managed. `archived` — archived through git-ns/repo/archive; commit rights on it are revoked. `detached` — no longer governed: its namespace was unbound, or it moved outside the namespace. `orphaned` — its last owner left the community and ownership passed to the namespace admins, who have not yet named a new owner. `unmanaged` — it exists on the forge inside a bound namespace but was never created or adopted through the VTC.\",\n          \"enum\": [\n            \"pendingCreate\",\n            \"active\",\n            \"archived\",\n            \"detached\",\n            \"orphaned\",\n            \"unmanaged\"\n          ],\n          \"type\": \"string\"\n        },\n        \"sync\": {\n          \"$ref\": \"#/$defs/Sync\"\n        },\n        \"visibility\": {\n          \"$ref\": \"#/$defs/RepoVisibility\"\n        }\n      },\n      \"required\": [\n        \"resource\",\n        \"visibility\",\n        \"state\",\n        \"owners\",\n        \"bootstrap\",\n        \"sync\"\n      ],\n      \"title\": \"RepoSummary\",\n      \"type\": \"object\"\n    },\n    \"RepoVisibility\": {\n      \"description\": \"Repository visibility on the forge.\",\n      \"enum\": [\n        \"public\",\n        \"private\"\n      ],\n      \"title\": \"RepoVisibility\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The reserved repository, and the manual steps when a person must create it.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"manualSteps\": {\n          \"description\": \"Present when no bot can create repositories in this namespace (a manual-mode namespace, or a personal account): the steps, in order, that a person with forge access carries out. The repository becomes `active` when it is then adopted with git-ns/repo/adopt.\",\n          \"items\": {\n            \"maxLength\": 2048,\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"repo\": {\n          \"$ref\": \"#/$defs/RepoSummary\",\n          \"description\": \"The repository as recorded — normally `pendingCreate` at this point.\"\n        }\n      },\n      \"required\": [\n        \"repo\"\n      ],\n      \"title\": \"Git Namespaces — Create Repository — response payload\",\n      \"type\": \"object\"\n    },\n    \"Segment\": {\n      \"description\": \"One lowercased owner or repository name. Forges compare these case-insensitively, so the wire form is always lowercase and a producer lowercases before sending. A leading `.` is refused, which rules out `.` and `..`.\",\n      \"maxLength\": 100,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z0-9_-][a-z0-9._-]*$\",\n      \"title\": \"Segment\",\n      \"type\": \"string\"\n    },\n    \"Sync\": {\n      \"additionalProperties\": false,\n      \"description\": \"How the forge compares with the VTC's projection for one repository.\",\n      \"properties\": {\n        \"checkedAt\": {\n          \"description\": \"When the forge was last compared. Absent if never.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"drift\": {\n          \"description\": \"Outstanding drift. Empty unless `state` is `drift`.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/DriftItem\"\n          },\n          \"type\": \"array\"\n        },\n        \"state\": {\n          \"description\": \"`inSync` — the last comparison found no drift. `drift` — it found some, listed in `drift`. `pending` — a change has been sent to the forge and not yet confirmed. `unchecked` — nothing compares this repository (a manual-mode namespace).\",\n          \"enum\": [\n            \"inSync\",\n            \"drift\",\n            \"pending\",\n            \"unchecked\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"state\",\n        \"drift\"\n      ],\n      \"title\": \"Sync\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/git-ns/repo/create/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A holder of `git.repo.create` on a namespace creates a repository in it and becomes its owner. The VTC reserves the name; a bridge creates the repository and turns commit trust on, or, where no bot can create repositories there, the response lists the steps a person must take.\",\n  \"properties\": {\n    \"description\": {\n      \"description\": \"A one-line description for the forge's repository page.\",\n      \"maxLength\": 350,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"name\": {\n      \"$ref\": \"#/$defs/Segment\",\n      \"description\": \"The repository name, lowercased. The repository's resource is `<forge>/<owner>/<name>`.\"\n    },\n    \"namespace\": {\n      \"$ref\": \"#/$defs/NamespaceId\",\n      \"description\": \"The namespace to create the repository in.\"\n    },\n    \"visibility\": {\n      \"$ref\": \"#/$defs/RepoVisibility\"\n    }\n  },\n  \"required\": [\n    \"namespace\",\n    \"name\",\n    \"visibility\"\n  ],\n  \"title\": \"Git Namespaces — Create Repository — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Bootstrap\":{\"additionalProperties\":false,\"description\":\"Whether each step that turns commit trust on for a repository is in place, as last reported. A step that this forge's plan does not need reads `true`.\",\"properties\":{\"keyring\":{\"description\":\"The exempt platform keyring for forge-signed merge commits is committed, or the forge's plan does not need one.\",\"type\":\"boolean\"},\"requiredCheck\":{\"description\":\"The forge refuses to merge into the default branch unless the verify-trust check passes, with no bypass, and a pull request cannot change what that check runs: an organisation-required workflow, code-owner review of workflow files, or protected workflow paths, as the forge allows.\",\"type\":\"boolean\"},\"variables\":{\"description\":\"The repository names the Trust Registry and this VTC as its trust anchors.\",\"type\":\"boolean\"},\"workflow\":{\"description\":\"The verify-trust check runs on the repository's pull requests — from a workflow committed to it, or, where the forge supports it, required on it from the namespace's own bridge-managed workflow repository at a pinned commit.\",\"type\":\"boolean\"}},\"required\":[\"workflow\",\"keyring\",\"variables\",\"requiredCheck\"],\"title\":\"Bootstrap\",\"type\":\"object\"},\"Did\":{\"description\":\"A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.\",\"maxLength\":2048,\"pattern\":\"^did:[a-z0-9]+:(?:(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})*:)*(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})+$\",\"title\":\"Did\",\"type\":\"string\"},\"DriftItem\":{\"additionalProperties\":false,\"description\":\"One difference between the forge's observed state and the VTC's projection of a repository.\",\"properties\":{\"account\":{\"$ref\":\"#/$defs/ForgeAccount\",\"description\":\"Whose role differs, for the three role types.\"},\"expected\":{\"description\":\"What the projection calls for, in the forge's own vocabulary. Absent when the projection calls for nothing.\",\"maxLength\":256,\"type\":\"string\"},\"observed\":{\"description\":\"What the forge shows, in the forge's own vocabulary (a role name such as `maintain`, a setting name). Absent when nothing is there.\",\"maxLength\":256,\"type\":\"string\"},\"resource\":{\"$ref\":\"#/$defs/RepoResource\"},\"type\":{\"description\":\"`roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.\",\"enum\":[\"roleAdded\",\"roleRemoved\",\"roleChanged\",\"requiredCheckMissing\",\"protectionWeakened\",\"bootstrapMissing\"],\"type\":\"string\"}},\"required\":[\"type\",\"resource\"],\"title\":\"DriftItem\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ForgeAccount\":{\"additionalProperties\":false,\"description\":\"A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.\",\"properties\":{\"forge\":{\"$ref\":\"#/$defs/ForgeHost\"},\"id\":{\"$ref\":\"#/$defs/ForgeId\"},\"login\":{\"description\":\"The account's current login, as the forge reported it when last seen. Display only.\",\"maxLength\":100,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"forge\",\"id\",\"login\"],\"title\":\"ForgeAccount\",\"type\":\"object\"},\"ForgeHost\":{\"description\":\"The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, or a self-hosted Forgejo instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.\",\"maxLength\":253,\"minLength\":3,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$\",\"title\":\"ForgeHost\",\"type\":\"string\"},\"ForgeId\":{\"description\":\"An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub and Forgejo ids are decimal integers written as strings (`\\\"812736451\\\"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.\",\"maxLength\":64,\"minLength\":1,\"title\":\"ForgeId\",\"type\":\"string\"},\"NamespaceId\":{\"description\":\"The VTC's opaque identifier for a namespace, assigned when it is bound. Stable for the life of the binding; never reused for another binding.\",\"maxLength\":128,\"minLength\":1,\"title\":\"NamespaceId\",\"type\":\"string\"},\"RepoResource\":{\"description\":\"A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo>`, lowercase.\",\"maxLength\":455,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,99}/[a-z0-9_-][a-z0-9._-]{0,99}$\",\"title\":\"RepoResource\",\"type\":\"string\"},\"RepoSummary\":{\"additionalProperties\":false,\"description\":\"One repository as the VTC records it.\",\"properties\":{\"bootstrap\":{\"$ref\":\"#/$defs/Bootstrap\"},\"forgeId\":{\"$ref\":\"#/$defs/ForgeId\",\"description\":\"The forge's repository id. Absent until the forge has confirmed the repository exists (a `pendingCreate` repository, or one adopted in bridge mode before the first inspection).\"},\"owners\":{\"description\":\"The DIDs holding `git.repo.own` on this repository by an explicit grant. Empty only for an `unmanaged` repository, and for an `orphaned` one whose ownership rests with the namespace admins by implication.\",\"items\":{\"$ref\":\"#/$defs/Did\"},\"type\":\"array\",\"uniqueItems\":true},\"resource\":{\"$ref\":\"#/$defs/RepoResource\"},\"state\":{\"description\":\"`pendingCreate` — the name is reserved and the repository is not yet confirmed on the forge. `active` — managed. `archived` — archived through git-ns/repo/archive; commit rights on it are revoked. `detached` — no longer governed: its namespace was unbound, or it moved outside the namespace. `orphaned` — its last owner left the community and ownership passed to the namespace admins, who have not yet named a new owner. `unmanaged` — it exists on the forge inside a bound namespace but was never created or adopted through the VTC.\",\"enum\":[\"pendingCreate\",\"active\",\"archived\",\"detached\",\"orphaned\",\"unmanaged\"],\"type\":\"string\"},\"sync\":{\"$ref\":\"#/$defs/Sync\"},\"visibility\":{\"$ref\":\"#/$defs/RepoVisibility\"}},\"required\":[\"resource\",\"visibility\",\"state\",\"owners\",\"bootstrap\",\"sync\"],\"title\":\"RepoSummary\",\"type\":\"object\"},\"RepoVisibility\":{\"description\":\"Repository visibility on the forge.\",\"enum\":[\"public\",\"private\"],\"title\":\"RepoVisibility\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The reserved repository, and the manual steps when a person must create it.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"manualSteps\":{\"description\":\"Present when no bot can create repositories in this namespace (a manual-mode namespace, or a personal account): the steps, in order, that a person with forge access carries out. The repository becomes `active` when it is then adopted with git-ns/repo/adopt.\",\"items\":{\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"},\"repo\":{\"$ref\":\"#/$defs/RepoSummary\",\"description\":\"The repository as recorded — normally `pendingCreate` at this point.\"}},\"required\":[\"repo\"],\"title\":\"Git Namespaces — Create Repository — response payload\",\"type\":\"object\"},\"Segment\":{\"description\":\"One lowercased owner or repository name. Forges compare these case-insensitively, so the wire form is always lowercase and a producer lowercases before sending. A leading `.` is refused, which rules out `.` and `..`.\",\"maxLength\":100,\"minLength\":1,\"pattern\":\"^[a-z0-9_-][a-z0-9._-]*$\",\"title\":\"Segment\",\"type\":\"string\"},\"Sync\":{\"additionalProperties\":false,\"description\":\"How the forge compares with the VTC's projection for one repository.\",\"properties\":{\"checkedAt\":{\"description\":\"When the forge was last compared. Absent if never.\",\"format\":\"date-time\",\"type\":\"string\"},\"drift\":{\"description\":\"Outstanding drift. Empty unless `state` is `drift`.\",\"items\":{\"$ref\":\"#/$defs/DriftItem\"},\"type\":\"array\"},\"state\":{\"description\":\"`inSync` — the last comparison found no drift. `drift` — it found some, listed in `drift`. `pending` — a change has been sent to the forge and not yet confirmed. `unchecked` — nothing compares this repository (a manual-mode namespace).\",\"enum\":[\"inSync\",\"drift\",\"pending\",\"unchecked\"],\"type\":\"string\"}},\"required\":[\"state\",\"drift\"],\"title\":\"Sync\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/git-ns/repo/create/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A holder of `git.repo.create` on a namespace creates a repository in it and becomes its owner. The VTC reserves the name; a bridge creates the repository and turns commit trust on, or, where no bot can create repositories there, the response lists the steps a person must take.\",\"properties\":{\"description\":{\"description\":\"A one-line description for the forge's repository page.\",\"maxLength\":350,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"name\":{\"$ref\":\"#/$defs/Segment\",\"description\":\"The repository name, lowercased. The repository's resource is `<forge>/<owner>/<name>`.\"},\"namespace\":{\"$ref\":\"#/$defs/NamespaceId\",\"description\":\"The namespace to create the repository in.\"},\"visibility\":{\"$ref\":\"#/$defs/RepoVisibility\"}},\"required\":[\"namespace\",\"name\",\"visibility\"],\"title\":\"Git Namespaces — Create Repository — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -2401,7 +1910,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Bootstrap\": {\n      \"additionalProperties\": false,\n      \"description\": \"Whether each step that turns commit trust on for a repository is in place, as last reported. A step that this forge's plan does not need reads `true`.\",\n      \"properties\": {\n        \"keyring\": {\n          \"description\": \"The exempt platform keyring for forge-signed merge commits is committed, or the forge's plan does not need one.\",\n          \"type\": \"boolean\"\n        },\n        \"requiredCheck\": {\n          \"description\": \"The forge refuses to merge into the default branch unless the verify-trust check passes, with no bypass, and a pull request cannot change what that check runs: an organisation-required workflow, code-owner review of workflow files, or protected workflow paths, as the forge allows.\",\n          \"type\": \"boolean\"\n        },\n        \"variables\": {\n          \"description\": \"The repository names the Trust Registry and this VTC as its trust anchors.\",\n          \"type\": \"boolean\"\n        },\n        \"workflow\": {\n          \"description\": \"The verify-trust check runs on the repository's pull requests — from a workflow committed to it, or, where the forge supports it, required on it from the namespace's own bridge-managed workflow repository at a pinned commit.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"workflow\",\n        \"keyring\",\n        \"variables\",\n        \"requiredCheck\"\n      ],\n      \"title\": \"Bootstrap\",\n      \"type\": \"object\"\n    },\n    \"Did\": {\n      \"description\": \"A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.\",\n      \"maxLength\": 2048,\n      \"pattern\": \"^did:[a-z0-9]+:(?:(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})*:)*(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})+$\",\n      \"title\": \"Did\",\n      \"type\": \"string\"\n    },\n    \"DriftItem\": {\n      \"additionalProperties\": false,\n      \"description\": \"One difference between the forge's observed state and the VTC's projection of a repository.\",\n      \"properties\": {\n        \"account\": {\n          \"$ref\": \"#/$defs/ForgeAccount\",\n          \"description\": \"Whose role differs, for the three role types.\"\n        },\n        \"expected\": {\n          \"description\": \"What the projection calls for, in the forge's own vocabulary. Absent when the projection calls for nothing.\",\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"observed\": {\n          \"description\": \"What the forge shows, in the forge's own vocabulary (a role name such as `maintain`, a setting name). Absent when nothing is there.\",\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"resource\": {\n          \"$ref\": \"#/$defs/RepoResource\"\n        },\n        \"type\": {\n          \"description\": \"`roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.\",\n          \"enum\": [\n            \"roleAdded\",\n            \"roleRemoved\",\n            \"roleChanged\",\n            \"requiredCheckMissing\",\n            \"protectionWeakened\",\n            \"bootstrapMissing\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"type\",\n        \"resource\"\n      ],\n      \"title\": \"DriftItem\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ForgeAccount\": {\n      \"additionalProperties\": false,\n      \"description\": \"A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.\",\n      \"properties\": {\n        \"forge\": {\n          \"$ref\": \"#/$defs/ForgeHost\"\n        },\n        \"id\": {\n          \"$ref\": \"#/$defs/ForgeId\"\n        },\n        \"login\": {\n          \"description\": \"The account's current login, as the forge reported it when last seen. Display only.\",\n          \"maxLength\": 100,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"forge\",\n        \"id\",\n        \"login\"\n      ],\n      \"title\": \"ForgeAccount\",\n      \"type\": \"object\"\n    },\n    \"ForgeHost\": {\n      \"description\": \"The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, or a self-hosted Forgejo instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.\",\n      \"maxLength\": 253,\n      \"minLength\": 3,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$\",\n      \"title\": \"ForgeHost\",\n      \"type\": \"string\"\n    },\n    \"ForgeId\": {\n      \"description\": \"An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub and Forgejo ids are decimal integers written as strings (`\\\"812736451\\\"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"title\": \"ForgeId\",\n      \"type\": \"string\"\n    },\n    \"NamespaceId\": {\n      \"description\": \"The VTC's opaque identifier for a namespace, assigned when it is bound. Stable for the life of the binding; never reused for another binding.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"title\": \"NamespaceId\",\n      \"type\": \"string\"\n    },\n    \"RepoResource\": {\n      \"description\": \"A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo>`, lowercase.\",\n      \"maxLength\": 455,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,99}/[a-z0-9_-][a-z0-9._-]{0,99}$\",\n      \"title\": \"RepoResource\",\n      \"type\": \"string\"\n    },\n    \"RepoSummary\": {\n      \"additionalProperties\": false,\n      \"description\": \"One repository as the VTC records it.\",\n      \"properties\": {\n        \"bootstrap\": {\n          \"$ref\": \"#/$defs/Bootstrap\"\n        },\n        \"forgeId\": {\n          \"$ref\": \"#/$defs/ForgeId\",\n          \"description\": \"The forge's repository id. Absent until the forge has confirmed the repository exists (a `pendingCreate` repository, or one adopted in bridge mode before the first inspection).\"\n        },\n        \"owners\": {\n          \"description\": \"The DIDs holding `git.repo.own` on this repository by an explicit grant. Empty only for an `unmanaged` repository, and for an `orphaned` one whose ownership rests with the namespace admins by implication.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Did\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"resource\": {\n          \"$ref\": \"#/$defs/RepoResource\"\n        },\n        \"state\": {\n          \"description\": \"`pendingCreate` — the name is reserved and the repository is not yet confirmed on the forge. `active` — managed. `archived` — archived through git-ns/repo/archive; commit rights on it are revoked. `detached` — no longer governed: its namespace was unbound, or it moved outside the namespace. `orphaned` — its last owner left the community and ownership passed to the namespace admins, who have not yet named a new owner. `unmanaged` — it exists on the forge inside a bound namespace but was never created or adopted through the VTC.\",\n          \"enum\": [\n            \"pendingCreate\",\n            \"active\",\n            \"archived\",\n            \"detached\",\n            \"orphaned\",\n            \"unmanaged\"\n          ],\n          \"type\": \"string\"\n        },\n        \"sync\": {\n          \"$ref\": \"#/$defs/Sync\"\n        },\n        \"visibility\": {\n          \"$ref\": \"#/$defs/RepoVisibility\"\n        }\n      },\n      \"required\": [\n        \"resource\",\n        \"visibility\",\n        \"state\",\n        \"owners\",\n        \"bootstrap\",\n        \"sync\"\n      ],\n      \"title\": \"RepoSummary\",\n      \"type\": \"object\"\n    },\n    \"RepoVisibility\": {\n      \"description\": \"Repository visibility on the forge.\",\n      \"enum\": [\n        \"public\",\n        \"private\"\n      ],\n      \"title\": \"RepoVisibility\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The reserved repository, and the manual steps when a person must create it.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"manualSteps\": {\n          \"description\": \"Present when no bot can create repositories in this namespace (a manual-mode namespace, or a personal account): the steps, in order, that a person with forge access carries out. The repository becomes `active` when it is then adopted with git-ns/repo/adopt.\",\n          \"items\": {\n            \"maxLength\": 2048,\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"repo\": {\n          \"$ref\": \"#/$defs/RepoSummary\",\n          \"description\": \"The repository as recorded — normally `pendingCreate` at this point.\"\n        }\n      },\n      \"required\": [\n        \"repo\"\n      ],\n      \"title\": \"Git Namespaces — Create Repository — response payload\",\n      \"type\": \"object\"\n    },\n    \"Segment\": {\n      \"description\": \"One lowercased owner or repository name. Forges compare these case-insensitively, so the wire form is always lowercase and a producer lowercases before sending. A leading `.` is refused, which rules out `.` and `..`.\",\n      \"maxLength\": 100,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z0-9_-][a-z0-9._-]*$\",\n      \"title\": \"Segment\",\n      \"type\": \"string\"\n    },\n    \"Sync\": {\n      \"additionalProperties\": false,\n      \"description\": \"How the forge compares with the VTC's projection for one repository.\",\n      \"properties\": {\n        \"checkedAt\": {\n          \"description\": \"When the forge was last compared. Absent if never.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"drift\": {\n          \"description\": \"Outstanding drift. Empty unless `state` is `drift`.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/DriftItem\"\n          },\n          \"type\": \"array\"\n        },\n        \"state\": {\n          \"description\": \"`inSync` — the last comparison found no drift. `drift` — it found some, listed in `drift`. `pending` — a change has been sent to the forge and not yet confirmed. `unchecked` — nothing compares this repository (a manual-mode namespace).\",\n          \"enum\": [\n            \"inSync\",\n            \"drift\",\n            \"pending\",\n            \"unchecked\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"state\",\n        \"drift\"\n      ],\n      \"title\": \"Sync\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Bootstrap\":{\"additionalProperties\":false,\"description\":\"Whether each step that turns commit trust on for a repository is in place, as last reported. A step that this forge's plan does not need reads `true`.\",\"properties\":{\"keyring\":{\"description\":\"The exempt platform keyring for forge-signed merge commits is committed, or the forge's plan does not need one.\",\"type\":\"boolean\"},\"requiredCheck\":{\"description\":\"The forge refuses to merge into the default branch unless the verify-trust check passes, with no bypass, and a pull request cannot change what that check runs: an organisation-required workflow, code-owner review of workflow files, or protected workflow paths, as the forge allows.\",\"type\":\"boolean\"},\"variables\":{\"description\":\"The repository names the Trust Registry and this VTC as its trust anchors.\",\"type\":\"boolean\"},\"workflow\":{\"description\":\"The verify-trust check runs on the repository's pull requests — from a workflow committed to it, or, where the forge supports it, required on it from the namespace's own bridge-managed workflow repository at a pinned commit.\",\"type\":\"boolean\"}},\"required\":[\"workflow\",\"keyring\",\"variables\",\"requiredCheck\"],\"title\":\"Bootstrap\",\"type\":\"object\"},\"Did\":{\"description\":\"A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.\",\"maxLength\":2048,\"pattern\":\"^did:[a-z0-9]+:(?:(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})*:)*(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})+$\",\"title\":\"Did\",\"type\":\"string\"},\"DriftItem\":{\"additionalProperties\":false,\"description\":\"One difference between the forge's observed state and the VTC's projection of a repository.\",\"properties\":{\"account\":{\"$ref\":\"#/$defs/ForgeAccount\",\"description\":\"Whose role differs, for the three role types.\"},\"expected\":{\"description\":\"What the projection calls for, in the forge's own vocabulary. Absent when the projection calls for nothing.\",\"maxLength\":256,\"type\":\"string\"},\"observed\":{\"description\":\"What the forge shows, in the forge's own vocabulary (a role name such as `maintain`, a setting name). Absent when nothing is there.\",\"maxLength\":256,\"type\":\"string\"},\"resource\":{\"$ref\":\"#/$defs/RepoResource\"},\"type\":{\"description\":\"`roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.\",\"enum\":[\"roleAdded\",\"roleRemoved\",\"roleChanged\",\"requiredCheckMissing\",\"protectionWeakened\",\"bootstrapMissing\"],\"type\":\"string\"}},\"required\":[\"type\",\"resource\"],\"title\":\"DriftItem\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ForgeAccount\":{\"additionalProperties\":false,\"description\":\"A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.\",\"properties\":{\"forge\":{\"$ref\":\"#/$defs/ForgeHost\"},\"id\":{\"$ref\":\"#/$defs/ForgeId\"},\"login\":{\"description\":\"The account's current login, as the forge reported it when last seen. Display only.\",\"maxLength\":100,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"forge\",\"id\",\"login\"],\"title\":\"ForgeAccount\",\"type\":\"object\"},\"ForgeHost\":{\"description\":\"The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, or a self-hosted Forgejo instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.\",\"maxLength\":253,\"minLength\":3,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$\",\"title\":\"ForgeHost\",\"type\":\"string\"},\"ForgeId\":{\"description\":\"An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub and Forgejo ids are decimal integers written as strings (`\\\"812736451\\\"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.\",\"maxLength\":64,\"minLength\":1,\"title\":\"ForgeId\",\"type\":\"string\"},\"NamespaceId\":{\"description\":\"The VTC's opaque identifier for a namespace, assigned when it is bound. Stable for the life of the binding; never reused for another binding.\",\"maxLength\":128,\"minLength\":1,\"title\":\"NamespaceId\",\"type\":\"string\"},\"RepoResource\":{\"description\":\"A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo>`, lowercase.\",\"maxLength\":455,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,99}/[a-z0-9_-][a-z0-9._-]{0,99}$\",\"title\":\"RepoResource\",\"type\":\"string\"},\"RepoSummary\":{\"additionalProperties\":false,\"description\":\"One repository as the VTC records it.\",\"properties\":{\"bootstrap\":{\"$ref\":\"#/$defs/Bootstrap\"},\"forgeId\":{\"$ref\":\"#/$defs/ForgeId\",\"description\":\"The forge's repository id. Absent until the forge has confirmed the repository exists (a `pendingCreate` repository, or one adopted in bridge mode before the first inspection).\"},\"owners\":{\"description\":\"The DIDs holding `git.repo.own` on this repository by an explicit grant. Empty only for an `unmanaged` repository, and for an `orphaned` one whose ownership rests with the namespace admins by implication.\",\"items\":{\"$ref\":\"#/$defs/Did\"},\"type\":\"array\",\"uniqueItems\":true},\"resource\":{\"$ref\":\"#/$defs/RepoResource\"},\"state\":{\"description\":\"`pendingCreate` — the name is reserved and the repository is not yet confirmed on the forge. `active` — managed. `archived` — archived through git-ns/repo/archive; commit rights on it are revoked. `detached` — no longer governed: its namespace was unbound, or it moved outside the namespace. `orphaned` — its last owner left the community and ownership passed to the namespace admins, who have not yet named a new owner. `unmanaged` — it exists on the forge inside a bound namespace but was never created or adopted through the VTC.\",\"enum\":[\"pendingCreate\",\"active\",\"archived\",\"detached\",\"orphaned\",\"unmanaged\"],\"type\":\"string\"},\"sync\":{\"$ref\":\"#/$defs/Sync\"},\"visibility\":{\"$ref\":\"#/$defs/RepoVisibility\"}},\"required\":[\"resource\",\"visibility\",\"state\",\"owners\",\"bootstrap\",\"sync\"],\"title\":\"RepoSummary\",\"type\":\"object\"},\"RepoVisibility\":{\"description\":\"Repository visibility on the forge.\",\"enum\":[\"public\",\"private\"],\"title\":\"RepoVisibility\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The reserved repository, and the manual steps when a person must create it.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"manualSteps\":{\"description\":\"Present when no bot can create repositories in this namespace (a manual-mode namespace, or a personal account): the steps, in order, that a person with forge access carries out. The repository becomes `active` when it is then adopted with git-ns/repo/adopt.\",\"items\":{\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"},\"repo\":{\"$ref\":\"#/$defs/RepoSummary\",\"description\":\"The repository as recorded — normally `pendingCreate` at this point.\"}},\"required\":[\"repo\"],\"title\":\"Git Namespaces — Create Repository — response payload\",\"type\":\"object\"},\"Segment\":{\"description\":\"One lowercased owner or repository name. Forges compare these case-insensitively, so the wire form is always lowercase and a producer lowercases before sending. A leading `.` is refused, which rules out `.` and `..`.\",\"maxLength\":100,\"minLength\":1,\"pattern\":\"^[a-z0-9_-][a-z0-9._-]*$\",\"title\":\"Segment\",\"type\":\"string\"},\"Sync\":{\"additionalProperties\":false,\"description\":\"How the forge compares with the VTC's projection for one repository.\",\"properties\":{\"checkedAt\":{\"description\":\"When the forge was last compared. Absent if never.\",\"format\":\"date-time\",\"type\":\"string\"},\"drift\":{\"description\":\"Outstanding drift. Empty unless `state` is `drift`.\",\"items\":{\"$ref\":\"#/$defs/DriftItem\"},\"type\":\"array\"},\"state\":{\"description\":\"`inSync` — the last comparison found no drift. `drift` — it found some, listed in `drift`. `pending` — a change has been sent to the forge and not yet confirmed. `unchecked` — nothing compares this repository (a manual-mode namespace).\",\"enum\":[\"inSync\",\"drift\",\"pending\",\"unchecked\"],\"type\":\"string\"}},\"required\":[\"state\",\"drift\"],\"title\":\"Sync\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {
