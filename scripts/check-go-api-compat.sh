@@ -138,12 +138,29 @@ fi
 
 # A break already merged since the tag, by release-bump-go.sh's own rule, makes
 # the next Go release breaking whatever this PR is titled. Captured before
-# grepping, not piped, for the SIGPIPE reason given in release-bump-go.sh. Keep
-# this regex identical to that script's: if it ever becomes scope-aware, this
-# must follow, or the two disagree about how big the next release is.
+# grepping, not piped, for the SIGPIPE reason given in release-bump-go.sh. This
+# is that script's rule exactly — a `!` scoped to this package (or unscoped), or a
+# `BREAKING CHANGE` trailer — so the two never disagree about the next release.
+# Keep breaking_here() identical to release-bump-go.sh's.
 log=$(git log --format='%s%n%b' "$tag..$BASE_REF" -- "${WATCH[@]}")
-if prior=$(grep -m1 -E '^[a-z]+(\([^)]*\))?!:|^BREAKING[ -]CHANGE' <<<"$log"); then
-  echo "::notice::$count incompatible API change(s); the next Go release is already breaking (since $tag: \"$prior\"). $summary."
+SCOPES="go go-bindings"
+breaking_here() {
+  local line scopes s
+  grep -qE '^BREAKING[ -]CHANGE' <<<"$log" && return 0
+  while IFS= read -r line; do
+    [[ $line =~ ^[a-z]+(\(([^\)]*)\))?!: ]] || continue
+    scopes=${BASH_REMATCH[2]}
+    [ -z "$scopes" ] && return 0
+    IFS=',' read -ra parts <<<"$scopes"
+    for s in "${parts[@]}"; do
+      s=${s// /}
+      [[ " $SCOPES " == *" $s "* ]] && return 0
+    done
+  done <<<"$log"
+  return 1
+}
+if breaking_here; then
+  echo "::notice::$count incompatible API change(s); a change merged since $tag already makes the next Go release breaking. $summary."
   exit 0
 fi
 
