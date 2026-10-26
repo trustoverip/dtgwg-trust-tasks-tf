@@ -127,6 +127,8 @@ defects three times.
 | the member/value casing lint (`scripts/lib/member-casing.mjs`) | every schema's member names and enumerated values are lowerCamelCase (SPEC §4.10), or named in `member-casing-allowlist.json` — `external` with the vocabulary that owns it, or `frozen` for its own family's pre-lint deviations | whether an `external` entry's attribution is true |
 | the wire-conventions lint (`scripts/lib/wire-conventions.mjs`) | the latest version of every non-retired spec — and every shared definition it `$ref`s — spells instants as RFC 3339 and names them `<event>At` (only a bound such as `since` or `validUntil` keeps a preposition; never a bare `timestamp` or `at`), pages with `cursor` + `limit` → `nextCursor` (never `null`, no `truncated`/`pageSize`/`offset`), uses `since` only as a time filter, never a boolean `created`, and names every integer duration's unit (`…Seconds`, not `…Secs` or a bare `ttl`); deliberate look-alikes are in `wire-conventions-allowlist.json` with a reason | a convention the lint has no rule for, or an instant whose name and description give no hint it is one |
 | the stale-references check (`scripts/lib/stale-references.mjs`) | no current spec names another spec at a superseded version — in a schema, a description, a prose link or mention, or an example — unless it is history (a `Changes from` section), a version run ending at the latest, or listed in `stale-references-allowlist.json` with a reason; `npm run fix-stale-references` rewrites the text references and lists the wire pins, normative values and examples a person must move | whether the newer version is the one the referencing spec should follow, or a version named in prose the heuristics read as history |
+| `published schemas change only additively` (`scripts/check-published-schemas.mjs`, `scripts/lib/schema-compat.mjs`) | a spec file this PR changed that was in the last `trust-tasks-rs-v*` release changed only additively — no removed, renamed or newly required/optional member, no type, `title`, pattern or format change, no enum value inserted before another, no narrowed or dropped bound, no `proofRequirement` change or dropped error code | a semantic change carried only in prose, and anything already merged to main before the last release that was never compared |
+| commit-lint's `!` rule | a `!` title scopes it only to packages (`rs`, `ts`, `go`, `dart`, `codegen`, the binding crates, `ts-…`/`go-…`/`dart-…`) | whether the package API really broke |
 | the error-URI check in `check-bindings-conformance.mjs` | `trust_task_error_type_uri()`, `TRUST_TASK_ERROR_TYPE_URI`, `TrustTaskErrorTypeURI` and `trustTaskErrorTypeUri` all name the same version | whether that version is the right one to have adopted |
 
 The fourth instance of the hand-maintained-list failure mode was binding *prose*:
@@ -179,10 +181,21 @@ cannot be a required check.
 **Do NOT bump a version or write a CHANGELOG entry.** That changed — see below.
 What you owe the release instead is a conventional-commit PR title: `feat(<slug>):`
 when you ADD a spec family (additive API surface in both libraries), `spec(<slug>):`
-for an edit inside one, and a trailing `!` when it breaks a consumer.
+for an edit inside one. **A `!` is only for a package's public API, scoped to the
+package (`feat(rs)!:`, `fix(codegen)!:`) — never for a spec change.** One `!` makes
+every crate, and the npm, Go and Dart packages, a breaking release; commit-lint
+refuses a `!` whose scope is not a package.
 
 Breaking schema changes require a new spec **version** folder (per SPEC §5), not an
-in-place edit.
+in-place edit — and once a version has been **released**, *any* change its generated
+types can see does, even one SPEC §5.2's draft allowance would permit in place. CI
+(`published schemas change only additively`, `scripts/check-published-schemas.mjs`)
+compares each changed spec with the last `trust-tasks-rs-v*` release: in place, a
+released version may only gain an optional member, an appended enum value or
+`oneOf`/`anyOf` branch, a loosened bound, a new `$defs` entry, or a description, and
+may not change `proofRequirement` or drop a declared error code. A new version is a
+new module — an additive patch for every library; an in-place break is a MINOR for
+all of them.
 
 ## ⚠️ Merging is not releasing — read RELEASING.md before touching a version
 
