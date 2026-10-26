@@ -15,7 +15,7 @@
 //! validation.
 
 use serde::{de::DeserializeOwned, Serialize};
-use serde_json::{json, Value};
+use serde_json::Value;
 
 /// Deserialize `value` into `T`, re-serialize it, and require the same JSON
 /// back — the property the untagged enum broke.
@@ -31,6 +31,7 @@ fn round_trips<T: DeserializeOwned + Serialize>(value: Value) -> T {
 #[cfg(feature = "rooms")]
 mod rooms {
     use super::*;
+    use serde_json::json;
     use trust_tasks_rs::specs::rooms::keys::chain::v0_2 as chain;
     use trust_tasks_rs::specs::rooms::keys::profile::write::v0_1 as profile_write;
     use trust_tasks_rs::specs::rooms::records::curate::v0_1 as curate;
@@ -158,6 +159,7 @@ mod rooms {
 #[cfg(feature = "vtc")]
 mod vtc {
     use super::*;
+    use serde_json::json;
     use trust_tasks_rs::specs::vtc::directory::notes::append::v0_1 as append;
 
     /// A note that redacts an earlier one and says why in the same entry.
