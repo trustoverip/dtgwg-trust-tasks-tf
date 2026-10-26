@@ -1215,6 +1215,7 @@ export * as VtcStorageConfigsList_v0_1 from "./vtc/storage/configs/list/0.1/payl
 export * as VtcStorageConfigsList_v0_2 from "./vtc/storage/configs/list/0.2/payload.js";
 export * as VtcStorageConfigsProbe_v0_1 from "./vtc/storage/configs/probe/0.1/payload.js";
 export * as VtcStorageConfigsRetire_v0_1 from "./vtc/storage/configs/retire/0.1/payload.js";
+export * as VtcStorageConfigsRetire_v0_2 from "./vtc/storage/configs/retire/0.2/payload.js";
 export * as VtcStorageConfigsUpdate_v0_1 from "./vtc/storage/configs/update/0.1/payload.js";
 export * as VtcStorageConfigsUpdate_v0_2 from "./vtc/storage/configs/update/0.2/payload.js";
 export * as VtcStorageCredentialsSet_v0_1 from "./vtc/storage/credentials/set/0.1/payload.js";

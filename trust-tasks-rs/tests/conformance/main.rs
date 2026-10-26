@@ -2716,6 +2716,7 @@ mod vtc {
             }
             mod retire {
                 mod v0_1;
+                mod v0_2;
             }
             mod update {
                 mod v0_1;
