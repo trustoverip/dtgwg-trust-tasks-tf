@@ -107,7 +107,8 @@ jobs:
           git switch -C "$branch"
           git add -A
           # A sibling package whose (superseded) block this batch deletes breaks too,
-          # so its scope joins the title (the crates are sized by cargo-semver-checks).
+          # so its scope joins the title. `rs` is what makes the crates' release breaking:
+          # release-plz sizes it from the commit's `!`.
           scopes="rs, ts, go, dart"
           grep -q 'trust-tasks-dart-https/' "$RUNNER_TEMP/readiness.txt" && scopes="$scopes, dart-https"
           title="feat($scopes)!: withdraw $DUE specification versions superseded or retired for 90 days as of $AS_OF"
