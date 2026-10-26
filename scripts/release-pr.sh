@@ -52,6 +52,7 @@ TS_PACKAGES=(
   "@openvtc/trust-tasks-proof"
   "@openvtc/trust-tasks-tsp"
   "@openvtc/trust-tasks-capability-client"
+  "@openvtc/trust-tasks-gen"
 )
 GO_MODULES=(
   "trust-tasks-go"
