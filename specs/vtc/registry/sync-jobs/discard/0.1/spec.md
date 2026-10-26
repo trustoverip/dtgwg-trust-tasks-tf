@@ -62,7 +62,7 @@ A consumer **MUST** return the discarded job's `memberDid`. The caller discards 
 
 ## Authorization
 
-The authority is **administrative control of the community whose membership queue is being modified** — the same authority that admits and removes members, and the same one [`vtc/registry/sync-jobs/retry`](../../retry/0.1/spec.md) requires. A consumer **MUST** establish that the `issuer` holds it for the community the job belongs to.
+The authority is **administrative control of the community whose membership queue is being modified** — the same authority that admits and removes members, and the same one [`vtc/registry/sync-jobs/retry`](../../retry/0.2/spec.md) requires. A consumer **MUST** establish that the `issuer` holds it for the community the job belongs to.
 
 Per [SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements), verifying the VID, `issuer`, `recipient`, transport identity or `proof` establishes who sent the document and that it is unaltered; none of it establishes that the sender administers this community. A maintainer serving several communities **MUST** scope the check to the job's own community.
 
@@ -70,7 +70,7 @@ This task is not open to any caller. It destroys evidence that a membership chan
 
 ## Definitions
 
-- **`jobId`** — the job to delete, as [`vtc/registry/sync-jobs/list`](../../list/0.1/spec.md) reports it. Required, and single: there is no bulk form, because the act is irreversible and a bulk discard would let one request erase every record of a systemic failure.
+- **`jobId`** — the job to delete, as [`vtc/registry/sync-jobs/list`](../../list/0.2/spec.md) reports it. Required, and single: there is no bulk form, because the act is irreversible and a bulk discard would let one request erase every record of a systemic failure.
 - **`memberDid`** — returned in the response: the member whose pending change was dropped. Present so that the response says what the discard actually cost, rather than echoing an opaque identifier back.
 
 ## Request

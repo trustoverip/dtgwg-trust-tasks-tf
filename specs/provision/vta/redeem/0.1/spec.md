@@ -252,4 +252,4 @@ The poll exists for one purpose: to tell the wallet whether the person confirmed
 
 - [`provision/vta/claim/0.1`](../../claim/0.1/spec.md): the claim this task follows, and its `trust-task-next-step` reply.
 - Verifiable Trust Infrastructure, chapter *Trigger Links* (`VTI-LNK-*`): VTI-LNK-114, VTI-LNK-115 and VTI-LNK-117 on the claim and the claim check. Under development at [trustoverip/dtgwg-vti-spec#58](https://github.com/trustoverip/dtgwg-vti-spec/pull/58).
-- [`auth/oob/redeem`](../../../../auth/oob/redeem/0.1/spec.md): the long-poll pattern this task mirrors.
+- [`auth/oob/redeem`](../../../../auth/oob/redeem/0.2/spec.md): the long-poll pattern this task mirrors.

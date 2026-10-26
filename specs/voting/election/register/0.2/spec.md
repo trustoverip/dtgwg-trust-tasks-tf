@@ -76,7 +76,7 @@ related:
 
 ## Abstract
 
-The **Voting — Election Register** Trust Task is how a community hands an election to its ballot box. The community signs a request carrying the election's manifest, the manifest's digest and the voting key the election's tickets are issued under; the ballot box checks that the community is who registers it, recomputes the digest, checks the manifest can be run, and creates the election's empty board. The community's VTC sends it from inside [`vtc/elections/create`](../../../../vtc/elections/create/0.2/spec.md). The family's shared rules are in [`CONVENTIONS.md`](../../../_shared/0.1/CONVENTIONS.md).
+The **Voting — Election Register** Trust Task is how a community hands an election to its ballot box. The community signs a request carrying the election's manifest, the manifest's digest and the voting key the election's tickets are issued under; the ballot box checks that the community is who registers it, recomputes the digest, checks the manifest can be run, and creates the election's empty board. The community's VTC sends it from inside [`vtc/elections/create`](../../../../vtc/elections/create/0.3/spec.md). The family's shared rules are in [`CONVENTIONS.md`](../../../_shared/0.1/CONVENTIONS.md).
 
 ## Status of this Document
 

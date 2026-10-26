@@ -71,7 +71,7 @@ grant records which was used):
   than a directly-signed operator decision, and intended as a migration step
   toward direct signing.
 
-This mirrors [`auth/step-up/approve-response`](../../../auth/step-up/approve-response/0.2/spec.md).
+This mirrors [`auth/step-up/approve-response`](../../../auth/step-up/approve-response/0.6/spec.md).
 
 ## Status of this Document
 

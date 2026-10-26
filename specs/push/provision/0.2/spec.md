@@ -69,7 +69,7 @@ errorCodes:
 
 ## Abstract
 
-**Push — Provision** is how the **controller VTA** sets a wake handle's **trigger allowlist** on the push gateway: the DIDs permitted to request a wake for that handle (typically the device's mediator — queue-driven — and/or the VTA itself — policy-driven). The VTA is the source of truth for this policy ([`device/set-wake/0.1`](../../../device/set-wake/0.1/spec.md) conveys the device's handle to the VTA); this task is how the VTA pushes that policy to the gateway, which **enforces** it on every [`push/wake/0.1`](../../wake/0.1/spec.md).
+**Push — Provision** is how the **controller VTA** sets a wake handle's **trigger allowlist** on the push gateway: the DIDs permitted to request a wake for that handle (typically the device's mediator — queue-driven — and/or the VTA itself — policy-driven). The VTA is the source of truth for this policy ([`device/set-wake/0.2`](../../../device/set-wake/0.2/spec.md) conveys the device's handle to the VTA); this task is how the VTA pushes that policy to the gateway, which **enforces** it on every [`push/wake/0.2`](../../wake/0.2/spec.md).
 
 This is the mechanism that keeps "all device config at the VTA, token at the gateway": the VTA holds the handle + allowlist and provisions the gateway, which holds the token. A wake request from a DID not on the allowlist is refused.
 

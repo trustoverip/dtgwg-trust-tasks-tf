@@ -64,7 +64,7 @@ related:
 
 ## Abstract
 
-Revokes one recorded git right and withdraws it from the VTC's Trust Registry and, through the bridge, from the forge. The counterpart of [`git-ns/right/grant`](../../../../git-ns/right/grant/0.3/spec.md), whose [rights model](../../../../git-ns/right/grant/0.3/spec.md#the-rights-model) this specification relies on.
+Revokes one recorded git right and withdraws it from the VTC's Trust Registry and, through the bridge, from the forge. The counterpart of [`git-ns/right/grant`](../../../../git-ns/right/grant/0.4/spec.md), whose [rights model](../../../../git-ns/right/grant/0.4/spec.md#the-rights-model) this specification relies on.
 
 ## Changes from 0.3
 
@@ -109,10 +109,10 @@ The actor sends the revocation to the VTC. See the top-level schema in [`payload
 
 1. Refuses a triple that matches no live record with `git-ns/right/revoke:notGranted`. A client that only needs the right to be gone **MAY** treat that code as success. A break-glass record whose `breakGlass.effectiveAt` has not yet arrived matches here: it is revocable while it waits.
 2. Checks the authorization above.
-3. Refuses to remove the last *counting* owner of a repository with `git-ns:lastOwner`, and the last *counting* `git.ns.admin` of a bound namespace with `git-ns:lastAdmin` — counting as [fixed rules 3 and 4](../../grant/0.3/spec.md#the-fixed-rules) define it: no `expiresAt`, and not an unratified break-glass record. This applies to resignations too. A record that does not count is never refused here.
+3. Refuses to remove the last *counting* owner of a repository with `git-ns:lastOwner`, and the last *counting* `git.ns.admin` of a bound namespace with `git-ns:lastAdmin` — counting as [fixed rules 3 and 4](../../grant/0.4/spec.md#the-fixed-rules) define it: no `expiresAt`, and not an unratified break-glass record. This applies to resignations too. A record that does not count is never refused here.
 4. Evaluates the community's policy, which may refuse with `git-ns:policyDenied` and may not override the rules above. Policy **MUST NOT** refuse the revocation of an unratified break-glass record by anyone this specification entitles to revoke it: policy may narrow break-glass, never entrench one.
 5. Removes the record, withdraws the right — and, where no other record still implies it, the explicit `git.commit.sign` published for it — from the registry projection, and queues the forge projection. The response **MUST NOT** be sent before the removal is durable.
-6. Where the record carried `breakGlass`, records the revocation in the audit history at the severity it recorded the break-glass, and tells every community administrator and every live `git.ns.admin` of the namespace, as [`git-ns/right/break-glass`](../../break-glass/0.1/spec.md) requires for the break-glass itself.
+6. Where the record carried `breakGlass`, records the revocation in the audit history at the severity it recorded the break-glass, and tells every community administrator and every live `git.ns.admin` of the namespace, as [`git-ns/right/break-glass`](../../break-glass/0.2/spec.md) requires for the break-glass itself.
 
 ### Bob withdraws Dan's commit right after the release
 

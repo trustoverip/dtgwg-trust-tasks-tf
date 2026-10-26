@@ -168,7 +168,7 @@ Failures use `trust-task-error` ([SPEC §8](/SPEC.md#8-error-responses)).
 
 ### Data carried
 
-The request names one role and an optional reason; the response echoes the name. The `inUse` refusal discloses how many entries hold the role — a count, never the subjects, which a requester entitled to see them obtains through `acl/list/0.2` filtered by role. A producer **MUST NOT** put personal data in `reason` or `ext`.
+The request names one role and an optional reason; the response echoes the name. The `inUse` refusal discloses how many entries hold the role — a count, never the subjects, which a requester entitled to see them obtains through `acl/list/0.3` filtered by role. A producer **MUST NOT** put personal data in `reason` or `ext`.
 
 ### Correlation
 

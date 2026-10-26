@@ -60,7 +60,7 @@ from *no longer kept*.
 ### What 1.1 adds
 
 The holder's **annotations** — `starred`, `petname`, `lists` and `directoryRef`
-— beside the 1.0 `notes`, as [`persona/contact/put`](../../put/1.1/spec.md) 1.1
+— beside the 1.0 `notes`, as [`persona/contact/put`](../../put/1.2/spec.md) 1.1
 writes them. They are **contact-level**: whichever revision is asked for, the
 annotations returned are the contact's current ones, because they are the
 holder's present view of the relationship, not part of what the counterparty

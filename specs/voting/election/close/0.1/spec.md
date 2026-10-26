@@ -94,7 +94,7 @@ A conforming **consumer** (the ballot box) **MUST**, in this order:
 7. Answer with the election's summary, whose `head` includes the `closedEarly` entry.
 8. Tally the election from the board up to and including that entry, as at a scheduled close.
 
-A repeat of a close that already took effect is refused with `notOpen`: the effect is the one the first request had, and the producer reads it with [`voting/election/show`](../../show/0.1/spec.md).
+A repeat of a close that already took effect is refused with `notOpen`: the effect is the one the first request had, and the producer reads it with [`voting/election/show`](../../show/0.2/spec.md).
 
 ## Authorization
 

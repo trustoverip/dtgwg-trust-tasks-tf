@@ -62,7 +62,7 @@ A community that admits people on peer identity vetting counts statements only f
 
 This task is how an administrator grants that role. The credential is revoked with [`vtc/endorsements/revoke`](../../../../endorsements/revoke/0.1/spec.md), which flips its status-list bit, and removing a member revokes it too. A community's manifest names the role it counts as `vetting.eligibleVetters.role`, matched as the action `role:<role>`.
 
-A vetter who has lost the credential asks for it again with [`vtc/vetting/vetters/resend`](../../resend/0.1/spec.md). A vetter who wants applicants to find them publishes a profile with [`vtc/vetting/vetters/profile`](../../profile/0.1/spec.md), which [`vtc/vetting/vetters/list`](../../list/0.1/spec.md) returns. A grant alone lists nobody.
+A vetter who has lost the credential asks for it again with [`vtc/vetting/vetters/resend`](../../resend/0.2/spec.md). A vetter who wants applicants to find them publishes a profile with [`vtc/vetting/vetters/profile`](../../profile/0.1/spec.md), which [`vtc/vetting/vetters/list`](../../list/0.1/spec.md) returns. A grant alone lists nobody.
 
 ## Status of this Document
 
@@ -88,7 +88,7 @@ A conforming **community** (`recipient`):
    - an `id`, returned as `credentialId`.
 
    The role is an action in the community's own authority vocabulary, not an endorsement type, so nothing is registered through `vtc/endorsement-types/register` for it.
-5. **MUST** deliver the credential to the member over [`credential-exchange/issue/0.1`](../../../../../credential-exchange/issue/0.1/spec.md). A failed delivery does not undo the grant. The community **MAY** deliver the same credential again when the grant is repeated, and delivers it again when the member asks with [`vtc/vetting/vetters/resend`](../../resend/0.1/spec.md).
+5. **MUST** deliver the credential to the member over [`credential-exchange/issue/0.1`](../../../../../credential-exchange/issue/0.1/spec.md). A failed delivery does not undo the grant. The community **MAY** deliver the same credential again when the grant is repeated, and delivers it again when the member asks with [`vtc/vetting/vetters/resend`](../../resend/0.2/spec.md).
 6. **MUST** treat a grant as ended once its credential is revoked through [`vtc/endorsements/revoke/0.1`](../../../../endorsements/revoke/0.1/spec.md) with `endorsementId`, or expires. When a member is removed or leaves, the community **MUST** revoke every live vetter grant that member holds. When a grant is revoked, the community **MUST** delete the member's [vetter profile](../../profile/0.1/spec.md).
 
 ## Authorization

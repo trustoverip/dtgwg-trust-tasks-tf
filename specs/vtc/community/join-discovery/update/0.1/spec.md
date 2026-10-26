@@ -45,7 +45,7 @@ related:
 
 ## Abstract
 
-The **VTC Community — Join Discovery — Update** Trust Task sets whether the community answers [`vtc/join-requests/manifest`](../../../../join-requests/manifest/0.2/spec.md) to a caller it cannot identify.
+The **VTC Community — Join Discovery — Update** Trust Task sets whether the community answers [`vtc/join-requests/manifest`](../../../../join-requests/manifest/0.4/spec.md) to a caller it cannot identify.
 
 Turning it off does not refuse applicants: a signed request, or one from a transport-authenticated sender, is still answered, and refusing those would break the join ceremony rather than close anything. It makes the answer attributable.
 

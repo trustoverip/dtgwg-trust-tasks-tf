@@ -50,7 +50,7 @@ related:
 
 ## Abstract
 
-The **External Accounts — Archive** Trust Task retires an account without destroying it: it is refused for use and left out of default listings, and its record, key and bindings are kept so that [`external/accounts/restore`](../../restore/0.1/spec.md) can bring it back. Archiving is a reduction and takes one person; it is also the required step before [`external/accounts/delete`](../../delete/0.1/spec.md).
+The **External Accounts — Archive** Trust Task retires an account without destroying it: it is refused for use and left out of default listings, and its record, key and bindings are kept so that [`external/accounts/restore`](../../restore/0.2/spec.md) can bring it back. Archiving is a reduction and takes one person; it is also the required step before [`external/accounts/delete`](../../delete/0.1/spec.md).
 
 ## Status of this Document
 

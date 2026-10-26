@@ -46,7 +46,7 @@ related:
 
 ## Abstract
 
-`identify` is the member's statement **"I am this DID, I hold this lock, and I can see the screen."** The wallet builds it unsigned with the chosen DID as `issuer`, and the member's VTA signs it with `vault/sign-trust-task` for `authentication`. It grants no authority on its own and is never sent by itself: it travels as the `identify` member of [`auth/oob/prove`](../../prove/0.1/spec.md), signed on the outside by the lock key.
+`identify` is the member's statement **"I am this DID, I hold this lock, and I can see the screen."** The wallet builds it unsigned with the chosen DID as `issuer`, and the member's VTA signs it with `vault/sign-trust-task` for `authentication`. It grants no authority on its own and is never sent by itself: it travels as the `identify` member of [`auth/oob/prove`](../../prove/0.3/spec.md), signed on the outside by the lock key.
 
 Its payload is closed — three members, `additionalProperties: false`, no `ext` — because a VTA signs it without user verification. A VTA validates it against this schema and the exact type URI before signing, so a compromised wallet cannot use it to obtain a signature over anything else.
 
@@ -76,7 +76,7 @@ A conforming **consumer** (the service, executing `auth/oob/prove`):
 
 ## Authorization
 
-Membership of the community is what this document lets the service check, and only after the issuer string is found in the service's own member list. The proof establishes control of the DID; the membership check establishes standing; the entered number establishes that the holder can see the starter's screen. None of them is authority to sign anyone in — that requires a user-verified [`auth/oob/grant`](../../grant/0.1/spec.md).
+Membership of the community is what this document lets the service check, and only after the issuer string is found in the service's own member list. The proof establishes control of the DID; the membership check establishes standing; the entered number establishes that the holder can see the starter's screen. None of them is authority to sign anyone in — that requires a user-verified [`auth/oob/grant`](../../grant/0.3/spec.md).
 
 ## Definitions
 

@@ -165,7 +165,7 @@ The community already knows who took which ticket — it issued them — so `tic
 
 ### Retention
 
-Transient. The community keeps nothing of the request beyond its ordinary request log; the records it reads are kept under [`vtc/elections/create`](../../create/0.2/spec.md) and [`vtc/elections/tickets/issue`](../../tickets/issue/0.1/spec.md).
+Transient. The community keeps nothing of the request beyond its ordinary request log; the records it reads are kept under [`vtc/elections/create`](../../create/0.3/spec.md) and [`vtc/elections/tickets/issue`](../../tickets/issue/0.1/spec.md).
 
 ### Consent/purpose
 

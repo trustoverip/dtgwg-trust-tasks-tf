@@ -58,7 +58,7 @@ related:
 
 A member reaches their community from more than one surface — its member portal through their wallet, a command-line or terminal client, a phone — and each one acts against the same community and the same key holder. What none of them can do is keep its own account of which rooms the member is in: a room accepted in one would be missing from the others, and an acceptance one began could be finished by no other. This task gives every surface the same answer, from the one party that records it, so that taking up a room in one surface is taken up in all of them.
 
-It does not replace [`vtc/rooms/offers/list`](../../../offers/list/0.2/spec.md), which carries the credentials an open offer is collected with, and lists an accepted offer only while a repeat can be answered. This lists the record, for as long as the community keeps it, and carries no credentials.
+It does not replace [`vtc/rooms/offers/list`](../../../offers/list/0.4/spec.md), which carries the credentials an open offer is collected with, and lists an accepted offer only while a repeat can be answered. This lists the record, for as long as the community keeps it, and carries no credentials.
 
 ## Status of this Document
 
@@ -103,9 +103,9 @@ Neither is the surface's, and every surface reads both, so every surface reaches
 
 | This task's `state` | Tier | Key holder holds group state for the member | The surface shows | And offers |
 |---|---|---|---|---|
-| `offered` | any | — | an offer | to accept it: collect the credentials with [`vtc/rooms/offers/list`](../../../offers/list/0.2/spec.md), store them with the key holder, then accept |
+| `offered` | any | — | an offer | to accept it: collect the credentials with [`vtc/rooms/offers/list`](../../../offers/list/0.4/spec.md), store them with the key holder, then accept |
 | `admitted` | `open` | — (an `open` room has no group) | a room the member is in | to open it |
-| `admitted` | any, with a renewal listed for it by [`vtc/rooms/offers/list`](../../../offers/list/0.3/spec.md) at `0.3` or later | — | a room the member is in | to keep it: store the renewal's credentials with the key holder in place of the ones it renews, before anything else the rows below offer |
+| `admitted` | any, with a renewal listed for it by [`vtc/rooms/offers/list`](../../../offers/list/0.4/spec.md) at `0.3` or later | — | a room the member is in | to keep it: store the renewal's credentials with the key holder in place of the ones it renews, before anything else the rows below offer |
 | `admitted` | sealed | yes | a room the member is in | to open it |
 | `admitted` | sealed | no, and `repeatAcceptUntil` present | a room whose acceptance is not finished | to finish it: Surface item 3, then a repeated accept, then the Welcome |
 | `admitted` | sealed | no, and `repeatAcceptUntil` absent | a room the member was admitted to and cannot open from this key holder | nothing it can do itself: an administrator re-admits |
@@ -123,7 +123,7 @@ A surface's own record of an acceptance is wrong twice: it is missing everything
 
 The entitlement is **being the member the record is about**, proven by the document's proof and checked against the community's own membership record at execution time. No administrative standing is involved, and none is accepted in its place: administrators read who is in a room with [`vtc/rooms/community/members/list`](../../../community/members/list/0.1/spec.md). A community answering members separately from administrators answers this on its member audience.
 
-**Signing as the member.** The DID the community addresses its offers to is often one whose keys are held by the member's key holder, so the surface the member acts from has this request completed and signed as that DID with [`rooms/keys/act`](../../../../../rooms/keys/act/0.5/spec.md) at `0.5` or later — the first version whose table lists this type — which carries no presentation for this type.
+**Signing as the member.** The DID the community addresses its offers to is often one whose keys are held by the member's key holder, so the surface the member acts from has this request completed and signed as that DID with [`rooms/keys/act`](../../../../../rooms/keys/act/0.8/spec.md) at `0.5` or later — the first version whose table lists this type — which carries no presentation for this type.
 
 ## Definitions
 
@@ -218,7 +218,7 @@ The caller's own record: which of the community's rooms they were offered, accep
 
 ### Correlation
 
-The community maintainer's identifier scope is public, for the reason [`vtc/rooms/offers/list`](../../../offers/list/0.2/spec.md) gives. The answer reveals to the caller only their own admissions — nothing about who else was offered or admitted to any room. The community already holds this record as the rooms' owner; answering it adds nothing to what it knows, and it learns only that the member asked, which it learns of every surface that reads it.
+The community maintainer's identifier scope is public, for the reason [`vtc/rooms/offers/list`](../../../offers/list/0.4/spec.md) gives. The answer reveals to the caller only their own admissions — nothing about who else was offered or admitted to any room. The community already holds this record as the rooms' owner; answering it adds nothing to what it knows, and it learns only that the member asked, which it learns of every surface that reads it.
 
 ### Retention
 

@@ -136,7 +136,7 @@ than a worst case. `key` is content too — `invoice-contact` says something abo
 the subject even to a party that cannot read the value, and a key naming a person,
 a condition, or a dispute says a great deal. `contextId` is a scoping label rather
 than a secret, but it names which part of a principal's life the item belongs to.
-Nothing here is sealed: unlike [`vault/upsert`](../../../../vault/upsert/0.3/spec.md),
+Nothing here is sealed: unlike [`vault/upsert`](../../../../vault/upsert/0.4/spec.md),
 this task carries no HPKE envelope, and the VTA necessarily reads `value` in
 cleartext in order to store it.
 

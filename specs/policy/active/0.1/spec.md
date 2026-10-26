@@ -37,7 +37,7 @@ errorCodes: []
 
 The **Policy — Active** Trust Task reads the active-policy bindings — the `(contextId, purpose) → policy` map that [`policy/activate`](../../activate/0.1/) writes. It is the read side of that write: given a `purpose`, it returns the single policy currently authoritative for that slot (or nothing, if none is active); with `purpose` omitted, it returns every active binding.
 
-It exists as its own task rather than a filter on [`policy/list`](../../list/0.2/) because a purpose is **not** a property of a policy in this model — it is a binding produced by activation (see `policy/activate`). `policy/list` enumerates policy *modules* (which carry `appliesTo`/`priority`, not `purpose`); this task enumerates the *bindings*. A `purpose` filter on `list` would be answering a question its result shape cannot express.
+It exists as its own task rather than a filter on [`policy/list`](../../list/0.3/) because a purpose is **not** a property of a policy in this model — it is a binding produced by activation (see `policy/activate`). `policy/list` enumerates policy *modules* (which carry `appliesTo`/`priority`, not `purpose`); this task enumerates the *bindings*. A `purpose` filter on `list` would be answering a question its result shape cannot express.
 
 ## Conformance
 

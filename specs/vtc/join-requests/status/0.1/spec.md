@@ -116,10 +116,10 @@ refused when it had not.
 The community maintainer declares `identifierScope: public`. An applicant polls
 the community it applied to, addressing it by the same DID it found before
 submitting and the same one the
-[`manifest`](../../manifest/0.1/spec.md) published; a pairwise community
+[`manifest`](../../manifest/0.4/spec.md) published; a pairwise community
 identifier would leave a poller unable to confirm that the party answering is the
 party that took their evidence. The applicant declares `pairwise` for the reason
-[`submit`](../../submit/0.2/spec.md) gives — the identifier needs to persist for
+[`submit`](../../submit/0.3/spec.md) gives — the identifier needs to persist for
 the life of this application and no further.
 
 The id-less poll deserves a note, because it looks like a shortcut and is really
@@ -142,7 +142,7 @@ Transient. A plain poll reads current state and writes nothing. A honoured
 `resendCredentials` records when it was honoured, for the rate limit, beside the
 request it concerns. The values a poll returns were already durable on the
 community's row from
-[`submit`](../../submit/0.2/spec.md) and [`decide`](../../decide/0.1/spec.md).
+[`submit`](../../submit/0.3/spec.md) and [`decide`](../../decide/0.1/spec.md).
 
 The asymmetry worth naming is that the applicant is the one party in this family
 who ends up holding a durable record they can act on. The refusal — its `code`,

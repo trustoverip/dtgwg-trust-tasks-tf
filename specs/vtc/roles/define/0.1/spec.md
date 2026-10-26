@@ -237,7 +237,7 @@ The security-relevant property is not confidentiality but amplification. A role 
 
 ### Correlation
 
-The VTC learns who defined which role, and approvers see the same. Role names and ceilings are community-wide vocabulary and are not, in themselves, about any person; they become correlating only through the entries that hold them, which `acl/list/0.2` (filtered by role) reveals to those permitted to see it. `threadId` joins request to response, which for an approval-gated definition may be separated by a long interval.
+The VTC learns who defined which role, and approvers see the same. Role names and ceilings are community-wide vocabulary and are not, in themselves, about any person; they become correlating only through the entries that hold them, which `acl/list/0.3` (filtered by role) reveals to those permitted to see it. `threadId` joins request to response, which for an approval-gated definition may be separated by a long interval.
 
 ### Retention
 

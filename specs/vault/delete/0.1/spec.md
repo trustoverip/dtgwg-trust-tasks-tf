@@ -52,7 +52,7 @@ errorCodes:
 
 ## Abstract
 
-The **Vault — Delete** Trust Task tombstones a vault entry. The maintainer **MUST** preserve the tombstone for a configured grace period (RECOMMENDED 30 days) so late-syncing consumers can observe the deletion via `vault/sync/0.1` and wipe their local caches before the tombstone is garbage-collected.
+The **Vault — Delete** Trust Task tombstones a vault entry. The maintainer **MUST** preserve the tombstone for a configured grace period (RECOMMENDED 30 days) so late-syncing consumers can observe the deletion via `vault/sync/0.3` and wipe their local caches before the tombstone is garbage-collected.
 
 ## Conformance
 
@@ -63,7 +63,7 @@ A conforming **consumer** (the vault maintainer) **MUST**:
 1. Verify proof and `VaultWrite` capability on the entry's context.
 2. If `expectedVersion` is supplied and does not match → `vault/delete:versionConflict` with `details.currentVersion`.
 3. Atomically: set a tombstone marker on the entry with `deletedAt = now`, `graceUntil = now + maintainer-policy-grace`. The secret material MUST be zeroised immediately (cleartext erased from storage). The metadata view MAY be retained until `graceUntil` so sync clients can observe the deletion identity.
-4. Emit a `sync/event/0.1` of kind `vault.deleted` to every consumer with VaultRead on the entry's context, carrying `{ id, deletedAt, graceUntil }`.
+4. Emit a `sync/event/0.2` of kind `vault.deleted` to every consumer with VaultRead on the entry's context, carrying `{ id, deletedAt, graceUntil }`.
 5. After `graceUntil`, the maintainer MAY purge the tombstone entirely. Consumers that connect after purge see the entry as absent (indistinguishable from "never existed").
 6. Treat a delete-of-an-already-deleted entry as idempotent if the tombstone still exists; return success. If the tombstone has been purged, return `notFound`.
 

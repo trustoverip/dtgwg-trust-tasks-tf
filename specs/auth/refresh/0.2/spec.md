@@ -72,7 +72,7 @@ related:
 
 The **Auth — Refresh** Trust Task exchanges a long-lived *refresh token* for a fresh short-lived *access token*, without re-running the challenge-response handshake. The refresh token serves as bearer authentication for this exchange; the consumer verifies it against its own session state.
 
-This task does not change the session's *AAL* — refresh preserves whatever `amr` and `acr` the original authentication established. To elevate AAL, use [`auth/passkey/login/finish/0.1`](../../passkey/login/finish/0.1/spec.md) against the existing session, or run a [`auth/step-up/approve-request`](../../step-up/approve-request/0.1/spec.md) handshake.
+This task does not change the session's *AAL* — refresh preserves whatever `amr` and `acr` the original authentication established. To elevate AAL, use [`auth/passkey/login/finish/0.2`](../../passkey/login/finish/0.2/spec.md) against the existing session, or run a [`auth/step-up/approve-request`](../../step-up/approve-request/0.5/spec.md) handshake.
 
 **New in 0.2, two independent additions:**
 
@@ -172,7 +172,7 @@ Where a consumer requires a `proof` on every refresh for its own audit reasons, 
 
 ### Refresh of a session-key-bound session (valid)
 
-The browser's console logged in with `auth/authenticate/0.2` and was handed back `session.sessionKey`. It now refreshes, proving possession of that same key alongside the token.
+The browser's console logged in with `auth/authenticate/0.3` and was handed back `session.sessionKey`. It now refreshes, proving possession of that same key alongside the token.
 
 ```json
 {

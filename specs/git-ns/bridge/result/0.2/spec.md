@@ -49,7 +49,7 @@ related:
 
 ## Abstract
 
-The bridge reports how a job sent with [`git-ns/bridge/job`](../../../../git-ns/bridge/job/0.1/spec.md) ended: the outcome, the repository it touched as the forge now identifies it, and the outcome of each step. The VTC uses it to move a repository from `pendingCreate` to `active`, to record its forge id and bootstrap status, and to decide whether to send the job again.
+The bridge reports how a job sent with [`git-ns/bridge/job`](../../../../git-ns/bridge/job/0.6/spec.md) ended: the outcome, the repository it touched as the forge now identifies it, and the outcome of each step. The VTC uses it to move a repository from `pendingCreate` to `active`, to record its forge id and bootstrap status, and to decide whether to send the job again.
 
 ## Changes from 0.1
 

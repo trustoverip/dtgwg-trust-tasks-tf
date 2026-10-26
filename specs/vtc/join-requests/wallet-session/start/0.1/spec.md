@@ -97,13 +97,13 @@ This task **begins** an OpenID4VP exchange; it does not carry one. The two walle
 ### Producer (applicant)
 
 1. **MUST** carry a proof; its signer is the applicant the session is bound to.
-2. **MUST** name the criterion by the `requirementsDigest` [`vtc/join-requests/manifest/0.3`](../../../manifest/0.3/spec.md) published for it, and **SHOULD** check that the criterion states a credential query before asking.
+2. **MUST** name the criterion by the `requirementsDigest` [`vtc/join-requests/manifest/0.4`](../../../manifest/0.4/spec.md) published for it, and **SHOULD** check that the criterion states a credential query before asking.
 3. **MAY** supply `requestId` to record the evidence on a join request it has already submitted — typically one answered `deferred` because a credential was missing. Without it the evidence is held for its next [`submit`](../../../submit/0.3/spec.md).
 4. **SHOULD** show the `walletUri` only to the person who will answer it, and **SHOULD** stop showing it at `expiresAt` or once [`wallet-session/status`](../../status/0.1/spec.md) reports the session is no longer `awaitingWallet`.
 
 ### Consumer (community)
 
-1. **MUST** resolve `criterion` to a criterion it publishes, or one it still honours within that version's `requirementsGrace` ([`manifest/0.3`](../../../manifest/0.3/spec.md) item 5), and refuse otherwise with `criterionNotFound`. It **MUST** refuse with `noWalletPresentation` when that criterion states no credential query a wallet can answer.
+1. **MUST** resolve `criterion` to a criterion it publishes, or one it still honours within that version's `requirementsGrace` ([`manifest/0.3`](../../../manifest/0.4/spec.md) item 5), and refuse otherwise with `criterionNotFound`. It **MUST** refuse with `noWalletPresentation` when that criterion states no credential query a wallet can answer.
 2. When `requestId` is supplied, **MUST** confirm the request exists and belongs to the proof signer, and refuse with `requestNotFound` if either fails — the same code for both, so the task cannot be used to probe for other applicants' requests. It **MUST** refuse with `requestClosed` a request of the signer's that has been decided or withdrawn.
 3. **MUST** choose the verifier identity named by `clientIdPrefix`, or its default when absent, and refuse with `verifierNotConfigured` when it holds none. The identity is the one OpenID4VP's client identifier prefix names: a DID for `decentralized_identifier`, an X.509 certificate for `x509_hash`. It **SHOULD** be a key dedicated to signing OpenID4VP requests, not the community's own DID.
 4. **MUST** bind the session to the proof signer, to the resolved criterion version, and to `requestId` when supplied. Nothing a wallet later sends can change any of the three.
@@ -126,7 +126,7 @@ The wallet holds no authority here at all. It answers a request the community si
 
 **Presentation session** — the state the community holds for one wallet exchange: the applicant DID, the criterion version, the join request if any, the DCQL query, the nonce, the ephemeral response key, the verifier identity that signs the request object, and, once a wallet answers, the outcome.
 
-**`criterion`** — the `requirementsDigest` of the criterion the evidence is for, as [`manifest/0.3`](../../../manifest/0.3/spec.md) publishes it and [`submit/0.3`](../../../submit/0.3/spec.md) carries it. The digest names one version of the criterion, so the query a wallet is asked to satisfy is the one the applicant read, even if the community changes the criterion while the session is open.
+**`criterion`** — the `requirementsDigest` of the criterion the evidence is for, as [`manifest/0.3`](../../../manifest/0.4/spec.md) publishes it and [`submit/0.3`](../../../submit/0.3/spec.md) carries it. The digest names one version of the criterion, so the query a wallet is asked to satisfy is the one the applicant read, even if the community changes the criterion while the session is open.
 
 **`requestId`** — a join request of the applicant's, as returned by [`submit`](../../../submit/0.3/spec.md), to record the evidence on.
 

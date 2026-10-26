@@ -79,7 +79,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 ## Authorization
 
-The authority is **operation of the agent as a whole**: the same standing that may change which transports it advertises ([`vta/services/update`](../../update/1.0/)). A recipient **MUST** refuse a producer without it, including one that administers only some of the agent's contexts — the report spans every sender, whatever context it dealt with.
+The authority is **operation of the agent as a whole**: the same standing that may change which transports it advertises ([`vta/services/update`](../../update/1.2/)). A recipient **MUST** refuse a producer without it, including one that administers only some of the agent's contexts — the report spans every sender, whatever context it dealt with.
 
 Per [SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements), the proof establishes who asked; entitlement is the recipient's own decision.
 

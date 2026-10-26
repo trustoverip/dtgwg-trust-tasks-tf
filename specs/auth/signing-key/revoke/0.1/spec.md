@@ -53,7 +53,7 @@ related:
 
 ## Abstract
 
-The **Auth — Signing Key Revoke** Trust Task withdraws one delegation enrolled by [`auth/signing-key/enroll`](../../enroll/0.1/spec.md). From the moment it executes, a document signed by the key is refused, and the key cannot be enrolled again.
+The **Auth — Signing Key Revoke** Trust Task withdraws one delegation enrolled by [`auth/signing-key/enroll`](../../enroll/0.2/spec.md). From the moment it executes, a document signed by the key is refused, and the key cannot be enrolled again.
 
 Revocation is the lever an identity reaches for when a device is lost, a browser profile is suspect, or a key has simply outlived its use. It presupposes nothing beyond the caller's standing over the delegation: requiring a fresh gesture to *withdraw* a credential would be a gate that protects the attacker, since an operator who suspects a device should be able to disown it before they reach for their authenticator.
 

@@ -104,7 +104,7 @@ A *request* document carries `type: https://trusttasks.org/spec/keys/derive-and-
     "derivationPath": "m/26'/9'/0'",
     "document": {
       "id": "urn:uuid:6f1b2c3d-4e5f-4061-8293-a4b5c6d7e8f9",
-      "type": "https://trusttasks.org/spec/auth/authenticate/0.1",
+      "type": "https://trusttasks.org/spec/auth/authenticate/0.3",
       "issuer": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
       "payload": { "sessionId": "s-1", "challenge": "c-1" }
     },
@@ -129,7 +129,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/keys/de
     "signerDid": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
     "document": {
       "id": "urn:uuid:6f1b2c3d-4e5f-4061-8293-a4b5c6d7e8f9",
-      "type": "https://trusttasks.org/spec/auth/authenticate/0.1",
+      "type": "https://trusttasks.org/spec/auth/authenticate/0.3",
       "issuer": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
       "payload": { "sessionId": "s-1", "challenge": "c-1" },
       "proof": {

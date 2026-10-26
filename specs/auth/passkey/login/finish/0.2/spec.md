@@ -69,7 +69,7 @@ related:
 
 ## Abstract
 
-The **Auth — Passkey Login (finish)** Trust Task completes the WebAuthn assertion ceremony started by [`auth/passkey/login/start/0.1`](../../start/0.1/spec.md). The producer submits the `AuthenticatorAssertionResponse` returned by `navigator.credentials.get`; the auth service verifies the assertion per WebAuthn Level 2 §7.2 and dispatches on the start ceremony's recorded `purpose`:
+The **Auth — Passkey Login (finish)** Trust Task completes the WebAuthn assertion ceremony started by [`auth/passkey/login/start/0.2`](../../start/0.2/spec.md). The producer submits the `AuthenticatorAssertionResponse` returned by `navigator.credentials.get`; the auth service verifies the assertion per WebAuthn Level 2 §7.2 and dispatches on the start ceremony's recorded `purpose`:
 
 - `purpose: "login"` — issue a new `Session` and `TokenBundle` with `amr` containing at least `"passkey"`, `acr` defaulting to `"aal2"`.
 - `purpose: "stepUp"` — locate the producer's existing session, rotate its `amr`/`acr` to reflect the new factor (`amr` adds `"passkey"`, `acr` raises to `"aal2"` or `"aal3"` per consumer policy). The session id and existing tokens persist.

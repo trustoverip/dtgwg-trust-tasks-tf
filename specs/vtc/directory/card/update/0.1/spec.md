@@ -161,7 +161,7 @@ The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, 
 
 A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here.
 
-A conforming **producer** is the member, signing with their membership DID or with a key the member delegated for this community under [`auth/oob/grant/0.2`](../../../../../auth/oob/grant/0.2/spec.md) whose `signingScope` covers `vtc/directory`. An update that widens any field's visibility to `public`, or sets `discoverability.external` to `true`, **MUST** be signed by the membership DID itself; a consumer **MUST** refuse such an update signed by a delegated key. A client **MUST NOT** send this document on the member's behalf without the member's decision.
+A conforming **producer** is the member, signing with their membership DID or with a key the member delegated for this community under [`auth/oob/grant/0.3`](../../../../../auth/oob/grant/0.3/spec.md) whose `signingScope` covers `vtc/directory`. An update that widens any field's visibility to `public`, or sets `discoverability.external` to `true`, **MUST** be signed by the membership DID itself; a consumer **MUST** refuse such an update signed by a delegated key. A client **MUST NOT** send this document on the member's behalf without the member's decision.
 
 A conforming **consumer** (the community) **MUST**:
 

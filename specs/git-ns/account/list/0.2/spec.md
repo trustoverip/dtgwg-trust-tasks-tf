@@ -53,7 +53,7 @@ related:
 
 ## Abstract
 
-A member links their own forge account once, community-wide, through [`git-ns/account/link`](../../link/0.1/spec.md); [`git-ns/view`](../../../view/0.5/spec.md) then shows that member their own linked accounts and nobody else's — correctly, since a member's forge identity is theirs to see, not another member's business. But an administrator diagnosing why a bridge job's `desiredRoles` skipped someone, or auditing which members have never linked an account and so hold no forge role at all, needs the whole roster. This task is that roster: every member's linked account on every forge, with the membership fact (`memberCurrent`) that says whether the link still projects anything. It is an admin console's *Linked accounts* table, a command-line `accounts list`.
+A member links their own forge account once, community-wide, through [`git-ns/account/link`](../../link/0.1/spec.md); [`git-ns/view`](../../../view/0.6/spec.md) then shows that member their own linked accounts and nobody else's — correctly, since a member's forge identity is theirs to see, not another member's business. But an administrator diagnosing why a bridge job's `desiredRoles` skipped someone, or auditing which members have never linked an account and so hold no forge role at all, needs the whole roster. This task is that roster: every member's linked account on every forge, with the membership fact (`memberCurrent`) that says whether the link still projects anything. It is an admin console's *Linked accounts* table, a command-line `accounts list`.
 
 It is a read. It changes nothing, links nothing and unlinks nothing.
 
@@ -81,7 +81,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 Not consequential, and declared for clarity. The caller is the DID the document's verified `proof` binds to its `issuer`; an unsigned document is refused with `proofRequired`.
 
-The entitlement is **the community-administrator capability** in the VTC's own access control, exactly as in [`git-ns/right/list`](../../../right/list/0.1/spec.md). A linked account is not scoped to any namespace — the same link is used by every bridge, in every namespace, that needs to know a member's forge identity — so holding `git.ns.admin` on one or more namespaces does not entitle a caller to this community-wide roster. A caller who does not hold the community-administrator capability is refused with `git-ns/account/list:notCommunityAdministrator`.
+The entitlement is **the community-administrator capability** in the VTC's own access control, exactly as in [`git-ns/right/list`](../../../right/list/0.3/spec.md). A linked account is not scoped to any namespace — the same link is used by every bridge, in every namespace, that needs to know a member's forge identity — so holding `git.ns.admin` on one or more namespaces does not entitle a caller to this community-wide roster. A caller who does not hold the community-administrator capability is refused with `git-ns/account/list:notCommunityAdministrator`.
 
 The capability is read from the VTC's own records at execution time; the `proof` establishes who asked, not that they may ([SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10).
 

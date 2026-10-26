@@ -81,19 +81,19 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 Not consequential, and declared for clarity. The caller is the DID the document's verified `proof` binds to its `issuer`, or the DID a key the VTC has recorded as delegated by that DID acts for; an unsigned document is refused with `proofRequired`. Nothing in the payload names or widens whose view is returned.
 
 - **`scope: member`** (the default) — the entitlement is **membership of the community**: a caller the VTC does not resolve to a current member is refused with `permissionDenied`. A non-member holding a repository right through community policy — an outside contributor who signs commits — has no view through this task; what they hold is readable from the Trust Registry like anyone else's. What each member sees is then narrowed by their own rights, as below.
-- **`scope: administrator`** — the entitlement is, for each namespace, **the community-administrator capability** in the VTC's own access control (the one [`git-ns/namespace/bind`](../../namespace/bind/0.1/spec.md) requires), or **`git.ns.admin` on that namespace** held by explicit record and live at the instant the VTC evaluates the request. The caller must be a current member, as for the default scope. A caller entitled to no namespace within `resource` is refused with `git-ns/view:notAdministrator`. A context-scoped administrator of the VTC who holds no `git.ns.admin` administers no namespace here: the capability that counts is the community-wide one.
+- **`scope: administrator`** — the entitlement is, for each namespace, **the community-administrator capability** in the VTC's own access control (the one [`git-ns/namespace/bind`](../../namespace/bind/0.2/spec.md) requires), or **`git.ns.admin` on that namespace** held by explicit record and live at the instant the VTC evaluates the request. The caller must be a current member, as for the default scope. A caller entitled to no namespace within `resource` is refused with `git-ns/view:notAdministrator`. A context-scoped administrator of the VTC who holds no `git.ns.admin` administers no namespace here: the capability that counts is the community-wide one.
 
 The linked accounts returned are the caller's own under either scope, and no right or capability — `git.ns.admin` and the community-administrator capability included — widens that to anyone else's.
 
 ## Definitions
 
-**`resource`** — narrows the answer to that resource and everything it contains, by whole-segment containment ([the fixed rules](../../right/grant/0.3/spec.md#the-fixed-rules)). A repository resource returns that repository and the rights on it; a namespace resource returns the namespace and everything in it. For `accounts`, it narrows to the resource's forge.
+**`resource`** — narrows the answer to that resource and everything it contains, by whole-segment containment ([the fixed rules](../../right/grant/0.4/spec.md#the-fixed-rules)). A repository resource returns that repository and the rights on it; a namespace resource returns the namespace and everything in it. For `accounts`, it narrows to the resource's forge.
 
 **Administered namespace** — for a holder of the community-administrator capability, every namespace bound to the VTC, `pending` ones included. For anyone else, each namespace on which they hold a live, explicitly recorded `git.ns.admin`.
 
 **`scope`** — `member`, the default, or `administrator`. It chooses which entitlement answers the request ([Authorization](#authorization)); it never changes the response's shape.
 
-**`breakGlass`** — `true` narrows the answer to break-glass records: those carrying `breakGlass` ([`git-ns/right/break-glass`](../../right/break-glass/0.1/spec.md)), ratified or not.
+**`breakGlass`** — `true` narrows the answer to break-glass records: those carrying `breakGlass` ([`git-ns/right/break-glass`](../../right/break-glass/0.2/spec.md)), ratified or not.
 
 **`accounts`** — the forge accounts linked to the caller's DID, at most one per forge, each with `linkedAt`, the instant the VTC recorded the link. A link attempt still `pending` is not an account.
 
@@ -289,7 +289,7 @@ Bob owns `gadgets`, so he sees every right on it, reasons included. On `widgets`
 
 ### What Dana sees
 
-Carol, the only admin of `acme`, was away when a release had to ship, and Bob gave himself `git.ns.admin` with [`git-ns/right/break-glass`](../../right/break-glass/0.1/spec.md). Nobody has ratified it yet, so Dana's console shows it as awaiting her. Dana linked no forge account.
+Carol, the only admin of `acme`, was away when a release had to ship, and Bob gave himself `git.ns.admin` with [`git-ns/right/break-glass`](../../right/break-glass/0.2/spec.md). Nobody has ratified it yet, so Dana's console shows it as awaiting her. Dana linked no forge account.
 
 ```json
 {

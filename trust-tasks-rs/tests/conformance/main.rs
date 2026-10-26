@@ -2218,6 +2218,7 @@ mod vtc {
         mod create {
             mod v0_1;
             mod v0_2;
+            mod v0_3;
         }
         mod list {
             mod v0_1;
@@ -2656,10 +2657,12 @@ mod vtc {
         mod storage {
             mod assign {
                 mod v0_1;
+                mod v0_2;
             }
             mod migrate {
                 mod v0_1;
                 mod v0_2;
+                mod v0_3;
             }
         }
         mod usage {
@@ -2702,6 +2705,7 @@ mod vtc {
             mod create {
                 mod v0_1;
                 mod v0_2;
+                mod v0_3;
             }
             mod get {
                 mod v0_1;
@@ -2717,16 +2721,19 @@ mod vtc {
             mod retire {
                 mod v0_1;
                 mod v0_2;
+                mod v0_3;
             }
             mod update {
                 mod v0_1;
                 mod v0_2;
+                mod v0_3;
             }
         }
         mod credentials {
             mod set {
                 mod v0_1;
                 mod v0_2;
+                mod v0_3;
             }
         }
     }

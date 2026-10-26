@@ -41,7 +41,7 @@ related:
 
 ## Abstract
 
-The **VTC Groups — Show** Trust Task reads one group, as [`vtc/groups/list`](../../list/0.1/spec.md) would show it, with its DID (`groupDid`) — the identity that issues its members' membership credentials.
+The **VTC Groups — Show** Trust Task reads one group, as [`vtc/groups/list`](../../list/0.2/spec.md) would show it, with its DID (`groupDid`) — the identity that issues its members' membership credentials.
 
 ## Status of this Document
 
@@ -59,11 +59,11 @@ A conforming **consumer** (the community) **MUST**:
 
 1. Refuse a caller who is neither an active member nor an administrator with `permissionDenied`.
 2. Answer `notFound` alike for a group that does not exist and one whose `visibility` does not admit the caller.
-3. Apply the field rules of [`vtc/groups/list`](../../list/0.1/spec.md) Conformance item 3.
+3. Apply the field rules of [`vtc/groups/list`](../../list/0.2/spec.md) Conformance item 3.
 
 ## Authorization
 
-**Authority: standing in the community, bounded by the group's visibility**, as for [`vtc/groups/list`](../../list/0.1/spec.md).
+**Authority: standing in the community, bounded by the group's visibility**, as for [`vtc/groups/list`](../../list/0.2/spec.md).
 
 ## Definitions
 

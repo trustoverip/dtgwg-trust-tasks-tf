@@ -53,7 +53,7 @@ related:
 
 ## Abstract
 
-The first leg of redeeming an [`auth/passkey/enroll/invite`](../../../invite/0.2/spec.md). The invitee — typically in a browser, on the auth service's own origin, having opened the invite URL — sends the token from the URL and the claim code they were given separately. The auth service answers with WebAuthn creation options for the invite's subject, and, when the subject already holds credentials of the invite's purpose, request options over those too.
+The first leg of redeeming an [`auth/passkey/enroll/invite`](../../../invite/0.3/spec.md). The invitee — typically in a browser, on the auth service's own origin, having opened the invite URL — sends the token from the URL and the claim code they were given separately. The auth service answers with WebAuthn creation options for the invite's subject, and, when the subject already holds credentials of the invite's purpose, request options over those too.
 
 ## Status of this Document
 

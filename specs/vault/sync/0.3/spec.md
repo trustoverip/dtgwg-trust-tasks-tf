@@ -43,7 +43,7 @@ errorCodes:
 
 ## Abstract
 
-The **Vault — Sync** Trust Task is the incremental-delta companion to the `sync/event/0.1` server-push notification: a long-lived consumer subscribes to push events while connected; when reconnecting after offline, it calls `vault/sync` to catch up on missed events.
+The **Vault — Sync** Trust Task is the incremental-delta companion to the `sync/event/0.2` server-push notification: a long-lived consumer subscribes to push events while connected; when reconnecting after offline, it calls `vault/sync` to catch up on missed events.
 
 Events are strictly ordered by `seq` within a context. The consumer applies them in order to keep its local cache convergent with the maintainer's authoritative state.
 

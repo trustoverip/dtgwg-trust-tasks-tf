@@ -84,6 +84,10 @@ Versions live side-by-side in their own folders (`specs/acl/grant/0.1/`, `specs/
 - `MINOR` bump = backwards-compatible change.
 - `MAJOR` bump = breaking change, reset `MINOR` to 0.
 - Editorial/normalization changes to a `status: draft` spec — normalizing casing to the canonical convention below, re-pinning a framework or shared-schema `$ref` with no wire effect, rewording descriptions — are made **in place**. Do **not** create a new version folder for them ([SPEC.md §5.2](SPEC.md#52-compatibility-rules)).
+- **A new version makes every reference to the old one stale, and the build says so.** Other specs name yours by version — a Type URI in a schema `const`, a link in their prose, a description, a sample document. The stale-references check (`scripts/lib/stale-references.mjs`) fails the build on any such reference, in the latest version of any non-retired spec, to a version you have superseded. `npm run fix-stale-references` rewrites the prose links, mentions and descriptions for you, and lists what it will not touch:
+  - a **wire pin** (a schema `const`/`enum`/`pattern`/`$ref`) or a **normative value** (a full Type URI in prose, or a version in a MUST/SHOULD sentence — the `expects` entry a deferred operation sends, say): moving it changes what conforms, so the referencing spec takes a new version too, with a `## Changes from` section saying so;
+  - an **example** carrying a Type URI: its payload was written for the old version, so check it against the new one before moving it.
+  An old version named on purpose — in a `## Changes from` or `### What 0.4 changed` section, in a version run ending at the latest, after `since`/`added in`, before `or later` — is left alone. Anything else deliberate goes in `scripts/lib/stale-references-allowlist.json` with the reason.
 - See [SPEC.md §5.2](SPEC.md#52-compatibility-rules) for the precise compatibility rules consumers will apply to your version bump. (That is the *spec's* version, which you do own — unlike the library versions, which the Release PR assigns; see [RELEASING.md](RELEASING.md).)
 
 ## `spec.md` front matter

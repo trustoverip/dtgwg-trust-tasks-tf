@@ -79,7 +79,7 @@ The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, 
 
 A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here.
 
-A conforming **producer** is an active member, signing with their membership DID or with a key they delegated for this community under [`auth/oob/grant/0.2`](../../../../../auth/oob/grant/0.2/spec.md) whose `signingScope` covers `vtc/directory`; or a holder of the directory administration capability. A producer **SHOULD** scale an image down before sending it: the community keeps no more than it needs to show.
+A conforming **producer** is an active member, signing with their membership DID or with a key they delegated for this community under [`auth/oob/grant/0.3`](../../../../../auth/oob/grant/0.3/spec.md) whose `signingScope` covers `vtc/directory`; or a holder of the directory administration capability. A producer **SHOULD** scale an image down before sending it: the community keeps no more than it needs to show.
 
 A conforming **consumer** (the community) **MUST**:
 

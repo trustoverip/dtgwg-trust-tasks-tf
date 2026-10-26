@@ -137,7 +137,7 @@ The request carries one instance identifier; the response, that instance's refre
 
 ### Correlation
 
-The task makes the control plane resolve the instance's DID, which an observer of the instance's hosting (or of the resolver the control plane uses) can see as a fetch from the control plane at that moment. That fetch is the same one the scheduled refresh makes, so the task reveals only that an administrator acted, not anything new about the fleet. The response carries the same topology as [`did-management/registry/get`](../../get/0.1/spec.md) and is administrator-only for the same reason.
+The task makes the control plane resolve the instance's DID, which an observer of the instance's hosting (or of the resolver the control plane uses) can see as a fetch from the control plane at that moment. That fetch is the same one the scheduled refresh makes, so the task reveals only that an administrator acted, not anything new about the fleet. The response carries the same topology as [`did-management/registry/get`](../../get/0.2/spec.md) and is administrator-only for the same reason.
 
 Both parties declare `identifierScope: public`, and must: the control plane's DID is the recipient every administrator addresses and the key its replies are verified against, and the administrator's DID is what the access-control entry is keyed on.
 

@@ -76,7 +76,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 A conforming **producer** (the trustee, through its client) **MUST**:
 
-1. Sign the request as the trustee's DID, with the complaints its VTA found ([`vta/pcs/trustee/keys`](../../../../vta/pcs/trustee/keys/0.1/spec.md)).
+1. Sign the request as the trustee's DID, with the complaints its VTA found ([`vta/pcs/trustee/keys`](../../../../vta/pcs/trustee/keys/0.3/spec.md)).
 
 A conforming **consumer** (the ballot box) **MUST**, in this order:
 

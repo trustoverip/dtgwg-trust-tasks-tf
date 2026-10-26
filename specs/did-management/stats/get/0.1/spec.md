@@ -54,7 +54,7 @@ related:
 
 A hosting service counts how often each DID it hosts is resolved and updated — the edges report their counts to the control plane with [`did-management/server/stats-sync`](../../../server/stats-sync/0.1/spec.md). **Stats Get** reads the totals: one slot's, for its owner's dashboard, or the whole service's, for an administrator's.
 
-For the same counters over time, bucketed, see [`did-management/stats/timeseries`](../../timeseries/0.1/spec.md).
+For the same counters over time, bucketed, see [`did-management/stats/timeseries`](../../timeseries/0.2/spec.md).
 
 ## Status of this Document
 

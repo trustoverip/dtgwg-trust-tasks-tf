@@ -60,7 +60,7 @@ The `previousPolicyId` in the response is what makes the swap auditable and reve
 
 Producer: supply `id` and `purpose`. Supply `contextId` only if the maintainer partitions its active-policy map per context. Carry a proof.
 
-Consumer: verify `PolicyAdmin` capability. Resolve the policy by `id`; if none exists, return `notFound`. If it is `enabled: false`, return `policyDisabled`. If it is already the active policy for `(contextId, purpose)`, return `alreadyActive` — do not re-emit audit or sync events for a no-op. Otherwise **atomically** replace the active pointer for `(contextId, purpose)`: record the displaced id, set the new one, and return `previousPolicyId` (or `null` on the first activation for the slot). Emit `sync/event/0.1` with kind `policyChanged`, and audit the swap with `{ who, when, purpose, contextId, activated, previousPolicyId }`.
+Consumer: verify `PolicyAdmin` capability. Resolve the policy by `id`; if none exists, return `notFound`. If it is `enabled: false`, return `policyDisabled`. If it is already the active policy for `(contextId, purpose)`, return `alreadyActive` — do not re-emit audit or sync events for a no-op. Otherwise **atomically** replace the active pointer for `(contextId, purpose)`: record the displaced id, set the new one, and return `previousPolicyId` (or `null` on the first activation for the slot). Emit `sync/event/0.2` with kind `policyChanged`, and audit the swap with `{ who, when, purpose, contextId, activated, previousPolicyId }`.
 
 ## Security & Privacy
 

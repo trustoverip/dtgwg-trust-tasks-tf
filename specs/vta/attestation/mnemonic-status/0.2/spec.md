@@ -55,7 +55,7 @@ related:
 
 ## Abstract
 
-A TEE agent generates its BIP-39 seed inside the enclave on first boot and holds it in a guard that releases it, once, within a short window after boot ([`vta/attestation/mnemonic-export`](../../mnemonic-export/1.0/spec.md)). Before a super administrator asks for that release — or decides it has already been missed — it needs to know the guard's state: is the window still open, has the mnemonic already been taken, does entropy remain to export at all, and how long is left.
+A TEE agent generates its BIP-39 seed inside the enclave on first boot and holds it in a guard that releases it, once, within a short window after boot ([`vta/attestation/mnemonic-export`](../../mnemonic-export/1.1/spec.md)). Before a super administrator asks for that release — or decides it has already been missed — it needs to know the guard's state: is the window still open, has the mnemonic already been taken, does entropy remain to export at all, and how long is left.
 
 This task answers that. It changes nothing: the window closes and the entropy wipes on its own schedule regardless of whether anyone asks.
 
@@ -86,11 +86,11 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 *Declared under [SPEC §7.3](/SPEC.md#73-specification-requirements) item 15.* Not consequential, and declared for clarity.
 
-The entitlement is the same **super-admin standing** that [`vta/attestation/mnemonic-export`](../../mnemonic-export/1.0/spec.md) requires for the release itself: the operator authorised to take the one-time backup is the same operator authorised to check whether the chance remains. An administrator without that standing learns nothing about the window's state. The `proof` establishes who asked, not that they may ([SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10).
+The entitlement is the same **super-admin standing** that [`vta/attestation/mnemonic-export`](../../mnemonic-export/1.1/spec.md) requires for the release itself: the operator authorised to take the one-time backup is the same operator authorised to check whether the chance remains. An administrator without that standing learns nothing about the window's state. The `proof` establishes who asked, not that they may ([SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10).
 
 ## Definitions
 
-**Export window** — the bounded period after boot during which [`vta/attestation/mnemonic-export`](../../mnemonic-export/1.0/spec.md) will release the mnemonic. Opened only when the VTA was started with an export window configured, and only on the boot that generated the entropy.
+**Export window** — the bounded period after boot during which [`vta/attestation/mnemonic-export`](../../mnemonic-export/1.1/spec.md) will release the mnemonic. Opened only when the VTA was started with an export window configured, and only on the boot that generated the entropy.
 
 **Entropy available** — whether the guard still holds the 32 bytes of seed entropy. Cryptographically wiped once exported or once the window expires, and never present on a boot after the first, because a VTA generates its seed only once.
 

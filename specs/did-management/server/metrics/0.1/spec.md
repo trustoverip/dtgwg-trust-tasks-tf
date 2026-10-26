@@ -49,7 +49,7 @@ related:
 
 The shared shape, [`_shared/0.2/metrics-snapshot`](../../../_shared/0.2/metrics-snapshot.schema.json), is deliberately generic — any service in this ecosystem can answer its own `*/server/metrics`-shaped task with the same `MetricsSnapshot`, not only a DID hosting service.
 
-This is not the DID-specific resolve/update counters — those are [`did-management/stats/get`](../../../stats/get/0.1/spec.md) and [`did-management/stats/timeseries`](../../../stats/timeseries/0.1/spec.md), scoped to one slot or the service's DID-serving totals. **Server Metrics** is the operator's process-level view: how the service itself is running, independent of any one DID.
+This is not the DID-specific resolve/update counters — those are [`did-management/stats/get`](../../../stats/get/0.1/spec.md) and [`did-management/stats/timeseries`](../../../stats/timeseries/0.2/spec.md), scoped to one slot or the service's DID-serving totals. **Server Metrics** is the operator's process-level view: how the service itself is running, independent of any one DID.
 
 A generic, unauthenticated liveness probe (no metrics, no detail) is a separate, deliberately different concern and stays outside the Trust Task surface — see [`did-management/server/info`](../../info/0.1/spec.md) for the public read this category does define, and Consent/purpose below for why a liveness probe is not this task.
 
@@ -79,7 +79,7 @@ The entitlement is **administrator standing on this hosting service**, read from
 
 **Snapshot** — the service's counters, gauges and histograms as read at one instant (`takenAt`); not a stream, and not a diff against a previous read.
 
-**Counter**, **gauge**, **histogram** — as in [`_shared/0.2/metrics-snapshot`](../../../_shared/0.2/metrics-snapshot.schema.json): a counter only rises; a gauge may rise or fall; a histogram is a distribution reported as cumulative buckets. `counters`, `gauges` and `histograms` are each always present in a response, empty when the service exposes none of that kind — so a collector can tell "none of this kind" from "the field was dropped", the same convention [`did-management/registry/list`](../../../registry/list/0.1/spec.md) uses for `servedDomains`.
+**Counter**, **gauge**, **histogram** — as in [`_shared/0.2/metrics-snapshot`](../../../_shared/0.2/metrics-snapshot.schema.json): a counter only rises; a gauge may rise or fall; a histogram is a distribution reported as cumulative buckets. `counters`, `gauges` and `histograms` are each always present in a response, empty when the service exposes none of that kind — so a collector can tell "none of this kind" from "the field was dropped", the same convention [`did-management/registry/list`](../../../registry/list/0.2/spec.md) uses for `servedDomains`.
 
 ## Request
 

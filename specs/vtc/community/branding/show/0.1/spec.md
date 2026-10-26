@@ -41,7 +41,7 @@ related:
 
 ## Abstract
 
-The **VTC Community — Branding — Show** Trust Task returns the community's branding: the display name, accent colour and logo URL it asks a prospective applicant's client to show. It is exactly what [`vtc/join-requests/manifest/0.2`](../../../../join-requests/manifest/0.2/spec.md) publishes as `branding`, stored by [`vtc/community/branding/update`](../../update/0.1/spec.md).
+The **VTC Community — Branding — Show** Trust Task returns the community's branding: the display name, accent colour and logo URL it asks a prospective applicant's client to show. It is exactly what [`vtc/join-requests/manifest/0.4`](../../../../join-requests/manifest/0.4/spec.md) publishes as `branding`, stored by [`vtc/community/branding/update`](../../update/0.1/spec.md).
 
 Branding is presentation only: self-asserted, unverified, and never an identifier. `communityDid` identifies the community; `branding` only asks to be shown a certain way.
 

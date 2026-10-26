@@ -78,7 +78,7 @@ related:
 
 ## Abstract
 
-A step-up approver ([`attest/0.1`](../../attest/0.1/spec.md)) must be bound on an anchor independent of the subject's signing key. For a subject's *first* approver that anchor is someone else — an administrator's [`invite`](../../invite/0.1/spec.md), or the community's install token. For every later one it can be the subject themselves, **through a factor they already hold**: a live approver, or a passkey bound to them as a step-up factor.
+A step-up approver ([`attest/0.1`](../../attest/0.1/spec.md)) must be bound on an anchor independent of the subject's signing key. For a subject's *first* approver that anchor is someone else — an administrator's [`invite`](../../invite/0.2/spec.md), or the community's install token. For every later one it can be the subject themselves, **through a factor they already hold**: a live approver, or a passkey bound to them as a step-up factor.
 
 This task is that self-service path. It adds an approver — on a new browser, a new phone — or, with `replaces`, rotates one out in the same step, so a user who moves device needs nobody's help. Two pieces of evidence are involved, and they are deliberately different:
 
@@ -137,7 +137,7 @@ A conforming **consumer** (the relying party):
 
 The authority this task presupposes is **a step-up factor the subject already holds**, exercised over this enrolment's terms. The subject's own signature — by their own DID, never a delegation — establishes whose factors are being changed, as it does on both redeem legs, so a console key that a script could drive cannot even begin an enrolment. It is not the authority, because a second factor bound on the strength of a signing key adds nothing to that key.
 
-The reference implementation — a VTC — obtains that evidence as an **operation-bound step-up** delivered inline ([`approve-request/0.4`](../../../approve-request/0.4/spec.md) *Inline delivery*):
+The reference implementation — a VTC — obtains that evidence as an **operation-bound step-up** delivered inline ([`approve-request/0.4`](../../../approve-request/0.5/spec.md) *Inline delivery*):
 
 1. The subject sends the enrolment, typically without `statement`. The relying party finds no approval bound to its terms and refuses with `permissionDenied`, carrying `details.stepUpRequest`: an `approve-request/0.4` payload for the subject, with a fresh `challenge`, `boundTo` its own salted digest of the type and terms, and `accepts` the kinds the subject's existing factors can answer — `approverSigned` naming the subject's live approvers, `webauthn` for a step-up passkey.
 2. The subject answers with an [`approve-response/0.6`](../../../approve-response/0.6/spec.md) from an existing factor, and the relying party records the approval. Nothing is elevated.

@@ -424,7 +424,7 @@ disjoint members both succeed; that is the feature. It also means neither saw
 the other's edit, so an application whose members carry a joint invariant
 **MUST NOT** rely on patches to maintain it — send a whole `value` under
 `expectedVersion`, or use the `atomic` mode of
-[`vta/app-state/put-many`](../../put-many/1.0/spec.md).
+[`vta/app-state/put-many`](../../put-many/1.1/spec.md).
 
 **Size caps are a denial-of-service boundary as well as a correctness one.** A
 documented cap bounds what one namespace can consume; a maintainer **SHOULD**

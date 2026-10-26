@@ -62,7 +62,7 @@ related:
 
 ## Abstract
 
-A **namespace** binds a VTC to one owner — an organisation or a personal account — on one forge. Once it is bound, the VTC governs who may create repositories under that owner, who owns each one, who maintains it and whose commits its CI check accepts, as the rights described in [the rights model](../../../../git-ns/right/grant/0.1/spec.md#the-rights-model). A VTC may bind several namespaces, on several forges.
+A **namespace** binds a VTC to one owner — an organisation or a personal account — on one forge. Once it is bound, the VTC governs who may create repositories under that owner, who owns each one, who maintains it and whose commits its CI check accepts, as the rights described in [the rights model](../../../../git-ns/right/grant/0.4/spec.md#the-rights-model). A VTC may bind several namespaces, on several forges.
 
 This task starts a binding. In **bridge mode** the forge-side proof that the administrator controls the owner is carried by the community's bridge: installing the community's own forge app on the owner (GitHub), or signing in to the forge as an owner of the organisation (Forgejo). The namespace is `pending` until that proof arrives. In **manual mode** there is no automation and no forge-side proof: the namespace is bound at once, and each repository's own CI configuration naming this VTC is what connects it.
 
@@ -88,7 +88,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 *Declared under [SPEC §7.3](/SPEC.md#73-specification-requirements) item 15.*
 
-The entitlement is the **community-administrator capability** in the VTC's own access control. No git right suffices, because before binding there are none; binding is what creates the first one. In bridge mode a second piece of evidence is required before the namespace is bound: control of the owner on the forge, proved to the bridge by installing the community's app or by signing in as an organisation owner, and reported as a `bindCompleted` event ([`git-ns/bridge/event`](../../../../git-ns/bridge/event/0.1/spec.md)). The bridge's single-use nonce in `next.url` is what ties that proof to this request; a proof nobody in this VTC started is not bound.
+The entitlement is the **community-administrator capability** in the VTC's own access control. No git right suffices, because before binding there are none; binding is what creates the first one. In bridge mode a second piece of evidence is required before the namespace is bound: control of the owner on the forge, proved to the bridge by installing the community's app or by signing in as an organisation owner, and reported as a `bindCompleted` event ([`git-ns/bridge/event`](../../../../git-ns/bridge/event/0.5/spec.md)). The bridge's single-use nonce in `next.url` is what ties that proof to this request; a proof nobody in this VTC started is not bound.
 
 The `proof` on this request establishes which administrator asked, not that they may; that is checked against the VTC's access control ([SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10).
 
@@ -100,7 +100,7 @@ The `proof` on this request establishes which administrator asked, not that they
 
 **`namespace.state`** — `pending` until the forge-side proof arrives, then `bound`. A manual-mode namespace is `bound` at once.
 
-**`next.url`** — where the administrator goes to prove control. It carries the bridge's single-use nonce and is valid only as long as the bridge says ([`git-ns/bridge/job`](../../../../git-ns/bridge/job/0.1/spec.md) `next.expiresAt`).
+**`next.url`** — where the administrator goes to prove control. It carries the bridge's single-use nonce and is valid only as long as the bridge says ([`git-ns/bridge/job`](../../../../git-ns/bridge/job/0.6/spec.md) `next.expiresAt`).
 
 ## Request
 
@@ -109,7 +109,7 @@ The administrator sends the request to the VTC. See the top-level schema in [`pa
 1. Refuses a sender without the community-administrator capability with `permissionDenied`.
 2. Refuses a `forge` and `owner` that this VTC has already bound, or is binding, with `git-ns/namespace/bind:alreadyBound`.
 3. Evaluates its git-namespace policy (for example, which forges it allows), which may refuse with `git-ns:policyDenied`.
-4. In bridge mode, refuses with `git-ns/namespace/bind:noBridge` when no bridge serving this forge is configured. Otherwise records the namespace as `pending`, sends the bridge a `beginBind` job ([`git-ns/bridge/job`](../../../../git-ns/bridge/job/0.1/spec.md)), and returns the bridge's `next.url`. While completing the proof the bridge also prepares whatever namespace-wide protection its forge needs so that a pull request cannot satisfy its own check — on a GitHub organisation, a bridge-managed workflow repository and an organisation ruleset that runs verify-trust from it at a pinned commit — and the VTC **SHOULD** tell the administrator which forge permissions that takes. When the bridge reports `bindCompleted` for that job, the VTC records the owner's forge id and kind, sets the namespace to `bound`, and records `git.ns.admin` on `<forge>/<owner>` for the administrator who sent this request. When the bridge reports the job `failed` instead (the nonce expired, or the proof did not match), the VTC discards the pending namespace.
+4. In bridge mode, refuses with `git-ns/namespace/bind:noBridge` when no bridge serving this forge is configured. Otherwise records the namespace as `pending`, sends the bridge a `beginBind` job ([`git-ns/bridge/job`](../../../../git-ns/bridge/job/0.6/spec.md)), and returns the bridge's `next.url`. While completing the proof the bridge also prepares whatever namespace-wide protection its forge needs so that a pull request cannot satisfy its own check — on a GitHub organisation, a bridge-managed workflow repository and an organisation ruleset that runs verify-trust from it at a pinned commit — and the VTC **SHOULD** tell the administrator which forge permissions that takes. When the bridge reports `bindCompleted` for that job, the VTC records the owner's forge id and kind, sets the namespace to `bound`, and records `git.ns.admin` on `<forge>/<owner>` for the administrator who sent this request. When the bridge reports the job `failed` instead (the nonce expired, or the proof did not match), the VTC discards the pending namespace.
 5. In manual mode, records the namespace as `bound` and records `git.ns.admin` for the administrator at once.
 
 A VTC **MUST** make clear to the administrator, before the namespace is bound, that rights published under it are public: anyone can read from the Trust Registry who owns and who may commit to each repository in it. How it does so is its own.

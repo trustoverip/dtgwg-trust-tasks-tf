@@ -102,7 +102,7 @@ from a short page: a maintainer may return fewer than `limit` for reasons of its
 own, and a short array is indistinguishable from a complete one.
 
 **`World`** — one named part of the holder's life. See
-[`persona/world/put`](../../put/1.0/spec.md) for the meaning of each member.
+[`persona/world/put`](../../put/1.1/spec.md) for the meaning of each member.
 
 ### Dangling membership is returned, not pruned
 

@@ -57,7 +57,7 @@ related:
 
 ## Abstract
 
-The **VTC Website — Files — Show** Trust Task reads one file of the community's website — the bytes [`vtc/website/files/list`](../../list/0.1/spec.md) deliberately leaves out — with its content hash and content type. A file may be up to the community's maximum file size (10 MiB by default), which does not fit one bounded document, so the read is **ranged**: each request names an `offset` and a `length` up to 256 KiB, and the response says whether it reached the end.
+The **VTC Website — Files — Show** Trust Task reads one file of the community's website — the bytes [`vtc/website/files/list`](../../list/0.3/spec.md) deliberately leaves out — with its content hash and content type. A file may be up to the community's maximum file size (10 MiB by default), which does not fit one bounded document, so the read is **ranged**: each request names an `offset` and a `length` up to 256 KiB, and the response says whether it reached the end.
 
 A ranged read needs no session on the community: each range is read from the file as it is. To make several ranges one consistent read, a caller passes the `etag` the first range returned as `ifMatch` on the rest; if the file changes in between, the community answers `changed` rather than hand back a mixture of two versions. This is why the read is not a staged transfer like `backup/get-chunk` — nothing needs staging, because the file on disk and its hash already are the transfer's terms.
 

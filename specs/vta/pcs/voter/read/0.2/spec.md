@@ -68,7 +68,7 @@ a ticket — [`vtc/elections/list`](../../../../../vtc/elections/list/0.3/spec.m
 membership DID. A community answers those reads only to a party its roll admits, so the
 request must be signed by the member; the member's key usually lives in their VTA, and this
 task lets a client that holds none read as the member, exactly as
-[`vta/pcs/voter/register`](../../register/0.1/spec.md)'s `ticketDocument` lets it ask for the
+[`vta/pcs/voter/register`](../../register/0.2/spec.md)'s `ticketDocument` lets it ask for the
 ticket. The family's shared rules are in
 [`CONVENTIONS.md`](../../../../../voting/_shared/0.1/CONVENTIONS.md).
 

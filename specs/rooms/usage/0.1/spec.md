@@ -179,7 +179,7 @@ property. This task gives the room's owner a view of it, and nothing more — co
 bytes, never names or contents.
 
 **`admin` and nothing less.** A chain conferring `read` or `write` makes a party a member,
-and a member's own figures are in [`rooms/info`](../../info/0.1/spec.md). Answering this to
+and a member's own figures are in [`rooms/info`](../../info/0.3/spec.md). Answering this to
 any member would let every member watch every other.
 
 **`private` is refused, not approximated.** A host that guessed attribution on a `private`

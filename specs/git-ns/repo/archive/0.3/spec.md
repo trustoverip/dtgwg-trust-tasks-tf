@@ -97,7 +97,7 @@ The owner sends the request to the VTC. See the top-level schema in [`payload.sc
 1. Refuses a resource it does not record with `git-ns:unknownRepo`. Refuses a `pendingCreate`, `detached` or `unmanaged` repository with `git-ns:repoNotActive`.
 2. Checks the authorization above, and policy, which may refuse with `git-ns:policyDenied`.
 3. For an already `archived` repository, returns it with `rightsRevoked: 0` and changes nothing. Repeating an archive is safe.
-4. Otherwise sets the repository `archived`, revokes every `git.commit.sign` record whose resource is the repository, withdraws those and the explicit `git.commit.sign` published for owners and maintainers from its registry projection, and in bridge mode sends the bridge an `archive` job ([`git-ns/bridge/job`](../../../../git-ns/bridge/job/0.3/spec.md)).
+4. Otherwise sets the repository `archived`, revokes every `git.commit.sign` record whose resource is the repository, withdraws those and the explicit `git.commit.sign` published for owners and maintainers from its registry projection, and in bridge mode sends the bridge an `archive` job ([`git-ns/bridge/job`](../../../../git-ns/bridge/job/0.6/spec.md)).
 
 This specification defines no task that reverses an archive. A repository unarchived on the forge stays `archived` in the VTC and is reported as drift.
 

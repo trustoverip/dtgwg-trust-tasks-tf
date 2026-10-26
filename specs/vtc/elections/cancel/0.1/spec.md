@@ -96,14 +96,14 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 A conforming **community** (`recipient`):
 
-1. **MUST** answer `electionUnknown` for an election it does not hold or the caller may not see, as [`vtc/elections/show`](../../show/0.1/spec.md) does, and **MUST** refuse a requester without `vtc.elections.manage` (VTI-VOT-080), read from the signer's live access-control entry at execution time, with `permissionDenied`.
+1. **MUST** answer `electionUnknown` for an election it does not hold or the caller may not see, as [`vtc/elections/show`](../../show/0.2/spec.md) does, and **MUST** refuse a requester without `vtc.elections.manage` (VTI-VOT-080), read from the signer's live access-control entry at execution time, with `permissionDenied`.
 2. **MUST** refuse with `notOpen` an election that is closed, tallied or already cancelled. A repeat of the same signed document is answered with the answer first given ([SPEC §7.2](/SPEC.md#72-consumer-requirements) item 11).
 3. **MUST** stop issuing the election's tickets durably, before anything else, and **MUST NOT** issue one again whatever the ballot box answers (VTI-VOT-024). Stopping issuance is the one effect that never waits on the ballot box: it only narrows what the community does.
 4. **MUST** then send [`voting/election/cancel`](../../../../voting/election/cancel/0.1/spec.md) to the ballot box, signed as itself, and record the election as `cancelled` only after the ballot box answered with success. When the ballot box does not answer it answers `ballotBoxUnavailable`, and the requester sends the request again to finish; the ballot box treats a repeated cancel as the first. When the ballot box refuses it answers `ballotBoxRefused`.
 5. For an election the ballot box has not registered (`pendingRegistration`, `registrationRefused`), **MUST** first stop delivering the registration, then send the cancel as in item 4, and **MUST** treat the ballot box's `electionUnknown` as success: there is nothing at the ballot box to cancel.
 6. **MUST** audit the cancellation (VTI-VOT-100): the requester, the election, the time, `reason`, and the ballot box's answer.
 
-A conforming **member's VTA** discards its ticket for a cancelled election (CONVENTIONS §5.3); it learns of the cancellation from [`vtc/elections/show`](../../show/0.1/spec.md) or [`voting/election/show`](../../../../voting/election/show/0.1/spec.md).
+A conforming **member's VTA** discards its ticket for a cancelled election (CONVENTIONS §5.3); it learns of the cancellation from [`vtc/elections/show`](../../show/0.2/spec.md) or [`voting/election/show`](../../../../voting/election/show/0.2/spec.md).
 
 ## Authorization
 

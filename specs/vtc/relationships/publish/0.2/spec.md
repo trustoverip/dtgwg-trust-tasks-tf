@@ -43,7 +43,7 @@ errorCodes:
 
 ## Abstract
 
-The **VTC Relationships — Publish** Trust Task records a member-issued Verifiable Relationship Credential (`vrc`) asserting a relationship to another member. The community verifies and stores it, returning its `id`, the `issuerDid`/`subjectDid`, and a `vrcDigestMultibase` for out-of-band integrity. Revoke via [`vtc/relationships/revoke`](../../revoke/0.1/).
+The **VTC Relationships — Publish** Trust Task records a member-issued Verifiable Relationship Credential (`vrc`) asserting a relationship to another member. The community verifies and stores it, returning its `id`, the `issuerDid`/`subjectDid`, and a `vrcDigestMultibase` for out-of-band integrity. Revoke via [`vtc/relationships/revoke`](../../revoke/0.2/).
 
 
 An edge may be published under a **relationship DID** — an identifier scoped to
