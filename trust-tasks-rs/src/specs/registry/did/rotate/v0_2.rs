@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,33 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///An administrator asks a trust registry to rotate the keys of the registry's own agent-managed did:webvh in place, preserving the DID while refreshing its key material. Members are lowerCamelCase, as throughout the registry/* family.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/registry/did/rotate/0.2",
-///  "title": "Payload",
-///  "description": "An administrator asks a trust registry to rotate the keys of the registry's own agent-managed did:webvh in place, preserving the DID while refreshing its key material. Members are lowerCamelCase, as throughout the registry/* family.",
-///  "type": "object",
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "label": {
-///      "description": "Operator-facing audit label for the rotation.",
-///      "type": "string",
-///      "maxLength": 256
-///    },
-///    "preRotationCount": {
-///      "description": "Override the number of pre-rotation key commitments published for the new key set. Absent: the managing agent's default.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -202,16 +151,6 @@ impl Payload {
 }
 ///Operator-facing audit label for the rotation.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Operator-facing audit label for the rotation.",
-///  "type": "string",
-///  "maxLength": 256
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadLabel(::std::string::String);
@@ -271,39 +210,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadLabel {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "did",
-///    "newScid",
-///    "newVersionId"
-///  ],
-///  "properties": {
-///    "did": {
-///      "description": "The DID whose keys were rotated.",
-///      "type": "string"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "newScid": {
-///      "description": "The DID's SCID after rotation.",
-///      "type": "string"
-///    },
-///    "newVersionId": {
-///      "description": "The did:webvh log's new versionId after rotation.",
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -483,7 +389,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"did\": {\n          \"description\": \"The DID whose keys were rotated.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"newScid\": {\n          \"description\": \"The DID's SCID after rotation.\",\n          \"type\": \"string\"\n        },\n        \"newVersionId\": {\n          \"description\": \"The did:webvh log's new versionId after rotation.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"newScid\",\n        \"newVersionId\"\n      ],\n      \"title\": \"Registry DID Rotate — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/registry/did/rotate/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"An administrator asks a trust registry to rotate the keys of the registry's own agent-managed did:webvh in place, preserving the DID while refreshing its key material. Members are lowerCamelCase, as throughout the registry/* family.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"label\": {\n      \"description\": \"Operator-facing audit label for the rotation.\",\n      \"maxLength\": 256,\n      \"type\": \"string\"\n    },\n    \"preRotationCount\": {\n      \"description\": \"Override the number of pre-rotation key commitments published for the new key set. Absent: the managing agent's default.\",\n      \"minimum\": 0,\n      \"type\": \"integer\"\n    }\n  },\n  \"title\": \"Registry DID Rotate — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"did\":{\"description\":\"The DID whose keys were rotated.\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"newScid\":{\"description\":\"The DID's SCID after rotation.\",\"type\":\"string\"},\"newVersionId\":{\"description\":\"The did:webvh log's new versionId after rotation.\",\"type\":\"string\"}},\"required\":[\"did\",\"newScid\",\"newVersionId\"],\"title\":\"Registry DID Rotate — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/registry/did/rotate/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"An administrator asks a trust registry to rotate the keys of the registry's own agent-managed did:webvh in place, preserving the DID while refreshing its key material. Members are lowerCamelCase, as throughout the registry/* family.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"label\":{\"description\":\"Operator-facing audit label for the rotation.\",\"maxLength\":256,\"type\":\"string\"},\"preRotationCount\":{\"description\":\"Override the number of pre-rotation key commitments published for the new key set. Absent: the managing agent's default.\",\"minimum\":0,\"type\":\"integer\"}},\"title\":\"Registry DID Rotate — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -492,7 +398,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"did\": {\n          \"description\": \"The DID whose keys were rotated.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"newScid\": {\n          \"description\": \"The DID's SCID after rotation.\",\n          \"type\": \"string\"\n        },\n        \"newVersionId\": {\n          \"description\": \"The did:webvh log's new versionId after rotation.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"newScid\",\n        \"newVersionId\"\n      ],\n      \"title\": \"Registry DID Rotate — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"did\":{\"description\":\"The DID whose keys were rotated.\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"newScid\":{\"description\":\"The DID's SCID after rotation.\",\"type\":\"string\"},\"newVersionId\":{\"description\":\"The did:webvh log's new versionId after rotation.\",\"type\":\"string\"}},\"required\":[\"did\",\"newScid\",\"newVersionId\"],\"title\":\"Registry DID Rotate — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {
