@@ -46,12 +46,14 @@ mod consume;
 mod dispatcher;
 mod document;
 mod error;
+mod extends_index;
 mod payload;
 mod proof;
 mod transport;
 mod type_uri;
 
 pub mod discovery;
+pub mod extension;
 pub mod freshness;
 pub mod guards;
 pub mod handlers;
