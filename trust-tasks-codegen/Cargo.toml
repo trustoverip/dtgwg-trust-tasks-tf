@@ -32,3 +32,5 @@ proc-macro2 = "1"
 quote = "1"
 heck = "0.5"
 walkdir = "2"
+# Content addresses of the registry bundles (`--bundles`).
+sha2 = "0.10"
