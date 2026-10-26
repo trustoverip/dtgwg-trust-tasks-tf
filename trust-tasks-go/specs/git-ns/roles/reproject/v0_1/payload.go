@@ -9,6 +9,8 @@ import (
 )
 
 // Response The repositories the VTC queued a projectRoles job for.
+//
+// Deprecated: superseded by git-ns/roles/reproject/0.2
 type Response struct {
 	// Each repository a projectRoles job was queued for, with its complete desiredRoles.
 	// Empty: the namespace has no active or orphaned repository.
@@ -36,6 +38,8 @@ type Resource = string
 // has the VTC send its bridge the complete forge roles of one repository, or of every
 // repository in a namespace, again — so the forge comes to match the VTC's rights under
 // the role map the bridge now applies. No right changes.
+//
+// Deprecated: superseded by git-ns/roles/reproject/0.2
 type Payload struct {
 	// A namespace (`<forge>/<owner>`): every active or orphaned repository in it. A
 	// repository (`<forge>/<owner>/<repo>`): that repository only.
@@ -48,6 +52,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/git-ns/roles/reproject/0.1"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by git-ns/roles/reproject/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/git-ns/roles/reproject/0.1#response"

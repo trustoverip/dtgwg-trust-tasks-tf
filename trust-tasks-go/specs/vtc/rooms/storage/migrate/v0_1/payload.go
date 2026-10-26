@@ -20,6 +20,8 @@ const (
 )
 
 // Response VTC Rooms — Storage — Migrate — response payload
+//
+// Deprecated: superseded by vtc/rooms/storage/migrate/0.3
 type Response struct {
 	// Community-generated handle for this room's migration.
 	MigrationID string `json:"migrationId"`
@@ -49,6 +51,8 @@ type StorageConfigID = string
 // Payload Move a hosted room's existing blobs onto its assigned storage config: copy,
 // verify against the manifest, switch, orphan the old copy. The outer document members
 // are owned by the framework — SPEC §6.3.
+//
+// Deprecated: superseded by vtc/rooms/storage/migrate/0.3
 type Payload struct {
 	// The room's identifier, as its owner minted it.
 	RoomID string `json:"roomId"`
@@ -67,6 +71,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/vtc/rooms/storage/migrate/0.1"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vtc/rooms/storage/migrate/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/rooms/storage/migrate/0.1#response"

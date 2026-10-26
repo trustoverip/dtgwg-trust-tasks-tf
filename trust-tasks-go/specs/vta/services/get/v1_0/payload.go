@@ -10,6 +10,8 @@ import (
 
 // Response Success response to vta/services/get. Type
 // https://trusttasks.org/spec/vta/services/get/1.0#response.
+//
+// Deprecated: superseded by vta/services/get/1.1
 type Response struct {
 	State ServiceState `json:"state"`
 	Ext   *Ext         `json:"ext,omitempty"`
@@ -56,6 +58,8 @@ const (
 )
 
 // Payload Request payload for vta/services/get. Reads one transport's current state.
+//
+// Deprecated: superseded by vta/services/get/1.1
 type Payload struct {
 	Service ServiceKind `json:"service"`
 	Ext     *Ext        `json:"ext,omitempty"`
@@ -63,6 +67,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/vta/services/get/1.0"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vta/services/get/1.1"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/services/get/1.0#response"

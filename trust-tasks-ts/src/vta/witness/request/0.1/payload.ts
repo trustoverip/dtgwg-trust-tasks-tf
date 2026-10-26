@@ -8,6 +8,8 @@ import type { DigestMultibase, Ext } from "../../../../_shared/components.js";
 
 /**
  * A client asks its VTA to run a witnessed session for one of its principal's relationships: open a witness/session with the named witness as the relationship DID the VTA holds, present the relationship credential (and, optionally, the membership evidence) from its credential vault, verify the Verifiable Witness Credential the witness returns, and store it in the vault with its evidence.
+ *
+ * @deprecated retired; use vta/witness/open/0.1
  */
 export interface VTAWitnessRequestPayload {
   /**
@@ -52,6 +54,8 @@ export interface Membership {
 }
 /**
  * The stored VWC's vault handle, its digest, and the evidence documents that carry it. Sent only once the VWC is verified and stored.
+ *
+ * @deprecated retired; use vta/witness/open/0.1
  */
 export interface VTAWitnessRequestResponsePayload {
   /**
@@ -89,13 +93,29 @@ export type { DigestMultibase, Ext };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/witness/request/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "retired; use vta/witness/open/0.1";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated retired; use vta/witness/open/0.1
+ */
 export type Payload = VTAWitnessRequestPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/witness/request/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated retired; use vta/witness/open/0.1
+ */
 export type Response = VTAWitnessRequestResponsePayload;
 
 /**

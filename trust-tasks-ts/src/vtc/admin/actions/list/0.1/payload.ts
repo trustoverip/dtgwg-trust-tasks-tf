@@ -8,6 +8,8 @@ import type { Action_VtcAdminActionsV0_1 as Action, ActionId, DigestMultibase, E
 
 /**
  * Enumerate the administrative actions a Verifiable Trust Community holds that the caller is entitled to see, one page at a time, from one of four views. The single-record sibling is vtc/admin/actions/show/0.1. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by vtc/admin/actions/list/0.3
  */
 export interface VTCAdminActionsListPayload {
   /**
@@ -30,6 +32,8 @@ export interface VTCAdminActionsListPayload {
 }
 /**
  * One page of actions and the caller's badge counts. Failures use trust-task-error, not this shape.
+ *
+ * @deprecated superseded by vtc/admin/actions/list/0.3
  */
 export interface VTCAdminActionsListResponsePayload {
   /**
@@ -64,13 +68,29 @@ export type { Action, ActionId, DigestMultibase, Ext, Field, Summary };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/admin/actions/list/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vtc/admin/actions/list/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vtc/admin/actions/list/0.3
+ */
 export type Payload = VTCAdminActionsListPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/admin/actions/list/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vtc/admin/actions/list/0.3
+ */
 export type Response = VTCAdminActionsListResponsePayload;
 
 /**

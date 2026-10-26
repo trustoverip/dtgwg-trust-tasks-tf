@@ -6,6 +6,7 @@
 import type { Ext, MemberAction, MemberActions, OfferCredentials, OfferV2, Renewal_VtcV0_1 as Renewal, RenewalCredentials, RoomDescription, RoomLabel, Visibility } from "../../../../../_shared/components.js";
 
 
+/** @deprecated superseded by vtc/rooms/offers/list/0.4 */
 export interface VTCRoomsOffersListPayload {
   /**
    * Opaque continuation token from a previous page's `nextCursor`.
@@ -19,6 +20,8 @@ export interface VTCRoomsOffersListPayload {
 }
 /**
  * Success response to vtc/rooms/offers/list. Type https://trusttasks.org/spec/vtc/rooms/offers/list/0.3#response. The offers addressed to the caller, and the renewals of admissions they hold, and no one else's.
+ *
+ * @deprecated superseded by vtc/rooms/offers/list/0.4
  */
 export interface VTCRoomsOffersListResponsePayload {
   /**
@@ -44,13 +47,29 @@ export type { Ext, MemberAction, MemberActions, OfferCredentials, OfferV2, Renew
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/rooms/offers/list/0.3" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vtc/rooms/offers/list/0.4";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vtc/rooms/offers/list/0.4
+ */
 export type Payload = VTCRoomsOffersListPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/rooms/offers/list/0.3#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vtc/rooms/offers/list/0.4
+ */
 export type Response = VTCRoomsOffersListResponsePayload;
 
 /**

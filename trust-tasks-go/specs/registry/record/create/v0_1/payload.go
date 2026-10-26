@@ -9,6 +9,8 @@ import (
 )
 
 // Response Registry Record Create — response payload
+//
+// Deprecated: retired; use registry/record/put/0.2
 type Response struct {
 	// Whether the record was created.
 	OK bool `json:"ok"`
@@ -53,6 +55,8 @@ const (
 // Payload An administrator asks a trust registry to create a new trust record (a
 // recognition or authorization assertion). Idempotent per record key
 // (entity+authority+action+resource); creating an existing key is an error.
+//
+// Deprecated: retired; use registry/record/put/0.2
 type Payload struct {
 	Record TrustRecord `json:"record"`
 	Ext    *Ext        `json:"ext,omitempty"`
@@ -60,6 +64,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/registry/record/create/0.1"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "retired; use registry/record/put/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/registry/record/create/0.1#response"

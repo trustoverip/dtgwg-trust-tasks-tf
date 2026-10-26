@@ -8,6 +8,8 @@ import type { ElectionId, Ext, TrusteeIndex } from "../../../../../_shared/compo
 
 /**
  * The dealer's VTA reveals the share it dealt to a trustee that complained, and returns the voting/trustees/justify request signed as the dealer.
+ *
+ * @deprecated retired; use vta/pcs/trustee/justify/0.2
  */
 export interface VTAPCSTrusteeJustifyPayload {
   /**
@@ -26,6 +28,7 @@ export interface VTAPCSTrusteeJustifyPayload {
   recipient: TrusteeIndex;
   ext?: Ext;
 }
+/** @deprecated retired; use vta/pcs/trustee/justify/0.2 */
 export interface VTAPCSTrusteeJustifyResponsePayload {
   document: JustifyDocument;
   ext?: Ext;
@@ -62,13 +65,29 @@ export type { ElectionId, Ext, TrusteeIndex };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/pcs/trustee/justify/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "retired; use vta/pcs/trustee/justify/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated retired; use vta/pcs/trustee/justify/0.2
+ */
 export type Payload = VTAPCSTrusteeJustifyPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/pcs/trustee/justify/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated retired; use vta/pcs/trustee/justify/0.2
+ */
 export type Response = VTAPCSTrusteeJustifyResponsePayload;
 
 /**

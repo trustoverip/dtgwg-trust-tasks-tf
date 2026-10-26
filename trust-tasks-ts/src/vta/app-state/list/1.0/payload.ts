@@ -8,6 +8,8 @@ import type { AppStateRecord, Ext, Key_VtaV0_1 as Key, Namespace, Version_VtaV0_
 
 /**
  * Enumerate application-state records in a context. Two modes, distinguished by whether `sinceVersion` is supplied. Without it this is a SNAPSHOT of live records, optionally narrowed by `prefix`. With it this is a CHANGE FEED: every record in the namespace whose version exceeds the watermark, tombstones included, which is what lets an incremental consumer converge. Pagination is opaque-cursor based.
+ *
+ * @deprecated superseded by vta/app-state/list/1.1
  */
 export interface VTAApplicationStateListPayload {
   /**
@@ -49,6 +51,8 @@ export interface VTAApplicationStateListPayload {
 }
 /**
  * Success response to vta/app-state/list. Type https://trusttasks.org/spec/vta/app-state/list/1.0#response.
+ *
+ * @deprecated superseded by vta/app-state/list/1.1
  */
 export interface VTAApplicationStateListResponsePayload {
   /**
@@ -83,13 +87,29 @@ export type { AppStateRecord, Ext, Key, Namespace, Version };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/app-state/list/1.0" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vta/app-state/list/1.1";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vta/app-state/list/1.1
+ */
 export type Payload = VTAApplicationStateListPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/app-state/list/1.0#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vta/app-state/list/1.1
+ */
 export type Response = VTAApplicationStateListResponsePayload;
 
 /**

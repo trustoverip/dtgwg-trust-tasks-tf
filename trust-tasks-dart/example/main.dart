@@ -1,3 +1,5 @@
+// acl/grant/0.1 is superseded; this example moves to the current version before its withdrawal batch.
+// ignore_for_file: deprecated_member_use_from_same_package
 // Consuming a Trust Task document, end to end.
 //
 // Run it:

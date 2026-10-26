@@ -7,6 +7,10 @@
 // it supports, then re-sends the identical document, which the server absorbs
 // as a retry rather than executing twice (bindings/https/0.2 §5.1).
 
+// trust-task-discovery 0.2 is superseded, but it is the newest version
+// HttpsServer.enableDiscovery answers.
+// ignore_for_file: deprecated_member_use
+
 import 'package:trust_tasks/specs/trust_task_discovery/v0_2/payload.dart'
     as discovery;
 import 'package:trust_tasks/trust_tasks.dart';

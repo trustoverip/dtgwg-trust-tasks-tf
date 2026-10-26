@@ -8,6 +8,8 @@ import type { AclChangedEvent_SyncV0_1 as AclChangedEvent, AndroidApp_VaultV0_1 
 
 /**
  * Consumer requests an incremental delta of vault changes since a given seq baseline. The maintainer returns an ordered list of upsert/delete/acl/policy events, followed by a new seq baseline the consumer SHOULD persist for the next sync. Pairs with sync/event/0.1 server-push notifications: a live consumer subscribes to push events; on reconnect after offline, it calls vault/sync to catch up.
+ *
+ * @deprecated superseded by vault/sync/0.3
  */
 export interface VaultSyncPayload {
   /**
@@ -24,6 +26,7 @@ export interface VaultSyncPayload {
   pageSize?: number;
   ext?: Ext;
 }
+/** @deprecated superseded by vault/sync/0.3 */
 export interface VaultSyncResponsePayload {
   /**
    * Ordered events; consumer applies in order. Each event carries its own `seq` (strictly monotonic, no gaps within a context). Shape is the same as sync/event/0.1's push form.
@@ -46,13 +49,29 @@ export type { AclChangedEvent, AndroidApp, AttachmentRef, Did, Ext, IosApp, Poli
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vault/sync/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vault/sync/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vault/sync/0.3
+ */
 export type Payload = VaultSyncPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vault/sync/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vault/sync/0.3
+ */
 export type Response = VaultSyncResponsePayload;
 
 /**

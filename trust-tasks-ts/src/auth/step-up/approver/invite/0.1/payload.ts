@@ -8,6 +8,8 @@ import type { ApproverLabel, Ext } from "../../../../../_shared/components.js";
 
 /**
  * An administrator asks the relying party for a single-use invite, redeemed by the invited subject with a separately delivered claim code, to bind a step-up approver to that subject. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by auth/step-up/approver/invite/0.2
  */
 export interface AuthStepUpApproverInvitePayload {
   /**
@@ -26,6 +28,8 @@ export interface AuthStepUpApproverInvitePayload {
 }
 /**
  * The issued invite. The claim code is returned only here.
+ *
+ * @deprecated superseded by auth/step-up/approver/invite/0.2
  */
 export interface AuthStepUpApproverInviteResponsePayload {
   /**
@@ -53,13 +57,29 @@ export type { ApproverLabel, Ext };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/step-up/approver/invite/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by auth/step-up/approver/invite/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by auth/step-up/approver/invite/0.2
+ */
 export type Payload = AuthStepUpApproverInvitePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/auth/step-up/approver/invite/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by auth/step-up/approver/invite/0.2
+ */
 export type Response = AuthStepUpApproverInviteResponsePayload;
 
 /**

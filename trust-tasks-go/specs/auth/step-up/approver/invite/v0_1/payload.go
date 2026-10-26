@@ -9,6 +9,8 @@ import (
 )
 
 // Response The issued invite. The claim code is returned only here.
+//
+// Deprecated: superseded by auth/step-up/approver/invite/0.2
 type Response struct {
 	// The relying party's identifier for the invite, for audit and administration. Not a
 	// redemption factor: it is neither the token nor derivable from it.
@@ -42,6 +44,8 @@ type ApproverLabel = string
 // the invited subject with a separately delivered claim code, to bind a step-up approver
 // to that subject. The outer document members (id, type, issuer, recipient, issuedAt,
 // expiresAt, proof) are owned by the framework — SPEC §6.3.
+//
+// Deprecated: superseded by auth/step-up/approver/invite/0.2
 type Payload struct {
 	// The DID invited to bind a step-up approver. MUST be a subject the relying party
 	// recognises, and MUST NOT be the administrator issuing the invite.
@@ -58,6 +62,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/auth/step-up/approver/invite/0.1"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by auth/step-up/approver/invite/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/auth/step-up/approver/invite/0.1#response"

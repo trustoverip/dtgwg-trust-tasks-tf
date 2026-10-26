@@ -8,6 +8,8 @@ import type { Ext, PublicKeyCredentialDescriptor, PublicKeyCredentialRequestOpti
 
 /**
  * Ask the auth service to begin revoking one of the subject's passkeys. The response carries PublicKeyCredentialRequestOptions for a fresh user-verification ceremony; nothing is removed until the matching auth/passkey/revoke/finish presents the assertion.
+ *
+ * @deprecated superseded by auth/passkey/revoke/start/0.2
  */
 export interface AuthPasskeyRevokeStart {
   /**
@@ -21,6 +23,8 @@ export interface AuthPasskeyRevokeStart {
 }
 /**
  * Server-issued re-authentication options. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/revoke/start/0.1#response.
+ *
+ * @deprecated superseded by auth/passkey/revoke/start/0.2
  */
 export interface AuthPasskeyRevokeStartResponsePayload {
   /**
@@ -43,13 +47,29 @@ export type { Ext, PublicKeyCredentialDescriptor, PublicKeyCredentialRequestOpti
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/passkey/revoke/start/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by auth/passkey/revoke/start/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by auth/passkey/revoke/start/0.2
+ */
 export type Payload = AuthPasskeyRevokeStart;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/auth/passkey/revoke/start/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by auth/passkey/revoke/start/0.2
+ */
 export type Response = AuthPasskeyRevokeStartResponsePayload;
 
 /**

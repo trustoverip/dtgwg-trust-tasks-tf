@@ -11,6 +11,8 @@ import (
 // Response Success response to persona/contact/put. Type
 // https://trusttasks.org/spec/persona/contact/put/1.1#response. Identifiers, the current
 // revision and what changed; no claim value and no annotation text is echoed.
+//
+// Deprecated: superseded by persona/contact/put/1.2
 type Response struct {
 	ContactID Ulid `json:"contactId"`
 
@@ -196,6 +198,8 @@ const (
 // that entry and persona, and appends no revision. In every form each annotation given
 // replaces the stored one, each `removeX` removes one, and each annotation absent is
 // unchanged. The outer document members are owned by the framework — SPEC §6.3.
+//
+// Deprecated: superseded by persona/contact/put/1.2
 type Payload struct {
 	ContextID string `json:"contextId"`
 
@@ -258,6 +262,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/persona/contact/put/1.1"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by persona/contact/put/1.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/persona/contact/put/1.1#response"

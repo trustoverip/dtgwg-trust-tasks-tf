@@ -13,6 +13,8 @@ export type ComposeClaim = NewClaim | HeldClaim;
 
 /**
  * Compose a face for one context, where it is needed, from values typed now and attributes already held — and optionally wear it there in the same act. Local by default: a value typed here stays in this context unless the holder says it should be reusable. Where the face lives follows from what it carries, so there is no scope parameter to get wrong.
+ *
+ * @deprecated superseded by persona/profile/compose/1.1
  */
 export interface PersonaProfileComposePayload {
   /**
@@ -74,6 +76,8 @@ export interface HeldClaim {
 }
 /**
  * Success response to persona/profile/compose. Type https://trusttasks.org/spec/persona/profile/compose/1.0#response.
+ *
+ * @deprecated superseded by persona/profile/compose/1.1
  */
 export interface PersonaProfileComposeResponsePayload {
   profileId: Ulid;
@@ -118,13 +122,29 @@ export type { ClaimType, Ext, Slot, Ulid, ValueType, Version };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/persona/profile/compose/1.0" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by persona/profile/compose/1.1";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by persona/profile/compose/1.1
+ */
 export type Payload = PersonaProfileComposePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/persona/profile/compose/1.0#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by persona/profile/compose/1.1
+ */
 export type Response = PersonaProfileComposeResponsePayload;
 
 /**

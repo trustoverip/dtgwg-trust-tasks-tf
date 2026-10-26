@@ -493,6 +493,7 @@ impl HttpsServerBuilder {
     /// some types downstream but wants to advertise them as supported.
     /// For the common "advertise exactly what I handle" case, see
     /// [`Self::enable_discovery`].
+    #[allow(deprecated)] // serves discovery 0.1 and 0.2 on purpose until they are withdrawn
     pub fn with_discovery(self, registry: DiscoveryRegistry) -> Self {
         let public = Arc::clone(&self.public_discovery);
         let public_v0_2 = Arc::clone(&self.public_discovery);
@@ -521,6 +522,7 @@ impl HttpsServerBuilder {
     ///     .enable_discovery() // ← advertises grant + revoke
     ///     .build();
     /// ```
+    #[allow(deprecated)] // advertises discovery 0.1 and 0.2 on purpose until they are withdrawn
     pub fn enable_discovery(self) -> Self {
         let mut registry: DiscoveryRegistry = self.routes.keys().cloned().collect();
         // Always advertise discovery itself — otherwise a discoverer who

@@ -8,6 +8,8 @@ import type { AndroidApp_VaultV0_1 as AndroidApp, Companion_DeviceV0_1 as Compan
 
 /**
  * Dry-run a policy decision against a synthetic PolicyInput. Returns the policy decision plus a trace of which policy modules matched and which rules fired. Used by the policy-editor UI to verify changes before save and by admins to diagnose unexpected deny/allow outcomes.
+ *
+ * @deprecated superseded by policy/evaluate/0.3
  */
 export interface PolicyEvaluatePayload {
   input: PolicyInput;
@@ -19,6 +21,7 @@ export interface PolicyEvaluatePayload {
   includeTrace?: boolean;
   ext?: Ext;
 }
+/** @deprecated superseded by policy/evaluate/0.3 */
 export interface PolicyEvaluateResponsePayload {
   decision: PolicyDecision;
   /**
@@ -38,13 +41,29 @@ export type { AndroidApp, Companion, ConsumerKind, Did, Ext, IosApp, PolicyDecis
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/policy/evaluate/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by policy/evaluate/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by policy/evaluate/0.3
+ */
 export type Payload = PolicyEvaluatePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/policy/evaluate/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by policy/evaluate/0.3
+ */
 export type Response = PolicyEvaluateResponsePayload;
 
 /**

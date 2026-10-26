@@ -6,6 +6,7 @@
 import type { AclEntry_AclV0_1 as AclEntry, Ext } from "../../../_shared/components.js";
 
 
+/** @deprecated superseded by acl/list/0.3 */
 export interface ACLListPayload {
   /**
    * Optional filter — only entries with this role are returned.
@@ -38,6 +39,8 @@ export interface ACLListPayload {
 }
 /**
  * The success response to an acl/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/list/0.1#response.
+ *
+ * @deprecated superseded by acl/list/0.3
  */
 export interface ACLListResponsePayload {
   /**
@@ -68,13 +71,29 @@ export type { AclEntry, Ext };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/acl/list/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by acl/list/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by acl/list/0.3
+ */
 export type Payload = ACLListPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/acl/list/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by acl/list/0.3
+ */
 export type Response = ACLListResponsePayload;
 
 /**

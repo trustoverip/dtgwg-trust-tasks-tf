@@ -20,6 +20,8 @@ const (
 
 // Response The outcome the service recorded. It never contains session material:
 // authority goes to the starter key, through auth/oob/redeem only.
+//
+// Deprecated: superseded by auth/oob/respond/0.3
 type Response struct {
 	// `approved` when the grant approved and every check passed; `declined` when the grant
 	// declined.
@@ -35,6 +37,8 @@ type Ext = map[string]json.RawMessage
 // by carrying a signed auth/oob/grant document. Issued and signed by the lock key `K_a`.
 // The outer document members (id, type, issuer, recipient, issuedAt, expiresAt,
 // parentThreadId, proof) are owned by the framework — SPEC §6.3.
+//
+// Deprecated: superseded by auth/oob/respond/0.3
 type Payload struct {
 	// A complete, signed auth/oob/grant/0.1 Trust Task document, issued by the identified DID
 	// and signed by its VTA for `assertionMethod`. The service verifies it as a document in
@@ -47,6 +51,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/auth/oob/respond/0.1"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by auth/oob/respond/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/auth/oob/respond/0.1#response"

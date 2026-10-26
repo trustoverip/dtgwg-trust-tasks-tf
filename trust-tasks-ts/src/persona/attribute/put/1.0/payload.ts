@@ -8,6 +8,8 @@ import type { ClaimType, ExpectedVersion_PersonaV0_1 as ExpectedVersion, Ext, Pr
 
 /**
  * Create or replace one attribute in the holder's pool. Omit `attributeId` to create; supply it to replace. `expectedVersion` makes the write conditional.
+ *
+ * @deprecated superseded by persona/attribute/put/1.1
  */
 export interface PersonaAttributePutPayload {
   /**
@@ -52,6 +54,8 @@ export interface PersonaAttributePutPayload {
 }
 /**
  * Success response to persona/attribute/put. Type https://trusttasks.org/spec/persona/attribute/put/1.0#response. A failed precondition is not a success: it is a trust-task-error carrying persona/attribute/put:versionConflict, whose details carry the maintainer's current version and value.
+ *
+ * @deprecated superseded by persona/attribute/put/1.1
  */
 export interface PersonaAttributePutResponsePayload {
   attributeId: Ulid;
@@ -100,13 +104,29 @@ export type { ClaimType, ExpectedVersion, Ext, ProofRung, Provenance, ReleaseReq
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/persona/attribute/put/1.0" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by persona/attribute/put/1.1";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by persona/attribute/put/1.1
+ */
 export type Payload = PersonaAttributePutPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/persona/attribute/put/1.0#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by persona/attribute/put/1.1
+ */
 export type Response = PersonaAttributePutResponsePayload;
 
 /**

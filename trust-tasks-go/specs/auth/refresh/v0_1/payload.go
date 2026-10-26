@@ -11,6 +11,8 @@ import (
 // Response Issued by the auth service when the presented refresh token is valid. Carried
 // in a Trust Task document whose type is
 // https://trusttasks.org/spec/auth/refresh/0.1#response.
+//
+// Deprecated: superseded by auth/refresh/0.2
 type Response struct {
 	// Optional session snapshot. Consumers SHOULD include it so the producer can refresh
 	// client-side state (acr changes after step-up, scope changes after policy edits) without
@@ -94,6 +96,8 @@ type Session struct {
 
 // Payload Exchange a refresh token for a new access token (and optionally a new refresh
 // token).
+//
+// Deprecated: superseded by auth/refresh/0.2
 type Payload struct {
 	// The refresh token previously issued in a TokenBundle. Consumers verify it server-side;
 	// producers treat it as opaque.
@@ -109,6 +113,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/auth/refresh/0.1"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by auth/refresh/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/auth/refresh/0.1#response"

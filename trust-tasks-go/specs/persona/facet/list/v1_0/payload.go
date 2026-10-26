@@ -10,6 +10,8 @@ import (
 
 // Response Success response to persona/facet/list. Type
 // https://trusttasks.org/spec/persona/facet/list/1.0#response.
+//
+// Deprecated: retired; use persona/world/list/1.0
 type Response struct {
 	Facets []Facet `json:"facets"`
 
@@ -87,6 +89,8 @@ type Ext = map[string]json.RawMessage
 
 // Payload List the holder's facets, with their membership. Cursor-paginated like every
 // other persona listing.
+//
+// Deprecated: retired; use persona/world/list/1.0
 type Payload struct {
 	// The page size to ask for — never a cap on the result. A consumer that wants every facet
 	// follows `nextCursor` to the end; one that treats this as a limit will silently draw a
@@ -101,6 +105,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/persona/facet/list/1.0"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "retired; use persona/world/list/1.0"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/persona/facet/list/1.0#response"

@@ -86,6 +86,8 @@ type ResponseFindingsItem struct {
 
 // Response Success response to persona/correlation/analyze. Type
 // https://trusttasks.org/spec/persona/correlation/analyze/1.0#response.
+//
+// Deprecated: superseded by persona/correlation/analyze/1.2
 type Response struct {
 	Findings []ResponseFindingsItem `json:"findings"`
 	Ext      *Ext                   `json:"ext,omitempty"`
@@ -144,6 +146,8 @@ type PayloadCandidate struct {
 
 // Payload Report where the holder's identities link to one another, and what can be done
 // about each link. The findings task behind the counts the write tasks return.
+//
+// Deprecated: superseded by persona/correlation/analyze/1.2
 type Payload struct {
 	// Analyse one attribute. Omit to analyse the whole pool.
 	AttributeID *Ulid `json:"attributeId,omitempty"`
@@ -160,6 +164,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/persona/correlation/analyze/1.1"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by persona/correlation/analyze/1.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/persona/correlation/analyze/1.1#response"

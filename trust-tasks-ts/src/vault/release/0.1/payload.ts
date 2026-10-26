@@ -8,6 +8,8 @@ import type { AndroidApp_VaultV0_1 as AndroidApp, ConsumerContext, Did_VaultV0_1
 
 /**
  * Consumer requests that the maintainer release the cleartext secret material of a vault entry. The response carries the secret in a pluggable cipher envelope (see vault/_shared/0.1/sealed-envelope); the cleartext shape is `vault/_shared/0.1/vault-secret#/$defs/VaultSecret`. This is the fallback when proxy-login is not viable (`vault/proxy-login:notProxyable`) or when the consumer needs the raw secret for a flow the maintainer cannot perform (e.g. autofill into a desktop app, copy-to-clipboard for offline use).
+ *
+ * @deprecated superseded by vault/release/0.2
  */
 export interface VaultReleasePayload {
   entryId: string;
@@ -29,6 +31,7 @@ export interface VaultReleasePayload {
   ttlSecondsHint?: number;
   ext?: Ext;
 }
+/** @deprecated superseded by vault/release/0.2 */
 export interface VaultReleaseResponsePayload {
   /**
    * Pluggable cipher envelope. Cleartext is a `vault/_shared/0.1/vault-secret#/$defs/VaultSecret`. Consumers reject envelope kinds they don't implement with `vault/release:envelopeUnsupported`.
@@ -51,13 +54,29 @@ export type { AndroidApp, ConsumerContext, Did, DidcommAuthcryptEnvelope, Ext, H
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vault/release/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vault/release/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vault/release/0.2
+ */
 export type Payload = VaultReleasePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vault/release/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vault/release/0.2
+ */
 export type Response = VaultReleaseResponsePayload;
 
 /**

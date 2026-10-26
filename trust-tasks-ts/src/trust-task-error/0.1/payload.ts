@@ -5,6 +5,8 @@
 
 /**
  * The canonical error-response payload per SPEC.md §8.2.
+ *
+ * @deprecated superseded by trust-task-error/0.5
  */
 export interface TrustTaskErrorPayload {
   /**
@@ -51,7 +53,19 @@ export interface TrustTaskErrorPayload {
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/trust-task-error/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by trust-task-error/0.5";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by trust-task-error/0.5
+ */
 export type Payload = TrustTaskErrorPayload;
 
 /**

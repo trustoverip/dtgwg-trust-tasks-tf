@@ -11,6 +11,8 @@ import (
 // Response Issued by the auth service after verifying the proof on the authenticate
 // document. Carried in a Trust Task document whose type is
 // https://trusttasks.org/spec/auth/authenticate/0.2#response.
+//
+// Deprecated: superseded by auth/authenticate/0.3
 type Response struct {
 	// The session the consumer has just created or refreshed for this subject. Carries
 	// `sessionKey` when the request bound one.
@@ -104,6 +106,8 @@ type Session struct {
 // the optional `sessionKey` member, a did:key VID the consumer binds to the created
 // session so later documents in that session can be signed with it instead of the
 // subject's own key.
+//
+// Deprecated: superseded by auth/authenticate/0.3
 type Payload struct {
 	// The exact challenge value returned by a prior auth/challenge call. Consumers MUST
 	// reject mismatch, expired, or re-used challenges.
@@ -136,6 +140,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/auth/authenticate/0.2"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by auth/authenticate/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/auth/authenticate/0.2#response"

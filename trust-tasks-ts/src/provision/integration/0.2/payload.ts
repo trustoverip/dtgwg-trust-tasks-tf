@@ -13,6 +13,8 @@ export type BootstrapAsk = TemplateBootstrapAsk | AdminRotationAsk;
 
 /**
  * Relayer presents a VP-signed bootstrap request from an integration holder; the maintainer mints the integration's DIDs and admin credential from a registered DID template and ships the material back HPKE-sealed to the holder's ephemeral did:key. Two ask variants are supported: TemplateBootstrap (mint integration DID + optional admin DID) and AdminRotation (mint only the long-term admin DID).
+ *
+ * @deprecated superseded by provision/integration/0.3
  */
 export interface ProvisionIntegrationPayload {
   request: BootstrapRequest;
@@ -175,6 +177,8 @@ export interface DataIntegrityProof {
 }
 /**
  * Carried in a Trust Task document whose type is https://trusttasks.org/spec/provision/integration/0.1#response. The sealed `bundle` is the secret-bearing artefact; `summary` is non-secret audit metadata.
+ *
+ * @deprecated superseded by provision/integration/0.3
  */
 export interface ProvisionIntegrationResponsePayload {
   /**
@@ -248,13 +252,29 @@ export type { Ext };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/provision/integration/0.2" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by provision/integration/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by provision/integration/0.3
+ */
 export type Payload = ProvisionIntegrationPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/provision/integration/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by provision/integration/0.3
+ */
 export type Response = ProvisionIntegrationResponsePayload;
 
 /**

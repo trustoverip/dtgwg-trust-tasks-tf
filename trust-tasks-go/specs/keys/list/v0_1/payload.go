@@ -10,6 +10,8 @@ import (
 
 // Response The success response to a keys/list request. Carried in a Trust Task document
 // whose type is https://trusttasks.org/spec/keys/list/0.1#response.
+//
+// Deprecated: superseded by keys/list/0.2
 type Response struct {
 	// The page of records, in the custodian's own order.
 	Keys []KeyRecord `json:"keys"`
@@ -136,6 +138,8 @@ const (
 )
 
 // Payload Keys List — payload
+//
+// Deprecated: superseded by keys/list/0.2
 type Payload struct {
 	// Return only keys in this lifecycle state. Omitted returns every state, including
 	// revoked keys.
@@ -157,6 +161,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/keys/list/0.1"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by keys/list/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/keys/list/0.1#response"

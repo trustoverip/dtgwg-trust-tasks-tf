@@ -22,6 +22,8 @@ const (
 
 // Response Acknowledgement of the recorded decision, and whether the approval threshold
 // is now met.
+//
+// Deprecated: superseded by task-consent/decision/0.2
 type Response struct {
 	// `granted` = the threshold is met and the requester's re-submit will now execute.
 	// `pending` = the approval was recorded but more are needed. `denied` = the request was
@@ -78,6 +80,8 @@ const (
 // Payload An enrolled approver authorizes (or refuses) one pending privileged task, bound
 // to the exact payload it was shown. The proof on this document — not the transport
 // session that carried it — is the authorization.
+//
+// Deprecated: superseded by task-consent/decision/0.2
 type Payload struct {
 	// Echoes the task-consent/request this decision answers, binding it to that one pending
 	// request. An executor MUST consume the challenge at execution rather than on receipt of
@@ -99,6 +103,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/task-consent/decision/0.1"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by task-consent/decision/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/task-consent/decision/0.1#response"

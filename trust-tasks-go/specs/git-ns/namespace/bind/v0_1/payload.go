@@ -17,6 +17,8 @@ type ResponseNext struct {
 }
 
 // Response The namespace as recorded, and where to go next if it is still pending.
+//
+// Deprecated: superseded by git-ns/namespace/bind/0.2
 type Response struct {
 	Namespace GitNamespace `json:"namespace"`
 
@@ -117,6 +119,8 @@ const (
 // governs who may create, own, maintain and commit to repositories under it. In bridge
 // mode the response says where to send the forge owner to prove control; the namespace
 // stays `pending` until that proof arrives.
+//
+// Deprecated: superseded by git-ns/namespace/bind/0.2
 type Payload struct {
 	// The forge's host, lowercased.
 	Forge ForgeHost `json:"forge"`
@@ -133,6 +137,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/git-ns/namespace/bind/0.1"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by git-ns/namespace/bind/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/git-ns/namespace/bind/0.1#response"

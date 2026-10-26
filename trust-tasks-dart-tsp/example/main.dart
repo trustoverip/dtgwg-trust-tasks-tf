@@ -11,7 +11,7 @@
 
 import 'package:affinidi_tsp/affinidi_tsp.dart';
 import 'package:ssi/ssi.dart';
-import 'package:trust_tasks/specs/trust_task_discovery/v0_1/payload.dart'
+import 'package:trust_tasks/specs/trust_task_discovery/v0_3/payload.dart'
     as discovery;
 import 'package:trust_tasks/trust_tasks.dart';
 import 'package:trust_tasks_tsp/trust_tasks_tsp.dart';

@@ -2,7 +2,8 @@
 //! payloads against the embedded `payload.schema.json` files.
 
 #![cfg(feature = "validate")]
-
+// Names pinned, now-superseded spec versions as fixed specimens; moves before their withdrawal.
+#![allow(deprecated)]
 use trust_tasks_rs::{specs::acl::grant::v0_1 as grant, validate::ValidatedPayload, Payload};
 
 #[test]

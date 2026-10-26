@@ -1,3 +1,5 @@
+// acl/grant/0.1 is superseded; this smoke test moves to the current version before its withdrawal batch.
+// ignore_for_file: deprecated_member_use_from_same_package
 // Smoke test across the seam between the generated libraries and the
 // hand-written runtime.
 //

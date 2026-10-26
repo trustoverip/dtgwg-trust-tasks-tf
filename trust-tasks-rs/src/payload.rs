@@ -363,6 +363,7 @@ pub trait RequestPayload: Payload {
 }
 
 #[cfg(all(test, feature = "acl"))] // its specimens are acl payloads
+#[allow(deprecated)] // the specimens are fixed versions; that they are superseded is beside the point
 mod tests {
     use super::*;
     use crate::specs::acl::change_role::v0_1 as change_role;

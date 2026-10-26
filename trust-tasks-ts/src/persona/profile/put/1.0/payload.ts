@@ -8,6 +8,8 @@ import type { ClaimType, ExpectedVersion_PersonaV0_1 as ExpectedVersion, Ext, Fa
 
 /**
  * Create or replace one profile: a named, ordered projection over the holder's attribute pool. Entries reference pool attributes rather than copying them, so a fact edited once is edited everywhere it appears.
+ *
+ * @deprecated superseded by persona/profile/put/1.1
  */
 export interface PersonaProfilePutPayload {
   /**
@@ -39,6 +41,8 @@ export interface PersonaProfilePutPayload {
 }
 /**
  * Success response to persona/profile/put. Type https://trusttasks.org/spec/persona/profile/put/1.0#response.
+ *
+ * @deprecated superseded by persona/profile/put/1.1
  */
 export interface PersonaProfilePutResponsePayload {
   profileId: Ulid;
@@ -65,13 +69,29 @@ export type { ClaimType, ExpectedVersion, Ext, FaceReach, ProfileEntry, ProofRun
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/persona/profile/put/1.0" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by persona/profile/put/1.1";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by persona/profile/put/1.1
+ */
 export type Payload = PersonaProfilePutPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/persona/profile/put/1.0#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by persona/profile/put/1.1
+ */
 export type Response = PersonaProfilePutResponsePayload;
 
 /**

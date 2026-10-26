@@ -12,6 +12,8 @@ import (
 // https://trusttasks.org/spec/rooms/owner/group/add/0.2#response. The room's new epoch,
 // and the Welcome for the caller to deliver to the newcomer's key holder with
 // rooms/keys/welcome.
+//
+// Deprecated: superseded by rooms/owner/group/add/0.3
 type Response struct {
 	// The room.
 	RoomID string `json:"roomId"`
@@ -37,6 +39,8 @@ type Response struct {
 type Ext = map[string]json.RawMessage
 
 // Payload Rooms Owner Group Add — payload
+//
+// Deprecated: superseded by rooms/owner/group/add/0.3
 type Payload struct {
 	// The room whose group admits a member. The recipient MUST hold its group.
 	RoomID string `json:"roomId"`
@@ -64,6 +68,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/rooms/owner/group/add/0.2"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by rooms/owner/group/add/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/rooms/owner/group/add/0.2#response"

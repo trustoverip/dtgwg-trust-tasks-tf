@@ -9,6 +9,8 @@ import (
 )
 
 // Response Vault Credentials Get — response payload
+//
+// Deprecated: retired; use vault/credentials/get/0.2
 type Response struct {
 	// The verifiable credential as stored, carried verbatim. Maintainers must not
 	// re-serialise it — the bytes carry a proof over themselves.
@@ -23,6 +25,8 @@ type Response struct {
 type Ext = map[string]json.RawMessage
 
 // Payload Fetch one stored credential's full body by id.
+//
+// Deprecated: retired; use vault/credentials/get/0.2
 type Payload struct {
 	// Local handle from a query descriptor. Opaque; consumers must not derive or guess one.
 	ID string `json:"id"`
@@ -33,6 +37,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/vault/credentials/get/0.1"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "retired; use vault/credentials/get/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vault/credentials/get/0.1#response"

@@ -316,6 +316,7 @@ fn check_thread(
 }
 
 #[cfg(test)]
+#[allow(deprecated)] // the specimen is a fixed spec version; that it is superseded is beside the point
 mod tests {
     use super::*;
     use trust_tasks_rs::specs::acl::grant::v0_1 as grant;

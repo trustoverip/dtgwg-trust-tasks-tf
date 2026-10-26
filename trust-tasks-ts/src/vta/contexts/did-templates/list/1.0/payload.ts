@@ -13,6 +13,8 @@ export type Scope = Builtin | Global | Context;
 
 /**
  * List the DID templates scoped to a context on a VTA. Gated on context access. The success response is the set of persisted DidTemplateRecords for the context.
+ *
+ * @deprecated retired; use vta/did-templates/list/2.0
  */
 export interface VTAContextDIDTemplateListPayload {
   /**
@@ -26,6 +28,8 @@ export interface VTAContextDIDTemplateListPayload {
 }
 /**
  * The templates scoped to the context.
+ *
+ * @deprecated retired; use vta/did-templates/list/2.0
  */
 export interface VTAContextDIDTemplateListResponsePayload {
   /**
@@ -85,13 +89,29 @@ export type { Ext };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/contexts/did-templates/list/1.0" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "retired; use vta/did-templates/list/2.0";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated retired; use vta/did-templates/list/2.0
+ */
 export type Payload = VTAContextDIDTemplateListPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/contexts/did-templates/list/1.0#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated retired; use vta/did-templates/list/2.0
+ */
 export type Response = VTAContextDIDTemplateListResponsePayload;
 
 /**

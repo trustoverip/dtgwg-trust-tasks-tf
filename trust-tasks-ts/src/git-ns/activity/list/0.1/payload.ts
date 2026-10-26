@@ -13,6 +13,8 @@ export type Source = "audit" | "job";
 
 /**
  * A namespace's administrators list recent rights changes, drift reports and bridge jobs in the namespaces they administer — every namespace, for a community administrator. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by git-ns/activity/list/0.3
  */
 export interface GitNamespacesListActivityPayload {
   /**
@@ -31,6 +33,8 @@ export interface GitNamespacesListActivityPayload {
 }
 /**
  * The matching items, newest first.
+ *
+ * @deprecated superseded by git-ns/activity/list/0.3
  */
 export interface GitNamespacesListActivityResponsePayload {
   /**
@@ -88,13 +92,29 @@ export type { Did, Ext, NamespaceId, Resource, Right };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/git-ns/activity/list/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by git-ns/activity/list/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by git-ns/activity/list/0.3
+ */
 export type Payload = GitNamespacesListActivityPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/git-ns/activity/list/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by git-ns/activity/list/0.3
+ */
 export type Response = GitNamespacesListActivityResponsePayload;
 
 /**

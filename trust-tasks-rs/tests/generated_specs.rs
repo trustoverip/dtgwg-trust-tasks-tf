@@ -7,6 +7,8 @@
 //! compose with `TrustTask::for_payload`.
 //!
 //! Its specimens are `acl` payloads, so a build without that family skips it.
+// Pinned to fixed spec versions on purpose; that they are superseded is beside the point.
+#![allow(deprecated)]
 #![cfg(feature = "acl")]
 
 use trust_tasks_rs::{specs::acl::grant::v0_1 as grant, Payload, TrustTask, TypeUri};

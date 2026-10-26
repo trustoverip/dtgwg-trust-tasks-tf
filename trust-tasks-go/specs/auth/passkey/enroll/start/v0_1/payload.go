@@ -10,6 +10,8 @@ import (
 
 // Response Server-issued WebAuthn creation options. Carried in a Trust Task document
 // whose type is https://trusttasks.org/spec/auth/passkey/enroll/start/0.1#response.
+//
+// Deprecated: superseded by auth/passkey/enroll/start/0.2
 type Response struct {
 	// Opaque server handle correlating this start with the matching finish. The producer MUST
 	// echo it verbatim.
@@ -99,6 +101,8 @@ type CredentialDescriptor struct {
 // Payload Ask the auth service to begin a WebAuthn registration ceremony. The response
 // carries PublicKeyCredentialCreationOptions; the producer hands them to
 // `navigator.credentials.create({ publicKey: ... })`.
+//
+// Deprecated: superseded by auth/passkey/enroll/start/0.2
 type Payload struct {
 	// Operator-facing label for the credential (e.g. "Alice's MacBook"). Surfaced in the
 	// credential list for later management.
@@ -110,6 +114,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/auth/passkey/enroll/start/0.1"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by auth/passkey/enroll/start/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/auth/passkey/enroll/start/0.1#response"

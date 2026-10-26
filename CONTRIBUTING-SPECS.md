@@ -544,7 +544,7 @@ Maturity bumps are PRs like any other. The build script enforces the values; the
 
 ## Retiring a spec
 
-`retired` is a **terminal** status — once a spec is retired it stays retired. Retirement signals "no longer recommended for new use" while keeping the spec's prose and schema available so already-issued documents remain verifiable.
+`retired` can move only to `withdrawn` (below) — once a spec is retired it never returns to an earlier status. Retirement signals "no longer recommended for new use" while keeping the spec's prose and schema available so already-issued documents remain verifiable.
 
 Three cases trigger retirement in practice:
 
@@ -562,3 +562,12 @@ supersededBy: acl/grant/1.0      # or just `acl/grant` for "latest non-retired v
 The bare-URL redirect (`https://trusttasks.org/spec/<slug>`) skips retired versions automatically. Consumer tooling reads `supersededBy` to direct implementers at the recommended replacement.
 
 A retired spec **MUST NOT** transition back to `draft`, `candidate`, or `standard`. If you need to revive functionality, publish a fresh `MAJOR.MINOR` of the slug and let it progress through the lifecycle from `draft`.
+
+## Superseded, deprecated and withdrawn versions
+
+A version is **superseded** as soon as a later version of its slug exists that is neither retired nor withdrawn and is at least as mature (a `draft` is superseded by any later version; a `standard` only by a later `standard`). You do not mark it — publishing the successor is what supersedes it. From then on:
+
+- **The libraries mark it deprecated.** The Rust, TypeScript, Go and Dart generators each give a superseded or retired version a deprecation note — `superseded by acl/grant/0.3`, `retired; use acl/grant/0.3`, or `retired` — as a constant (`DEPRECATION`, `Deprecation`, `deprecation`) and as `#[deprecated]` / `@deprecated` / `// Deprecated:` / `@Deprecated` on its root types. That is a compiler warning for a consumer, not a break, and `npm run check-bindings` holds the four notes equal.
+- **After 90 days it is withdrawn, in a quarterly batch.** On the first day of each quarter `.github/workflows/withdraw.yml` runs `npm run withdraw-due` — every version superseded or retired for at least 90 days becomes `status: withdrawn`, with a `supersededBy` naming its successor — regenerates the libraries without them, and opens one pull request. Its schema and prose stay published, so already-issued documents remain verifiable, but it is no longer generated into any library. Removing a module breaks the libraries' users, so this is the one scheduled breaking release a quarter rather than a trickle of them; preview the next batch with `npm run withdraw-due -- --dry --as-of 2027-01-01`.
+
+`withdrawn` is terminal. Never set it by hand outside the batch, and never on a version something still pins on the wire — the stale-references check (above) makes sure nothing current does.

@@ -10,6 +10,8 @@ import (
 
 // Response The action as the caller is entitled to see it. Failures use trust-task-error,
 // not this shape.
+//
+// Deprecated: superseded by vtc/admin/actions/show/0.3
 type Response struct {
 	Action Action `json:"action"`
 	Ext    *Ext   `json:"ext,omitempty"`
@@ -336,6 +338,8 @@ type ActionID = string
 // (continuation `proceed`, hint {actionId}). The enumeration sibling is
 // vtc/admin/actions/list/0.2. The outer document members (id, type, issuer, recipient,
 // issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+//
+// Deprecated: superseded by vtc/admin/actions/show/0.3
 type Payload struct {
 	// The action to fetch — from a next-step hint, a list entry, or a notification.
 	ActionID ActionID `json:"actionId"`
@@ -344,6 +348,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/vtc/admin/actions/show/0.2"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vtc/admin/actions/show/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/admin/actions/show/0.2#response"
