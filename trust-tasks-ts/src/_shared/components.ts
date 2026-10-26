@@ -12740,7 +12740,7 @@ export interface TransportObservation_DidManagementV0_3 {
   transport: "tsp" | "didcomm" | "https";
   observedAt: string;
 }
-export interface TrustRecord_RegistryV0_1 {
+export interface TrustRecord {
   entity_id: string;
   authority_id: string;
   action: string;

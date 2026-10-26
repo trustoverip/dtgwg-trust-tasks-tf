@@ -3,7 +3,7 @@
  * Source: specs/registry/record/query/0.2/payload.schema.json
  */
 
-import type { Ext, RecordType, TrustRecord_RegistryV0_1 as TrustRecord } from "../../../../_shared/components.js";
+import type { Ext, RecordType, TrustRecord } from "../../../../_shared/components.js";
 
 
 /**
