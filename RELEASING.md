@@ -66,6 +66,15 @@ libraries have carried since each version was superseded. The batch's CI runs
 every test, so a hand-written use of a withdrawn version (a smoke test, an
 example) fails there and is moved to the successor in the same PR. The workflow
 needs `RELEASE_PLZ_TOKEN`, as the Release PR does, for its PR to trigger CI.
+Hand-written support kept on purpose for a version until its batch — the HTTPS
+servers answering `trust-task-discovery` 0.1/0.2 for older peers — sits in blocks
+opened by a `… (superseded)` comment and closed by `--- end`; the batch PR's body
+lists the files, and they are deleted in that PR. A family whose every version is
+withdrawn also loses its `trust-tasks-rs` Cargo feature (in the 2027-01-01 batch,
+`confirm`), which is a break for any consumer that enabled it — say so in the
+batch PR. `Withdrawal readiness` (`scripts/check-withdrawal-readiness.mjs`) warns
+about any other hand-written import of a due version from the moment it is due,
+and fails CI from 30 days before the batch.
 
 **`spec` is ours, not the standard's**, and release-plz does not know it — an
 unrecognised type is scored as a **patch**. That is right for an in-place schema

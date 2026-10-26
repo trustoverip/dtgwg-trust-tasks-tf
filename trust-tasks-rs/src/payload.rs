@@ -339,7 +339,7 @@ pub trait Payload: Serialize + DeserializeOwned {
 ///   `send()` compile for an exchange that yields no document, trading a
 ///   compile-time error for a runtime one (the HTTPS binding answers such a
 ///   request with `204` and no body).
-/// - **`trust_task_ok::v0_1::Payload`** — a real payload, but the wrong one
+/// - **the `trust-task-ok/0.1` payload** — a real payload, but the wrong one
 ///   to bake in: framework 0.5.0 deprecates `trust-task-ok` in favour of a
 ///   specification declaring an empty `#response` of its own. Pairing every
 ///   response-less specification with a type that is being retired would

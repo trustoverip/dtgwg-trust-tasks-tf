@@ -96,8 +96,11 @@ for (const d of due) {
   }
 }
 
-if (deletions.length) {
-  const files = [...new Set(deletions.map((d) => d.file))];
+// Every file holding a block, including blocks with no import of their own
+// (a `mod superseded;` line) — the batch deletes them all.
+const blockFiles = sources.filter(([, text]) => text.split('\n').some((l) => SUPERSEDED_OPEN.test(l))).map(([f]) => f);
+if (deletions.length || blockFiles.length) {
+  const files = [...new Set([...deletions.map((d) => d.file), ...blockFiles])].sort();
   console.log(
     `The ${batchText} batch PR deletes ${deletions.length} use(s) kept on purpose in \`(superseded)\` blocks, in: ${files.join(', ')}.`
   );
