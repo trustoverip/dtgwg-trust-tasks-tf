@@ -17,11 +17,12 @@
 //   * The bundle's schema is key-sorted (RFC 8785). `propertyOrder` restores
 //     the authored order of every `properties` object, so the generated
 //     classes list their fields — and serialize their members — exactly as the
-//     prebuilt ones do. Nothing restores the authored order of `$defs`, so the
-//     top-level declarations come out in `$defs`-key order (dependencies first,
-//     as before) rather than the order the .mjs happened to splice them in, and
-//     the embedded schema text is the bundle's key order. Both are reported by
-//     the equivalence check (scripts/check-dart-consumer-generation.mjs).
+//     prebuilt ones do, and `defsOrder` restores the order the .mjs's inliner
+//     leaves the root `$defs` in, so the top-level declarations come out in the
+//     same order too. A bundle older than `defsOrder` falls back to `$defs`-key
+//     order (dependencies still first). The embedded schema text stays the
+//     bundle's key order — JSON-equal to the prebuilt's, not byte-equal. The
+//     equivalence check (scripts/check-dart-consumer-generation.mjs) reports it.
 
 import 'dart:convert';
 
@@ -114,6 +115,10 @@ class Bundle {
     if (order is! Map<String, dynamic>) {
       throw BundleError('`propertyOrder` has the wrong type');
     }
+    final defsOrder = decoded['defsOrder'] ?? <String, dynamic>{};
+    if (defsOrder is! Map<String, dynamic>) {
+      throw BundleError('`defsOrder` has the wrong type');
+    }
     final schema = need<Map<String, dynamic>>('schema');
     final response = need<Map<String, dynamic>?>('responseSchema');
 
@@ -127,12 +132,43 @@ class Bundle {
       policy: need<Map<String, dynamic>>('policy'),
       schemaText: jsonEncode(schema),
       responseSchemaText: response == null ? null : jsonEncode(response),
-      schema: _ordered(schema, '/schema', order) as Map<String, dynamic>,
+      schema: _withDefsOrder(
+        _ordered(schema, '/schema', order) as Map<String, dynamic>,
+        defsOrder['/schema'],
+      ),
       responseSchema: response == null
           ? null
-          : _ordered(response, '/responseSchema', order)
-              as Map<String, dynamic>,
+          : _withDefsOrder(
+              _ordered(response, '/responseSchema', order)
+                  as Map<String, dynamic>,
+              defsOrder['/responseSchema'],
+            ),
     );
+  }
+
+  /// [schema] with its root `$defs` in the order [names] lists them — the
+  /// order the in-repo inliner leaves them in, and so the order the prebuilt
+  /// tree declares (and reserves the names of) its types. A bundle older than
+  /// `defsOrder` names none, and the `$defs` keep the bundle's key order.
+  static Map<String, dynamic> _withDefsOrder(
+    Map<String, dynamic> schema,
+    Object? names,
+  ) {
+    final defs = schema[r'$defs'];
+    if (names == null) return schema;
+    if (names is! List || names.any((n) => n is! String)) {
+      throw BundleError('`defsOrder` lists something other than names');
+    }
+    if (defs is! Map<String, dynamic>) return schema;
+    final reordered = <String, dynamic>{};
+    for (final name in names.cast<String>()) {
+      if (defs.containsKey(name)) reordered[name] = defs[name];
+    }
+    // Anything defsOrder does not name keeps the bundle's order, after.
+    for (final entry in defs.entries) {
+      reordered.putIfAbsent(entry.key, () => entry.value);
+    }
+    return {...schema, r'$defs': reordered};
   }
 
   /// A deep copy of [node] (at JSON Pointer [pointer]) with every `properties`

@@ -3,7 +3,8 @@
 // Its output is held to the prebuilt tree by
 // scripts/check-dart-consumer-generation.mjs (every bundle in the registry);
 // these pin the contract around it: the digest check, the lock and bundle
-// versions it refuses, the output directory it owns, and determinism.
+// versions it refuses, the output directory it owns, determinism, and the
+// `$defs` order it takes from a bundle's `defsOrder` (or does without).
 
 @TestOn('vm')
 library;
@@ -12,6 +13,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:test/test.dart';
+import 'package:trust_tasks/src/generator/emit.dart';
 import 'package:trust_tasks/src/generator/generate.dart';
 import 'package:trust_tasks/src/generator/lock.dart';
 import 'package:trust_tasks/src/generator/sha256.dart';
@@ -171,6 +173,112 @@ void main() {
           () => Lockfile.parse(sourced.replaceFirst(
               'url = "https://tasks.acme.example"', 'token = "x"')),
           throwsA(isA<LockError>()));
+    });
+  });
+
+  group('defsOrder', () {
+    // Independent definitions, so dependency order cannot decide; `Item` and
+    // `item` both want the class name `Item`, so the first declared gets it.
+    Map<String, dynamic> bundle(Object? defsOrder) {
+      Map<String, dynamic> schema() => {
+            r'$defs': {
+              'Alpha': {
+                'type': 'string',
+                'enum': ['a'],
+              },
+              'Item': {
+                'type': 'object',
+                'properties': {
+                  'upper': {'type': 'string'},
+                },
+              },
+              'Response': {
+                'type': 'object',
+                'properties': {
+                  'ok': {'type': 'boolean'},
+                },
+              },
+              'Zeta': {
+                'type': 'string',
+                'enum': ['z'],
+              },
+              'item': {
+                'type': 'object',
+                'properties': {
+                  'lower': {'type': 'string'},
+                },
+              },
+            },
+            'type': 'object',
+            'properties': {
+              'alpha': {r'$ref': r'#/$defs/Alpha'},
+              'zeta': {r'$ref': r'#/$defs/Zeta'},
+            },
+          };
+      final b = vaultGet()
+        ..['schema'] = schema()
+        ..['responseSchema'] = schema()
+        ..['propertyOrder'] = <String, dynamic>{}
+        ..remove('defsOrder');
+      if (defsOrder != null) b['defsOrder'] = defsOrder;
+      return b;
+    }
+
+    List<String> declared(Map<String, dynamic> b) => RegExp(
+          r'^(?:class|typedef|extension type const) (\w+)',
+          multiLine: true,
+        )
+            .allMatches(
+                generateLibrary(Bundle.parse(jsonEncode(b)), source: 'test'))
+            .map((m) => m[1]!)
+            .toList();
+
+    test('declares the root \$defs in the order it lists', () {
+      final order = ['Zeta', 'item', 'Response', 'Item', 'Alpha'];
+      final b = bundle({'/schema': order, '/responseSchema': order});
+      expect(declared(b),
+          ['Zeta', 'Item', 'Response', 'Item2', 'Alpha', 'Payload']);
+      // `item` was reserved first, so it is the class with `lower`.
+      final lib = generateLibrary(Bundle.parse(jsonEncode(b)), source: 'test');
+      expect(lib, contains('class Item {\n  const Item({\n    this.lower,'));
+    });
+
+    test('a definition it does not name follows, in the bundle\'s order', () {
+      final b = bundle({
+        '/schema': ['Zeta'],
+      });
+      expect(declared(b),
+          ['Zeta', 'Alpha', 'Item', 'Response', 'Item2', 'Payload']);
+    });
+
+    test('a bundle older than it keeps the bundle\'s key order', () {
+      final legacy = declared(bundle(null));
+      expect(legacy, ['Alpha', 'Item', 'Response', 'Zeta', 'Item2', 'Payload']);
+      expect(declared(bundle(<String, dynamic>{})), legacy);
+      // The example's vendored bundles predate defsOrder.
+      for (final f in Directory('${exampleDir.path}/trust-tasks')
+          .listSync(recursive: true)
+          .whereType<File>()) {
+        expect(f.readAsStringSync(), isNot(contains('"defsOrder"')),
+            reason: f.path);
+      }
+    });
+
+    test('refuses one of the wrong shape', () {
+      for (final bad in <Object>[
+        ['Zeta'],
+        {
+          '/schema': [1],
+        },
+        {'/schema': 'Zeta'},
+      ]) {
+        expect(
+          () => Bundle.parse(jsonEncode(bundle(bad))),
+          throwsA(isA<BundleError>()
+              .having((e) => e.message, 'message', contains('defsOrder'))),
+          reason: jsonEncode(bad),
+        );
+      }
     });
   });
 

@@ -13,12 +13,20 @@
 //   1. The embedded schema text (`payloadSchemaJson`, `responsePayloadSchemaJson`).
 //      The bundle's schema is key-sorted (RFC 8785); the prebuilt embeds the
 //      authored keyword order. Compared as parsed JSON — must be equal.
-//   2. The ORDER of top-level declarations. The .mjs emits `$defs` in the order
-//      its cross-file `$ref` splice reached them; the bundle's `$defs` are
-//      key-sorted and `propertyOrder` records the order of `properties` only,
-//      so that order is not recoverable. Each declaration — every class, its
-//      fields in order, its fromJson/toJson — must still be byte-identical, and
-//      the multiset of declarations equal.
+//   2. The ORDER of top-level declarations, in one case only. The bundle's
+//      `defsOrder` gives the root `$defs` in the order the .mjs's inliner
+//      leaves them, and both generators then declare them dependencies-first,
+//      walking each definition's `$ref`s in the order its keywords are written.
+//      That keyword order is not in the bundle (it is key-sorted, and
+//      `propertyOrder` covers `properties` only). It decides the outcome only
+//      where one schema object reaches two not-yet-declared definitions through
+//      sibling keywords — in the registry, a map whose `propertyNames` and
+//      `additionalProperties` each `$ref` a definition, written in either order
+//      (both occur). A library may differ in declaration order only when its
+//      bundle has such an object; each declaration — every class, its fields
+//      in order, its fromJson/toJson — must still be byte-identical, and the
+//      multiset of declarations equal. A bundle without `defsOrder` (older than
+//      it) is a failure here: rebuild the bundles.
 //
 // The two header lines (generator and source) differ by design and are not
 // compared. Libraries the consumer generator does not write are listed, not
@@ -123,11 +131,30 @@ function blocks(text) {
   return { parts, schemas };
 }
 
+// The bundle behind each generated library, to judge a reordering against.
+const bundleFor = new Map();
+for (const s of index.specs) {
+  const dirs = s.slug.split("/").map((p) => p.replace(/^_/, "").replace(/[^A-Za-z0-9]+/g, "_"));
+  bundleFor.set([...dirs, `v${s.version.replace(".", "_")}`, "payload.dart"].join("/"), s);
+}
+
+/** Does [node] hold an object whose `propertyNames` and `additionalProperties` both `$ref` a definition? */
+function hasKeyedMapOfRefs(node) {
+  if (Array.isArray(node)) return node.some(hasKeyedMapOfRefs);
+  if (node === null || typeof node !== "object") return false;
+  const refs = (n) => JSON.stringify(n ?? null).includes('"$ref":"#/$defs/');
+  if (refs(node.propertyNames) && typeof node.additionalProperties === "object" && refs(node.additionalProperties)) {
+    return true;
+  }
+  return Object.values(node).some(hasKeyedMapOfRefs);
+}
+
 const generated = (await walk(outDir)).map((f) => path.relative(outDir, f)).sort();
 const prebuilt = new Set((await walk(PREBUILT)).map((f) => path.relative(PREBUILT, f)));
 
 let identical = 0;
-let reordered = 0;
+const reordered = [];
+const declName = (p) => (p.match(/^(?:class|typedef|extension type const) (\w+)/m) ?? [])[1];
 const failures = [];
 for (const rel of generated) {
   if (rel === "extends_index.dart") continue;
@@ -167,7 +194,19 @@ for (const rel of generated) {
       ].join("\n"),
     );
   } else if (sameSequence) identical++;
-  else reordered++;
+  else {
+    const spec = bundleFor.get(rel);
+    const bundle = spec && JSON.parse(await fs.readFile(path.join(bundlesDir, spec.path), "utf8"));
+    if (!bundle || !Array.isArray(bundle.defsOrder?.["/schema"])) {
+      failures.push(`${rel}: declarations in a different order, and its bundle has no \`defsOrder\` — rebuild the bundles`);
+    } else if (!hasKeyedMapOfRefs(bundle.schema)) {
+      failures.push(
+        `${rel}: declarations in a different order, with no propertyNames/additionalProperties pair to explain it\n` +
+          `  generated: ${mine.parts.map(declName).filter(Boolean).join(", ")}\n` +
+          `  prebuilt:  ${theirs.parts.map(declName).filter(Boolean).join(", ")}`,
+      );
+    } else reordered.push(rel);
+  }
 }
 
 // The extends index: same entries, restricted to what was generated.
@@ -192,7 +231,11 @@ for (const p of other) failures.push(`${p}: prebuilt, but the consumer generator
 
 console.log(`Dart consumer generation vs the prebuilt tree (${index.specs.length} bundles, generated in ${seconds} s)`);
 console.log(`  ${identical} libraries byte-identical apart from the header and the embedded schema's key order (JSON-equal)`);
-console.log(`  ${reordered} more identical declaration for declaration, in a different top-level order ($defs order is not in the bundle)`);
+console.log(
+  `  ${reordered.length} more identical declaration for declaration, in a different top-level order ` +
+    `(a propertyNames/additionalProperties pair whose authored keyword order the bundle does not carry):`,
+);
+for (const rel of reordered) console.log(`      ${rel}`);
 console.log(`  extends_index.dart: ${myIndex.length} entries, ${myIndex.join("\n") === theirIndex.join("\n") ? "equal" : "DIFFERENT"}`);
 console.log(`  not generated by design: ${shared.length} shared-definition libraries, ${framework.length} framework libraries`);
 console.log(`  skipped with a note: ${notes.length} (${notes.filter((n) => n.includes("withdrawn")).length} withdrawn, ${notes.filter((n) => n.includes("framework")).length} framework)`);
