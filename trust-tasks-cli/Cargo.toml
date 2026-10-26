@@ -18,6 +18,10 @@ publish = true
 [[bin]]
 name = "trust-tasks"
 path = "src/main.rs"
+# No rustdoc pages: the binary would document to target/doc/trust_tasks and
+# collide with the `trust-tasks` facade crate, and its doc comments are clap
+# `--help` text, not API docs.
+doc = false
 
 [dependencies]
 anyhow = "1"
