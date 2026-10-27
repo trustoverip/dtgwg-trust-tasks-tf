@@ -363,17 +363,34 @@ the runtime only".
   imports `trust-task-discovery`, a framework specification the runtime always
   carries. Nothing to change.
 
-## Milestone 5 — when
+## Milestone 5 — deprecated, removal to be scheduled
 
-Decided 2026-10-27: the prebuilt modules are deprecated **after one release
-cycle** of the generators in use. Milestone 3 shipped in the 2026-10-26
-releases (`@openvtc/trust-tasks` 0.27.8 with `./runtime`,
+Decided 2026-10-27 — first "after one release cycle of the generators in use",
+then, the same day, **deprecate now**: the 90-day clock to removal starts with
+the release that carries it, rather than a cycle later. Milestone 3 had shipped
+in the 2026-10-26 releases (`@openvtc/trust-tasks` 0.27.8 with `./runtime`,
 `@openvtc/trust-tasks-gen` 0.1.0, `trust-tasks-cli` 0.1.2, the Go and Dart
-generators in their modules); milestone 4's TypeScript change (#947) ships in
-the release after.
+generators in their modules).
+
+What is deprecated is every prebuilt specification module outside the
+framework's own (`trust-task-*`, `trust-ceremony-*`, `_framework/`), which the
+runtimes speak and keep. Each library marks it where its toolchain reports a
+deprecation, and only on the prebuilt entry point — never in what the
+consumer-side generators emit, which is the replacement:
+
+| Library | Mark | Who reports it |
+|---|---|---|
+| Rust | `#[deprecated]` on each gated family module in `trust-tasks-rs/src/specs/mod.rs` (trust-tasks-codegen) — it reaches every path and item under the module | rustc, on every use; a build with `-D warnings` fails |
+| TypeScript | `@deprecated` on each namespace re-export in the package root, spelled `import * as _X …; export import X = _X;` because TypeScript ignores `@deprecated` on `export * as` (build-ts-bindings.mjs) | editors and `@typescript-eslint/no-deprecated`; a deep import of a module file is not marked — TypeScript has no module-level deprecation |
+| Go | a `Deprecated:` paragraph in each prebuilt package's doc (build-go-bindings.mjs) | gopls and staticcheck (SA1019) on import; the compiler never warns |
+| Dart | `@Deprecated` on each prebuilt library's `library` directive (build-dart-bindings.mjs) | the analyzer (`deprecated_member_use`) on import from another package; `--fatal-infos` fails |
+
+The four equivalence tests mask exactly that mark, so a consumer-side generator
+is still held byte for byte to the prebuilt tree.
+
 The withdrawal batch that removes them — one declared break per library — is
-chosen after deprecation, once the generators' use is known; the earliest is
-the first quarterly batch at least 90 days after the deprecation ships.
+chosen once the generators' use is known; the earliest is the first quarterly
+batch at least 90 days after the deprecation ships.
 
 ## Third-party sources
 

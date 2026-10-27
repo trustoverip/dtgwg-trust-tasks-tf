@@ -14,6 +14,10 @@
 //!   gate, the route-before-verify ordering, request/response binding on
 //!   the client, discovery privacy, the status table, and `Content-Type`.
 
+// Exercises the prebuilt specification modules on purpose; they are deprecated
+// in favour of generating the tasks an application uses (trust-tasks-build).
+#![allow(deprecated)]
+
 use std::net::SocketAddr;
 use std::sync::atomic::{AtomicUsize, Ordering as AtomicOrdering};
 use std::sync::{Arc, Mutex};

@@ -11,6 +11,10 @@
 //! cargo run -p trust-tasks-didcomm --example local_roundtrip
 //! ```
 
+// Exercises the prebuilt specification modules on purpose; they are deprecated
+// in favour of generating the tasks an application uses (trust-tasks-build).
+#![allow(deprecated)]
+
 use affinidi_messaging_didcomm::{identity::PrivateIdentity, DIDCommAgent};
 use trust_tasks_didcomm::{pack_trust_task, unpack_trust_task};
 use trust_tasks_rs::{specs::acl::grant::v0_2 as grant, RejectReason, TransportHandler, TrustTask};

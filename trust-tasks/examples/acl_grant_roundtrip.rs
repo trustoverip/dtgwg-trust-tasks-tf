@@ -17,6 +17,10 @@
 //!
 //! [`GETTING-STARTED.md`]: https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/GETTING-STARTED.md
 
+// Exercises the prebuilt specification modules on purpose; they are deprecated
+// in favour of generating the tasks an application uses (trust-tasks-build).
+#![allow(deprecated)]
+
 // GETTING-STARTED:begin imports
 use affinidi_secrets_resolver::secrets::Secret;
 use trust_tasks::https::{BearerAuth, ClientError, HttpsClient, HttpsServer};

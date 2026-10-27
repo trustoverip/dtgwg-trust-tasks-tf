@@ -2,6 +2,9 @@
 // inside the §7.2 pipeline.
 
 import 'package:test/test.dart';
+// The specimen is a prebuilt library, deprecated in favour of generating the
+// tasks an application uses (dart run trust_tasks:generate).
+// ignore: deprecated_member_use
 import 'package:trust_tasks/specs/acl/grant/v0_2/payload.dart' as acl_grant;
 import 'package:trust_tasks/trust_tasks.dart';
 import 'package:trust_tasks_proof/trust_tasks_proof.dart';

@@ -362,7 +362,11 @@ pub trait RequestPayload: Payload {
     type Response: Payload;
 }
 
-#[cfg(all(test, feature = "acl"))] // its specimens are acl payloads
+#[cfg(all(test, feature = "acl"))]
+// its specimens are acl payloads
+// The specimens are prebuilt modules, deprecated in favour of generating the
+// tasks an application uses (trust-tasks-build).
+#[allow(deprecated)]
 mod tests {
     use super::*;
     use crate::specs::acl::change_role::v0_2 as change_role;

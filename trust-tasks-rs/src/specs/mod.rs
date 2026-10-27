@@ -57,81 +57,159 @@
 
 // trust-tasks-codegen:begin
 #[cfg(feature = "acl")]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
 pub mod acl;
 #[cfg(feature = "audit")]
 #[cfg(not(test))]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
 pub mod audit;
 #[cfg(feature = "auth")]
 #[cfg(not(test))]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
 pub mod auth;
 #[cfg(feature = "backup")]
 #[cfg(not(test))]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
 pub mod backup;
 #[cfg(feature = "chat")]
 #[cfg(not(test))]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
 pub mod chat;
 #[cfg(feature = "config")]
 #[cfg(not(test))]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
 pub mod config;
 #[cfg(feature = "confirm")]
 #[cfg(not(test))]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
 pub mod confirm;
 #[cfg(feature = "consent")]
 #[cfg(not(test))]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
 pub mod consent;
 #[cfg(feature = "credential-exchange")]
 #[cfg(not(test))]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
 pub mod credential_exchange;
 #[cfg(feature = "device")]
 #[cfg(not(test))]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
 pub mod device;
 #[cfg(feature = "did-management")]
 #[cfg(not(test))]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
 pub mod did_management;
 #[cfg(feature = "external")]
 #[cfg(not(test))]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
 pub mod external;
 #[cfg(feature = "git-ns")]
 #[cfg(not(test))]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
 pub mod git_ns;
 #[cfg(feature = "git-trust")]
 #[cfg(not(test))]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
 pub mod git_trust;
 #[cfg(feature = "governance")]
 #[cfg(not(test))]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
 pub mod governance;
 #[cfg(feature = "keys")]
 #[cfg(not(test))]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
 pub mod keys;
 #[cfg(feature = "messaging")]
 #[cfg(not(test))]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
 pub mod messaging;
 #[cfg(feature = "persona")]
 #[cfg(not(test))]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
 pub mod persona;
 #[cfg(feature = "policy")]
 #[cfg(not(test))]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
 pub mod policy;
 #[cfg(feature = "process-attestation")]
 #[cfg(not(test))]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
 pub mod process_attestation;
 #[cfg(feature = "provision")]
 #[cfg(not(test))]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
 pub mod provision;
 #[cfg(feature = "push")]
 #[cfg(not(test))]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
 pub mod push;
 #[cfg(feature = "registry")]
 #[cfg(not(test))]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
 pub mod registry;
 #[cfg(feature = "rooms")]
 #[cfg(not(test))]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
 pub mod rooms;
 #[cfg(feature = "sync")]
 #[cfg(not(test))]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
 pub mod sync;
 #[cfg(feature = "task-consent")]
 #[cfg(not(test))]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
 pub mod task_consent;
 pub mod trust_ceremony_receipt;
 pub mod trust_task_control;
@@ -140,26 +218,50 @@ pub mod trust_task_next_step;
 pub mod trust_task_ok;
 #[cfg(feature = "vault")]
 #[cfg(not(test))]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
 pub mod vault;
 #[cfg(feature = "vetting")]
 #[cfg(not(test))]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
 pub mod vetting;
 #[cfg(feature = "voting")]
 #[cfg(not(test))]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
 pub mod voting;
 #[cfg(feature = "vrc")]
 #[cfg(not(test))]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
 pub mod vrc;
 #[cfg(feature = "vta")]
 #[cfg(not(test))]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
 pub mod vta;
 #[cfg(feature = "vtc")]
 #[cfg(not(test))]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
 pub mod vtc;
 #[cfg(feature = "webvh")]
 #[cfg(not(test))]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
 pub mod webvh;
 #[cfg(feature = "witness")]
 #[cfg(not(test))]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
 pub mod witness;
 // trust-tasks-codegen:end

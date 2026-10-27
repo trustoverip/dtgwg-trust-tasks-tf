@@ -120,7 +120,17 @@ const SCHEMA_CONST = /^(const String (?:response)?[pP]ayloadSchemaJson =\s*)('(?
 
 /** Top-level blocks after the two header lines, schema text pulled out. */
 function blocks(text) {
-  const body = text.split("\n").slice(2).join("\n").replace(/^\n+/, "");
+  const body = text
+    .split("\n")
+    .slice(2)
+    .join("\n")
+    // A prebuilt library outside the framework's own specifications is
+    // deprecated on its `library` directive (build-dart-bindings.mjs); the
+    // generated library is the replacement, so it has none.
+    .replace(/\n+@Deprecated\(\s*'The prebuilt specification libraries will be removed: [^']*'\)\nlibrary;\n/, (m) =>
+      m.startsWith("\n\n") ? "\n" : "",
+    )
+    .replace(/^\n+/, "");
   const schemas = [];
   const parts = body.split(/\n\n(?=\S)/).map((b) =>
     b.replace(SCHEMA_CONST, (_, pre, lit, post) => {

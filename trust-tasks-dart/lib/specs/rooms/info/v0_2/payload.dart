@@ -2,6 +2,10 @@
 // Source: specs/rooms/info/0.2/payload.schema.json
 // ignore_for_file: deprecated_member_use_from_same_package
 
+@Deprecated(
+    'The prebuilt specification libraries will be removed: pin the tasks you use with the trust-tasks CLI and generate them with `dart run trust_tasks:generate` (GETTING-STARTED.md).')
+library;
+
 import 'package:trust_tasks/trust_tasks.dart';
 
 /// How much of a room its host can see, fixed at creation and immutable thereafter.

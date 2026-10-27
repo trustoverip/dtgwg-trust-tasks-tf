@@ -36,7 +36,8 @@
 //                 bundle — carries. Each such declaration must be one no
 //                 prebuilt spec module imports.
 //   index.ts      The `export * as <Namespace> from "<path>"` lines must equal
-//                 the prebuilt barrel's for the same modules.
+//                 the prebuilt barrel's for the same modules (whose deprecated
+//                 `export import` spelling is read back as `export * as`).
 //   _extends.ts   Byte-identical after the banner.
 //   tsc           The generated tree, type-checked whole, as an application
 //                 would.
@@ -361,7 +362,18 @@ console.log(`tsc: the generated tree type-checked in ${((Date.now() - tscStarted
 // ── 5. index.ts and _extends.ts ─────────────────────────────────────────────
 
 const barrelLines = (text) => text.split("\n").filter((l) => /^export \* as \S+ from "\.\/(?!_)[^"]+\/payload\.js";$/.test(l));
-const pBarrel = barrelLines(fs.readFileSync(path.join(PREBUILT, "index.ts"), "utf8")).filter((l) => !l.includes('"./trust-task-error/'));
+// The prebuilt barrel deprecates every non-framework namespace (milestone 5 of
+// docs/design/consumer-side-generation.md) by spelling its re-export
+// `import * as _X from "…"; /** @deprecated … */ export import X = _X;` —
+// TypeScript ignores @deprecated on `export * as`. Read that form back as the
+// `export * as X from "…"` it stands for; the generated barrel, which is the
+// replacement, is not deprecated.
+const undeprecated = (text) =>
+  text.replace(
+    /^import \* as _(\S+) from ("[^"]+");\n\/\*\* @deprecated The prebuilt specification modules will be removed: [^\n]*\*\/\nexport import \1 = _\1;$/gm,
+    "export * as $1 from $2;",
+  );
+const pBarrel = barrelLines(undeprecated(fs.readFileSync(path.join(PREBUILT, "index.ts"), "utf8"))).filter((l) => !l.includes('"./trust-task-error/'));
 const gBarrel = barrelLines(fs.readFileSync(path.join(out, "index.ts"), "utf8"));
 if (pBarrel.join("\n") !== gBarrel.join("\n")) {
   const ps = new Set(pBarrel);

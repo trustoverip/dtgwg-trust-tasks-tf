@@ -2,6 +2,9 @@
 //!
 //! Its specimens are `acl` payloads, so a build without that family skips it.
 #![cfg(feature = "acl")]
+// Exercises the prebuilt specification modules on purpose; they are deprecated
+// in favour of generating the tasks an application uses (trust-tasks-build).
+#![allow(deprecated)]
 
 use serde_json::Value;
 use trust_tasks_rs::{

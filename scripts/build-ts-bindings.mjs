@@ -1510,7 +1510,38 @@ async function emitIndex(generated) {
     );
   }
 
-  await fs.writeFile(path.join(OUT_DIR, "index.ts"), lines.join("\n") + "\n", "utf8");
+  await fs.writeFile(path.join(OUT_DIR, "index.ts"), lines.map(deprecatePrebuilt).join("\n") + "\n", "utf8");
+}
+
+/**
+ * The prebuilt specification modules are deprecated (milestone 5 of
+ * docs/design/consumer-side-generation.md): an application generates the tasks
+ * it pins with `@openvtc/trust-tasks-gen` and imports the runtime from
+ * `@openvtc/trust-tasks/runtime`. The framework's own specifications are not —
+ * the runtime speaks them.
+ *
+ * The mark sits on the root re-export, not in the modules, because TypeScript
+ * ignores `@deprecated` on `export * as X from …` but honours it on an
+ * `export import X = _X` alias, and because the modules are what
+ * `trust-tasks-gen-ts` emits too (its equivalence test compares them byte for
+ * byte). A deep import (`@openvtc/trust-tasks/acl/grant/0.2/payload.js`) is
+ * not marked; TypeScript has no module-level deprecation.
+ */
+const PREBUILT_DEPRECATION =
+  "The prebuilt specification modules will be removed: pin the tasks you use with the " +
+  "`trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime " +
+  "from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md).";
+
+function deprecatePrebuilt(line) {
+  const m = /^export \* as (\S+) from "(.+)";$/.exec(line);
+  if (!m) return line;
+  const [, alias, from] = m;
+  if (/^\.\/(_framework\/|trust-task|trust-ceremony)/.test(from)) return line;
+  return [
+    `import * as _${alias} from "${from}";`,
+    `/** @deprecated ${PREBUILT_DEPRECATION} */`,
+    `export import ${alias} = _${alias};`,
+  ].join("\n");
 }
 
 /**

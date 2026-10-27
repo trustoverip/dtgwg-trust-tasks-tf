@@ -413,6 +413,34 @@ a fifth time and compares:
   names; a Type URI string or a JSON fixture naming the version is fine, since a
   withdrawn schema stays published.
 
+## ⚠️ Every prebuilt specification module is deprecated (milestone 5)
+
+Separate from the per-version lifecycle above: since milestone 5 of
+`docs/design/consumer-side-generation.md`, the prebuilt modules **as a whole**
+are deprecated in all four libraries, because an application generates the
+tasks it pins instead. The framework's own specifications (`trust-task-*`,
+`trust-ceremony-*`, `_framework/`) are not — the runtimes speak them. Each
+generator marks only the prebuilt **entry point**, never the module body, since
+the module body is also what the consumer-side generators emit:
+
+- Rust — `#[deprecated]` on each gated family `pub mod` in `src/specs/mod.rs`
+  (`PREBUILT_DEPRECATION` in trust-tasks-codegen). `trust_tasks_build`'s output
+  is unmarked.
+- TypeScript — the root `index.ts` re-exports each module as
+  `import * as _X …; /** @deprecated … */ export import X = _X;`, because
+  TypeScript ignores `@deprecated` on `export * as`.
+- Go — a `Deprecated:` paragraph in each prebuilt package's doc.
+- Dart — `@Deprecated` on each prebuilt library's `library` directive;
+  `analysis_options.yaml` ignores `deprecated_member_use_from_same_package`
+  so this package's own tests pass the 3.3 floor's `--fatal-infos`.
+
+Consequences: hand-written Rust in this repo that uses a prebuilt module on
+purpose — the `acl`-specimen test modules, the integration tests, the examples —
+carries `#[allow(deprecated)]` (CI denies warnings); new runtime code must not
+depend on a non-framework family at all. The TS, Go and Dart equivalence tests
+mask exactly the mark and nothing else, so change its wording in the generator
+and the test together.
+
 ## ⚠️ `extends`: routing a newer version to the version a consumer implements
 
 A spec version may declare `extends: "<M.K>"` (SPEC §5.2 "Declared extension"): it

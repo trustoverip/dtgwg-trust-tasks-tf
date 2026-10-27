@@ -18,6 +18,12 @@ Requires Go 1.24 or later (the package types are generic over the payload).
 Schema engine are yours to choose, so this module declares interfaces for them
 and implements neither.
 
+> **The prebuilt packages under `specs/` are deprecated** (all but the
+> framework's own `trust-task-*` ones) and will be removed in a future release.
+> Pin the tasks you use with the `trust-tasks` CLI and generate them with
+> `cmd/trust-tasks-gen` — see [Generating only the tasks you use](#generating-only-the-tasks-you-use).
+> gopls and staticcheck (SA1019) flag an import of a deprecated package.
+
 ## Layout
 
 | Path | What it is |

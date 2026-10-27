@@ -2,6 +2,9 @@
 //! payloads against the embedded `payload.schema.json` files.
 
 #![cfg(feature = "validate")]
+// Exercises the prebuilt specification modules on purpose; they are deprecated
+// in favour of generating the tasks an application uses (trust-tasks-build).
+#![allow(deprecated)]
 use trust_tasks_rs::{specs::acl::grant::v0_2 as grant, validate::ValidatedPayload, Payload};
 
 #[test]

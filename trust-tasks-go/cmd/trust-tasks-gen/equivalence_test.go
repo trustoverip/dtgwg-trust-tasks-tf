@@ -35,6 +35,10 @@ package main
 //  3. Shared-schema packages (specs/<x>/shared/…, specs/framework/…) have no
 //     counterpart: a bundle inlines what its payload reaches, and so does each
 //     prebuilt payload package, so nothing imports them.
+//  4. A prebuilt package outside the framework's own specifications has a
+//     package doc whose `Deprecated:` paragraph deprecates it (milestone 5 of
+//     docs/design/consumer-side-generation.md). The generated package is the
+//     replacement, so it has none.
 
 import (
 	"bytes"
@@ -299,7 +303,13 @@ func compareFiles(want, got []byte) fileDiff {
 // schemaLiteral is an embedded schema constant's value, on one line.
 var schemaLiteral = regexp.MustCompile(`(?m)^(const (?:Response)?PayloadSchemaJSON = )".*"$`)
 
-// maskFile drops the two header lines (permitted difference 1) and replaces
+// prebuiltDeprecation is the package doc build-go-bindings.mjs writes above a
+// prebuilt package's clause (permitted difference 4) — exactly its three lines,
+// so a generated package doc, if one ever appeared, would still be compared.
+var prebuiltDeprecation = regexp.MustCompile(`(?m)^// Package \w+ is the prebuilt module for \S+\.\n//\n// Deprecated: The prebuilt specification packages will be removed: .*\n(package )`)
+
+// maskFile drops the two header lines (permitted difference 1) and the
+// prebuilt package's deprecation doc (permitted difference 4), and replaces
 // the embedded schema literals (permitted difference 2, compared as JSON
 // above) with a placeholder.
 func maskFile(src []byte) []byte {
@@ -308,6 +318,7 @@ func maskFile(src []byte) []byte {
 			src = src[nl+1:]
 		}
 	}
+	src = prebuiltDeprecation.ReplaceAll(src, []byte(`${1}`))
 	return schemaLiteral.ReplaceAll(src, []byte(`${1}"…"`))
 }
 

@@ -9,6 +9,9 @@
 //!
 //! Its specimens are `acl` payloads, so a build without that family skips it.
 #![cfg(feature = "acl")]
+// Exercises the prebuilt specification modules on purpose; they are deprecated
+// in favour of generating the tasks an application uses (trust-tasks-build).
+#![allow(deprecated)]
 
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;

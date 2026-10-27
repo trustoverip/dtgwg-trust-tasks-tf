@@ -14,6 +14,10 @@
 //! generated type, and a payload with none of the members is still refused by
 //! validation.
 
+// Exercises the prebuilt specification modules on purpose; they are deprecated
+// in favour of generating the tasks an application uses (trust-tasks-build).
+#![allow(deprecated)]
+
 use serde::{de::DeserializeOwned, Serialize};
 use serde_json::Value;
 

@@ -89,6 +89,17 @@ const UNIT_TEST_FAMILIES: &[&str] = &["acl"];
 /// A separate `#[cfg]` rather than `all(feature = …, not(test))`, so the
 /// `#[cfg(feature = "…")]` line `tests/spec_feature_manifest.rs` reads is
 /// unchanged.
+/// Every prebuilt specification family is deprecated (milestone 5 of
+/// docs/design/consumer-side-generation.md): an application generates the
+/// tasks it pins with `trust-tasks-build` instead. The framework's own
+/// families are not gated and not deprecated — the runtime speaks them.
+///
+/// `#[deprecated]` on the module reaches every path and item under it, and is
+/// on the family module rather than on the generated types because those
+/// types are what `trust_tasks_build::generate_module` gives an application
+/// too, which must not carry it.
+const PREBUILT_DEPRECATION: &str = "#[deprecated(note = \"the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \\\"Generate only the tasks you use\\\")\")]";
+
 fn unit_test_gate(family: &str) -> &'static str {
     if UNIT_TEST_FAMILIES.contains(&family) {
         ""
@@ -1306,7 +1317,7 @@ fn write_node(
 ) -> Result<()> {
     let decl = |name: &String| match gates.get(name) {
         Some(family) => format!(
-            "#[cfg(feature = {:?})]\n{}pub mod {name};",
+            "#[cfg(feature = {:?})]\n{}{PREBUILT_DEPRECATION}\npub mod {name};",
             feature_name(family),
             unit_test_gate(family)
         ),
