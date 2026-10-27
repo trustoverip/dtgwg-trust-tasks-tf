@@ -66,13 +66,13 @@
 //! See [`GETTING-STARTED.md`] at the repo root for a signed `acl/grant`
 //! exchange with both ends written out, the TypeScript equivalent, and the
 //! four traps that reliably cost an afternoon. The Rust in that document is
-//! extracted from `examples/acl_grant_roundtrip.rs` in this crate and a test
-//! fails if the two drift, so it is code that compiles and runs rather than
-//! code that once did.
+//! extracted from the repository's `examples/getting-started` application — this
+//! facade with `default-features = false`, and the one task it speaks generated
+//! in `build.rs` — and a test fails if the two drift, so it is code that
+//! compiles and runs rather than code that once did.
 //!
 //! ```sh
-//! cargo run -p trust-tasks --features https,proof-affinidi \
-//!     --example acl_grant_roundtrip
+//! cargo run -p trust-tasks-example-getting-started
 //! ```
 //!
 //! [Trust Tasks]: https://trusttasks.org/

@@ -47,13 +47,19 @@ directly** — that is the supported answer, not a workaround.
 ## Getting started
 
 [`GETTING-STARTED.md`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/GETTING-STARTED.md)
-walks a signed `acl/grant` round trip end to end, in Rust and TypeScript, and
-names the traps. Its Rust is extracted from this crate's example:
+walks a signed `acl/grant` round trip end to end, in Rust, TypeScript, Go and
+Dart, and names the traps. Its Rust is extracted from an example application
+that uses this facade with `default-features = false` and generates the one
+task it speaks, `acl/grant/0.2`, in `build.rs`
+([`examples/getting-started`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/examples/getting-started)):
 
 ```sh
-cargo run -p trust-tasks --features https,proof-affinidi \
-    --example acl_grant_roundtrip
+cargo run -p trust-tasks-example-getting-started
 ```
+
+The facade's default feature, `all-specs`, compiles every prebuilt
+specification module; those are deprecated, and an application generates the
+tasks it uses instead (see GETTING-STARTED §1).
 
 ## License
 

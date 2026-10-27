@@ -1,7 +1,7 @@
 //! The gate that stops `GETTING-STARTED.md` rotting.
 //!
 //! The document's Rust snippets are not written by hand: each one is a region
-//! of `examples/acl_grant_roundtrip.rs`, an example CI compiles (via
+//! of `examples/getting-started/src/main.rs`, an example application CI compiles (via
 //! `cargo clippy --workspace --all-targets --all-features`) and a human can
 //! run. This test asserts the two are byte-identical, so a change to the
 //! example that is not carried into the document fails the build rather than
@@ -14,7 +14,7 @@
 //! is the thread that ties the prose to it.
 //!
 //! In the document a snippet is introduced by
-//! `<!-- snippet: trust-tasks/examples/acl_grant_roundtrip.rs#<region> -->`
+//! `<!-- snippet: examples/getting-started/src/main.rs#<region> -->`
 //! immediately followed by a ```rust fence. In the example a region is the
 //! lines between `// GETTING-STARTED:begin <region>` and
 //! `// GETTING-STARTED:end <region>`.
@@ -22,7 +22,7 @@
 use std::collections::BTreeSet;
 use std::path::PathBuf;
 
-const EXAMPLE_REL: &str = "trust-tasks/examples/acl_grant_roundtrip.rs";
+const EXAMPLE_REL: &str = "examples/getting-started/src/main.rs";
 const DOC_REL: &str = "GETTING-STARTED.md";
 
 fn repo_root() -> PathBuf {
