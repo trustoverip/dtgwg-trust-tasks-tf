@@ -48,7 +48,7 @@ A consumer **MUST**:
 
 1. Unpack the DIDComm envelope, verifying the authcrypt signature and decrypting the `body`.
 2. Reject the envelope if its `type` field is not exactly `https://trusttasks.org/binding/didcomm/0.1/envelope` (see [§4](#4-error-mapping)).
-3. Deserialise `body` as a *Trust Task document* (`TrustTask<P>` for some payload type `P`).
+3. Deserialise `body` as a *Trust Task document* (`TrustTask<P>` for some payload type `P`). Keep the received JSON object alongside it: the `proof` is verified over that object with only the top-level `proof` removed, never over a re-serialisation of the typed document, and the typed document is the one parsed from it ([SPEC §4.7](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#47-proof), "What a consumer verifies").
 4. Proceed with the framework's [§7.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#72-consumer-requirements) pipeline.
 
 ## 3. Identity mapping

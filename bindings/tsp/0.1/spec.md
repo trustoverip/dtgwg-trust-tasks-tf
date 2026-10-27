@@ -63,7 +63,7 @@ A consumer **MUST**:
 
 1. Receive and verify the TSP message — checking the message signature and decrypting the payload — recovering the authenticated `VID_sndr` and the addressed `VID_rcvr`.
 2. Parse the decrypted payload as JSON and reject it if its `type` member is not exactly `https://trusttasks.org/binding/tsp/0.1/envelope` (see [§4](#4-error-mapping)). A payload that is valid TSP but is not a Trust Task envelope is not an error of this binding; it is simply not dispatched through the framework pipeline.
-3. Deserialise `document` as a *Trust Task document* (`TrustTask<P>` for some payload type `P` selected by the document's `type` member).
+3. Deserialise `document` as a *Trust Task document* (`TrustTask<P>` for some payload type `P` selected by the document's `type` member). Keep the received JSON object alongside it: the `proof` is verified over that object with only the top-level `proof` removed, never over a re-serialisation of the typed document, and the typed document is the one parsed from it ([SPEC §4.7](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#47-proof), "What a consumer verifies").
 4. Proceed with the framework's [§7.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#72-consumer-requirements) pipeline.
 
 ## 3. Identity mapping
