@@ -124,6 +124,13 @@ final RegExp _localRe = RegExp(r'^[a-z][A-Za-z0-9_]*$');
 /// stripped: an error raised while handling a response still belongs to the
 /// bare slug.
 ///
+/// Because the code carries no authority, a received one means something only
+/// against the Type URI of the request it answers (SPEC §8.5):
+/// `vault/get:notFound` from the registry's `vault/get` and from a private one
+/// are different codes. Resolve it with `inResponseTo.typeUri` (or the request
+/// you sent), never by the string alone, and keep that Type URI beside it
+/// anywhere the code outlives the exchange.
+///
 /// Throws [ArgumentError] if the derived slug or [local] is malformed.
 String extendedCode(String typeUri, String local) {
   final slug = slugFromTypeUri(typeUri);

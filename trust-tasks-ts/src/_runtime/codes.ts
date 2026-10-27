@@ -129,7 +129,10 @@ const LOCAL_RE = /^[a-z][A-Za-z0-9_]*$/;
  * `did:web:acme.example/spec/payments/settle/1.0` or
  * `urn:example:acme:spec:payments:settle:1.0` — gets `payments/settle:<local>`.
  * The code carries the slug and not the authority, as Rust's
- * `TrustTaskCode::Extended` does.
+ * `TrustTaskCode::Extended` does — so a received code means something only
+ * against the Type URI of the request it answers (SPEC §8.5): resolve it with
+ * `inResponseTo.typeUri` (or the request you sent), never by the string alone,
+ * and keep that Type URI beside it anywhere the code outlives the exchange.
  *
  * @throws if `typeUri` is not a Type URI or `local` is malformed.
  */
