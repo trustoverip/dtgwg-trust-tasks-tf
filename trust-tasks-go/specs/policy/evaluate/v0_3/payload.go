@@ -12,6 +12,8 @@ import (
 )
 
 // Response Policy Evaluate — response payload
+//
+// Deprecated: superseded by policy/evaluate/0.4
 type Response struct {
 	Decision PolicyDecision `json:"decision"`
 
@@ -239,6 +241,8 @@ type DigestMultibase = string
 // the policy-editor UI to verify changes before save and by admins to diagnose unexpected
 // outcomes. 0.3 evaluates against the generalised PolicyInput (any Trust Task, carrying
 // typeUri + side-effect/exposure classes) and can return the `requireConsent` decision.
+//
+// Deprecated: superseded by policy/evaluate/0.4
 type Payload struct {
 	Input PolicyInput `json:"input"`
 
@@ -266,7 +270,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by policy/evaluate/0.4"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/policy/evaluate/0.3#response"

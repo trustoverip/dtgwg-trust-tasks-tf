@@ -326,6 +326,8 @@
   "policy/_shared/0.3/policy.schema.json#/$defs/PolicyDecision": "PolicyDecision_PolicyV0_3",
   "policy/_shared/0.3/policy.schema.json#/$defs/PolicyInput": "PolicyInput_PolicyV0_3",
   "policy/_shared/0.3/policy.schema.json#/$defs/PolicyModule": "PolicyModule",
+  "policy/_shared/0.4/policy.schema.json#/$defs/PolicyDecision": "PolicyDecision_PolicyV0_4",
+  "policy/_shared/0.4/policy.schema.json#/$defs/PolicyInput": "PolicyInput_PolicyV0_3",
   "provision/vta/_shared/0.1/vta.schema.json#/$defs/Handle": "Handle",
   "registry/_shared/0.1/registry.schema.json#/$defs/QueryContext": "QueryContext",
   "registry/_shared/0.1/registry.schema.json#/$defs/RecordType": "RecordType",
