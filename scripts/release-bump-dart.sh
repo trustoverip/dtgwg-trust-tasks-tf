@@ -214,6 +214,13 @@ cliff_paths=()
 for w in "${WATCH[@]}"; do
   if [ -d "$w" ]; then cliff_paths+=(--include-path "$w/**"); else cliff_paths+=(--include-path "$w"); fi
 done
+# A package first published by hand can have no changelog yet. trust-tasks-ts-gen
+# had none, and its first automated bump failed the whole Release PR job, which
+# stopped every package's release. Start one rather than fail.
+if [ ! -f "$CHANGELOG" ]; then
+  printf '# Changelog — `%s`\n' "$PKG" >"$CHANGELOG"
+  echo "::warning::$CHANGELOG did not exist, so it was started; give it the package's versioning preamble in the Release PR."
+fi
 if section=$(git-cliff --config cliff.toml \
   --strip header \
   --tag "v$next" \
