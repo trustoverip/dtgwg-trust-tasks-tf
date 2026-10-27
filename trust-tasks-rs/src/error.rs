@@ -224,6 +224,13 @@ pub enum TrustTaskCode {
     Standard(StandardCode),
 
     /// A specification-extended code in the form `<slug>:<local>`.
+    ///
+    /// The code names a slug but no authority, so it means something only
+    /// against the Type URI of the request it answers (SPEC.md §8.5):
+    /// `vault/get:notFound` from the registry's `vault/get` and from a private
+    /// one are different codes. Resolve it with `inResponseTo.typeUri` (or
+    /// the request you sent), never by the string alone, and keep that Type
+    /// URI beside it anywhere the code outlives the exchange.
     Extended {
         /// The slug owning this extension, e.g. `"trust-task-control"` or `"acl/grant"`.
         slug: String,
