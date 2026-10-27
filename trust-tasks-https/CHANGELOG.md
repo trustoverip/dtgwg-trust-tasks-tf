@@ -6,6 +6,45 @@ this crate versions independently of `trust-tasks-rs` — it takes its own
 leading bump when a `trust-tasks-rs` break reaches it, rather than aligning
 to that crate's number (see the `0.6.5` → `0.7.0` release for the shape).
 
+## [0.36.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-https-v0.35.4...trust-tasks-https-v0.36.0) — 2026-10-27
+
+
+### Added
+
+- **ts, go**: Trust-task-error/0.6 and the unsupportedExtension and indeterminate standard codes ([#961](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/961))
+
+* feat(ts)!: trust-task-error/0.6 and the unsupportedExtension and indeterminate standard codes
+
+  Framework 0.7.0 added unsupportedExtension to the standard codes, and the
+  indeterminate ruling (SPEC §8.3) adds indeterminate: the recipient could
+  not decide because something it needed and does not control could not
+  be obtained or checked, which is neither a refusal nor a failed
+  verification. Both live in the closed code list of the trust-task-error
+  payload schema, so they need a new version.
+
+  - specs/trust-task-error/0.6: both codes appended to the enum, and
+    extends: "0.5", which the build checks. References to 0.5 across the
+    registry therefore stay current, and no other spec changes.
+  - All four libraries recognize both codes and emit 0.6:
+    trust_task_error_type_uri(), TRUST_TASK_ERROR_TYPE_URI,
+    TrustTaskErrorTypeURI and trustTaskErrorTypeUri move together.
+    Rust's StandardCode is hand-written (trust-task-error is in
+    SKIP_SLUGS) and gains UnsupportedExtension and Indeterminate, with
+    indeterminate retryable by default as §8.3 gives it.
+  - The HTTPS binding's status table maps unsupportedExtension to 422 and
+    indeterminate to 503, in the binding prose, trust-tasks-https and
+    trust_tasks_https. The Dart package spells the new codes out so it
+    still builds against a core that predates them.
+
+  Breaking for @openvtc/trust-tasks only: StandardCode is a closed union
+  there, so an exhaustive switch over it stops compiling. Rust's
+  StandardCode is #[non_exhaustive] and Go's and Dart's are open string
+  types, so the change is additive for them.
+
+  Part of trustoverip/dtgwg-trust-tasks-spec#42.
+
+
+
 ## [0.35.4](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-https-v0.35.3...trust-tasks-https-v0.35.4) — 2026-10-27
 
 

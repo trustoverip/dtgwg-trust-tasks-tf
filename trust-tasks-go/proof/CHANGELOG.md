@@ -3,6 +3,8 @@
 All notable changes to `trust-tasks-go/proof` are documented here. Entries are
 generated from conventional commits by the release automation (see RELEASING.md).
 
+## 0.1.4 — 2026-10-27
+
 ## 0.1.3 — 2026-10-22
 
 

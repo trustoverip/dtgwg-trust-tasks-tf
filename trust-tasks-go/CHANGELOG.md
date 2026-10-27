@@ -11,6 +11,90 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.10.0 — 2026-10-27
+
+
+### Added
+
+- **ts, go**: Trust-task-error/0.6 and the unsupportedExtension and indeterminate standard codes (#961)
+
+* feat(ts)!: trust-task-error/0.6 and the unsupportedExtension and indeterminate standard codes
+
+  Framework 0.7.0 added unsupportedExtension to the standard codes, and the
+  indeterminate ruling (SPEC §8.3) adds indeterminate: the recipient could
+  not decide because something it needed and does not control could not
+  be obtained or checked, which is neither a refusal nor a failed
+  verification. Both live in the closed code list of the trust-task-error
+  payload schema, so they need a new version.
+
+  - specs/trust-task-error/0.6: both codes appended to the enum, and
+    extends: "0.5", which the build checks. References to 0.5 across the
+    registry therefore stay current, and no other spec changes.
+  - All four libraries recognize both codes and emit 0.6:
+    trust_task_error_type_uri(), TRUST_TASK_ERROR_TYPE_URI,
+    TrustTaskErrorTypeURI and trustTaskErrorTypeUri move together.
+    Rust's StandardCode is hand-written (trust-task-error is in
+    SKIP_SLUGS) and gains UnsupportedExtension and Indeterminate, with
+    indeterminate retryable by default as §8.3 gives it.
+  - The HTTPS binding's status table maps unsupportedExtension to 422 and
+    indeterminate to 503, in the binding prose, trust-tasks-https and
+    trust_tasks_https. The Dart package spells the new codes out so it
+    still builds against a core that predates them.
+
+  Breaking for @openvtc/trust-tasks only: StandardCode is a closed union
+  there, so an exhaustive switch over it stops compiling. Rust's
+  StandardCode is #[non_exhaustive] and Go's and Dart's are open string
+  types, so the change is additive for them.
+
+  Part of trustoverip/dtgwg-trust-tasks-spec#42.
+
+- **registry**: Declare carried protocols in front matter (#959)
+
+SPEC §9.4 Carried Protocols and §7.3 item 23 add a carries front-matter
+  object naming the external protocol, version, defining reference and
+  operation a specification carries.
+
+  - spec.meta.schema.json accepts carries (all four members required).
+  - The build records it in registry.json and checks §9.4 rule 1 across
+    the tree: a slug carries one operation in every live version, and no
+    two slugs carry the same operation of the same protocol version.
+  - The spec page shows a Carries row linking the protocol.
+  - registry/authorization/0.2 and registry/recognition/0.2 declare that
+    they carry TRQP 2.0's authorization and recognition operations; their
+    TRQP field-name sections now say so and name the party mapping.
+  - CONTRIBUTING-SPECS gains "Carrying another protocol".
+  - SPEC.md is regenerated from canonical main (bdf2cdd), which this
+    needs for the §9.4 anchor.
+
+  Part of trustoverip/dtgwg-trust-tasks-spec#43.
+
+
+
+### Specifications
+
+- **policy**: A consent decision carries its quorum and self-approval rule (#960)
+
+policy/_shared/0.3 gave requireConsent.minApprovals a default of 1 and
+  requireConsent.excludeRequester a default of false. JSON Schema defaults
+  are annotations, but generators apply them, so a decision that omitted
+  either sent a quorum of one, or let the requester approve itself, with
+  nothing on the wire to show that nobody had chosen it. SPEC §6.6 rule 5
+  now forbids a governance default in a shared schema component.
+
+  - policy/_shared/0.4: both members required, defaults removed.
+    task-consent/request/0.1 already requires both, so the policy decision
+    and the consent request now agree.
+  - policy/evaluate/0.4: policy/evaluate/0.3 re-pinned to the new
+    component, which is its only change; the Security & Privacy section
+    gains the four sub-headings a new version must carry.
+  - policy/get/0.1 and policy/active/0.1 stay on 0.3: they use only
+    PolicyModule, which is unchanged.
+  - Stale references in task-consent prose moved to policy/evaluate/0.4.
+  - Rust, TypeScript, Go and Dart regenerated. 0.1 to 0.3 of
+    policy/evaluate are now marked superseded by 0.4.
+
+  Part of trustoverip/dtgwg-trust-tasks-spec#39.
+
 ## 0.9.9 — 2026-10-27
 
 
