@@ -1,5 +1,80 @@
 # Changelog
 
+## [0.35.4](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-v0.35.3...trust-tasks-v0.35.4) — 2026-10-27
+
+
+### Added
+
+- The prebuilt specification modules are deprecated in all four libraries; generate the tasks you use ([#954](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/954))
+
+Milestone 5 of docs/design/consumer-side-generation.md. Every prebuilt module
+  outside the framework's own specifications (trust-task-*, trust-ceremony-*,
+  _framework/) is deprecated, so that an application is told to pin the tasks it
+  uses with the trust-tasks CLI and generate them instead. Nothing is removed:
+  the withdrawal batch that removes them is chosen later, at least 90 days after
+  this ships.
+
+  Each library marks the prebuilt entry point where its toolchain reports a
+  deprecation, never the module body, which is also what the consumer-side
+  generators emit:
+
+  - Rust: #[deprecated] on each gated family module in trust-tasks-rs's
+    specs/mod.rs (trust-tasks-codegen). It reaches every path and item under the
+    module; framework modules and trust-tasks-build's output are unmarked.
+  - TypeScript: the root index re-exports each module as
+    `import * as _X …; /** @deprecated … */ export import X = _X;`, because
+    TypeScript ignores @deprecated on `export * as`. API compatibility against
+    0.27.8: nothing removed or changed. A deep import of a module file is not
+    marked; TypeScript has no module-level deprecation.
+  - Go: a `Deprecated:` paragraph in each prebuilt package's doc, which gopls and
+    staticcheck (SA1019) report on import.
+  - Dart: @Deprecated on each prebuilt library's `library` directive, which the
+    analyzer reports on import from another package. This package's own tests
+    use them, so analysis_options ignores the same-package diagnostic SDKs
+    before 3.4 report.
+
+  The TS, Go and Dart equivalence tests mask exactly the mark; every consumer
+  generator is still held to the prebuilt tree as before. Hand-written Rust that
+  uses prebuilt modules on purpose — the acl-specimen test modules, the
+  integration tests and the examples — carries #[allow(deprecated)]; none of the
+  runtime does.
+
+  GETTING-STARTED, the four library READMEs, the design doc and CLAUDE.md say
+  so, and point at each language's generator.
+
+
+
+### Documentation
+
+- GETTING-STARTED pins and generates the task it uses, in all four languages ([#955](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/955))
+
+The walkthroughs taught the prebuilt specification modules, which #954
+  deprecated. They now start where an application does: `trust-tasks add
+  acl/grant/0.2`, then each language's generator.
+
+  - §1 is "pin the tasks you use, then one dependency line": the CLI, the
+    facade with `default-features = false` plus a build.rs that generates
+    through it (`runtime_path("::trust_tasks")`), and `trust-tasks generate
+    --lang ts|go|dart` for the others. The facade line said version "0.1"; it is
+    0.35. The advice to trim the 26 per-family features is gone with them.
+  - §2's Rust is still extracted verbatim from a runnable example, now an
+    application of its own, examples/getting-started (trust-tasks.lock pinning
+    acl/grant/0.2, its vendored bundle, a build.rs), instead of an example of
+    the facade crate, which cannot have a build script per example. The only
+    code change is the `use` line: `tasks::acl::grant::v0_2`, generated, for
+    `trust_tasks::specs::acl::grant::v0_2`. It runs end to end
+    (`cargo run -p trust-tasks-example-getting-started`), and
+    getting_started_snippets follows it.
+  - §3–3b (TypeScript, Go, Dart) import the runtime and the generated module
+    instead of the package's prebuilt one, and move from acl/grant 0.1, which is
+    superseded, to 0.2, as the Rust uses. Every name in them was checked against
+    generated 0.2 code and the consumer example apps.
+
+  The facade's README and crate docs point at the new example, and lose the
+  dev-dependencies only the old one needed.
+
+
+
 ## [0.35.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-v0.35.2...trust-tasks-v0.35.3) — 2026-10-26
 
 

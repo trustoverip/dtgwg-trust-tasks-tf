@@ -1,6 +1,6 @@
 {
   "name": "@openvtc/trust-tasks-tsp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "The ToIP Trust Spanning Protocol transport binding for Trust Tasks: HPKE-sealed envelopes and the SPEC 7.2 pipeline, on @openvtc/vti-tsp-js.",
   "type": "module",
   "license": "Apache-2.0",
