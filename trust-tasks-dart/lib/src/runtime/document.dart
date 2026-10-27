@@ -506,7 +506,7 @@ class RejectReason {
 /// validate as `0.3`. Per §5.2 forward-minor compatibility a `0.3` consumer
 /// SHOULD accept it.
 const String trustTaskErrorTypeUri =
-    'https://trusttasks.org/spec/trust-task-error/0.5';
+    'https://trusttasks.org/spec/trust-task-error/0.6';
 
 /// Returns the timestamp a built response is stamped with. Injectable so tests
 /// are deterministic.

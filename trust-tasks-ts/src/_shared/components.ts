@@ -10027,6 +10027,45 @@ export interface PolicyDecision_PolicyV0_3 {
    */
   explanation?: string;
 }
+export interface PolicyDecision_PolicyV0_4 {
+  decision: "allow" | "deny" | "requireStepUp" | "requireConsent";
+  /**
+   * Vault-flow-specific. When decision == "allow" for a proxy-login/release request, whether the maintainer should proxy-login or release-for-fill. Default: proxy. Ignored for other task kinds.
+   */
+  mode?: "proxy" | "fill";
+  /**
+   * When decision == "requireStepUp", which method to demand.
+   */
+  stepUp?: {
+    method: "webauthnUv" | "pushApproval" | "totp";
+    ttlSeconds?: number;
+  };
+  /**
+   * When decision == "requireConsent", the approver constraint the enforcement point MUST satisfy — a signed consent decision from the named set, bound to the request's payloadDigest — before executing.
+   */
+  requireConsent?: {
+    /**
+     * Named set of enrolled approver devices permitted to approve this task (resolved by the enforcement point against its device registry).
+     */
+    approverSet: string;
+    /**
+     * REQUIRED, with no default: whether the requester may approve its own request is the community's choice, not this schema's (SPEC §6.6 rule 5). When true, the device that issued the request MUST NOT be accepted as the approver — forcing cross-device approval so a compromised requesting device cannot self-approve.
+     */
+    excludeRequester: boolean;
+    /**
+     * REQUIRED, with no default: the quorum is the community's choice, not this schema's (SPEC §6.6 rule 5), and an omitted quorum is malformedRequest rather than one. Number of distinct approvers from the set required before the task may execute.
+     */
+    minApprovals: number;
+  };
+  /**
+   * When decision == "allow", maximum lifetime of any issued session blob / released secret.
+   */
+  ttlSecondsCap?: number;
+  /**
+   * Human-readable explanation for diagnostic display.
+   */
+  explanation?: string;
+}
 /**
  * The structured input fed to a policy evaluator on every vault/proxy-login, vault/release, and policy/evaluate call.
  */

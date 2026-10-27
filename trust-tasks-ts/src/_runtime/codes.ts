@@ -25,6 +25,9 @@ export const STANDARD_CODES = [
   "taskFailed",
   "unavailable",
   "internalError",
+  // New in trust-task-error/0.6 (SPEC.md §4.5.2, §8.3).
+  "unsupportedExtension",
+  "indeterminate",
 ] as const;
 
 /**

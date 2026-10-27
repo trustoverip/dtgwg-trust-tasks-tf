@@ -430,8 +430,8 @@ impl<P> TrustTask<P> {
 pub fn trust_task_error_type_uri() -> TypeUri {
     // The `trust-task-error` slug is a framework-defined reserved name, so
     // `TypeUri::canonical` accepts it.
-    TypeUri::canonical("trust-task-error", 0, 5)
-        .expect("trust-task-error/0.5 is a valid framework Type URI")
+    TypeUri::canonical("trust-task-error", 0, 6)
+        .expect("trust-task-error/0.6 is a valid framework Type URI")
 }
 
 impl fmt::Display for ErrorResponse {

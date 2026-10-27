@@ -41,7 +41,7 @@ void main() {
     });
 
     test('lists every §8.3 code', () {
-      expect(StandardCode.values, hasLength(14));
+      expect(StandardCode.values, hasLength(16));
       expect(StandardCode.values.first, StandardCode.malformedRequest);
     });
 
