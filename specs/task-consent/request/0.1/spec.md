@@ -65,7 +65,7 @@ approver's answer returns as a
 
 It exists because of a gap that a payload alone cannot close. When a policy
 returns `requireConsent` (see
-[`PolicyDecision`](../../../policy/_shared/0.3/policy.schema.json)), *something*
+[`PolicyDecision`](../../../policy/_shared/0.4/policy.schema.json)), *something*
 must show a person what they are agreeing to. The obvious candidate — the
 payload the requester submitted — is exactly the wrong one: it is authored by
 the least trusted party in the system, and it does not contain the task's
@@ -437,7 +437,7 @@ a requester who learns that their prose reaches a human's screen unedited has an
 incentive to use it for something other than context.
 
 Whether an approval step exists at all is not this specification's to say. A
-[`policy/evaluate`](../../../policy/evaluate/0.3/spec.md) decision of `requireConsent`
+[`policy/evaluate`](../../../policy/evaluate/0.4/spec.md) decision of `requireConsent`
 is what causes a request to be raised, and per
 [SPEC.md §7.3](/SPEC.md#73-specification-requirements) item 13 a *Trust Task
 specification* **MUST NOT** declare that a consent or approval step is required. This
