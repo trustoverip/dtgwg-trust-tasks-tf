@@ -5,6 +5,11 @@ title: Registry — Authorization Query
 summary: A relying party asks a trust registry whether an entity is authorized by an authority for a given action and resource, per the ToIP Trust Registry Query Protocol (TRQP) v2.0.
 status: draft
 targetFrameworkVersion: "0.6.0"
+carries:
+  protocol: TRQP
+  version: "2.0"
+  reference: https://trustoverip.github.io/tswg-trust-registry-protocol/
+  operation: authorization
 category: governance
 keywords:
   - trust-registry
@@ -113,7 +118,7 @@ The *trust registry* (now the `issuer` of the response) replies with the `#respo
 
 ## TRQP field names
 
-A registry that serves both this task and the plain HTTP TRQP binding answers the same question on both. The members map one to one:
+This task is the `authorization` operation of TRQP v2.0 carried as a Trust Task ([SPEC §9.4](/SPEC.md#94-carried-protocols)), declared in its `carries` front matter: the *relying party* is the `issuer`, the *trust registry* the `recipient`, and the registry's answer, `authorized: false` included, is the success response. A registry that serves both this task and the plain HTTP TRQP binding answers the same question on both. The members map one to one:
 
 | This task | TRQP v2.0 |
 |---|---|

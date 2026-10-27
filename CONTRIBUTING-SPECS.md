@@ -427,6 +427,30 @@ The codegen resolves the cross-file `$ref` by splicing the shared `Ext` `$def` i
 
 Spec authors **MUST NOT** define cross-spec semantics for any `ext.*` key; ecosystem semantics belong to the namespace controller. Spec authors **MAY** include a non-normative example showing the `ext` shape an ecosystem might use, but the example should be clearly marked as illustrative.
 
+## Carrying another protocol (`carries`)
+
+If your task is an operation of a protocol defined outside the framework (ToIP TRQP, IEEE 7012 MyTerms, and so on), it is a member of that protocol's *protocol family* ([SPEC.md §9.4](SPEC.md#94-carried-protocols)). Declare it:
+
+```yaml
+carries:
+  protocol: TRQP
+  version: "2.0"
+  reference: https://trustoverip.github.io/tswg-trust-registry-protocol/
+  operation: authorization
+```
+
+and meet the seven rules of §9.4:
+
+- **One spec per operation.** One request and its answer, and no operations the protocol does not define. The build refuses a slug whose versions carry different operations, and two slugs carrying the same operation of the same protocol version.
+- **A field mapping table** in the prose, from each of the protocol's fields to the member that carries it. Renaming to lowerCamelCase is fine; new meaning is not.
+- **Every answer is the success response**, negative ones included. `trust-task-error` is only for "not performed".
+- **Name the protocol version**, and move to a new spec version when the protocol changes the operation (`extends` when it only adds).
+- **Map the parties** in `parties`, and say what supplies any identifier the protocol needs that the envelope does not carry.
+- **No departures.** Anything the protocol does not define, such as an extra check or step, is a separate spec without `carries`, which a ceremony can compose with this one.
+- **The protocol's conformance is the protocol's.**
+
+`registry/authorization/0.2` and `registry/recognition/0.2` are the worked examples. Where the protocol's owner takes part, prefer that they publish the family under their own authority ([SPEC §6.5](SPEC.md#65-private-and-unpublished-trust-task-specifications)).
+
 ## Task-specific error codes (optional)
 
 If your task defines extension codes per [SPEC.md §8.5](SPEC.md#85-extension-by-individual-trust-task-specifications), declare them in front matter. The namespace before the colon **MUST** equal the spec's slug — including any `/` separators:
