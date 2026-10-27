@@ -52,6 +52,13 @@ extension type const StandardCode(String value) {
   static const StandardCode unavailable = StandardCode('unavailable');
   static const StandardCode internalError = StandardCode('internalError');
 
+  /// New in trust-task-error/0.6 (SPEC.md §4.5.2).
+  static const StandardCode unsupportedExtension =
+      StandardCode('unsupportedExtension');
+
+  /// New in trust-task-error/0.6 (SPEC.md §8.3).
+  static const StandardCode indeterminate = StandardCode('indeterminate');
+
   /// Every §8.3 code, in the order SPEC.md declares them.
   static const List<StandardCode> values = <StandardCode>[
     malformedRequest,
@@ -68,6 +75,8 @@ extension type const StandardCode(String value) {
     taskFailed,
     unavailable,
     internalError,
+    unsupportedExtension,
+    indeterminate,
   ];
 }
 

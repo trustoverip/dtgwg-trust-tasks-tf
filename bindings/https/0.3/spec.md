@@ -150,8 +150,9 @@ The server **SHOULD** map the *Trust Task document* response to an HTTP status a
 | `wrongRecipient`                                         | `422 Unprocessable Entity`            |
 | `cancelled`                                              | `422 Unprocessable Entity`            |
 | `taskFailed`                                             | `422 Unprocessable Entity`            |
+| `unsupportedExtension`                                   | `422 Unprocessable Entity`            |
 | `idConflict`                                             | `409 Conflict`                        |
-| `unavailable`                                            | `503 Service Unavailable`             |
+| `unavailable` / `indeterminate`                          | `503 Service Unavailable`             |
 | `internalError`                                          | `500 Internal Server Error`           |
 | Internal server error (transport-level, no error doc)    | `500 Internal Server Error`           |
 

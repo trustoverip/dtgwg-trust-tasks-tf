@@ -41,6 +41,9 @@ const (
 	CodeTaskFailed         StandardCode = "taskFailed"
 	CodeUnavailable        StandardCode = "unavailable"
 	CodeInternalError      StandardCode = "internalError"
+	// New in trust-task-error/0.6 (SPEC.md §4.5.2, §8.3).
+	CodeUnsupportedExtension StandardCode = "unsupportedExtension"
+	CodeIndeterminate        StandardCode = "indeterminate"
 )
 
 // StandardCodes lists every §8.3 code, in the order SPEC.md declares them.
@@ -54,6 +57,7 @@ func StandardCodes() []StandardCode {
 		CodeExpired, CodeProofRequired, CodeProofInvalid, CodePermissionDenied,
 		CodeWrongRecipient, CodeIdentityMismatch, CodeIDConflict, CodeCancelled,
 		CodeTaskFailed, CodeUnavailable, CodeInternalError,
+		CodeUnsupportedExtension, CodeIndeterminate,
 	}
 }
 

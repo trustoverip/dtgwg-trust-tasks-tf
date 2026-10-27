@@ -43,7 +43,7 @@ pub struct InResponseTo {
     pub id: Option<String>,
 }
 
-/// The `payload` of a `trust-task-error/0.5` document, per SPEC.md §8.2.
+/// The `payload` of a `trust-task-error/0.6` document, per SPEC.md §8.2.
 ///
 /// Exchange-level correlation is carried by the surrounding
 /// [`TrustTask`](crate::TrustTask)'s `threadId`; *which document* this error
@@ -283,6 +283,18 @@ pub enum StandardCode {
     Unavailable,
     /// The recipient party encountered an unexpected internal failure.
     InternalError,
+    /// The document named a namespace critical under `extCritical` that the
+    /// consumer does not recognize (SPEC.md §4.5.2). The consumer understood
+    /// the `type` and its version, and refused rather than process the
+    /// document without the namespace. New in `trust-task-error/0.6`.
+    UnsupportedExtension,
+    /// The recipient party could not decide, because something it needed and
+    /// does not control could not be obtained or checked: the schema behind a
+    /// `type`, the material behind a `verificationMethod`, a status list, or a
+    /// referenced document whose digest no longer matches (SPEC.md §8.3).
+    /// Neither a refusal nor a failed verification: a party retaining it
+    /// must not read it as either. New in `trust-task-error/0.6`.
+    Indeterminate,
 }
 
 impl StandardCode {
@@ -293,7 +305,7 @@ impl StandardCode {
     pub fn default_retryable(self) -> bool {
         matches!(
             self,
-            StandardCode::Unavailable | StandardCode::InternalError
+            StandardCode::Unavailable | StandardCode::InternalError | StandardCode::Indeterminate
         )
     }
 
@@ -318,6 +330,8 @@ impl StandardCode {
             StandardCode::TaskFailed => "taskFailed",
             StandardCode::Unavailable => "unavailable",
             StandardCode::InternalError => "internalError",
+            StandardCode::UnsupportedExtension => "unsupportedExtension",
+            StandardCode::Indeterminate => "indeterminate",
         }
     }
 }
@@ -840,6 +854,8 @@ fn parse_standard(s: &str) -> Result<StandardCode, ParseCodeError> {
         "taskFailed" | "task_failed" => StandardCode::TaskFailed,
         "unavailable" => StandardCode::Unavailable,
         "internalError" | "internal_error" => StandardCode::InternalError,
+        "unsupportedExtension" => StandardCode::UnsupportedExtension,
+        "indeterminate" => StandardCode::Indeterminate,
         // A bare token that doesn't match a standard code is treated as a
         // malformed extension (extensions require a colon-namespaced slug).
         other => return Err(ParseCodeError::InvalidLocal(other.to_string())),
@@ -921,6 +937,8 @@ mod tests {
             StandardCode::TaskFailed,
             StandardCode::Unavailable,
             StandardCode::InternalError,
+            StandardCode::UnsupportedExtension,
+            StandardCode::Indeterminate,
         ] {
             let wire = code.as_str();
             let parsed: TrustTaskCode = wire.parse().unwrap();
@@ -1007,6 +1025,8 @@ mod tests {
         assert!(!StandardCode::Expired.default_retryable());
         assert!(StandardCode::Unavailable.default_retryable());
         assert!(StandardCode::InternalError.default_retryable());
+        assert!(StandardCode::Indeterminate.default_retryable());
+        assert!(!StandardCode::UnsupportedExtension.default_retryable());
     }
 
     #[test]

@@ -225,7 +225,7 @@ export interface RejectReason {
  * SHOULD accept it. (This comment said `0.3` while the value said `0.5`: the
  * value moved and the prose did not.)
  */
-export const TRUST_TASK_ERROR_TYPE_URI = "https://trusttasks.org/spec/trust-task-error/0.5";
+export const TRUST_TASK_ERROR_TYPE_URI = "https://trusttasks.org/spec/trust-task-error/0.6";
 
 /**
  * SPEC §7.2 items 4 and 5a — expiry and wrong-recipient.

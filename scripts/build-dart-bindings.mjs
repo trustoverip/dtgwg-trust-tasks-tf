@@ -1335,7 +1335,8 @@ async function main() {
         );
       }
       seen.set(result.file, path.relative(REPO_ROOT, schemaPath));
-      if (result.slugInfo && result.extendsVersion !== null) {
+      // trust-task-error is left out, as trust-tasks-codegen leaves it out (SKIP_SLUGS): it has no registry bundle, so the consumer-side generators cannot index it, and an error document is read by the runtime's own path, never routed by extends.
+      if (result.slugInfo && result.extendsVersion !== null && result.slugInfo.slug !== 'trust-task-error') {
         const { slug, version } = result.slugInfo;
         extendsEntries.push([`https://trusttasks.org/spec/${slug}/${version}`, result.extendsVersion]);
       }
