@@ -10,6 +10,15 @@ If you are writing a *specification* rather than consuming one, you want
 [`CONTRIBUTING-SPECS.md`](./CONTRIBUTING-SPECS.md) and [`SPEC.md`](./SPEC.md)
 instead. This page is for consumers.
 
+> **The prebuilt specification modules are deprecated.** Every library still
+> ships a module for every registry specification, and the walkthroughs below
+> use them for brevity, but they will be removed in a future release. An
+> application pins the tasks it uses with the `trust-tasks` CLI and generates
+> only those — [Generate only the tasks you use](#generate-only-the-tasks-you-use-rust)
+> for Rust, and `@openvtc/trust-tasks-gen`, `cmd/trust-tasks-gen` and
+> `dart run trust_tasks:generate` for TypeScript, Go and Dart. The framework's
+> own specifications (`trust-task-*`) are not deprecated.
+
 ---
 
 ## 1. One dependency line

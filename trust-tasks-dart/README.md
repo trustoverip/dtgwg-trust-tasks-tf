@@ -21,6 +21,13 @@ Requires Dart 3.3 or later. **No dependencies** — the cryptosuite and the JSON
 Schema engine are yours to choose, so this package declares interfaces for them
 and implements neither.
 
+> **The prebuilt libraries under `lib/specs/` are deprecated** (all but the
+> framework's own `trust_task_*` ones) and will be removed in a future
+> release. Pin the tasks you use with the `trust-tasks` CLI and generate them
+> with `dart run trust_tasks:generate` — see
+> [Generating only the tasks you use](#generating-only-the-tasks-you-use). The
+> analyzer reports an import of a deprecated library (`deprecated_member_use`).
+
 ## Importing
 
 The package's own library exports the **runtime only**. Dart's `export` is flat

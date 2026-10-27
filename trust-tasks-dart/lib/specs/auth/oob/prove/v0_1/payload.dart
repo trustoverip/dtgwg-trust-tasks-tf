@@ -2,6 +2,10 @@
 // Source: specs/auth/oob/prove/0.1/payload.schema.json
 // ignore_for_file: deprecated_member_use_from_same_package
 
+@Deprecated(
+    'The prebuilt specification libraries will be removed: pin the tasks you use with the trust-tasks CLI and generate them with `dart run trust_tasks:generate` (GETTING-STARTED.md).')
+library;
+
 import 'package:trust_tasks/trust_tasks.dart';
 
 /// The service-generated handle of one request: 16 to 32 bytes from a

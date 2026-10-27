@@ -1,6 +1,9 @@
 import 'dart:convert';
 
 import 'package:test/test.dart';
+// The specimen is a prebuilt library, deprecated in favour of generating the
+// tasks an application uses (dart run trust_tasks:generate).
+// ignore: deprecated_member_use
 import 'package:trust_tasks/specs/acl/grant/v0_2/payload.dart' as acl_grant;
 // --- trust-task-discovery 0.1 / 0.2 (superseded) -----------------------------
 // Delete these two imports, and the group marked the same way below, when the

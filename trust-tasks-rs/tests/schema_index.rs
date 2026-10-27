@@ -1,6 +1,9 @@
 //! The Type URI → schema lookup a dispatching consumer needs.
 
 #![cfg(feature = "validate")]
+// Exercises the prebuilt specification modules on purpose; they are deprecated
+// in favour of generating the tasks an application uses (trust-tasks-build).
+#![allow(deprecated)]
 use serde_json::json;
 use trust_tasks_rs::schema_index::schema_for;
 use trust_tasks_rs::validate::against_schema;

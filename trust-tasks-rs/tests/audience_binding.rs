@@ -6,6 +6,9 @@
 //!
 //! Its specimens are `acl` payloads, so a build without that family skips it.
 #![cfg(feature = "acl")]
+// Exercises the prebuilt specification modules on purpose; they are deprecated
+// in favour of generating the tasks an application uses (trust-tasks-build).
+#![allow(deprecated)]
 
 use chrono::Utc;
 use trust_tasks_rs::{specs::acl::grant::v0_2 as grant, Payload, Proof, StandardCode, TrustTask};

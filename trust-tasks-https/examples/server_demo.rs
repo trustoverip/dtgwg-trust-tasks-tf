@@ -20,6 +20,10 @@
 //!
 //! Then point [`client_demo`] at it.
 
+// Exercises the prebuilt specification modules on purpose; they are deprecated
+// in favour of generating the tasks an application uses (trust-tasks-build).
+#![allow(deprecated)]
+
 use affinidi_secrets_resolver::secrets::Secret;
 use trust_tasks_https::{BearerAuth, HttpsServer};
 use trust_tasks_proof::affinidi::Verifier;

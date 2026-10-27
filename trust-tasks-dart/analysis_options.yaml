@@ -13,3 +13,9 @@ analyzer:
     # are prose written for spec readers. They occasionally mention a member name
     # that Dartdoc cannot resolve to a symbol; that is not worth failing a build.
     comment_references: ignore
+    # Every prebuilt specification library is deprecated (build-dart-bindings.mjs,
+    # milestone 5 of docs/design/consumer-side-generation.md) so that an
+    # application importing one is told to generate it instead. This package's
+    # own tests and smoke test still exercise them, and SDKs before 3.4 report
+    # that same-package use, which the 3.3 floor job's --fatal-infos would fail.
+    deprecated_member_use_from_same_package: ignore

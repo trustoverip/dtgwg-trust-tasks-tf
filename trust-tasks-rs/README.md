@@ -11,6 +11,13 @@ freshness semantics into a single validation pipeline.
 
 The framework specification this crate implements is [`SPEC.md`](../SPEC.md).
 
+> **The prebuilt specification modules under `specs::` are deprecated** (all but
+> the framework's own `trust-task-*` families) and will be removed in a future
+> release. Depend on this crate with `default-features = false` for the runtime
+> alone, pin the tasks you use with the `trust-tasks` CLI, and generate them in
+> `build.rs` with [`trust-tasks-build`](https://crates.io/crates/trust-tasks-build)
+> — see [Generating only the tasks you use](#generating-only-the-tasks-you-use).
+
 ## What's in here
 
 | Module | Purpose | SPEC.md section |

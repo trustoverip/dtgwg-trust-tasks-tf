@@ -2,6 +2,10 @@
 // Source: specs/vtc/storage/credentials/set/0.1/payload.schema.json
 // ignore_for_file: deprecated_member_use_from_same_package
 
+@Deprecated(
+    'The prebuilt specification libraries will be removed: pin the tasks you use with the trust-tasks CLI and generate them with `dart run trust_tasks:generate` (GETTING-STARTED.md).')
+library;
+
 import 'package:trust_tasks/trust_tasks.dart';
 
 /// A storage config's identifier, chosen by the administrator who creates it and

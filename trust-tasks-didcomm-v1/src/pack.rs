@@ -316,6 +316,9 @@ fn check_thread(
 }
 
 #[cfg(test)]
+// The specimens are prebuilt modules, deprecated in favour of generating the
+// tasks an application uses (trust-tasks-build).
+#[allow(deprecated)]
 mod tests {
     use super::*;
     use trust_tasks_rs::specs::acl::grant::v0_2 as grant;

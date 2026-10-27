@@ -20,6 +20,10 @@
 //! cargo run -p trust-tasks-https --example client_demo
 //! ```
 
+// Exercises the prebuilt specification modules on purpose; they are deprecated
+// in favour of generating the tasks an application uses (trust-tasks-build).
+#![allow(deprecated)]
+
 use affinidi_secrets_resolver::secrets::Secret;
 use trust_tasks_https::{ClientError, HttpsClient};
 use trust_tasks_proof::affinidi::SignOptions;

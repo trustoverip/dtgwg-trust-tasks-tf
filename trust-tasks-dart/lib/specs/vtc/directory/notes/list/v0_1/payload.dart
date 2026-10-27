@@ -2,6 +2,10 @@
 // Source: specs/vtc/directory/notes/list/0.1/payload.schema.json
 // ignore_for_file: deprecated_member_use_from_same_package
 
+@Deprecated(
+    'The prebuilt specification libraries will be removed: pin the tasks you use with the trust-tasks CLI and generate them with `dart run trust_tasks:generate` (GETTING-STARTED.md).')
+library;
+
 import 'package:trust_tasks/trust_tasks.dart';
 
 /// Opaque identifier of one note: `note_` followed by 16 to 64 base64url characters.

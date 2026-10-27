@@ -84,6 +84,9 @@ where
 }
 
 #[cfg(test)]
+// The specimens are prebuilt modules, deprecated in favour of generating the
+// tasks an application uses (trust-tasks-build).
+#[allow(deprecated)]
 mod tests {
     use super::*;
 

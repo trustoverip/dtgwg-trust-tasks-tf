@@ -2,6 +2,10 @@
 // Source: specs/external/credentials/issue/0.2/payload.schema.json
 // ignore_for_file: deprecated_member_use_from_same_package
 
+@Deprecated(
+    'The prebuilt specification libraries will be removed: pin the tasks you use with the trust-tasks CLI and generate them with `dart run trust_tasks:generate` (GETTING-STARTED.md).')
+library;
+
 import 'package:trust_tasks/trust_tasks.dart';
 
 /// A SHA-256 digest in standard base64 (RFC 4648 §4, padded), as S3 carries it in

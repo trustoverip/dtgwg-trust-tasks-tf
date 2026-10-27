@@ -22,6 +22,15 @@ The Rust counterpart is [`trust-tasks-rs`](https://crates.io/crates/trust-tasks-
 both crates are regenerated together so the Rust and TypeScript wire
 shapes stay byte-identical.
 
+> **The prebuilt specification modules are deprecated** (all but the
+> framework's own `trust-task-*` ones) and will be removed in a future release.
+> Import the runtime from `@openvtc/trust-tasks/runtime`, pin the tasks you use
+> with the `trust-tasks` CLI, and generate them with
+> [`@openvtc/trust-tasks-gen`](https://www.npmjs.com/package/@openvtc/trust-tasks-gen)
+> (`trust-tasks generate --lang ts --out src/trust-tasks`). Editors flag the
+> root's namespace exports; a deep import of a module file is not flagged, but
+> is deprecated all the same.
+
 ## Install
 
 ```sh

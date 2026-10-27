@@ -971,6 +971,25 @@ function emitNamed(em, node, target, defNames) {
 
 /* ── File assembly ───────────────────────────────────────────────────────── */
 
+/**
+ * The prebuilt specification libraries are deprecated (milestone 5 of
+ * docs/design/consumer-side-generation.md): an application generates the
+ * tasks it pins with `dart run trust_tasks:generate` instead. `@Deprecated` on
+ * the `library` directive makes the analyzer report every import of it from
+ * another package (deprecated_member_use). The framework's own specifications
+ * and shared schemas are not deprecated: the runtime speaks them. The
+ * consumer-side generator writes no such directive, so its equivalence check
+ * (scripts/check-dart-consumer-generation.mjs) drops this block.
+ */
+const PREBUILT_DEPRECATION =
+  "The prebuilt specification libraries will be removed: pin the tasks you use with the " +
+  "trust-tasks CLI and generate them with `dart run trust_tasks:generate` (GETTING-STARTED.md).";
+
+function prebuiltLibraryDeprecation(sourceRel) {
+  if (/^specs\/(_framework\/|trust-task|trust-ceremony)/.test(sourceRel)) return [];
+  return ["", `@Deprecated(${JSON.stringify(PREBUILT_DEPRECATION).replace(/^"|"$/g, "'")})`, "library;"];
+}
+
 /** The tail every generated request library carries: URIs, schemas, policy. */
 function emitTail(slugInfo, policy, schemas, hasResponse, deprecation, extendsVersion) {
   if (!slugInfo) return [];
@@ -1195,6 +1214,7 @@ function generateOne(schemaPath, lifecycle) {
   // deprecated_member_use_from_same_package, which `--fatal-infos` fails on in the
   // 3.3 floor job; later SDKs do not report same-library use at all.
   if (deprecation !== null) header.push("// ignore_for_file: deprecated_member_use_from_same_package");
+  header.push(...prebuiltLibraryDeprecation(em.sourceRel));
   if (tail.length > 0) header.push("", `import '${RUNTIME_IMPORT}';`);
 
   const body = [...em.decls, ...tail];
