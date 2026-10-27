@@ -307,3 +307,55 @@ func TestSigningRefusesDocumentThatCouldNeverVerify(t *testing.T) {
 		t.Error("signing a document with no issuer should fail")
 	}
 }
+
+// TestSharedProofVectors runs the registry's shared proof vectors
+// (fixtures/proof at the repository root), which every library's verifier
+// runs, so a document one implementation signs is checked by all four. It
+// includes a document whose timestamps a typed parser would re-spell (SPEC
+// §4.7, "What a consumer verifies"): it must verify, and its re-spelled twin
+// must not.
+func TestSharedProofVectors(t *testing.T) {
+	const dir = "../../fixtures/proof/"
+	b, err := os.ReadFile(dir + "manifest.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var manifest struct {
+		Entries []struct {
+			File        string `json:"file"`
+			Cryptosuite string `json:"cryptosuite"`
+			Expect      string `json:"expect"`
+		} `json:"entries"`
+	}
+	if err := json.Unmarshal(b, &manifest); err != nil {
+		t.Fatal(err)
+	}
+	// Every suite this verifier implements; an entry for any other suite fails
+	// the test rather than being skipped silently.
+	supported := map[string]bool{"eddsa-jcs-2022": true, "ecdsa-jcs-2019": true}
+	v := NewVerifier(WithClock(laterClock()))
+	for _, e := range manifest.Entries {
+		t.Run(e.File, func(t *testing.T) {
+			if !supported[e.Cryptosuite] {
+				t.Fatalf("no support for %s; list it as unsupported here if that is intended", e.Cryptosuite)
+			}
+			doc, err := os.ReadFile(dir + e.File)
+			if err != nil {
+				t.Fatal(err)
+			}
+			err = v.Verify(context.Background(), doc)
+			switch e.Expect {
+			case "valid":
+				if err != nil {
+					t.Errorf("expected valid, got %v", err)
+				}
+			case "invalid":
+				if err == nil {
+					t.Error("expected invalid, but it verified")
+				}
+			default:
+				t.Fatalf("unknown expect %q", e.Expect)
+			}
+		})
+	}
+}
