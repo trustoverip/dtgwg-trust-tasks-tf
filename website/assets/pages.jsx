@@ -1610,6 +1610,18 @@ function SpecDetail({ task, setRoute }) {
               </dd>
             </>
           )}
+          {/* SPEC §9.4 Carried Protocols: the external protocol this spec is
+              the Trust Tasks form of. Renders only when declared. */}
+          {task.carries && (
+            <>
+              <dt>Carries</dt>
+              <dd>
+                <a href={task.carries.reference} target="_blank" rel="noreferrer">{task.carries.protocol} {task.carries.version}</a>
+                {" "}operation <code>{task.carries.operation}</code>
+                <span style={{ color: "var(--tt-text-muted)" }}> — this specification is that operation carried as a Trust Task; its meaning is the protocol's (<a href="/SPEC.md#94-carried-protocols">SPEC §9.4</a>).</span>
+              </dd>
+            </>
+          )}
           {task.supersededBy && (
             <>
               <dt>Superseded by</dt>

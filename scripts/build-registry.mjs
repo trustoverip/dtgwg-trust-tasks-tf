@@ -1493,6 +1493,9 @@ function buildTask(entry, meta, schema, uses) {
     knownImplementations: meta.knownImplementations || [],
     wireCompatibleWith: meta.wireCompatibleWith || null,
     extends: meta.extends || null,
+    // SPEC §9.4 Carried Protocols, §7.3 item 23: the external protocol and
+    // operation this specification carries, or null.
+    carries: meta.carries || null,
     supersededBy: meta.supersededBy || null,
     jsonLdContext: !!meta.jsonLdContext,
     hasResponse,
@@ -2286,6 +2289,34 @@ function main() {
     }
   }
   if (extendsChecked) console.log(`  Declared extensions: ${extendsChecked} version(s) checked against the version each extends`);
+
+  // `carries` (SPEC §9.4 Carried Protocols, §7.3 item 23). The meta-schema
+  // checks the shape; the rule that needs the whole tree is "one specification
+  // per operation" (§9.4 rule 1): the versions of one slug carry one operation,
+  // and no two slugs carry the same operation of the same protocol version.
+  // Withdrawn versions are history and are not compared.
+  const carriedBy = new Map();
+  let carriesDeclared = 0;
+  const bySlugOp = new Map();
+  for (const t of tasks) {
+    if (!t.carries || t.status === 'withdrawn') continue;
+    carriesDeclared++;
+    const rel = `${t.slug}/${t.version}`;
+    const op = `${t.carries.protocol}#${t.carries.operation}`;
+    const prev = bySlugOp.get(t.slug);
+    if (prev && prev.op !== op) {
+      fail(rel, `carries ${t.carries.protocol} operation '${t.carries.operation}', but ${prev.rel} carries ${prev.op.replace('#', " operation '")}'. A slug carries one operation in every version (SPEC §9.4 rule 1); a different operation is a different specification`);
+    } else if (!prev) bySlugOp.set(t.slug, { op, rel });
+    const key = `${t.carries.protocol}@${t.carries.version}#${t.carries.operation}`;
+    const other = carriedBy.get(key);
+    if (other && other.slug !== t.slug) {
+      fail(rel, `carries ${t.carries.protocol} ${t.carries.version} operation '${t.carries.operation}', which ${other.slug}/${other.version} already carries. One operation of a protocol version has one specification (SPEC §9.4 rule 1)`);
+    } else if (!other) carriedBy.set(key, t);
+  }
+  if (carriesDeclared) {
+    const protocols = [...new Set(tasks.filter((t) => t.carries && t.status !== 'withdrawn').map((t) => `${t.carries.protocol} ${t.carries.version}`))];
+    console.log(`  Carried protocols: ${carriesDeclared} version(s) carry an operation of ${protocols.join(', ')}`);
+  }
 
   // related[] referential integrity
   const slugSet = new Set(tasks.map((t) => t.slug));

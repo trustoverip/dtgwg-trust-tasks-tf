@@ -617,6 +617,18 @@
       "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
       "description": "Declares that this version is a backwards-compatible extension of the named earlier version of the same slug and MAJOR (SPEC \u00a75.2 Declared extension, \u00a77.3 item 22): it keeps every member, type, required member, enumerated value, constraint and definition of that version and only adds \u2014 an optional member, an appended enumerated value or oneOf/anyOf branch, a loosened bound, a new definition \u2014 with the same proof requirement and every declared error code. Binding even at draft. Consumers of the named version accept this version's documents by ignoring unknown members, and a reference to the named version is satisfied by this one, so the change cascades nowhere. The build checks the promise against the two payload schemas (scripts/lib/schema-compat.mjs)."
     },
+    "carries": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protocol", "version", "reference", "operation"],
+      "description": "Declares that this specification carries one operation of a protocol defined outside the framework, as a member of that protocol's protocol family (SPEC \u00a79.4 Carried Protocols, \u00a77.3 item 23). The specification maps each field of the operation to a member, adds no meaning, reports every answer of the operation in its success response, and makes no departure from the protocol.",
+      "properties": {
+        "protocol": { "type": "string", "minLength": 1, "maxLength": 128, "description": "The carried protocol's name, as its owner publishes it (for example `TRQP`)." },
+        "version": { "type": "string", "minLength": 1, "maxLength": 32, "description": "The version of the carried protocol this specification carries. A change to the protocol that changes this operation's fields or answers is carried by a new version of the specification." },
+        "reference": { "type": "string", "format": "uri", "description": "A URI of the document that defines the carried protocol at that version." },
+        "operation": { "type": "string", "minLength": 1, "maxLength": 128, "description": "The carried protocol's own name for the operation this specification carries. One specification carries one operation." }
+      }
+    },
     "supersededBy": {
       "type": "string",
       "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*(/(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*))?$",
