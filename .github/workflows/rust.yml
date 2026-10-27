@@ -29,7 +29,7 @@ on:
       - "Cargo.lock"
       - "specs/**"
       # GETTING-STARTED.md's Rust is asserted equal to
-      # trust-tasks/examples/acl_grant_roundtrip.rs by a test in that crate,
+      # examples/getting-started/src/main.rs by a test in trust-tasks,
       # so a doc-only edit still has to run cargo test.
       - "GETTING-STARTED.md"
       - ".github/workflows/rust.yml"
@@ -573,7 +573,7 @@ jobs:
           sudo apt-get install -y libdbus-1-dev pkg-config
       # `publish = false` crates are not uploaded, so they are not checked.
       - name: cargo package --workspace
-        run: cargo package --workspace --exclude trust-tasks-codegen --exclude trust-tasks-example-consumer-app
+        run: cargo package --workspace --exclude trust-tasks-codegen --exclude trust-tasks-example-consumer-app --exclude trust-tasks-example-getting-started
 
   # The `trust-tasks` CLI against the WHOLE registry, as deploy.yml publishes
   # it: every bundle, the index and the by-digest store, built here by the same

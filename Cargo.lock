@@ -5157,9 +5157,6 @@ dependencies = [
 name = "trust-tasks"
 version = "0.35.3"
 dependencies = [
- "affinidi-secrets-resolver",
- "chrono",
- "tokio",
  "trust-tasks-capability-client",
  "trust-tasks-ceremony",
  "trust-tasks-didcomm",
@@ -5168,7 +5165,6 @@ dependencies = [
  "trust-tasks-proof 0.35.3",
  "trust-tasks-rs 0.35.3",
  "trust-tasks-tsp",
- "uuid",
 ]
 
 [[package]]
@@ -5297,6 +5293,18 @@ dependencies = [
  "serde_json",
  "trust-tasks-build",
  "trust-tasks-rs 0.35.3",
+]
+
+[[package]]
+name = "trust-tasks-example-getting-started"
+version = "0.0.0"
+dependencies = [
+ "affinidi-secrets-resolver",
+ "chrono",
+ "tokio",
+ "trust-tasks",
+ "trust-tasks-build",
+ "uuid",
 ]
 
 [[package]]

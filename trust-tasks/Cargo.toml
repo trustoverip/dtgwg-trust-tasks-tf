@@ -77,22 +77,6 @@ trust-tasks-proof = { path = "../trust-tasks-proof", version = "0.35", optional 
 trust-tasks-ceremony = { path = "../trust-tasks-ceremony", version = "0.2", optional = true }
 trust-tasks-capability-client = { path = "../trust-tasks-capability-client", version = "0.35", optional = true }
 
-[dev-dependencies]
-# Only the `acl_grant_roundtrip` example needs these. Dev-dependencies are
-# stripped at publish, so they cost a consumer nothing.
-tokio = { version = "1", features = ["full"] }
-uuid = { version = "1", features = ["v4"] }
-chrono = { version = "0.4", default-features = false, features = ["clock"] }
-affinidi-secrets-resolver = "0.5"
-
-[[example]]
-name = "acl_grant_roundtrip"
-# The example is the source of truth for GETTING-STARTED.md's Rust snippets
-# (see `tests/getting_started_snippets.rs`). It only builds with a transport
-# and a proof backend, so it is gated — `cargo clippy --workspace --all-targets
-# --all-features` in CI is what compiles it.
-required-features = ["https", "proof-affinidi"]
-
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]

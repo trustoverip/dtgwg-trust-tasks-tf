@@ -1,0 +1,9 @@
+# Written by `trust-tasks`. Do not edit by hand.
+version = 1
+registry = "https://trusttasks.org"
+
+[[task]]
+slug = "acl/grant"
+version = "0.2"
+type_uri = "https://trusttasks.org/spec/acl/grant/0.2"
+digest = "sha256:c0a13be9c8038a5507f41517f7b92ef36a83d91506c525e8f8d7b7d0123c71a6"
