@@ -11,6 +11,86 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.27.9 — 2026-10-27
+
+
+### Added
+
+- The prebuilt specification modules are deprecated in all four libraries; generate the tasks you use (#954)
+
+Milestone 5 of docs/design/consumer-side-generation.md. Every prebuilt module
+  outside the framework's own specifications (trust-task-*, trust-ceremony-*,
+  _framework/) is deprecated, so that an application is told to pin the tasks it
+  uses with the trust-tasks CLI and generate them instead. Nothing is removed:
+  the withdrawal batch that removes them is chosen later, at least 90 days after
+  this ships.
+
+  Each library marks the prebuilt entry point where its toolchain reports a
+  deprecation, never the module body, which is also what the consumer-side
+  generators emit:
+
+  - Rust: #[deprecated] on each gated family module in trust-tasks-rs's
+    specs/mod.rs (trust-tasks-codegen). It reaches every path and item under the
+    module; framework modules and trust-tasks-build's output are unmarked.
+  - TypeScript: the root index re-exports each module as
+    `import * as _X …; /** @deprecated … */ export import X = _X;`, because
+    TypeScript ignores @deprecated on `export * as`. API compatibility against
+    0.27.8: nothing removed or changed. A deep import of a module file is not
+    marked; TypeScript has no module-level deprecation.
+  - Go: a `Deprecated:` paragraph in each prebuilt package's doc, which gopls and
+    staticcheck (SA1019) report on import.
+  - Dart: @Deprecated on each prebuilt library's `library` directive, which the
+    analyzer reports on import from another package. This package's own tests
+    use them, so analysis_options ignores the same-package diagnostic SDKs
+    before 3.4 report.
+
+  The TS, Go and Dart equivalence tests mask exactly the mark; every consumer
+  generator is still held to the prebuilt tree as before. Hand-written Rust that
+  uses prebuilt modules on purpose — the acl-specimen test modules, the
+  integration tests and the examples — carries #[allow(deprecated)]; none of the
+  runtime does.
+
+  GETTING-STARTED, the four library READMEs, the design doc and CLAUDE.md say
+  so, and point at each language's generator.
+
+- **ts**: Parse every SPEC §6.1 Type URI form in the runtime (#951)
+
+The runtime hard-coded the public registry prefix, so extended error codes
+  and `extends` routing failed for third-party (SPEC §6.5) specifications.
+  A single parser (`parseTypeUri`, mirroring trust-tasks-rs `type_uri.rs`)
+  now reads the registry form, the path form under any authority (https,
+  DID URLs, ...) and the URN form, refusing http and malformed input.
+
+  - `slugFromTypeUri`, `extendedCode` and `familyCode` accept every form and
+    produce authority-free `<slug>:<local>` codes, as Rust does.
+  - `extendsOf` / `extendsChain` / `readForSpec` walk a chain under the
+    received Type URI's own authority and form, so a chain never crosses
+    authorities and a third-party document never routes to a registry
+    specification sharing its slug.
+  - New exports: `parseTypeUri`, `tryParseTypeUri`, `formatTypeUri`,
+    `typeUriWithVersion`, `sameSpecification`, `TypeUriError`,
+    `FRAMEWORK_RESERVED_SLUGS`, `REGISTRY_TYPE_URI_AUTHORITY`, and the
+    `TypeUri`, `TypeUriVariant`, `TypeUriErrorKind` types.
+
+
+
+### Documentation
+
+- An extended error code is read against the Type URI it answers, in SPEC.md and all four libraries (#953)
+
+SPEC.md is regenerated from canonical main (trustoverip/dtgwg-trust-tasks-spec
+  #35): an extended code carries a slug but no authority, so a party resolves
+  it against the Type URI of the document the error reports on
+  (inResponseTo.typeUri, else the request correlated by threadId) and never by
+  its string alone; the namespace is always the slug's /-form, and the local
+  code contains no colon. The regeneration also brings in #33 (declared
+  `extends`, and `withdrawn` after a version is superseded), which the site
+  already serves.
+
+  Each library's extended-code docs say the same where a reader meets it:
+  Rust's TrustTaskCode::Extended, TypeScript's extendedCode, Go's ExtendedCode
+  and Dart's extendedCode.
+
 ## 0.27.8 — 2026-10-26
 
 

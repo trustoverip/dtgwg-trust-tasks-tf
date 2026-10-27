@@ -11,6 +11,88 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.9.9 — 2026-10-27
+
+
+### Added
+
+- The prebuilt specification modules are deprecated in all four libraries; generate the tasks you use (#954)
+
+Milestone 5 of docs/design/consumer-side-generation.md. Every prebuilt module
+  outside the framework's own specifications (trust-task-*, trust-ceremony-*,
+  _framework/) is deprecated, so that an application is told to pin the tasks it
+  uses with the trust-tasks CLI and generate them instead. Nothing is removed:
+  the withdrawal batch that removes them is chosen later, at least 90 days after
+  this ships.
+
+  Each library marks the prebuilt entry point where its toolchain reports a
+  deprecation, never the module body, which is also what the consumer-side
+  generators emit:
+
+  - Rust: #[deprecated] on each gated family module in trust-tasks-rs's
+    specs/mod.rs (trust-tasks-codegen). It reaches every path and item under the
+    module; framework modules and trust-tasks-build's output are unmarked.
+  - TypeScript: the root index re-exports each module as
+    `import * as _X …; /** @deprecated … */ export import X = _X;`, because
+    TypeScript ignores @deprecated on `export * as`. API compatibility against
+    0.27.8: nothing removed or changed. A deep import of a module file is not
+    marked; TypeScript has no module-level deprecation.
+  - Go: a `Deprecated:` paragraph in each prebuilt package's doc, which gopls and
+    staticcheck (SA1019) report on import.
+  - Dart: @Deprecated on each prebuilt library's `library` directive, which the
+    analyzer reports on import from another package. This package's own tests
+    use them, so analysis_options ignores the same-package diagnostic SDKs
+    before 3.4 report.
+
+  The TS, Go and Dart equivalence tests mask exactly the mark; every consumer
+  generator is still held to the prebuilt tree as before. Hand-written Rust that
+  uses prebuilt modules on purpose — the acl-specimen test modules, the
+  integration tests and the examples — carries #[allow(deprecated)]; none of the
+  runtime does.
+
+  GETTING-STARTED, the four library READMEs, the design doc and CLAUDE.md say
+  so, and point at each language's generator.
+
+- **dart**: Parse every SPEC §6.1 Type URI form, so third-party specs get extended codes and extends routing (#952)
+
+The Dart runtime recognised only the public registry's Type URIs. A new
+  `TypeUri` (exported from the barrel, with `TypeUriVariant`, `TypeUriError`
+  and `TypeUriFormatException`) parses all three §6.1 forms — the registry's,
+  the path form under any authority (https URL, DID URL, …) and the URN form —
+  and refuses what trust-tasks-rs's `TypeUri` refuses: `http` in every form, a
+  `urn:` without `:spec:` or without an NID and prefix, a malformed or reserved
+  slug, and a version that is not MAJOR.MINOR.
+
+  - `slugFromTypeUri`, and with it `extendedCode` / `familyCode`, accept every
+    form; codes stay authority-free `<slug>:<local>`, as Rust's
+    `TrustTaskCode::Extended` renders them. Invalid input still throws
+    `ArgumentError`.
+  - `extensionChain`, `extendsTo` and `readForVersion` walk a declared-extension
+    chain with `TypeUri.withVersion`: same authority, form and slug, only the
+    version changed, so a chain never crosses authorities and a third-party
+    document never routes to a registry spec of the same slug.
+  - Fixes `_splitVersion`, which split the version on the last `/` and so found
+    none in a URN-form Type URI: a URN document was never routed forward.
+
+
+
+### Documentation
+
+- An extended error code is read against the Type URI it answers, in SPEC.md and all four libraries (#953)
+
+SPEC.md is regenerated from canonical main (trustoverip/dtgwg-trust-tasks-spec
+  #35): an extended code carries a slug but no authority, so a party resolves
+  it against the Type URI of the document the error reports on
+  (inResponseTo.typeUri, else the request correlated by threadId) and never by
+  its string alone; the namespace is always the slug's /-form, and the local
+  code contains no colon. The regeneration also brings in #33 (declared
+  `extends`, and `withdrawn` after a version is superseded), which the site
+  already serves.
+
+  Each library's extended-code docs say the same where a reader meets it:
+  Rust's TrustTaskCode::Extended, TypeScript's extendedCode, Go's ExtendedCode
+  and Dart's extendedCode.
+
 ## 0.9.8 — 2026-10-26
 
 
