@@ -1,0 +1,51 @@
+{
+  "description": "Shared Data Integrity proof vectors for Trust Task documents. Every library's proof verifier runs every entry, so a document signed by one implementation is checked by all of them (SPEC §4.7). Signed with the Ed25519 key of seed [7; 32] unless noted.",
+  "entries": [
+    {
+      "file": "eddsa-jcs-2022-baseline.json",
+      "cryptosuite": "eddsa-jcs-2022",
+      "expect": "valid",
+      "why": "The baseline suite every consumer verifies (SPEC §4.7.1). Its proofValue is reproduced byte for byte by the Rust, TypeScript, Dart and Go signers."
+    },
+    {
+      "file": "ecdsa-jcs-2019-ts-p256.json",
+      "cryptosuite": "ecdsa-jcs-2019",
+      "curve": "P-256",
+      "expect": "valid",
+      "why": "ecdsa-jcs-2019 over P-256, signed by the TypeScript backend. SPEC §4.7.1 says a consumer SHOULD verify P-256."
+    },
+    {
+      "file": "ecdsa-jcs-2019-ts-p384.json",
+      "cryptosuite": "ecdsa-jcs-2019",
+      "curve": "P-384",
+      "expect": "valid",
+      "why": "ecdsa-jcs-2019 over P-384, signed by the TypeScript backend."
+    },
+    {
+      "file": "ecdsa-jcs-2019-go-p256.json",
+      "cryptosuite": "ecdsa-jcs-2019",
+      "curve": "P-256",
+      "expect": "valid",
+      "why": "ecdsa-jcs-2019 over P-256, signed by the Go backend with a high S, which every verifier must accept (Go's ecdsa.Sign does not normalise S). SPEC §4.7.1 says a consumer SHOULD verify P-256."
+    },
+    {
+      "file": "ecdsa-jcs-2019-go-p384.json",
+      "cryptosuite": "ecdsa-jcs-2019",
+      "curve": "P-384",
+      "expect": "valid",
+      "why": "ecdsa-jcs-2019 over P-384, signed by the Go backend with a high S, which every verifier must accept (Go's ecdsa.Sign does not normalise S)."
+    },
+    {
+      "file": "eddsa-jcs-2022-timestamp-spellings.json",
+      "cryptosuite": "eddsa-jcs-2022",
+      "expect": "valid",
+      "why": "issuedAt is spelled 2026-01-01T00:00:00.000Z and expiresAt 2027-01-01T00:00:00+00:00, both valid RFC 3339 that a typed date parser re-serializes differently. A verifier that checks the document as received accepts it; one that re-serializes a typed parse refuses a correctly signed document (SPEC §4.7, What a consumer verifies)."
+    },
+    {
+      "file": "eddsa-jcs-2022-timestamp-spellings-normalized.json",
+      "cryptosuite": "eddsa-jcs-2022",
+      "expect": "invalid",
+      "why": "The previous document with both timestamps rewritten to the Z form and the proof left as it was. It must fail: the signature covers the spelling, so a verifier that accepts this is not checking the bytes it received."
+    }
+  ]
+}

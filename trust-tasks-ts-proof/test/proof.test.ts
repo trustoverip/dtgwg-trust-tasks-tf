@@ -235,3 +235,25 @@ test("signing refuses a document that could never verify", () => {
   delete noIssuer.issuer;
   assert.throws(() => signTrustTask(noIssuer as TrustTaskDocument<unknown>, signer));
 });
+
+// The registry's shared proof vectors (fixtures/proof at the repository root),
+// which every library's verifier runs, so a document one implementation signs is
+// checked by all four. They include a document whose timestamps a typed parser
+// would re-spell (SPEC §4.7, "What a consumer verifies"): it must verify, and its
+// re-spelled twin must not.
+{
+  const dir = new URL("../../../fixtures/proof/", import.meta.url);
+  const manifest = JSON.parse(readFileSync(fileURLToPath(new URL("manifest.json", dir)), "utf8")) as {
+    entries: { file: string; cryptosuite: string; expect: "valid" | "invalid" }[];
+  };
+  // Every suite this verifier implements; an entry for any other suite fails
+  // rather than being skipped silently.
+  const supported = new Set(["eddsa-jcs-2022", "ecdsa-jcs-2019"]);
+  for (const entry of manifest.entries) {
+    test(`shared vector: ${entry.file} is ${entry.expect}`, async () => {
+      assert.ok(supported.has(entry.cryptosuite), `no support for ${entry.cryptosuite}`);
+      const doc = JSON.parse(readFileSync(fileURLToPath(new URL(entry.file, dir)), "utf8")) as TrustTaskDocument<unknown>;
+      assert.equal(await verifier.verify(doc), entry.expect === "valid");
+    });
+  }
+}
