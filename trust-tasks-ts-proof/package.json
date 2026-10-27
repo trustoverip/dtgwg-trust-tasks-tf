@@ -32,10 +32,10 @@
     "@scure/base": "^2.0.0"
   },
   "peerDependencies": {
-    "@openvtc/trust-tasks": "^0.27.8"
+    "@openvtc/trust-tasks": "^0.28.0"
   },
   "devDependencies": {
-    "@openvtc/trust-tasks": "^0.27.8",
+    "@openvtc/trust-tasks": "^0.28.0",
     "@types/node": "^22.0.0",
     "typescript": "^5.6.0"
   }
