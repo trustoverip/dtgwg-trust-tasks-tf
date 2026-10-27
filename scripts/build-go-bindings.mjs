@@ -1189,7 +1189,10 @@ async function main() {
       await fs.mkdir(result.dir, { recursive: true });
       await fs.writeFile(result.file, result.source, "utf8");
       packages.add(result.dir);
-      if (result.typeUri && result.extendsVersion) extendsEntries.push([result.typeUri, result.extendsVersion]);
+      // trust-task-error is left out, as trust-tasks-codegen leaves it out (SKIP_SLUGS): it has no registry bundle, so the consumer-side generators cannot index it, and an error document is read by the runtime's own path, never routed by extends.
+      if (result.typeUri && result.extendsVersion && !result.typeUri.includes("/spec/trust-task-error/")) {
+        extendsEntries.push([result.typeUri, result.extendsVersion]);
+      }
       ok++;
     } catch (err) {
       console.error("  ✗ " + path.relative(REPO_ROOT, schemaPath));

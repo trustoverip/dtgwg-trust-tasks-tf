@@ -253,6 +253,22 @@ Where the failure will be retained as evidence (for example, a compliance refusa
 
 ## Security & Privacy
 
+### Data carried
+
+A standard or extended `code`, `retryable`, and optionally `retryAfter`, a free-text `message`, `inResponseTo` (the Type URI and `id` of the document the error reports on) and `details`, bounded per [SPEC.md §8.2.2](/SPEC.md#822-bounding-details). `indeterminate` names in `details` only the kind of reference that could not be obtained, never its location or contents. No secret is carried.
+
+### Correlation
+
+`inResponseTo` and `threadId` tie the error to the document it answers, and the error's `issuer` names the reporting consumer. An `identityMismatch` error goes to the transport-authenticated sender, never to the contested in-band `issuer` ([SPEC.md §8.1](/SPEC.md#81-the-trust-task-error-specification)).
+
+### Retention
+
+An error is normally consumed by the producer over the transport that delivered the request, and kept no longer than its retry logic needs. A party that retains one as evidence keeps each extended code with the Type URI it was resolved against ([SPEC.md §8.5](/SPEC.md#85-extension-by-individual-trust-task-specifications)), and **MUST NOT** read a retained `indeterminate` as a refusal or a failed verification.
+
+### Consent/purpose
+
+An error reports why a task was not performed. It acts for no subject and records no consent.
+
 An error document **MAY** carry sensitive context in `message` or `details` — for example, the name of an internal service, the identifier of a revoked credential, or the reason a particular party was denied access. Producers **SHOULD** apply the principle of least disclosure: include only what the original producer needs to understand the failure and take next-step action.
 
 Implementations **SHOULD** include a `proof` member where the error will be retained, replayed, or relied upon by parties beyond the immediate exchange. Without a proof, a retained error document cannot be attributed to the reporting consumer after the fact and offers no integrity guarantee against tampering by intermediaries.

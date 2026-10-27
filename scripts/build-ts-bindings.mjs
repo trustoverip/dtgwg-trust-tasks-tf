@@ -1558,7 +1558,8 @@ function deprecatePrebuilt(line) {
  */
 async function emitExtendsIndex(generated) {
   const entries = generated
-    .filter((g) => g.slugInfo && g.extendsVersion)
+    // trust-task-error is left out, as trust-tasks-codegen leaves it out (SKIP_SLUGS): it has no registry bundle, so the consumer-side generators cannot index it, and an error document is read by the runtime's own path, never routed by extends.
+    .filter((g) => g.slugInfo && g.extendsVersion && g.slugInfo.slug !== "trust-task-error")
     .map((g) => [`https://trusttasks.org/spec/${g.slugInfo.slug}/${g.slugInfo.version}`, g.extendsVersion])
     .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
   const lines = [
