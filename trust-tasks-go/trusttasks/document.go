@@ -375,7 +375,7 @@ type RejectReason struct {
 // emit idConflict (§8.3), which is absent from 0.3's code enum and does not match
 // its extended-code pattern — a document carrying it would not validate as 0.3.
 // Per §5.2 forward-minor compatibility a 0.3 consumer SHOULD accept it.
-const TrustTaskErrorTypeURI = "https://trusttasks.org/spec/trust-task-error/0.5"
+const TrustTaskErrorTypeURI = "https://trusttasks.org/spec/trust-task-error/0.6"
 
 // ValidateBasic applies SPEC §7.2 items 4 and 5a — expiry and wrong-recipient.
 //

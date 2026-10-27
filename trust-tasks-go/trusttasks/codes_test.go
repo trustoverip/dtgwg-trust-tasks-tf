@@ -59,8 +59,8 @@ func TestNormalizeLeavesAnExtendedCodeAlone(t *testing.T) {
 
 func TestStandardCodesListsEveryCodeAndCannotBeMutatedByACaller(t *testing.T) {
 	first := tt.StandardCodes()
-	if len(first) != 14 {
-		t.Fatalf("expected the 14 §8.3 codes, got %d", len(first))
+	if len(first) != 16 {
+		t.Fatalf("expected the 16 §8.3 codes, got %d", len(first))
 	}
 	first[0] = "tampered"
 	if tt.StandardCodes()[0] != tt.CodeMalformedRequest {
