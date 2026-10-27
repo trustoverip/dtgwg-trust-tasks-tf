@@ -160,7 +160,15 @@ describe("extends chain lookup", () => {
         typeof m === "object" && m !== null && "TYPE_URI" in m && "EXTENDS" in m,
     );
     assert.ok(modules.length > 100, "the root export lists the generated modules");
-    for (const m of modules) assert.equal(EXTENDS_BY_TYPE_URI[m.TYPE_URI] ?? null, m.EXTENDS, m.TYPE_URI);
+    // trust-task-error is the one exception: like trust-tasks-codegen, the
+    // generator keeps it out of the index (it has no registry bundle, and an
+    // error document is never routed by extends), while its module still
+    // states EXTENDS.
+    for (const m of modules) {
+      const indexed = m.TYPE_URI.includes("/spec/trust-task-error/") ? m.EXTENDS : (EXTENDS_BY_TYPE_URI[m.TYPE_URI] ?? null);
+      assert.equal(indexed, m.EXTENDS, m.TYPE_URI);
+      if (m.TYPE_URI.includes("/spec/trust-task-error/")) assert.equal(EXTENDS_BY_TYPE_URI[m.TYPE_URI], undefined, m.TYPE_URI);
+    }
     assert.equal(EXTENDS_BY_TYPE_URI[V03.TYPE_URI] ?? null, V03.EXTENDS);
     const expected = extendsChain(V03.TYPE_URI).includes("0.1") ? "accepted" : "refused";
     assert.equal(readForSpec(doc03(), V01.SPEC).kind, expected);
