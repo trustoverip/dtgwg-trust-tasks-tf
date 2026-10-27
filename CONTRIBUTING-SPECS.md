@@ -195,6 +195,24 @@ Every example block **SHOULD** be a complete JSON object — including framework
 
 See `specs/acl/grant/0.1/spec.md` for a worked example.
 
+## Decisions, holds and repeated requests
+
+Three framework rules decide which reply form a task uses. Settle them when you design the schema, not when an implementer asks.
+
+**A decision is an outcome, not an error** ([SPEC.md §8](SPEC.md#8-error-responses), "A decision is not a failure"). If your task exists to produce a decision (admit or refuse, accept or reject, authorized or not), every decision it can produce, a negative one included, goes in `$defs.Response`, typically as an enumerated `decision` member. Do not declare an `errorCodes` entry for one. `permissionDenied` and your task-specific codes mean the task was not performed: the requester may not ask, or you could not complete it. A signed negative decision is evidence a relying party can keep and cite; a decision hidden in an error code is one a client that does not know the code reads as `taskFailed`. `registry/authorization`'s `authorized: false` is the pattern.
+
+**A hold is a next step, not an error** ([SPEC.md §8.6](SPEC.md#86-reserved-response-type-slugs), "A hold is a next step"). If your task can be held for an approval, a consent decision or a step-up, say in prose that the consumer answers with `trust-task-next-step`, and what its `expects` names. Do not declare a `stepUpRequired`- or `consentRequired`-style error code for the hold. Declining the approval is a refusal, answered `permissionDenied`.
+
+**Say what a repeated request yields** ([SPEC.md §7.2](SPEC.md#72-consumer-requirements), "A target already in the requested state"). For each operation, state which kind it is:
+
+| Kind | Examples | A request for a state that already holds |
+|---|---|---|
+| Setting a state | revoke, deactivate, disable, enable, set | Succeeds. The response **MAY** say whether anything changed (`newlyRevoked`, `changed`). |
+| Creating something | register, grant, create, issue | Refused with a task-specific code (`alreadyRegistered`, `alreadyGranted`). |
+| Missing target | any | Refused with a task-specific code, which **MAY** be the same as "exists but you may not see it". |
+
+`keys/revoke/0.1`, `git-trust/grant/0.1` and `vtc/relationships/revoke/0.1` show each kind.
+
 ## The `## Authorization` section
 
 [SPEC §7.3 item 15](SPEC.md#73-specification-requirements) requires a **consequential** *Trust Task specification* to describe the class of authorization evidence a consumer needs in order to interpret the task correctly. Write it as an H2 named `## Authorization`, placed immediately after `## Conformance`.
@@ -404,6 +422,8 @@ A definition used by **more than one task in a family** — a record shape retur
 ```
 
 Inline copies drift: an edit to one task's copy silently forks the wire shape the family's other tasks still validate against, and the divergence is invisible until an implementer round-trips a record between the two. The `_shared/` component versions independently (pin a specific version — [SPEC §6.6](SPEC.md#66-shared-schema-components) forbids "latest" references), and the registry build indexes it and shows which tasks depend on it. A definition used by exactly one task stays a local `$def` in that task's schema.
+
+**No governance defaults** ([SPEC §6.6](SPEC.md#66-shared-schema-components) rule 5). A shared component **MUST NOT** put a `default` on a threshold or quorum, a TTL or validity period, a role, an evaluation order, or any other value a community's policy chooses. Make the member required instead. JSON Schema's `default` is only an annotation, but code generators and form builders apply it, so `"default": 1` on `minApprovals` sends a quorum of one for every producer that left the member out. In your own payload schema the rule is a **SHOULD NOT**, and if you do supply such a default, state the value in prose as your specification's choice.
 
 ### Opting into the framework `ext` extension slot
 
