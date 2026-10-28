@@ -2291,6 +2291,9 @@ export import VtaContextsCreate_v1_0 = _VtaContextsCreate_v1_0;
 import * as _VtaContextsDelete_v1_0 from "./vta/contexts/delete/1.0/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtaContextsDelete_v1_0 = _VtaContextsDelete_v1_0;
+import * as _VtaContextsDelete_v1_1 from "./vta/contexts/delete/1.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtaContextsDelete_v1_1 = _VtaContextsDelete_v1_1;
 import * as _VtaContextsDidTemplatesCreate_v1_0 from "./vta/contexts/did-templates/create/1.0/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtaContextsDidTemplatesCreate_v1_0 = _VtaContextsDidTemplatesCreate_v1_0;

@@ -1613,6 +1613,7 @@ mod vta {
         }
         mod delete {
             mod v1_0;
+            mod v1_1;
         }
         mod did_templates {
             mod create {

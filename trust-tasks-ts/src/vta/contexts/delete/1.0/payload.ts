@@ -6,6 +6,7 @@
 import type { Ext } from "../../../../_shared/components.js";
 
 
+/** @deprecated superseded by vta/contexts/delete/1.1 */
 export interface VTAContextsDeletePayload {
   /**
    * Context to delete.
@@ -19,6 +20,8 @@ export interface VTAContextsDeletePayload {
 }
 /**
  * Success response to vta/contexts/delete. Type https://trusttasks.org/spec/vta/contexts/delete/1.0#response.
+ *
+ * @deprecated superseded by vta/contexts/delete/1.1
  */
 export interface VTAContextsDeleteResponsePayload {
   id: string;
@@ -53,15 +56,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by vta/contexts/delete/1.1";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vta/contexts/delete/1.1
+ */
 export type Payload = VTAContextsDeletePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/contexts/delete/1.0#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vta/contexts/delete/1.1
+ */
 export type Response = VTAContextsDeleteResponsePayload;
 
 /**

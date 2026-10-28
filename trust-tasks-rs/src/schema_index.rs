@@ -3898,6 +3898,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vta/contexts/delete/1.0#response" => <crate::specs::vta::contexts::delete::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/contexts/delete/1.1" => <crate::specs::vta::contexts::delete::v1_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/contexts/delete/1.1#response" => <crate::specs::vta::contexts::delete::v1_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/contexts/did-templates/create/1.0" => <crate::specs::vta::contexts::did_templates::create::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
@@ -10400,6 +10406,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/contexts/delete/1.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::contexts::delete::v1_1::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/contexts/did-templates/create/1.0" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::vta::contexts::did_templates::create::v1_0::Payload,
@@ -16488,6 +16499,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/contexts/delete/1.0" => {
             Some(crate::specs::vta::contexts::delete::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/contexts/delete/1.1" => {
+            Some(crate::specs::vta::contexts::delete::v1_1::ERROR_CODES)
         }
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
