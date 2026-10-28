@@ -221,6 +221,19 @@ function stripDeclaration(ts: string, name: string): string {
   return lines.join("\n");
 }
 
+/** Every `title` below the root: the names json-schema-to-typescript gives nested branch types. */
+function nestedTitles(schema: JsonObject): string[] {
+  const out: string[] = [];
+  const visit = (node: Json, isRoot: boolean): void => {
+    if (Array.isArray(node)) return node.forEach((n) => visit(n, false));
+    if (!isObject(node)) return;
+    if (!isRoot && typeof node.title === "string") out.push(node.title);
+    for (const value of Object.values(node)) visit(value, false);
+  };
+  visit(schema, true);
+  return out;
+}
+
 /** Suffix every `title` below the root, recording the original name. */
 function tagNestedTitles(schema: JsonObject, suffix: string, displayNames: Map<string, string>): void {
   const visit = (node: Json, isRoot: boolean): void => {
@@ -399,11 +412,34 @@ async function compileComponents(
   const names = [...byName.keys()].sort();
   const $defs: JsonObject = {};
   const properties: JsonObject = {};
+  const schemas = new Map<string, JsonObject>();
   for (const name of names) {
     const entry = byName.get(name)!;
     const schema = structuredClone(entry.fragment);
     refsToComponentNames(schema, entry.representative);
+    schemas.set(name, schema);
+  }
+  // A qualified component's nested branch types are tagged with its suffix, so
+  // they cannot collide. A bare one's keep their own titles, and those can: a
+  // lock that reaches one shape of `ConsumerKind` (bare) and the `Service` of
+  // `auth/oob` (bare) has two declarations wanting `Service`, and the compiler
+  // would number the second. The package never meets this — over the whole
+  // registry `ConsumerKind` has two shapes and is qualified — so tag such a
+  // component's nested titles with its family and version, which is the name
+  // the package gives the same branch.
+  const titleUses = new Map<string, number>();
+  for (const name of names) {
+    if (name === byName.get(name)!.baseName) {
+      for (const title of new Set(nestedTitles(schemas.get(name)!))) titleUses.set(title, (titleUses.get(title) ?? 0) + 1);
+    }
+  }
+  for (const name of names) {
+    const entry = byName.get(name)!;
+    const schema = schemas.get(name)!;
     if (name !== entry.baseName) tagNestedTitles(schema, name.slice(entry.baseName.length), displayNames);
+    else if (nestedTitles(schema).some((t) => byName.has(t) || titleUses.get(t)! > 1)) {
+      tagNestedTitles(schema, `_${entry.representative.tag}`, displayNames);
+    }
     $defs[name] = { ...schema, title: name };
     properties[name] = { $ref: `#/$defs/${name}` };
   }
