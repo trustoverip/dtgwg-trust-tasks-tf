@@ -2,6 +2,21 @@
 
 All notable changes to `@openvtc/trust-tasks-capability-client` are documented here.
 
+## 0.1.2 — 2026-10-28
+
+
+### Fixed
+
+- **ts-proof, ts-tsp, ts-capability-client**: Admit @openvtc/trust-tasks 0.28 (#965)
+
+The core reached 0.28.0 in #963. The published siblings declare
+  @openvtc/trust-tasks ^0.27.8 as a peer dependency, which npm reads as
+  <0.28.0, so an application on the current core cannot install them.
+
+  Raise the peer and dev ranges to ^0.28.0 and refresh the lockfiles
+  against the published core. All three build, typecheck and pass their
+  tests against it. Releasing this releases the three siblings.
+
 ## 0.1.1 — 2026-10-27
 
 
