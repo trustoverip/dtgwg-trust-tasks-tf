@@ -2178,6 +2178,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "messaging")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/messaging/stats/show/0.1#response" => <crate::specs::messaging::stats::show::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "peer-check")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/peer-check/ask/0.1" => <crate::specs::peer_check::ask::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "peer-check")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/peer-check/ask/0.1#response" => <crate::specs::peer_check::ask::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "persona")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/persona/attribute/delete/1.0" => <crate::specs::persona::attribute::delete::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -8816,6 +8822,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         "https://trusttasks.org/spec/messaging/stats/show/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::messaging::stats::show::v0_1::Payload,
         >()),
+        #[cfg(feature = "peer-check")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/peer-check/ask/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::peer_check::ask::v0_1::Payload,
+        >()),
         #[cfg(feature = "persona")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/persona/attribute/delete/1.0" => {
@@ -15043,6 +15054,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/messaging/stats/show/0.1" => {
             Some(crate::specs::messaging::stats::show::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "peer-check")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/peer-check/ask/0.1" => {
+            Some(crate::specs::peer_check::ask::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "persona")]
         #[cfg(not(test))]

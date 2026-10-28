@@ -981,6 +981,12 @@ mod messaging {
         }
     }
 }
+#[cfg(feature = "peer-check")]
+mod peer_check {
+    mod ask {
+        mod v0_1;
+    }
+}
 #[cfg(feature = "persona")]
 mod persona {
     mod attribute {

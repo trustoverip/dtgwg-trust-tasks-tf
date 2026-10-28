@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/peer-check/ask/0.1",
+  "title": "Peer Check — Ask — payload",
+  "description": "The request payload of peer-check/ask: a short yes-or-no question one party puts to another, with an unguessable challenge. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. The asker is the `issuer`, the party being asked is the `recipient`, and the document MUST carry `expiresAt`.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "challenge",
+    "question"
+  ],
+  "properties": {
+    "challenge": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{22,86}$",
+      "description": "An unguessable value the asker generates for this one question: at least 128 bits from a cryptographically secure random source, encoded base64url without padding (22 to 86 characters). The responder echoes it unchanged in its answer."
+    },
+    "question": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "What the asker wants confirmed, in one short sentence, for example \"Did you just ask me to send you a one-time code?\". It is asker-authored text the responder's device displays attributed to the asker, never as a statement the device itself vouches for."
+    },
+    "note": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "description": "OPTIONAL extra context from the asker. It is UNTRUSTED display text: the responder's device MUST render it as plain text, attributed to the asker and visually distinct from anything the device itself asserts, and MUST NOT interpret it as markup, a link, or an instruction."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Peer Check Ask Response Payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "challenge",
+        "requestDigest",
+        "decision",
+        "respondedAt"
+      ],
+      "description": "The success-response payload: the responder's answer, signed by the responder. Failures use trust-task-error, not this shape. A responder that declines because it does not recognise the question answers with `decision: denied`; an error is for a document the responder could not act on at all.",
+      "properties": {
+        "challenge": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{22,86}$",
+          "description": "The `challenge` of the request, echoed unchanged. The asker rejects an answer whose challenge it did not issue, or has already consumed."
+        },
+        "requestDigest": {
+          "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/DigestMultibase",
+          "description": "The task digest (SPEC §4.9.3) of the request document this answers: multibase(multihash(H(JCS(request without its top-level proof)))). It binds the answer to the exact question, challenge, note, parties and expiry the responder was shown, so a yes given to one ask cannot be presented as a yes to another."
+        },
+        "decision": {
+          "type": "string",
+          "enum": [
+            "approved",
+            "denied"
+          ],
+          "description": "The responder's answer. `approved` means yes to the question as asked; `denied` means no."
+        },
+        "respondedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the responder gave the answer, RFC 3339. Informational for the asker; freshness is judged against the request's `expiresAt` and the asker's own clock."
+        },
+        "deniedReason": {
+          "type": "string",
+          "enum": [
+            "notRecognised",
+            "declined",
+            "other"
+          ],
+          "description": "OPTIONAL, and only meaningful with `decision: denied`; an asker MUST ignore it, and a responder MUST NOT send it, with `approved` (the schema does not enforce this). `notRecognised` — the responder does not recognise what the question describes; `declined` — the responder recognises it and says no; `other` — anything else. An enumeration rather than prose, so an asker never renders responder-authored text."
+        }
+      }
+    }
+  }
+}

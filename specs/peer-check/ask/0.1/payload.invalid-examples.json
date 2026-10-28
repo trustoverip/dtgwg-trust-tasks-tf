@@ -1,0 +1,49 @@
+[
+  {
+    "note": "A challenge below 128 bits (16 base64url characters) is guessable; the pattern requires at least 22 characters.",
+    "payload": {
+      "challenge": "c2hvcnQ",
+      "question": "Did you just ask me for a code?"
+    }
+  },
+  {
+    "note": "question is required; a request with only a challenge asks nothing.",
+    "payload": {
+      "challenge": "q7Xk2mRt9LwB4vNf8ZpYhA"
+    }
+  },
+  {
+    "note": "question is capped at 200 characters so a prompt stays readable; a long one is refused rather than truncated.",
+    "payload": {
+      "challenge": "q7Xk2mRt9LwB4vNf8ZpYhA",
+      "question": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    }
+  },
+  {
+    "note": "Unknown top-level payload member — additionalProperties: false catches `urgency`.",
+    "payload": {
+      "challenge": "q7Xk2mRt9LwB4vNf8ZpYhA",
+      "question": "Did you just ask me for a code?",
+      "urgency": "high"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "decision must be approved or denied; `maybe` is not an answer.",
+    "payload": {
+      "challenge": "q7Xk2mRt9LwB4vNf8ZpYhA",
+      "requestDigest": "zQmaoDjqe8muePtetx54p69mGtegPHFcqwQAWz6SsTh2gUD",
+      "decision": "maybe",
+      "respondedAt": "2026-10-28T14:00:20Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "requestDigest is required; without it an answer is not bound to the exact request and could be replayed against another ask.",
+    "payload": {
+      "challenge": "q7Xk2mRt9LwB4vNf8ZpYhA",
+      "decision": "approved",
+      "respondedAt": "2026-10-28T14:00:20Z"
+    }
+  }
+]
