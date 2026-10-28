@@ -5,6 +5,27 @@ package versions over its own API. Below 1.0 a breaking change bumps the leading
 non-zero component. Publishing is triggered by the
 `trust-tasks-ts-gen-v<version>` tag; see `RELEASING.md`.
 
+## 0.1.2 — 2026-10-28
+
+
+### Fixed
+
+- **ts-gen**: Qualify a bare component's nested branch types when their titles collide (#971)
+
+A lock that reaches one shape of `ConsumerKind` (device/list 0.3,
+  device/register 0.2) leaves it bare, so its `oneOf` branches keep their
+  titles, `Companion` and `Service`. A lock that also pins auth/oob/claim 0.2
+  or prove 0.3 has a shared `Service` of its own. json-schema-to-typescript
+  then numbers the second `Service1`, and generation refuses the lock
+  ("the components module declares counter-suffixed duplicates: Service1").
+
+  The prebuilt package never meets this: over the whole registry
+  `ConsumerKind` has two shapes and is qualified, so its branches are tagged
+  `_DeviceV0_2`. Tag a bare component's nested titles the same way when any of
+  them collides with a component name or with another bare component's
+  nested title. Modules still bind the plain names (`Service_DeviceV0_2 as
+  Service`), and `npm run equivalence` is unchanged.
+
 ## 0.1.1 — 2026-10-27
 
 
