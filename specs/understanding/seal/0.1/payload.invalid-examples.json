@@ -66,5 +66,36 @@
         "effectiveFrom": "2026-09-24T10:10:00Z"
       }
     }
+  },
+  {
+    "note": "Response without decision — every response reports accepted, countered or refused; acceptance is never implied by the response type alone.",
+    "variant": "response",
+    "payload": {
+      "taskContext": "urn:uuid:1a2b3c4d-0004-4000-8000-000000000001",
+      "taskDigestMultibase": "zQmT6nR3sVwXeJhK4d8f2gY1pQ9mN7bC5aE3wD6rL8sU2v"
+    }
+  },
+  {
+    "note": "Response with an undefined decision — the three decisions are IEEE 7012-2025 §5.3.1's (a) to (c), and there is no fourth.",
+    "variant": "response",
+    "payload": {
+      "decision": "negotiating",
+      "taskContext": "urn:uuid:1a2b3c4d-0004-4000-8000-000000000001",
+      "taskDigestMultibase": "zQmT6nR3sVwXeJhK4d8f2gY1pQ9mN7bC5aE3wD6rL8sU2v"
+    }
+  },
+  {
+    "note": "counterAgreement beside decision: accepted — an alternative is carried only by a counter.",
+    "variant": "response",
+    "payload": {
+      "decision": "accepted",
+      "taskContext": "urn:uuid:1a2b3c4d-0004-4000-8000-000000000001",
+      "taskDigestMultibase": "zQmT6nR3sVwXeJhK4d8f2gY1pQ9mN7bC5aE3wD6rL8sU2v",
+      "counterAgreement": {
+        "name": "Data retention (6 months)",
+        "rosterItems": ["data-retention-6mo"],
+        "effectiveFrom": "2026-09-24T10:10:00Z"
+      }
+    }
   }
 ]

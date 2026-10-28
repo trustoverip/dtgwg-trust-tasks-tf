@@ -163,7 +163,8 @@ A success *response* document carries `type:
 https://trusttasks.org/spec/understanding/offer/0.1#response`, with a payload that validates
 against the `$anchor: "response"` sub-schema in `payload.schema.json`. Issued by the host.
 
-The response payload is `{ termsRef: TermsRef }`. A joining party proceeding to
+The response payload is `{ termsRef }`, a `RegisterRef` (shared with `understanding/seal`, in
+[`_shared/0.1/agreement.schema.json`](../../_shared/0.1/agreement.schema.json)). A joining party proceeding to
 `understanding/exchange` **MUST** carry this document's `id` forward as `offerId`, so the
 exchange is bound to the exact terms version this response named.
 

@@ -2,7 +2,7 @@
 slug: understanding/seal
 version: "0.1"
 title: "Understanding — Seal"
-summary: "The two parties to a passed understanding/exchange record a bilateral MyTerms-style agreement, each independently signing the same terms."
+summary: "The two parties to a passed understanding/exchange record a bilateral agreement, each independently signing the same terms, through a handshake modelled on IEEE 7012-2025 that does not claim to conform to it."
 status: draft
 targetFrameworkVersion: "0.6.0"
 category: consent
@@ -57,7 +57,10 @@ outcomeEvidence:
     SPEC §4.9.3, computed over the accepted request in full. That also closes a gap the family's
     earlier `agreementDigestMultibase` construction left open by scoping the digest to the
     `agreement` member alone: the full-document task digest additionally binds `exchangeId` and,
-    where present, `respondsTo`.
+    where present, `respondsTo`. The response reports every decision — accepted, countered or
+    refused (SPEC §8, "A decision is not a failure") — so a signed refusal is citable evidence
+    too; a party citing it as the record that an agreement was reached checks `/payload/decision`
+    is `accepted`.
 retention:
   class: durable
   rationale: >-
@@ -76,18 +79,6 @@ errorCodes:
   - code: understanding/seal:understandingInsufficient
     meaning: The exchange named by `exchangeId` recorded outcome "insufficient". A seal cannot be grounded in a failed exchange.
     retryable: false
-  - code: understanding/seal:refused
-    meaning: The second party declines to accept the proposed agreement outright. No reason is given, and none is owed.
-    retryable: false
-  - code: understanding/seal:countered
-    meaning: >-
-      The second party's single alternative agreement, per IEEE 7012-2025 §5.3.1(b). Carried as
-      an error rather than a `#response` so acceptance and counter are never structurally
-      ambiguous to a party checking this specification's outcomeEvidence declaration (above).
-      MUST NOT be used to answer a request that itself carries `respondsTo`.
-    retryable: true
-    detailsSchema:
-      $ref: "../../_shared/0.1/agreement.schema.json#/$defs/CounterDetails"
   - code: understanding/seal:negotiationInProgress
     meaning: >-
       This `exchangeId` already grounds a prior understanding/seal request from this pair, and
@@ -104,8 +95,9 @@ errorCodes:
   - code: understanding/seal:agreementMismatch
     meaning: >-
       A follow-up's `agreement` does not match, under JSON Canonicalization, the
-      `counterAgreement` it responds to. Re-proposing different terms is negotiation beyond the
-      single choice IEEE 7012-2025 §5.2.2 forbids, not an acceptance of the counter.
+      `counterAgreement` of the countered response it answers. Re-proposing different terms is
+      negotiation beyond the single choice IEEE 7012-2025 §5.2.2 forbids, not an acceptance of
+      the counter.
     retryable: false
 related:
   - understanding/offer
@@ -149,15 +141,23 @@ This task's proposal/response/counter shape follows the handshake IEEE Std 7012-
 ("Action and Interaction") specifies, adapted rather than reproduced verbatim — the differences
 matter and are stated below rather than left implicit.
 
+**This is not a carried protocol.** This specification does not declare `carries`, and is not a
+*protocol family* for IEEE 7012 in the sense of [Carried Protocols](/SPEC.md#94-carried-protocols):
+it departs from 7012 in the ways stated below, and SPEC §9.4 rule 6 forbids a specification that
+carries a protocol from departing from it. An implementation that needs to *be* a MyTerms agent —
+an individual proposing from a neutral roster to an entity, under 7012's own rules — needs a
+separate family that carries 7012 faithfully. This family borrows 7012's handshake for a
+host-governed engagement, and makes no claim of 7012 conformance.
+
 **What follows the standard directly.** §5.3.1 gives the responding party exactly three moves:
 accept the proposed terms (a), respond with a single alternative from the same structured and
 bounded list (b), or reject (c). §5.2.2 adds the limit: "There shall be no negotiation beyond the
-single choice by either party." This specification implements that three-way choice
-(`understanding/seal:countered` is this specification's own mechanism for expressing 7012's
-option (b) as a Trust Task error, not something 7012 itself specifies as an error code or a
-`respondsTo` field — the mechanics of enforcement are this specification's design, the *shape*
-of the choice is 7012's) and enforces the one-round limit in Authorization, below, as a Trust
-Task rule rather than leaving each deployment to reimplement §5.2.2 for itself. §5.2.3 requires
+single choice by either party." This specification implements that three-way choice as the
+response's `decision` — `accepted`, `countered` or `refused` — (the `respondsTo` follow-up and
+its refusal codes are this specification's own mechanism, not something 7012 itself specifies:
+the mechanics of enforcement are this specification's design, the *shape* of the choice is
+7012's) and enforces the one-round limit in Authorization, below, as a Trust Task rule rather
+than leaving each deployment to reimplement §5.2.2 for itself. §5.2.3 requires
 the completed handshake to carry a unique, pseudonymous-or-explicit contract identifier and to
 notify both parties: the accepted request's own `id`, carried forward as `taskContext` in the
 response (above), serves as that identifier, and the response's delivery to the first party over
@@ -286,15 +286,21 @@ permitted follow-up described below. Without this rule, a per-`respondsTo` check
 gap open: a first party could open a second, unchained request on the same `exchangeId` after
 receiving a counter, and negotiate without limit by simply not naming what it is answering.
 
-The host **MUST** decide each request one of exactly three ways:
+The host **MUST** decide each request one of exactly three ways, each reported as a `#response`
+document per Response, below — a decision is the task's outcome, not a failure
+([SPEC §8](/SPEC.md#8-error-responses), "A decision is not a failure"):
 
-- **Accept** — a `#response` document per Response, below. Available for any request, whether or
-  not it carries `respondsTo`.
-- **Counter** — `trust-task-error` `understanding/seal:countered`, carrying the alternative in
-  `details.counterAgreement`. **MUST NOT** be used to answer a request that itself carries
-  `respondsTo`: a countered request has already had its one round, and the host's only choices
-  at that point are to accept or refuse.
-- **Refuse** — `trust-task-error` `understanding/seal:refused`. Available for any request.
+- **Accept** — `decision: "accepted"`. Available for any request, whether or not it carries
+  `respondsTo`.
+- **Counter** — `decision: "countered"`, carrying the alternative in `counterAgreement`.
+  **MUST NOT** be used to answer a request that itself carries `respondsTo`: a countered request
+  has already had its one round, and the host's only choices at that point are to accept or
+  refuse.
+- **Refuse** — `decision: "refused"`. Available for any request. No reason is given, and none is
+  owed.
+
+The error codes this specification declares report only that a request was not decided: it named
+no live passed exchange, came from the wrong party, or broke the one-round rule below.
 
 ### Answering a counter
 
@@ -305,7 +311,7 @@ all four:
 
 1. it grounds this same `exchangeId`;
 2. it was issued by this same first party;
-3. this recipient answered it with `understanding/seal:countered`; and
+3. this recipient answered it with `decision: "countered"`; and
 4. it has not already received a conforming follow-up.
 
 A follow-up satisfying all four **MUST** carry an `agreement` identical, under JSON
@@ -339,20 +345,23 @@ assurance the parties separately agreed to rely on.
   trust. A party that is *not* the host and needs to verify an `understanding/exchange` outcome
   independently has no declared `outcomeEvidence` to rely on for it — that is a known limit of
   this family, not addressed by this version.
-* **Counter.** `understanding/seal:countered` — an error, not a `#response`; see Authorization
-  and Response, below. Carries `details.counterAgreement`, the second party's single alternative
-  agreement. A later request's `respondsTo` names the countered request, continuing the same
-  engagement for exactly one further round under the conditions in Authorization above.
+* **Decision.** The response's `decision`: `accepted`, `countered` or `refused`. See
+  Authorization, above.
+* **Counter.** A response with `decision: "countered"`, carrying `counterAgreement`, the second
+  party's single alternative agreement. A later request's `respondsTo` names the countered
+  request, continuing the same engagement for exactly one further round under the conditions in
+  Authorization above.
 * **Agreement.** The terms being sealed: a name, the roster items agreed, and resolvable,
   hash-pinned pointers to the agreement's legal register and its machine-readable register,
   following the three-register pattern (plain language, legal, machine-readable) MyTerms
   negotiations use. Carried by reference; this task does not carry the plain-language text
   itself.
 * **Outcome evidence binding.** `taskContext` and `taskDigestMultibase` in the response — the
-  accepted request's `id` and its task digest per SPEC §4.9.3, computed over the full request
+  decided request's `id` and its task digest per SPEC §4.9.3, computed over the full request
   document rather than only its `agreement` member. Together they let a party outside this
-  exchange — a relationship credential, a VAC — cite this response as evidence the agreement was
-  reached, per SPEC §7.3 item 20 and this specification's `outcomeEvidence` declaration, above.
+  exchange — a relationship credential, a VAC — cite this response as evidence of the decision,
+  per SPEC §7.3 item 20 and this specification's `outcomeEvidence` declaration, above; a party
+  citing it as evidence that the agreement was reached also checks `decision` is `accepted`.
 
 ## Request
 
@@ -414,18 +423,19 @@ request on a given `exchangeId` after the first is refused with
 A success *response* document carries `type:
 https://trusttasks.org/spec/understanding/seal/0.1#response`, with a payload that validates
 against the `$anchor: "response"` sub-schema in `payload.schema.json`. Issued by the second
-party, and means acceptance and only acceptance — see Authorization, above, for the other two
-outcomes.
+party, and reports its decision — accepted, countered or refused; see Authorization, above.
 
-The response payload is `{ taskContext, taskDigestMultibase }`, binding the acceptance to the
-exact request accepted per SPEC §4.9.3. A conforming second party **MUST** compute
-`taskDigestMultibase` over the full accepted request, exactly as received, with its top-level
-`proof` removed; a recipient of the response **MUST** recompute the digest over the request it
-holds and reject the pair if they disagree.
+The response payload is `{ decision, taskContext, taskDigestMultibase, counterAgreement? }`,
+binding the decision to the exact request decided per SPEC §4.9.3. A conforming second party
+**MUST** compute `taskDigestMultibase` over the full decided request, exactly as received, with
+its top-level `proof` removed; a recipient of the response **MUST** recompute the digest over the
+request it holds and reject the pair if they disagree. A response with `decision: "countered"`
+**MUST** carry `counterAgreement`, and the schema refuses `counterAgreement` beside any other
+decision.
 
-Refusal uses `trust-task-error` with `understanding/seal:refused`, and a counter uses
-`understanding/seal:countered` ([SPEC.md §8](/SPEC.md#8-error-responses)) — neither is the
-`#response` variant.
+A request that is not decided at all — no live passed exchange, the wrong issuer, a broken
+one-round rule — is answered with `trust-task-error` and one of the codes in the front matter
+([SPEC.md §8](/SPEC.md#8-error-responses)), never with this response.
 
 ### The second party accepts
 
@@ -439,6 +449,7 @@ Refusal uses `trust-task-error` with `understanding/seal:refused`, and a counter
   "recipient": "did:example:alice",
   "issuedAt": "2026-09-24T10:10:01Z",
   "payload": {
+    "decision": "accepted",
     "taskContext": "urn:uuid:1a2b3c4d-0004-4000-8000-000000000001",
     "taskDigestMultibase": "zQmT6nR3sVwXeJhK4d8f2gY1pQ9mN7bC5aE3wD6rL8sU2v"
   },
@@ -455,26 +466,25 @@ Refusal uses `trust-task-error` with `understanding/seal:refused`, and a counter
 
 ### The second party counters instead
 
-A counter is a `trust-task-error` document, not a `#response`:
+A counter is a `#response` like an acceptance, with the alternative in `counterAgreement`:
 
 ```json
 {
   "id": "urn:uuid:1a2b3c4d-0004-4000-8000-000000000003",
-  "type": "https://trusttasks.org/spec/trust-task-error/0.5",
+  "type": "https://trusttasks.org/spec/understanding/seal/0.1#response",
   "threadId": "urn:uuid:1a2b3c4d-0004-4000-8000-000000000001",
   "parentThreadId": "urn:uuid:1a2b3c4d-0003-4000-8000-000000000001",
   "issuer": "did:example:host",
   "recipient": "did:example:alice",
   "issuedAt": "2026-09-24T10:10:01Z",
   "payload": {
-    "code": "understanding/seal:countered",
-    "message": "Countering with a shorter retention period.",
-    "details": {
-      "counterAgreement": {
-        "name": "Data retention (6 months)",
-        "rosterItems": ["data-retention-6mo", "no-third-party-sharing"],
-        "effectiveFrom": "2026-09-24T10:10:00Z"
-      }
+    "decision": "countered",
+    "taskContext": "urn:uuid:1a2b3c4d-0004-4000-8000-000000000001",
+    "taskDigestMultibase": "zQmT6nR3sVwXeJhK4d8f2gY1pQ9mN7bC5aE3wD6rL8sU2v",
+    "counterAgreement": {
+      "name": "Data retention (6 months)",
+      "rosterItems": ["data-retention-6mo", "no-third-party-sharing"],
+      "effectiveFrom": "2026-09-24T10:10:00Z"
     }
   },
   "proof": {
@@ -520,21 +530,21 @@ naming the countered request in `respondsTo`:
 }
 ```
 
-The host's response to this second request **MUST** be acceptance (`taskContext` naming this
-request's `id`) or `understanding/seal:refused` — a second `understanding/seal:countered` here
-is refused by the first party as `understanding/seal:negotiationExhausted` were it somehow sent,
-and a conforming host does not send one.
+The host's response to this second request **MUST** be `decision: "accepted"` (`taskContext`
+naming this request's `id`) or `decision: "refused"` — a conforming host does not counter a
+request that carries `respondsTo`, and a first party **MUST** treat such a counter as a protocol
+violation rather than as an offer it may answer.
 
 ## Security & Privacy
 
 ### Data carried
 
-All three document kinds — the request, the acceptance, and a counter's error details — carry
-only references: roster item identifiers, pointers to the agreement's legal and
-machine-readable registers, and the digest binding an acceptance to a specific request. Neither
-the request nor the acceptance carries the plain-language text of the agreement, personal data
-about either party beyond their own signing identifiers, or anything from the
-`understanding/exchange` this seal is grounded in beyond its `id`.
+Both document kinds — the request and the response, whatever its decision — carry only
+references: roster item identifiers, pointers to the agreement's legal and machine-readable
+registers, and the digest binding a decision to a specific request. Neither the request nor the
+response carries the plain-language text of the agreement, personal data about either party
+beyond their own signing identifiers, or anything from the `understanding/exchange` this seal is
+grounded in beyond its `id`.
 
 ### Correlation
 
@@ -553,11 +563,11 @@ Both parties **SHOULD** retain this exchange for as long as either might rely on
 evidentiary basis for a relationship credential or VAC, in a dispute over what was agreed, or in
 an audit — since neither `agreement`'s referenced registers nor this exchange's documents are
 retained anywhere else on either party's behalf by this specification. This duty is symmetric
-and applies whatever the engagement's final state: a first party **SHOULD** retain an
-`understanding/seal:refused` outcome, and a countered-but-unaccepted proposal, for the same
-reasons and the same duration it would retain a sealed one. IEEE 7012-2025 states this duty on
-both sides as a "shall" (§5.2.4, §5.3.1, §5.4.4); see Relationship to IEEE 7012-2025, above, for
-why this specification carries it at a SHOULD rather than repeat that strength verbatim.
+and applies whatever the engagement's final state: a first party **SHOULD** retain a refused
+decision, and a countered-but-unaccepted proposal, for the same reasons and the same duration it
+would retain a sealed one. IEEE 7012-2025 states this duty on both sides as a "shall" (§5.2.4,
+§5.3.1, §5.4.4); see Relationship to IEEE 7012-2025, above, for why this specification carries it
+at a SHOULD rather than repeat that strength verbatim.
 
 ### Consent/purpose
 

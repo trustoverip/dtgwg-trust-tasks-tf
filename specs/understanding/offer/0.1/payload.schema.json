@@ -16,6 +16,7 @@
     "proposedIdentifier": {
       "type": "string",
       "pattern": "^did:",
+      "maxLength": 2048,
       "description": "A DID the joining party is willing to be reached at if the engagement proceeds, distinct from `issuer`. OPTIONAL — absent means the joining party proposes continuing under `issuer` itself. It does not take over the thread: the host's response is addressed to `issuer`, and understanding/exchange accepts only `issuer` against this offer (understanding/exchange:issuerMismatch), because control of this identifier is not proven here. It governs only the identity recorded at understanding/seal."
     },
     "ext": {
@@ -24,35 +25,6 @@
     }
   },
   "$defs": {
-    "TermsRef": {
-      "title": "TermsRef",
-      "description": "A resolvable, version-identified, hash-pinned pointer to the host's terms. The same `{ uri, version, digestMultibase }` shape as the governance-framework reference the companion Verifiable Trust Infrastructure specification places in a DID document (VTI-KEY-052: a `GovernanceFramework` service whose `serviceEndpoint` is the `uri`, with `version` and `digestMultibase` members) — where the host's DID document carries one, this termsRef MUST name the same document (see spec.md Response).",
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["uri", "version", "digestMultibase"],
-      "properties": {
-        "uri": {
-          "type": "string",
-          "format": "iri",
-          "description": "Where the terms document can be resolved."
-        },
-        "version": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 64,
-          "description": "The host's own version label for the terms document named by `uri`."
-        },
-        "digestMultibase": {
-          "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/DigestMultibase",
-          "description": "The multibase-encoded multihash of the terms document's bytes at this `version`, so a party that resolves `uri` later can confirm it fetched the same content this response named."
-        },
-        "mediaType": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The media type of the resolved document (e.g. \"application/ld+json\", \"text/html\")."
-        }
-      }
-    },
     "Response": {
       "$anchor": "response",
       "title": "Understanding — Offer — response payload",
@@ -62,8 +34,8 @@
       "required": ["termsRef"],
       "properties": {
         "termsRef": {
-          "$ref": "#/$defs/TermsRef",
-          "description": "A resolvable, version-identified, hash-pinned pointer to the terms that would govern the engagement."
+          "$ref": "../../_shared/0.1/agreement.schema.json#/$defs/RegisterRef",
+          "description": "A resolvable, version-identified, hash-pinned pointer to the terms that would govern the engagement. Where the host's DID document carries a `GovernanceFramework` service (VTI-KEY-052), this MUST name the same document (see spec.md Response)."
         },
         "ext": {
           "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/Ext",

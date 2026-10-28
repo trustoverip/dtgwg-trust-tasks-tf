@@ -48,7 +48,7 @@
       "type": "https://trusttasks.org/spec/understanding/seal/0.1",
       "issuer": "joining-party",
       "recipient": "host",
-      "description": "The two parties record a bilateral agreement grounded in the passed exchange. The host may accept, refuse, or counter with exactly one alternative agreement; a countered proposal may be answered with at most one further request re-proposing the countered terms — IEEE 7012-2025 §5.3.1's three-way choice (accept, a single alternative, reject) under §5.2.2's rule that there is no negotiation beyond the single choice by either party. A counter and a refusal are both carried as a trust-task-error, never as this step's success response, specifically so completion evidence for this step cannot be confused with an abandoned negotiation. This ceremony's completion predicate (below) checks only that the seal step's exchange is present, per this evidence layer's own limits (it cannot express a check over response content) — a relying party MUST additionally confirm, from the step's own documents, that its terminal document is genuinely understanding/seal/0.1#response (the type understanding/seal's outcomeEvidence declaration names) rather than a trust-task-error, since ceremony-level completion alone does not distinguish a sealed agreement from a countered-and-abandoned one.",
+      "description": "The two parties record a bilateral agreement grounded in the passed exchange. The host may accept, refuse, or counter with exactly one alternative agreement; a countered proposal may be answered with at most one further request re-proposing the countered terms — IEEE 7012-2025 §5.3.1's three-way choice (accept, a single alternative, reject) under §5.2.2's rule that there is no negotiation beyond the single choice by either party. Every decision — accepted, countered or refused — is carried in this step's success response as `decision` (SPEC §8, \"A decision is not a failure\"). This ceremony's completion predicate (below) checks only that the seal step's exchange is present, per this evidence layer's own limits (it cannot express a check over response content) — a relying party MUST additionally confirm, from the step's own documents, that its terminal document is the understanding/seal/0.1#response that decides the request it names and carries `decision: \"accepted\"`, since ceremony-level completion alone does not distinguish a sealed agreement from a refused or countered-and-abandoned one.",
       "prev": ["exchange"],
       "terminal": true,
       "compensatable": false
@@ -64,7 +64,7 @@
   "enactmentPrivacy": "shared",
   "sideEffects": {
     "level": "mutating",
-    "rationale": "max() over the steps: exchange records an outcome and seal records a bilateral agreement (or, on the error paths, a counter or refusal). offer alone has no side effect. No step in this ceremony is destructive."
+    "rationale": "max() over the steps: exchange records an outcome and seal records the host's decision on a bilateral agreement (accepted, countered or refused). offer alone has no side effect. No step in this ceremony is destructive."
   },
   "exposure": {
     "discloses": "metadata",
