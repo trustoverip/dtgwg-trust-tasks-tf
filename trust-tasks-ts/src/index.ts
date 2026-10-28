@@ -1913,6 +1913,18 @@ export * as TrustTaskError_v0_5 from "./trust-task-error/0.5/payload.js";
 export * as TrustTaskError_v0_6 from "./trust-task-error/0.6/payload.js";
 export * as TrustTaskNextStep_v0_1 from "./trust-task-next-step/0.1/payload.js";
 export * as TrustTaskOk_v0_1 from "./trust-task-ok/0.1/payload.js";
+import * as _AgreementShared_v0_1 from "./understanding/_shared/0.1/agreement.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import AgreementShared_v0_1 = _AgreementShared_v0_1;
+import * as _UnderstandingExchange_v0_1 from "./understanding/exchange/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import UnderstandingExchange_v0_1 = _UnderstandingExchange_v0_1;
+import * as _UnderstandingOffer_v0_1 from "./understanding/offer/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import UnderstandingOffer_v0_1 = _UnderstandingOffer_v0_1;
+import * as _UnderstandingSeal_v0_1 from "./understanding/seal/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import UnderstandingSeal_v0_1 = _UnderstandingSeal_v0_1;
 import * as _ConsumerContextShared_v0_1 from "./vault/_shared/0.1/consumer-context.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import ConsumerContextShared_v0_1 = _ConsumerContextShared_v0_1;

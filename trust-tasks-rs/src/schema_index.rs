@@ -3365,6 +3365,24 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/trust-task-discovery/0.3#response" => <crate::specs::trust_task_discovery::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
         "https://trusttasks.org/spec/trust-task-next-step/0.1" => <crate::specs::trust_task_next_step::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         "https://trusttasks.org/spec/trust-task-ok/0.1" => <crate::specs::trust_task_ok::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "understanding")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/understanding/exchange/0.1" => <crate::specs::understanding::exchange::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "understanding")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/understanding/exchange/0.1#response" => <crate::specs::understanding::exchange::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "understanding")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/understanding/offer/0.1" => <crate::specs::understanding::offer::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "understanding")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/understanding/offer/0.1#response" => <crate::specs::understanding::offer::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "understanding")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/understanding/seal/0.1" => <crate::specs::understanding::seal::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "understanding")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/understanding/seal/0.1#response" => <crate::specs::understanding::seal::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vault")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vault/credentials/archive/0.1" => <crate::specs::vault::credentials::archive::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -9911,6 +9929,21 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         "https://trusttasks.org/spec/trust-task-ok/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::trust_task_ok::v0_1::Payload,
         >()),
+        #[cfg(feature = "understanding")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/understanding/exchange/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::understanding::exchange::v0_1::Payload,
+        >()),
+        #[cfg(feature = "understanding")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/understanding/offer/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::understanding::offer::v0_1::Payload,
+        >()),
+        #[cfg(feature = "understanding")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/understanding/seal/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::understanding::seal::v0_1::Payload,
+        >()),
         #[cfg(feature = "vault")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vault/credentials/archive/0.1" => {
@@ -16054,6 +16087,21 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         "https://trusttasks.org/spec/trust-task-ok/0.1" => {
             Some(crate::specs::trust_task_ok::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "understanding")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/understanding/exchange/0.1" => {
+            Some(crate::specs::understanding::exchange::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "understanding")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/understanding/offer/0.1" => {
+            Some(crate::specs::understanding::offer::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "understanding")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/understanding/seal/0.1" => {
+            Some(crate::specs::understanding::seal::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "vault")]
         #[cfg(not(test))]

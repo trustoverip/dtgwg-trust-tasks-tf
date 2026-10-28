@@ -5133,6 +5133,35 @@ export interface AgentNameEntry_VtaV0_7 {
   createdAt?: string;
   ext?: Ext;
 }
+export interface Agreement {
+  /**
+   * A consistent, transparent name for this agreement, meaningful to a non-specialist — IEEE 7012-2025 §4.3. A separate version member is not carried: §4.3's own note permits a release date in place of a version number, and `effectiveFrom` already serves that role.
+   */
+  name: string;
+  /**
+   * The agreed terms, as identifiers into the roster the grounding understanding/offer response's termsRef names. MUST be drawn from that same roster — see understanding/seal's Authorization section.
+   *
+   * @minItems 1
+   * @maxItems 64
+   */
+  rosterItems: [string, ...string[]];
+  /**
+   * OPTIONAL pointer to the agreement's canonical legal-register text.
+   */
+  legalRef?: RegisterRef;
+  /**
+   * OPTIONAL pointer to the agreement's machine-readable register (for example JSON-LD).
+   */
+  machineReadableRef?: RegisterRef;
+  /**
+   * When the agreement takes effect.
+   */
+  effectiveFrom: string;
+  /**
+   * OPTIONAL. When the agreement lapses on its own terms, absent a separate termination.
+   */
+  effectiveUntil?: string;
+}
 /**
  * The answer to one question. Exactly one member besides `question` is present, matching the question's type, or `abstain` for an optional question left unanswered.
  */
@@ -10771,6 +10800,27 @@ export interface RecordRetention {
    * Ecosystem-defined extension members per SPEC.md §4.5.1. A host MUST NOT treat a member here as making more records eligible: a removal rule a member's reader cannot understand is one they were never told about.
    */
   ext?: Ext;
+}
+/**
+ * A resolvable, version-identified, hash-pinned pointer to one document: the host's terms (understanding/offer's termsRef) or one register of an agreement. The same `{ uri, version, digestMultibase }` shape as understanding/offer's termsRef and as the governance-framework reference the companion Verifiable Trust Infrastructure specification places in a DID document (VTI-KEY-052: a `GovernanceFramework` service whose `serviceEndpoint` is the `uri`, with `version` and `digestMultibase` members).
+ */
+export interface RegisterRef {
+  /**
+   * Where the document can be resolved.
+   */
+  uri: string;
+  /**
+   * The publisher's own version label for the resolved document.
+   */
+  version: string;
+  /**
+   * The multibase-encoded multihash of the resolved document's bytes at this `version`, so a party that fetches `uri` later can confirm it is the same content this reference named.
+   */
+  digestMultibase: DigestMultibase;
+  /**
+   * The media type of the resolved document (e.g. "application/ld+json", "text/html").
+   */
+  mediaType?: string;
 }
 /**
  * A passkey already bound to a subject, as listed by `auth/passkey/list` and targeted by `auth/passkey/revoke/*`. This is the auth service's own management view of a credential — not a WebAuthn dictionary — so its members are camelCase per SPEC.md §4.10. The exception is `transports`, whose values are the externally-owned WebAuthn transport tokens and are carried verbatim.

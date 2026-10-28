@@ -1366,6 +1366,18 @@ mod trust_task_discovery {
 mod trust_task_next_step {
     mod v0_1;
 }
+#[cfg(feature = "understanding")]
+mod understanding {
+    mod exchange {
+        mod v0_1;
+    }
+    mod offer {
+        mod v0_1;
+    }
+    mod seal {
+        mod v0_1;
+    }
+}
 #[cfg(feature = "vault")]
 mod vault {
     mod credentials {

@@ -408,6 +408,8 @@
   "task-consent/_shared/0.1/task-consent.schema.json#/$defs/Effect": "Effect_TaskConsentV0_1",
   "task-consent/_shared/0.1/task-consent.schema.json#/$defs/Exposure": "Exposure",
   "task-consent/_shared/0.1/task-consent.schema.json#/$defs/StatePin": "StatePin",
+  "understanding/_shared/0.1/agreement.schema.json#/$defs/Agreement": "Agreement",
+  "understanding/_shared/0.1/agreement.schema.json#/$defs/RegisterRef": "RegisterRef",
   "vault/_shared/0.1/consumer-context.schema.json#/$defs/ConsumerContext": "ConsumerContext",
   "vault/_shared/0.1/consumer-context.schema.json#/$defs/StepUpProof": "StepUpProof_VaultV0_1",
   "vault/_shared/0.1/sealed-envelope.schema.json#/$defs/DidcommAuthcryptEnvelope": "DidcommAuthcryptEnvelope_VaultV0_1",

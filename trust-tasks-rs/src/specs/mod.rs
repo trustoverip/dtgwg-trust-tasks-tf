@@ -216,6 +216,12 @@ pub mod trust_task_control;
 pub mod trust_task_discovery;
 pub mod trust_task_next_step;
 pub mod trust_task_ok;
+#[cfg(feature = "understanding")]
+#[cfg(not(test))]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
+pub mod understanding;
 #[cfg(feature = "vault")]
 #[cfg(not(test))]
 #[deprecated(
