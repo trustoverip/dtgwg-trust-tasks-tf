@@ -332,3 +332,37 @@ describe("generate", () => {
     });
   });
 });
+
+describe("a bare component's nested branch types", () => {
+  /** A registry bundle vendored under test/fixtures/registry. */
+  const registryTask = (slug: string, version: string): Task => {
+    const bytes = fs.readFileSync(path.join(PKG, "test", "fixtures", "registry", ...slug.split("/"), `${version}.bundle.json`));
+    return { slug, version, typeUri: JSON.parse(bytes.toString()).typeUri, bytes };
+  };
+
+  // device/list 0.3 reaches one shape of `ConsumerKind`, so it is bare, and its
+  // `oneOf` branches are titled `Companion` and `Service`. auth/oob/claim 0.2
+  // shares a definition named `Service` too. Before this was handled the
+  // compiler numbered the second `Service1` and generation refused the lock.
+  it("are qualified when a title collides, and modules still bind the plain name", async () => {
+    const { lock } = app([registryTask("device/list", "0.3"), registryTask("auth/oob/claim", "0.2")]);
+    const { files } = await generateFiles({ lock, ...quiet });
+    const text = (p: string) => files.get(p)!;
+
+    const components = text("_shared/components.ts");
+    assert.match(components, /^export interface Service \{$/m, "auth/oob's Service stays bare");
+    assert.match(components, /^export interface Service_DeviceV0_2 \{$/m, "the package's name for device's branch");
+    assert.match(components, /^export type ConsumerKind = Companion_DeviceV0_2 \| Service_DeviceV0_2;$/m);
+    assert.doesNotMatch(components, /\bService1\b/);
+
+    assert.match(text("device/list/0.3/payload.ts"), /\bService_DeviceV0_2 as Service\b/);
+    assert.match(text("auth/oob/claim/0.2/payload.ts"), /import type \{[^}]*\bService\b(?! as)/);
+  });
+
+  it("keep their own titles when nothing collides", async () => {
+    const { lock } = app([registryTask("device/list", "0.3")]);
+    const { files } = await generateFiles({ lock, ...quiet });
+    const components = files.get("_shared/components.ts")!;
+    assert.match(components, /^export type ConsumerKind = Companion \| Service;$/m);
+  });
+});
