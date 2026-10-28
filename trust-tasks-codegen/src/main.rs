@@ -12,6 +12,16 @@
 //! cargo run -p trust-tasks-codegen
 //! cargo fmt
 //! ```
+//!
+//! With `--bundles <out-dir>` it instead writes the registry bundles — one
+//! self-contained `bundle.json` per specification version plus an
+//! `index.json` — and touches nothing in `trust-tasks-rs`. See [`bundle`].
+//!
+//! ```sh
+//! cargo run -p trust-tasks-codegen -- --bundles website/specs
+//! ```
+
+mod bundle;
 
 use std::collections::BTreeMap;
 use std::fs;
@@ -20,8 +30,8 @@ use std::path::{Path, PathBuf};
 use anyhow::{anyhow, Context, Result};
 use proc_macro2::TokenStream;
 use quote::quote;
-use serde_json::{json, Value};
-use walkdir::WalkDir;
+use serde_json::Value;
+use trust_tasks_build::publish::{self, compute_lifecycles, Lifecycle};
 
 /// Slug of the framework error spec — modelled by hand in
 /// `trust_tasks_rs::ErrorPayload`, so we never emit a generated version.
@@ -38,7 +48,7 @@ const ALL_SPECS_FEATURE: &str = "all-specs";
 ///
 /// These are **not** feature-gated. The crate's own hand-written framework
 /// machinery depends on them unconditionally (`discovery.rs` does
-/// `use crate::specs::trust_task_discovery::v0_1 as wire;` at module scope),
+/// `use crate::specs::trust_task_discovery::v0_3 as wire_v0_3;` at module scope),
 /// so gating them would mean gating the framework surface that every consumer
 /// needs whatever families they picked. They are also 1.4% of the generated
 /// tree, so there is nothing to win by it.
@@ -79,6 +89,17 @@ const UNIT_TEST_FAMILIES: &[&str] = &["acl"];
 /// A separate `#[cfg]` rather than `all(feature = …, not(test))`, so the
 /// `#[cfg(feature = "…")]` line `tests/spec_feature_manifest.rs` reads is
 /// unchanged.
+/// Every prebuilt specification family is deprecated (milestone 5 of
+/// docs/design/consumer-side-generation.md): an application generates the
+/// tasks it pins with `trust-tasks-build` instead. The framework's own
+/// families are not gated and not deprecated — the runtime speaks them.
+///
+/// `#[deprecated]` on the module reaches every path and item under it, and is
+/// on the family module rather than on the generated types because those
+/// types are what `trust_tasks_build::generate_module` gives an application
+/// too, which must not carry it.
+const PREBUILT_DEPRECATION: &str = "#[deprecated(note = \"the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \\\"Generate only the tasks you use\\\")\")]";
+
 fn unit_test_gate(family: &str) -> &'static str {
     if UNIT_TEST_FAMILIES.contains(&family) {
         ""
@@ -104,6 +125,10 @@ struct Spec {
     version: String,
     /// Path to `payload.schema.json`.
     schema_path: PathBuf,
+    /// The deprecation note, or `None` for a live version. Set from the
+    /// registry-wide lifecycle once every spec is discovered — see
+    /// [`compute_lifecycles`].
+    deprecation: Option<String>,
 }
 
 impl Spec {
@@ -135,6 +160,21 @@ impl Spec {
     /// Full Type URI for the request variant.
     fn type_uri(&self) -> String {
         format!("https://trusttasks.org/spec/{}/{}", self.slug, self.version)
+    }
+
+    /// This version as the shared bundle builder sees it.
+    fn dir(&self) -> publish::SpecDir {
+        publish::SpecDir::new(&self.slug, &self.version, self.schema_path.clone())
+    }
+
+    /// The version's policy, read by the shared builder.
+    fn policy(&self) -> Result<publish::SpecPolicyDecl> {
+        let has_response = fs::read_to_string(&self.schema_path)
+            .ok()
+            .and_then(|t| serde_json::from_str::<Value>(&t).ok())
+            .and_then(|v| v.get("$defs").and_then(|d| d.get("Response")).cloned())
+            .is_some();
+        publish::read_spec_policy(&self.dir(), has_response, &publish::Resolver::local())
     }
 
     /// Path to the adjacent `spec.md`.
@@ -241,441 +281,6 @@ struct InvalidExample {
     response: bool,
 }
 
-/// Scan a `spec.md`'s YAML front matter for `bearer: true`. Returns
-/// `false` when the field is absent, set to `false`, or the file is
-/// missing. Per SPEC.md §4.8.3 and §7.3 item 12, the default is non-bearer.
-fn read_bearer_flag(spec_md_path: &Path) -> Result<bool> {
-    if !spec_md_path.exists() {
-        return Ok(false);
-    }
-    let text = fs::read_to_string(spec_md_path)
-        .with_context(|| format!("read {}", spec_md_path.display()))?;
-
-    // Front matter is the first `---`-delimited block at the top of the file.
-    let mut lines = text.lines();
-    let first = lines.next().unwrap_or("");
-    if first.trim() != "---" {
-        return Ok(false);
-    }
-    let mut front_matter = String::new();
-    for line in lines {
-        if line.trim() == "---" {
-            break;
-        }
-        front_matter.push_str(line);
-        front_matter.push('\n');
-    }
-
-    let value: serde_json::Value = serde_saphyr::from_str(&front_matter)
-        .with_context(|| format!("parse YAML front matter in {}", spec_md_path.display()))?;
-    Ok(value
-        .get("bearer")
-        .and_then(|v| v.as_bool())
-        .unwrap_or(false))
-}
-
-/// The `proof` requirement each document variant carries, per SPEC.md §7.3
-/// item 8.
-///
-/// The declaration is either a single `requirement` covering every variant, or
-/// a per-variant `request` / `response` pair. Both are normalised here so the
-/// emitter never branches.
-#[derive(Debug, Clone, Copy, Default)]
-struct ProofRequired {
-    request: bool,
-    response: bool,
-}
-
-/// Scan a `spec.md`'s YAML front matter for the §7.3 item 8 proof declaration.
-///
-/// Only `REQUIRED` obliges a consumer to reject a proofless document, so each
-/// variant reduces to a bool. Returns both `false` when the field is absent or
-/// the file is missing. A per-variant declaration that omits `response` takes
-/// the request's value — the conservative reading, and the only one that cannot
-/// weaken a variant by omission.
-fn read_proof_required_flag(spec_md_path: &Path) -> Result<ProofRequired> {
-    if !spec_md_path.exists() {
-        return Ok(ProofRequired::default());
-    }
-    let text = fs::read_to_string(spec_md_path)
-        .with_context(|| format!("read {}", spec_md_path.display()))?;
-
-    let mut lines = text.lines();
-    let first = lines.next().unwrap_or("");
-    if first.trim() != "---" {
-        return Ok(ProofRequired::default());
-    }
-    let mut front_matter = String::new();
-    for line in lines {
-        if line.trim() == "---" {
-            break;
-        }
-        front_matter.push_str(line);
-        front_matter.push('\n');
-    }
-
-    let value: serde_json::Value = serde_saphyr::from_str(&front_matter)
-        .with_context(|| format!("parse YAML front matter in {}", spec_md_path.display()))?;
-    let pr = match value.get("proofRequirement") {
-        Some(v) => v,
-        None => return Ok(ProofRequired::default()),
-    };
-    let level = |key: &str| {
-        pr.get(key)
-            .and_then(|v| v.as_str())
-            .map(|s| s == "REQUIRED")
-    };
-
-    // Single-value form applies to every variant.
-    if let Some(all) = level("requirement") {
-        return Ok(ProofRequired {
-            request: all,
-            response: all,
-        });
-    }
-    let request = level("request").unwrap_or(false);
-    Ok(ProofRequired {
-        request,
-        response: level("response").unwrap_or(request),
-    })
-}
-
-/// The `issuedAt` requirement each document variant carries, per SPEC.md §7.3
-/// item 17.
-///
-/// Declared with the same shape as item 8's `proofRequirement` — a single
-/// `requirement` covering every variant, or a per-variant `request` /
-/// `response` pair — and normalised the same way, so the emitter never
-/// branches and a reader of one declaration understands the other.
-#[derive(Debug, Clone, Copy, Default)]
-struct IssuedAtRequired {
-    request: bool,
-    response: bool,
-}
-
-/// Scan a `spec.md`'s YAML front matter for the §7.3 item 17 `issuedAt`
-/// declaration.
-///
-/// Only `REQUIRED` obliges a consumer to reject a document with no `issuedAt`
-/// — the framework baseline of §4.2 is already a SHOULD, and `RECOMMENDED`
-/// restates it — so each variant reduces to a bool. Returns both `false` when
-/// the field is absent or the file is missing. A per-variant declaration that
-/// omits `response` takes the request's value, matching
-/// [`read_proof_required_flag`]: the only reading that cannot weaken a variant
-/// by omission.
-fn read_issued_at_required_flag(spec_md_path: &Path) -> Result<IssuedAtRequired> {
-    if !spec_md_path.exists() {
-        return Ok(IssuedAtRequired::default());
-    }
-    let text = fs::read_to_string(spec_md_path)
-        .with_context(|| format!("read {}", spec_md_path.display()))?;
-
-    let mut lines = text.lines();
-    if lines.next().unwrap_or("").trim() != "---" {
-        return Ok(IssuedAtRequired::default());
-    }
-    let mut front_matter = String::new();
-    for line in lines {
-        if line.trim() == "---" {
-            break;
-        }
-        front_matter.push_str(line);
-        front_matter.push('\n');
-    }
-
-    let value: serde_json::Value = serde_saphyr::from_str(&front_matter)
-        .with_context(|| format!("parse YAML front matter in {}", spec_md_path.display()))?;
-    let Some(ir) = value.get("issuedAtRequirement") else {
-        return Ok(IssuedAtRequired::default());
-    };
-    let level = |key: &str| {
-        ir.get(key)
-            .and_then(|v| v.as_str())
-            .map(|s| s == "REQUIRED")
-    };
-
-    if let Some(all) = level("requirement") {
-        return Ok(IssuedAtRequired {
-            request: all,
-            response: all,
-        });
-    }
-    let request = level("request").unwrap_or(false);
-    Ok(IssuedAtRequired {
-        request,
-        response: level("response").unwrap_or(request),
-    })
-}
-
-/// The per-type document size bound (front matter `maxDocumentBytes`), per
-/// variant. `None` for a variant the specification declares no bound for.
-#[derive(Debug, Clone, Copy, Default)]
-struct MaxDocumentBytes {
-    request: Option<usize>,
-    response: Option<usize>,
-}
-
-/// Scan a `spec.md`'s YAML front matter for `maxDocumentBytes`.
-///
-/// Unlike the proof and `issuedAt` declarations, an absent `response` does
-/// **not** take the request's value: the member bounds what a consumer must
-/// accept as well as what it may refuse, and a response is usually far smaller
-/// than the request that carried bulk content, so inheriting the request's
-/// bound would oblige a producer to accept replies of a size it never asked
-/// for. Absent means "no declared bound", which is the framework default.
-fn read_max_document_bytes(spec_md_path: &Path) -> Result<MaxDocumentBytes> {
-    if !spec_md_path.exists() {
-        return Ok(MaxDocumentBytes::default());
-    }
-    let text = fs::read_to_string(spec_md_path)
-        .with_context(|| format!("read {}", spec_md_path.display()))?;
-    let mut lines = text.lines();
-    if lines.next().unwrap_or("").trim() != "---" {
-        return Ok(MaxDocumentBytes::default());
-    }
-    let mut front_matter = String::new();
-    for line in lines {
-        if line.trim() == "---" {
-            break;
-        }
-        front_matter.push_str(line);
-        front_matter.push('\n');
-    }
-    let value: serde_json::Value = serde_saphyr::from_str(&front_matter)
-        .with_context(|| format!("parse YAML front matter in {}", spec_md_path.display()))?;
-    let Some(decl) = value.get("maxDocumentBytes") else {
-        return Ok(MaxDocumentBytes::default());
-    };
-    let bound = |key: &str| -> Result<Option<usize>> {
-        match decl.get(key) {
-            None => Ok(None),
-            Some(v) => v
-                .as_u64()
-                .and_then(|n| usize::try_from(n).ok())
-                .map(Some)
-                .ok_or_else(|| {
-                    anyhow!(
-                        "{}: maxDocumentBytes.{key} must be a non-negative integer",
-                        spec_md_path.display()
-                    )
-                }),
-        }
-    };
-    let request = bound("request")?;
-    let response = bound("response")?;
-    if request.is_none() && response.is_none() {
-        return Err(anyhow!(
-            "{}: maxDocumentBytes declares neither a `request` nor a `response` bound",
-            spec_md_path.display()
-        ));
-    }
-    Ok(MaxDocumentBytes { request, response })
-}
-
-/// Read whether the party filling the framework `member` (`"issuer"` or
-/// `"recipient"`) is declared `requirement: REQUIRED` in the spec's front
-/// matter. Returns `false` when no party carries that `member`, when its
-/// requirement is `RECOMMENDED` / `OPTIONAL`, or when the file is missing. Per
-/// SPEC.md §7.2 item 5 / §7.3 item 5, only `REQUIRED` obliges the consumer to
-/// reject a document lacking that member in-band.
-fn read_member_required_flag(spec_md_path: &Path, member: &str) -> Result<bool> {
-    if !spec_md_path.exists() {
-        return Ok(false);
-    }
-    let text = fs::read_to_string(spec_md_path)
-        .with_context(|| format!("read {}", spec_md_path.display()))?;
-    let mut lines = text.lines();
-    if lines.next().unwrap_or("").trim() != "---" {
-        return Ok(false);
-    }
-    let mut front_matter = String::new();
-    for line in lines {
-        if line.trim() == "---" {
-            break;
-        }
-        front_matter.push_str(line);
-        front_matter.push('\n');
-    }
-    let value: serde_json::Value = serde_saphyr::from_str(&front_matter)
-        .with_context(|| format!("parse YAML front matter in {}", spec_md_path.display()))?;
-    let Some(parties) = value.get("parties").and_then(|v| v.as_array()) else {
-        return Ok(false);
-    };
-    Ok(parties.iter().any(|p| {
-        p.get("member").and_then(|v| v.as_str()) == Some(member)
-            && p.get("requirement").and_then(|v| v.as_str()) == Some("REQUIRED")
-    }))
-}
-
-/// One `errorCodes` declaration from a spec's front matter (SPEC §7.3 item 9).
-#[derive(Debug, Clone, PartialEq, Eq)]
-struct ErrorCodeDecl {
-    /// Fully qualified wire form, `<namespace>:<local>`.
-    code: String,
-    /// The declaration's `meaning`, rendered as the constant's rustdoc.
-    meaning: String,
-    /// The declared `retryable`.
-    retryable: bool,
-    /// The declared `detailsSchema`, the JSON Schema an error's `details`
-    /// member conforms to (SPEC §7.3 item 9). As written in the front matter
-    /// until [`read_error_codes`] resolves its cross-file `$ref`s.
-    details_schema: Option<Value>,
-    /// The constant's identifier inside the generated `error_codes` module —
-    /// the local part in SCREAMING_SNAKE_CASE.
-    ident: String,
-}
-
-/// Read the `errorCodes` a spec's front matter declares (SPEC §7.3 item 9).
-///
-/// Returns an empty Vec when the field is absent or empty, or the file is
-/// missing — "declares no task-specific codes" is the same answer in each case.
-fn read_error_codes(spec: &Spec) -> Result<Vec<ErrorCodeDecl>> {
-    let spec_md_path = spec.spec_md_path();
-    if !spec_md_path.exists() {
-        return Ok(Vec::new());
-    }
-    let text = fs::read_to_string(&spec_md_path)
-        .with_context(|| format!("read {}", spec_md_path.display()))?;
-    let mut lines = text.lines();
-    if lines.next().unwrap_or("").trim() != "---" {
-        return Ok(Vec::new());
-    }
-    let mut front_matter = String::new();
-    for line in lines {
-        if line.trim() == "---" {
-            break;
-        }
-        front_matter.push_str(line);
-        front_matter.push('\n');
-    }
-    let value: serde_json::Value = serde_saphyr::from_str(&front_matter)
-        .with_context(|| format!("parse YAML front matter in {}", spec_md_path.display()))?;
-    let mut decls = error_code_decls(&spec.slug, &value)
-        .with_context(|| format!("errorCodes in {}", spec_md_path.display()))?;
-
-    // A `detailsSchema` may `$ref` a shared schema file relative to the spec
-    // (the step-up challenge in `vault/*`). The registry build inlines those
-    // for its own readers; the constant must be self-contained for the same
-    // reason `PAYLOAD_SCHEMA` is — a consumer validating against it has no base
-    // URI to resolve a relative ref against.
-    let spec_dir = spec_md_path
-        .parent()
-        .ok_or_else(|| anyhow!("{} has no parent", spec_md_path.display()))?;
-    for decl in &mut decls {
-        if let Some(schema) = decl.details_schema.as_mut() {
-            resolve_cross_file_refs(schema, spec_dir).with_context(|| {
-                format!(
-                    "errorCodes[{:?}].detailsSchema in {}",
-                    decl.code,
-                    spec_md_path.display()
-                )
-            })?;
-        }
-    }
-    Ok(decls)
-}
-
-/// The `errorCodes` declarations in parsed front matter `value`, for the spec
-/// whose slug is `slug`.
-///
-/// The build (`scripts/build-registry.mjs`) already validates these against
-/// `spec.meta.schema.json` and the §8.5 namespace rule. They are re-checked
-/// here because what this function emits is a *constant a consumer puts on the
-/// wire*: `DeclaredErrorCode` converts to a `TrustTaskCode` infallibly on the
-/// strength of it, so a code that does not parse, or a namespace outside the
-/// slug's family, must stop generation rather than reach a library.
-fn error_code_decls(slug: &str, value: &serde_json::Value) -> Result<Vec<ErrorCodeDecl>> {
-    use heck::ToShoutySnakeCase;
-
-    let Some(entries) = value.get("errorCodes") else {
-        return Ok(Vec::new());
-    };
-    if entries.is_null() {
-        return Ok(Vec::new());
-    }
-    let entries = entries
-        .as_array()
-        .ok_or_else(|| anyhow!("`errorCodes` is not a list"))?;
-
-    // The slug itself plus each proper path prefix of it (§8.5 rule 2).
-    let permitted: Vec<&str> = slug
-        .match_indices('/')
-        .map(|(i, _)| &slug[..i])
-        .chain(std::iter::once(slug))
-        .collect();
-
-    let mut out: Vec<ErrorCodeDecl> = Vec::with_capacity(entries.len());
-    for entry in entries {
-        let code = entry
-            .get("code")
-            .and_then(|v| v.as_str())
-            .ok_or_else(|| anyhow!("an `errorCodes` entry has no string `code`"))?;
-        let retryable = entry
-            .get("retryable")
-            .and_then(|v| v.as_bool())
-            .ok_or_else(|| anyhow!("errorCodes[{code:?}] has no boolean `retryable`"))?;
-        let meaning = entry
-            .get("meaning")
-            .and_then(|v| v.as_str())
-            .unwrap_or("")
-            .lines()
-            .map(str::trim)
-            .collect::<Vec<_>>()
-            .join("\n")
-            .trim()
-            .to_string();
-        let details_schema = match entry.get("detailsSchema") {
-            None => None,
-            Some(schema) if schema.is_object() => Some(schema.clone()),
-            Some(_) => {
-                return Err(anyhow!(
-                    "errorCodes[{code:?}].detailsSchema is not an object (SPEC §7.3 item 9)"
-                ));
-            }
-        };
-
-        let (namespace, local) = code
-            .split_once(':')
-            .ok_or_else(|| anyhow!("errorCodes[{code:?}] has no `:` (SPEC §8.5)"))?;
-        if !permitted.contains(&namespace) {
-            return Err(anyhow!(
-                "errorCodes[{code:?}] is namespaced {namespace:?}, which is neither the slug \
-                 {slug:?} nor a path prefix of it (SPEC §8.5)"
-            ));
-        }
-        let mut chars = local.chars();
-        let well_formed = chars.next().is_some_and(|c| c.is_ascii_lowercase())
-            && chars.all(|c| c.is_ascii_alphanumeric() || c == '_');
-        if !well_formed {
-            return Err(anyhow!(
-                "errorCodes[{code:?}] has a local part {local:?} outside the \
-                 `[a-z][a-zA-Z0-9_]*` grammar of spec.meta.schema.json"
-            ));
-        }
-
-        let ident = local.to_shouty_snake_case();
-        // Two declarations whose local parts differ only in casing
-        // (`notFound`, `not_found`), or that share a local part under
-        // different namespaces (`keys:notFound`, `keys/revoke:notFound`), would
-        // claim one constant. Refuse rather than pick one silently.
-        if let Some(clash) = out.iter().find(|d| d.ident == ident) {
-            return Err(anyhow!(
-                "errorCodes[{code:?}] and errorCodes[{:?}] both map to the constant \
-                 `error_codes::{ident}`",
-                clash.code
-            ));
-        }
-        out.push(ErrorCodeDecl {
-            code: code.to_string(),
-            meaning,
-            retryable,
-            details_schema,
-            ident,
-        });
-    }
-    Ok(out)
-}
-
 /// Spec.md sections often embed illustrative `trust-task-error` responses
 /// next to the request/response examples. Drop any harvested example whose
 /// top-level `type` does not match this spec's URI — that way the
@@ -769,12 +374,49 @@ fn extract_examples(spec_md_path: &Path) -> Result<SpecExamples> {
 
 fn main() -> Result<()> {
     let repo_root = find_repo_root()?;
+
+    let args: Vec<String> = std::env::args().skip(1).collect();
+    match args.as_slice() {
+        [] => {}
+        [flag, out] if flag == "--bundles" => {
+            return bundle::run(&repo_root, &std::env::current_dir()?.join(out));
+        }
+        _ => {
+            return Err(anyhow!(
+                "usage: trust-tasks-codegen [--bundles <out-dir>] (got {args:?})"
+            ))
+        }
+    }
     let specs_dir = repo_root.join("specs");
     let out_root = repo_root.join("trust-tasks-rs/src/specs");
 
-    let specs = discover_specs(&specs_dir)?;
-    if specs.is_empty() {
+    let discovered = discover_specs(&specs_dir)?;
+    if discovered.is_empty() {
         return Err(anyhow!("no specs found under {}", specs_dir.display()));
+    }
+
+    // A withdrawn version is generated nowhere — no module, no `mod.rs` entry,
+    // no schema-index arm, no conformance test — so it is dropped here, before
+    // anything downstream sees it. Every other version learns its deprecation.
+    let lifecycles = compute_lifecycles(&specs_dir)?;
+    let mut specs = Vec::with_capacity(discovered.len());
+    let mut withdrawn = 0usize;
+    for mut spec in discovered {
+        match lifecycles.get(&(spec.slug.clone(), spec.version.clone())) {
+            Some(Lifecycle::Withdrawn) => withdrawn += 1,
+            Some(Lifecycle::Deprecated(note)) => {
+                spec.deprecation = Some(note.clone());
+                specs.push(spec);
+            }
+            Some(Lifecycle::Live) => specs.push(spec),
+            None => {
+                return Err(anyhow!(
+                    "{}/{}: has a payload.schema.json but no spec.md to read its status from",
+                    spec.slug,
+                    spec.version
+                ))
+            }
+        }
     }
 
     println!("Discovered {} specs:", specs.len());
@@ -827,12 +469,15 @@ fn main() -> Result<()> {
 
     write_mod_tree(&specs, &out_root)?;
     write_schema_index(&specs, &repo_root)?;
+    write_extends_index(&specs, &repo_root)?;
     write_cargo_features(&gated, &repo_root)?;
 
     println!(
-        "\nGenerated {} payload modules into {}",
+        "\nGenerated {} payload modules into {} ({} deprecated, {} withdrawn and skipped)",
         specs.len(),
-        out_root.display()
+        out_root.display(),
+        specs.iter().filter(|s| s.deprecation.is_some()).count(),
+        withdrawn
     );
     println!(
         "Feature-gated {} spec families ({} framework-reserved families are always compiled)",
@@ -937,45 +582,18 @@ fn find_repo_root() -> Result<PathBuf> {
     ))
 }
 
+/// Every specification version under `specs_dir` except [`SKIP_SLUGS`] — the
+/// shared builder's discovery, with this crate's per-version state.
 fn discover_specs(specs_dir: &Path) -> Result<Vec<Spec>> {
-    let mut out = Vec::new();
-    for entry in WalkDir::new(specs_dir).into_iter().filter_map(|e| e.ok()) {
-        if entry.file_name() != "payload.schema.json" {
-            continue;
-        }
-        let version_dir = entry.path().parent().ok_or_else(|| {
-            anyhow!(
-                "payload.schema.json with no parent: {}",
-                entry.path().display()
-            )
-        })?;
-        let slug_dir = version_dir
-            .parent()
-            .ok_or_else(|| anyhow!("no slug dir for {}", entry.path().display()))?;
-
-        let version = version_dir
-            .file_name()
-            .and_then(|s| s.to_str())
-            .ok_or_else(|| anyhow!("non-utf8 version dir: {}", version_dir.display()))?
-            .to_string();
-        let slug = slug_dir
-            .strip_prefix(specs_dir)
-            .with_context(|| format!("slug dir {} is not under specs/", slug_dir.display()))?
-            .to_string_lossy()
-            .replace('\\', "/");
-
-        if SKIP_SLUGS.contains(&slug.as_str()) {
-            continue;
-        }
-
-        out.push(Spec {
-            slug,
-            version,
-            schema_path: entry.path().to_path_buf(),
-        });
-    }
-    out.sort_by(|a, b| (a.slug.as_str(), a.version.as_str()).cmp(&(&b.slug, &b.version)));
-    Ok(out)
+    Ok(publish::discover_specs(specs_dir, SKIP_SLUGS)?
+        .into_iter()
+        .map(|dir| Spec {
+            slug: dir.slug,
+            version: dir.version,
+            schema_path: dir.schema_path,
+            deprecation: None,
+        })
+        .collect())
 }
 
 /// Remove every previously-generated module file/dir under `out_root` except
@@ -1022,58 +640,6 @@ fn clean_generated_tree(out_root: &Path) -> Result<()> {
     Ok(())
 }
 
-/// Make every multi-paragraph doc attribute in a generated module safe for
-/// rustdoc.
-///
-/// A doc attribute whose text spans lines is printed as `/**{text}*/` — the
-/// first line flush against the opening delimiter, every continuation line
-/// carrying the indentation of whatever item it documents once rustfmt has run.
-/// rustdoc strips only the whitespace *common* to all lines of a doc comment,
-/// and the un-indented first line makes that common prefix empty. An item four
-/// spaces deep therefore has its second and later paragraphs read as
-/// **indented code blocks**, which rustdoc then compiles as Rust doctests and
-/// fails on.
-///
-/// It bit `trust-task-next-step/0.1` and `trust-ceremony-receipt/0.1` through
-/// multi-paragraph `description`s. It bit again through a titled inline
-/// `oneOf` branch: typify documents an enum variant as `"{title}\n\n{description}"`
-/// (`metadata_title_and_description`), so a one-paragraph description became
-/// two paragraphs that no schema contained, and 77 doctests failed. A pass over
-/// the schema's `description`s cannot see text typify assembles itself, so the
-/// fix is applied to what typify emits instead.
-///
-/// The fix is to start such a doc on its own line. Every line then carries the
-/// item's indentation, the common prefix is non-empty, rustdoc strips it, and
-/// the paragraphs render as prose. Applied only where a blank line exists, so
-/// single-paragraph docs are untouched.
-fn indent_safe_docs(file: &mut syn::File) {
-    use syn::visit_mut::VisitMut;
-
-    struct IndentSafe;
-    impl VisitMut for IndentSafe {
-        fn visit_attribute_mut(&mut self, attr: &mut syn::Attribute) {
-            if !attr.path().is_ident("doc") {
-                return;
-            }
-            let syn::Meta::NameValue(nv) = &mut attr.meta else {
-                return;
-            };
-            let syn::Expr::Lit(syn::ExprLit {
-                lit: syn::Lit::Str(text),
-                ..
-            }) = &mut nv.value
-            else {
-                return;
-            };
-            let value = text.value();
-            if value.contains("\n\n") && !value.starts_with('\n') {
-                *text = syn::LitStr::new(&format!("\n{value}"), text.span());
-            }
-        }
-    }
-    IndentSafe.visit_file_mut(file);
-}
-
 /// Generate one spec's module, returning the path to write it to and its
 /// contents — **without touching the filesystem**.
 ///
@@ -1085,94 +651,16 @@ fn indent_safe_docs(file: &mut syn::File) {
 /// downstream `cargo fmt` error about an unresolvable module — pointing
 /// nowhere near the file at fault.
 fn generate_one(spec: &Spec, out_root: &Path) -> Result<GeneratedSpec> {
-    let mut schema: Value = serde_json::from_str(&fs::read_to_string(&spec.schema_path)?)
-        .with_context(|| format!("parse {}", spec.schema_path.display()))?;
+    // Through the registry bundle, and the generator an application's
+    // `build.rs` runs on it (`trust-tasks-build`): the module committed here is
+    // therefore, byte for byte, what an application generates from the
+    // version's published bundle — only the paths to the runtime differ.
+    let built = bundle::build_bundle(spec)?;
+    let parsed = trust_tasks_build::Bundle::from_slice(&built.bytes)?;
+    let formatted =
+        trust_tasks_build::generate_module(&parsed, &trust_tasks_build::Target::runtime_crate())?;
+    let has_response = parsed.response_schema.is_some();
 
-    // Resolve any cross-file `$ref`s (e.g. into _shared/ or _framework/)
-    // by inlining the referenced `$def` into this schema's local `$defs`.
-    // Done before typify sees the schema, and the result becomes the
-    // SCHEMA_JSON constant so runtime ValidatedPayload::validate_value
-    // does not need a network-style resolver either.
-    let base_dir = spec
-        .schema_path
-        .parent()
-        .ok_or_else(|| anyhow!("schema path has no parent"))?
-        .to_path_buf();
-    resolve_cross_file_refs(&mut schema, &base_dir).with_context(|| {
-        format!(
-            "failed to resolve cross-file $refs for {}/{}",
-            spec.slug, spec.version
-        )
-    })?;
-
-    // The inlined, self-contained schema is now the on-the-wire
-    // `Payload::PAYLOAD_SCHEMA`.
-    let raw = serde_json::to_string_pretty(&schema)? + "\n";
-
-    // The response variant needs a schema of its own: the root schema
-    // describes the *request* payload, and `$defs.Response` describes the
-    // response. Wrap the latter in a document that keeps `$defs` reachable so
-    // its internal `$ref`s still resolve, rather than lifting the subschema
-    // out and breaking them.
-    let response_raw = schema
-        .get("$defs")
-        .and_then(|d| d.get("Response"))
-        .map(|_| {
-            let mut doc = serde_json::Map::new();
-            if let Some(s) = schema.get("$schema") {
-                doc.insert("$schema".into(), s.clone());
-            }
-            // No `$id`: JSON Schema 2020-12 forbids a non-empty fragment in
-            // `$id`, so the natural `<base>#response` is not a legal value and
-            // a compliant validator refuses to compile the document. The
-            // response schema needs no identity of its own — nothing `$ref`s
-            // it from outside — and `#/$defs/...` resolves against the
-            // document root either way.
-            doc.insert("$ref".into(), Value::String("#/$defs/Response".into()));
-            doc.insert(
-                "$defs".into(),
-                schema.get("$defs").cloned().unwrap_or(Value::Null),
-            );
-            serde_json::to_string_pretty(&Value::Object(doc)).map(|s| s + "\n")
-        })
-        .transpose()?;
-
-    let has_response = normalize_titles(&mut schema)?;
-    // typify (0.5) expects Draft-07 `definitions` rather than 2020-12 `$defs`.
-    migrate_defs_to_definitions(&mut schema);
-    // After the migration, so the pass resolves `#/definitions/...`.
-    flatten_unevaluated_compositions(&mut schema);
-    // Only reshapes a `oneOf` that would otherwise defeat typify (a branch
-    // with a compound `not`); a plain discriminated `oneOf` is untouched.
-    desugar_oneof_with_compound_not(&mut schema);
-
-    // Round-trip the normalized schema into the schemars representation
-    // typify works with.
-    let normalized_text = serde_json::to_string(&schema)?;
-    let root_schema: schemars::schema::RootSchema = serde_json::from_str(&normalized_text)?;
-
-    // `with_struct_builder(true)` is what makes an additive spec change
-    // non-breaking. Every generated struct gains an inherent
-    // `X::builder()` returning a `builder::X` with one `.field(v)` setter
-    // per member and a `TryFrom<builder::X> for X`, so a consumer never
-    // has to spell the members it does not care about. Combined with
-    // `#[non_exhaustive]` (applied below) the builder is the *only*
-    // cross-crate construction path, which is the point: adding a member
-    // to a schema can no longer break a call site.
-    //
-    // typify already emits `impl Default` for a struct whose every member
-    // is optional, so `Default` needs no extra derive here.
-    let settings = {
-        let mut s = typify::TypeSpaceSettings::default();
-        s.with_struct_builder(true);
-        s
-    };
-    let mut type_space = typify::TypeSpace::new(&settings);
-    type_space
-        .add_root_schema(root_schema)
-        .with_context(|| format!("typify: add_root_schema for {}/{}", spec.slug, spec.version))?;
-
-    let body = type_space.to_stream();
     let mut examples = extract_examples(&spec.spec_md_path())?;
     filter_examples_to_this_spec(spec, &mut examples);
     let invalid_examples = read_invalid_examples(spec)?;
@@ -1184,47 +672,6 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<GeneratedSpec> {
             spec.version
         ));
     }
-    let is_bearer = read_bearer_flag(&spec.spec_md_path())?;
-    let is_proof_required = read_proof_required_flag(&spec.spec_md_path())?;
-    let is_issued_at_required = read_issued_at_required_flag(&spec.spec_md_path())?;
-    let max_document_bytes = read_max_document_bytes(&spec.spec_md_path())?;
-    if !has_response && max_document_bytes.response.is_some() {
-        return Err(anyhow!(
-            "{}/{}: maxDocumentBytes declares a `response` bound, but the schema defines no \
-             $defs.Response",
-            spec.slug,
-            spec.version
-        ));
-    }
-    // Request `recipient` member tracks the recipient party; the response swaps
-    // parties, so its `recipient` member tracks the issuer party (§7.2 item 5).
-    let recipient_required = read_member_required_flag(&spec.spec_md_path(), "recipient")?;
-    let issuer_required = read_member_required_flag(&spec.spec_md_path(), "issuer")?;
-    let error_codes = read_error_codes(spec)?;
-    let module_tokens = render_module(
-        spec,
-        body,
-        has_response,
-        is_bearer,
-        is_proof_required,
-        is_issued_at_required,
-        max_document_bytes,
-        recipient_required,
-        issuer_required,
-        &error_codes,
-        &raw,
-        response_raw.as_deref(),
-    );
-
-    let mut parsed: syn::File = syn::parse2(module_tokens.clone()).with_context(|| {
-        format!(
-            "failed to parse generated tokens for {}/{}:\n{}",
-            spec.slug, spec.version, module_tokens
-        )
-    })?;
-    apply_non_exhaustive(&mut parsed);
-    indent_safe_docs(&mut parsed);
-    let formatted = prettyplease::unparse(&parsed);
 
     let conformance = render_conformance_file(spec, &examples, &invalid_examples, has_response)
         .map(|tokens| {
@@ -1258,527 +705,6 @@ struct GeneratedSpec {
     path: PathBuf,
     contents: String,
     conformance: Option<String>,
-}
-
-/// Mark every generated payload type `#[non_exhaustive]`.
-///
-/// This is the half of the ergonomics contract that the builder cannot
-/// provide on its own. Without it a consumer keeps reaching for a struct
-/// literal, and the next member added to a schema keeps breaking every one
-/// of those literals — the tax this crate's CHANGELOG has recorded
-/// repeatedly ("consumers constructing `AclEntry` with a struct literal must
-/// add `step_up: None`"). With it, cross-crate construction has to go
-/// through `X::builder()` or `X::default()`, both of which absorb a new
-/// member silently, and a `match` on a generated enum has to carry a
-/// wildcard arm, which absorbs a new enum value silently. `#[non_exhaustive]`
-/// binds only *other* crates, so `trust-tasks-rs`' own code — including the
-/// `builder` module's `TryFrom` impl and the generated conformance tests —
-/// is unaffected.
-///
-/// Applied to:
-///
-/// - **named-field structs** (`Payload`, `Response`, and every `$defs`
-///   object type) — the struct-literal case, and the one the builder
-///   gives an alternative to;
-/// - **enums** — matching the precedent set by `StandardCode` in 0.7.0, so
-///   that a value added to a schema's `enum` is not a break either.
-///
-/// Deliberately *not* applied to tuple/newtype structs. typify emits those
-/// for constrained scalars (`ExtKey`) and for map wrappers (`Ext(pub
-/// HashMap<..>)`); it generates no builder for them, so marking them
-/// `#[non_exhaustive]` would remove the only construction path a consumer
-/// has and leave nothing in its place. Their shape is fixed by the scalar
-/// or map they wrap, so there is no additive change for the attribute to
-/// absorb.
-///
-/// Only top-level items are visited. The nested `error`, `builder` and
-/// `defaults` modules typify emits are crate-internal plumbing whose types
-/// are constructed by generated code, never by a consumer's struct literal.
-fn apply_non_exhaustive(file: &mut syn::File) {
-    let attr: syn::Attribute = syn::parse_quote!(#[non_exhaustive]);
-    for item in file.items.iter_mut() {
-        match item {
-            syn::Item::Struct(s) if matches!(s.fields, syn::Fields::Named(_)) => {
-                s.attrs.push(attr.clone());
-            }
-            syn::Item::Enum(e) => e.attrs.push(attr.clone()),
-            _ => {}
-        }
-    }
-}
-
-/// Resolve `$ref` strings of the form `<relative-path>#/$defs/<name>` by
-/// loading the referenced JSON file and splicing its `$defs.<name>` into
-/// the current schema's `$defs.<name>`, then rewriting the `$ref` to the
-/// now-local form `#/$defs/<name>`.
-///
-/// Handles transitive refs (e.g. acl-entry.schema.json's AclEntry contains
-/// a $ref to framework.schema.json's Ext) by recursively resolving the
-/// spliced fragment against the directory it came from.
-///
-/// Local `#/$defs/…` and `#/…` refs are left untouched.
-fn resolve_cross_file_refs(schema: &mut Value, base_dir: &Path) -> Result<()> {
-    use std::collections::HashSet;
-
-    let mut frontier: Vec<(Value, PathBuf)> = collect_external_refs(schema, base_dir);
-    let mut seen: HashSet<String> = HashSet::new();
-    while let Some((ref_value, owner_dir)) = frontier.pop() {
-        let ref_str = ref_value
-            .as_str()
-            .ok_or_else(|| anyhow!("$ref value was not a string"))?
-            .to_string();
-        let (rel_path, def_name) = split_external_ref(&ref_str).ok_or_else(|| {
-            anyhow!("external $ref {ref_str:?} is not of the form <path>#/$defs/<name>")
-        })?;
-        let abs_path = owner_dir.join(rel_path);
-        let abs_path_canonical = fs::canonicalize(&abs_path).with_context(|| {
-            format!(
-                "$ref target {} (from {}) does not exist",
-                abs_path.display(),
-                owner_dir.display()
-            )
-        })?;
-        let dedupe_key = format!("{}#/$defs/{}", abs_path_canonical.display(), def_name);
-        if !seen.insert(dedupe_key) {
-            continue;
-        }
-        let referenced: Value = serde_json::from_str(&fs::read_to_string(&abs_path_canonical)?)
-            .with_context(|| format!("parse referenced schema {}", abs_path_canonical.display()))?;
-        let fragment = referenced
-            .get("$defs")
-            .and_then(|v| v.get(def_name))
-            .ok_or_else(|| {
-                anyhow!(
-                    "{} has no $defs/{} (referenced from {})",
-                    abs_path_canonical.display(),
-                    def_name,
-                    owner_dir.display()
-                )
-            })?
-            .clone();
-
-        // Splice the fragment into the local schema's $defs.<name>.
-        let defs = schema
-            .as_object_mut()
-            .ok_or_else(|| anyhow!("schema root must be an object"))?
-            .entry("$defs")
-            .or_insert_with(|| Value::Object(Default::default()))
-            .as_object_mut()
-            .ok_or_else(|| anyhow!("$defs must be an object"))?;
-        if let Some(existing) = defs.get(def_name) {
-            if existing != &fragment {
-                return Err(anyhow!(
-                    "schema already defines $defs/{def_name} with a different shape; \
-                     cross-file $ref splice would overwrite it"
-                ));
-            }
-        } else {
-            defs.insert(def_name.to_string(), fragment.clone());
-        }
-
-        // The fragment's own external refs (transitive) are resolved
-        // against the file it came from, not the original base_dir.
-        let referenced_dir = abs_path_canonical
-            .parent()
-            .ok_or_else(|| anyhow!("referenced file has no parent dir"))?
-            .to_path_buf();
-        frontier.extend(collect_external_refs(&fragment, &referenced_dir));
-
-        // The fragment may also contain *internal* refs (`#/$defs/X`)
-        // pointing at sibling defs in the source file. Without
-        // splicing those too, typify panics with `$ref
-        // #/definitions/X is missing` after `migrate_defs_to_definitions`
-        // rewrites the references. Reformulate each internal ref as a
-        // synthetic external ref against the same source file so the
-        // splice path treats them uniformly.
-        let synthetic_external: Vec<Value> = collect_internal_refs(&fragment)
-            .into_iter()
-            .map(|local| Value::String(format!("{}{}", rel_path, local)))
-            .collect();
-        for synth in synthetic_external {
-            frontier.push((synth, owner_dir.clone()));
-        }
-    }
-
-    // After splicing, rewrite every external $ref string to the local form.
-    rewrite_external_refs_local(schema);
-    Ok(())
-}
-
-/// Walk `schema` and collect every `$ref` whose value is an external (non-
-/// `#`-prefixed) reference. Returns `(ref_value, base_dir_for_resolving_it)`.
-fn collect_external_refs(schema: &Value, base_dir: &Path) -> Vec<(Value, PathBuf)> {
-    let mut out = Vec::new();
-    walk_external_refs(schema, base_dir, &mut |r, dir| {
-        out.push((r.clone(), dir.to_path_buf()))
-    });
-    out
-}
-
-/// Walk `schema` and collect every internal `$ref` value (those that
-/// start with `#`). Returns the raw fragment strings so the caller
-/// can rewrite them into synthetic external refs.
-fn collect_internal_refs(schema: &Value) -> Vec<String> {
-    let mut out = Vec::new();
-    walk_internal_refs(schema, &mut |s| out.push(s.to_string()));
-    out
-}
-
-fn walk_internal_refs(value: &Value, sink: &mut impl FnMut(&str)) {
-    match value {
-        Value::Object(map) => {
-            if let Some(r) = map.get("$ref") {
-                if let Some(s) = r.as_str() {
-                    if s.starts_with('#') {
-                        sink(s);
-                    }
-                }
-            }
-            for v in map.values() {
-                walk_internal_refs(v, sink);
-            }
-        }
-        Value::Array(items) => {
-            for v in items {
-                walk_internal_refs(v, sink);
-            }
-        }
-        _ => {}
-    }
-}
-
-fn walk_external_refs(value: &Value, base_dir: &Path, sink: &mut impl FnMut(&Value, &Path)) {
-    match value {
-        Value::Object(map) => {
-            if let Some(r) = map.get("$ref") {
-                if r.as_str().map(|s| !s.starts_with('#')).unwrap_or(false) {
-                    sink(r, base_dir);
-                }
-            }
-            for v in map.values() {
-                walk_external_refs(v, base_dir, sink);
-            }
-        }
-        Value::Array(items) => {
-            for v in items {
-                walk_external_refs(v, base_dir, sink);
-            }
-        }
-        _ => {}
-    }
-}
-
-/// After splicing, replace every external `$ref` string with its local
-/// fragment-only form so typify (and downstream validators) see a self-
-/// contained schema.
-fn rewrite_external_refs_local(value: &mut Value) {
-    match value {
-        Value::Object(map) => {
-            if let Some(Value::String(s)) = map.get_mut("$ref") {
-                if !s.starts_with('#') {
-                    if let Some((_, def_name)) = split_external_ref(s) {
-                        *s = format!("#/$defs/{def_name}");
-                    }
-                }
-            }
-            for v in map.values_mut() {
-                rewrite_external_refs_local(v);
-            }
-        }
-        Value::Array(items) => {
-            for v in items {
-                rewrite_external_refs_local(v);
-            }
-        }
-        _ => {}
-    }
-}
-
-/// Parse `"<relative-path>#/$defs/<name>"` into its two halves.
-fn split_external_ref(s: &str) -> Option<(&str, &str)> {
-    let hash = s.find('#')?;
-    let path = &s[..hash];
-    let fragment = &s[hash + 1..];
-    let prefix = "/$defs/";
-    let def_name = fragment.strip_prefix(prefix)?;
-    if path.is_empty() || def_name.is_empty() || def_name.contains('/') {
-        return None;
-    }
-    Some((path, def_name))
-}
-
-/// Rename the 2020-12 `$defs` keyword to the Draft-07 `definitions` keyword
-/// recursively, and rewrite every `$ref` of the form `#/$defs/X` to
-/// `#/definitions/X`. typify 0.5 only honors the older keyword; the two are
-/// semantically equivalent for our purposes.
-fn migrate_defs_to_definitions(schema: &mut Value) {
-    match schema {
-        Value::Object(map) => {
-            if let Some(defs) = map.remove("$defs") {
-                map.insert("definitions".to_string(), defs);
-            }
-            if let Some(Value::String(s)) = map.get_mut("$ref") {
-                if let Some(stripped) = s.strip_prefix("#/$defs/") {
-                    *s = format!("#/definitions/{stripped}");
-                }
-            }
-            for v in map.values_mut() {
-                migrate_defs_to_definitions(v);
-            }
-        }
-        Value::Array(items) => {
-            for v in items {
-                migrate_defs_to_definitions(v);
-            }
-        }
-        _ => {}
-    }
-}
-
-/// Rewrite schema titles so typify produces clean type names:
-/// `Payload` for the root, `Response` for the response sub-schema. Returns
-/// whether a response anchor was present.
-fn normalize_titles(schema: &mut Value) -> Result<bool> {
-    let obj = schema
-        .as_object_mut()
-        .ok_or_else(|| anyhow!("schema root must be an object"))?;
-    obj.insert("title".into(), json!("Payload"));
-
-    let mut has_response = false;
-    if let Some(defs) = obj.get_mut("$defs").and_then(Value::as_object_mut) {
-        if let Some(resp) = defs.get_mut("Response").and_then(Value::as_object_mut) {
-            resp.insert("title".into(), json!("Response"));
-            has_response = true;
-        }
-    }
-    Ok(has_response)
-}
-
-#[allow(clippy::too_many_arguments)]
-fn render_module(
-    spec: &Spec,
-    body: TokenStream,
-    has_response: bool,
-    is_bearer: bool,
-    is_proof_required: ProofRequired,
-    is_issued_at_required: IssuedAtRequired,
-    max_document_bytes: MaxDocumentBytes,
-    recipient_required: bool,
-    issuer_required: bool,
-    error_codes: &[ErrorCodeDecl],
-    schema_json: &str,
-    response_schema_json: Option<&str>,
-) -> TokenStream {
-    let type_uri = spec.type_uri();
-    let response_uri = format!("{type_uri}#response");
-    let slug_doc = format!(" Spec slug: `{}`. Version: `{}`.", spec.slug, spec.version);
-
-    // Per SPEC §4.8.3, only bearer specs override Payload::IS_BEARER. Non-
-    // bearer specs (the default) leave the trait's default `false` in place.
-    let bearer_const = if is_bearer {
-        quote! { const IS_BEARER: bool = true; }
-    } else {
-        quote! {}
-    };
-
-    // Per SPEC §7.3 item 8, only `REQUIRED` overrides
-    // Payload::IS_PROOF_REQUIRED; `RECOMMENDED` / `OPTIONAL` (or absent) leave
-    // the trait default `false` in place. The two variants are emitted
-    // independently: a spec may require a proof on the response it returns
-    // without requiring one on the request that triggered it, or the reverse.
-    let req_proof_const = if is_proof_required.request {
-        quote! { const IS_PROOF_REQUIRED: bool = true; }
-    } else {
-        quote! {}
-    };
-    let resp_proof_const = if is_proof_required.response {
-        quote! { const IS_PROOF_REQUIRED: bool = true; }
-    } else {
-        quote! {}
-    };
-
-    // Per SPEC §7.3 item 17, only `REQUIRED` overrides
-    // Payload::IS_ISSUED_AT_REQUIRED; anything else (or absent) leaves the
-    // trait default `false` in place, which is §4.2's SHOULD. Emitted per
-    // variant on the same reasoning as the proof consts above: a spec may
-    // require a stamped instant on the request that causes the effect without
-    // requiring one on the acknowledgement it sends back.
-    let req_issued_at_const = if is_issued_at_required.request {
-        quote! { const IS_ISSUED_AT_REQUIRED: bool = true; }
-    } else {
-        quote! {}
-    };
-    let resp_issued_at_const = if is_issued_at_required.response {
-        quote! { const IS_ISSUED_AT_REQUIRED: bool = true; }
-    } else {
-        quote! {}
-    };
-
-    // Front matter `maxDocumentBytes` (SPEC §12.4's "body-size limit
-    // appropriate to the Trust Task specification's payload", stated per
-    // type). Only a declared variant overrides the trait default `None`.
-    let size_const = |bound: Option<usize>| match bound {
-        Some(n) => quote! { const MAX_DOCUMENT_BYTES: Option<usize> = Some(#n); },
-        None => quote! {},
-    };
-    let req_size_const = size_const(max_document_bytes.request);
-    let resp_size_const = size_const(max_document_bytes.response);
-
-    // Per SPEC §7.2 item 5 / §7.3 item 5, a spec whose `recipient` party is
-    // REQUIRED overrides Payload::IS_RECIPIENT_REQUIRED. The request's
-    // `recipient` is the recipient party; the response swaps the parties, so its
-    // `recipient` is the request's issuer — hence the response impl uses the
-    // issuer-party requirement.
-    let req_recipient_const = if recipient_required {
-        quote! { const IS_RECIPIENT_REQUIRED: bool = true; }
-    } else {
-        quote! {}
-    };
-    let resp_recipient_const = if issuer_required {
-        quote! { const IS_RECIPIENT_REQUIRED: bool = true; }
-    } else {
-        quote! {}
-    };
-
-    // SPEC §7.2 item 2 — the schema the payload is validated against, carried
-    // on the type itself so a consumer never has to find it. Emitted
-    // unconditionally: it is a `&'static str` and pulls in no dependency, and
-    // gating it behind `validate` was what left the schema unreachable to
-    // anyone who had not already opted in.
-    let resp_schema_const = match response_schema_json {
-        Some(json) => quote! { const PAYLOAD_SCHEMA: Option<&'static str> = Some(#json); },
-        None => quote! {},
-    };
-
-    // SPEC §4.4.1 — the request payload names the response payload it is
-    // answered with, so a transport can infer it. Emitted only for a
-    // specification that actually defines a `$defs.Response`: a
-    // fire-and-forget specification has no response *document*, and the
-    // honest encoding of that is the absence of a `RequestPayload` impl
-    // rather than a stand-in type. See the trait docs in
-    // `trust-tasks-rs/src/payload.rs` for why neither `()` nor
-    // `trust-task-ok` is used to fill the hole.
-    let response_payload_impl = if has_response {
-        quote! {
-            impl crate::Payload for Response {
-                const TYPE_URI: &'static str = #response_uri;
-                #bearer_const
-                #resp_proof_const
-                #resp_issued_at_const
-                #resp_size_const
-                #resp_recipient_const
-                #resp_schema_const
-            }
-
-            impl crate::RequestPayload for Payload {
-                type Response = Response;
-            }
-        }
-    } else {
-        quote! {}
-    };
-
-    let error_codes_items = render_error_codes(error_codes);
-
-    quote! {
-        //! Generated by `trust-tasks-codegen` — do not edit by hand.
-        //!
-        #![doc = #slug_doc]
-
-        #[allow(unused_imports)]
-        use serde::{Deserialize, Serialize};
-
-        #body
-
-        impl crate::Payload for Payload {
-            const TYPE_URI: &'static str = #type_uri;
-            #bearer_const
-            #req_proof_const
-            #req_issued_at_const
-            #req_size_const
-            #req_recipient_const
-            const PAYLOAD_SCHEMA: Option<&'static str> = Some(#schema_json);
-        }
-
-        #response_payload_impl
-
-        #error_codes_items
-    }
-}
-
-/// Emit the SPEC §7.3 item 9 declarations: a `pub const ERROR_CODES` slice on
-/// every module, and — when the specification declares any — a `pub mod
-/// error_codes` holding one `DeclaredErrorCode` constant per declaration.
-///
-/// `ERROR_CODES` is emitted even when empty, so "this specification declares no
-/// task-specific codes" is a value a consumer can read rather than an absent
-/// item it has to infer from a compile error. The submodule is not: an empty
-/// module is a namespace with nothing to name.
-fn render_error_codes(error_codes: &[ErrorCodeDecl]) -> TokenStream {
-    let slice_doc = quote! {
-        #[doc = " The extended error codes this specification declares (SPEC §7.3 item 9,"]
-        #[doc = " §8.5), in declaration order. Empty when it declares none."]
-    };
-    if error_codes.is_empty() {
-        return quote! {
-            #slice_doc
-            pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[];
-        };
-    }
-
-    let idents: Vec<proc_macro2::Ident> = error_codes
-        .iter()
-        .map(|d| quote::format_ident!("{}", d.ident))
-        .collect();
-    let consts = error_codes.iter().zip(&idents).map(|(d, ident)| {
-        let code = &d.code;
-        let retryable = d.retryable;
-        let head = format!(" `{code}`");
-        let meaning_lines: Vec<String> = d.meaning.lines().map(|l| format!(" {l}")).collect();
-        let retry_doc = format!(" Declared `retryable: {retryable}`.");
-        let (details_doc, details_schema) = match &d.details_schema {
-            Some(schema) => {
-                // Compact: the constant is read by a validator, not a person,
-                // and the spec page renders the schema for people.
-                let json =
-                    serde_json::to_string(schema).expect("a serde_json::Value always serializes");
-                (
-                    Some(" Declares a `detailsSchema` for the error's `details` member."),
-                    quote! { ::core::option::Option::Some(#json) },
-                )
-            }
-            None => (None, quote! { ::core::option::Option::None }),
-        };
-        let details_doc = details_doc.into_iter();
-        quote! {
-            #[doc = #head]
-            #[doc = ""]
-            #(#[doc = #meaning_lines])*
-            #[doc = ""]
-            #[doc = #retry_doc]
-            #(#[doc = #details_doc])*
-            pub const #ident: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
-                code: #code,
-                retryable: #retryable,
-                details_schema: #details_schema,
-            };
-        }
-    });
-
-    quote! {
-        #slice_doc
-        pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[#(error_codes::#idents),*];
-
-        /// One constant per extended error code this specification declares
-        /// (SPEC §7.3 item 9), named for its local part.
-        ///
-        /// Emit these rather than a string literal: the code is read from the
-        /// specification, so it cannot name a code the specification never
-        /// declared.
-        pub mod error_codes {
-            #(#consts)*
-        }
-    }
 }
 
 /// Emit one spec's file of the `conformance` integration test, with one test
@@ -2041,7 +967,7 @@ fn write_schema_index(specs: &[Spec], repo_root: &Path) -> Result<()> {
             path,
             spec.version_module(),
         ));
-        let max_document_bytes = read_max_document_bytes(&spec.spec_md_path())?;
+        let max_document_bytes = spec.policy()?.max_document_bytes;
         if max_document_bytes.request.is_some() {
             size_arms.push_str(&gate);
             size_arms.push_str(&format!(
@@ -2114,6 +1040,10 @@ fn write_schema_index(specs: &[Spec], repo_root: &Path) -> Result<()> {
 //! Both sides are indexed: the request under the bare Type URI, the response
 //! under the same URI suffixed `#response`, which is what the generated
 //! `Response` type already declares as its own `TYPE_URI`.
+
+// A deprecated specification version is indexed until it is withdrawn, and
+// indexing it means naming its deprecated `Payload` / `Response` types.
+#![allow(deprecated)]
 
 /// The payload schema for `type_uri`, or `None` if this build knows no spec for it.
 ///
@@ -2199,11 +1129,63 @@ pub fn max_document_bytes_for(type_uri: &str) -> Option<usize> {{
 {size_arms}        _ => None,
     }}
 }}
+
+/// The version the specification behind `type_uri` declares it extends (SPEC
+/// §5.2 "Declared extension"), or `None`. Re-exported from
+/// [`crate::extension`], which also walks the chain; it is here so every
+/// per-Type-URI lookup has one home.
+pub use crate::extension::extends_for;
 "#
     );
 
     let path = repo_root.join("trust-tasks-rs/src/schema_index.rs");
     fs::write(path, body)?;
+    Ok(())
+}
+
+/// Emit `trust-tasks-rs/src/extends_index.rs` — bare request Type URI → the
+/// `MAJOR.MINOR` its specification declares it extends (front matter
+/// `extends`, SPEC §5.2 "Declared extension").
+///
+/// Not part of `schema_index`, and not feature-gated per family, on purpose:
+/// the dispatchers route along it, and they are compiled whether or not the
+/// `validate` feature (which gates `schema_index`) or the received version's
+/// family module is. The arms are string literals rather than references to
+/// each module's `EXTENDS`, so a build without a family still knows that
+/// family's chain — the received version never needs a module of its own to
+/// be routed to the version the consumer implements. `check-bindings` holds
+/// the per-module constants to the front matter; the generator holds this
+/// table to the same reading, since both come from the shared front-matter
+/// reader (`publish::read_spec_policy`).
+fn write_extends_index(specs: &[Spec], repo_root: &Path) -> Result<()> {
+    let mut arms = String::new();
+    for spec in specs {
+        if let Some(target) = spec.policy()?.extends {
+            arms.push_str(&format!(
+                "        {:?} => Some({:?}),\n",
+                spec.type_uri(),
+                target
+            ));
+        }
+    }
+    let body = format!(
+        r#"//! Generated by `trust-tasks-codegen` — do not edit by hand.
+//!
+//! Bare request Type URI → the `MAJOR.MINOR` its specification declares it
+//! extends (SPEC §5.2 "Declared extension"). Read through
+//! [`crate::extension::extends_for`].
+
+/// The direct `extends` declaration of the specification behind the bare
+/// request `type_uri`, or `None`.
+pub(crate) fn declared_extends(type_uri: &str) -> Option<&'static str> {{
+    #[allow(clippy::match_single_binding)]
+    match type_uri {{
+{arms}        _ => None,
+    }}
+}}
+"#
+    );
+    fs::write(repo_root.join("trust-tasks-rs/src/extends_index.rs"), body)?;
     Ok(())
 }
 
@@ -2288,7 +1270,11 @@ fn write_conformance_tree(
          //! The round-trip tests harvested from every specification's examples. One\n\
          //! integration test rather than a `#[cfg(test)]` module per specification, so\n\
          //! they link the ordinary library build instead of a second, unit-test\n\
-         //! compilation of the whole generated tree.\n\n",
+         //! compilation of the whole generated tree.\n\
+         \n\
+         // A deprecated specification version is still tested until it is\n\
+         // withdrawn, and testing it means naming its deprecated types.\n\
+         #![allow(deprecated)]\n\n",
     );
     render(&root, &gates, 0, &mut body);
     fs::write(dir.join("main.rs"), body)?;
@@ -2331,7 +1317,7 @@ fn write_node(
 ) -> Result<()> {
     let decl = |name: &String| match gates.get(name) {
         Some(family) => format!(
-            "#[cfg(feature = {:?})]\n{}pub mod {name};",
+            "#[cfg(feature = {:?})]\n{}{PREBUILT_DEPRECATION}\npub mod {name};",
             feature_name(family),
             unit_test_gate(family)
         ),
@@ -2383,725 +1369,5 @@ fn replace_between(existing: &str, begin: &str, end: &str, body: &str) -> String
             format!("{before}\n{body}\n{after}")
         }
         _ => format!("{existing}\n{begin}\n{body}\n{end}\n"),
-    }
-}
-
-/// Rewrite an `allOf` composition closed with `unevaluatedProperties: false`
-/// into the flat, `additionalProperties: false` object it denotes.
-///
-/// ## Why this exists
-///
-/// A specification that wants to reuse a shared definition *and* add members
-/// of its own has exactly one way to close the result: `unevaluatedProperties`
-/// at the outer level. `additionalProperties` cannot do it — both keywords are
-/// evaluated against the whole instance from within the subschema that
-/// declares them, so an `additionalProperties: false` inside either the shared
-/// definition or the composing schema rejects the other's members. That is why
-/// `credentials/_shared/0.2`'s `IssuedCredentialBase` is deliberately left
-/// open and `vta/credentials/issue/0.2` closes over it.
-///
-/// typify does not model `unevaluatedProperties`. It flattens the `allOf` into
-/// a single struct with every member — the right shape — but emits no
-/// `deny_unknown_fields`, because it only maps `additionalProperties: false`.
-/// The generated type is then *more permissive than the schema it came from*:
-/// a validator rejects an unknown member, the Rust type silently accepts it.
-///
-/// This pass performs the flattening itself, before typify sees the schema, so
-/// the strictness survives the round-trip. The struct typify produces is
-/// unchanged; only the attribute is added.
-///
-/// ## When it declines
-///
-/// Only a composition whose every `allOf` member is a plain object schema —
-/// properties, required, and annotations, with no combinator of its own and no
-/// closure — is flattened. Anything else (a nested `allOf`, a `oneOf`, an
-/// `if`/`then`, a member that closes itself) is left exactly as it was: the
-/// merge would not be sound, and a wrong `deny_unknown_fields` rejects valid
-/// documents, which is worse than the permissiveness it would fix.
-fn flatten_unevaluated_compositions(schema: &mut Value) {
-    let defs = schema.get("definitions").cloned().unwrap_or(Value::Null);
-    flatten_node(schema, &defs);
-}
-
-/// Walk every object node, flattening where [`flatten_here`] applies.
-fn flatten_node(node: &mut Value, defs: &Value) {
-    match node {
-        Value::Object(map) => {
-            flatten_here(map, defs);
-            for (_, v) in map.iter_mut() {
-                flatten_node(v, defs);
-            }
-        }
-        Value::Array(items) => {
-            for v in items.iter_mut() {
-                flatten_node(v, defs);
-            }
-        }
-        _ => {}
-    }
-}
-
-/// Resolve a local `#/definitions/X` reference against the document's
-/// definitions. Returns `None` for anything else — an unresolved cross-file
-/// `$ref` means the composition cannot be reasoned about here, which is a
-/// decline, not an error.
-fn resolve_local_ref<'a>(value: &'a Value, defs: &'a Value) -> Option<&'a Value> {
-    let r = value.get("$ref")?.as_str()?;
-    let name = r.strip_prefix("#/definitions/")?;
-    defs.get(name)
-}
-
-/// Members a plain object schema may carry and still be safe to merge.
-/// Anything outside this set means the subschema constrains the instance in a
-/// way a flat merge would lose.
-const MERGEABLE_KEYS: &[&str] = &[
-    "$anchor",
-    "$comment",
-    "$id",
-    "$schema",
-    "default",
-    "description",
-    "examples",
-    "properties",
-    "required",
-    "title",
-    "type",
-];
-
-/// Flatten one node in place, if it is a closed `allOf` composition of plain
-/// object schemas. No-op otherwise.
-fn flatten_here(map: &mut serde_json::Map<String, Value>, defs: &Value) {
-    if map.get("unevaluatedProperties") != Some(&Value::Bool(false)) {
-        return;
-    }
-    let Some(Value::Array(all_of)) = map.get("allOf") else {
-        return;
-    };
-
-    // Resolve every member first, and only commit once all of them qualify —
-    // a partial merge would produce a struct that is neither the composition
-    // nor the original.
-    let mut resolved = Vec::with_capacity(all_of.len());
-    for member in all_of {
-        let target = match resolve_local_ref(member, defs) {
-            Some(t) => t,
-            None if member.get("$ref").is_none() => member,
-            None => return,
-        };
-        let Some(obj) = target.as_object() else {
-            return;
-        };
-        if obj.keys().any(|k| !MERGEABLE_KEYS.contains(&k.as_str())) {
-            return;
-        }
-        resolved.push(obj.clone());
-    }
-
-    // The outer schema's own members win a collision: it is the more specific
-    // statement, and this is the direction JSON Schema's `allOf` already
-    // resolves to (both constraints apply; the narrower one decides).
-    let mut properties = serde_json::Map::new();
-    let mut required: Vec<Value> = Vec::new();
-    for obj in &resolved {
-        if let Some(Value::Object(props)) = obj.get("properties") {
-            for (k, v) in props {
-                properties.insert(k.clone(), v.clone());
-            }
-        }
-        if let Some(Value::Array(req)) = obj.get("required") {
-            for r in req {
-                if !required.contains(r) {
-                    required.push(r.clone());
-                }
-            }
-        }
-    }
-    if let Some(Value::Object(own)) = map.get("properties") {
-        for (k, v) in own {
-            properties.insert(k.clone(), v.clone());
-        }
-    }
-    if let Some(Value::Array(own_req)) = map.get("required") {
-        for r in own_req {
-            if !required.contains(r) {
-                required.push(r.clone());
-            }
-        }
-    }
-
-    map.remove("allOf");
-    map.remove("unevaluatedProperties");
-    map.insert("type".into(), Value::String("object".into()));
-    map.insert("properties".into(), Value::Object(properties));
-    if !required.is_empty() {
-        map.insert("required".into(), Value::Array(required));
-    }
-    map.insert("additionalProperties".into(), Value::Bool(false));
-}
-
-/// Drop a `oneOf` combinator from the schema typify sees when any of its
-/// branches carries a compound `not` (wrapped in `anyOf`/`allOf`, or a
-/// multi-field `required`) instead of a single `{"required": ["x"]}` guard.
-///
-/// ## Why this exists
-///
-/// A spec expressing "exactly one of A, B, C" (with A, B, C themselves
-/// possibly excluding more than one sibling — SPEC.md's mutual-exclusion
-/// idiom, e.g. `auth/passkey/enroll/invite/update`'s `role` /
-/// `expiresAt` / `extendBy`) writes each branch as `{"required": ["a"],
-/// "not": {"anyOf": [{"required": ["b"]}, {"required": ["c"]}]}}`. typify
-/// (0.6) merges a `oneOf` branch's keywords into the untagged enum variant
-/// it synthesizes for that branch, and it handles a bare `"not": {"required":
-/// ["x"]}` directly — property `x` is simply absent from that variant's
-/// fields. Wrap the same exclusion in `anyOf` and typify's merge instead
-/// produces an uninhabited type (`pub enum PayloadVariant0 {}`) for that
-/// branch, so a document that should satisfy it can never deserialize — and,
-/// worse, a property required only by *that* branch (`role`, excluded by
-/// nobody else) gets silently dropped from every *other* branch's variant
-/// too, so a document combining it with another branch's discriminator also
-/// fails to round-trip.
-///
-/// Re-expressing the same constraint as `anyOf` (at least one) plus a
-/// pairwise `not` (no two at once) — `oneOf`'s own JSON Schema definition —
-/// was tried and does not help: typify applies the same broken merge to a
-/// `not` wrapping `anyOf`/`allOf` regardless of which top-level combinator
-/// carries it, so the replacement produces the identical dropped-property
-/// defect one level up.
-///
-/// The combinator is instead removed outright, with **no** replacement, from
-/// only the copy of the schema handed to typify. `generate_one` captures the
-/// wire schema (`SCHEMA_JSON`, what `ValidatedPayload::validate_value` and
-/// every other language's binding validate against — SPEC.md §7.2 item 2)
-/// *before* this pass runs, so the actual mutual-exclusion constraint is
-/// still enforced at runtime; only the Rust type becomes as permissive as
-/// the TypeScript/Go/Dart bindings already are for this same schema (every
-/// affected member optional, no combinator modelled in the type system).
-/// That is a real loss of a compile-time guarantee, but every alternative
-/// tried produces a Rust type that is not merely less precise, but
-/// *outright wrong* — unable to represent, or silently unable to
-/// deserialize, a document the schema declares valid. A plain discriminated
-/// `oneOf` (every branch's `not`, if any, a single `{"required": ["x"]}`)
-/// typify already renders as a clean Rust enum, and is untouched here.
-fn desugar_oneof_with_compound_not(schema: &mut Value) {
-    desugar_oneof_node(schema);
-}
-
-fn desugar_oneof_node(node: &mut Value) {
-    match node {
-        Value::Object(map) => {
-            let drop = matches!(map.get("oneOf"), Some(Value::Array(branches)) if branches.len() >= 2 && branches.iter().any(has_compound_not));
-            if drop {
-                map.remove("oneOf");
-            }
-            for (_, v) in map.iter_mut() {
-                desugar_oneof_node(v);
-            }
-        }
-        Value::Array(items) => {
-            for v in items.iter_mut() {
-                desugar_oneof_node(v);
-            }
-        }
-        _ => {}
-    }
-}
-
-/// A branch's `not` is "simple" — and left to typify's own direct handling —
-/// only when it is exactly `{"required": ["x"]}` for a single field `x`.
-/// Anything else (wrapped in `anyOf`/`allOf`, more than one required field,
-/// or any other shape) is "compound" and triggers dropping the whole
-/// `oneOf` in [`desugar_oneof_with_compound_not`].
-fn has_compound_not(branch: &Value) -> bool {
-    let Some(not) = branch.get("not") else {
-        return false;
-    };
-    let Some(obj) = not.as_object() else {
-        // `not: true` / `not: false` — not a shape this pass understands;
-        // treat conservatively as compound so the `oneOf` is dropped rather
-        // than handed to typify's oneOf-merge heuristics.
-        return true;
-    };
-    if obj.len() != 1 {
-        return true;
-    }
-    !matches!(obj.get("required"), Some(Value::Array(arr)) if arr.len() == 1)
-}
-
-#[cfg(test)]
-mod flatten_tests {
-    use super::*;
-    use serde_json::json;
-
-    fn flattened(mut schema: Value) -> Value {
-        flatten_unevaluated_compositions(&mut schema);
-        schema
-    }
-
-    /// The shape `vta/credentials/issue/0.2` uses: a `$ref` to a shared open
-    /// definition, the composing schema's own members alongside it, closed
-    /// with `unevaluatedProperties`.
-    #[test]
-    fn merges_a_referenced_base_and_closes_the_result() {
-        let out = flattened(json!({
-            "definitions": {
-                "Base": {
-                    "type": "object",
-                    "properties": { "a": { "type": "string" }, "b": { "type": "string" } },
-                    "required": ["a"]
-                },
-                "Composed": {
-                    "allOf": [{ "$ref": "#/definitions/Base" }],
-                    "properties": { "c": { "type": "string" } },
-                    "unevaluatedProperties": false
-                }
-            }
-        }));
-        let c = &out["definitions"]["Composed"];
-        assert_eq!(c["additionalProperties"], json!(false));
-        assert!(c.get("allOf").is_none(), "the allOf is consumed");
-        assert!(c.get("unevaluatedProperties").is_none());
-        assert_eq!(c["properties"]["a"], json!({ "type": "string" }));
-        assert_eq!(c["properties"]["c"], json!({ "type": "string" }));
-        assert_eq!(c["required"], json!(["a"]));
-    }
-
-    /// The outer schema is the more specific statement, so its own definition
-    /// of a member decides. Merging the other way would let a shared base
-    /// silently widen a member the composing spec deliberately narrowed.
-    #[test]
-    fn the_composing_schema_wins_a_collision() {
-        let out = flattened(json!({
-            "definitions": {
-                "Base": { "type": "object", "properties": { "a": { "type": "string" } } },
-                "Composed": {
-                    "allOf": [{ "$ref": "#/definitions/Base" }],
-                    "properties": { "a": { "type": "integer" } },
-                    "unevaluatedProperties": false
-                }
-            }
-        }));
-        assert_eq!(
-            out["definitions"]["Composed"]["properties"]["a"],
-            json!({ "type": "integer" })
-        );
-    }
-
-    /// A member carrying a combinator of its own is not a plain object, so
-    /// the merge would drop a constraint. Declining leaves the schema exactly
-    /// as it was — permissive, but not wrong.
-    #[test]
-    fn declines_when_a_member_carries_a_combinator() {
-        let input = json!({
-            "definitions": {
-                "Base": { "oneOf": [{ "type": "object" }, { "type": "null" }] },
-                "Composed": {
-                    "allOf": [{ "$ref": "#/definitions/Base" }],
-                    "unevaluatedProperties": false
-                }
-            }
-        });
-        assert_eq!(flattened(input.clone()), input, "left untouched");
-    }
-
-    /// An unresolved `$ref` cannot be reasoned about, and guessing would be
-    /// how a wrong `deny_unknown_fields` gets emitted.
-    #[test]
-    fn declines_on_an_unresolvable_ref() {
-        let input = json!({
-            "definitions": {
-                "Composed": {
-                    "allOf": [{ "$ref": "../elsewhere.json#/$defs/Base" }],
-                    "unevaluatedProperties": false
-                }
-            }
-        });
-        assert_eq!(flattened(input.clone()), input);
-    }
-
-    /// `unevaluatedProperties: true` is not a closure, so there is nothing to
-    /// carry over and nothing to do.
-    #[test]
-    fn ignores_an_open_composition() {
-        let input = json!({
-            "definitions": {
-                "Base": { "type": "object", "properties": { "a": { "type": "string" } } },
-                "Composed": {
-                    "allOf": [{ "$ref": "#/definitions/Base" }],
-                    "unevaluatedProperties": true
-                }
-            }
-        });
-        assert_eq!(flattened(input.clone()), input);
-    }
-
-    /// A schema already closed with `additionalProperties` never had the
-    /// problem; typify handles it, and this pass must not disturb it.
-    #[test]
-    fn leaves_an_already_closed_object_alone() {
-        let input = json!({
-            "definitions": {
-                "Plain": {
-                    "type": "object",
-                    "properties": { "a": { "type": "string" } },
-                    "additionalProperties": false
-                }
-            }
-        });
-        assert_eq!(flattened(input.clone()), input);
-    }
-}
-
-#[cfg(test)]
-mod desugar_oneof_tests {
-    use super::*;
-    use serde_json::json;
-
-    fn desugared(mut schema: Value) -> Value {
-        desugar_oneof_with_compound_not(&mut schema);
-        schema
-    }
-
-    /// The defect's own shape: a role-only branch whose `not` excludes two
-    /// siblings via `anyOf`, alongside two branches with a single-field
-    /// `not` each. The whole `oneOf` is dropped, not just the compound
-    /// branch — `oneOf` is one combinator over the whole array.
-    #[test]
-    fn drops_a_oneof_with_any_compound_not_branch() {
-        let input = json!({
-            "type": "object",
-            "required": ["inviteId"],
-            "oneOf": [
-                {
-                    "required": ["role"],
-                    "not": { "anyOf": [{ "required": ["expiresAt"] }, { "required": ["extendBy"] }] }
-                },
-                { "required": ["expiresAt"], "not": { "required": ["extendBy"] } },
-                { "required": ["extendBy"], "not": { "required": ["expiresAt"] } }
-            ]
-        });
-        let out = desugared(input);
-        assert!(out.get("oneOf").is_none());
-        assert_eq!(out["required"], json!(["inviteId"]));
-    }
-
-    /// A `not` with more than one `required` field (implicit AND, not
-    /// wrapped in `anyOf`) is compound too — only a *single*-field
-    /// `required` is the shape typify handles directly.
-    #[test]
-    fn a_multi_field_required_not_is_compound() {
-        let input = json!({
-            "oneOf": [
-                { "required": ["a"], "not": { "required": ["b", "c"] } },
-                { "required": ["b"] }
-            ]
-        });
-        assert!(desugared(input).get("oneOf").is_none());
-    }
-
-    /// The two-way case every other affected schema in `specs/` uses
-    /// (`auth/revoke-session/0.1`, `vta/app-state/put/1.0`, …): each
-    /// branch's `not` is a single-field `required`, which typify already
-    /// renders as a clean discriminated enum. Left untouched.
-    #[test]
-    fn leaves_a_plain_two_way_oneof_alone() {
-        let input = json!({
-            "oneOf": [
-                { "required": ["sessionId"], "not": { "required": ["all"] } },
-                { "required": ["all"], "not": { "required": ["sessionId"] } }
-            ]
-        });
-        assert_eq!(desugared(input.clone()), input);
-    }
-
-    /// A branch with no `not` at all (e.g. a plain discriminated union) is
-    /// simple by definition and never triggers the drop by itself.
-    #[test]
-    fn a_branch_with_no_not_is_simple() {
-        let input = json!({
-            "oneOf": [
-                { "required": ["kind"], "properties": { "kind": { "const": "a" } } },
-                { "required": ["kind"], "properties": { "kind": { "const": "b" } } }
-            ]
-        });
-        assert_eq!(desugared(input.clone()), input);
-    }
-
-    /// The pass recurses into `$defs`/`definitions` and array members (e.g.
-    /// a nested `allOf`), not just the schema's own top-level `oneOf`.
-    #[test]
-    fn recurses_into_nested_schemas() {
-        let input = json!({
-            "definitions": {
-                "Nested": {
-                    "oneOf": [
-                        {
-                            "required": ["a"],
-                            "not": { "anyOf": [{ "required": ["b"] }] }
-                        },
-                        { "required": ["b"], "not": { "required": ["a"] } }
-                    ]
-                }
-            }
-        });
-        let out = desugared(input);
-        assert!(out["definitions"]["Nested"].get("oneOf").is_none());
-    }
-}
-
-#[cfg(test)]
-mod error_code_tests {
-    use super::*;
-
-    #[test]
-    fn a_details_schema_is_carried_and_its_absence_is_none() {
-        let out = decls(
-            "rooms/keys/file-key",
-            r#"
-errorCodes:
-  - code: rooms/keys/file-key:unknownEpoch
-    meaning: x
-    retryable: false
-    detailsSchema:
-      type: object
-      required: [reason]
-      properties:
-        reason: { type: string, enum: [notDelivered, beyondChain] }
-        heldEpoch: { type: integer, minimum: 1 }
-  - code: rooms/keys/file-key:noGroup
-    meaning: y
-    retryable: false
-"#,
-        )
-        .unwrap();
-        assert_eq!(
-            out[0].details_schema,
-            Some(json!({
-                "type": "object",
-                "required": ["reason"],
-                "properties": {
-                    "reason": { "type": "string", "enum": ["notDelivered", "beyondChain"] },
-                    "heldEpoch": { "type": "integer", "minimum": 1 }
-                }
-            }))
-        );
-        assert_eq!(out[1].details_schema, None);
-    }
-
-    #[test]
-    fn a_details_schema_that_is_not_an_object_is_refused() {
-        let err = decls(
-            "keys/revoke",
-            "errorCodes:\n  - code: keys/revoke:notFound\n    meaning: x\n    retryable: false\n    detailsSchema: true\n",
-        )
-        .unwrap_err();
-        assert!(
-            err.to_string().contains("detailsSchema is not an object"),
-            "{err}"
-        );
-    }
-
-    #[test]
-    fn a_constant_carries_its_details_schema_or_none() {
-        let with = ErrorCodeDecl {
-            code: "rooms/keys/file-key:unknownEpoch".into(),
-            meaning: "x".into(),
-            retryable: false,
-            details_schema: Some(json!({ "type": "object" })),
-            ident: "UNKNOWN_EPOCH".into(),
-        };
-        let without = ErrorCodeDecl {
-            code: "rooms/keys/file-key:noGroup".into(),
-            details_schema: None,
-            ident: "NO_GROUP".into(),
-            ..with.clone()
-        };
-        let out = render_error_codes(&[with, without]).to_string();
-        assert!(
-            out.contains(
-                r#"details_schema : :: core :: option :: Option :: Some ("{\"type\":\"object\"}")"#
-            ),
-            "{out}"
-        );
-        assert!(
-            out.contains("details_schema : :: core :: option :: Option :: None"),
-            "{out}"
-        );
-    }
-
-    fn decls(slug: &str, yaml: &str) -> Result<Vec<ErrorCodeDecl>> {
-        let value: serde_json::Value = serde_saphyr::from_str(yaml).unwrap();
-        error_code_decls(slug, &value)
-    }
-
-    #[test]
-    fn absent_null_and_empty_all_declare_nothing() {
-        assert!(decls("acl/grant", "slug: acl/grant").unwrap().is_empty());
-        assert!(decls("acl/grant", "errorCodes:").unwrap().is_empty());
-        assert!(decls("acl/grant", "errorCodes: []").unwrap().is_empty());
-    }
-
-    #[test]
-    fn a_declaration_becomes_a_shouty_constant_in_declaration_order() {
-        let out = decls(
-            "vtc/join-requests/withdraw",
-            r#"
-errorCodes:
-  - code: vtc/join-requests/withdraw:notFound
-    meaning: >-
-      The applicant has no open request.
-    retryable: false
-  - code: vtc/join-requests/withdraw:alreadyDecided
-    meaning: Terminal.
-    retryable: true
-"#,
-        )
-        .unwrap();
-        assert_eq!(out.len(), 2);
-        assert_eq!(out[0].ident, "NOT_FOUND");
-        assert_eq!(out[0].code, "vtc/join-requests/withdraw:notFound");
-        assert_eq!(out[0].meaning, "The applicant has no open request.");
-        assert!(!out[0].retryable);
-        assert_eq!(out[1].ident, "ALREADY_DECIDED");
-        assert!(out[1].retryable);
-    }
-
-    /// Frozen framework 0.1 specs declare snake_case locals; they must name the
-    /// same shape of constant as a lowerCamelCase one.
-    #[test]
-    fn a_snake_case_local_names_the_same_shape_of_constant() {
-        let out = decls(
-            "acl/grant",
-            "errorCodes:\n  - code: acl/grant:role_not_recognized\n    meaning: x\n    retryable: false\n",
-        )
-        .unwrap();
-        assert_eq!(out[0].ident, "ROLE_NOT_RECOGNIZED");
-    }
-
-    /// SPEC §8.5 rule 2: a family namespace is a proper path prefix of the slug.
-    #[test]
-    fn a_family_namespace_is_accepted() {
-        let out = decls(
-            "keys/revoke",
-            "errorCodes:\n  - code: keys:notFound\n    meaning: x\n    retryable: false\n",
-        )
-        .unwrap();
-        assert_eq!(out[0].ident, "NOT_FOUND");
-    }
-
-    #[test]
-    fn an_unrelated_namespace_is_refused() {
-        let err = decls(
-            "keys/revoke",
-            "errorCodes:\n  - code: acl/grant:notFound\n    meaning: x\n    retryable: false\n",
-        )
-        .unwrap_err();
-        assert!(err.to_string().contains("neither the slug"), "{err}");
-        // `keys/rev` is a string prefix of the slug but not a path prefix.
-        assert!(decls(
-            "keys/revoke",
-            "errorCodes:\n  - code: keys/rev:notFound\n    meaning: x\n    retryable: false\n",
-        )
-        .is_err());
-    }
-
-    #[test]
-    fn a_malformed_local_part_is_refused() {
-        for local in ["NotFound", "", "not-found", "1st"] {
-            let yaml = format!(
-                "errorCodes:\n  - code: \"keys/revoke:{local}\"\n    meaning: x\n    retryable: false\n"
-            );
-            assert!(decls("keys/revoke", &yaml).is_err(), "{local:?} accepted");
-        }
-    }
-
-    #[test]
-    fn a_missing_retryable_is_refused() {
-        assert!(decls(
-            "keys/revoke",
-            "errorCodes:\n  - code: keys/revoke:notFound\n    meaning: x\n",
-        )
-        .is_err());
-    }
-
-    /// Two declarations that would claim one constant: the generator must not
-    /// silently keep one of them.
-    #[test]
-    fn two_declarations_claiming_one_constant_are_refused() {
-        let casing = "errorCodes:\n  - code: keys/revoke:notFound\n    meaning: x\n    retryable: false\n  - code: keys/revoke:not_found\n    meaning: y\n    retryable: false\n";
-        assert!(decls("keys/revoke", casing).is_err());
-        let namespaces = "errorCodes:\n  - code: keys:notFound\n    meaning: x\n    retryable: false\n  - code: keys/revoke:notFound\n    meaning: y\n    retryable: false\n";
-        let err = decls("keys/revoke", namespaces).unwrap_err();
-        assert!(err.to_string().contains("error_codes::NOT_FOUND"), "{err}");
-    }
-
-    #[test]
-    fn an_empty_list_renders_an_empty_slice_and_no_submodule() {
-        let out = render_error_codes(&[]).to_string();
-        assert!(out.contains("pub const ERROR_CODES"));
-        assert!(!out.contains("mod error_codes"));
-    }
-}
-
-#[cfg(test)]
-mod indent_safe_doc_tests {
-    use super::*;
-
-    fn docs_after(source: &str) -> Vec<String> {
-        let mut file: syn::File = syn::parse_str(source).unwrap();
-        indent_safe_docs(&mut file);
-        let mut docs = Vec::new();
-        let syn::Item::Enum(e) = &file.items[0] else {
-            panic!("expected an enum");
-        };
-        for attr in e
-            .attrs
-            .iter()
-            .chain(e.variants.iter().flat_map(|v| v.attrs.iter()))
-        {
-            if let syn::Meta::NameValue(nv) = &attr.meta {
-                if let syn::Expr::Lit(syn::ExprLit {
-                    lit: syn::Lit::Str(s),
-                    ..
-                }) = &nv.value
-                {
-                    docs.push(s.value());
-                }
-            }
-        }
-        docs
-    }
-
-    /// The shape typify gives a titled inline `oneOf` branch: title, blank
-    /// line, description. Unrepaired, rustdoc read the description as an
-    /// indented code block and compiled it as a doctest.
-    #[test]
-    fn a_titled_variant_doc_starts_on_its_own_line() {
-        let docs = docs_after(
-            r#"
-            #[doc = "An account's settings."]
-            pub enum Settings {
-                #[doc = "Settings for aws\n\nEgress: `sts.<region>.amazonaws.com`."]
-                Aws { region: String },
-            }
-            "#,
-        );
-        assert_eq!(
-            docs,
-            [
-                "An account's settings.",
-                "\nSettings for aws\n\nEgress: `sts.<region>.amazonaws.com`.",
-            ]
-        );
-    }
-
-    #[test]
-    fn a_doc_already_on_its_own_line_is_left_alone() {
-        let docs = docs_after(
-            r#"
-            #[doc = "\nOne.\n\nTwo."]
-            pub enum E { A }
-            "#,
-        );
-        assert_eq!(docs, ["\nOne.\n\nTwo."]);
     }
 }

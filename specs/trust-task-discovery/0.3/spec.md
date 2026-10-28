@@ -232,11 +232,11 @@ A success *response* document carries `type: https://trusttasks.org/spec/trust-t
   "issuedAt": "2026-06-20T10:00:01Z",
   "payload": {
     "supportedTypes": [
-      "https://trusttasks.org/spec/acl/change-role/0.1",
-      "https://trusttasks.org/spec/acl/grant/0.1",
-      "https://trusttasks.org/spec/acl/list/0.1",
-      "https://trusttasks.org/spec/acl/revoke/0.1",
-      "https://trusttasks.org/spec/acl/show/0.1"
+      "https://trusttasks.org/spec/acl/change-role/0.2",
+      "https://trusttasks.org/spec/acl/grant/0.2",
+      "https://trusttasks.org/spec/acl/list/0.3",
+      "https://trusttasks.org/spec/acl/revoke/0.2",
+      "https://trusttasks.org/spec/acl/show/0.2"
     ]
   }
 }
@@ -254,11 +254,11 @@ A success *response* document carries `type: https://trusttasks.org/spec/trust-t
   "issuedAt": "2026-06-20T10:00:01Z",
   "payload": {
     "supportedTypes": [
-      "https://trusttasks.org/spec/acl/change-role/0.1",
-      "https://trusttasks.org/spec/acl/grant/0.1",
-      "https://trusttasks.org/spec/acl/list/0.1",
-      "https://trusttasks.org/spec/acl/revoke/0.1",
-      "https://trusttasks.org/spec/acl/show/0.1"
+      "https://trusttasks.org/spec/acl/change-role/0.2",
+      "https://trusttasks.org/spec/acl/grant/0.2",
+      "https://trusttasks.org/spec/acl/list/0.3",
+      "https://trusttasks.org/spec/acl/revoke/0.2",
+      "https://trusttasks.org/spec/acl/show/0.2"
     ]
   }
 }
@@ -280,11 +280,11 @@ A responder that requires the `vnd.affinidi.webvh` `ext` namespace on every `acl
     "frameworkVersion": "0.6.0",
     "supportedTypes": [
       {
-        "type": "https://trusttasks.org/spec/acl/grant/0.1",
+        "type": "https://trusttasks.org/spec/acl/grant/0.2",
         "requiredExt": ["vnd.affinidi.webvh"]
       },
-      "https://trusttasks.org/spec/acl/list/0.1",
-      "https://trusttasks.org/spec/acl/show/0.1"
+      "https://trusttasks.org/spec/acl/list/0.3",
+      "https://trusttasks.org/spec/acl/show/0.2"
     ]
   }
 }
@@ -312,14 +312,14 @@ A responder that accepts a document up to ten minutes after its `issuedAt`, with
     },
     "supportedTypes": [
       {
-        "type": "https://trusttasks.org/spec/acl/grant/0.1",
+        "type": "https://trusttasks.org/spec/acl/grant/0.2",
         "acceptanceWindow": {
           "maxAgeSeconds": 120,
           "clockSkewSeconds": 30
         }
       },
-      "https://trusttasks.org/spec/acl/list/0.1",
-      "https://trusttasks.org/spec/acl/show/0.1"
+      "https://trusttasks.org/spec/acl/list/0.3",
+      "https://trusttasks.org/spec/acl/show/0.2"
     ]
   }
 }

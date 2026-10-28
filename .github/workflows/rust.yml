@@ -9,6 +9,8 @@ on:
       - "trust-tasks/**"
       - "trust-tasks-rs/**"
       - "trust-tasks-codegen/**"
+      - "trust-tasks-build/**"
+      - "examples/**"
       - "trust-tasks-https/**"
       - "trust-tasks-didcomm/**"
       # These three were missing, so a change to one of them ran no Rust CI at
@@ -20,11 +22,14 @@ on:
       - "trust-tasks-ceremony/**"
       - "trust-tasks-proof/**"
       - "trust-tasks-tsp/**"
+      - "trust-tasks-cli/**"
+      # The by-digest store script the `cli` job builds its registry with.
+      - "scripts/write-by-digest-store.sh"
       - "Cargo.toml"
       - "Cargo.lock"
       - "specs/**"
       # GETTING-STARTED.md's Rust is asserted equal to
-      # trust-tasks/examples/acl_grant_roundtrip.rs by a test in that crate,
+      # examples/getting-started/src/main.rs by a test in trust-tasks,
       # so a doc-only edit still has to run cargo test.
       - "GETTING-STARTED.md"
       - ".github/workflows/rust.yml"
@@ -156,6 +161,38 @@ jobs:
             echo "::endgroup::"
           done
 
+  # An application that generates its tasks at build time: three registry
+  # versions and one from a third-party source pinned in
+  # examples/consumer-app/trust-tasks.lock, their bundles vendored beside it,
+  # `trust-tasks-rs` with `default-features = false`. Building it runs
+  # trust-tasks-build (digest check + generation) in a real build.rs, and
+  # running it is a round trip through the generated types. The whole job is
+  # seconds where a build of the prebuilt modules is minutes — which is the
+  # point of milestone 2 (docs/design/consumer-side-generation.md).
+  consumer-app:
+    name: example application (trust-tasks-build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - name: cargo run -p trust-tasks-example-consumer-app
+        run: cargo run -p trust-tasks-example-consumer-app
+      - name: cargo test -p trust-tasks-build --all-features
+        run: cargo test -p trust-tasks-build --all-features
+      # The example's third-party fixture registry is what its specs build to
+      # (`trust-tasks registry build`, the publisher's side), and the vendored
+      # bundles are what the lock pins — offline, as an application's CI runs it.
+      - name: fixture registry is up to date, and the lock verifies
+        run: |
+          cargo run -q -p trust-tasks-cli -- registry build \
+            --specs examples/consumer-app/fixture-registry/specs \
+            --type-uri-prefix https://tasks.example.com \
+            --out examples/consumer-app/fixture-registry/site \
+            --official-specs specs
+          git diff --exit-code -- examples/consumer-app/fixture-registry
+          test -z "$(git status --porcelain -- examples/consumer-app/fixture-registry)"
+          cargo run -q -p trust-tasks-cli -- -C examples/consumer-app check
+
   doc:
     name: cargo doc
     runs-on: ubuntu-latest
@@ -196,26 +233,94 @@ jobs:
   # resolver, a `msrv` job picking a lower toolchain will be
   # appropriate again.
 
-  # A value inserted into an existing enum anywhere but its end shifts the
-  # discriminant of every generated Rust variant after it, which makes the whole
-  # core version group a breaking release (#819 made 0.32.0 breaking this way;
-  # #834 would have made 0.33.0 breaking until #835 appended instead). Caught
-  # here, on the pull request, rather than in the Release PR after the merge.
-  enum-append-only:
-    name: enum values are append-only
+  # A released specification is compiled into every library, so an in-place
+  # edit that changes its generated types is a breaking release of the whole
+  # core version group (#858, #758 and #750 each cost a MINOR; #819's mid-enum
+  # insertion made 0.32.0 breaking). Caught here, on the pull request: a released
+  # version may change only additively, and anything else is a new version.
+  published-schemas:
+    name: published schemas change only additively
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
         with:
+          # Full history AND tags: the comparison is against the last
+          # trust-tasks-rs-v* release, and the script refuses to run without it.
           fetch-depth: 0
       - uses: actions/setup-node@v6
         with:
           node-version: "24"
-      - name: Check every changed enum only grew at its end
+      - name: Check every released spec changed only additively
         env:
-          ENUM_BASE_REF: ${{ github.event.pull_request.base.sha }}
-        run: node scripts/check-enum-append-only.mjs
+          PUBLISHED_BASE_REF: ${{ github.event.pull_request.base.sha }}
+        run: node scripts/check-published-schemas.mjs
+
+  # The crates' counterpart of `go API compatibility` and friends: each
+  # published crate against its own last release, failing an incompatible
+  # change the PR title does not declare with a `!`. This used to run inside
+  # the Release PR job (release-plz's `semver_check`), after the merge and over
+  # every generated module (~12.6 GB, 8-13 minutes, repeatedly killed for
+  # memory). Here it compares the runtime plus one generated family and takes
+  # about a minute; what it checks and why that is enough is in the script.
+  api-compat:
+    name: rs API compatibility
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          # Tags for the baselines, history for the "already breaking" check.
+          fetch-depth: 0
+      # A changed binding crate pulls in Affinidi's TDK, whose build scripts
+      # probe for libdbus-1. See the `test` job for why `update` may fail.
+      - name: Install libdbus-1-dev
+        run: |
+          sudo apt-get update || true
+          sudo apt-get install -y libdbus-1-dev pkg-config
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-semver-checks
+      # Only a PR that changes a binding crate needs this: documenting one
+      # compiles trust-tasks-rs with every family, ~13 GB resident, measured.
+      # A standard runner has 16 GB; swap lets it finish under pressure. On
+      # whichever of / and /mnt has more room, up to 16 GB, leaving 8 GB for
+      # the builds — the runner image's disk layout is not ours to assume.
+      - name: Add swap
+        run: |
+          sudo systemctl stop systemd-oomd || true
+          sudo swapoff -a
+          sudo rm -f /mnt/swapfile /swapfile
+          root_free=$(df --output=avail -BG / | tail -1 | tr -dc 0-9)
+          mnt_free=$(df --output=avail -BG /mnt | tail -1 | tr -dc 0-9)
+          if [ "$mnt_free" -gt "$root_free" ]; then dir=/mnt free=$mnt_free; else dir='' free=$root_free; fi
+          size=$(( free - 8 < 16 ? free - 8 : 16 ))
+          if [ "$size" -lt 4 ]; then
+            echo "::warning::only ${free}G free; not adding swap"
+          else
+            sudo fallocate -l "${size}G" "$dir/swapfile"
+            sudo chmod 600 "$dir/swapfile"
+            sudo mkswap "$dir/swapfile"
+            sudo swapon "$dir/swapfile"
+          fi
+          free -h
+      - name: Compare with the last releases
+        # The title is read through the API, never interpolated into the
+        # script body (see go.yml's api-compat for why it is fetched now rather
+        # than taken from the event: retitle, re-run, and this sees the change).
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          EVENT_TITLE: ${{ github.event.pull_request.title }}
+          BASE_REF: ${{ github.event.pull_request.base.sha }}
+          # Lints from the published crates' own source are not this job's
+          # business; cargo-semver-checks builds both trees.
+          RUSTFLAGS: ""
+        run: |
+          PR_TITLE=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq .title) || PR_TITLE="$EVENT_TITLE"
+          export PR_TITLE
+          scripts/check-rs-api-compat.sh
 
   fmt:
     name: cargo fmt
@@ -241,6 +346,19 @@ jobs:
           - { name: --all-features, flags: --all-features }
     steps:
       - uses: actions/checkout@v6
+      # The same margin the `test` job has, for the same reason: checking the
+      # whole workspace with every generated module beside the TDK crates has
+      # peaked past a hosted runner's 16 GB, and the kernel then kills the job
+      # (exit 143, "The runner has received a shutdown signal") rather than
+      # failing it.
+      - name: Add swap
+        run: |
+          sudo swapoff -a || true
+          sudo fallocate -l 10G /swapfile
+          sudo chmod 600 /swapfile
+          sudo mkswap /swapfile
+          sudo swapon /swapfile
+          free -h
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
@@ -455,7 +573,32 @@ jobs:
           sudo apt-get install -y libdbus-1-dev pkg-config
       # `publish = false` crates are not uploaded, so they are not checked.
       - name: cargo package --workspace
-        run: cargo package --workspace --exclude trust-tasks-codegen
+        run: cargo package --workspace --exclude trust-tasks-codegen --exclude trust-tasks-example-consumer-app --exclude trust-tasks-example-getting-started
+
+  # The `trust-tasks` CLI against the WHOLE registry, as deploy.yml publishes
+  # it: every bundle, the index and the by-digest store, built here by the same
+  # codegen and script. The `test` job already runs this crate's tests against
+  # its fixture registry; this adds `full_registry_round_trip`, which is
+  # skipped there because it needs `TRUST_TASKS_TEST_REGISTRY_FULL`. Light: the
+  # codegen's `--bundles` mode takes about a second, and neither crate links
+  # trust-tasks-rs.
+  cli:
+    name: cargo test (trust-tasks-cli, against the whole registry)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+      - name: Build the registry (bundles, index, by-digest store)
+        run: |
+          registry="$RUNNER_TEMP/registry"
+          cargo run -q --release -p trust-tasks-codegen -- --bundles "$registry/specs"
+          scripts/write-by-digest-store.sh "$registry/specs"
+          echo "TRUST_TASKS_TEST_REGISTRY_FULL=$registry" >> "$GITHUB_ENV"
+      - name: cargo test -p trust-tasks-cli
+        run: cargo test -p trust-tasks-cli
 
   deny:
     name: cargo deny

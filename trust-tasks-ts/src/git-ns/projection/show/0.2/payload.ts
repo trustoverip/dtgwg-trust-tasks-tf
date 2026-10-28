@@ -3,11 +3,13 @@
  * Source: specs/git-ns/projection/show/0.2/payload.schema.json
  */
 
-import type { Did_GitNsV0_3 as Did, Ext, Resource, Right } from "../../../../_shared/components.js";
+import type { Did_GitNsV0_3 as Did, Ext, Resource_GitNsV0_1 as Resource, Right } from "../../../../_shared/components.js";
 
 
 /**
  * A community administrator reads what the VTC has published (and what it still owes) to the Trust Registry for its git namespaces. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by git-ns/projection/show/0.3
  */
 export interface GitNamespacesShowTrustRegistryProjectionPayload {
   /**
@@ -26,6 +28,8 @@ export interface GitNamespacesShowTrustRegistryProjectionPayload {
 }
 /**
  * What is published, and how far it is from what the VTC's records currently call for.
+ *
+ * @deprecated superseded by git-ns/projection/show/0.3
  */
 export interface GitNamespacesShowTrustRegistryProjectionResponsePayload {
   /**
@@ -97,13 +101,37 @@ export type { Did, Ext, Resource, Right };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/git-ns/projection/show/0.2" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by git-ns/projection/show/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by git-ns/projection/show/0.3
+ */
 export type Payload = GitNamespacesShowTrustRegistryProjectionPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/git-ns/projection/show/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by git-ns/projection/show/0.3
+ */
 export type Response = GitNamespacesShowTrustRegistryProjectionResponsePayload;
 
 /**

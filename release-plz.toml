@@ -28,26 +28,21 @@
 # ritual used to cost.
 changelog_config = "cliff.toml"
 
-# Compare each crate's public API against its published version and force a
-# compatibility-breaking bump when it actually broke, rather than trusting an
-# author to notice.
+# OFF: the crates' public APIs are checked on every pull request instead
+# (`rs API compatibility` in rust.yml, scripts/check-rs-api-compat.sh), each
+# against its own last release, and an undeclared break is refused there. That
+# leaves the bump to the conventional commits, as for the npm, Go and Dart
+# packages: a `!` scoped to a crate (or a BREAKING CHANGE trailer) moves the
+# compatibility field, anything else is a patch.
 #
-# ON FOR ALL NINE, deliberately. The sibling VTI workspace switches this off for
-# twelve of its crates, but those are published only to satisfy crates.io's
-# rule that a published crate's whole closure must be published — nothing
-# consumes their APIs. The opposite is true here: every crate this repo
-# publishes exists to be consumed directly (a transport binding, the proof
-# backend, the ceremony helpers, the generated types), so a silent break in any
-# of them reaches somebody.
-#
-# The cost is real — cargo-semver-checks builds rustdoc JSON twice per crate,
-# current and baseline — but it is paid once per merge to main in the
-# `release-pr` job, not on every pull request, which is the tax VTI was
-# avoiding. If the job outgrows its timeout, `trust-tasks` (the facade) is the
-# first candidate to switch off: it only re-exports the other eight, so most of
-# its surface is already checked on the crate that owns it. Turn it off there
-# before weakening the check anywhere that owns an API.
-semver_check = true
+# It was on, and run here, until the Release PR job outgrew it: cargo-semver-
+# checks builds rustdoc JSON twice per crate, and over every generated family
+# trust-tasks-rs peaks at ~12.6 GB. The job took 8-13 minutes after every merge
+# to main, was repeatedly killed for memory on a 16 GB runner, and found a
+# break only after the PR that made it had merged. On the PR the check covers
+# the runtime plus one generated family and takes about a minute; the script's
+# header says why that is enough.
+semver_check = false
 
 # One GitHub Release per published crate, carrying that crate's changelog
 # section. This is what an external consumer lands on from crates.io.
@@ -108,8 +103,10 @@ publish_no_verify = true
 # once they share a floor the breaking bump dominates and every crate carries
 # the right signal.
 #
-# NOT in the group: `trust-tasks-ceremony` (no `trust-tasks-rs` dependency at
-# all, so it versions on its own) and `trust-tasks-codegen` (`publish = false`).
+# NOT in the group: `trust-tasks-ceremony` and `trust-tasks-build` (no
+# `trust-tasks-rs` dependency at all, so each versions on its own — the code
+# `trust-tasks-build` generates names `trust-tasks-rs` items, but as text, not
+# as a Cargo dependency), and `trust-tasks-codegen` (`publish = false`).
 
 [[package]]
 name = "trust-tasks-rs"
@@ -142,3 +139,9 @@ version_group = "core"
 [[package]]
 name = "trust-tasks-capability-client"
 version_group = "core"
+
+# trust-tasks-cli and trust-tasks-build need no entry: neither depends on
+# trust-tasks-rs, so each versions on its own, like trust-tasks-ceremony. Both
+# were held back with `release = false` until their manual first publish
+# (0.1.0, with `publish.yml` registered as their Trusted Publisher); a new
+# crate starts the same way (RELEASING.md).

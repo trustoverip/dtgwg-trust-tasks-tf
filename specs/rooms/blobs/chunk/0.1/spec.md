@@ -61,7 +61,7 @@ related:
 
 ## Abstract
 
-The **Rooms Blobs — Chunk** Trust Task returns one chunk of a blob whose download was opened by [`rooms/blobs/get`](../../get/0.1/spec.md). Chunks may be fetched in any order, in parallel, and again; the reader checks each against the manifest it verified, so the host is trusted for availability only.
+The **Rooms Blobs — Chunk** Trust Task returns one chunk of a blob whose download was opened by [`rooms/blobs/get`](../../get/0.2/spec.md). Chunks may be fetched in any order, in parallel, and again; the reader checks each against the manifest it verified, so the host is trusted for availability only.
 
 This is the room counterpart of [`backup/get-chunk`](../../../../backup/get-chunk/0.1/spec.md), with the same chunk vocabulary. A chunk request carries no room presentation: the open download is its authority, and it belongs to the party that opened it.
 

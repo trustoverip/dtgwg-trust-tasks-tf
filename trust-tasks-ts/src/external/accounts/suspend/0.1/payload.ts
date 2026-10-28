@@ -3,11 +3,13 @@
  * Source: specs/external/accounts/suspend/0.1/payload.schema.json
  */
 
-import type { AccountBinding, AccountContextId, AccountId, AccountProbeReport, AccountProbeStep, AccountPublicMaterial, AccountSecretInfo, AccountSettings, AccountState, AwsArn, AwsRegion, CredentialScopeCeiling, DigestMultibase, Ext, ExternalAccount, ProviderBucketName, ProviderHttpsUrl, ProviderObjectAction, ProviderObjectPrefix, SecretFingerprint, SuiMoveCall } from "../../../../_shared/components.js";
+import type { AccountBinding, AccountContextId, AccountId, AccountProbeReport_ExternalV0_1 as AccountProbeReport, AccountProbeStep, AccountPublicMaterial, AccountSecretInfo, AccountSettings, AccountState, AwsArn, AwsRegion, CredentialScopeCeiling, DigestMultibase, Ext, ExternalAccount_ExternalV0_1 as ExternalAccount, ProviderBucketName, ProviderHttpsUrl, ProviderObjectAction, ProviderObjectPrefix, SecretFingerprint, SuiMoveCall } from "../../../../_shared/components.js";
 
 
 /**
  * A manager suspends an external account — the kill switch: every issuance and signature is refused at once, by one person, without consent. The outer document members are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by external/accounts/suspend/0.2
  */
 export interface ExternalAccountsSuspendPayload {
   context: AccountContextId;
@@ -18,6 +20,7 @@ export interface ExternalAccountsSuspendPayload {
   reason?: string;
   ext?: Ext;
 }
+/** @deprecated superseded by external/accounts/suspend/0.2 */
 export interface ExternalAccountsSuspendResponsePayload {
   account: ExternalAccount;
   ext?: Ext;
@@ -29,13 +32,37 @@ export type { AccountBinding, AccountContextId, AccountId, AccountProbeReport, A
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/external/accounts/suspend/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by external/accounts/suspend/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by external/accounts/suspend/0.2
+ */
 export type Payload = ExternalAccountsSuspendPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/external/accounts/suspend/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by external/accounts/suspend/0.2
+ */
 export type Response = ExternalAccountsSuspendResponsePayload;
 
 /**

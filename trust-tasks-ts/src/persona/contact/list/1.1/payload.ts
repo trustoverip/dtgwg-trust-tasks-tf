@@ -45,7 +45,7 @@ export interface PersonaContactListResponsePayload {
   contacts: {
     contactId: Ulid;
     /**
-     * The DID the contact disclosed. Absent for a contact made from a community directory entry whose DID the holder has not been shown (persona/contact/put/1.1, linking form).
+     * The DID the contact disclosed. Absent for a contact made from a community directory entry whose DID the holder has not been shown (persona/contact/put/1.1 and later, linking form).
      */
     subjectDid?: string;
     knownByPersona: string;
@@ -77,6 +77,22 @@ export type { DirectoryEntryId, DirectoryRef, Ext, ListId, ListIds, Petname, Uli
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/persona/contact/list/1.1" as const;
+
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = null;
 
 /** Stable alias for this specification's request payload shape. */
 export type Payload = PersonaContactListPayload;
@@ -181,7 +197,7 @@ export const PAYLOAD_SCHEMA = {
               "subjectDid": {
                 "type": "string",
                 "minLength": 1,
-                "description": "The DID the contact disclosed. Absent for a contact made from a community directory entry whose DID the holder has not been shown (persona/contact/put/1.1, linking form)."
+                "description": "The DID the contact disclosed. Absent for a contact made from a community directory entry whose DID the holder has not been shown (persona/contact/put/1.1 and later, linking form)."
               },
               "knownByPersona": {
                 "type": "string",
@@ -343,7 +359,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
               "subjectDid": {
                 "type": "string",
                 "minLength": 1,
-                "description": "The DID the contact disclosed. Absent for a contact made from a community directory entry whose DID the holder has not been shown (persona/contact/put/1.1, linking form)."
+                "description": "The DID the contact disclosed. Absent for a contact made from a community directory entry whose DID the holder has not been shown (persona/contact/put/1.1 and later, linking form)."
               },
               "knownByPersona": {
                 "type": "string",

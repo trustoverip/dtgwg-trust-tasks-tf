@@ -127,7 +127,7 @@ It travels once, inside `evidence.outcome`, under the witness's proof. A second 
 
 ### Reading the evidence back later
 
-The VTA stores both evidence documents with the VWC, so that a later presentation of the VWC can ship them. [`vault/credentials/get/0.1`](../../../../vault/credentials/get/0.1/spec.md) returns a stored credential and nothing beside it. [`vta/witness/list`](../../list/0.1/spec.md) reads back every stored VWC with its evidence, exactly as stored, so a client that lost this response — or another device of the same principal — can still present the VWC.
+The VTA stores both evidence documents with the VWC, so that a later presentation of the VWC can ship them. [`vault/credentials/get/0.2`](../../../../vault/credentials/get/0.2/spec.md) returns a stored credential and nothing beside it. [`vta/witness/list`](../../list/0.2/spec.md) reads back every stored VWC with its evidence, exactly as stored, so a client that lost this response — or another device of the same principal — can still present the VWC.
 
 ## Request
 

@@ -1,0 +1,23 @@
+[
+  {
+    "note": "There is no subject: the answer is the caller's own administered namespaces, never someone else's.",
+    "payload": {
+      "subject": "did:webvh:QmBobScid2:acme-vtc.example:bob"
+    }
+  },
+  {
+    "note": "`namespace` is the VTC's identifier, not a resource filter by pattern; it cannot be empty.",
+    "payload": {
+      "namespace": ""
+    }
+  },
+  {
+    "note": "`namespace` names one namespace.",
+    "payload": {
+      "namespace": [
+        "ns_01J8Z6Q4M2",
+        "ns_01J8Z6Q4M3"
+      ]
+    }
+  }
+]

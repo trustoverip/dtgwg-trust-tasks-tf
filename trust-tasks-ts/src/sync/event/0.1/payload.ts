@@ -8,6 +8,8 @@ import type { AclChangedEvent_SyncV0_1 as AclChangedEvent, AndroidApp_VaultV0_1 
 
 /**
  * One-way push notification from the maintainer to a subscribing consumer. Carries a single SyncEvent (vault.upserted, vault.deleted, acl.changed, policy.changed). The consumer updates its cache and does NOT respond — there is no #response form. For offline catch-up the consumer uses vault/sync/0.1 to pull missed events.
+ *
+ * @deprecated superseded by sync/event/0.2
  */
 export interface SyncEventPayload {
   event: SyncEvent;
@@ -20,7 +22,27 @@ export type { AclChangedEvent, AndroidApp, AttachmentRef, Did, Ext, IosApp, Poli
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/sync/event/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by sync/event/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by sync/event/0.2
+ */
 export type Payload = SyncEventPayload;
 
 /**

@@ -54,7 +54,7 @@ related:
 The **Rooms Keys — Present** Trust Task produces a presentation for one room operation,
 on behalf of a caller that does not hold the credentials behind it.
 
-The counterpart to [`rooms/keys/open`](../../open/0.1/spec.md): that one keeps key material
+The counterpart to [`rooms/keys/open`](../../open/0.2/spec.md): that one keeps key material
 from crossing to an agent, this one keeps *credentials* from crossing.
 
 **A presentation is scoped to the action it was asked for, and granted to the caller that

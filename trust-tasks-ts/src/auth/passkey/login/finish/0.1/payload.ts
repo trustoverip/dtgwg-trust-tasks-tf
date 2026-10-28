@@ -8,6 +8,8 @@ import type { AuthenticatorAssertionResponseLogin, Ext, Session_AuthV0_1 as Sess
 
 /**
  * Submit the WebAuthn assertion that completes a passkey login or step-up ceremony. On success the auth service issues a session (login) or elevates an existing session's acr (step-up).
+ *
+ * @deprecated superseded by auth/passkey/login/finish/0.2
  */
 export interface AuthPasskeyLoginFinish {
   /**
@@ -25,6 +27,8 @@ export interface AuthPasskeyLoginFinish {
 }
 /**
  * Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/login/finish/0.1#response. For `purpose: login` the payload includes the new session + tokens; for `purpose: step-up` only the elevated session is included (the producer's existing tokens are unchanged — they now carry a higher acr at the next token introspection).
+ *
+ * @deprecated superseded by auth/passkey/login/finish/0.2
  */
 export interface AuthPasskeyLoginFinishResponsePayload {
   session: Session;
@@ -42,13 +46,37 @@ export type { AuthenticatorAssertionResponseLogin, Ext, Session, TokenBundle };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/passkey/login/finish/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by auth/passkey/login/finish/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by auth/passkey/login/finish/0.2
+ */
 export type Payload = AuthPasskeyLoginFinish;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/auth/passkey/login/finish/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by auth/passkey/login/finish/0.2
+ */
 export type Response = AuthPasskeyLoginFinishResponsePayload;
 
 /**

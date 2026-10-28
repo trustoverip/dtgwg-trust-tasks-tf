@@ -7,7 +7,7 @@ import type { AclChangedEvent_SyncV0_2 as AclChangedEvent, AndroidApp_VaultV0_2 
 
 
 /**
- * One-way push notification from the maintainer to a subscribing consumer. Carries a single SyncEvent (vault.upserted, vault.deleted, acl.changed, policy.changed). The consumer updates its cache and does NOT respond — there is no #response form. For offline catch-up the consumer uses vault/sync/0.1 to pull missed events.
+ * One-way push notification from the maintainer to a subscribing consumer. Carries a single SyncEvent (vault.upserted, vault.deleted, acl.changed, policy.changed). The consumer updates its cache and does NOT respond — there is no #response form. For offline catch-up the consumer uses vault/sync/0.3 to pull missed events.
  */
 export interface SyncEventPayload {
   event: SyncEvent;
@@ -19,6 +19,22 @@ export type { AclChangedEvent, AndroidApp, AttachmentRef, Did, Ext, IosApp, Poli
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/sync/event/0.2" as const;
+
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = null;
 
 /** Stable alias for this specification's request payload shape. */
 export type Payload = SyncEventPayload;
@@ -36,7 +52,7 @@ export const PAYLOAD_SCHEMA = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/sync/event/0.2",
   "title": "Sync Event — payload",
-  "description": "One-way push notification from the maintainer to a subscribing consumer. Carries a single SyncEvent (vault.upserted, vault.deleted, acl.changed, policy.changed). The consumer updates its cache and does NOT respond — there is no #response form. For offline catch-up the consumer uses vault/sync/0.1 to pull missed events.",
+  "description": "One-way push notification from the maintainer to a subscribing consumer. Carries a single SyncEvent (vault.upserted, vault.deleted, acl.changed, policy.changed). The consumer updates its cache and does NOT respond — there is no #response form. For offline catch-up the consumer uses vault/sync/0.3 to pull missed events.",
   "type": "object",
   "additionalProperties": false,
   "required": [

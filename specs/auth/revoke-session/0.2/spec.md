@@ -120,7 +120,7 @@ Verifying the `proof` establishes who is acting, never that they may act on the 
 * **Producer.** The party requesting the revocation; identified by `issuer`. Either the subject itself or a party with authority over the subject's access.
 * **Subject.** The party the targeted sessions belong to — the producer, or the party named in `subject`.
 * **Auth service.** The party holding the sessions; identified by `recipient`.
-* **Session.** Server-side authenticated state created by a prior authentication (for example [`auth/authenticate`](../../authenticate/0.1/spec.md)), to which access and refresh tokens are bound.
+* **Session.** Server-side authenticated state created by a prior authentication (for example [`auth/authenticate`](../../authenticate/0.3/spec.md)), to which access and refresh tokens are bound.
 
 ## Request
 

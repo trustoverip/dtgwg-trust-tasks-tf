@@ -53,11 +53,11 @@ DID it will use and whether it requests a witnessed exchange; the counterparty
 accepts (naming its own relationship DID) or declines.
 
 This is the peer-to-peer sibling of the community-mediated
-[`vtc/relationships/request`](../../../../vtc/relationships/request/0.1/spec.md):
+[`vtc/relationships/request`](../../../../vtc/relationships/request/0.2/spec.md):
 that specification obtains one credential from a community member; this
 exchange is **mutual** (both parties issue, via
 [`vrc/relationships/issue`](../../issue/0.1/spec.md)) and optionally
-**witnessed** (via [`witness/session`](../../../../witness/session/0.1/spec.md)).
+**witnessed** (via [`witness/session`](../../../../witness/session/0.2/spec.md)).
 
 ## The exchange this document opens
 

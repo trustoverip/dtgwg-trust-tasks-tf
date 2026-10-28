@@ -7,7 +7,7 @@ import type { BoardHead, DigestMultibase, ElectionId, ElectionState, ElectionSum
 
 
 /**
- * The community closes voting in one of its elections before `votingCloses`, where the manifest allows it.
+ * The community closes voting in one of its elections before `votingClosesAt` (`votingCloses` in a manifest pinned to `voting/_shared/0.1`), where the manifest allows it.
  */
 export interface VotingElectionClosePayload {
   /**
@@ -32,6 +32,22 @@ export type { BoardHead, DigestMultibase, ElectionId, ElectionState, ElectionSum
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/voting/election/close/0.1" as const;
 
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = null;
+
 /** Stable alias for this specification's request payload shape. */
 export type Payload = VotingElectionClosePayload;
 
@@ -54,7 +70,7 @@ export const PAYLOAD_SCHEMA = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/voting/election/close/0.1",
   "title": "Voting — Election Close — payload",
-  "description": "The community closes voting in one of its elections before `votingCloses`, where the manifest allows it.",
+  "description": "The community closes voting in one of its elections before `votingClosesAt` (`votingCloses` in a manifest pinned to `voting/_shared/0.1`), where the manifest allows it.",
   "type": "object",
   "additionalProperties": false,
   "required": [

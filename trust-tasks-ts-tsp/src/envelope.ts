@@ -1,4 +1,4 @@
-import type { TransportContext, TransportHandler } from "@openvtc/trust-tasks";
+import type { TransportContext, TransportHandler } from "@openvtc/trust-tasks/runtime";
 import { pack, unpack, decodeEnvelope, type PackKeys, type UnpackKeys } from "@openvtc/vti-tsp-js";
 
 /** The binding's stable identifier (`bindings/tsp/0.1` §1). Never on the wire. */

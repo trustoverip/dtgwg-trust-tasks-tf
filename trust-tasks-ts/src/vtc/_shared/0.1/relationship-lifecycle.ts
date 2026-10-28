@@ -14,4 +14,4 @@ export interface VTCSharedRelationshipLifecycleDefinitions {
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../../_shared/components.js".
  */
-export type { InForce, LifecycleReason } from "../../../_shared/components.js";
+export type { InForce_VtcV0_1 as InForce, LifecycleReason } from "../../../_shared/components.js";

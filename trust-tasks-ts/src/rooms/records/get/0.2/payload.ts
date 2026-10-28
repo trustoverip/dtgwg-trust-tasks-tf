@@ -79,7 +79,7 @@ export interface RoomsRecordsGetResponsePayload {
    */
   trace?: RecordTrace;
   /**
-   * The stored blobs this record names, exactly as rooms/records/put/0.2 wrote them: the file's ciphertext, fetched with rooms/blobs/get. Absent when the record names none, when it is retracted, and on records written by put 0.1. Cleartext on every tier, as on the write. NOT committed: CommittedRecord predates it, so a reader removes it, with the verification members and `ext`, before hashing the leaf (see `trace`).
+   * The stored blobs this record names, exactly as rooms/records/put (0.2 and later) wrote them: the file's ciphertext, fetched with rooms/blobs/get. Absent when the record names none, when it is retracted, and on records written by put 0.1. Cleartext on every tier, as on the write. NOT committed: CommittedRecord predates it, so a reader removes it, with the verification members and `ext`, before hashing the leaf (see `trace`).
    *
    * @minItems 1
    * @maxItems 1
@@ -93,6 +93,22 @@ export type { AuthorityPresentation, BlobRef, DataCommitment, DigestMultibase, E
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/rooms/records/get/0.2" as const;
+
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = null;
 
 /** Stable alias for this specification's request payload shape. */
 export type Payload = RoomsRecordsGetPayload;
@@ -217,7 +233,7 @@ export const PAYLOAD_SCHEMA = {
           "items": {
             "$ref": "#/$defs/BlobRef"
           },
-          "description": "The stored blobs this record names, exactly as rooms/records/put/0.2 wrote them: the file's ciphertext, fetched with rooms/blobs/get. Absent when the record names none, when it is retracted, and on records written by put 0.1. Cleartext on every tier, as on the write. NOT committed: CommittedRecord predates it, so a reader removes it, with the verification members and `ext`, before hashing the leaf (see `trace`)."
+          "description": "The stored blobs this record names, exactly as rooms/records/put (0.2 and later) wrote them: the file's ciphertext, fetched with rooms/blobs/get. Absent when the record names none, when it is retracted, and on records written by put 0.1. Cleartext on every tier, as on the write. NOT committed: CommittedRecord predates it, so a reader removes it, with the verification members and `ext`, before hashing the leaf (see `trace`)."
         },
         "ext": {
           "$ref": "#/$defs/Ext"
@@ -445,7 +461,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "items": {
             "$ref": "#/$defs/BlobRef"
           },
-          "description": "The stored blobs this record names, exactly as rooms/records/put/0.2 wrote them: the file's ciphertext, fetched with rooms/blobs/get. Absent when the record names none, when it is retracted, and on records written by put 0.1. Cleartext on every tier, as on the write. NOT committed: CommittedRecord predates it, so a reader removes it, with the verification members and `ext`, before hashing the leaf (see `trace`)."
+          "description": "The stored blobs this record names, exactly as rooms/records/put (0.2 and later) wrote them: the file's ciphertext, fetched with rooms/blobs/get. Absent when the record names none, when it is retracted, and on records written by put 0.1. Cleartext on every tier, as on the write. NOT committed: CommittedRecord predates it, so a reader removes it, with the verification members and `ext`, before hashing the leaf (see `trace`)."
         },
         "ext": {
           "$ref": "#/$defs/Ext"

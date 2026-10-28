@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/pcs/vote/0.2",
+  "title": "VTA PCS — Vote — payload",
+  "description": "A voter's client hands its VTA a ballot; the VTA checks it against the election's manifest, makes the ticket's attestation over it, and returns the complete voting/ballot/cast document, signed by a did:key used for this cast alone, for the client to send.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contextId",
+    "community",
+    "parameters",
+    "manifest",
+    "ballot"
+  ],
+  "properties": {
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "The context the voter belongs to."
+    },
+    "community": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "description": "The community's DID. MUST equal the manifest's `community`."
+    },
+    "parameters": {
+      "$ref": "../../../../voting/_shared/0.2/voting.schema.json#/$defs/VotingParameters",
+      "description": "The community's published voting parameters. Its `votingKey` MUST be the one the ticket was issued under."
+    },
+    "manifest": {
+      "$ref": "../../../../voting/_shared/0.2/voting.schema.json#/$defs/Manifest",
+      "description": "The election's manifest, exactly as registered. The engine recomputes its digest and checks it against the one it recorded at voter/register."
+    },
+    "ballot": {
+      "$ref": "../../../../voting/_shared/0.2/voting.schema.json#/$defs/Ballot",
+      "description": "The voter's ballot. The cast binds its RFC 8785 (JCS) canonicalization."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "CastDocument": {
+      "title": "CastDocument",
+      "description": "A complete, signed voting/ballot/cast/0.1 request document, ready to send to the ballot box. Its payload is validated by that specification's schema; the members fixed here are the ones this task guarantees.",
+      "type": "object",
+      "required": [
+        "id",
+        "type",
+        "issuer",
+        "recipient",
+        "issuedAt",
+        "payload",
+        "proof"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+          "description": "A random (version 4) UUID URN, generated for this cast and derived from nothing else."
+        },
+        "type": {
+          "const": "https://trusttasks.org/spec/voting/ballot/cast/0.1#request"
+        },
+        "issuer": {
+          "type": "string",
+          "maxLength": 256,
+          "pattern": "^did:key:z[1-9A-HJ-NP-Za-km-z]+$",
+          "description": "The did:key generated for this cast alone (VTI-VOT-003)."
+        },
+        "recipient": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "The manifest's `ballotBox`."
+        },
+        "issuedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When present, the manifest's `votingClosesAt`."
+        },
+        "payload": {
+          "type": "object",
+          "description": "The voting/ballot/cast/0.1 request payload — `community`, `electionId` and the Cast the engine built — and nothing else."
+        },
+        "proof": {
+          "type": "object",
+          "description": "The Data Integrity proof made with the cast's one-time key."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA PCS — Vote — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "castDocument",
+        "tag"
+      ],
+      "properties": {
+        "castDocument": {
+          "$ref": "#/$defs/CastDocument"
+        },
+        "tag": {
+          "type": "string",
+          "maxLength": 4096,
+          "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$",
+          "description": "The cast's tag (the election's nullifier for this ticket), as the cast carries it. The same for every cast this ticket makes in this election."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -76,7 +76,7 @@ The **Vault — Proxy Login** Trust Task asks the maintainer to perform an authe
 
 The long-term credential never leaves the maintainer. The consumer learns only the session blob, which the maintainer scopes with a short TTL and binds to a specific origin.
 
-For sites that cannot be proxy-logged-in (rare — browser-bound channel binding, anti-bot, captcha walls), the maintainer returns `notProxyable` and the consumer falls back to `vault/release/0.1` for a fill flow.
+For sites that cannot be proxy-logged-in (rare — browser-bound channel binding, anti-bot, captcha walls), the maintainer returns `notProxyable` and the consumer falls back to `vault/release/0.2` for a fill flow.
 
 ## Conformance
 
@@ -102,7 +102,7 @@ A conforming **consumer** (the vault maintainer) **MUST**:
    - `didcommPeer`: complete the DIDComm authentication handshake to the relying party.
    - `bearerToken`: simply return the token in the configured header.
 6. Construct a `SessionBlob` with `expiresAt` set conservatively (RECOMMENDED ≤ the third party's session TTL, and never more than 1 hour for high-value sites). Seal with HPKE to the consumer's published recipient X25519 key.
-7. Record `lastUsedAt = now` on the entry; emit a `sync/event/0.1` of kind `vaultUpserted` so other consumers see the update.
+7. Record `lastUsedAt = now` on the entry; emit a `sync/event/0.2` of kind `vaultUpserted` so other consumers see the update.
 8. Audit-log the proxy-login with `{ who, when, entryId, sessionId, outcome }`.
 9. On third-party failure: distinguish reachability (`targetUnreachable`, retryable) from credential rejection (`credentialRejected`, not retryable).
 10. **MUST NOT** include the long-term credential in any field of the response.

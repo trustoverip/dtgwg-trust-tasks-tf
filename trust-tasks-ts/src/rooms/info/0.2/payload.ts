@@ -3,11 +3,13 @@
  * Source: specs/rooms/info/0.2/payload.schema.json
  */
 
-import type { AuthorityPresentation, Ext, RecordPrune, RecordRetention, RetentionPolicy, RoomLimits, ScopeLimits, Usage, Visibility } from "../../../_shared/components.js";
+import type { AuthorityPresentation, Ext, RecordPrune_RoomsV0_1 as RecordPrune, RecordRetention, RetentionPolicy, RoomLimits, ScopeLimits, Usage, Visibility } from "../../../_shared/components.js";
 
 
 /**
  * A member asks a room's host what it holds about the room: its tier, its current epoch, how long it keeps its records and when it last pruned them, the limits the host applies to its files, and how much of them the room and the member have used.
+ *
+ * @deprecated superseded by rooms/info/0.3
  */
 export interface RoomsInfoPayload {
   /**
@@ -25,6 +27,8 @@ export interface RoomsInfoPayload {
 }
 /**
  * Success response to rooms/info. Type https://trusttasks.org/spec/rooms/info/0.2#response.
+ *
+ * @deprecated superseded by rooms/info/0.3
  */
 export interface RoomsInfoResponsePayload {
   /**
@@ -77,13 +81,37 @@ export type { AuthorityPresentation, Ext, RecordPrune, RecordRetention, Retentio
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/rooms/info/0.2" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by rooms/info/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by rooms/info/0.3
+ */
 export type Payload = RoomsInfoPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/rooms/info/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by rooms/info/0.3
+ */
 export type Response = RoomsInfoResponsePayload;
 
 /**

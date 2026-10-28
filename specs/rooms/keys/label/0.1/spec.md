@@ -94,7 +94,7 @@ A conforming **recipient** (the key holder):
 6. **MUST**, when anything changed, set `updatedAt` to the time of the change and answer with `changed: true`.
 7. **MUST NOT** case-fold, normalise, translate or otherwise rewrite a detail. What a member wrote is what they are shown.
 8. **MUST** keep the label with its group state for the room and the member, protected as it protects that state, and **MUST** include it in a backup of that state. It **MUST** discard the label when it discards the group state for that room and member — and **MUST NOT** discard it for any other reason: not when the member is removed from the room (the key holder still opens what it holds, and an archived room is the one a member most needs to recognise), not when the room lapses, and not when its host or owner changes.
-9. **MUST NOT** send a label, or any part of one, to anyone but a caller that may act as its member: not to the room, its host, its owner or a community; not in any document it completes, signs or seals for the member ([`rooms/keys/act`](../../act/0.3/spec.md), [`rooms/keys/seal`](../../seal/0.2/spec.md), [`rooms/keys/present`](../../present/0.2/spec.md)); and not in any record it writes to a room.
+9. **MUST NOT** send a label, or any part of one, to anyone but a caller that may act as its member: not to the room, its host, its owner or a community; not in any document it completes, signs or seals for the member ([`rooms/keys/act`](../../act/0.8/spec.md), [`rooms/keys/seal`](../../seal/0.2/spec.md), [`rooms/keys/present`](../../present/0.2/spec.md)); and not in any record it writes to a room.
 10. **MUST NOT** write a detail's text to a log or an audit record. It **MAY** record that the label for a room and member changed, and when.
 
 ## Authorization
@@ -123,7 +123,7 @@ A room can be known by several names, written by different parties for different
 
 1. the member's **personal label** (this task, read through [`rooms/keys/list`](../../list/0.2/spec.md) 0.2) — the only name nobody else wrote;
 2. the room's own **profile** name — written by the room's curators, sealed in the room and read by its members, and the same for every member;
-3. the label of the community's **offer** of the room ([`vtc/rooms/offers/list`](../../../../vtc/rooms/offers/list/0.2/spec.md)) — what the community called it when it offered it, which the member may have seen only once;
+3. the label of the community's **offer** of the room ([`vtc/rooms/offers/list`](../../../../vtc/rooms/offers/list/0.4/spec.md)) — what the community called it when it offered it, which the member may have seen only once;
 4. the room's **DID**.
 
 A surface that shows a personal label **SHOULD** make the room's own name reachable beside it — as a second line, or on the room's detail view — so that a member who named a room long ago can see that its curators have since renamed it, and **SHOULD** mark the personal label as theirs ("your name for it"). Every one of these names is plain text and is rendered as text: names written by others come from parties a member does not control, and even a personal label is shown on surfaces — an agent, a terminal — where markup or control characters would be acted on.

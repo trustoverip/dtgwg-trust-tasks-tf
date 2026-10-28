@@ -1,0 +1,20 @@
+[
+  {
+    "note": "There is no subject: the answer is the caller's own administered namespaces, never someone else's.",
+    "payload": {
+      "subject": "did:webvh:QmBobScid2:acme-vtc.example:bob"
+    }
+  },
+  {
+    "note": "`namespace` is the VTC's identifier; it cannot be empty.",
+    "payload": {
+      "namespace": ""
+    }
+  },
+  {
+    "note": "A resource filter belongs to `git-ns/view`; this listing narrows by namespace only.",
+    "payload": {
+      "resource": "github.com/acme"
+    }
+  }
+]

@@ -8,6 +8,8 @@ import type { Ext } from "../../../../../_shared/components.js";
 
 /**
  * An administrator issues a single-use invite, redeemed with a separately delivered claim code, that binds a passkey to a subject who cannot yet authorise the binding themselves: their first passkey, or — for `purpose: stepUp` — a step-up-only passkey that never opens a session.
+ *
+ * @deprecated superseded by auth/passkey/enroll/invite/0.3
  */
 export interface AuthPasskeyEnrollInvite {
   /**
@@ -38,6 +40,8 @@ export interface AuthPasskeyEnrollInvite {
 }
 /**
  * The issued invite. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/invite/0.2#response.
+ *
+ * @deprecated superseded by auth/passkey/enroll/invite/0.3
  */
 export interface AuthPasskeyEnrollInviteResponsePayload {
   invite: {
@@ -72,13 +76,37 @@ export type { Ext };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/passkey/enroll/invite/0.2" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by auth/passkey/enroll/invite/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by auth/passkey/enroll/invite/0.3
+ */
 export type Payload = AuthPasskeyEnrollInvite;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/auth/passkey/enroll/invite/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by auth/passkey/enroll/invite/0.3
+ */
 export type Response = AuthPasskeyEnrollInviteResponsePayload;
 
 /**

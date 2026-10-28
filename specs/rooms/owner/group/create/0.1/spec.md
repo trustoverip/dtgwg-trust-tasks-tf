@@ -64,7 +64,7 @@ A room's owner asks their **key holder** to form the room's MLS group, with the 
 
 On an `attributed` or `private` room every record and every file is sealed under a key derived from the group, so until a group exists nobody can write anything — including the owner. Every other member reaches the group by a Welcome ([`rooms/keys/welcome`](../../../../keys/welcome/0.1/spec.md)); the owner cannot, because there is nobody to welcome them. This is the step that makes the first member, and it is the only one in the family that creates a group rather than joining one.
 
-**The group's room epoch is 1 when it is formed**, which is the epoch a host records when a room is registered ([`rooms/create`](../../../../create/0.1/spec.md)). MLS counts its epochs from 0 and a room from 1, so a group formed here and a room registered at its host agree without anything being minted.
+**The group's room epoch is 1 when it is formed**, which is the epoch a host records when a room is registered ([`rooms/create`](../../../../create/0.2/spec.md)). MLS counts its epochs from 0 and a room from 1, so a group formed here and a room registered at its host agree without anything being minted.
 
 An `open` room has no group: its records are stored in the clear. A recipient MAY refuse this task for a room it knows to be `open`, but is not required to know the tier.
 

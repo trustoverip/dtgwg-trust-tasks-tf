@@ -61,7 +61,7 @@ in it, which a producer **SHOULD** offer deliberately rather than by default.
 
 Each summary carries the holder's **annotations** that a client sorts, badges and
 filters by — `starred` (always present), `petname`, `lists` and `directoryRef` —
-as [`persona/contact/put`](../../put/1.1/spec.md) 1.1 writes them. The private
+as [`persona/contact/put`](../../put/1.2/spec.md) 1.1 writes them. The private
 `notes` stay on [`persona/contact/get`](../../get/1.1/spec.md): a listing is
 rendered in places a single contact's detail is not.
 

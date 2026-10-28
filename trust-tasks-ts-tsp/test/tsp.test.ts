@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import type { TrustTaskDocument, ResolvedParties, ErrorResponse } from "@openvtc/trust-tasks";
-import { respondWith } from "@openvtc/trust-tasks";
+import type { TrustTaskDocument, ResolvedParties, ErrorResponse } from "@openvtc/trust-tasks/runtime";
+import { respondWith } from "@openvtc/trust-tasks/runtime";
 import { ed25519, x25519 } from "@noble/curves/ed25519.js";
 import {
   packTrustTask,

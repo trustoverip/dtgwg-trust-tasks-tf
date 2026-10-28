@@ -60,6 +60,10 @@
 // family/version-qualified identifier (`VaultEntry_VaultV0_1`). Only a name
 // with exactly one shape across the whole registry keeps the bare form.
 //
+// Once emitted, a name is kept: `trust-tasks-ts/component-names.lock.json`
+// records it, so a later second shape (a new `_shared` version) is qualified
+// alone and the published bare name does not move. See `buildComponentRegistry`.
+//
 // Each spec module re-exports what it uses under the definition's own name, so
 // `AclEntry` is still `AclEntry` there — what disappears is the numbered
 // duplicates. Shared schema modules re-export their own definitions the same
@@ -353,15 +357,57 @@ function familyTag(abs) {
 }
 
 /**
+ * Where the names given to hoisted components are remembered between runs.
+ *
+ * The name a component gets is part of the package's public API: modules
+ * re-export it, and `SharedComponents` exports it under that name. Deriving it
+ * afresh each run made it depend on what *else* exists. A name with one shape
+ * is bare, a name with several is qualified, so publishing a second shape of
+ * `TrustRecord` (a new `_shared` version) renamed the first one to
+ * `TrustRecord_RegistryV0_1` in every module that already exported it. That is
+ * a breaking release of the package for a purely additive spec change.
+ *
+ * The lock keeps every name that has been generated. A component that has a
+ * name keeps it; only components without one are named by the rules below.
+ * It lives outside `src/` so it is not shipped, and the drift job diffs it with
+ * `src/`, so a regenerated lock that was not committed fails CI.
+ */
+const NAME_LOCK_PATH = path.join(REPO_ROOT, "trust-tasks-ts", "component-names.lock.json");
+
+const lockKey = (component) =>
+  `${path.relative(SPECS_DIR, component.file).split(path.sep).join("/")}#/$defs/${component.defName}`;
+
+function readNameLock() {
+  if (!fsSync.existsSync(NAME_LOCK_PATH)) return new Map();
+  return new Map(Object.entries(JSON.parse(fsSync.readFileSync(NAME_LOCK_PATH, "utf8"))));
+}
+
+async function writeNameLock(components) {
+  const entries = [...components.values()].map((c) => [lockKey(c), c.tsName]);
+  entries.sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+  await fs.writeFile(NAME_LOCK_PATH, JSON.stringify(Object.fromEntries(entries), null, 2) + "\n", "utf8");
+}
+
+/**
  * Give every component a TypeScript name.
  *
- * A `$defs` name that denotes exactly one shape across the whole registry keeps
- * it. A name that denotes several is emitted once per shape, and *every* one of
- * them is qualified — leaving one unqualified would imply it is the canonical
- * `VaultEntry` when there is no such thing.
+ * Components are grouped by shape, so a group is one TypeScript type.
+ *
+ * 1. A group keeps the name the lock gives its components. When two groups
+ *    claim one locked name (a shape that split, by an in-place additive edit to
+ *    one of its copies), the group holding the earliest source file keeps it
+ *    and the other is named afresh.
+ * 2. Any other group is named afresh. A `$defs` name with exactly one shape
+ *    across the registry, and not already taken, is used bare. Otherwise the
+ *    name is qualified with the family and version (`VaultEntry_VaultV0_1`).
+ *    A brand-new name with several shapes qualifies *every* one of them,
+ *    because leaving one bare would imply it is the canonical `VaultEntry` when
+ *    there is no such thing. A name that already shipped bare stays bare, and
+ *    the new shape beside it is the one that gets qualified.
  */
 function buildComponentRegistry(payloadPaths) {
   const components = collectComponents(payloadPaths);
+  const lock = readNameLock();
 
   const byDefName = new Map();
   for (const component of components.values()) {
@@ -370,29 +416,53 @@ function buildComponentRegistry(payloadPaths) {
     byDefName.get(component.baseName).push(component);
   }
 
-  const byName = new Map();
+  const groups = [];
   const multiShaped = [];
   for (const [baseName, list] of byDefName) {
-    const groups = new Map();
+    const byShape = new Map();
     for (const component of list) {
-      if (!groups.has(component.shape)) groups.set(component.shape, []);
-      groups.get(component.shape).push(component);
+      if (!byShape.has(component.shape)) byShape.set(component.shape, []);
+      byShape.get(component.shape).push(component);
     }
-    const qualify = groups.size > 1;
-    if (qualify) multiShaped.push({ baseName, shapes: groups.size });
-    for (const group of groups.values()) {
-      group.sort((a, b) => (a.file < b.file ? -1 : a.file > b.file ? 1 : 0));
-      const name = qualify ? `${baseName}_${familyTag(group[0].file)}` : baseName;
-      if (byName.has(name)) {
-        throw new Error(
-          `two shapes of ${baseName} both want the TypeScript name ${name} — ` +
-            `they come from the same family and version (${group[0].file} vs ` +
-            `${byName.get(name).sources[0].file}); one of them needs renaming in the schema`,
-        );
-      }
-      byName.set(name, { name, baseName, fragment: group[0].fragment, file: group[0].file, sources: group });
-      for (const component of group) component.tsName = name;
+    if (byShape.size > 1) multiShaped.push({ baseName, shapes: byShape.size });
+    for (const sources of byShape.values()) {
+      sources.sort((a, b) => (a.file < b.file ? -1 : a.file > b.file ? 1 : 0));
+      groups.push({ baseName, sources, shapes: byShape.size });
     }
+  }
+  groups.sort((a, b) => (a.sources[0].file < b.sources[0].file ? -1 : a.sources[0].file > b.sources[0].file ? 1 : 0));
+
+  const byName = new Map();
+  const assign = (group, name) => {
+    byName.set(name, { name, baseName: group.baseName, fragment: group.sources[0].fragment, file: group.sources[0].file, sources: group.sources });
+    for (const component of group.sources) component.tsName = name;
+    group.name = name;
+  };
+
+  // 1. Locked names. A group whose sources were locked under different names
+  // (two shapes that later converged) keeps the bare one if it has it, else
+  // the first in sort order.
+  for (const group of groups) {
+    const locked = [...new Set(group.sources.map((c) => lock.get(lockKey(c))).filter(Boolean))].sort(
+      (a, b) => (a === group.baseName ? -1 : b === group.baseName ? 1 : a.localeCompare(b)),
+    );
+    const name = locked.find((n) => !byName.has(n));
+    if (name) assign(group, name);
+  }
+
+  // 2. Everything else.
+  for (const group of groups) {
+    if (group.name) continue;
+    const bare = group.shapes === 1 && !byName.has(group.baseName);
+    const name = bare ? group.baseName : `${group.baseName}_${familyTag(group.sources[0].file)}`;
+    if (byName.has(name)) {
+      throw new Error(
+        `two shapes of ${group.baseName} both want the TypeScript name ${name} — ` +
+          `they come from the same family and version (${group.sources[0].file} vs ` +
+          `${byName.get(name).sources[0].file}); one of them needs renaming in the schema`,
+      );
+    }
+    assign(group, name);
   }
 
   // A hoisted name that collides with one of the module tail's own exports
@@ -621,6 +691,19 @@ function slugFromSchemaPath(schemaPath) {
   return { slug, version };
 }
 
+/** A spec.md's YAML front matter, or null when it has none or cannot be read. */
+function readFrontMatter(specPath) {
+  try {
+    const src = fsSync.readFileSync(specPath, "utf8");
+    if (!src.startsWith("---")) return null;
+    const end = src.indexOf("\n---", 3);
+    if (end < 0) return null;
+    return YAML.parse(src.slice(3, end).replace(/^\r?\n/, "")) || null;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Read the SPEC §7.2 policy flags out of a spec's front matter.
  *
@@ -637,17 +720,7 @@ function slugFromSchemaPath(schemaPath) {
  * is the one declared for the *issuer* party of the request.
  */
 function readSpecPolicy(schemaPath) {
-  const specPath = path.join(path.dirname(schemaPath), "spec.md");
-  let meta;
-  try {
-    const src = fsSync.readFileSync(specPath, "utf8");
-    if (!src.startsWith("---")) return null;
-    const end = src.indexOf("\n---", 3);
-    if (end < 0) return null;
-    meta = YAML.parse(src.slice(3, end).replace(/^\r?\n/, ""));
-  } catch {
-    return null;
-  }
+  const meta = readFrontMatter(path.join(path.dirname(schemaPath), "spec.md"));
   if (!meta) return null;
 
   const partyRequirement = (member) =>
@@ -681,7 +754,20 @@ function readSpecPolicy(schemaPath) {
           response: (ir.response ?? ir.request) === "REQUIRED",
         };
 
+  // SPEC §5.2 "Declared extension" / §7.3 item 22: the earlier MINOR this
+  // version promises to extend. The build (scripts/build-registry.mjs) checks
+  // the promise against the two payload schemas; all this generator does is
+  // carry the DIRECT declaration through, so the runtime can walk the chain.
+  let extendsVersion = null;
+  if (meta.extends !== undefined && meta.extends !== null) {
+    if (typeof meta.extends !== "string" || !/^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$/.test(meta.extends)) {
+      throw new Error(`${specPath}: extends must be a "<MAJOR>.<MINOR>" string, got ${JSON.stringify(meta.extends)}`);
+    }
+    extendsVersion = meta.extends;
+  }
+
   return {
+    extendsVersion,
     isBearer: meta.bearer === true,
     isProofRequired: proofRequired.request,
     responseIsProofRequired: proofRequired.response,
@@ -692,6 +778,119 @@ function readSpecPolicy(schemaPath) {
     isRecipientRequired: partyRequirement("recipient"),
     responseIsRecipientRequired: partyRequirement("issuer"),
   };
+}
+
+// --- Version lifecycle (SPEC "Superseded and Withdrawn Versions") ----------
+//
+// Every published version is generated, but not every one is current:
+//
+//   - WITHDRAWN (`status: withdrawn`) — superseded or retired for at least 90
+//     days and flipped in a scheduled batch. Nothing is generated for it: no
+//     module, no barrel export. Removing a module is a breaking release, which
+//     is why withdrawal is batched rather than continuous.
+//   - DEPRECATED — not withdrawn, and either `status: retired`, or SUPERSEDED:
+//     a later version of the same slug is live (neither retired nor withdrawn)
+//     at an equal or higher maturity (draft < candidate < standard).
+//
+// A deprecated module carries its note in `DEPRECATION` and as `@deprecated`
+// on its root payload types, so a consumer's editor and linter flag the use
+// without anything breaking. The note text is byte-identical across the four
+// libraries; `npm run check-bindings` holds them to it. This is a third
+// independent implementation of the rule (see CLAUDE.md on why the generators
+// are not factored together).
+
+const MATURITY_RANK = { draft: 0, candidate: 1, standard: 2 };
+
+/** Numeric MAJOR-then-MINOR comparison of two "M.N" strings. */
+function compareVersions(a, b) {
+  const [am, an] = a.split(".").map(Number);
+  const [bm, bn] = b.split(".").map(Number);
+  return am - bm || an - bn;
+}
+
+/**
+ * Map every task spec version directory to its lifecycle verdict:
+ * `{ withdrawn: boolean, deprecation: string | null }`.
+ */
+async function computeLifecycle() {
+  const specFiles = (await walk(SPECS_DIR, /^spec\.md$/)).filter(
+    (p) => !path.relative(SPECS_DIR, p).split(path.sep).some((s) => s.startsWith("_")),
+  );
+
+  // slug → [{ version, status, supersededBy, dir }]
+  const bySlug = new Map();
+  for (const specPath of specFiles) {
+    const dir = path.dirname(specPath);
+    const segments = path.relative(SPECS_DIR, dir).split(path.sep);
+    const version = segments[segments.length - 1];
+    if (!/^\d+\.\d+$/.test(version)) continue;
+    const slug = segments.slice(0, -1).join("/");
+    const meta = readFrontMatter(specPath) || {};
+    if (!bySlug.has(slug)) bySlug.set(slug, []);
+    bySlug.get(slug).push({ version, status: meta.status, supersededBy: meta.supersededBy, dir });
+  }
+
+  const isLive = (v) => v.status !== "retired" && v.status !== "withdrawn";
+  const latestLive = (slug) => {
+    const live = (bySlug.get(slug) || []).filter(isLive);
+    if (!live.length) return null;
+    live.sort((a, b) => compareVersions(a.version, b.version));
+    return `${slug}/${live[live.length - 1].version}`;
+  };
+
+  const verdicts = new Map();
+  for (const [slug, versions] of bySlug) {
+    for (const v of versions) {
+      if (v.status === "withdrawn") {
+        verdicts.set(v.dir, { withdrawn: true, deprecation: null });
+        continue;
+      }
+      let deprecation = null;
+      if (v.status === "retired") {
+        let successor;
+        if (typeof v.supersededBy === "string") {
+          successor = /\/\d+\.\d+$/.test(v.supersededBy)
+            ? v.supersededBy
+            : latestLive(v.supersededBy);
+        } else {
+          successor = latestLive(slug);
+        }
+        deprecation = successor ? `retired; use ${successor}` : "retired";
+      } else {
+        const rank = MATURITY_RANK[v.status] ?? 0;
+        const superseded = versions.some(
+          (w) =>
+            isLive(w) &&
+            compareVersions(w.version, v.version) > 0 &&
+            (MATURITY_RANK[w.status] ?? 0) >= rank,
+        );
+        if (superseded) deprecation = `superseded by ${latestLive(slug)}`;
+      }
+      verdicts.set(v.dir, { withdrawn: false, deprecation });
+    }
+  }
+  return verdicts;
+}
+
+/**
+ * Add `@deprecated <note>` to the doc comment of the `export interface|type
+ * <name>` declared in `ts`, creating the comment if there is none. A name not
+ * declared in this module (a response aliasing a hoisted component) is left
+ * alone — the component is shared, and deprecation belongs to the spec.
+ */
+function markDeprecated(ts, name, note) {
+  const decl = new RegExp(`^export (?:interface|type) ${name}\\b`, "m");
+  const m = decl.exec(ts);
+  if (!m) return ts;
+  const before = ts.slice(0, m.index);
+  const after = ts.slice(m.index);
+  // The compiler writes a schema `description` as a multi-line JSDoc ending
+  // ` */` on the line directly above the declaration; extend that one.
+  if (/(^|\n) \*\/\n$/.test(before)) {
+    const close = before.lastIndexOf(" */");
+    return before.slice(0, close) + ` *\n * @deprecated ${note}\n` + before.slice(close) + after;
+  }
+  return before + `/** @deprecated ${note} */\n` + after;
 }
 
 // Synthetic property name used to drag `$defs.Response` into the compiler's
@@ -817,16 +1016,36 @@ function stripResponseProbe(ts, schemaPath) {
   return { ts: stripped, responseType: m[1] };
 }
 
-function emitTail(slugInfo, ts, rootType, responseType, schemaPath, policy, schemas) {
+function emitTail(slugInfo, ts, rootType, responseType, schemaPath, policy, schemas, deprecation) {
   if (!slugInfo) return ""; // shared schemas are not Trust Tasks
   const { slug, version } = slugInfo;
   const typeUri = `https://trusttasks.org/spec/${slug}/${version}`;
+  const aliasDoc = (what) =>
+    deprecation
+      ? [`/**`, ` * Stable alias for this specification's ${what} shape.`, ` *`, ` * @deprecated ${deprecation}`, ` */`]
+      : [`/** Stable alias for this specification's ${what} shape. */`];
   const lines = [
     "",
     `/** Trust Task type URI. */`,
     `export const TYPE_URI = ${JSON.stringify(typeUri)} as const;`,
     "",
-    `/** Stable alias for this specification's request payload shape. */`,
+    `/**`,
+    ` * The earlier version of this specification that this one declares it`,
+    ` * extends (front matter \`extends\`, SPEC §5.2 "Declared extension"), or`,
+    ` * \`null\`. Only the direct declaration — follow the chain with`,
+    ` * \`extendsChain\` / \`readForSpec\`.`,
+    ` */`,
+    `export const EXTENDS: string | null = ${policy?.extendsVersion ? JSON.stringify(policy.extendsVersion) : "null"};`,
+    "",
+    `/**`,
+    ` * Why this version is deprecated, or \`null\` while it is current. A`,
+    ` * superseded or retired version is still supported, and is withdrawn from`,
+    ` * this package in a later scheduled batch (SPEC "Superseded and Withdrawn`,
+    ` * Versions").`,
+    ` */`,
+    `export const DEPRECATION: string | null = ${JSON.stringify(deprecation ?? null)};`,
+    "",
+    ...aliasDoc("request payload"),
   ];
   // If the compiler already named the root `Payload` the alias is redundant and
   // would be a self-reference; anything else named `Payload` is a genuine clash
@@ -848,7 +1067,7 @@ function emitTail(slugInfo, ts, rootType, responseType, schemaPath, policy, sche
       `/** Trust Task response type URI (request type URI + "#response"). */`,
       `export const RESPONSE_TYPE_URI = ${JSON.stringify(typeUri + "#response")} as const;`,
       "",
-      `/** Stable alias for this specification's success-response payload shape. */`,
+      ...aliasDoc("success-response payload"),
       ...(responseType === "Response"
         ? [`// (the response interface is already named \`Response\`)`]
         : [`export type Response = ${responseType};`]),
@@ -947,7 +1166,7 @@ function compileOptions(sourcePath, cwd) {
   };
 }
 
-async function generateOne(schemaPath, registry) {
+async function generateOne(schemaPath, registry, lifecycle) {
   const outPath = relativeOutPath(schemaPath);
   await ensureDir(path.dirname(outPath));
 
@@ -974,6 +1193,7 @@ async function generateOne(schemaPath, registry) {
 
   const slugInfo = slugFromSchemaPath(schemaPath);
   const policy = slugInfo ? readSpecPolicy(schemaPath) : null;
+  const deprecation = slugInfo ? (lifecycle.get(path.dirname(schemaPath))?.deprecation ?? null) : null;
   if (slugInfo && !policy) {
     // Every task spec has front matter (the registry build enforces it). A
     // miss here would silently emit a module with no SPEC, and a consumer
@@ -991,15 +1211,15 @@ async function generateOne(schemaPath, registry) {
     schemas = { request: selfContained, response: responseSchemaOf(selfContained) };
   }
 
-  const tail = emitTail(
-    slugInfo,
-    ts,
-    rootTypeName(ts, schemaPath, raw),
-    responseType,
-    schemaPath,
-    policy,
-    schemas,
-  );
+  const rootType = rootTypeName(ts, schemaPath, raw);
+  if (deprecation) {
+    ts = markDeprecated(ts, rootType, deprecation);
+    // `responseType` is a type expression; only a bare name can be annotated.
+    if (responseType && /^[A-Za-z0-9_$]+$/.test(responseType) && responseType !== rootType) {
+      ts = markDeprecated(ts, responseType, deprecation);
+    }
+  }
+  const tail = emitTail(slugInfo, ts, rootType, responseType, schemaPath, policy, schemas, deprecation);
 
   // Imports go above the compiler's output and the re-exports below it, so
   // `rootTypeName`'s positional fallback still sees the compiler's own first
@@ -1007,7 +1227,7 @@ async function generateOne(schemaPath, registry) {
   const { imports, reexports } = componentClauses(used, outPath, ts, registry, responseType ?? "");
   const own = ownDefinitionReexports(schemaPath, outPath, registry);
   await fs.writeFile(outPath, spliceAfterBanner(ts, imports) + reexports + own + tail, "utf8");
-  return { outPath, slugInfo };
+  return { outPath, slugInfo, extendsVersion: policy?.extendsVersion ?? null };
 }
 
 /** Insert `block` immediately after the generated banner comment. */
@@ -1290,8 +1510,77 @@ async function emitIndex(generated) {
     );
   }
 
-  await fs.writeFile(path.join(OUT_DIR, "index.ts"), lines.join("\n") + "\n", "utf8");
+  await fs.writeFile(path.join(OUT_DIR, "index.ts"), lines.map(deprecatePrebuilt).join("\n") + "\n", "utf8");
 }
+
+/**
+ * The prebuilt specification modules are deprecated (milestone 5 of
+ * docs/design/consumer-side-generation.md): an application generates the tasks
+ * it pins with `@openvtc/trust-tasks-gen` and imports the runtime from
+ * `@openvtc/trust-tasks/runtime`. The framework's own specifications are not —
+ * the runtime speaks them.
+ *
+ * The mark sits on the root re-export, not in the modules, because TypeScript
+ * ignores `@deprecated` on `export * as X from …` but honours it on an
+ * `export import X = _X` alias, and because the modules are what
+ * `trust-tasks-gen-ts` emits too (its equivalence test compares them byte for
+ * byte). A deep import (`@openvtc/trust-tasks/acl/grant/0.2/payload.js`) is
+ * not marked; TypeScript has no module-level deprecation.
+ */
+const PREBUILT_DEPRECATION =
+  "The prebuilt specification modules will be removed: pin the tasks you use with the " +
+  "`trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime " +
+  "from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md).";
+
+function deprecatePrebuilt(line) {
+  const m = /^export \* as (\S+) from "(.+)";$/.exec(line);
+  if (!m) return line;
+  const [, alias, from] = m;
+  if (/^\.\/(_framework\/|trust-task|trust-ceremony)/.test(from)) return line;
+  return [
+    `import * as _${alias} from "${from}";`,
+    `/** @deprecated ${PREBUILT_DEPRECATION} */`,
+    `export import ${alias} = _${alias};`,
+  ].join("\n");
+}
+
+/**
+ * The per-Type-URI index of declared extensions, which the hand-written runtime
+ * (`_runtime/extends.ts`) walks to route a document of a later MINOR to the
+ * version a consumer implements.
+ *
+ * Each spec module already carries its own `EXTENDS`, but the point of the
+ * routing is that an application which imports only `x/0.2` accepts `x/0.3`
+ * after a library upgrade, with no code change — so the runtime cannot rely on
+ * the caller having imported the later module. Only declaring versions are
+ * listed: an absent key means "declares nothing", which is what the runtime
+ * must assume for an unknown URI anyway.
+ */
+async function emitExtendsIndex(generated) {
+  const entries = generated
+    // trust-task-error is left out, as trust-tasks-codegen leaves it out (SKIP_SLUGS): it has no registry bundle, so the consumer-side generators cannot index it, and an error document is read by the runtime's own path, never routed by extends.
+    .filter((g) => g.slugInfo && g.extendsVersion && g.slugInfo.slug !== "trust-task-error")
+    .map((g) => [`https://trusttasks.org/spec/${g.slugInfo.slug}/${g.slugInfo.version}`, g.extendsVersion])
+    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+  const lines = [
+    "/** Generated by scripts/build-ts-bindings.mjs — DO NOT EDIT BY HAND. */",
+    "",
+    "/**",
+    " * Bare request Type URI → the version it declares it extends (front matter",
+    " * `extends`, SPEC §5.2 \"Declared extension\"). Only versions that declare one",
+    " * are listed. Each entry is a DIRECT declaration; the runtime's",
+    " * `extendsChain` follows them transitively.",
+    " */",
+    "export const EXTENDS_BY_TYPE_URI: Readonly<Record<string, string>> = Object.freeze({",
+    ...entries.map(([uri, v]) => `  ${JSON.stringify(uri)}: ${JSON.stringify(v)},`),
+    "});",
+    "",
+  ];
+  await fs.writeFile(path.join(OUT_DIR, EXTENDS_INDEX_FILE), lines.join("\n"), "utf8");
+}
+
+/** Where {@link emitExtendsIndex} writes. Imported by `_runtime/extends.ts`. */
+const EXTENDS_INDEX_FILE = "_extends.ts";
 
 // Hand-written directories under src/ that the generator must not touch. The
 // underscore prefix matches the `_shared` / `_framework` convention already
@@ -1326,7 +1615,20 @@ async function main() {
   //     one would be strictly worse — not generic over the payload, so unusable
   //     with consumeInbound — and having both invites picking the wrong one.
   const NOT_PAYLOAD_SCHEMAS = new Set(["spec.meta.schema.json", "trust-task.schema.json"]);
-  const filtered = schemas.filter((p) => !NOT_PAYLOAD_SCHEMAS.has(path.basename(p)));
+  // A withdrawn version is skipped whole — every schema in its directory —
+  // before the component registry is seeded, so it shapes nothing generated.
+  const lifecycle = await computeLifecycle();
+  const withdrawn = new Set(
+    [...lifecycle].filter(([, v]) => v.withdrawn).map(([dir]) => dir),
+  );
+  const filtered = schemas.filter(
+    (p) => !NOT_PAYLOAD_SCHEMAS.has(path.basename(p)) && !withdrawn.has(path.dirname(p)),
+  );
+  const deprecatedCount = [...lifecycle.values()].filter((v) => v.deprecation).length;
+  console.log(
+    `Lifecycle: ${lifecycle.size} spec versions, ${deprecatedCount} deprecated, ` +
+      `${withdrawn.size} withdrawn (skipped).`,
+  );
 
   // The component registry is seeded from the payload schemas and the shared
   // schemas. A `$def` neither reaches is duplicated nowhere and needs no
@@ -1347,13 +1649,14 @@ async function main() {
   for (const { baseName, shapes } of registry.multiShaped) {
     console.log(`  · ${baseName}: ${shapes} shapes`);
   }
+  await writeNameLock(registry.components);
   await emitComponentsModule(registry);
 
   console.log(`Generating bindings for ${filtered.length} schemas...`);
   const generated = [];
   for (const schemaPath of filtered) {
     try {
-      const result = await generateOne(schemaPath, registry);
+      const result = await generateOne(schemaPath, registry, lifecycle);
       generated.push(result);
       console.log("  ✓ " + path.relative(REPO_ROOT, schemaPath));
     } catch (err) {
@@ -1364,6 +1667,7 @@ async function main() {
   }
 
   await emitIndex(generated);
+  await emitExtendsIndex(generated);
   console.log(`\nGenerated ${generated.length} TS modules into ${path.relative(REPO_ROOT, OUT_DIR)}`);
 }
 

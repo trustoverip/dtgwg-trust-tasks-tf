@@ -51,7 +51,7 @@ A conforming server **MUST**:
 
 1. Accept `POST /trust-tasks` and reject every other method/path combination with the appropriate HTTP status (`405 Method Not Allowed` / `404 Not Found`). These responses are not framework error documents.
 2. Read `Authorization` (if present) and map the bearer token to a *Verifiable Identifier* via a deployment-defined mechanism (an in-process map, a JWT verifier, a database lookup, …). A request with no `Authorization` header is treated as having no transport-authenticated sender.
-3. Parse the request body as JSON, then as a `TrustTask<P>` document for some payload type `P` selected by the document's `type` member.
+3. Parse the request body as JSON, then as a `TrustTask<P>` document for some payload type `P` selected by the document's `type` member. Keep the received JSON object alongside it: the `proof` is verified over that object with only the top-level `proof` removed, never over a re-serialisation of the typed document, and the typed document is the one parsed from it ([SPEC §4.7](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#47-proof), "What a consumer verifies").
 4. Apply the framework [§7.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#72-consumer-requirements) consumer pipeline — `resolve_parties` per [§4.8.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#481-precedence-of-in-band-over-transport-derived-identity), `validate_basic`, `enforce_audience_binding`, dispatch by canonical *Type URI* per [§4.4.1 item 1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md#441-request-and-response-variants), then the registered handler.
 5. Return either a `#response`-variant *Trust Task document* (success) or a `trust-task-error` document (rejection) as the response body — both in JSON, both with `Content-Type: application/json` — except where [§2.1](#21-streamed-responses) applies.
 
@@ -150,8 +150,9 @@ The server **SHOULD** map the *Trust Task document* response to an HTTP status a
 | `wrongRecipient`                                         | `422 Unprocessable Entity`            |
 | `cancelled`                                              | `422 Unprocessable Entity`            |
 | `taskFailed`                                             | `422 Unprocessable Entity`            |
+| `unsupportedExtension`                                   | `422 Unprocessable Entity`            |
 | `idConflict`                                             | `409 Conflict`                        |
-| `unavailable`                                            | `503 Service Unavailable`             |
+| `unavailable` / `indeterminate`                          | `503 Service Unavailable`             |
 | `internalError`                                          | `500 Internal Server Error`           |
 | Internal server error (transport-level, no error doc)    | `500 Internal Server Error`           |
 

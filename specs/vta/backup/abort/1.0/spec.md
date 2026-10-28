@@ -75,7 +75,7 @@ Per [SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements), verifying the VID, 
 
 ## Definitions
 
-**`bundleId`** — the handle returned in the descriptor from [`initiate-export`](../../initiate-export/1.0/spec.md) or [`initiate-import`](../../initiate-import/1.0/spec.md). Opaque: a producer quotes what it was given and **MUST NOT** derive, guess or enumerate one. Abort takes bundles of either kind, which is why this task has one specification rather than two — the operator's intent ("stop this, discard the bytes") is identical, and the recipient already knows which kind it holds.
+**`bundleId`** — the handle returned in the descriptor from [`initiate-export`](../../initiate-export/1.1/spec.md) or [`initiate-import`](../../initiate-import/1.1/spec.md). Opaque: a producer quotes what it was given and **MUST NOT** derive, guess or enumerate one. Abort takes bundles of either kind, which is why this task has one specification rather than two — the operator's intent ("stop this, discard the bytes") is identical, and the recipient already knows which kind it holds.
 
 **`aborted`** — whether this request is what moved the bundle to a terminal state. `false` means the bundle was already terminal: completed, expired, or aborted by an earlier identical request. That is a success, not a failure — see [Idempotence](#idempotence) — and the member exists so a producer can tell "I cancelled it" from "it was already over" without either being an error.
 

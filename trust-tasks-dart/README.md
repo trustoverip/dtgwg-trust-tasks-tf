@@ -21,6 +21,13 @@ Requires Dart 3.3 or later. **No dependencies** — the cryptosuite and the JSON
 Schema engine are yours to choose, so this package declares interfaces for them
 and implements neither.
 
+> **The prebuilt libraries under `lib/specs/` are deprecated** (all but the
+> framework's own `trust_task_*` ones) and will be removed in a future
+> release. Pin the tasks you use with the `trust-tasks` CLI and generate them
+> with `dart run trust_tasks:generate` — see
+> [Generating only the tasks you use](#generating-only-the-tasks-you-use). The
+> analyzer reports an import of a deprecated library (`deprecated_member_use`).
+
 ## Importing
 
 The package's own library exports the **runtime only**. Dart's `export` is flat
@@ -30,7 +37,7 @@ Import the specification you need directly, with a prefix:
 
 ```dart
 import 'package:trust_tasks/trust_tasks.dart';
-import 'package:trust_tasks/specs/acl/grant/v0_1/payload.dart' as acl_grant;
+import 'package:trust_tasks/specs/acl/grant/v0_2/payload.dart' as acl_grant;
 ```
 
 Each generated library exports a uniform surface:
@@ -43,7 +50,7 @@ Each generated library exports a uniform surface:
 | `spec`, `responseSpec` | `SpecPolicy` values carrying the §7.2 policy flags and the schema above |
 
 Paths are snake_cased for Dart's `file_names` lint, so the slug `acl/change-role`
-becomes `specs/acl/change_role/v0_1/payload.dart`.
+becomes `specs/acl/change_role/v0_2/payload.dart`.
 
 ## Consuming a document
 
@@ -125,6 +132,31 @@ pointer-to-slice.
 
 Unrecognized **top-level** members survive a round trip in
 `TrustTaskDocument.extra`, per the §7.1 / §7.2 guidance to preserve them.
+
+## Generating only the tasks you use
+
+The package ships a generator that writes the libraries for exactly the task
+versions an application pins, from a `trust-tasks.lock` and the bundles
+vendored beside it (written by the `trust-tasks` CLI — see
+[consumer-side generation](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/docs/design/consumer-side-generation.md)):
+
+```console
+dart run trust_tasks:generate --lock trust-tasks.lock --out lib/trust_tasks
+```
+
+It checks each bundle's SHA-256 against the lock before writing anything, needs
+no network, and owns `--out`: the directory is rewritten whole, and refused if
+it is non-empty without the `.trust-tasks-generated` marker. Each library lands
+at `<out>/<slug>/v<M>_<N>/payload.dart` with the same API as its counterpart
+under `package:trust_tasks/specs/`, and `<out>/extends_index.dart` is the index
+to pass as `index:` to `readForVersion`. The framework's own specifications
+(`trust-task-*`, `trust-ceremony-*`) are skipped — import them from the package.
+A task from a third-party source in the lock (`source = "acme"`, vendored under
+`trust-tasks/@acme/`) is generated under `<out>/acme/…` and keeps its bundle's
+own Type URI.
+Output is formatted at language version 3.3 (`--language-version` to change it).
+[`examples/consumer-app-dart`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/examples/consumer-app-dart)
+is a complete application.
 
 ## Regenerating
 

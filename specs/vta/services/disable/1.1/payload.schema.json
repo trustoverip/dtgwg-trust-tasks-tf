@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/services/disable/1.1",
+  "title": "VTA Services \u2014 Disable \u2014 payload",
+  "description": "Request payload for vta/services/disable. Stops advertising a transport and republishes the log. For `didcomm` this schedules a drain rather than cutting delivery immediately \u2014 see `drainEndsAt` in the result.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "service"
+  ],
+  "properties": {
+    "service": {
+      "$ref": "../../../_shared/0.8/service.schema.json#/$defs/ServiceKind"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+    },
+    "drainTtlSeconds": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "`didcomm` only: how long the unadvertised mediator keeps accepting delivery. Absent takes the agent's default. **0 means immediate teardown, and is only honoured when the request did not arrive through the mediator being torn down** \u2014 over a DIDComm-carried request the agent enforces a floor (1 hour), because cutting the mediator mid-request would discard the reply to the very task asking for it. A caller cannot rely on 0 being obeyed; read `drainEndsAt` in the result to learn what actually happened."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Services \u2014 Disable \u2014 response payload",
+      "description": "Success response to vta/services/disable. Type https://trusttasks.org/spec/vta/services/disable/1.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "result"
+      ],
+      "properties": {
+        "result": {
+          "$ref": "../../../_shared/0.8/service.schema.json#/$defs/ServiceMutationResult"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

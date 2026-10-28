@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/elections/create/0.2",
+  "title": "VTC Elections — Create — payload",
+  "description": "An administrator creates an election of the community: the community checks the manifest, records the election and registers it with the ballot box the manifest names. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "manifest"
+  ],
+  "properties": {
+    "manifest": {
+      "$ref": "../../../../voting/_shared/0.2/voting.schema.json#/$defs/Manifest",
+      "description": "The election's manifest, exactly as it will be registered with the ballot box. `community` is this community's DID; `ballotBox` is a voting service on the community's trusted list. Its digest (CONVENTIONS §1) is what every ticket and cast of the election is bound to, so the community registers these bytes and no others."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Elections — Create — response payload",
+      "description": "Success response to vtc/elections/create/0.1: the election as recorded. Type https://trusttasks.org/spec/vtc/elections/create/0.2#response — carried directly, or on the request's threadId when a parked creation executes after its approval.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "electionId",
+        "manifestDigest",
+        "state"
+      ],
+      "properties": {
+        "electionId": {
+          "$ref": "../../../../voting/_shared/0.2/voting.schema.json#/$defs/ElectionId"
+        },
+        "manifestDigest": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/DigestMultibase",
+          "description": "The SHA-256 multihash of the RFC 8785 (JCS) canonicalization of the manifest as registered."
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "pendingRegistration",
+            "registered"
+          ],
+          "description": "`registered`: the ballot box answered the registration. `pendingRegistration`: the election is recorded and the community is still delivering it to the ballot box; it keeps trying, and issues no ticket until the ballot box has answered."
+        },
+        "actionId": {
+          "$ref": "../../../admin/actions/_shared/0.2/action.schema.json#/$defs/ActionId",
+          "description": "Present when this response follows the execution of a creation that was parked for another administrator's consent: the identifier of that action, as vtc/admin/actions/show named it."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

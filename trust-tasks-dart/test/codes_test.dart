@@ -41,7 +41,7 @@ void main() {
     });
 
     test('lists every §8.3 code', () {
-      expect(StandardCode.values, hasLength(14));
+      expect(StandardCode.values, hasLength(16));
       expect(StandardCode.values.first, StandardCode.malformedRequest);
     });
 
@@ -139,11 +139,57 @@ void main() {
       expect(slugFromTypeUri(didDelete), 'did-management/did/delete');
     });
 
-    test('refuses a URI outside the Trust Tasks namespace', () {
+    test('accepts every SPEC §6.1 form, not only the registry', () {
+      expect(slugFromTypeUri('https://example.com/spec/acl/grant/0.1'),
+          'acl/grant');
       expect(
-        () => slugFromTypeUri('https://example.com/spec/acl/grant/0.1'),
-        throwsArgumentError,
-      );
+          slugFromTypeUri('https://example.com/trust-tasks/spec/'
+              'payments/settle/1.2#response'),
+          'payments/settle');
+      expect(slugFromTypeUri('did:web:acme.example/spec/payments/settle/0.1'),
+          'payments/settle');
+      expect(
+          slugFromTypeUri('urn:example:tasks:spec:payments:settle:0.1#request'),
+          'payments/settle');
+    });
+
+    test('refuses what is not a Type URI', () {
+      for (final bad in <String>[
+        'not a uri',
+        'http://trusttasks.org/spec/acl/grant/0.1',
+        'https://trusttasks.org/spec/acl/grant',
+        'https://trusttasks.org/spec/acl/grant/x',
+        'https://trusttasks.org/spec//0.1',
+        'urn:example:tasks:payments:settle:0.1',
+        'https://trusttasks.org/spec/trust-task-evil/0.1',
+      ]) {
+        expect(() => slugFromTypeUri(bad), throwsArgumentError, reason: bad);
+      }
+    });
+  });
+
+  group('extended codes under a third-party authority (§6.5)', () {
+    // Authority-free, `<slug>:<local>`, as trust-tasks-rs's
+    // TrustTaskCode::Extended renders, whatever the Type URI's form.
+    for (final uri in <String>[
+      'https://acme.example/spec/payments/settle/0.1',
+      'https://acme.example/tasks/spec/payments/settle/0.1#response',
+      'did:web:acme.example/spec/payments/settle/0.1',
+      'urn:example:acme:spec:payments:settle:0.1',
+      'urn:example:acme:spec:payments:settle:0.1#response',
+    ]) {
+      test(uri, () {
+        expect(extendedCode(uri, 'insufficientFunds'),
+            'payments/settle:insufficientFunds');
+        expect(familyCode(uri, 'payments', 'frozen'), 'payments:frozen');
+        expect(() => familyCode(uri, 'payments/refund', 'frozen'),
+            throwsArgumentError);
+      });
+    }
+
+    test('a malformed Type URI is refused', () {
+      expect(() => extendedCode('urn:example:acme:payments:0.1', 'x'),
+          throwsArgumentError);
     });
   });
 }

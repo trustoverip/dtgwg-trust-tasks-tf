@@ -3,6 +3,118 @@
 All notable changes to `trust-tasks-didcomm-v1` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.36.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-didcomm-v1-v0.36.0...trust-tasks-didcomm-v1-v0.36.1) — 2026-10-28
+
+
+## [0.36.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-didcomm-v1-v0.35.4...trust-tasks-didcomm-v1-v0.36.0) — 2026-10-27
+
+
+## [0.35.4](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-didcomm-v1-v0.35.3...trust-tasks-didcomm-v1-v0.35.4) — 2026-10-27
+
+
+### Added
+
+- The prebuilt specification modules are deprecated in all four libraries; generate the tasks you use ([#954](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/954))
+
+Milestone 5 of docs/design/consumer-side-generation.md. Every prebuilt module
+  outside the framework's own specifications (trust-task-*, trust-ceremony-*,
+  _framework/) is deprecated, so that an application is told to pin the tasks it
+  uses with the trust-tasks CLI and generate them instead. Nothing is removed:
+  the withdrawal batch that removes them is chosen later, at least 90 days after
+  this ships.
+
+  Each library marks the prebuilt entry point where its toolchain reports a
+  deprecation, never the module body, which is also what the consumer-side
+  generators emit:
+
+  - Rust: #[deprecated] on each gated family module in trust-tasks-rs's
+    specs/mod.rs (trust-tasks-codegen). It reaches every path and item under the
+    module; framework modules and trust-tasks-build's output are unmarked.
+  - TypeScript: the root index re-exports each module as
+    `import * as _X …; /** @deprecated … */ export import X = _X;`, because
+    TypeScript ignores @deprecated on `export * as`. API compatibility against
+    0.27.8: nothing removed or changed. A deep import of a module file is not
+    marked; TypeScript has no module-level deprecation.
+  - Go: a `Deprecated:` paragraph in each prebuilt package's doc, which gopls and
+    staticcheck (SA1019) report on import.
+  - Dart: @Deprecated on each prebuilt library's `library` directive, which the
+    analyzer reports on import from another package. This package's own tests
+    use them, so analysis_options ignores the same-package diagnostic SDKs
+    before 3.4 report.
+
+  The TS, Go and Dart equivalence tests mask exactly the mark; every consumer
+  generator is still held to the prebuilt tree as before. Hand-written Rust that
+  uses prebuilt modules on purpose — the acl-specimen test modules, the
+  integration tests and the examples — carries #[allow(deprecated)]; none of the
+  runtime does.
+
+  GETTING-STARTED, the four library READMEs, the design doc and CLAUDE.md say
+  so, and point at each language's generator.
+
+
+
+## [0.35.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-didcomm-v1-v0.35.2...trust-tasks-didcomm-v1-v0.35.3) — 2026-10-26
+
+
+### Fixed
+
+- **rs**: The transport crates depend on trust-tasks-rs's runtime only ([#939](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/939))
+
+trust-tasks-didcomm, -didcomm-v1, -tsp, -https, -proof and
+  -capability-client depended on trust-tasks-rs with its default features,
+  which are every specification family. Cargo unifies features across the
+  graph, so an application that generates only the tasks it pins
+  (trust-tasks-build) still compiled every prebuilt module as soon as it
+  depended on any transport, and the facade route in GETTING-STARTED
+  (`trust-tasks` with default-features = false and runtime_path) got every
+  family anyway.
+
+  None of these crates uses a specification module outside its tests,
+  examples and doc examples, so each now depends on the runtime alone
+  (default-features = false) and enables `acl` (and `task-consent` for
+  trust-tasks-https) as a dev-dependency feature for those.
+
+  Verified per crate in isolation, so no other workspace member can switch
+  the families back on: `cargo tree -e features` shows trust-tasks-rs with
+  no features for each, and each crate's tests, examples and doctests pass
+  with --all-features.
+
+  An application that reached a family's types only because a transport
+  switched every family on must now enable that family (or the `all-specs`
+  default) on trust-tasks-rs itself.
+
+
+
+## [0.35.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-didcomm-v1-v0.35.1...trust-tasks-didcomm-v1-v0.35.2) — 2026-10-26
+
+
+## [0.35.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-didcomm-v1-v0.35.0...trust-tasks-didcomm-v1-v0.35.1) — 2026-10-26
+
+
+## [0.35.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-didcomm-v1-v0.34.2...trust-tasks-didcomm-v1-v0.35.0) — 2026-10-26
+
+
+### Added
+
+- **codegen**: Superseded and retired spec versions are deprecated in every library, and withdrawn ones leave them in a quarterly batch ([#921](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/921))
+
+* feat(go): mark superseded and retired spec versions deprecated, and omit withdrawn ones
+
+  Every generated request package now exports `const Deprecation` (empty for a
+  current version, otherwise "superseded by <slug>/<M.N>", "retired; use
+  <slug>/<M.N>" or "retired"), and a deprecated version's Payload and Response
+  types carry a `// Deprecated:` paragraph. A version with `status: withdrawn`
+  gets no package at all. The rule is derived independently from front matter,
+  per SPEC "Superseded and Withdrawn Versions".
+
+
+
+## [0.34.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-didcomm-v1-v0.34.1...trust-tasks-didcomm-v1-v0.34.2) — 2026-10-24
+
+
+## [0.34.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-didcomm-v1-v0.34.0...trust-tasks-didcomm-v1-v0.34.1) — 2026-10-23
+
+
 ## [0.34.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-didcomm-v1-v0.33.2...trust-tasks-didcomm-v1-v0.34.0) — 2026-10-23
 
 

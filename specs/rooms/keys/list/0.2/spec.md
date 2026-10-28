@@ -108,7 +108,7 @@ A conforming **consumer** (the caller):
 Neither number alone says what a member can read.
 
 - `epoch` **behind the room's own** means a commit has not been delivered. Records written since will not open, and the repair is delivery, not anything the member does.
-- `earliestReadableEpoch` **equal to `epoch`** means this key holder reads only from where it joined. The repair is [`rooms/keys/chain`](../../chain/0.1/spec.md).
+- `earliestReadableEpoch` **equal to `epoch`** means this key holder reads only from where it joined. The repair is [`rooms/keys/chain`](../../chain/0.2/spec.md).
 - `earliestReadableEpoch` of **`1`** means the room's whole retained history is reachable.
 - Anything **between** is a chain delivered in part, or one deliberately severed below that point — and a surface cannot tell those apart, because they are the same fact about reachability.
 
@@ -120,7 +120,7 @@ The converse also holds and matters more. A key holder that has not been told ab
 
 ### Which name a surface shows
 
-*This subsection is informative.* A surface listing a member's rooms prefers the member's **personal label**, then the room's own **profile** name (written by its curators, read by its members), then the label of the community's **offer** ([`vtc/rooms/offers/list`](../../../../vtc/rooms/offers/list/0.2/spec.md)), then the room's DID — and keeps the room's own name reachable beside a personal one. [`rooms/keys/label`](../../label/0.1/spec.md) gives the reasons.
+*This subsection is informative.* A surface listing a member's rooms prefers the member's **personal label**, then the room's own **profile** name (written by its curators, read by its members), then the label of the community's **offer** ([`vtc/rooms/offers/list`](../../../../vtc/rooms/offers/list/0.4/spec.md)), then the room's DID — and keeps the room's own name reachable beside a personal one. [`rooms/keys/label`](../../label/0.1/spec.md) gives the reasons.
 
 ## Request
 

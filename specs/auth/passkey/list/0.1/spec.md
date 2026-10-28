@@ -48,7 +48,7 @@ The **Auth — Passkey List** Trust Task enumerates the passkeys bound to a subj
 
 It is the credential-management counterpart to [`auth/sessions/list/0.1`](../../../sessions/list/0.1/spec.md). Sessions answers *"where am I signed in?"*; this answers *"what can sign me in?"* — a longer-lived and more consequential question, because revoking a session ends an episode whereas revoking a credential removes a capability permanently.
 
-Its output is the input to revocation: [`auth/passkey/revoke/start/0.1`](../../revoke/start/0.1/spec.md) targets a `credentialId` returned here.
+Its output is the input to revocation: [`auth/passkey/revoke/start/0.2`](../../revoke/start/0.2/spec.md) targets a `credentialId` returned here.
 
 ## Status of this Document
 

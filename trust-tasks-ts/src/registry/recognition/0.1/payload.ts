@@ -8,6 +8,8 @@ import type { Ext, QueryContext } from "../../../_shared/components.js";
 
 /**
  * TRQP v2.0 recognition query: ask a trust registry whether an entity is recognised by an authority for a given action+resource. Field names are verbatim from the TRQP recognition request/response schemas so the same payload serves the plain HTTP TRQP binding and the Trust Task binding.
+ *
+ * @deprecated superseded by registry/recognition/0.2
  */
 export interface RegistryRecognitionPayload {
   /**
@@ -29,6 +31,7 @@ export interface RegistryRecognitionPayload {
   context?: QueryContext;
   ext?: Ext;
 }
+/** @deprecated superseded by registry/recognition/0.2 */
 export interface RegistryRecognitionResponsePayload {
   entity_id: string;
   authority_id: string;
@@ -60,13 +63,37 @@ export type { Ext, QueryContext };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/registry/recognition/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by registry/recognition/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by registry/recognition/0.2
+ */
 export type Payload = RegistryRecognitionPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/registry/recognition/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by registry/recognition/0.2
+ */
 export type Response = RegistryRecognitionResponsePayload;
 
 /**

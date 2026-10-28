@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/pcs/vote-encrypted/0.3",
+  "title": "VTA PCS — Vote Encrypted — payload",
+  "description": "The voter's VTA checks a ballot against the manifest, encrypts it to the election key as the election's level requires, and returns the cast signed by a key made for it alone.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contextId",
+    "community",
+    "parameters",
+    "manifest",
+    "ballot",
+    "ceremony"
+  ],
+  "properties": {
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "The context the voter belongs to."
+    },
+    "community": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "description": "The community's DID."
+    },
+    "parameters": {
+      "$ref": "../../../../voting/_shared/0.2/voting.schema.json#/$defs/VotingParameters"
+    },
+    "manifest": {
+      "$ref": "../../../../voting/_shared/0.2/voting.schema.json#/$defs/Manifest"
+    },
+    "ballot": {
+      "$ref": "../../../../voting/_shared/0.2/voting.schema.json#/$defs/Ballot"
+    },
+    "ceremony": {
+      "$ref": "../../../../voting/_shared/0.2/voting.schema.json#/$defs/TrusteeCeremony",
+      "description": "The ceremony as the board holds it: voting/trustees/status's `steps`, passed on unchanged. The VTA verifies every step as its trustee's before taking it."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA PCS — Vote Encrypted — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "castDocument",
+        "tag"
+      ],
+      "properties": {
+        "castDocument": {
+          "title": "CastDocument",
+          "description": "The voting/ballot/cast-encrypted request, signed by a key made for this cast alone (VTI-VOT-003).",
+          "type": "object",
+          "required": [
+            "id",
+            "type",
+            "issuer",
+            "recipient",
+            "issuedAt",
+            "payload",
+            "proof"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+            },
+            "type": {
+              "const": "https://trusttasks.org/spec/voting/ballot/cast-encrypted/0.1"
+            },
+            "issuer": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048,
+              "description": "The signer."
+            },
+            "recipient": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048,
+              "description": "The ballot box."
+            },
+            "issuedAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "expiresAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "payload": {
+              "type": "object",
+              "description": "That task's request payload."
+            },
+            "proof": {
+              "type": "object",
+              "description": "A Data Integrity proof by an `authentication` key of `issuer`."
+            }
+          }
+        },
+        "tag": {
+          "$ref": "../../../../voting/_shared/0.2/voting.schema.json#/$defs/Multibase"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

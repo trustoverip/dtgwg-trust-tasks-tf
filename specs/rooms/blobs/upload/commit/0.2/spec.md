@@ -72,7 +72,7 @@ related:
 
 The **Rooms Blobs — Upload — Commit** Trust Task completes an upload opened by [`rooms/blobs/upload/begin`](../../begin/0.2/spec.md). The host checks that every chunk has arrived, checks the reassembled ciphertext against the digest committed in the manifest, hands the blob to its store, and answers with the blob's **BlobRef**: the digest of the manifest.
 
-A committed blob is not yet a file in the room. It becomes one when a record names it, with [`rooms/records/put/0.2`](../../../../records/put/0.2/spec.md). Until then it counts against the member's and the room's usage, and if no record ever names it, it is orphaned and collected like any blob whose last record let go of it.
+A committed blob is not yet a file in the room. It becomes one when a record names it, with [`rooms/records/put/0.3`](../../../../records/put/0.3/spec.md). Until then it counts against the member's and the room's usage, and if no record ever names it, it is orphaned and collected like any blob whose last record let go of it.
 
 ## Status of this Document
 
@@ -90,7 +90,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 A conforming **producer**:
 
-1. **MUST** sign the commit with the upload key the begin named (proxied) and **SHOULD** discard that key's secret once the commit is answered, or as the owner (direct), through [`rooms/keys/act`](../../../../keys/act/0.1/spec.md) where its keys are held by its key holder.
+1. **MUST** sign the commit with the upload key the begin named (proxied) and **SHOULD** discard that key's secret once the commit is answered, or as the owner (direct), through [`rooms/keys/act`](../../../../keys/act/0.8/spec.md) where its keys are held by its key holder.
 2. **MUST** name the committed blob in a record promptly, or abandon it knowing it will be collected. A producer **MUST NOT** treat a committed blob as part of the room before a record names it.
 
 A conforming **host** (`recipient`):
@@ -180,7 +180,7 @@ The host answers with the sub-schema reachable via `$anchor: "response"`. A refu
 
 **Nothing is recorded that storage does not hold.** In direct mode the host never carried the bytes, so it checks them where they are before the blob exists in the room (item 3). A member who wrote the wrong bytes, or none, gets a refusal, not a record naming an object that will not open; what they wrote is deleted, and an upload never committed is reclaimed with the rest of the orphan sweep.
 
-**A blob belongs to one room.** Recording the room at commit is what lets [`rooms/records/put/0.2`](../../../../records/put/0.2/spec.md) refuse a record naming a blob that was never uploaded, or was uploaded to another room. A record can never point at nothing, or at another room's file.
+**A blob belongs to one room.** Recording the room at commit is what lets [`rooms/records/put/0.3`](../../../../records/put/0.3/spec.md) refuse a record naming a blob that was never uploaded, or was uploaded to another room. A record can never point at nothing, or at another room's file.
 
 **Stores differ in what deletion means.** On most stores, collecting an orphan removes the ciphertext. A store that publishes ciphertext, so that anyone holding its address can fetch it, may keep it indefinitely, and deletion there is not erasure. On such a store the only deletion that holds is cryptographic: once nobody can derive the file's key, the ciphertext is noise. A host using such a store **SHOULD** say so to the room's members.
 

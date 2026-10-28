@@ -1,11 +1,20 @@
 import 'dart:convert';
 
 import 'package:test/test.dart';
-import 'package:trust_tasks/specs/acl/grant/v0_1/payload.dart' as acl_grant;
+// The specimen is a prebuilt library, deprecated in favour of generating the
+// tasks an application uses (dart run trust_tasks:generate).
+// ignore: deprecated_member_use
+import 'package:trust_tasks/specs/acl/grant/v0_2/payload.dart' as acl_grant;
+// --- trust-task-discovery 0.1 / 0.2 (superseded) -----------------------------
+// Delete these two imports, and the group marked the same way below, when the
+// withdrawal batch removes 0.1 and 0.2.
 import 'package:trust_tasks/specs/trust_task_discovery/v0_1/payload.dart'
-    as discovery;
+    as discovery_v0_1;
 import 'package:trust_tasks/specs/trust_task_discovery/v0_2/payload.dart'
     as discovery_v0_2;
+// --- end trust-task-discovery 0.1 / 0.2 -------------------------------------
+import 'package:trust_tasks/specs/trust_task_discovery/v0_3/payload.dart'
+    as discovery;
 import 'package:trust_tasks/trust_tasks.dart';
 import 'package:trust_tasks_https/trust_tasks_https.dart';
 
@@ -256,6 +265,7 @@ void main() {
         localVid: server,
         auth: StaticBearerAuth({aliceToken: alice}),
         clock: () => fixedNow,
+        // acl/grant is here only as a proof-REQUIRED specification.
       )..on<acl_grant.Payload, acl_grant.Response>(
           spec: acl_grant.spec,
           decode: acl_grant.Payload.fromJson,
@@ -266,7 +276,13 @@ void main() {
         );
       final doc = echoDoc(type: acl_grant.typeUri)
         ..['payload'] = {
-          'entry': {'subject': 'did:web:bob.example', 'role': 'admin'},
+          'entry': {
+            'subject': 'did:web:bob.example',
+            'role': 'admin',
+            'act': {'scope': 'all'},
+            'keys': {'scope': 'all'},
+            'capabilities': {'scope': 'ceiling'},
+          },
         };
       final reply = await s.handle(post(doc));
       expect(codeOf(reply), 'proofRequired');
@@ -387,45 +403,99 @@ void main() {
       final s = echoServer()..enableDiscovery();
       final reply = await s.handle(post(query()));
       expect(reply.status, 200);
-      final payload = bodyOf(reply)['payload'] as Map<String, dynamic>;
-      expect(
-          payload['supportedTypes'],
-          [
-            echoType,
-            notifyType,
-            discovery.typeUri,
-            discovery_v0_2.typeUri,
-          ]..sort());
-      // 0.1 admits only MAJOR.MINOR.
-      expect(payload['frameworkVersion'], '0.6');
+      final body = bodyOf(reply);
+      expect(body['type'], discovery.responseTypeUri);
+      final payload = body['payload'] as Map<String, dynamic>;
+      final listed = (payload['supportedTypes'] as List).cast<String>();
+      expect(listed,
+          containsAll(<String>[echoType, notifyType, discovery.typeUri]));
+      // Sorted, bare, and nothing that is not a route.
+      expect(listed, [...listed]..sort());
+      expect(listed.where((t) => t.contains('#')), isEmpty);
+      expect(payload['frameworkVersion'], '0.6.0');
     });
 
-    test('answers 0.2 in 0.2, with the three-part framework release', () async {
-      final s = echoServer()..enableDiscovery();
-      final reply = await s.handle(post(echoDoc(type: discovery_v0_2.typeUri)
-        ..['payload'] = <String, dynamic>{}));
+    test('a 0.3 answer validates against the 0.3 response schema', () async {
+      final s = echoServer()..enableDiscovery(frameworkVersion: '0.6.1');
+      final reply = await s.handle(post(query(patterns: ['*'])));
       expect(reply.status, 200);
       final body = bodyOf(reply);
-      expect(body['type'], '${discovery_v0_2.typeUri}#response');
+      expect(body['type'], '${discovery.typeUri}#response');
       final payload = body['payload'] as Map<String, dynamic>;
-      expect(payload['frameworkVersion'], '0.6.0');
-      expect(payload['supportedTypes'], contains(echoType));
+      expect(
+          _violations(discovery.responsePayloadSchemaJson, payload), isEmpty);
+      // The check is not vacuous: it refuses what the schema refuses.
+      for (final bad in <Map<String, dynamic>>[
+        {...payload, 'extra': true},
+        {...payload, 'frameworkVersion': '0.6'},
+        {
+          ...payload,
+          'acceptanceWindow': {'maxAgeSeconds': 0, 'clockSkewSeconds': 0},
+        },
+        {
+          'supportedTypes': [
+            {'type': echoType, 'requiredExt': <String>[]},
+          ],
+        },
+      ]) {
+        expect(
+            _violations(discovery.responsePayloadSchemaJson, bad), isNotEmpty,
+            reason: '$bad');
+      }
+
+      // And it reads back through the generated type.
+      final read = discovery.Response.fromJson(payload);
+      expect(read.supportedTypes, contains(echoType));
+      expect(read.frameworkVersion, '0.6.1');
+      // echoServer keeps the consequential posture: five minutes, 60 s skew.
+      expect(read.acceptanceWindow?.maxAgeSeconds, 300);
+      expect(read.acceptanceWindow?.clockSkewSeconds, 60);
     });
 
-    test('keeps a PATCH in 0.2 and drops it only in 0.1', () async {
-      // One server per request: both documents share echoDoc's id, and the
-      // replay record would otherwise refuse the second.
-      Future<Map<String, dynamic>> ask(Map<String, dynamic> doc) async {
-        final s = echoServer()..enableDiscovery(frameworkVersion: '0.6.1');
-        return bodyOf(await s.handle(post(doc)))['payload']
+    test('a request outside the 0.3 request schema is refused', () async {
+      final s = echoServer()..enableDiscovery();
+      final ok = query(patterns: ['acl/*']);
+      expect(_violations(discovery.payloadSchemaJson, ok['payload']), isEmpty);
+      final bad = echoDoc(type: discovery.typeUri)
+        ..['payload'] = {'patterns': 'acl/*'};
+      expect(codeOf(await s.handle(post(bad))), 'malformedRequest');
+    });
+
+    test('patterns filter the 0.3 answer', () async {
+      final s = echoServer()..enableDiscovery();
+      final reply = await s.handle(post(query(patterns: [_slugOf(echoType)])));
+      final payload = bodyOf(reply)['payload'] as Map<String, dynamic>;
+      expect(payload['supportedTypes'], [echoType]);
+    });
+
+    test('the advertised window is the enforced one, rounded down', () async {
+      Future<Map<String, dynamic>> ask(FreshnessPolicy freshness,
+          {bool advertise = true}) async {
+        final s = echoServer(freshness: freshness)
+          ..enableDiscovery(advertiseAcceptanceWindow: advertise);
+        return bodyOf(await s.handle(post(query())))['payload']
             as Map<String, dynamic>;
       }
 
-      final v1 = await ask(query());
-      final v2 = await ask(echoDoc(type: discovery_v0_2.typeUri)
-        ..['payload'] = <String, dynamic>{});
-      expect(v1['frameworkVersion'], '0.6');
-      expect(v2['frameworkVersion'], '0.6.1');
+      final window = (await ask(const FreshnessPolicy(
+        maxAge: Duration(seconds: 90, milliseconds: 900),
+        skew: Duration(seconds: 5, milliseconds: 500),
+        requireIssuedAt: true,
+      )))['acceptanceWindow'];
+      // Never wider than enforced (responder rule 1): fractions round down.
+      expect(window, {'maxAgeSeconds': 90, 'clockSkewSeconds': 5});
+
+      // An unbounded window has no 0.3 spelling, so none is stated.
+      expect(
+        (await ask(FreshnessPolicy.defaults)).containsKey('acceptanceWindow'),
+        isFalse,
+      );
+      // And a deployment may keep it to itself.
+      expect(
+        (await ask(FreshnessPolicy.consequential, advertise: false))
+            .containsKey('acceptanceWindow'),
+        isFalse,
+      );
     });
 
     test('refuses an unauthenticated discoverer unless public', () async {
@@ -444,6 +514,171 @@ void main() {
       expect((await public.handle(post(doc, token: null))).status, 200);
     });
   });
+
+  // --- trust-task-discovery 0.1 / 0.2 (superseded) -----------------------------
+  // Delete this group, and the two imports marked the same way at the top of
+  // this file, when the withdrawal batch removes 0.1 and 0.2.
+  group('discovery 0.1 / 0.2 (superseded, still answered)', () {
+    Map<String, dynamic> query01() => echoDoc(type: discovery_v0_1.typeUri)
+      ..['payload'] = <String, dynamic>{};
+    Map<String, dynamic> query02() => echoDoc(type: discovery_v0_2.typeUri)
+      ..['payload'] = <String, dynamic>{};
+
+    test('0.1 and 0.2 are listed beside 0.3', () async {
+      final s = echoServer()..enableDiscovery();
+      final payload = bodyOf(await s.handle(post(query01())))['payload']
+          as Map<String, dynamic>;
+      expect(
+          payload['supportedTypes'],
+          [
+            echoType,
+            notifyType,
+            discovery_v0_1.typeUri,
+            discovery_v0_2.typeUri,
+            discovery.typeUri,
+          ]..sort());
+      // 0.1 admits only MAJOR.MINOR.
+      expect(payload['frameworkVersion'], '0.6');
+    });
+
+    test('answers 0.2 in 0.2, with the three-part framework release', () async {
+      final s = echoServer()..enableDiscovery();
+      final reply = await s.handle(post(query02()));
+      expect(reply.status, 200);
+      final body = bodyOf(reply);
+      expect(body['type'], '${discovery_v0_2.typeUri}#response');
+      final payload = body['payload'] as Map<String, dynamic>;
+      expect(payload['frameworkVersion'], '0.6.0');
+      expect(payload['supportedTypes'], contains(echoType));
+      // 0.2's response is closed: no acceptanceWindow.
+      expect(payload.containsKey('acceptanceWindow'), isFalse);
+    });
+
+    test('keeps a PATCH in 0.2 and drops it only in 0.1', () async {
+      // One server per request: both documents share echoDoc's id, and the
+      // replay record would otherwise refuse the second.
+      Future<Map<String, dynamic>> ask(Map<String, dynamic> doc) async {
+        final s = echoServer()..enableDiscovery(frameworkVersion: '0.6.1');
+        return bodyOf(await s.handle(post(doc)))['payload']
+            as Map<String, dynamic>;
+      }
+
+      expect((await ask(query01()))['frameworkVersion'], '0.6');
+      expect((await ask(query02()))['frameworkVersion'], '0.6.1');
+    });
+  });
+  // --- end trust-task-discovery 0.1 / 0.2 -------------------------------------
+}
+
+/// The slug of a bare Type URI.
+String _slugOf(String typeUri) => slugFromTypeUri(typeUri);
+
+/// What in [instance] the JSON Schema [schemaJson] refuses, for the subset of
+/// JSON Schema the trust-task-discovery schemas use: `type`, `required`,
+/// `additionalProperties: false`, `properties`, `items`, `oneOf`, `minItems`,
+/// `maxItems`, `uniqueItems`, `minimum`, `minLength`, `pattern`, `format: uri`
+/// and local `$ref`. A keyword it does not know fails the check rather than
+/// passing silently, so a later schema that needs more cannot slip by.
+List<String> _violations(String schemaJson, Object? instance) {
+  final root = jsonDecode(schemaJson) as Map<String, dynamic>;
+  const known = {
+    r'$schema', r'$id', r'$defs', r'$anchor', r'$ref', 'title', //
+    'description', 'type', 'required', 'additionalProperties', 'properties',
+    'items', 'oneOf', 'minItems', 'maxItems', 'uniqueItems', 'minimum',
+    'minLength', 'pattern', 'format',
+  };
+  final out = <String>[];
+
+  Map<String, dynamic> resolve(String ref) {
+    var node = root;
+    for (final part in ref.substring(2).split('/')) {
+      node = node[part] as Map<String, dynamic>;
+    }
+    return node;
+  }
+
+  bool typeOk(String type, Object? v) => switch (type) {
+        'object' => v is Map,
+        'array' => v is List,
+        'string' => v is String,
+        'integer' => v is int,
+        'boolean' => v is bool,
+        _ => false,
+      };
+
+  void check(Map<String, dynamic> schema, Object? v, String at) {
+    for (final k in schema.keys) {
+      if (!known.contains(k)) out.add('$at: unsupported keyword $k');
+    }
+    final ref = schema[r'$ref'];
+    if (ref is String) check(resolve(ref), v, at);
+    final type = schema['type'];
+    if (type is String && !typeOk(type, v)) {
+      out.add('$at: not $type');
+      return;
+    }
+    final oneOf = schema['oneOf'];
+    if (oneOf is List) {
+      final matches = oneOf.where((branch) {
+        final before = out.length;
+        check(branch as Map<String, dynamic>, v, at);
+        final ok = out.length == before;
+        out.removeRange(before, out.length);
+        return ok;
+      }).length;
+      if (matches != 1) out.add('$at: matches $matches oneOf branches');
+    }
+    if (v is Map) {
+      final props = (schema['properties'] as Map<String, dynamic>?) ?? const {};
+      for (final r in (schema['required'] as List?) ?? const []) {
+        if (!v.containsKey(r)) out.add('$at: missing $r');
+      }
+      if (schema['additionalProperties'] == false) {
+        for (final k in v.keys) {
+          if (!props.containsKey(k)) out.add('$at: unexpected member $k');
+        }
+      }
+      for (final e in props.entries) {
+        if (v.containsKey(e.key)) {
+          check(e.value as Map<String, dynamic>, v[e.key], '$at/${e.key}');
+        }
+      }
+    }
+    if (v is List) {
+      final minItems = schema['minItems'];
+      final maxItems = schema['maxItems'];
+      if (minItems is int && v.length < minItems) out.add('$at: too few');
+      if (maxItems is int && v.length > maxItems) out.add('$at: too many');
+      if (schema['uniqueItems'] == true && v.toSet().length != v.length) {
+        out.add('$at: duplicates');
+      }
+      final items = schema['items'];
+      if (items is Map<String, dynamic>) {
+        for (var i = 0; i < v.length; i++) {
+          check(items, v[i], '$at/$i');
+        }
+      }
+    }
+    if (v is String) {
+      final minLength = schema['minLength'];
+      if (minLength is int && v.length < minLength) out.add('$at: too short');
+      final pattern = schema['pattern'];
+      if (pattern is String && !RegExp(pattern).hasMatch(v)) {
+        out.add('$at: does not match $pattern');
+      }
+      if (schema['format'] == 'uri' &&
+          !(Uri.tryParse(v)?.isAbsolute ?? false)) {
+        out.add('$at: not an absolute URI');
+      }
+    }
+    if (v is int) {
+      final minimum = schema['minimum'];
+      if (minimum is int && v < minimum) out.add('$at: below $minimum');
+    }
+  }
+
+  check(root, instance, '');
+  return out;
 }
 
 class _Capture implements ProofVerifier {

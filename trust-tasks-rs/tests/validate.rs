@@ -2,8 +2,10 @@
 //! payloads against the embedded `payload.schema.json` files.
 
 #![cfg(feature = "validate")]
-
-use trust_tasks_rs::{specs::acl::grant::v0_1 as grant, validate::ValidatedPayload, Payload};
+// Exercises the prebuilt specification modules on purpose; they are deprecated
+// in favour of generating the tasks an application uses (trust-tasks-build).
+#![allow(deprecated)]
+use trust_tasks_rs::{specs::acl::grant::v0_2 as grant, validate::ValidatedPayload, Payload};
 
 #[test]
 fn valid_payload_passes_schema_check() {
@@ -11,6 +13,9 @@ fn valid_payload_passes_schema_check() {
         "entry": {
             "subject": "did:web:alice.example",
             "role": "admin",
+            "act": { "scope": "all" },
+            "keys": { "scope": "all" },
+            "capabilities": { "scope": "ceiling" },
             "label": "Alice — primary admin"
         }
     });
@@ -19,7 +24,7 @@ fn valid_payload_passes_schema_check() {
 
 #[test]
 fn missing_required_field_fails() {
-    // `entry` is required by acl/grant/0.1.
+    // `entry` is required by acl/grant/0.2.
     let payload = serde_json::json!({ "reason": "spring cleaning" });
     let err = grant::Payload::validate_value(&payload).expect_err("missing entry should reject");
     let combined = err.messages().join(" | ");
@@ -36,7 +41,13 @@ fn unknown_field_fails_when_schema_forbids_it() {
     // `deny_unknown_fields`. This proves runtime validation matches the
     // structural deserializer.
     let payload = serde_json::json!({
-        "entry": { "subject": "did:web:alice.example", "role": "admin" },
+        "entry": {
+            "subject": "did:web:alice.example",
+            "role": "admin",
+            "act": { "scope": "all" },
+            "keys": { "scope": "all" },
+            "capabilities": { "scope": "ceiling" }
+        },
         "noSuchField": 1
     });
     grant::Payload::validate_value(&payload)
@@ -50,7 +61,7 @@ fn schema_json_is_embedded_at_compile_time() {
     // schema, and gating it was what put it out of reach.
     let schema = <grant::Payload as Payload>::PAYLOAD_SCHEMA.expect("generated payloads carry it");
     assert!(schema.contains("\"$id\""));
-    assert!(schema.contains("acl/grant/0.1"));
+    assert!(schema.contains("acl/grant/0.2"));
 
     // Response variants carry one too — the defect in #230 was on a response.
     let response =

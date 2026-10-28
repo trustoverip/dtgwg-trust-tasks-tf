@@ -52,6 +52,34 @@ jobs:
           # unconventional and files it under "Other", so prefer one scope —
           # but a title that reads correctly is not worth failing a PR over.
           if printf '%s' "$TITLE" | grep -qE "^($types)(\([a-z0-9._/, -]+\))?!?: .+"; then
+            # `!` makes release-plz cut a BREAKING release of every crate in the
+            # version group, and the npm/Go/Dart bump scripts do the same. It is
+            # for a package's public API, so every scope must name a package. A
+            # specification change never needs it: a released spec changes only
+            # additively in place (check-published-schemas), and anything else is
+            # a new version — a new module, an additive patch. 22 `!` titles on
+            # spec changes (#858 among them, whose crate API did not change at
+            # all) each cost every library a MINOR before this was enforced.
+            if printf '%s' "$TITLE" | grep -qE '^[a-z]+(\([^)]*\))?!:'; then
+              pkg='rs|ts|go|dart|codegen|runtime|bindings|https|didcomm|didcomm-v1|tsp|proof|ceremony|capability-client|cli|build|(rs|ts|go|dart)-[a-z0-9-]+'
+              scopes=$(printf '%s' "$TITLE" | sed -nE 's/^[a-z]+\(([^)]*)\)!:.*/\1/p' | tr ',' '\n' | sed 's/^ *//; s/ *$//')
+              bad=$(printf '%s\n' "$scopes" | grep -vxE "$pkg" || true)
+              if [ -z "$scopes" ] || [ -n "$bad" ]; then
+                # shellcheck disable=SC2016 # the backticks are literal Markdown, not substitution
+                printf '::error::`!` names a breaking change to a package API, but this title scopes it to: %s\n' "${bad:-(no scope)}"
+                cat <<'EOF'
+          `!` makes every crate in the release group — and the npm, Go and Dart
+          packages — a BREAKING release. Use it only for a package's public API, and
+          scope it to the package: feat(rs)!:  fix(codegen)!:  feat(ts)!:  feat(go-didcomm)!:
+
+          A specification change never needs it. A released spec may change in place
+          only additively (CI: published schemas change only additively); anything
+          else goes in a NEW VERSION FOLDER, which is a new module — an additive
+          patch for every library. Drop the `!`. See RELEASING.md.
+          EOF
+                exit 1
+              fi
+            fi
             echo "ok: $TITLE"
             exit 0
           fi
@@ -69,7 +97,7 @@ jobs:
 
           type   feat fix docs test ci build perf refactor chore security spec site revert
           scope  optional, e.g. (rs) (https) (vault) (ts-bindings); one is best
-          !      optional, marks a breaking change
+          !      optional, marks a breaking change to a PACKAGE API; scope it to the package
 
           Examples:
             feat(rs): add a trust-tasks facade crate

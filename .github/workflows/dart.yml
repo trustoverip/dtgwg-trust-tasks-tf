@@ -128,6 +128,118 @@ jobs:
         working-directory: trust-tasks-dart
         run: dart test
 
+  # `dart run trust_tasks:generate` — the consumer-side generator, which reads a
+  # trust-tasks.lock and its vendored bundles — run over EVERY bundle in the
+  # registry and compared with the prebuilt tree under lib/specs/ (generated
+  # from specs/ by scripts/build-dart-bindings.mjs). Two independent
+  # generators from two inputs; this is what keeps them equivalent. The script
+  # names the two differences the bundle format makes unavoidable (embedded
+  # schema key order, compared as JSON; top-level declaration order, compared
+  # declaration by declaration) and fails on anything else.
+  consumer-generation:
+    name: consumer generation matches the prebuilt tree
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+      - name: Build every bundle
+        run: cargo run -q --release -p trust-tasks-codegen -- --bundles "$RUNNER_TEMP/bundles"
+      - name: Install dependencies
+        working-directory: trust-tasks-dart
+        run: dart pub get
+      - name: Compare
+        run: node scripts/check-dart-consumer-generation.mjs "$RUNNER_TEMP/bundles"
+
+  # An application that pins three tasks (the same three as
+  # examples/consumer-app), generates their libraries, analyzes them with
+  # --fatal-infos, and runs a round trip through the runtime. On the 3.3 floor
+  # as well, where `dart format` has no --language-version.
+  consumer-app:
+    name: example application (${{ matrix.sdk }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        sdk: ["3.3", "stable"]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: ${{ matrix.sdk }}
+      - name: Install dependencies
+        working-directory: examples/consumer-app-dart
+        run: dart pub get
+      - name: Generate
+        working-directory: examples/consumer-app-dart
+        run: dart run trust_tasks:generate --lock trust-tasks.lock --out lib/trust_tasks
+      - name: Analyze
+        working-directory: examples/consumer-app-dart
+        run: dart analyze --fatal-infos
+      - name: Run
+        working-directory: examples/consumer-app-dart
+        run: dart run bin/main.dart
+
+  # The release is sized by the PR title: `feat(dart)!:` makes trust_tasks a
+  # breaking release, anything else a patch. Nothing else stopped an accidental
+  # break shipping as a patch — Rust has cargo-semver-checks, Dart had nothing.
+  # This compares the PR's public API — the runtime AND every generated library
+  # under lib/specs — with the latest trust_tasks on pub.dev, and fails on a
+  # break the title does not declare. Additions (a new spec version, a new
+  # optional member, a new closed value) pass. See scripts/check-dart-api.mjs
+  # for what counts as breaking and the two rewrites dart_apitool needs.
+  #
+  # The title is read from the API at run time, not from the event payload: the
+  # workflow does not run on `edited` (that would re-run every job here on any
+  # description edit), so after retitling a PR to `feat(dart)!:` you re-run this
+  # job, and a re-run replays the ORIGINAL event, title included.
+  api-compatibility:
+    name: Dart API compatibility
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          # History and tags: a break already declared since the published
+          # release (trust-tasks-dart-v*) lets this PR's break through.
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "npm"
+      # Pinned with the tool: dart_apitool 0.23.2 analyses with analyzer 10.2,
+      # and an analyzer older than the SDK it runs on is not guaranteed to read
+      # that SDK's libraries. Move the two together.
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: "3.13"
+      - run: npm ci --no-audit --no-fund
+      - name: Activate dart_apitool
+        run: dart pub global activate dart_apitool 0.23.2
+      - name: Compare with the published trust_tasks
+        # Passed through the environment, never interpolated into the script
+        # (see commit-lint.yml).
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          EVENT_TITLE: ${{ github.event.pull_request.title }}
+          BASE_REF: ${{ github.event.pull_request.base.sha }}
+        run: |
+          PR_TITLE=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq .title) || PR_TITLE=$EVENT_TITLE
+          export PR_TITLE
+          node scripts/check-dart-api.mjs
+
   # Five hand-maintained files each list the Dart packages (see the script's
   # header). #483 left the tag-dart matrix with an entry that had no `dir`; the
   # YAML was valid, so only a failed release showed it.

@@ -8,6 +8,8 @@ import type { Ext, PublicKeyCredentialDescriptor, PublicKeyCredentialRequestOpti
 
 /**
  * A relying party asks an approver (typically a wallet or a VTA) to ratify an AAL elevation for a subject's session, or — bound to one operation — to approve that one act without elevating any session.
+ *
+ * @deprecated superseded by auth/step-up/approve-request/0.5
  */
 export interface AuthStepUpApproveRequest {
   /**
@@ -52,6 +54,8 @@ export interface AuthStepUpApproveRequest {
 }
 /**
  * Synchronous ack from the approver acknowledging it received the request and will (or will not) deliver an approve-response. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/approve-request/0.3#response.
+ *
+ * @deprecated superseded by auth/step-up/approve-request/0.5
  */
 export interface AuthStepUpApproveRequestResponsePayload {
   /**
@@ -71,13 +75,37 @@ export type { Ext, PublicKeyCredentialDescriptor, PublicKeyCredentialRequestOpti
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/step-up/approve-request/0.3" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by auth/step-up/approve-request/0.5";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by auth/step-up/approve-request/0.5
+ */
 export type Payload = AuthStepUpApproveRequest;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/auth/step-up/approve-request/0.3#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by auth/step-up/approve-request/0.5
+ */
 export type Response = AuthStepUpApproveRequestResponsePayload;
 
 /**

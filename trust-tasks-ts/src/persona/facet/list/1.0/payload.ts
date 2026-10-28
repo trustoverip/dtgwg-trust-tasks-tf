@@ -8,6 +8,8 @@ import type { Ext, FacetColour, Ulid, Version_PersonaV0_1 as Version } from "../
 
 /**
  * List the holder's facets, with their membership. Cursor-paginated like every other persona listing.
+ *
+ * @deprecated retired; use persona/world/list/1.0
  */
 export interface PersonaFacetListPayload {
   /**
@@ -22,6 +24,8 @@ export interface PersonaFacetListPayload {
 }
 /**
  * Success response to persona/facet/list. Type https://trusttasks.org/spec/persona/facet/list/1.0#response.
+ *
+ * @deprecated retired; use persona/world/list/1.0
  */
 export interface PersonaFacetListResponsePayload {
   /**
@@ -65,13 +69,37 @@ export type { Ext, FacetColour, Ulid, Version };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/persona/facet/list/1.0" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "retired; use persona/world/list/1.0";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated retired; use persona/world/list/1.0
+ */
 export type Payload = PersonaFacetListPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/persona/facet/list/1.0#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated retired; use persona/world/list/1.0
+ */
 export type Response = PersonaFacetListResponsePayload;
 
 /**

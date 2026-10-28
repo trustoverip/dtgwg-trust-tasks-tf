@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/services/rollback/1.2",
+  "title": "VTA Services — Rollback — payload",
+  "description": "Request payload for vta/services/rollback. Reverts a transport to its previous advertised settings by writing a NEW log entry — the history is append-only, so a rollback is a forward step that restores an earlier state, never an erasure of what happened.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "service"
+  ],
+  "properties": {
+    "service": {
+      "$ref": "../../../_shared/0.8/service.schema.json#/$defs/ServiceKind"
+    },
+    "drainTtlSeconds": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Mediated transports only (`didcomm`, `tsp`): when the rollback moves the transport off its current mediator, how long that mediator keeps accepting delivery for correspondents still holding the current DID document. Refused for `rest` and `webauthn`. Absent takes the agent's default; ignored when the rollback leaves no mediator draining. The agent may raise a value below its floor to the floor — and does, over a request that arrived through the mediator being replaced — and one mediator carrying both mediated transports drains once for both, so read `drainEndsAt` in the result for the window actually applied."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Services — Rollback — response payload",
+      "description": "Success response to vta/services/rollback. Type https://trusttasks.org/spec/vta/services/rollback/1.2#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "result"
+      ],
+      "properties": {
+        "result": {
+          "$ref": "../../../_shared/0.8/service.schema.json#/$defs/RollbackResult"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,54 @@
+[
+  {
+    "note": "`resource` names its forge.",
+    "payload": {
+      "resource": "acme"
+    }
+  },
+  {
+    "note": "`resource` is lowercase.",
+    "payload": {
+      "resource": "github.com/ACME"
+    }
+  },
+  {
+    "note": "Unknown members are refused: there is no subject filter, a member sees what they may see.",
+    "payload": {
+      "subject": "did:webvh:QmDanScid4:dan.example"
+    }
+  },
+  {
+    "note": "`accounts` is a response member. A request cannot name whose accounts to return: the answer only ever carries the caller's own.",
+    "payload": {
+      "accounts": [
+        {
+          "account": {
+            "forge": "github.com",
+            "id": "5550123",
+            "login": "eve-dev"
+          },
+          "linkedAt": "2026-09-23T10:00:00Z"
+        }
+      ]
+    }
+  },
+  {
+    "note": "`scope` is `member` or `administrator`: there is no scope that widens the answer beyond what the caller administers.",
+    "payload": {
+      "scope": "everything"
+    }
+  },
+  {
+    "note": "`breakGlass` is a boolean narrowing, not a filter on who broke the glass.",
+    "payload": {
+      "breakGlass": "did:webvh:QmBobScid2:acme-vtc.example:bob"
+    }
+  },
+  {
+    "note": "An administrator's read still carries no subject: it answers for the namespaces the caller administers, never for a DID the request names.",
+    "payload": {
+      "scope": "administrator",
+      "subject": "did:webvh:QmBobScid2:acme-vtc.example:bob"
+    }
+  }
+]

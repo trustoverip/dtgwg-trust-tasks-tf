@@ -6,6 +6,7 @@
 import type { CredentialId, Ext } from "../../../../_shared/components.js";
 
 
+/** @deprecated superseded by vta/credentials/issue/0.2 */
 export interface VTACredentialsIssuePayload {
   /**
    * DID of the credential's subject/holder (becomes credentialSubject.id).
@@ -36,6 +37,8 @@ export interface VTACredentialsIssuePayload {
  * The success response to a vta/credentials/issue request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/credentials/issue/0.1#response.
  *
  * This is the credentials/_shared IssuedCredential shape — same members, same required set — plus `supersedes` and `ext`. It states them inline rather than `$ref`-ing the shared definition because that definition sets `additionalProperties: false`, which under `allOf` would reject the two extra members. The shared CredentialId is still referenced. Keep the two in step by hand if either changes.
+ *
+ * @deprecated superseded by vta/credentials/issue/0.2
  */
 export interface VTACredentialsIssueResponsePayload {
   credentialId: CredentialId;
@@ -63,13 +66,37 @@ export type { CredentialId, Ext };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/credentials/issue/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vta/credentials/issue/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vta/credentials/issue/0.2
+ */
 export type Payload = VTACredentialsIssuePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/credentials/issue/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vta/credentials/issue/0.2
+ */
 export type Response = VTACredentialsIssueResponsePayload;
 
 /**

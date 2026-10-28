@@ -1,0 +1,4 @@
+# Written by `dart run trust_tasks:generate` from trust-tasks.lock.
+/lib/trust_tasks/
+.dart_tool/
+pubspec.lock

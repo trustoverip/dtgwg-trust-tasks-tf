@@ -177,13 +177,13 @@ registry that is not a concession — it is the task working as designed. A
 relationship credential asserts that *this* member vouches for *that* one, and it
 is worth something only to a third party who can recognise both DIDs as the ones
 they see in the community directory, in a
-[`list`](../../list/0.2/spec.md) response, and on the other credentials each
+[`list`](../../list/0.3/spec.md) response, and on the other credentials each
 party holds. Pairwise identifiers would defeat the credential outright: a VRC
 naming two identifiers nobody else can resolve asserts a relationship between two
 parties nobody else can identify, which is a statement with no relying party.
 
 So the correlation is the product. Every VRC issued through this task is one more
-edge in a graph that [`list`](../../list/0.2/spec.md) and `graph` expose, and the
+edge in a graph that [`list`](../../list/0.3/spec.md) and `graph` expose, and the
 accumulation is far more revealing than any single credential: who a member is
 connected to, how densely, and when each connection was formed. `vrcDigestMultibase`
 makes individual edges trackable across stores, and the credential's own
@@ -209,7 +209,7 @@ The consequence is that this task's effect cannot be retracted by deleting
 anything. Once released, the credential is a signed artefact the requester holds;
 if it has been published it is also in the community's store and in the hands of
 everyone who has listed it since. Withdrawal is
-[`revoke`](../../revoke/0.1/spec.md) — a *new* signed statement that supersedes
+[`revoke`](../../revoke/0.2/spec.md) — a *new* signed statement that supersedes
 the old one — not erasure, and a member who wants a relationship un-asserted
 should expect the record of its having existed to remain.
 

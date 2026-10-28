@@ -8,6 +8,8 @@ import type { AndroidApp_VaultV0_2 as AndroidApp, AttachmentRef_VaultV0_3 as Att
 
 /**
  * Create a new vault entry or update an existing one. The secret material — if present — rides inside a pluggable cipher envelope (see `vault/_shared/0.1/sealed-envelope`), so the Trust Task carries ciphertext and an authenticator, not plaintext. Updates may be partial: any populated metadata field replaces the current value; omitted fields are left untouched; explicit null clears the field (per `clearFields`). Optimistic-concurrency check via `expectedVersion`.
+ *
+ * @deprecated superseded by vault/upsert/0.4
  */
 export interface VaultUpsertPayload {
   /**
@@ -44,6 +46,7 @@ export interface VaultUpsertPayload {
   clearFields?: ("notes" | "favicon" | "expiresAt" | "tags" | "selectors" | "customFieldNames")[];
   ext?: Ext;
 }
+/** @deprecated superseded by vault/upsert/0.4 */
 export interface VaultUpsertResponsePayload {
   entry: VaultEntry;
   /**
@@ -59,13 +62,37 @@ export type { AndroidApp, AttachmentRef, Did, DidcommAuthcryptEnvelope, DigestMu
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vault/upsert/0.3" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vault/upsert/0.4";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vault/upsert/0.4
+ */
 export type Payload = VaultUpsertPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vault/upsert/0.3#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vault/upsert/0.4
+ */
 export type Response = VaultUpsertResponsePayload;
 
 /**

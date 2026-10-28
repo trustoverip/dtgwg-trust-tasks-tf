@@ -3,11 +3,13 @@
  * Source: specs/git-ns/right/ratify/0.1/payload.schema.json
  */
 
-import type { BreakGlass, Did_GitNsV0_3 as Did, ElevatedRight, Ext, Resource, Right, RightRecord_GitNsV0_4 as RightRecord } from "../../../../_shared/components.js";
+import type { BreakGlass_GitNsV0_4 as BreakGlass, Did_GitNsV0_3 as Did, ElevatedRight, Ext, Resource_GitNsV0_1 as Resource, Right, RightRecord_GitNsV0_4 as RightRecord } from "../../../../_shared/components.js";
 
 
 /**
  * An administrator other than its subject ratifies one unratified break-glass record, turning it into an ordinary grant: it stops being flagged, and starts counting toward the last-owner and last-admin invariants.
+ *
+ * @deprecated superseded by git-ns/right/ratify/0.2
  */
 export interface GitNamespacesRatifyBreakGlassPayload {
   /**
@@ -31,6 +33,8 @@ export interface GitNamespacesRatifyBreakGlassPayload {
 }
 /**
  * The ratified record.
+ *
+ * @deprecated superseded by git-ns/right/ratify/0.2
  */
 export interface GitNamespacesRatifyBreakGlassResponsePayload {
   /**
@@ -46,13 +50,37 @@ export type { BreakGlass, Did, ElevatedRight, Ext, Resource, Right, RightRecord 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/git-ns/right/ratify/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by git-ns/right/ratify/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by git-ns/right/ratify/0.2
+ */
 export type Payload = GitNamespacesRatifyBreakGlassPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/git-ns/right/ratify/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by git-ns/right/ratify/0.2
+ */
 export type Response = GitNamespacesRatifyBreakGlassResponsePayload;
 
 /**

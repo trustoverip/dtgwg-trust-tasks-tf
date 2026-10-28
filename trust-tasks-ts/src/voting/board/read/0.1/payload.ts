@@ -3,11 +3,13 @@
  * Source: specs/voting/board/read/0.1/payload.schema.json
  */
 
-import type { Answer, Ballot, BoardEntry, BoardHead, Cast, CastEntry, ConfirmationEntry, Dealing, DealingEntry, DecryptionAuthorizedEntry, DecryptionTarget, DigestMultibase, ElectionId, ElectionKey, ElectionKeyEntry, ElectionResult, ElGamalCiphertext, EncryptedCast, EncryptedCastEntry, Ext, GroupElement, GroupScalar, JustificationEntry, Key_VotingV0_1 as Key, LifecycleEntry, Multibase_VotingV0_1 as Multibase, PartialDecryption, PartialDecryptionsEntry, QuestionResult, ReplacementEntry, ResultEntry, SealedPayload, SealedShare, SigmaProof, SignedRequest, SpoiledEntry, TransportKey, TransportKeyEntry, TrusteeIndex, TrusteeStepEntry, UnsealedEntry } from "../../../../_shared/components.js";
+import type { Answer, Ballot, BoardEntry_VotingV0_1 as BoardEntry, BoardHead, Cast, CastEntry_VotingV0_1 as CastEntry, ConfirmationEntry_VotingV0_1 as ConfirmationEntry, Dealing, DealingEntry_VotingV0_1 as DealingEntry, DecryptionAuthorizedEntry_VotingV0_1 as DecryptionAuthorizedEntry, DecryptionTarget, DigestMultibase, ElectionId, ElectionKey, ElectionKeyEntry_VotingV0_1 as ElectionKeyEntry, ElectionResult, ElGamalCiphertext, EncryptedCast, EncryptedCastEntry_VotingV0_1 as EncryptedCastEntry, Ext, GroupElement, GroupScalar, JustificationEntry_VotingV0_1 as JustificationEntry, Key_VotingV0_1 as Key, LifecycleEntry_VotingV0_1 as LifecycleEntry, Multibase_VotingV0_1 as Multibase, PartialDecryption, PartialDecryptionsEntry_VotingV0_1 as PartialDecryptionsEntry, QuestionResult, ReplacementEntry_VotingV0_1 as ReplacementEntry, ResultEntry_VotingV0_1 as ResultEntry, SealedPayload, SealedShare, SigmaProof, SignedRequest, SpoiledEntry_VotingV0_1 as SpoiledEntry, TransportKey, TransportKeyEntry_VotingV0_1 as TransportKeyEntry, TrusteeIndex, TrusteeStepEntry_VotingV0_1 as TrusteeStepEntry, UnsealedEntry_VotingV0_1 as UnsealedEntry } from "../../../../_shared/components.js";
 
 
 /**
  * Reads a range of an election board's entries, against the current head or against an earlier tree size.
+ *
+ * @deprecated superseded by voting/board/read/0.2
  */
 export interface VotingBoardReadPayload {
   /**
@@ -29,6 +31,7 @@ export interface VotingBoardReadPayload {
   treeSize?: number;
   ext?: Ext;
 }
+/** @deprecated superseded by voting/board/read/0.2 */
 export interface VotingBoardReadResponsePayload {
   /**
    * The tree size the page was read against. No entry at or beyond it is returned.
@@ -56,13 +59,37 @@ export type { Answer, Ballot, BoardEntry, BoardHead, Cast, CastEntry, Confirmati
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/voting/board/read/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by voting/board/read/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by voting/board/read/0.2
+ */
 export type Payload = VotingBoardReadPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/voting/board/read/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by voting/board/read/0.2
+ */
 export type Response = VotingBoardReadResponsePayload;
 
 /**

@@ -10,7 +10,7 @@
 
 import 'dart:convert';
 
-import 'package:trust_tasks/specs/acl/grant/v0_1/payload.dart' as acl_grant;
+import 'package:trust_tasks/specs/acl/grant/v0_2/payload.dart' as acl_grant;
 import 'package:trust_tasks/trust_tasks.dart';
 
 const me = 'did:web:maintainer.example';
@@ -40,7 +40,13 @@ String inboundJson({String role = 'admin'}) => jsonEncode({
         'proofValue': 'z3kgExampleOnlyNotARealSignature',
       },
       'payload': {
-        'entry': {'subject': 'did:web:alice.example', 'role': role},
+        'entry': {
+          'subject': 'did:web:alice.example',
+          'role': role,
+          'act': {'scope': 'all'},
+          'keys': {'scope': 'all'},
+          'capabilities': {'scope': 'ceiling'},
+        },
       },
     });
 

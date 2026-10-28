@@ -802,3 +802,5 @@ mark.tt-mark {
 /* Retired status — muted slate, slightly de-emphasized */
 .tt-status--retired   { color: var(--tt-text-muted); border-color: color-mix(in srgb, var(--tt-text-muted) 35%, transparent); opacity: 0.85; }
 .tt-status--retired   .dot { background: var(--tt-text-muted); }
+.tt-status--withdrawn { color: var(--tt-text-muted); border-color: color-mix(in srgb, var(--tt-text-muted) 25%, transparent); opacity: 0.65; text-decoration: line-through; }
+.tt-status--withdrawn .dot { background: var(--tt-text-muted); }

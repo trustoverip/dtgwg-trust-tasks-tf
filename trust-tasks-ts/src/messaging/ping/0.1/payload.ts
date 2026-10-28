@@ -6,6 +6,7 @@
 import type { Ext } from "../../../_shared/components.js";
 
 
+/** @deprecated superseded by messaging/ping/0.2 */
 export interface MessagingPingPayload {
   /**
    * Optional opaque value the requester may supply to correlate the response to this probe. The mediator echoes it verbatim in the response.
@@ -18,6 +19,8 @@ export interface MessagingPingPayload {
 }
 /**
  * The success response to a messaging/ping request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/ping/0.1#response.
+ *
+ * @deprecated superseded by messaging/ping/0.2
  */
 export interface MessagingPingResponsePayload {
   /**
@@ -48,13 +51,37 @@ export type { Ext };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/messaging/ping/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by messaging/ping/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by messaging/ping/0.2
+ */
 export type Payload = MessagingPingPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/messaging/ping/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by messaging/ping/0.2
+ */
 export type Response = MessagingPingResponsePayload;
 
 /**

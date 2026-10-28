@@ -59,7 +59,7 @@ The **Auth — Step-up Approver Revoke** Trust Task withdraws one step-up approv
 
 A subject revokes their own approver when a device is lost or a browser profile is suspect. An administrator revokes a member's — naming `subject` — for incident response, or when the member reports a lost device and cannot reach any factor themselves.
 
-**Revoking the last approver is allowed.** It costs the subject the ability to answer a step-up with an approver, and nothing else: their authority, their DID and their other factors are untouched, and it is recoverable — through another factor they hold with [`enroll`](../../enroll/0.1/spec.md), or through an administrator's [`invite`](../../invite/0.1/spec.md). Refusing it would leave a subject unable to disown a factor they believe compromised, which protects the attacker.
+**Revoking the last approver is allowed.** It costs the subject the ability to answer a step-up with an approver, and nothing else: their authority, their DID and their other factors are untouched, and it is recoverable — through another factor they hold with [`enroll`](../../enroll/0.1/spec.md), or through an administrator's [`invite`](../../invite/0.2/spec.md). Refusing it would leave a subject unable to disown a factor they believe compromised, which protects the attacker.
 
 ## Status of this Document
 

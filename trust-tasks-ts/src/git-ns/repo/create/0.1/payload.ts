@@ -3,11 +3,13 @@
  * Source: specs/git-ns/repo/create/0.1/payload.schema.json
  */
 
-import type { Bootstrap, Did_GitNsV0_1 as Did, DriftItem, Ext, ForgeAccount, ForgeHost, ForgeId, NamespaceId, RepoResource, RepoSummary_GitNsV0_1 as RepoSummary, RepoVisibility, Segment, Sync } from "../../../../_shared/components.js";
+import type { Bootstrap, Did_GitNsV0_1 as Did, DriftItem_GitNsV0_1 as DriftItem, Ext, ForgeAccount_GitNsV0_1 as ForgeAccount, ForgeHost_GitNsV0_1 as ForgeHost, ForgeId_GitNsV0_1 as ForgeId, NamespaceId, RepoResource_GitNsV0_1 as RepoResource, RepoSummary_GitNsV0_1 as RepoSummary, RepoVisibility, Segment_GitNsV0_1 as Segment, Sync_GitNsV0_1 as Sync } from "../../../../_shared/components.js";
 
 
 /**
  * A holder of `git.repo.create` on a namespace creates a repository in it and becomes its owner. The VTC reserves the name; a bridge creates the repository and turns commit trust on, or, where no bot can create repositories there, the response lists the steps a person must take.
+ *
+ * @deprecated superseded by git-ns/repo/create/0.4
  */
 export interface GitNamespacesCreateRepositoryPayload {
   /**
@@ -27,6 +29,8 @@ export interface GitNamespacesCreateRepositoryPayload {
 }
 /**
  * The reserved repository, and the manual steps when a person must create it.
+ *
+ * @deprecated superseded by git-ns/repo/create/0.4
  */
 export interface GitNamespacesCreateRepositoryResponsePayload {
   /**
@@ -48,13 +52,37 @@ export type { Bootstrap, Did, DriftItem, Ext, ForgeAccount, ForgeHost, ForgeId, 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/git-ns/repo/create/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by git-ns/repo/create/0.4";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by git-ns/repo/create/0.4
+ */
 export type Payload = GitNamespacesCreateRepositoryPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/git-ns/repo/create/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by git-ns/repo/create/0.4
+ */
 export type Response = GitNamespacesCreateRepositoryResponsePayload;
 
 /**

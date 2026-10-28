@@ -212,7 +212,7 @@ community states it carried out the described check, and nothing more: not that
 the claimed identity is true, and not that the subject is a person or a member.
 Personhood, like admission, is the community's decision, recorded on the
 member's membership credential (VMC) by
-[`vtc/members/personhood/assert`](../../../members/personhood/assert/0.1/spec.md);
+[`vtc/members/personhood/assert`](../../../members/personhood/assert/0.2/spec.md);
 a `vetted/1` statement, the community's own or a vetter's, is one input to it.
 
 #### Example: a community desk check

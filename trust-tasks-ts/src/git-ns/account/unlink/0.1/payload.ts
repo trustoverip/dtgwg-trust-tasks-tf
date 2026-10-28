@@ -3,7 +3,7 @@
  * Source: specs/git-ns/account/unlink/0.1/payload.schema.json
  */
 
-import type { Ext, ForgeAccount, ForgeHost, ForgeId } from "../../../../_shared/components.js";
+import type { Ext, ForgeAccount_GitNsV0_1 as ForgeAccount, ForgeHost_GitNsV0_1 as ForgeHost, ForgeId_GitNsV0_1 as ForgeId } from "../../../../_shared/components.js";
 
 
 /**
@@ -40,6 +40,22 @@ export type { Ext, ForgeAccount, ForgeHost, ForgeId };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/git-ns/account/unlink/0.1" as const;
+
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = null;
 
 /** Stable alias for this specification's request payload shape. */
 export type Payload = GitNamespacesUnlinkForgeAccountPayload;

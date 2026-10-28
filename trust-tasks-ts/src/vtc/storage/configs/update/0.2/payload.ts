@@ -8,6 +8,8 @@ import type { AwsRoleArn, ConfigState, Ext, ExternalAccountContextId, ExternalAc
 
 /**
  * Change a storage config's label, settings that do not locate stored blobs, authentication, capacity or default flag. Never a secret. The outer document members are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by vtc/storage/configs/update/0.3
  */
 export interface VTCStorageConfigsUpdatePayload {
   configId: StorageConfigId;
@@ -31,6 +33,7 @@ export interface VTCStorageConfigsUpdatePayload {
   reason: string;
   ext?: Ext;
 }
+/** @deprecated superseded by vtc/storage/configs/update/0.3 */
 export interface VTCStorageConfigsUpdateResponsePayload {
   config: StorageConfig;
   ext?: Ext;
@@ -42,13 +45,37 @@ export type { AwsRoleArn, ConfigState, Ext, ExternalAccountContextId, ExternalAc
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/storage/configs/update/0.2" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vtc/storage/configs/update/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vtc/storage/configs/update/0.3
+ */
 export type Payload = VTCStorageConfigsUpdatePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/storage/configs/update/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vtc/storage/configs/update/0.3
+ */
 export type Response = VTCStorageConfigsUpdateResponsePayload;
 
 /**

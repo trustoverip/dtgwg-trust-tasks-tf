@@ -41,6 +41,9 @@ const (
 	CodeTaskFailed         StandardCode = "taskFailed"
 	CodeUnavailable        StandardCode = "unavailable"
 	CodeInternalError      StandardCode = "internalError"
+	// New in trust-task-error/0.6 (SPEC.md §4.5.2, §8.3).
+	CodeUnsupportedExtension StandardCode = "unsupportedExtension"
+	CodeIndeterminate        StandardCode = "indeterminate"
 )
 
 // StandardCodes lists every §8.3 code, in the order SPEC.md declares them.
@@ -54,6 +57,7 @@ func StandardCodes() []StandardCode {
 		CodeExpired, CodeProofRequired, CodeProofInvalid, CodePermissionDenied,
 		CodeWrongRecipient, CodeIdentityMismatch, CodeIDConflict, CodeCancelled,
 		CodeTaskFailed, CodeUnavailable, CodeInternalError,
+		CodeUnsupportedExtension, CodeIndeterminate,
 	}
 }
 
@@ -135,8 +139,18 @@ func validNamespace(namespace string) bool {
 // (SPEC §8.5).
 //
 // typeURI is normally a generated package's TypeURI, so the namespace cannot
-// drift from the type's identity. The #response fragment is stripped: an error
-// raised while handling a response still belongs to the bare slug.
+// drift from the type's identity. It may be in any SPEC §6.1 form: the code is
+// <slug>:<local> whatever the authority, so a third-party (§6.5)
+// specification's codes are namespaced by its slug as the registry's are. The
+// #response fragment is stripped: an error raised while handling a response
+// still belongs to the bare slug.
+//
+// Because the code carries no authority, a received one means something only
+// against the Type URI of the request it answers (SPEC §8.5): vault/get:notFound
+// from the registry's vault/get and from a private one are different codes.
+// Resolve it with inResponseTo.typeUri (or the request you sent), never by the
+// string alone, and keep that Type URI beside it anywhere the code outlives the
+// exchange.
 func ExtendedCode(typeURI, local string) (string, error) {
 	slug, err := SlugFromTypeURI(typeURI)
 	if err != nil {
@@ -194,25 +208,20 @@ func FamilyCode(typeURI, namespace, local string) (string, error) {
 	return namespace + ":" + local, nil
 }
 
-// typeURIPrefix is the scheme and host every Trust Task Type URI carries.
-const typeURIPrefix = "https://trusttasks.org/spec/"
-
 // SlugFromTypeURI returns the slug of a Type URI, with any #request / #response
-// fragment removed.
+// fragment removed, for every form SPEC §6.1 defines — the public registry's,
+// the path form under any other authority (an https URL, a DID URL, …) and the
+// URN form, whose ':'-separated slug segments it returns '/'-separated
+// (urn:example:tasks:spec:payments:settle:0.1 → payments/settle). A malformed
+// Type URI is refused with a *[TypeURIError].
+//
+// The slug alone does not identify a specification: the same slug under two
+// authorities is two specifications. Use [ParseTypeURI] when the authority
+// matters.
 func SlugFromTypeURI(typeURI string) (string, error) {
-	if !strings.HasPrefix(typeURI, typeURIPrefix) {
-		return "", fmt.Errorf("trusttasks: not a Trust Task Type URI: %q", typeURI)
+	parsed, err := ParseTypeURI(typeURI)
+	if err != nil {
+		return "", err
 	}
-	rest := bareTypeURI(strings.TrimPrefix(typeURI, typeURIPrefix))
-	// The trailing segment is the MAJOR.MINOR version; everything before it is
-	// the slug.
-	parts := strings.Split(rest, "/")
-	if len(parts) < 2 {
-		return "", fmt.Errorf("trusttasks: Type URI %q carries no slug", typeURI)
-	}
-	slug := strings.Join(parts[:len(parts)-1], "/")
-	if !validNamespace(slug) {
-		return "", fmt.Errorf("trusttasks: Type URI %q yielded an invalid slug", typeURI)
-	}
-	return slug, nil
+	return parsed.Slug(), nil
 }

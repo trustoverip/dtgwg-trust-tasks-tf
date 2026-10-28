@@ -426,22 +426,41 @@ export type BlobRef = DigestMultibase;
 /**
  * One leaf of a board. A leaf's hash is the RFC 9162 leaf hash of the JCS canonicalization of this object. Entries carry no time of arrival: the order is the board's, and a timestamp would hand anyone who reads the board the timing the registrar's log would need to pair a ticket with its cast.
  */
-export type BoardEntry =
-  | CastEntry
-  | ReplacementEntry
-  | LifecycleEntry
-  | ResultEntry
-  | EncryptedCastEntry
-  | TransportKeyEntry
-  | DealingEntry
-  | ConfirmationEntry
-  | JustificationEntry
-  | ElectionKeyEntry
-  | PartialDecryptionsEntry
-  | UnsealedEntry
-  | SpoiledEntry
-  | TrusteeStepEntry
-  | DecryptionAuthorizedEntry;
+export type BoardEntry_VotingV0_1 =
+  | CastEntry_VotingV0_1
+  | ReplacementEntry_VotingV0_1
+  | LifecycleEntry_VotingV0_1
+  | ResultEntry_VotingV0_1
+  | EncryptedCastEntry_VotingV0_1
+  | TransportKeyEntry_VotingV0_1
+  | DealingEntry_VotingV0_1
+  | ConfirmationEntry_VotingV0_1
+  | JustificationEntry_VotingV0_1
+  | ElectionKeyEntry_VotingV0_1
+  | PartialDecryptionsEntry_VotingV0_1
+  | UnsealedEntry_VotingV0_1
+  | SpoiledEntry_VotingV0_1
+  | TrusteeStepEntry_VotingV0_1
+  | DecryptionAuthorizedEntry_VotingV0_1;
+/**
+ * One leaf of a board. A leaf's hash is the RFC 9162 leaf hash of the JCS canonicalization of this object. Entries carry no time of arrival: the order is the board's, and a timestamp would hand anyone who reads the board the timing the registrar's log would need to pair a ticket with its cast.
+ */
+export type BoardEntry_VotingV0_2 =
+  | CastEntry_VotingV0_2
+  | ReplacementEntry_VotingV0_2
+  | LifecycleEntry_VotingV0_2
+  | ResultEntry_VotingV0_2
+  | EncryptedCastEntry_VotingV0_2
+  | TransportKeyEntry_VotingV0_2
+  | DealingEntry_VotingV0_2
+  | ConfirmationEntry_VotingV0_2
+  | JustificationEntry_VotingV0_2
+  | ElectionKeyEntry_VotingV0_2
+  | PartialDecryptionsEntry_VotingV0_2
+  | UnsealedEntry_VotingV0_2
+  | SpoiledEntry_VotingV0_2
+  | TrusteeStepEntry_VotingV0_2
+  | DecryptionAuthorizedEntry_VotingV0_2;
 /**
  * `public`: anyone reads the board. `private`: the community, the auditors the manifest names and, for one cast's inclusion, the holder of its receipt (VTI-VOT-052).
  */
@@ -866,11 +885,19 @@ export type FileData = string;
 /**
  * The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, or a self-hosted Forgejo instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.
  */
-export type ForgeHost = string;
+export type ForgeHost_GitNsV0_1 = string;
+/**
+ * The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, `gitlab.com`, or a self-hosted Forgejo or GitLab instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.
+ */
+export type ForgeHost_GitNsV0_6 = string;
 /**
  * An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub and Forgejo ids are decimal integers written as strings (`"812736451"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.
  */
-export type ForgeId = string;
+export type ForgeId_GitNsV0_1 = string;
+/**
+ * An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub, Forgejo and GitLab ids are decimal integers written as strings (`"812736451"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.
+ */
+export type ForgeId_GitNsV0_6 = string;
 /**
  * Validity of a grant the sweep issues, in seconds: between one day and two years, the bounds vtc/vetting/vetters/grant applies to an administrator's grants.
  */
@@ -1515,7 +1542,11 @@ export type ReleaseRequirement = "consent" | "stepUp";
 /**
  * A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo>`, lowercase.
  */
-export type RepoResource = string;
+export type RepoResource_GitNsV0_1 = string;
+/**
+ * A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo-path>`, lowercase, where the repository path has 1 to 21 segments (see `Resource`).
+ */
+export type RepoResource_GitNsV0_6 = string;
 /**
  * Repository visibility on the forge.
  */
@@ -1531,13 +1562,17 @@ export type RequestId = string;
  */
 export type RequestedAttributes = RequestedAttribute[];
 /**
- * A forge-qualified resource: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo>` for one repository, all lowercase — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.
- */
-export type Resource = string;
-/**
  * Opaque qualifier naming the part of the maintainer's resources a capability applies to (e.g. `git-ns:github.com/acme`, `git-repo:github.com/acme/r#4211`, `policy:join`). Its grammar and containment rule are the maintainer's: a qualified capability covers the named resource and the resources inside it. A qualifier MUST NOT be read as widening the entry's act scope.
  */
 export type ResourceQualifier = string;
+/**
+ * A forge-qualified resource: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo>` for one repository, all lowercase — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.
+ */
+export type Resource_GitNsV0_1 = string;
+/**
+ * A forge-qualified resource, all lowercase: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo-path>` for one repository — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. On a forge with nested groups (GitLab) the repository path holds the subgroups between the top-level owner and the project: `gitlab.com/acme/platform/tools/cli` is one repository of the namespace `gitlab.com/acme`, and a subgroup such as `gitlab.com/acme/platform` is not a resource. A repository path has 1 to 21 segments (GitLab: 20 levels of subgroup and the project); GitHub and Forgejo repository paths are always one. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.
+ */
+export type Resource_GitNsV0_6 = string;
 /**
  * Opaque, community-minted position in one caller's event stream. A console MUST NOT parse, construct or order it; it only hands the latest one back as `since` when it re-subscribes. A community binds it to the caller it was minted for and treats a token minted for anyone else as unknown.
  */
@@ -1751,7 +1786,11 @@ export type SecretKind_VaultV0_2 =
 /**
  * One lowercased owner or repository name. Forges compare these case-insensitively, so the wire form is always lowercase and a producer lowercases before sending. A leading `.` is refused, which rules out `.` and `..`.
  */
-export type Segment = string;
+export type Segment_GitNsV0_1 = string;
+/**
+ * One lowercased owner, group or repository name. Forges compare these case-insensitively, so the wire form is always lowercase and a producer lowercases before sending. A leading `.` is refused, which rules out `.` and `..`. Up to 255 characters, the longest name GitLab allows; GitHub and Forgejo names are shorter.
+ */
+export type Segment_GitNsV0_6 = string;
 /**
  * How carefully a value is shown TO ITS OWN HOLDER. `high` means a consumer masks it by default, reveals it one attribute at a time on a deliberate act, and — the half that is not cosmetic — omits it from a listing that did not ask for sensitive values.
  *
@@ -2354,8 +2393,402 @@ export interface AccountBinding {
       ];
   grantedAt?: string;
 }
-export interface AccountProbeReport {
+export interface AccountProbeReport_ExternalV0_1 {
   at: string;
+  /**
+   * True when every step that ran succeeded.
+   */
+  ok: boolean;
+  /**
+   * True only when the canary steps (`put`, `get`, `delete`, or the model's equivalent) ran, so the account was exercised end to end. A probe that stopped after `exchange` because nothing named a canary prefix is `complete: false` even when `ok` is true, and does not clear `providerSetupRequired`.
+   */
+  complete: boolean;
+  /**
+   * In order; the first failing step ends the probe.
+   *
+   * @maxItems 8
+   */
+  steps:
+    | []
+    | [
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        }
+      ]
+    | [
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        }
+      ]
+    | [
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        }
+      ]
+    | [
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        }
+      ]
+    | [
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        }
+      ]
+    | [
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        }
+      ]
+    | [
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        }
+      ]
+    | [
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        },
+        {
+          step: AccountProbeStep;
+          ok: boolean;
+          durationMs?: number;
+          /**
+           * The provider's error, verbatim and truncated, so an administrator sees the cloud's own words. Untrusted text. A custodian MUST remove any credential, signature or token from it first.
+           */
+          providerError?: string;
+          providerRequestId?: string;
+        }
+      ];
+}
+export interface AccountProbeReport_ExternalV0_2 {
+  probedAt: string;
   /**
    * True when every step that ran succeeded.
    */
@@ -4407,6 +4840,107 @@ export interface Action_VtcAdminActionsV0_2 {
   ext?: Ext;
 }
 /**
+ * One parked administrative operation, as the caller is entitled to see it. The same action reads differently to different callers only in `challenge` and `callerRole`, which are per-caller.
+ */
+export interface Action_VtcAdminActionsV0_3 {
+  actionId: ActionId;
+  /**
+   * `approval` — eligible approvers approve or decline, N-of-M; the operation executes when the threshold is met. `acknowledge` — an operation that already happened (an operator's offline or break-glass write) which every remaining administrator must acknowledge; there is nothing to approve or decline. `queue` — an existing human decision (for example a join review) surfaced in the same list, with a threshold of one. `coolingOff` — an operation with no eligible third party to consent, which lands by itself at `landsAt` unless its requester cancels it first; nobody approves, declines or acknowledges it.
+   */
+  category: "approval" | "acknowledge" | "queue" | "coolingOff";
+  /**
+   * The community's name for what kind of operation is parked, dotted and lowerCamelCase (`acl.grant.authority`, `member.join.review`). Selects the summary template. The set is OPEN: a renderer that does not recognise a kind still renders `summary` from its fields.
+   */
+  kind: string;
+  /**
+   * The Type URI of the parked operation — the Trust Task the community will execute when the action completes (for `coolingOff`, when it lands). Together with `payload` it is exactly what will run. For `acknowledge`, the Type URI of the operation that already took effect; an operator's offline write, which is a command on the community's host and has no Trust Task of its own, is named by the record type `https://trusttasks.org/spec/vtc/operator/offline-write/0.1`, and `payload` is then that record.
+   */
+  typeUri: string;
+  /**
+   * VID of the party whose operation was parked. For `acknowledge`, the operator whose offline write is being acknowledged, where the community can attribute one. For `coolingOff`, the administrator whose operation will land — the only party who may cancel it.
+   */
+  requester: string;
+  /**
+   * `open` — awaiting decisions, or for `coolingOff` awaiting `landsAt`. `completed` — the threshold was met and the operation executed, a `coolingOff` operation landed, or, for `acknowledge`, every administrator acknowledged. `declined` — an eligible approver denied it. `expired` — it lapsed at `expiresAt`. `cancelled` — the requester withdrew it, or the community invalidated it (see `closedReason`). `failed` — the threshold was met or `landsAt` reached but the re-check at execution refused it, or execution itself failed; the operation did not take effect.
+   */
+  status: "open" | "completed" | "declined" | "expired" | "cancelled" | "failed";
+  /**
+   * When the operation was parked.
+   */
+  createdAt: string;
+  /**
+   * When an open action lapses. ALWAYS present for `approval`, whose open life is bounded (72 hours by default; the community configures it between 15 minutes and 14 days). Absent for an `acknowledge` or `queue` action that does not expire, and ALWAYS absent for `coolingOff`, which does not lapse but lands — see `landsAt`.
+   */
+  expiresAt?: string;
+  /**
+   * When a `coolingOff` action lands: the instant from which the community executes the parked operation, after its execution-time re-check, unless the requester cancelled first. Present exactly when `category` is `coolingOff`. It is a deadline for the requester's cancellation, not for anyone's approval, and it is fixed when the action is parked: neither the requester nor the subject can move it.
+   */
+  landsAt?: string;
+  /**
+   * Who may withdraw the action with `vtc/admin/actions/cancel` while it is `open`. Present on every open `coolingOff` action, where it is `requester`: the operation lands unless its requester stops it, and nobody else — the subject included — can. A closed set so that a console can offer a cancel control without inferring it; future values would widen who may cancel and need a new version.
+   */
+  cancellableBy?: "requester";
+  /**
+   * When the action left `open`. Present exactly when `status` is not `open`.
+   */
+  closedAt?: string;
+  /**
+   * Why the action closed. Present exactly when `status` is not `open`. `invalidated` — the community closed it because something it depended on stopped holding before the threshold or `landsAt` (an approver or the requester lost standing, the target state moved); `failedRecheck` — the threshold was met or `landsAt` reached but the execution-time re-check refused; `landedAfterCoolingOff` — a `coolingOff` action reached `landsAt` uncancelled and its operation executed (`status: completed`).
+   */
+  closedReason?:
+    | "thresholdMet"
+    | "declined"
+    | "expired"
+    | "cancelledByRequester"
+    | "invalidated"
+    | "failedRecheck"
+    | "acknowledged"
+    | "landedAfterCoolingOff";
+  /**
+   * The number of distinct approvals the operation needs. Present for `approval`; absent otherwise (a `queue` decision is one decision by construction, `acknowledge` needs every remaining administrator, and `coolingOff` needs no approval at all).
+   */
+  threshold?: number;
+  /**
+   * The decisions in favour recorded so far — approvals for `approval` and `queue`, acknowledgements for `acknowledge` — one entry per distinct subject, in the order recorded. Empty while none has landed, and always empty for `coolingOff`, which takes no decisions.
+   */
+  approvals: {
+    /**
+     * VID of the approver or acknowledger, as proven by the decision's own proof.
+     */
+    subject: string;
+    /**
+     * When the decision was recorded.
+     */
+    decidedAt: string;
+  }[];
+  /**
+   * How many further distinct decisions the action needs while `open` — approvals for `approval`, acknowledgements for `acknowledge`. Lets a console say 'one more' without disclosing the eligible set. Absent for `coolingOff`, which waits on time, not on decisions.
+   */
+  approversRemaining?: number;
+  summary: Summary;
+  /**
+   * The exact payload of the parked operation — the object `payloadDigest` is computed over and the one the community will execute. Carried so an approver can recompute the digest and re-derive every summary field from it rather than trusting the rendering (VTI-APV-013). Deliberately an open object: its shape is governed by the specification `typeUri` names, and a digest is checked over members exactly as received.
+   */
+  payload: {};
+  /**
+   * Digest of `payload`, taken over its RFC 8785 (JCS) canonicalization. The community re-derives it from the payload it is about to execute and refuses on mismatch. The digest an approver signs over is the challenge-salted one of `task-consent/decision`, not this value; this one lets the approver check that `payload` is what was parked.
+   */
+  payloadDigest: DigestMultibase;
+  /**
+   * Present ONLY on an action the CALLER may decide now — an `approval` or `queue` action on which the caller is an eligible approver who has not yet decided. Never present on `acknowledge` or `coolingOff`. Per-approver: two approvers are shown different challenges for the same action. Echoed verbatim in `task-consent/decision`'s `challenge`, which binds that decision to this approver and this action. Absent for everyone else, including the requester.
+   */
+  challenge?: string;
+  /**
+   * The caller's relation to this action. `approver` — an eligible approver (whether or not already decided). `requester` — the party whose operation was parked. `acknowledger` — an administrator expected to acknowledge it. `subject` — the party a `coolingOff` operation acts on, shown it so that they learn of it before it lands; a subject can neither decide nor cancel it. `observer` — none of these; seen only through the audit-read capability on a `history` or `all` view.
+   */
+  callerRole: "approver" | "requester" | "acknowledger" | "subject" | "observer";
+  /**
+   * How many open actions the requester currently has at the community, this one included. For consent-fatigue display: an approver shown the twentieth request from one requester today should be able to see that it is the twentieth.
+   */
+  requesterOpenActions?: number;
+  ext?: Ext;
+}
+/**
  * A privileged account at the mediator (an `admin` or `rootAdmin`).
  */
 export interface AdminAccount {
@@ -4447,13 +4981,13 @@ export interface AdminNote {
 /**
  * One right as the administrator's rights console shows it: a recorded `RightRecord` restated with the membership facts an administrator needs (`subjectMember`, `granterDeparted`), or a role-derived grant that carries no record. `git-ns/right/list` and `git-ns/right/issued-by-departed` are its only producers.
  */
-export interface AdminRightRow {
+export interface AdminRightRow_GitNsV0_5 {
   /**
    * Who holds the right.
    */
   subject: Did_GitNsV0_3;
   right: Right;
-  resource: Resource;
+  resource: Resource_GitNsV0_1;
   origin: RightOrigin;
   /**
    * Who caused the right (see `RightRecord.grantedBy`). Present exactly when `origin` is `recorded`; a role-derived grant is published by the hook relay from configuration, not by an actor.
@@ -4482,7 +5016,47 @@ export interface AdminRightRow {
   /**
    * Present exactly when `origin` is `recorded` and the record carries `breakGlass` — see `RightRecord.breakGlass`. Absent for a role-derived grant, which cannot be self-granted through break-glass.
    */
-  breakGlass?: BreakGlass;
+  breakGlass?: BreakGlass_GitNsV0_4;
+}
+/**
+ * One right as the administrator's rights console shows it: a recorded `RightRecord` restated with the membership facts an administrator needs (`subjectMember`, `granterDeparted`), or a role-derived grant that carries no record. `git-ns/right/list` and `git-ns/right/issued-by-departed` are its only producers.
+ */
+export interface AdminRightRow_GitNsV0_6 {
+  /**
+   * Who holds the right.
+   */
+  subject: Did_GitNsV0_3;
+  right: Right;
+  resource: Resource_GitNsV0_6;
+  origin: RightOrigin;
+  /**
+   * Who caused the right (see `RightRecord.grantedBy`). Present exactly when `origin` is `recorded`; a role-derived grant is published by the hook relay from configuration, not by an actor.
+   */
+  grantedBy?: Did_GitNsV0_3;
+  /**
+   * Present exactly when `origin` is `recorded`.
+   */
+  grantedAt?: string;
+  /**
+   * When the right lapses. Absent: no expiry, or `origin` is `roleDerived` (a role-derived grant never expires on its own — it is withdrawn by editing `[hooks.git-trust] grant_on_role`).
+   */
+  expiresAt?: string;
+  /**
+   * The granter's free-text reason, restated from the `RightRecord`. Absent when `origin` is `roleDerived`, or the record carries none.
+   */
+  reason?: string;
+  /**
+   * Whether `subject` is a current member of the community. `false` marks a right held by someone who has since left, or by an external signer the community never enrolled.
+   */
+  subjectMember: boolean;
+  /**
+   * Whether `grantedBy` was a member at the time of the grant and has since left. Always `false` when `origin` is `roleDerived`, or when the record's granter was never itself a member (the VTC's own DID, for a right it derives from configuration).
+   */
+  granterDeparted: boolean;
+  /**
+   * Present exactly when `origin` is `recorded` and the record carries `breakGlass` — see `RightRecord.breakGlass`. Absent for a role-derived grant, which cannot be self-granted through break-glass.
+   */
+  breakGlass?: BreakGlass_GitNsV0_6;
 }
 /**
  * A membership admitted directly, with the credentials issued for it — the success payload of vtc/members/admit and vtc/members/make-membership.
@@ -5105,49 +5679,49 @@ export interface BlobManifest {
    */
   digest: DigestMultibase;
 }
-export interface CastEntry {
+export interface CastEntry_VotingV0_1 {
   kind: "cast";
   cast: Cast;
 }
 /**
  * The cast at `replaces` is no longer counted: a later cast under the same tag is.
  */
-export interface ReplacementEntry {
+export interface ReplacementEntry_VotingV0_1 {
   kind: "replaced";
   tag: Multibase_VotingV0_1;
   replaces: number;
   by: number;
 }
-export interface LifecycleEntry {
+export interface LifecycleEntry_VotingV0_1 {
   kind: "opened" | "closed" | "closedEarly" | "cancelled";
   at: string;
 }
-export interface ResultEntry {
+export interface ResultEntry_VotingV0_1 {
   kind: "result";
   result: ElectionResult;
 }
-export interface EncryptedCastEntry {
+export interface EncryptedCastEntry_VotingV0_1 {
   kind: "encryptedCast";
   cast: EncryptedCast;
 }
 /**
  * Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind.
  */
-export interface TransportKeyEntry {
+export interface TransportKeyEntry_VotingV0_1 {
   kind: "transportKey";
   transportKey: TransportKey;
 }
 /**
  * Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind.
  */
-export interface DealingEntry {
+export interface DealingEntry_VotingV0_1 {
   kind: "dealing";
   dealing: Dealing;
 }
 /**
  * Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind.
  */
-export interface ConfirmationEntry {
+export interface ConfirmationEntry_VotingV0_1 {
   kind: "confirmation";
   trustee: TrusteeIndex;
   /**
@@ -5158,17 +5732,17 @@ export interface ConfirmationEntry {
 /**
  * Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind.
  */
-export interface JustificationEntry {
+export interface JustificationEntry_VotingV0_1 {
   kind: "justification";
   dealer: TrusteeIndex;
   recipient: TrusteeIndex;
   share: GroupScalar;
 }
-export interface ElectionKeyEntry {
+export interface ElectionKeyEntry_VotingV0_1 {
   kind: "electionKey";
   electionKey: ElectionKey;
 }
-export interface PartialDecryptionsEntry {
+export interface PartialDecryptionsEntry_VotingV0_1 {
   kind: "partials";
   trustee: TrusteeIndex;
   /**
@@ -5177,7 +5751,7 @@ export interface PartialDecryptionsEntry {
    */
   partials: [PartialDecryption, ...PartialDecryption[]];
 }
-export interface UnsealedEntry {
+export interface UnsealedEntry_VotingV0_1 {
   kind: "unsealed";
   leafIndex: number;
   ballot: Ballot;
@@ -5185,21 +5759,119 @@ export interface UnsealedEntry {
 /**
  * A sealed cast that did not open, or opened to no valid ballot: not counted (CONVENTIONS §9.7).
  */
-export interface SpoiledEntry {
+export interface SpoiledEntry_VotingV0_1 {
   kind: "spoiled";
   leafIndex: number;
 }
 /**
  * One step of the trustees' ceremony — an enrolment, a dealing, a confirmation or a justification — as the trustee's own signed request, so that anyone reading the board can tell who took it (CONVENTIONS §9.6).
  */
-export interface TrusteeStepEntry {
+export interface TrusteeStepEntry_VotingV0_1 {
   kind: "trusteeStep";
   request: SignedRequest;
 }
 /**
  * The community's voting/trustees/authorize request, exactly as the ballot box received it: the decryption targets of a closed election, pinned by digest to a head of the board (CONVENTIONS §9.7).
  */
-export interface DecryptionAuthorizedEntry {
+export interface DecryptionAuthorizedEntry_VotingV0_1 {
+  kind: "decryptionAuthorized";
+  request: SignedRequest;
+}
+export interface CastEntry_VotingV0_2 {
+  kind: "cast";
+  cast: Cast;
+}
+/**
+ * The cast at `replaces` is no longer counted: a later cast under the same tag is.
+ */
+export interface ReplacementEntry_VotingV0_2 {
+  kind: "replaced";
+  tag: Multibase_VotingV0_1;
+  replaces: number;
+  by: number;
+}
+export interface LifecycleEntry_VotingV0_2 {
+  kind: "opened" | "closed" | "closedEarly" | "cancelled";
+  occurredAt: string;
+}
+export interface ResultEntry_VotingV0_2 {
+  kind: "result";
+  result: ElectionResult;
+}
+export interface EncryptedCastEntry_VotingV0_2 {
+  kind: "encryptedCast";
+  cast: EncryptedCast;
+}
+/**
+ * Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind.
+ */
+export interface TransportKeyEntry_VotingV0_2 {
+  kind: "transportKey";
+  transportKey: TransportKey;
+}
+/**
+ * Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind.
+ */
+export interface DealingEntry_VotingV0_2 {
+  kind: "dealing";
+  dealing: Dealing;
+}
+/**
+ * Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind.
+ */
+export interface ConfirmationEntry_VotingV0_2 {
+  kind: "confirmation";
+  trustee: TrusteeIndex;
+  /**
+   * @maxItems 64
+   */
+  complaints: TrusteeIndex[];
+}
+/**
+ * Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind.
+ */
+export interface JustificationEntry_VotingV0_2 {
+  kind: "justification";
+  dealer: TrusteeIndex;
+  recipient: TrusteeIndex;
+  share: GroupScalar;
+}
+export interface ElectionKeyEntry_VotingV0_2 {
+  kind: "electionKey";
+  electionKey: ElectionKey;
+}
+export interface PartialDecryptionsEntry_VotingV0_2 {
+  kind: "partials";
+  trustee: TrusteeIndex;
+  /**
+   * @minItems 1
+   * @maxItems 100000
+   */
+  partials: [PartialDecryption, ...PartialDecryption[]];
+}
+export interface UnsealedEntry_VotingV0_2 {
+  kind: "unsealed";
+  leafIndex: number;
+  ballot: Ballot;
+}
+/**
+ * A sealed cast that did not open, or opened to no valid ballot: not counted (CONVENTIONS §9.7).
+ */
+export interface SpoiledEntry_VotingV0_2 {
+  kind: "spoiled";
+  leafIndex: number;
+}
+/**
+ * One step of the trustees' ceremony — an enrolment, a dealing, a confirmation or a justification — as the trustee's own signed request, so that anyone reading the board can tell who took it (CONVENTIONS §9.6).
+ */
+export interface TrusteeStepEntry_VotingV0_2 {
+  kind: "trusteeStep";
+  request: SignedRequest;
+}
+/**
+ * The community's voting/trustees/authorize request, exactly as the ballot box received it: the decryption targets of a closed election, pinned by digest to a head of the board (CONVENTIONS §9.7).
+ */
+export interface DecryptionAuthorizedEntry_VotingV0_2 {
   kind: "decryptionAuthorized";
   request: SignedRequest;
 }
@@ -5239,7 +5911,7 @@ export interface Bootstrap {
 /**
  * How a self-granted right came to be, and whether another administrator has since ratified it. A record whose `breakGlass` has no `ratifiedBy` is **unratified**: it is live and published like any other right, it does not count toward the last-owner or last-admin invariants, and any community administrator or namespace admin of its namespace may revoke it. Ratification (git-ns/right/ratify) sets `ratifiedBy` and `ratifiedAt`; from then on the record is an ordinary grant, and `breakGlass` stays as its history. Never published to the Trust Registry.
  */
-export interface BreakGlass {
+export interface BreakGlass_GitNsV0_4 {
   /**
    * Who broke the glass: always the record's `subject`, restated so the flag reads on its own.
    */
@@ -5254,6 +5926,35 @@ export interface BreakGlass {
   justification: string;
   /**
    * When the right takes effect, where the community's policy imposed a delay. Absent: it took effect at `at`. Until this instant the record confers nothing and is not published, and any administrator who may revoke it may do so.
+   */
+  effectiveAt?: string;
+  /**
+   * The administrator who ratified the record — never its subject. Absent while unratified.
+   */
+  ratifiedBy?: Did_GitNsV0_3;
+  /**
+   * When it was ratified. Present exactly when `ratifiedBy` is.
+   */
+  ratifiedAt?: string;
+}
+/**
+ * How a self-granted right came to be, and whether another administrator has since ratified it. A record whose `breakGlass` has no `ratifiedBy` is **unratified**: it is live and published like any other right, it does not count toward the last-owner or last-admin invariants, and any community administrator or namespace admin of its namespace may revoke it. Ratification (git-ns/right/ratify) sets `ratifiedBy` and `ratifiedAt`; from then on the record is an ordinary grant, and `breakGlass` stays as its history. Never published to the Trust Registry.
+ */
+export interface BreakGlass_GitNsV0_6 {
+  /**
+   * Who broke the glass: always the record's `subject`, restated so the flag reads on its own.
+   */
+  by: Did_GitNsV0_3;
+  /**
+   * When the VTC recorded the break-glass.
+   */
+  recordedAt: string;
+  /**
+   * The actor's statement of why nobody else could grant this right. Shown to every community administrator, every namespace admin of the namespace and every owner of the resource; kept in the audit record; never published.
+   */
+  justification: string;
+  /**
+   * When the right takes effect, where the community's policy imposed a delay. Absent: it took effect at `recordedAt`. Until this instant the record confers nothing and is not published, and any administrator who may revoke it may do so.
    */
   effectiveAt?: string;
   /**
@@ -6919,7 +7620,7 @@ export interface DomainEntry {
 /**
  * A DIDComm mediator that is no longer advertised but is still accepting delivery, so in-flight messages routed through it are not stranded.
  */
-export interface DrainEntry {
+export interface DrainEntry_VtaV0_1 {
   /**
    * The mediator being drained.
    */
@@ -6935,9 +7636,27 @@ export interface DrainEntry {
   ext?: Ext;
 }
 /**
+ * A DIDComm mediator that is no longer advertised but is still accepting delivery, so in-flight messages routed through it are not stranded.
+ */
+export interface DrainEntry_VtaV0_8 {
+  /**
+   * The mediator being drained.
+   */
+  mediatorDid: string;
+  /**
+   * Where it is still reachable for the remainder of the drain.
+   */
+  endpoint: string;
+  /**
+   * RFC 3339 instant after which the mediator is dropped and messages routed through it are lost.
+   */
+  drainEndsAt: string;
+  ext?: Ext;
+}
+/**
  * One difference between the forge's observed state and the VTC's projection of a repository.
  */
-export interface DriftItem {
+export interface DriftItem_GitNsV0_1 {
   /**
    * `roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.
    */
@@ -6948,11 +7667,39 @@ export interface DriftItem {
     | "requiredCheckMissing"
     | "protectionWeakened"
     | "bootstrapMissing";
-  resource: RepoResource;
+  resource: RepoResource_GitNsV0_1;
   /**
    * Whose role differs, for the three role types.
    */
-  account?: ForgeAccount;
+  account?: ForgeAccount_GitNsV0_1;
+  /**
+   * What the forge shows, in the forge's own vocabulary (a role name such as `maintain`, a setting name). Absent when nothing is there.
+   */
+  observed?: string;
+  /**
+   * What the projection calls for, in the forge's own vocabulary. Absent when the projection calls for nothing.
+   */
+  expected?: string;
+}
+/**
+ * One difference between the forge's observed state and the VTC's projection of a repository.
+ */
+export interface DriftItem_GitNsV0_6 {
+  /**
+   * `roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.
+   */
+  type:
+    | "roleAdded"
+    | "roleRemoved"
+    | "roleChanged"
+    | "requiredCheckMissing"
+    | "protectionWeakened"
+    | "bootstrapMissing";
+  resource: RepoResource_GitNsV0_6;
+  /**
+   * Whose role differs, for the three role types.
+   */
+  account?: ForgeAccount_GitNsV0_6;
   /**
    * What the forge shows, in the forge's own vocabulary (a role name such as `maintain`, a setting name). Absent when nothing is there.
    */
@@ -7391,7 +8138,7 @@ export interface Ext {
 /**
  * An account as every read returns it. Contains no private key, no secret and no issued credential, to any reader.
  */
-export interface ExternalAccount {
+export interface ExternalAccount_ExternalV0_1 {
   id: AccountId;
   /**
    * Display name. Untrusted text: render it, never interpret it.
@@ -7431,7 +8178,54 @@ export interface ExternalAccount {
    * True when the account cannot be used until its provider-side setup is redone: after a restore that could not carry its key or secret (a wrapped RSA key, a static secret), or after a rotation awaiting confirmation.
    */
   providerSetupRequired: boolean;
-  lastProbe?: AccountProbeReport;
+  lastProbe?: AccountProbeReport_ExternalV0_1;
+  createdAt: string;
+  updatedAt: string;
+}
+/**
+ * An account as every read returns it. Contains no private key, no secret and no issued credential, to any reader.
+ */
+export interface ExternalAccount_ExternalV0_2 {
+  id: AccountId;
+  /**
+   * Display name. Untrusted text: render it, never interpret it.
+   */
+  label: string;
+  context: AccountContextId;
+  settings: AccountSettings;
+  state: AccountState;
+  /**
+   * Absent for the static models, which hold a secret rather than a key.
+   */
+  publicMaterial?: AccountPublicMaterial;
+  /**
+   * Static models only; absent until the secret is set.
+   */
+  secret?: AccountSecretInfo;
+  /**
+   * @maxItems 256
+   */
+  bindings: AccountBinding[];
+  /**
+   * The provider hosts the custodian connects to on this account's behalf, derived by the custodian from its settings: the token or session endpoints issuance uses, and the destinations external/accounts/probe dials (the object store's host, for a storage model). The custodian MUST NOT connect anywhere else on the account's behalf, so an egress proxy can allow exactly this set. Empty only for a model that neither exchanges nor probes over the network.
+   *
+   * @maxItems 8
+   */
+  egressHosts:
+    | []
+    | [string]
+    | [string, string]
+    | [string, string, string]
+    | [string, string, string, string]
+    | [string, string, string, string, string]
+    | [string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string];
+  /**
+   * True when the account cannot be used until its provider-side setup is redone: after a restore that could not carry its key or secret (a wrapped RSA key, a static secret), or after a rotation awaiting confirmation.
+   */
+  providerSetupRequired: boolean;
+  lastProbe?: AccountProbeReport_ExternalV0_2;
   createdAt: string;
   updatedAt: string;
 }
@@ -7626,9 +8420,20 @@ export interface FileManifest {
 /**
  * A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.
  */
-export interface ForgeAccount {
-  forge: ForgeHost;
-  id: ForgeId;
+export interface ForgeAccount_GitNsV0_1 {
+  forge: ForgeHost_GitNsV0_1;
+  id: ForgeId_GitNsV0_1;
+  /**
+   * The account's current login, as the forge reported it when last seen. Display only.
+   */
+  login: string;
+}
+/**
+ * A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.
+ */
+export interface ForgeAccount_GitNsV0_6 {
+  forge: ForgeHost_GitNsV0_6;
+  id: ForgeId_GitNsV0_6;
   /**
    * The account's current login, as the forge reported it when last seen. Display only.
    */
@@ -7645,15 +8450,38 @@ export interface GcsSettings {
 /**
  * The VTC's binding to one owner on one forge.
  */
-export interface GitNamespace {
+export interface GitNamespace_GitNsV0_1 {
   id: NamespaceId;
-  forge: ForgeHost;
+  forge: ForgeHost_GitNsV0_1;
   /**
    * The organisation or user on the forge, lowercased.
    */
-  owner: Segment;
+  owner: Segment_GitNsV0_1;
   /**
    * Whether the owner is an organisation or a personal account, as the forge reports it. Present once known: a bridge-mode namespace learns it when binding completes, and a manual-mode namespace MAY never learn it.
+   */
+  kind?: "organization" | "user";
+  /**
+   * `bridge` — a bridge service acts on the forge for this namespace (creates repositories, projects roles, reports drift). `manual` — no automation; people with forge access carry out the steps the VTC names, and the VTC governs the rights alone.
+   */
+  mode: "bridge" | "manual";
+  /**
+   * `pending` — binding has started and the forge-side proof has not arrived yet. `bound` — the VTC governs rights under this namespace.
+   */
+  state: "pending" | "bound";
+}
+/**
+ * The VTC's binding to one owner on one forge.
+ */
+export interface GitNamespace_GitNsV0_6 {
+  id: NamespaceId;
+  forge: ForgeHost_GitNsV0_6;
+  /**
+   * The organisation or user on the forge, lowercased.
+   */
+  owner: Segment_GitNsV0_6;
+  /**
+   * Whether the owner is an organisation or a personal account, as the forge reports it; a GitLab top-level group is an `organization`. Present once known: a bridge-mode namespace learns it when binding completes, and a manual-mode namespace MAY never learn it.
    */
   kind?: "organization" | "user";
   /**
@@ -7937,7 +8765,7 @@ export interface HpkeArmoredEnvelope_VaultV0_2 {
 /**
  * Whether the edge is in force now, and if not, why not — the edge's resolved state, which is not the same thing as the event just recorded: restoring an edge whose `validUntil` passed while it was suspended records the restoration and still resolves `expired`. Exactly the members its `state` names are present.
  */
-export interface InForce {
+export interface InForce_VtcV0_1 {
   /**
    * `yes`: inside its window, nothing standing against it. `notYetValid`: its `validFrom` has not arrived. `expired`: its `validUntil` has passed. `suspended`: temporarily ineffective — the only non-`yes` state a lifecycle event can reverse. `superseded`: displaced by a later credential. `withdrawn`: terminal. `indeterminate`: the credential's own window could not be read, so no honest answer is available.
    */
@@ -7958,6 +8786,39 @@ export interface InForce {
    * Present for `superseded` and `withdrawn`.
    */
   at?: string;
+  /**
+   * Present for `superseded`: the digest of the credential that displaced it.
+   */
+  by?: string;
+  /**
+   * Present for `indeterminate`: why the window could not be read. Written by the community.
+   */
+  reason?: string;
+}
+/**
+ * Whether the edge is in force now, and if not, why not — the edge's resolved state, which is not the same thing as the event just recorded: restoring an edge whose `validUntil` passed while it was suspended records the restoration and still resolves `expired`. Exactly the members its `state` names are present.
+ */
+export interface InForce_VtcV0_4 {
+  /**
+   * `yes`: inside its window, nothing standing against it. `notYetValid`: its `validFrom` has not arrived. `expired`: its `validUntil` has passed. `suspended`: temporarily ineffective — the only non-`yes` state a lifecycle event can reverse. `superseded`: displaced by a later credential. `withdrawn`: terminal. `indeterminate`: the credential's own window could not be read, so no honest answer is available.
+   */
+  state: "yes" | "notYetValid" | "expired" | "suspended" | "superseded" | "withdrawn" | "indeterminate";
+  /**
+   * Present for `notYetValid`.
+   */
+  validFrom?: string;
+  /**
+   * Present for `expired`.
+   */
+  validUntil?: string;
+  /**
+   * Present for `suspended`: when the standing suspension was recorded.
+   */
+  since?: string;
+  /**
+   * Present for `superseded` and `withdrawn`: when the edge stopped being in force.
+   */
+  endedAt?: string;
   /**
    * Present for `superseded`: the digest of the credential that displaced it.
    */
@@ -8305,7 +9166,7 @@ export interface LocalSettings {
 /**
  * What an election asks and how it is decided (VTI-VOT-010). Its digest (`manifestDigest`) is the SHA-256 multihash of its RFC 8785 (JCS) canonicalization, and every cast is bound to it (VTI-VOT-011).
  */
-export interface Manifest {
+export interface Manifest_VotingV0_1 {
   electionId: ElectionId;
   /**
    * The community's DID.
@@ -8323,6 +9184,51 @@ export interface Manifest {
   registrationOpens: string;
   votingOpens: string;
   votingCloses: string;
+  revote: Revote;
+  board: {
+    visibility: BoardVisibility;
+    auditors: string[];
+  };
+  /**
+   * The DID of the voting service that holds the board.
+   */
+  ballotBox: string;
+  trustees?: Trustees;
+  /**
+   * Whether the community treats the result as deciding something; creating a binding election takes another administrator's consent (VTI-VOT-081).
+   */
+  binding: boolean;
+  allowEarlyClose: boolean;
+  /**
+   * Open elections only: whether running totals may be read while voting is open (VTI-VOT-061).
+   */
+  resultsBeforeClose: boolean;
+  /**
+   * Counted ballots required before any text answer is disclosed (VTI-VOT-065).
+   */
+  textReleaseThreshold: number;
+}
+/**
+ * What an election asks and how it is decided (VTI-VOT-010). Its digest (`manifestDigest`) is the SHA-256 multihash of its RFC 8785 (JCS) canonicalization, and every cast is bound to it (VTI-VOT-011).
+ */
+export interface Manifest_VotingV0_2 {
+  electionId: ElectionId;
+  /**
+   * The community's DID.
+   */
+  community: string;
+  title?: string;
+  description?: string;
+  /**
+   * @minItems 1
+   * @maxItems 128
+   */
+  questions: [Question, ...Question[]];
+  secrecy: SecrecyLevel;
+  roll: RollRule;
+  registrationOpensAt: string;
+  votingOpensAt: string;
+  votingClosesAt: string;
   revote: Revote;
   board: {
     visibility: BoardVisibility;
@@ -8547,11 +9453,52 @@ export interface MetricsSnapshot {
 /**
  * One observed step in the life of one message at the mediator. Carries metadata only — never a message body.
  */
-export interface MonitorEvent {
+export interface MonitorEvent_MessagingV0_1 {
   /**
    * When the step happened, with sub-second precision where the mediator has it.
    */
   at: string;
+  direction: TrafficDirection;
+  stage: TrafficStage;
+  channel: TrafficChannel;
+  protocol: WireProtocol;
+  /**
+   * The stored message's identifier, once it has one; correlates the events of one message and matches MessageMeta.msgId.
+   */
+  msgId?: string;
+  /**
+   * The sender, where the mediator knows it.
+   */
+  from?: Vid;
+  /**
+   * The recipient, where the mediator knows it.
+   */
+  to?: Vid;
+  /**
+   * Frame size in bytes.
+   */
+  size?: number;
+  /**
+   * The plaintext message type, present only when the mediator itself was the addressee and read it (a routing forward, a pickup request, a trust-task type URI, a trust ping). Absent for end-to-end-encrypted traffic the mediator only relays.
+   */
+  messageType?: string;
+  /**
+   * Present when stage is `refused`, and on any other stage that failed.
+   */
+  outcome?: TrafficOutcome;
+  /**
+   * For `delivered` and `forwarded`: milliseconds since the message was stored.
+   */
+  latencyMs?: number;
+}
+/**
+ * One observed step in the life of one message at the mediator. Carries metadata only — never a message body.
+ */
+export interface MonitorEvent_MessagingV0_3 {
+  /**
+   * When the step happened, with sub-second precision where the mediator has it.
+   */
+  occurredAt: string;
   direction: TrafficDirection;
   stage: TrafficStage;
   channel: TrafficChannel;
@@ -9070,6 +10017,45 @@ export interface PolicyDecision_PolicyV0_3 {
      * Number of distinct approvers from the set required before the task may execute.
      */
     minApprovals?: number;
+  };
+  /**
+   * When decision == "allow", maximum lifetime of any issued session blob / released secret.
+   */
+  ttlSecondsCap?: number;
+  /**
+   * Human-readable explanation for diagnostic display.
+   */
+  explanation?: string;
+}
+export interface PolicyDecision_PolicyV0_4 {
+  decision: "allow" | "deny" | "requireStepUp" | "requireConsent";
+  /**
+   * Vault-flow-specific. When decision == "allow" for a proxy-login/release request, whether the maintainer should proxy-login or release-for-fill. Default: proxy. Ignored for other task kinds.
+   */
+  mode?: "proxy" | "fill";
+  /**
+   * When decision == "requireStepUp", which method to demand.
+   */
+  stepUp?: {
+    method: "webauthnUv" | "pushApproval" | "totp";
+    ttlSeconds?: number;
+  };
+  /**
+   * When decision == "requireConsent", the approver constraint the enforcement point MUST satisfy — a signed consent decision from the named set, bound to the request's payloadDigest — before executing.
+   */
+  requireConsent?: {
+    /**
+     * Named set of enrolled approver devices permitted to approve this task (resolved by the enforcement point against its device registry).
+     */
+    approverSet: string;
+    /**
+     * REQUIRED, with no default: whether the requester may approve its own request is the community's choice, not this schema's (SPEC §6.6 rule 5). When true, the device that issued the request MUST NOT be accepted as the approver — forcing cross-device approval so a compromised requesting device cannot self-approve.
+     */
+    excludeRequester: boolean;
+    /**
+     * REQUIRED, with no default: the quorum is the community's choice, not this schema's (SPEC §6.6 rule 5), and an omitted quorum is malformedRequest rather than one. Number of distinct approvers from the set required before the task may execute.
+     */
+    minApprovals: number;
   };
   /**
    * When decision == "allow", maximum lifetime of any issued session blob / released secret.
@@ -9728,7 +10714,7 @@ export interface RecordMetadataV2 {
  *
  * **What a host keeps and what it does not.** A host keeps this marker, and in its audit trail the prune's `reason`, its requester where the tier discloses one, and the retention it was made under. It MUST NOT keep anything a pruned record said — body, ciphertext, cleartext, title, description, file or blob — and SHOULD NOT keep pruned records' keys: the count is the audit, and a list of keys on an `open` room, where keys may be descriptive, is content by another name.
  */
-export interface RecordPrune {
+export interface RecordPrune_RoomsV0_1 {
   /**
    * The version the prune took from the room's counter, as a put or a curation would. No record carries it; it is what moves `HeadVersion` past the removal, so that a root taken before and a root taken after are never labelled with one version.
    */
@@ -9737,6 +10723,27 @@ export interface RecordPrune {
    * When the host performed it.
    */
   at: string;
+  /**
+   * How many records were removed, tombstones included. A prune that removed nothing leaves no mark.
+   */
+  removed: number;
+}
+/**
+ * The mark a prune leaves: **that** records were removed, when, and how many — never which, and never anything they said.
+ *
+ * A prune removes records outright, tombstones included, so the room's record tree loses leaves and an incremental reader has nothing left to learn the removal from. This is what it learns from instead. A host keeps the latest one per room and serves it with every listing that can carry it (`rooms/records/list` 0.3, as `lastPrune`); a reader whose own copy of the room was synchronised to a version below `version` MUST rebuild that copy from a full listing — no `sinceVersion` — and drop every record the full listing no longer holds. Without that, a record the room removed lives on in every cache that synchronised before the prune, and a record retracted while the reader was away comes back as current.
+ *
+ * **What a host keeps and what it does not.** A host keeps this marker, and in its audit trail the prune's `reason`, its requester where the tier discloses one, and the retention it was made under. It MUST NOT keep anything a pruned record said — body, ciphertext, cleartext, title, description, file or blob — and SHOULD NOT keep pruned records' keys: the count is the audit, and a list of keys on an `open` room, where keys may be descriptive, is content by another name.
+ */
+export interface RecordPrune_RoomsV0_2 {
+  /**
+   * The version the prune took from the room's counter, as a put or a curation would. No record carries it; it is what moves `HeadVersion` past the removal, so that a root taken before and a root taken after are never labelled with one version.
+   */
+  version: number;
+  /**
+   * When the host performed it.
+   */
+  prunedAt: string;
   /**
    * How many records were removed, tombstones included. A prune that removed nothing leaves no mark.
    */
@@ -9791,6 +10798,27 @@ export interface RegisteredCredential {
   lastUsedAt?: string;
 }
 /**
+ * The `ServiceInstance` shape of `did-management/_shared/0.1`, with `lastSeen` renamed `lastSeenAt`; named apart from `service-instance.schema.json`'s `ServiceInstance`, a different shape, so the two do not collide in generated code.
+ */
+export interface RegisteredInstance {
+  /**
+   * Stable identifier the control plane uses for this instance. SHOULD be derived from the instance's DID (e.g. `did:web:host.example` → `did_web_host_example`) so it survives restarts.
+   */
+  instanceId: string;
+  /**
+   * VID identifying the registered service.
+   */
+  did: string;
+  label?: string;
+  publicUrl?: string;
+  /**
+   * Hosting domains this instance currently serves. Updated by `domain/assign` / `domain/unassign` ack flow.
+   */
+  servedDomains?: string[];
+  lastSeenAt?: string;
+  ext?: Ext;
+}
+/**
  * A key a patch declined to apply, with the reason.
  */
 export interface RejectedKey {
@@ -9801,9 +10829,22 @@ export interface RejectedKey {
   reason: string;
 }
 /**
+ * The two credentials a renewal replaces, serialized as rooms/owner/{issue-membership,issue-authority} return them: a membership and an authority granting the same actions until the renewal's `validUntil`. No invitation: the member is already admitted, and a renewal never opens a second way in. The member's surface stores each with the member's key holder **in place of** the one it renews, never beside it.
+ */
+export interface RenewalCredentials {
+  /**
+   * The renewed Verifiable Membership Credential.
+   */
+  membership: string;
+  /**
+   * The renewed Verifiable Authority Credential granting `actions` until `validUntil`.
+   */
+  authority: string;
+}
+/**
  * What vtc/rooms/offers/list/0.3 returns in `renewals`: a renewal of an admission the member already holds, as the member it is addressed to sees it. `label` and `description` are the room's as they stand when it is read.
  */
-export interface Renewal {
+export interface Renewal_VtcV0_1 {
   roomId: string;
   /**
    * The room's host: this community.
@@ -9828,27 +10869,41 @@ export interface Renewal {
   credentials: RenewalCredentials;
 }
 /**
- * The two credentials a renewal replaces, serialized as rooms/owner/{issue-membership,issue-authority} return them: a membership and an authority granting the same actions until the renewal's `validUntil`. No invitation: the member is already admitted, and a renewal never opens a second way in. The member's surface stores each with the member's key holder **in place of** the one it renews, never beside it.
+ * What vtc/rooms/offers/list/0.4 returns in `renewals`: a renewal of an admission the member already holds, as the member it is addressed to sees it. `label` and `description` are the room's as they stand when it is read.
  */
-export interface RenewalCredentials {
+export interface Renewal_VtcV0_4 {
+  roomId: string;
   /**
-   * The renewed Verifiable Membership Credential.
+   * The room's host: this community.
    */
-  membership: string;
+  host: string;
+  label: RoomLabel;
   /**
-   * The renewed Verifiable Authority Credential granting `actions` until `validUntil`.
+   * Absent when the room has none.
    */
-  authority: string;
+  description?: RoomDescription;
+  visibility: Visibility;
+  actions: MemberActions;
+  /**
+   * When the renewed authority expires.
+   */
+  validUntil: string;
+  /**
+   * When the authority it replaces expires: the renewal is listed until then, or until a later renewal or the member's removal supersedes it.
+   */
+  renewsAt: string;
+  issuedAt: string;
+  credentials: RenewalCredentials;
 }
 /**
  * One repository as the VTC records it.
  */
 export interface RepoSummary_GitNsV0_1 {
-  resource: RepoResource;
+  resource: RepoResource_GitNsV0_1;
   /**
    * The forge's repository id. Absent until the forge has confirmed the repository exists (a `pendingCreate` repository, or one adopted in bridge mode before the first inspection).
    */
-  forgeId?: ForgeId;
+  forgeId?: ForgeId_GitNsV0_1;
   visibility: RepoVisibility;
   /**
    * `pendingCreate` — the name is reserved and the repository is not yet confirmed on the forge. `active` — managed. `archived` — archived through git-ns/repo/archive; commit rights on it are revoked. `detached` — no longer governed: its namespace was unbound, or it moved outside the namespace. `orphaned` — its last owner left the community and ownership passed to the namespace admins, who have not yet named a new owner. `unmanaged` — it exists on the forge inside a bound namespace but was never created or adopted through the VTC.
@@ -9859,17 +10914,17 @@ export interface RepoSummary_GitNsV0_1 {
    */
   owners: Did_GitNsV0_1[];
   bootstrap: Bootstrap;
-  sync: Sync;
+  sync: Sync_GitNsV0_1;
 }
 /**
  * One repository as the VTC records it.
  */
 export interface RepoSummary_GitNsV0_3 {
-  resource: RepoResource;
+  resource: RepoResource_GitNsV0_1;
   /**
    * The forge's repository id. Absent until the forge has confirmed the repository exists (a `pendingCreate` repository, or one adopted in bridge mode before the first inspection).
    */
-  forgeId?: ForgeId;
+  forgeId?: ForgeId_GitNsV0_1;
   visibility: RepoVisibility;
   /**
    * `pendingCreate` — the name is reserved and the repository is not yet confirmed on the forge. `active` — managed. `archived` — archived through git-ns/repo/archive; commit rights on it are revoked. `detached` — no longer governed: its namespace was unbound, or it moved outside the namespace. `orphaned` — its last owner left the community and ownership passed to the namespace admins, who have not yet named a new owner. `unmanaged` — it exists on the forge inside a bound namespace but was never created or adopted through the VTC.
@@ -9880,7 +10935,28 @@ export interface RepoSummary_GitNsV0_3 {
    */
   owners: Did_GitNsV0_3[];
   bootstrap: Bootstrap;
-  sync: Sync;
+  sync: Sync_GitNsV0_1;
+}
+/**
+ * One repository as the VTC records it.
+ */
+export interface RepoSummary_GitNsV0_6 {
+  resource: RepoResource_GitNsV0_6;
+  /**
+   * The forge's repository id. Absent until the forge has confirmed the repository exists (a `pendingCreate` repository, or one adopted in bridge mode before the first inspection).
+   */
+  forgeId?: ForgeId_GitNsV0_6;
+  visibility: RepoVisibility;
+  /**
+   * `pendingCreate` — the name is reserved and the repository is not yet confirmed on the forge. `active` — managed. `archived` — archived through git-ns/repo/archive; commit rights on it are revoked. `detached` — no longer governed: its namespace was unbound, or it moved outside the namespace. `orphaned` — its last owner left the community and ownership passed to the namespace admins, who have not yet named a new owner. `unmanaged` — it exists on the forge inside a bound namespace but was never created or adopted through the VTC.
+   */
+  state: "pendingCreate" | "active" | "archived" | "detached" | "orphaned" | "unmanaged";
+  /**
+   * The DIDs holding `git.repo.own` on this repository by an explicit grant. Empty only for an `unmanaged` repository, and for an `orphaned` one whose ownership rests with the namespace admins by implication.
+   */
+  owners: Did_GitNsV0_3[];
+  bootstrap: Bootstrap;
+  sync: Sync_GitNsV0_6;
 }
 export interface RequestedAttribute {
   /**
@@ -10052,7 +11128,7 @@ export interface RightRecord_GitNsV0_1 {
    */
   subject: Did_GitNsV0_1;
   right: Right;
-  resource: Resource;
+  resource: Resource_GitNsV0_1;
   /**
    * The actor whose task caused the right: the granter, the creator of a repository (for its first `own`), the adopting admin, the transferring owner, or the binding admin (for the first `git.ns.admin`). The VTC's own DID for a right it derives from its configuration.
    */
@@ -10076,7 +11152,7 @@ export interface RightRecord_GitNsV0_3 {
    */
   subject: Did_GitNsV0_3;
   right: Right;
-  resource: Resource;
+  resource: Resource_GitNsV0_1;
   /**
    * The actor whose task caused the right: the granter, the creator of a repository (for its first `own`), the adopting admin, the transferring owner, or the binding admin (for the first `git.ns.admin`). The VTC's own DID for a right it derives from its configuration.
    */
@@ -10100,7 +11176,7 @@ export interface RightRecord_GitNsV0_4 {
    */
   subject: Did_GitNsV0_3;
   right: Right;
-  resource: Resource;
+  resource: Resource_GitNsV0_1;
   /**
    * The actor whose task caused the right: the granter, the creator of a repository (for its first `own`), the adopting admin, the transferring owner, or the binding admin (for the first `git.ns.admin`). The VTC's own DID for a right it derives from its configuration.
    */
@@ -10117,7 +11193,35 @@ export interface RightRecord_GitNsV0_4 {
   /**
    * Present exactly when the subject gave themselves this right through git-ns/right/break-glass. Absent for every other record.
    */
-  breakGlass?: BreakGlass;
+  breakGlass?: BreakGlass_GitNsV0_4;
+}
+/**
+ * One recorded right. Implied rights (§4.2 of the rights model: `own` implies `maintain` implies `commit.sign` on the same resource; `ns.admin` implies `repo.create` and `own` across its namespace) are not records and never appear as RightRecords. A record carrying `breakGlass` was given by its subject to themselves through git-ns/right/break-glass; it is a real right, published like any other, and is shown with that flag on every surface that shows the record.
+ */
+export interface RightRecord_GitNsV0_6 {
+  /**
+   * Who holds the right. For `git.commit.sign` this is the DID whose commit signatures the CI check accepts.
+   */
+  subject: Did_GitNsV0_3;
+  right: Right;
+  resource: Resource_GitNsV0_6;
+  /**
+   * The actor whose task caused the right: the granter, the creator of a repository (for its first `own`), the adopting admin, the transferring owner, or the binding admin (for the first `git.ns.admin`). The VTC's own DID for a right it derives from its configuration.
+   */
+  grantedBy: Did_GitNsV0_3;
+  grantedAt: string;
+  /**
+   * When the right lapses. Absent: no expiry.
+   */
+  expiresAt?: string;
+  /**
+   * The granter's free-text reason. Disclosed only to holders of `git.repo.own` on the resource and of `git.ns.admin` over it.
+   */
+  reason?: string;
+  /**
+   * Present exactly when the subject gave themselves this right through git-ns/right/break-glass. Absent for every other record.
+   */
+  breakGlass?: BreakGlass_GitNsV0_6;
 }
 /**
  * A grant set by reference: the capability ceiling of a defined role, conferred as resource grants exactly as a `grants` binding confers its list. It never assigns the role itself — an entry's administrative role and its community role stay direct assignments.
@@ -10282,7 +11386,7 @@ export interface RollRule {
 /**
  * The outcome of a rollback. Distinct from ServiceMutationResult because a rollback can legitimately publish nothing: if the previous state already equals the current one there is no change to write, and `kind: "noOp"` says so with `logEntryVersionId` absent. Treating that as a failure would be wrong — the requested state holds — and treating it as an ordinary success would report a log entry that does not exist.
  */
-export interface RollbackResult {
+export interface RollbackResult_VtaV0_1 {
   /**
    * What the rollback did. `disabled` re-disabled the transport, `enabled` re-advertised it at its prior settings, `updated` restored prior settings on an entry that stayed advertised, and `noOp` means the previous state already matched — nothing was written.
    */
@@ -10303,6 +11407,40 @@ export interface RollbackResult {
    * When that drain completes.
    */
   drainUntil?: string;
+  /**
+   * The agent's own DID.
+   */
+  vtaDid?: string;
+  /**
+   * True when the entry was written locally but not published — the operator must redeploy before any verifier sees it.
+   */
+  serverless?: boolean;
+  ext?: Ext;
+}
+/**
+ * The outcome of a rollback. Distinct from ServiceMutationResult because a rollback can legitimately publish nothing: if the previous state already equals the current one there is no change to write, and `kind: "noOp"` says so with `logEntryVersionId` absent. Treating that as a failure would be wrong — the requested state holds — and treating it as an ordinary success would report a log entry that does not exist.
+ */
+export interface RollbackResult_VtaV0_8 {
+  /**
+   * What the rollback did. `disabled` re-disabled the transport, `enabled` re-advertised it at its prior settings, `updated` restored prior settings on an entry that stayed advertised, and `noOp` means the previous state already matched — nothing was written.
+   */
+  kind: "disabled" | "enabled" | "updated" | "noOp";
+  /**
+   * Version id of the log entry the rollback wrote. **Absent when `kind` is `noOp`**, and present otherwise.
+   */
+  logEntryVersionId?: string;
+  /**
+   * RFC 3339 instant the rollback took effect. Absent for `noOp`.
+   */
+  effectiveAt?: string;
+  /**
+   * Present when rolling back DIDComm left a mediator draining.
+   */
+  drainingMediator?: string;
+  /**
+   * When that drain completes.
+   */
+  drainEndsAt?: string;
   /**
    * The agent's own DID.
    */
@@ -10718,11 +11856,11 @@ export interface ServiceInstance_DidManagementV0_2 {
   /**
    * The last document the control plane received from this instance. Absent when it has received none.
    */
-  lastInbound?: TransportObservation;
+  lastInbound?: TransportObservation_DidManagementV0_2;
   /**
    * The last document the control plane delivered to this instance. Absent when it has delivered none.
    */
-  lastOutbound?: TransportObservation;
+  lastOutbound?: TransportObservation_DidManagementV0_2;
   /**
    * When the instance last answered a health probe. Absent when it never has.
    */
@@ -10730,10 +11868,66 @@ export interface ServiceInstance_DidManagementV0_2 {
   registeredAt: string;
   ext?: Ext;
 }
+export interface ServiceInstance_DidManagementV0_3 {
+  /**
+   * Stable identifier the control plane uses for this instance. SHOULD be derived from the instance's DID so it survives restarts.
+   */
+  instanceId: string;
+  /**
+   * The instance's own DID — the identity its signed documents are verified against and the one the control plane addresses.
+   */
+  did: string;
+  /**
+   * `server` — a hosting server (edge) that resolves DIDs the control plane syncs to it. `witness` — a did:webvh witness. `watcher` — a did:webvh watcher that mirrors logs.
+   */
+  serviceType: "server" | "witness" | "watcher";
+  /**
+   * Operator-chosen display label. Untrusted free text.
+   */
+  label?: string;
+  /**
+   * The instance's public base URL, where it serves DID resolution. Absent when the instance registered without one.
+   */
+  publicUrl?: string;
+  /**
+   * The control plane's current verdict, from the instance's last answered health probe. `degraded` — answered late; `unreachable` — has not answered within the control plane's configured window.
+   */
+  status: "active" | "degraded" | "unreachable";
+  /**
+   * Hosting domains the instance has acknowledged serving. Always present — empty for an instance that serves none, which includes every `witness` and `watcher`.
+   */
+  servedDomains: string[];
+  /**
+   * DID methods the instance can host (e.g. `webvh`, `web`, `webs`), as it declared at registration.
+   */
+  enabledMethods?: string[];
+  /**
+   * `service[].type` values of the instance's DID document when the control plane last resolved it. Display only: nothing is routed on it. Absent when the document has not been resolved.
+   */
+  advertisedServices?: string[];
+  /**
+   * When `advertisedServices` was last resolved. Absent with it.
+   */
+  servicesCheckedAt?: string;
+  /**
+   * The last document the control plane received from this instance. Absent when it has received none.
+   */
+  lastInbound?: TransportObservation_DidManagementV0_3;
+  /**
+   * The last document the control plane delivered to this instance. Absent when it has delivered none.
+   */
+  lastOutbound?: TransportObservation_DidManagementV0_3;
+  /**
+   * When the instance last answered a health probe. Absent when it never has.
+   */
+  lastHealthCheckAt?: string;
+  registeredAt: string;
+  ext?: Ext;
+}
 /**
  * The outcome of a change to an advertised service. Every member describes the **log entry the change produced**, because that is what the change actually is: the agent's DID document is the record, and a consumer that treats the response as a mere acknowledgement will miss that a redeploy may be required.
  */
-export interface ServiceMutationResult {
+export interface ServiceMutationResult_VtaV0_1 {
   /**
    * Version id of the new did:webvh log entry this change wrote. Joins the change to the document's history.
    */
@@ -10761,9 +11955,39 @@ export interface ServiceMutationResult {
   ext?: Ext;
 }
 /**
+ * The outcome of a change to an advertised service. Every member describes the **log entry the change produced**, because that is what the change actually is: the agent's DID document is the record, and a consumer that treats the response as a mere acknowledgement will miss that a redeploy may be required.
+ */
+export interface ServiceMutationResult_VtaV0_8 {
+  /**
+   * Version id of the new did:webvh log entry this change wrote. Joins the change to the document's history.
+   */
+  logEntryVersionId: string;
+  /**
+   * RFC 3339 instant the change took effect — the same instant stamped on the new log entry.
+   */
+  effectiveAt: string;
+  /**
+   * Present when the change scheduled a DIDComm drain. Its absence means no drain was scheduled, NOT that a drain finished instantly: a consumer reporting 'done' on an absent value would be right, and one reporting it on a present value would be wrong.
+   */
+  drainEndsAt?: string;
+  /**
+   * The mediator being drained, when `drainEndsAt` is present.
+   */
+  drainingMediator?: string;
+  /**
+   * The agent's own DID — subject of the log entry this change wrote. Carried so a caller can follow up without a second round trip.
+   */
+  vtaDid?: string;
+  /**
+   * True when the agent's DID is self-hosted. **The change is persisted locally but NOT published**: the operator must fetch the updated `did.jsonl` and redeploy before any verifier sees it. A consumer that ignores this reports success for a change no one else can observe yet.
+   */
+  serverless?: boolean;
+  ext?: Ext;
+}
+/**
  * What the agent currently advertises for one service. `enabled` is the only member every kind carries; the rest are kind-specific and absent when they do not apply. Note that `enabled: false` and an absent entry are different: the first says the agent knows about this transport and is not advertising it, the second says it has never been configured.
  */
-export interface ServiceState {
+export interface ServiceState_VtaV0_1 {
   kind: ServiceKind;
   /**
    * Whether the agent currently advertises this transport in its DID document.
@@ -10781,6 +12005,29 @@ export interface ServiceState {
    * RFC 3339 instant at which a scheduled drain completes. Present only while a `didcomm` mediator is draining — see `vta/services/drain/list`.
    */
   drainsUntil?: string;
+  ext?: Ext;
+}
+/**
+ * What the agent currently advertises for one service. `enabled` is the only member every kind carries; the rest are kind-specific and absent when they do not apply. Note that `enabled: false` and an absent entry are different: the first says the agent knows about this transport and is not advertising it, the second says it has never been configured.
+ */
+export interface ServiceState_VtaV0_8 {
+  kind: ServiceKind;
+  /**
+   * Whether the agent currently advertises this transport in its DID document.
+   */
+  enabled: boolean;
+  /**
+   * The mediator this transport routes through. Present for `didcomm` and `tsp`.
+   */
+  mediatorDid?: string;
+  /**
+   * The advertised endpoint. Present for `rest` and `webauthn`.
+   */
+  url?: string;
+  /**
+   * RFC 3339 instant at which a scheduled drain completes. Present only while a `didcomm` mediator is draining — see `vta/services/drain/list`.
+   */
+  drainEndsAt?: string;
   ext?: Ext;
 }
 /**
@@ -11362,23 +12609,6 @@ export interface Summary {
    */
   templateDigest: DigestMultibase;
 }
-/**
- * How the forge compares with the VTC's projection for one repository.
- */
-export interface Sync {
-  /**
-   * `inSync` — the last comparison found no drift. `drift` — it found some, listed in `drift`. `pending` — a change has been sent to the forge and not yet confirmed. `unchecked` — nothing compares this repository (a manual-mode namespace).
-   */
-  state: "inSync" | "drift" | "pending" | "unchecked";
-  /**
-   * When the forge was last compared. Absent if never.
-   */
-  checkedAt?: string;
-  /**
-   * Outstanding drift. Empty unless `state` is `drift`.
-   */
-  drift: DriftItem[];
-}
 export interface SyncUpdate {
   /**
    * The slot path on its hosting domain (e.g. `alice`, `people/alice`, or `.well-known` for a root DID).
@@ -11405,6 +12635,40 @@ export interface SyncUpdate {
    */
   disabled: boolean;
   ext?: Ext;
+}
+/**
+ * How the forge compares with the VTC's projection for one repository.
+ */
+export interface Sync_GitNsV0_1 {
+  /**
+   * `inSync` — the last comparison found no drift. `drift` — it found some, listed in `drift`. `pending` — a change has been sent to the forge and not yet confirmed. `unchecked` — nothing compares this repository (a manual-mode namespace).
+   */
+  state: "inSync" | "drift" | "pending" | "unchecked";
+  /**
+   * When the forge was last compared. Absent if never.
+   */
+  checkedAt?: string;
+  /**
+   * Outstanding drift. Empty unless `state` is `drift`.
+   */
+  drift: DriftItem_GitNsV0_1[];
+}
+/**
+ * How the forge compares with the VTC's projection for one repository.
+ */
+export interface Sync_GitNsV0_6 {
+  /**
+   * `inSync` — the last comparison found no drift. `drift` — it found some, listed in `drift`. `pending` — a change has been sent to the forge and not yet confirmed. `unchecked` — nothing compares this repository (a manual-mode namespace).
+   */
+  state: "inSync" | "drift" | "pending" | "unchecked";
+  /**
+   * When the forge was last compared. Absent if never.
+   */
+  checkedAt?: string;
+  /**
+   * Outstanding drift. Empty unless `state` is `drift`.
+   */
+  drift: DriftItem_GitNsV0_6[];
 }
 export interface Tier {
   /**
@@ -11501,12 +12765,19 @@ export interface TransportKey {
   key: GroupElement;
   pok: SigmaProof;
 }
-export interface TransportObservation {
+export interface TransportObservation_DidManagementV0_2 {
   /**
    * The binding the document actually travelled on.
    */
   transport: "tsp" | "didcomm" | "https";
   at: string;
+}
+export interface TransportObservation_DidManagementV0_3 {
+  /**
+   * The binding the document actually travelled on.
+   */
+  transport: "tsp" | "didcomm" | "https";
+  observedAt: string;
 }
 export interface TrustRecord {
   entity_id: string;
@@ -11528,6 +12799,35 @@ export interface TrustRecord {
     [k: string]: unknown | undefined;
   };
   record_type: RecordType;
+}
+export interface TrustRecord_RegistryV0_2 {
+  entityId: string;
+  authorityId: string;
+  action: string;
+  resource: string;
+  /**
+   * Present on recognition records: whether the action+resource is recognised.
+   */
+  recognized?: boolean;
+  /**
+   * Present on authorization records: whether the action+resource authorization is confirmed.
+   */
+  authorized?: boolean;
+  /**
+   * Opaque governance context attached to the record.
+   */
+  context?: {
+    [k: string]: unknown | undefined;
+  };
+  recordType: RecordType;
+  /**
+   * The first instant at which the authority statement holds (inclusive). Absent: no lower bound.
+   */
+  validFrom?: string;
+  /**
+   * The instant at which the authority statement stops holding (exclusive). Absent: no upper bound. When both bounds are present, `validFrom` MUST be earlier than `validUntil`.
+   */
+  validUntil?: string;
 }
 /**
  * The trustees of a sealed or tallied-encrypted election and the number of them decryption needs (VTI-VOT-062). Neither the community nor the ballot box may be one.

@@ -88,7 +88,7 @@ Every credential member is OPTIONAL, and **absent means the community holds no s
 
 Each VMC is a DTG `MembershipCredential` as the DTG Credentials Core Specification defines it — `type` `["VerifiableCredential", "DTGCredential", "MembershipCredential"]` and `@context` `["https://www.w3.org/ns/credentials/v2", "https://registry.trustoverip.org/dtg/context/v1"]`. The grant is issued by the community with `issuerScope` `public`, the only scope a community can truthfully declare. The acknowledgement is issued by the member, with whatever `issuerScope` the member declared for that identifier, and carries `credentialSubject.digestMultibase` over the grant with its top-level `proof` removed; that digest is what `memberVmcBound` reports on.
 
-Credential bodies are carried as opaque objects. The schema does not describe their internals, matching [`vtc/relationships/list/0.2`](../../../relationships/list/0.2/), which returns `vrcJsonld` the same way: a credential carries a proof over its own bytes, and a schema that constrained the shape would invite a maintainer to normalise it and destroy the signature.
+Credential bodies are carried as opaque objects. The schema does not describe their internals, matching [`vtc/relationships/list/0.3`](../../../relationships/list/0.3/), which returns `vrcJsonld` the same way: a credential carries a proof over its own bytes, and a schema that constrained the shape would invite a maintainer to normalise it and destroy the signature.
 
 ### `memberVmcBound` is REQUIRED, and declares no default
 

@@ -46,7 +46,7 @@
     },
     "actionId": {
       "$ref": "../../../admin/actions/_shared/0.2/action.schema.json#/$defs/ActionId",
-      "description": "The cooling-off action holding the reduction. The subject follows it with vtc/admin/actions/show/0.2, where it appears with `callerRole: subject`, to learn whether it was cancelled or landed."
+      "description": "The cooling-off action holding the reduction. The subject follows it with vtc/admin/actions/show (0.2 or later), where it appears with `callerRole: subject`, to learn whether it was cancelled or landed."
     },
     "reason": {
       "type": "string",

@@ -11,9 +11,13 @@
 //! cargo run -p trust-tasks-didcomm --example local_roundtrip
 //! ```
 
+// Exercises the prebuilt specification modules on purpose; they are deprecated
+// in favour of generating the tasks an application uses (trust-tasks-build).
+#![allow(deprecated)]
+
 use affinidi_messaging_didcomm::{identity::PrivateIdentity, DIDCommAgent};
 use trust_tasks_didcomm::{pack_trust_task, unpack_trust_task};
-use trust_tasks_rs::{specs::acl::grant::v0_1 as grant, RejectReason, TransportHandler, TrustTask};
+use trust_tasks_rs::{specs::acl::grant::v0_2 as grant, RejectReason, TransportHandler, TrustTask};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 1. Generate two fresh peer identities (X25519 key agreement +
@@ -41,9 +45,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     //    Free-text members carry a `maxLength` (SPEC §7.3), so each is a
     //    validating newtype rather than a bare `String`: the bound is checked
     //    here, at construction, and not left to the far end of the wire.
+    //    acl/grant/0.2 states every authority axis explicitly — there is no
+    //    default: Carol may act everywhere, may use no keys, and holds the
+    //    full ceiling of the `moderator` role.
+    let act = grant::AuthorityScopeAll::try_from(grant::AuthorityScopeAll::builder().scope("all"))?;
+    let keys = grant::KeyScopeNone::try_from(grant::KeyScopeNone::builder().scope("none"))?;
+    let capabilities = grant::CapabilityScopeCeiling::try_from(
+        grant::CapabilityScopeCeiling::builder().scope("ceiling"),
+    )?;
     let entry: grant::AclEntry = grant::AclEntry::builder()
         .subject("did:web:carol.example")
         .role("moderator")
+        .act(act)
+        .keys(keys)
+        .capabilities(capabilities)
         .label(grant::AclEntryLabel::try_from(
             "Carol — content moderation",
         )?)
@@ -104,7 +119,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         alice_received.id,
         alice_received.type_uri,
         alice_received.thread_id.as_deref().unwrap_or("<none>"),
-        &*alice_received.payload.entry.role,
+        alice_received.payload.entry.role.as_str(),
     );
 
     // 7. Show a failure path: bob rejects a request with PermissionDenied.

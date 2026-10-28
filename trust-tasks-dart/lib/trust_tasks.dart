@@ -18,7 +18,7 @@
 ///
 /// ```dart
 /// import 'package:trust_tasks/trust_tasks.dart';
-/// import 'package:trust_tasks/specs/acl/grant/v0_1/payload.dart' as acl_grant;
+/// import 'package:trust_tasks/specs/acl/grant/v0_2/payload.dart' as acl_grant;
 /// ```
 ///
 /// ## Parity
@@ -40,7 +40,9 @@ export 'src/runtime/canonical.dart';
 export 'src/runtime/codes.dart';
 export 'src/runtime/consume.dart';
 export 'src/runtime/document.dart';
+export 'src/runtime/extension.dart';
 export 'src/runtime/freshness.dart';
 export 'src/runtime/replay.dart';
 export 'src/runtime/transport.dart';
+export 'src/runtime/type_uri.dart' hide parseTypeUriVersion;
 export 'src/runtime/version.dart';

@@ -10,32 +10,76 @@ If you are writing a *specification* rather than consuming one, you want
 [`CONTRIBUTING-SPECS.md`](./CONTRIBUTING-SPECS.md) and [`SPEC.md`](./SPEC.md)
 instead. This page is for consumers.
 
+> **You generate the tasks you use.** Every library still ships a prebuilt
+> module for every registry specification, but those are deprecated and will be
+> removed in a future release. This page pins the one task it uses,
+> `acl/grant/0.2`, and generates it. The framework's own specifications
+> (`trust-task-*`) come with the runtime in every language.
+
 ---
 
-## 1. One dependency line
+## 1. Pin the tasks you use, then one dependency line
+
+Trust Task specifications are versioned documents published at trusttasks.org.
+An application names the versions it speaks, and generates their types:
+
+```sh
+cargo install trust-tasks-cli
+trust-tasks add acl/grant/0.2      # writes trust-tasks.toml, trust-tasks.lock, trust-tasks/
+```
+
+Commit all three. The lock pins each version by digest and the bundles under
+`trust-tasks/` are verified against it; `trust-tasks check` does that offline,
+so run it in CI, and `trust-tasks update` moves pins, saying whether a move needs
+code changes. The same three files drive every language.
 
 ```toml
+# Cargo.toml
 [dependencies]
-trust-tasks = { version = "0.1", features = ["https", "proof-affinidi"] }
+trust-tasks = { version = "0.35", default-features = false, features = ["https", "proof-affinidi"] }
+
+[build-dependencies]
+trust-tasks-build = "0.1"
+```
+
+```rust
+// build.rs — checks each bundle's digest, then generates the pinned tasks
+fn main() -> Result<(), trust_tasks_build::Error> {
+    trust_tasks_build::Config::new()
+        .runtime_path("::trust_tasks") // the generated code reaches the runtime through the facade
+        .compile()?;
+    Ok(())
+}
 ```
 
 ```sh
-npm install @openvtc/trust-tasks
+npm install @openvtc/trust-tasks && npm install -D @openvtc/trust-tasks-gen
+trust-tasks generate --lang ts --out src/trust-tasks
 ```
 
 ```sh
 go get github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go
+trust-tasks generate --lang go --out internal/tasks
 ```
 
 ```sh
 dart pub add trust_tasks
+trust-tasks generate --lang dart --out lib/trust_tasks
 ```
 
-`trust-tasks` is a facade: it re-exports the framework's eight crates behind
-Cargo features so you pick a transport rather than a set of version numbers.
+`default-features = false` matters: the facade's default is `all-specs`, every
+prebuilt module (~90 MB of generated Rust, minutes and over 16 GB of memory for
+a cold build, and deprecated). Generating three tasks instead builds in about 8
+seconds and 0.4 GB. `trust-tasks generate` verifies the lock, then runs each
+language's own generator — it installs nothing, and Rust needs no command at
+all because `build.rs` is the generator.
+
+`trust-tasks` is a facade: it re-exports the framework's crates behind Cargo
+features so you pick a transport rather than a set of version numbers.
 Everything in it is a `pub use` — `trust_tasks::TrustTask` **is**
 `trust_tasks_rs::TrustTask` — so dropping the facade later is a
-find-and-replace, not a migration.
+find-and-replace, not a migration: depend on `trust-tasks-rs` with
+`default-features = false` and leave out `.runtime_path`.
 
 ### The crate matrix
 
@@ -43,7 +87,7 @@ Pick one row per thing you want to do; features combine.
 
 | I want to… | facade feature | what you write | underlying crate |
 |---|---|---|---|
-| model a document, run the SPEC §7.2 consumer checks | *(always on)* | `trust_tasks::{TrustTask, consume_inbound, specs, RejectReason}` | `trust-tasks-rs` |
+| model a document, run the SPEC §7.2 consumer checks | *(always on)* | `trust_tasks::{TrustTask, consume_inbound, RejectReason}`, and the tasks `build.rs` generated | `trust-tasks-rs` |
 | **send/receive over HTTPS** | `https` | `trust_tasks::https::{HttpsClient, HttpsServer, BearerAuth}` | `trust-tasks-https` |
 | **send/receive over DIDComm v2.1** | `didcomm` | `trust_tasks::didcomm::{DidcommHandler, DidcommConsumer}` | `trust-tasks-didcomm` |
 | **reach Aries-lineage agents** (DIDComm v1) | `didcomm-v1` | `trust_tasks::didcomm_v1::{DidcommV1Handler, DidcommV1Consumer}` | `trust-tasks-didcomm-v1` |
@@ -56,49 +100,55 @@ Pick one row per thing you want to do; features combine.
 | use JWT bearer auth on the HTTPS server | `https-jwt` | `trust_tasks::https::JwtBearerAuth` | `trust-tasks-https` |
 
 **You almost certainly want a transport plus `proof-affinidi`.** A task whose
-specification declares `proof` REQUIRED — `acl/grant/0.1` is one — cannot be
+specification declares `proof` REQUIRED — `acl/grant/0.2` is one — cannot be
 produced or consumed without a signer and a verifier.
 
-### When *not* to use the facade
+**To turn off a transport crate's own defaults** (`trust-tasks-https`'s
+`server`, `trust-tasks-didcomm-v1`'s `legacy-basic-message`), depend on that
+crate directly rather than through the facade. That is the supported answer, not
+a workaround — you have outgrown the front door.
 
-`trust-tasks-rs` has 26 per-spec-family features (`vault`, `acl`, `keys`, …) so
-a size-sensitive build compiles only the families it speaks. The facade
-forwards only the `all-specs` umbrella, not the 26 — putting 26 more names in
-front of a newcomer is the problem the facade exists to remove, and Cargo
-unifies features across the graph anyway, so trimming only pays off when
-nothing else asks for them.
-
-So: **if you are trimming spec families, or turning off a transport crate's own
-defaults (`trust-tasks-https`'s `server`, `trust-tasks-didcomm-v1`'s
-`legacy-basic-message`), depend on those crates directly.** That is the
-supported answer, not a workaround — you have outgrown the front door.
+An ecosystem's own tasks, published outside trusttasks.org, are pinned with
+`[sources.<name>]` in `trust-tasks.toml` and generated beside the registry's.
+See [`trust-tasks-cli`](./trust-tasks-cli/README.md),
+[`trust-tasks-build`](./trust-tasks-build/README.md) and
+[consumer-side generation](./docs/design/consumer-side-generation.md).
 
 ---
 
 ## 2. A signed `acl/grant` round trip, in Rust
 
-Every Rust block below is **extracted from a runnable example**,
-[`trust-tasks/examples/acl_grant_roundtrip.rs`](./trust-tasks/examples/acl_grant_roundtrip.rs).
-A test (`trust-tasks/tests/getting_started_snippets.rs`) fails the build if this
-page and that file drift, so what you copy is code that compiles today.
+Every Rust block below is **extracted from a runnable example application**,
+[`examples/getting-started`](./examples/getting-started): the `Cargo.toml`,
+`build.rs` and `trust-tasks.lock` of §1, and
+[`src/main.rs`](./examples/getting-started/src/main.rs). A test
+(`trust-tasks/tests/getting_started_snippets.rs`) fails the build if this page
+and that file drift, so what you copy is code that compiles today.
 
 ```sh
-cargo run -p trust-tasks --features https,proof-affinidi \
-    --example acl_grant_roundtrip
+cargo run -p trust-tasks-example-getting-started
 ```
 
 ### Imports
 
-Everything comes through the facade — one crate name in every path.
+Everything comes through the facade — one crate name in every path — except
+the task itself, which `build.rs` generated into `tasks`. `tasks::acl::grant::v0_2`
+is the path the prebuilt `trust_tasks::specs` module gave the same version, so
+moving code over is a change to its `use` line.
 
-<!-- snippet: trust-tasks/examples/acl_grant_roundtrip.rs#imports -->
+<!-- snippet: examples/getting-started/src/main.rs#imports -->
 ```rust
 use affinidi_secrets_resolver::secrets::Secret;
 use trust_tasks::https::{BearerAuth, ClientError, HttpsClient, HttpsServer};
 use trust_tasks::proof::affinidi::{SignOptions, Verifier};
 use trust_tasks::proof::ProofExt;
-use trust_tasks::specs::acl::grant::v0_1 as grant;
 use trust_tasks::TrustTask;
+
+// The tasks trust-tasks.lock pins, generated by build.rs.
+mod tasks {
+    include!(concat!(env!("OUT_DIR"), "/trust_tasks_generated.rs"));
+}
+use tasks::acl::grant::v0_2 as grant;
 ```
 
 ### Identity
@@ -107,7 +157,7 @@ Both ends have to agree on who the sender is. The demo derives a `did:key` from
 a fixed seed so there is no key exchange to get wrong; a real deployment loads a
 real key.
 
-<!-- snippet: trust-tasks/examples/acl_grant_roundtrip.rs#identity -->
+<!-- snippet: examples/getting-started/src/main.rs#identity -->
 ```rust
 /// A `did:key` derived from a fixed seed, so both ends agree on the sender's
 /// identity with no key exchange. Real deployments load a real key here.
@@ -127,7 +177,7 @@ fn demo_identity() -> (Secret, String) {
 
 ### The receiver
 
-<!-- snippet: trust-tasks/examples/acl_grant_roundtrip.rs#receiver -->
+<!-- snippet: examples/getting-started/src/main.rs#receiver -->
 ```rust
 /// The consuming end: authenticate the peer, verify the proof, handle the task.
 async fn receiver(alice_did: String) -> std::io::Result<()> {
@@ -146,8 +196,8 @@ async fn receiver(alice_did: String) -> std::io::Result<()> {
             println!(
                 "  [server] acl/grant from {} → subject={} role={}",
                 ctx.authenticated_sender.as_deref().unwrap_or("<unauth>"),
-                req.payload.entry.subject,
-                &*req.payload.entry.role,
+                req.payload.entry.subject.as_str(),
+                req.payload.entry.role.as_str(),
             );
             // Generated types are `#[non_exhaustive]`: build with `builder()`.
             Ok(grant::Response::builder()
@@ -164,7 +214,7 @@ async fn receiver(alice_did: String) -> std::io::Result<()> {
 
 ### The sender
 
-<!-- snippet: trust-tasks/examples/acl_grant_roundtrip.rs#sender -->
+<!-- snippet: examples/getting-started/src/main.rs#sender -->
 ```rust
 /// The producing end: build the document, sign it, send it, read the reply.
 async fn sender(secret: &Secret, my_did: &str) -> Result<(), Box<dyn std::error::Error>> {
@@ -183,9 +233,21 @@ async fn sender(secret: &Secret, my_did: &str) -> Result<(), Box<dyn std::error:
     // A free-text member declaring a `maxLength` (SPEC §7.3) generates a
     // validating newtype rather than a bare `String`, so the bound is checked
     // where the value is authored instead of at the far end of the wire.
+    //
+    // acl/grant/0.2 states every authority axis explicitly — there is no
+    // default and no implicit form. Carol may act everywhere, may use no
+    // keys, and holds the full ceiling of the `moderator` role.
+    let act = grant::AuthorityScopeAll::try_from(grant::AuthorityScopeAll::builder().scope("all"))?;
+    let keys = grant::KeyScopeNone::try_from(grant::KeyScopeNone::builder().scope("none"))?;
+    let capabilities = grant::CapabilityScopeCeiling::try_from(
+        grant::CapabilityScopeCeiling::builder().scope("ceiling"),
+    )?;
     let entry: grant::AclEntry = grant::AclEntry::builder()
         .subject("did:web:carol.example")
         .role("moderator")
+        .act(act)
+        .keys(keys)
+        .capabilities(capabilities)
         .label(grant::AclEntryLabel::try_from(
             "Carol — content moderation",
         )?)
@@ -215,8 +277,8 @@ async fn sender(secret: &Secret, my_did: &str) -> Result<(), Box<dyn std::error:
             "  [client] ← {}\n           threadId={} entry: subject={} role={}",
             resp.type_uri,
             resp.thread_id.as_deref().unwrap_or("<none>"),
-            resp.payload.entry.subject,
-            &*resp.payload.entry.role,
+            resp.payload.entry.subject.as_str(),
+            resp.payload.entry.role.as_str(),
         ),
         Err(ClientError::TrustTaskError { http_status, error }) => println!(
             "  [client] ← HTTP {} trust-task-error: code={} retryable={}",
@@ -236,7 +298,7 @@ Real output, from the command above:
   [server] listening on http://127.0.0.1:3000/trust-tasks (vid did:web:maintainer.example)
   [client] POST /trust-tasks  id=urn:uuid:335c52fd-3f48-4f06-8886-c469f57ef284
   [server] acl/grant from did:key:z6MkvDqGT54cXesYGvABpF1UapVNwjCqRcafi4Px6Thv5T3Z → subject=did:web:carol.example role=moderator
-  [client] ← https://trusttasks.org/spec/acl/grant/0.1#response
+  [client] ← https://trusttasks.org/spec/acl/grant/0.2#response
            threadId=urn:uuid:335c52fd-3f48-4f06-8886-c469f57ef284 entry: subject=did:web:carol.example role=moderator
 ```
 
@@ -247,8 +309,10 @@ a reply is correlated to what it answers.
 
 ## 3. The same round trip in TypeScript
 
-The TypeScript package is `@openvtc/trust-tasks`. Producing a document is the
-mirror of the Rust; the interesting half is **consuming** one, where
+The TypeScript package is `@openvtc/trust-tasks`; import its runtime from
+`@openvtc/trust-tasks/runtime`, and the task from the modules
+`trust-tasks generate --lang ts` wrote (§1). Producing a document is the mirror
+of the Rust; the interesting half is **consuming** one, where
 [`consumeInbound`](./trust-tasks-ts/README.md) runs the SPEC §7.2 pipeline
 (items 2 and 4–8, the freshness bound, and item 11's duplicate-execution
 record) and then calls your handler.
@@ -260,16 +324,18 @@ import {
   InMemoryReplayGuard,
   respondWith,
   StaticTransport,
-  AclGrant_v0_1,
-} from "@openvtc/trust-tasks";
+} from "@openvtc/trust-tasks/runtime";
+import { AclGrant_v0_2, declareExtends } from "./trust-tasks/index.js"; // generated
+
+declareExtends(); // once at start-up: route a newer version that `extends` a pinned one
 
 // The guard *is* the duplicate-execution record — one per consumer, held for
 // the process's lifetime. Back it with a shared store if you run replicas.
 const guard = new InMemoryReplayGuard();
 
-const outcome = await consumeInbound<AclGrant_v0_1.Payload, AclGrant_v0_1.Response>({
+const outcome = await consumeInbound<AclGrant_v0_2.Payload, AclGrant_v0_2.Response>({
   transport: new StaticTransport({ issuer: peerVid }), // what the transport authenticated
-  spec: AclGrant_v0_1.SPEC,
+  spec: AclGrant_v0_2.SPEC,
   proofPolicy: { kind: "verify", verify: myVerifier },
   payloadPolicy: { kind: "validate", validate: myValidator },
   // acl/grant is consequential: a replayed envelope must not grant twice.
@@ -318,12 +384,15 @@ detail is in [`trust-tasks-ts/README.md`](./trust-tasks-ts/README.md).
 The Go module is
 `github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go`. It mirrors the
 TypeScript shape — generated types plus a hand-written §7.2 pipeline — with the
-differences Go's type system forces.
+differences Go's type system forces. The task is the package
+`trust-tasks generate --lang go --out internal/tasks` wrote into your own
+module (§1).
 
 ```go
 import (
-    aclgrantv0_1 "github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/specs/acl/grant/v0_1"
     "github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/trusttasks"
+
+    aclgrantv0_2 "example.com/my-app/internal/tasks/acl/grant/v0_2" // generated
 )
 
 // The guard IS the duplicate-execution record — one per consumer, held for the
@@ -331,9 +400,9 @@ import (
 guard := trusttasks.NewInMemoryReplayGuard(0)
 
 outcome, err := trusttasks.ConsumeInbound(ctx,
-    trusttasks.ConsumeOptions[aclgrantv0_1.Payload, aclgrantv0_1.Response]{
+    trusttasks.ConsumeOptions[aclgrantv0_2.Payload, aclgrantv0_2.Response]{
         Transport:     trusttasks.StaticTransport{Context: trusttasks.TransportContext{Issuer: &peerVID}},
-        Spec:          aclgrantv0_1.Spec,
+        Spec:          aclgrantv0_2.Spec,
         ProofPolicy:   trusttasks.ProofPolicy{Kind: trusttasks.ProofVerify, Verifier: myVerifier},
         PayloadPolicy: trusttasks.PayloadPolicy{Kind: trusttasks.PayloadValidate, Validator: myValidator},
         // acl/grant is consequential: a replayed envelope must not grant twice.
@@ -344,15 +413,15 @@ outcome, err := trusttasks.ConsumeInbound(ctx,
         NewErrorID: uuid.NewString,
         Handler: func(
             ctx context.Context,
-            accepted *trusttasks.Document[aclgrantv0_1.Payload],
+            accepted *trusttasks.Document[aclgrantv0_2.Payload],
             parties trusttasks.ResolvedParties,
-        ) (*trusttasks.Document[aclgrantv0_1.Response], error) {
+        ) (*trusttasks.Document[aclgrantv0_2.Response], error) {
             entry, err := applyGrant(ctx, accepted.Payload.Entry, parties)
             if err != nil {
                 return nil, err
             }
-            return trusttasks.RespondWith[aclgrantv0_1.Payload, aclgrantv0_1.Response](
-                accepted, uuid.NewString(), aclgrantv0_1.Response{Entry: entry}, nil), nil
+            return trusttasks.RespondWith[aclgrantv0_2.Payload, aclgrantv0_2.Response](
+                accepted, uuid.NewString(), aclgrantv0_2.Response{Entry: entry}, nil), nil
         },
     })
 ```
@@ -367,7 +436,7 @@ Three Go-specific things worth knowing before you write the handler:
 - **`encoding/json` enforces less than it looks like it does.** It ignores
   unknown members and does not require a single REQUIRED one, so a payload
   missing everything unmarshals cleanly. Pass a real `PayloadValidator`; the
-  schema ships as `aclgrantv0_1.PayloadSchemaJSON`.
+  schema ships as `aclgrantv0_2.PayloadSchemaJSON`.
 - **Optional members are pointers, including slices** — `*[]string`. That is how
   "present and empty" stays distinguishable from "absent", which several specs
   make load-bearing.
@@ -381,13 +450,13 @@ Full detail is in [`trust-tasks-go/README.md`](./trust-tasks-go/README.md).
 
 ## 3b. The same round trip in Dart
 
-The Dart package is `trust_tasks`. Its library exports the runtime only — Dart's
-`export` is flat, so there is no way to namespace 500 generated libraries behind
-one barrel — and you import the specification you need with a prefix.
+The Dart package is `trust_tasks`, and its library is the runtime. The task is
+the library `trust-tasks generate --lang dart --out lib/trust_tasks` wrote into
+your own package (§1), imported with a prefix.
 
 ```dart
 import 'package:trust_tasks/trust_tasks.dart';
-import 'package:trust_tasks/specs/acl/grant/v0_1/payload.dart' as acl_grant;
+import 'package:my_app/trust_tasks/acl/grant/v0_2/payload.dart' as acl_grant; // generated
 
 // The guard IS the duplicate-execution record — one per consumer, held for the
 // process's lifetime. Back it with a shared store if you run replicas.

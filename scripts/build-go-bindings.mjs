@@ -28,6 +28,15 @@
 //   ResponsePayloadSchemaJSON — the same for the response variant
 //   Spec / ResponseSpec       — trusttasks.SpecPolicy values carrying the §7.2
 //                               items 5b/7/8 flags and the schema above
+//   Extends                   — the MAJOR.MINOR this version declares it extends
+//                               (front matter `extends`, SPEC §5.2 "Declared
+//                               extension"), or "" when it declares none. Only
+//                               the direct declaration, never the chain.
+//
+// And one registry-wide file, specs/extends.go (package specs), indexing every
+// declared extension by bare Type URI. The runtime walks a chain through it, so
+// an application implementing x/0.2 learns that x/0.3 extends it from a library
+// upgrade alone — without importing x/0.3's package, which it has never heard of.
 //
 // ── Three decisions that differ from the TypeScript generator ───────────────
 //
@@ -276,6 +285,9 @@ function readSpecPolicy(schemaPath) {
         };
 
   return {
+    // SPEC §5.2 "Declared extension" — the direct declaration only. Read here,
+    // independently of build-registry.mjs, for the same reason as the rest.
+    extends: meta.extends === undefined || meta.extends === null ? "" : String(meta.extends),
     isBearer: meta.bearer === true,
     isProofRequired: proofRequired.request,
     responseIsProofRequired: proofRequired.response,
@@ -286,6 +298,123 @@ function readSpecPolicy(schemaPath) {
     isRecipientRequired: partyRequirement("recipient"),
     responseIsRecipientRequired: partyRequirement("issuer"),
   };
+}
+
+/* ── Lifecycle: superseded, retired and withdrawn versions ───────────────── */
+
+/** Maturity rank of a `status`, for the supersession comparison. */
+const MATURITY_RANK = { draft: 0, candidate: 1, standard: 2 };
+
+/** `status` and `supersededBy` from a spec.md's front matter, or null. */
+function readLifecycleMeta(specPath) {
+  try {
+    const src = fsSync.readFileSync(specPath, "utf8");
+    if (!src.startsWith("---")) return null;
+    const end = src.indexOf("\n---", 3);
+    if (end < 0) return null;
+    const meta = YAML.parse(src.slice(3, end).replace(/^\r?\n/, ""));
+    return meta ? { status: meta.status, supersededBy: meta.supersededBy } : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Numeric MAJOR-then-MINOR comparison of two `M.N` strings. */
+function compareVersions(a, b) {
+  const [am, an] = a.split(".").map(Number);
+  const [bm, bn] = b.split(".").map(Number);
+  return am - bm || an - bn;
+}
+
+/**
+ * Derive every specification version's lifecycle from front matter, per SPEC
+ * "Superseded and Withdrawn Versions". Returns a map keyed `<slug>/<M.N>` to
+ * `{ withdrawn, note }`, where `note` is the deprecation text or null.
+ *
+ * - `status: withdrawn` is removed from the library entirely: no package.
+ * - A version's slug's *live* versions are those neither retired nor withdrawn.
+ * - A version is deprecated when it is `retired`, or SUPERSEDED — a later live
+ *   version of the same slug exists at an equal or higher maturity
+ *   (draft < candidate < standard).
+ * - Its successor is a retired spec's `supersededBy` (a bare slug resolving to
+ *   that slug's latest live version), else its own slug's latest live version.
+ *
+ * Deprecation is a warning and non-breaking; withdrawal deletes a package, which
+ * is why it is only flipped in scheduled batches. This is an independent
+ * derivation of the rule — the other three generators and check-bindings each
+ * have their own, for the reason decision 2 in the file header gives.
+ */
+async function readLifecycle() {
+  const bySlug = new Map();
+  for (const specPath of await walk(SPECS_DIR, /^spec\.md$/)) {
+    const parts = path.relative(SPECS_DIR, specPath).split(path.sep).slice(0, -1);
+    if (parts.some((p) => p.startsWith("_"))) continue;
+    const version = parts.pop();
+    if (!/^\d+\.\d+$/.test(version)) continue;
+    const meta = readLifecycleMeta(specPath);
+    if (!meta) continue;
+    const slug = parts.join("/");
+    if (!bySlug.has(slug)) bySlug.set(slug, []);
+    bySlug.get(slug).push({ version, ...meta });
+  }
+
+  const isLive = (v) => v.status !== "retired" && v.status !== "withdrawn";
+  const latestLive = (slug) => {
+    const live = (bySlug.get(slug) ?? []).filter(isLive).map((v) => v.version);
+    return live.sort(compareVersions).pop() ?? null;
+  };
+  const rank = (status) => MATURITY_RANK[status] ?? 0;
+
+  const out = new Map();
+  for (const [slug, versions] of bySlug) {
+    for (const v of versions) {
+      const key = `${slug}/${v.version}`;
+      if (v.status === "withdrawn") {
+        out.set(key, { withdrawn: true, note: null });
+        continue;
+      }
+      const retired = v.status === "retired";
+      const superseded =
+        !retired &&
+        versions.some(
+          (w) => isLive(w) && compareVersions(w.version, v.version) > 0 && rank(w.status) >= rank(v.status),
+        );
+      let note = null;
+      if (retired || superseded) {
+        let successor = null;
+        if (retired && typeof v.supersededBy === "string") {
+          if (/\/\d+\.\d+$/.test(v.supersededBy)) successor = v.supersededBy;
+          else {
+            const latest = latestLive(v.supersededBy);
+            successor = latest ? `${v.supersededBy}/${latest}` : null;
+          }
+        } else {
+          const latest = latestLive(slug);
+          successor = latest ? `${slug}/${latest}` : null;
+        }
+        if (retired) note = successor ? `retired; use ${successor}` : "retired";
+        else note = `superseded by ${successor}`;
+      }
+      out.set(key, { withdrawn: false, note });
+    }
+  }
+  return out;
+}
+
+/**
+ * Add a `// Deprecated: <note>` paragraph, last in the doc comment, to the
+ * declaration of `name` among `decls`. A no-op when nothing declares it.
+ */
+function markDeprecated(decls, name, note) {
+  for (let i = 0; i < decls.length; i++) {
+    const lines = decls[i].split("\n");
+    const at = lines.findIndex((l) => l.startsWith(`type ${name} `));
+    if (at < 0) continue;
+    const paragraph = at > 0 && lines[at - 1].startsWith("//") ? ["//"] : [];
+    lines.splice(at, 0, ...paragraph, `// Deprecated: ${note}`);
+    decls[i] = lines.join("\n");
+    return;
+  }
 }
 
 /* ── Go identifiers ──────────────────────────────────────────────────────── */
@@ -701,8 +830,34 @@ function emitNamed(em, node, target, defNames) {
 
 /* ── File assembly ───────────────────────────────────────────────────────── */
 
+
+/**
+ * The prebuilt specification packages are deprecated (milestone 5 of
+ * docs/design/consumer-side-generation.md): an application generates the
+ * tasks it pins with `cmd/trust-tasks-gen` instead. A `Deprecated:` paragraph
+ * in the package doc is how Go deprecates a package — gopls and staticcheck
+ * (SA1019) flag every import of it; the compiler never warns. The framework's
+ * own specifications and shared schemas are not deprecated: the runtime
+ * speaks them. The consumer-side generator writes no package doc, so its
+ * equivalence test masks this one.
+ */
+const PREBUILT_DEPRECATION =
+  "Deprecated: The prebuilt specification packages will be removed: pin the tasks you use " +
+  "with the trust-tasks CLI and generate them with " +
+  "go run github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/cmd/trust-tasks-gen " +
+  "(GETTING-STARTED.md).";
+
+function prebuiltPackageDoc(pkg, sourceRel) {
+  if (/^specs\/(_framework\/|trust-task|trust-ceremony)/.test(sourceRel)) return [];
+  return [
+    `// Package ${pkg} is the prebuilt module for ${sourceRel}.`,
+    "//",
+    `// ${PREBUILT_DEPRECATION}`,
+  ];
+}
+
 /** The tail every generated request package carries: URIs, schemas, policy. */
-function emitTail(slugInfo, policy, schemas, hasResponse) {
+function emitTail(slugInfo, policy, schemas, hasResponse, deprecation) {
   if (!slugInfo) return [];
   const { slug, version } = slugInfo;
   const typeUri = `https://trusttasks.org/spec/${slug}/${version}`;
@@ -712,6 +867,28 @@ function emitTail(slugInfo, policy, schemas, hasResponse) {
     [
       "// TypeURI is the Trust Task type URI this package's Payload is carried under.",
       `const TypeURI = ${goString(typeUri)}`,
+    ].join("\n"),
+  );
+
+  out.push(
+    [
+      "// Extends is the MAJOR.MINOR of this specification that this version declares it",
+      "// extends (SPEC §5.2 \"Declared extension\"), or \"\" when it declares none. A",
+      "// consumer implementing that version may read this version's documents by",
+      "// ignoring the payload members it does not recognise — see",
+      "// trusttasks.ReadForSpec. The direct declaration only; the chain is walked",
+      "// through the registry-wide index in package specs.",
+      `const Extends = ${goString(policy?.extends ?? "")}`,
+    ].join("\n"),
+  );
+
+  out.push(
+    [
+      "// Deprecation is empty for a current specification version, and otherwise says",
+      "// why this one is deprecated and what replaces it: \"superseded by <slug>/<M.N>\",",
+      "// \"retired; use <slug>/<M.N>\" or \"retired\". A deprecated version is still",
+      "// supported, but is withdrawn from this module in a later scheduled release.",
+      `const Deprecation = ${goString(deprecation ?? "")}`,
     ].join("\n"),
   );
 
@@ -863,7 +1040,7 @@ function outputFor(schemaPath) {
 }
 
 /** Generate one Go file from one schema. */
-function generateOne(schemaPath) {
+function generateOne(schemaPath, lifecycle) {
   const raw = JSON.parse(fsSync.readFileSync(schemaPath, "utf8"));
   const baseDir = path.dirname(schemaPath);
   const out = outputFor(schemaPath);
@@ -880,13 +1057,22 @@ function generateOne(schemaPath) {
   // else. Declaring a `Payload` for it would invent a type the spec does not
   // define.
   const rootHint = out.slugInfo ? "Payload" : null;
-  emitDeclarations(em, requestSchema, rootHint);
+  const { defNames, rootName } = emitDeclarations(em, requestSchema, rootHint);
+
+  const deprecation = out.slugInfo
+    ? (lifecycle.get(`${out.slugInfo.slug}/${out.slugInfo.version}`)?.note ?? null)
+    : null;
+  if (deprecation !== null) {
+    markDeprecated(em.decls, rootName, deprecation);
+    if (hasResponse) markDeprecated(em.decls, defNames.get("#/$defs/Response"), deprecation);
+  }
 
   const tail = emitTail(
     out.slugInfo,
     out.slugInfo ? readSpecPolicy(schemaPath) : null,
     { request: out.slugInfo ? requestSchema : null, response: hasResponse ? responseSchema : null },
     hasResponse,
+    deprecation,
   );
 
   const imports = [];
@@ -897,13 +1083,59 @@ function generateOne(schemaPath) {
     "// Code generated by scripts/build-go-bindings.mjs. DO NOT EDIT.",
     `// Source: ${em.sourceRel}`,
     "",
+    ...prebuiltPackageDoc(out.pkg, em.sourceRel),
     `package ${out.pkg}`,
   ];
   if (imports.length === 1) header.push("", `import ${imports[0]}`);
   else if (imports.length > 1) header.push("", "import (", ...imports.map((i) => `\t${i}`), ")");
 
   const body = [...em.decls, ...tail];
-  return { ...out, source: `${[...header, "", ...body.join("\n\n").split("\n")].join("\n")}\n` };
+  const extendsVersion = out.slugInfo ? (readSpecPolicy(schemaPath)?.extends ?? "") : "";
+  return {
+    ...out,
+    typeUri: out.slugInfo ? `https://trusttasks.org/spec/${out.slugInfo.slug}/${out.slugInfo.version}` : null,
+    extendsVersion,
+    source: `${[...header, "", ...body.join("\n\n").split("\n")].join("\n")}\n` };
+}
+
+/**
+ * The registry-wide index of declared extensions, `specs/extends.go`.
+ *
+ * Its own package, at the root of the generated tree, so the hand-written runtime
+ * can import it without importing any specification package (each of which
+ * imports the runtime — a cycle). Only versions that declare an extension are
+ * listed: a missing entry and an empty one mean the same thing.
+ */
+function emitExtendsIndex(entries) {
+  const sorted = [...entries].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+  const lines = [
+    "// Code generated by scripts/build-go-bindings.mjs. DO NOT EDIT.",
+    "",
+    "// Package specs indexes metadata that spans the generated specification",
+    "// packages beneath it, for the runtime in package trusttasks to consult without",
+    "// importing any one of them.",
+    "package specs",
+    "",
+    "import \"strings\"",
+    "",
+    "// extendsIndex maps a bare Type URI to the MAJOR.MINOR that version declares it",
+    "// extends (SPEC §5.2 \"Declared extension\"). Versions declaring none are absent.",
+    "var extendsIndex = map[string]string{",
+    ...sorted.map(([uri, v]) => `\t${goString(uri)}: ${goString(v)},`),
+    "}",
+    "",
+    "// ExtendsOf returns the MAJOR.MINOR the specification version named by typeURI",
+    "// declares it extends, or \"\" when it declares none or is not in the registry.",
+    "// A #request / #response fragment is ignored. The direct declaration only: walk",
+    "// the chain by calling it again with the extended version's Type URI.",
+    "func ExtendsOf(typeURI string) string {",
+    "\tif i := strings.IndexByte(typeURI, '#'); i >= 0 {",
+    "\t\ttypeURI = typeURI[:i]",
+    "\t}",
+    "\treturn extendsIndex[typeURI]",
+    "}",
+  ];
+  return `${lines.join("\n")}\n`;
 }
 
 /* ── Driver ──────────────────────────────────────────────────────────────── */
@@ -934,17 +1166,33 @@ async function main() {
   await clean();
 
   const schemas = (await walk(SPECS_DIR, /\.schema\.json$/)).sort();
-  const filtered = schemas.filter((p) => !NOT_PAYLOAD_SCHEMAS.has(path.basename(p)));
-  console.log(`Generating bindings for ${filtered.length} schemas...`);
+  const lifecycle = await readLifecycle();
+  // A withdrawn version gets no package at all (see readLifecycle).
+  let withdrawn = 0;
+  const filtered = schemas.filter((p) => {
+    if (NOT_PAYLOAD_SCHEMAS.has(path.basename(p))) return false;
+    const info = slugFromSchemaPath(p);
+    if (info && lifecycle.get(`${info.slug}/${info.version}`)?.withdrawn) {
+      withdrawn++;
+      return false;
+    }
+    return true;
+  });
+  console.log(`Generating bindings for ${filtered.length} schemas (${withdrawn} withdrawn versions skipped)...`);
 
   let ok = 0;
   const packages = new Set();
+  const extendsEntries = [];
   for (const schemaPath of filtered) {
     try {
-      const result = generateOne(schemaPath);
+      const result = generateOne(schemaPath, lifecycle);
       await fs.mkdir(result.dir, { recursive: true });
       await fs.writeFile(result.file, result.source, "utf8");
       packages.add(result.dir);
+      // trust-task-error is left out, as trust-tasks-codegen leaves it out (SKIP_SLUGS): it has no registry bundle, so the consumer-side generators cannot index it, and an error document is read by the runtime's own path, never routed by extends.
+      if (result.typeUri && result.extendsVersion && !result.typeUri.includes("/spec/trust-task-error/")) {
+        extendsEntries.push([result.typeUri, result.extendsVersion]);
+      }
       ok++;
     } catch (err) {
       console.error("  ✗ " + path.relative(REPO_ROOT, schemaPath));
@@ -952,6 +1200,8 @@ async function main() {
       process.exitCode = 1;
     }
   }
+
+  await fs.writeFile(path.join(OUT_DIR, "extends.go"), emitExtendsIndex(extendsEntries), "utf8");
 
   // Format in-process rather than leaving it to a second command the way
   // `cargo run -p trust-tasks-codegen && cargo fmt --all` does.

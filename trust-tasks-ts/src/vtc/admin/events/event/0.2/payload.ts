@@ -8,6 +8,8 @@ import type { Ext, ResumeToken, Topic_VtcAdminEventsV0_2 as Topic } from "../../
 
 /**
  * One hint, sent by a Verifiable Trust Community down an administrator console's live channel: something under `topic` changed, re-read it. It never carries the record that changed. Fire-and-forget: there is no response. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by vtc/admin/events/event/0.5
  */
 export interface VTCAdminEventsEventPayload {
   /**
@@ -35,7 +37,27 @@ export type { Ext, ResumeToken, Topic };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/admin/events/event/0.2" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vtc/admin/events/event/0.5";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vtc/admin/events/event/0.5
+ */
 export type Payload = VTCAdminEventsEventPayload;
 
 /**

@@ -9,12 +9,18 @@
 //! ```ignore
 //! # #[cfg(feature = "validate")]
 //! # fn demo() -> Result<(), trust_tasks_rs::validate::ValidationError> {
-//! use trust_tasks_rs::{specs::acl::grant::v0_1, validate::ValidatedPayload};
+//! use trust_tasks_rs::{specs::acl::grant::v0_2, validate::ValidatedPayload};
 //!
 //! let value: serde_json::Value = serde_json::json!({
-//!     "entry": { "subject": "did:web:alice.example", "role": "admin" }
+//!     "entry": {
+//!         "subject": "did:web:alice.example",
+//!         "role": "admin",
+//!         "act": { "scope": "all" },
+//!         "keys": { "scope": "all" },
+//!         "capabilities": { "scope": "ceiling" }
+//!     }
 //! });
-//! v0_1::Payload::validate_value(&value)?;
+//! v0_2::Payload::validate_value(&value)?;
 //! # Ok(())
 //! # }
 //! ```

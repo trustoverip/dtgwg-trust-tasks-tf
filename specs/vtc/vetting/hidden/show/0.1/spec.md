@@ -83,7 +83,7 @@ A conforming **community** (`recipient`):
 
 ## Authorization
 
-The entitlement is **administrator standing at the community**: the signer's access-control entry — or, for a delegated signing key ([`auth/signing-key/enroll`](../../../../../auth/signing-key/enroll/0.1/spec.md)), the entry of the identity it acts for — read at execution time. It is the standing [`vtc/vetting/hidden/publish`](../../publish/0.1/spec.md) requires, because this read exists to inform a publish, and because the stored configuration names each event's approver.
+The entitlement is **administrator standing at the community**: the signer's access-control entry — or, for a delegated signing key ([`auth/signing-key/enroll`](../../../../../auth/signing-key/enroll/0.2/spec.md)), the entry of the identity it acts for — read at execution time. It is the standing [`vtc/vetting/hidden/publish`](../../publish/0.1/spec.md) requires, because this read exists to inform a publish, and because the stored configuration names each event's approver.
 
 ## Definitions
 

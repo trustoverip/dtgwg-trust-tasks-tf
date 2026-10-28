@@ -1,14 +1,21 @@
 //! Parsed Trust Task *Type URI*.
 //!
-//! Models the canonical URI form defined in SPEC.md §6.1:
+//! Models every form SPEC.md §6.1 defines — the public registry's canonical
+//! form, and the two shapes a private specification (SPEC.md §6.5) may use
+//! under any other authority:
 //!
 //! ```text
-//! https://trusttasks.org/spec/<slug>/<MAJOR.MINOR>[#request|#response]
+//! https://trusttasks.org/spec/<slug>/<MAJOR.MINOR>          public registry
+//! <prefix>/spec/<slug>/<MAJOR.MINOR>                        path form (https, DID URL, …)
+//! urn:<NID>:<prefix>:spec:<slug-segments>:<MAJOR.MINOR>     URN form
 //! ```
 //!
-//! Private-registry authorities (SPEC.md §6.5) are accepted as long as the
-//! path shape is preserved. The slug, version, and optional request/response
-//! variant fragment (§4.4.1) are exposed as typed fields.
+//! each optionally followed by `#request` or `#response` (§4.4.1). A Type URI
+//! whose scheme is `urn` must use the URN form, and every other scheme the
+//! path form; `http` is refused in every form. The slug, version, and variant
+//! are exposed as typed fields, and [`fmt::Display`] reproduces the parsed
+//! string exactly — a Type URI is a name, compared by its whole string
+//! (§6.1), so the authority is kept verbatim and is part of equality.
 
 use std::fmt;
 use std::str::FromStr;
@@ -22,7 +29,10 @@ use thiserror::Error;
 /// single JSON string via [`SerializeDisplay`] / [`DeserializeFromStr`].
 #[derive(Debug, Clone, PartialEq, Eq, Hash, SerializeDisplay, DeserializeFromStr)]
 pub struct TypeUri {
+    /// Everything before `/spec/` (path form) or `:spec:` (URN form).
     authority: String,
+    /// The URN form: `<authority>:spec:<seg>:…:<M.N>`.
+    urn: bool,
     slug: String,
     major: u32,
     minor: u32,
@@ -50,12 +60,17 @@ impl Variant {
 /// Reasons a string fails to parse as a [`TypeUri`].
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum ParseTypeUriError {
-    /// URI scheme is not `https` or `http`.
-    #[error("type URI must use https (or http) scheme: {0}")]
+    /// The URI has no scheme, or its scheme is `http`, which SPEC §6.1
+    /// forbids in every form.
+    #[error("type URI must have a scheme other than http (SPEC §6.1): {0}")]
     Scheme(String),
 
-    /// The path is missing the `/spec/<slug>/<version>` shape.
-    #[error("type URI path must be /spec/<slug>/<major.minor>: {0}")]
+    /// Neither the path form `<prefix>/spec/<slug>/<major.minor>` nor (for a
+    /// `urn:`) the URN form `urn:<nid>:<prefix>:spec:<seg>:…:<major.minor>`.
+    #[error(
+        "type URI must be <prefix>/spec/<slug>/<major.minor>, or \
+         urn:<nid>:<prefix>:spec:<slug-segments>:<major.minor>: {0}"
+    )]
     Shape(String),
 
     /// Slug fails the §6.1 grammar.
@@ -102,6 +117,29 @@ impl TypeUri {
         validate_slug(&slug)?;
         Ok(Self {
             authority: authority.into().trim_end_matches('/').to_string(),
+            urn: false,
+            slug,
+            major,
+            minor,
+            variant,
+        })
+    }
+
+    /// Build a URN-form [`TypeUri`] (SPEC §6.1):
+    /// `<prefix>:spec:<slug segments>:<major>.<minor>`, where `prefix` is
+    /// `urn:<NID>:<prefix>`, e.g. `urn:example:tasks`.
+    pub fn new_urn(
+        prefix: impl Into<String>,
+        slug: impl Into<String>,
+        major: u32,
+        minor: u32,
+        variant: Option<Variant>,
+    ) -> Result<Self, ParseTypeUriError> {
+        let slug = slug.into();
+        validate_slug(&slug)?;
+        Ok(Self {
+            authority: prefix.into().trim_end_matches(':').to_string(),
+            urn: true,
             slug,
             major,
             minor,
@@ -177,15 +215,50 @@ impl TypeUri {
             ..self.clone()
         }
     }
+
+    /// The specification this URI names a version of, apart from the version
+    /// and variant: its authority, form and slug. Two Type URIs with the same
+    /// slug under different authorities are different specifications (SPEC
+    /// §6.1 — a slug is unique only within its authority), so this, not the
+    /// slug alone, decides whether an unrouted document is an unsupported
+    /// *version* of something a consumer implements.
+    pub(crate) fn specification_key(&self) -> String {
+        let mut bare = self.with_variant(None);
+        bare.major = 0;
+        bare.minor = 0;
+        bare.to_string()
+    }
+
+    /// A copy of this URI at `major.minor` — same authority, slug and variant.
+    /// Used to walk a declared-extension chain (SPEC §5.2), whose links name
+    /// only a version.
+    pub(crate) fn with_version(&self, major: u32, minor: u32) -> Self {
+        Self {
+            major,
+            minor,
+            ..self.clone()
+        }
+    }
 }
 
 impl fmt::Display for TypeUri {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{}/spec/{}/{}.{}",
-            self.authority, self.slug, self.major, self.minor
-        )?;
+        if self.urn {
+            write!(
+                f,
+                "{}:spec:{}:{}.{}",
+                self.authority,
+                self.slug.replace('/', ":"),
+                self.major,
+                self.minor
+            )?;
+        } else {
+            write!(
+                f,
+                "{}/spec/{}/{}.{}",
+                self.authority, self.slug, self.major, self.minor
+            )?;
+        }
         if let Some(v) = self.variant {
             write!(f, "#{}", v.as_fragment())?;
         }
@@ -209,38 +282,63 @@ impl FromStr for TypeUri {
             Some(other) => return Err(ParseTypeUriError::Fragment(other.to_string())),
         };
 
-        let scheme_split = without_fragment
-            .find("://")
+        // SPEC §6.1: any absolute URI, but never `http` — an `http` Type URI
+        // would normalise a transport-downgrade path for consumers that
+        // dereference it under §6.2 content negotiation, so the parser
+        // refuses it in every form.
+        let (scheme, _) = without_fragment
+            .split_once(':')
             .ok_or_else(|| ParseTypeUriError::Scheme(s.to_string()))?;
-        let scheme = &without_fragment[..scheme_split];
-        // SPEC §6.1: the scheme MUST be `https`. `http://` would normalise
-        // a transport-downgrade path for consumers that dereference the
-        // Type URI under §6.2 content negotiation, so we refuse it at the
-        // parser.
-        if scheme != "https" {
+        let scheme_ok = scheme
+            .chars()
+            .next()
+            .is_some_and(|c| c.is_ascii_alphabetic())
+            && scheme
+                .chars()
+                .all(|c| c.is_ascii_alphanumeric() || matches!(c, '+' | '-' | '.'));
+        if !scheme_ok || scheme.eq_ignore_ascii_case("http") {
             return Err(ParseTypeUriError::Scheme(s.to_string()));
         }
+        let shape = || ParseTypeUriError::Shape(s.to_string());
 
-        // Split into "<scheme>://<authority-and-path-prefix>/spec/<rest>"
-        let spec_idx = without_fragment
-            .find("/spec/")
-            .ok_or_else(|| ParseTypeUriError::Shape(s.to_string()))?;
-        let authority = &without_fragment[..spec_idx];
-        let rest = &without_fragment[spec_idx + "/spec/".len()..];
+        let (authority, slug, version, urn) = if scheme.eq_ignore_ascii_case("urn") {
+            // `urn:<NID>:<prefix>:spec:<seg>:…:<MAJOR.MINOR>`. The slug is the
+            // segments between the first `:spec:` and the version.
+            let (prefix, rest) = without_fragment.split_once(":spec:").ok_or_else(shape)?;
+            let mut parts = prefix.splitn(3, ':');
+            let (_, nid, ns) = (parts.next(), parts.next(), parts.next());
+            if nid.is_none_or(str::is_empty) || ns.is_none_or(str::is_empty) {
+                return Err(shape());
+            }
+            if rest.contains('/') {
+                return Err(shape());
+            }
+            let (slug, version) = rest.rsplit_once(':').ok_or_else(shape)?;
+            (prefix, slug.replace(':', "/"), version, true)
+        } else {
+            // `<prefix>/spec/<slug>/<MAJOR.MINOR>` — an https authority (with an
+            // optional path prefix), a DID URL, or any other scheme's prefix.
+            let spec_idx = without_fragment.find("/spec/").ok_or_else(shape)?;
+            let authority = &without_fragment[..spec_idx];
+            let after_scheme = &authority[scheme.len() + 1..];
+            if after_scheme.trim_start_matches('/').is_empty()
+                || (scheme.eq_ignore_ascii_case("https") && !after_scheme.starts_with("//"))
+            {
+                return Err(shape());
+            }
+            let rest = &without_fragment[spec_idx + "/spec/".len()..];
+            // The version is the final '/' segment; everything before it is the slug.
+            let (slug, version) = rest.rsplit_once('/').ok_or_else(shape)?;
+            (authority, slug.to_string(), version, false)
+        };
 
-        // The version is the final '/' segment; everything before it is the slug.
-        let last_slash = rest
-            .rfind('/')
-            .ok_or_else(|| ParseTypeUriError::Shape(s.to_string()))?;
-        let slug = &rest[..last_slash];
-        let version = &rest[last_slash + 1..];
-
-        validate_slug(slug)?;
+        validate_slug(&slug)?;
         let (major, minor) = parse_version(version)?;
 
         Ok(Self {
             authority: authority.to_string(),
-            slug: slug.to_string(),
+            urn,
+            slug,
             major,
             minor,
             variant,
@@ -478,11 +576,118 @@ mod tests {
 
     #[test]
     fn rejects_http_scheme() {
-        // SPEC §6.1 — only https is conformant.
-        let err = "http://trusttasks.org/spec/acl/grant/0.1"
-            .parse::<TypeUri>()
-            .unwrap_err();
-        assert!(matches!(err, ParseTypeUriError::Scheme(_)));
+        // SPEC §6.1 — http is non-conformant in every form.
+        for uri in [
+            "http://trusttasks.org/spec/acl/grant/0.1",
+            "HTTP://example.com/spec/acl/grant/0.1",
+            "http://example.com/x/spec/acl/grant/0.1#response",
+        ] {
+            let err = uri.parse::<TypeUri>().unwrap_err();
+            assert!(matches!(err, ParseTypeUriError::Scheme(_)), "{uri}");
+        }
+    }
+
+    /// Every SPEC §6.1 example parses, names its slug and version, and prints
+    /// back as the same string — with each variant fragment.
+    #[test]
+    fn every_spec_6_1_form_round_trips() {
+        for (uri, slug) in [
+            ("https://trusttasks.org/spec/acl/grant/0.1", "acl/grant"),
+            (
+                "https://example.com/trust-tasks/spec/acl/grant/0.1",
+                "acl/grant",
+            ),
+            (
+                "did:example:123456789abcdefghi/spec/acl/grant/0.1",
+                "acl/grant",
+            ),
+            ("did:web:tasks.example.com:x/spec/pay/0.1", "pay"),
+            ("urn:example:tasks:spec:acl:grant:0.1", "acl/grant"),
+            ("urn:example:tasks:sub:spec:pay:3.10", "pay"),
+            ("tag:example.com,2026:tasks/spec/acl/grant/0.1", "acl/grant"),
+        ] {
+            for fragment in ["", "#request", "#response"] {
+                let s = format!("{uri}{fragment}");
+                let parsed: TypeUri = s.parse().unwrap_or_else(|e| panic!("{s}: {e}"));
+                assert_eq!(parsed.slug(), slug, "{s}");
+                assert_eq!(parsed.to_string(), s);
+                assert_eq!(parsed.bare().to_string(), uri);
+                let json = serde_json::to_string(&parsed).unwrap();
+                assert_eq!(serde_json::from_str::<TypeUri>(&json).unwrap(), parsed);
+            }
+        }
+        let urn: TypeUri = "urn:example:tasks:spec:acl:grant:0.1".parse().unwrap();
+        assert_eq!((urn.major(), urn.minor()), (0, 1));
+        assert_eq!(
+            urn.with_response().to_string(),
+            "urn:example:tasks:spec:acl:grant:0.1#response"
+        );
+        assert_eq!(
+            urn.with_version(0, 2).to_string(),
+            "urn:example:tasks:spec:acl:grant:0.2"
+        );
+        assert_eq!(
+            TypeUri::new_urn("urn:example:tasks", "acl/grant", 0, 1, None)
+                .unwrap()
+                .to_string(),
+            "urn:example:tasks:spec:acl:grant:0.1"
+        );
+    }
+
+    /// A Type URI is a name compared by its whole string: the same slug and
+    /// version under two authorities, or in two forms, are different.
+    #[test]
+    fn the_authority_is_part_of_identity() {
+        let a: TypeUri = "https://trusttasks.org/spec/vault/get/0.3".parse().unwrap();
+        let b: TypeUri = "https://tasks.example.com/spec/vault/get/0.3"
+            .parse()
+            .unwrap();
+        let c: TypeUri = "urn:example:tasks:spec:vault:get:0.3".parse().unwrap();
+        let d: TypeUri = "did:web:tasks.example.com/spec/vault/get/0.3"
+            .parse()
+            .unwrap();
+        for (x, y) in [(&a, &b), (&a, &c), (&b, &c), (&b, &d), (&c, &d)] {
+            assert_eq!(x.slug(), y.slug());
+            assert_ne!(x, y);
+            assert_ne!(x.for_routing(), y.for_routing());
+        }
+    }
+
+    #[test]
+    fn malformed_forms_are_refused() {
+        for (uri, scheme_error) in [
+            ("trusttasks.org/spec/acl/grant/0.1", true),
+            ("1https://example.com/spec/a/0.1", true),
+            ("https:/spec/a/0.1", false),
+            ("https:///spec/a/0.1", false),
+            ("https:example.com/spec/a/0.1", false),
+            ("did:/spec/a/0.1", false),
+            ("urn:example:spec:a:0.1", false),
+            ("urn::tasks:spec:a:0.1", false),
+            ("urn:example:tasks:spec:acl/grant:0.1", false),
+            ("urn:example:tasks/spec/acl/grant/0.1", false),
+            ("did:example:123", false),
+        ] {
+            let err = uri.parse::<TypeUri>().unwrap_err();
+            assert_eq!(
+                matches!(err, ParseTypeUriError::Scheme(_)),
+                scheme_error,
+                "{uri}: {err:?}"
+            );
+        }
+        // The slug and version grammars hold in the URN form too.
+        assert!(matches!(
+            "urn:example:tasks:spec:Acl:0.1".parse::<TypeUri>(),
+            Err(ParseTypeUriError::Slug(_))
+        ));
+        assert!(matches!(
+            "urn:example:tasks:spec:acl:01.0".parse::<TypeUri>(),
+            Err(ParseTypeUriError::Version(_))
+        ));
+        assert!(matches!(
+            "urn:example:tasks:spec:trust-task-custom:0.1".parse::<TypeUri>(),
+            Err(ParseTypeUriError::ReservedSlug(_))
+        ));
     }
 
     #[test]

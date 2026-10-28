@@ -1,6 +1,6 @@
 [package]
 name = "trust-tasks-didcomm-v1"
-version = "0.34.0"
+version = "0.36.1"
 edition.workspace = true
 rust-version = "1.95"
 license.workspace = true
@@ -27,7 +27,10 @@ default = ["legacy-basic-message"]
 legacy-basic-message = []
 
 [dependencies]
-trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.34" }
+# The runtime only. This crate uses no generated specification module, and
+# default features would switch on every one of them for every application
+# that depends on it, including one that generates only the tasks it pins.
+trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.36", default-features = false }
 affinidi-messaging-didcomm-v1 = "0.2"
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
 log = "0.4"
@@ -37,5 +40,7 @@ thiserror = "2"
 uuid = { version = "1", features = ["v4"] }
 
 [dev-dependencies]
+# The tests, examples and doc examples build real tasks.
+trust-tasks-rs = { path = "../trust-tasks-rs", features = ["acl"] }
 async-trait = "0.1"
 tokio = { version = "1", features = ["macros", "rt", "rt-multi-thread"] }

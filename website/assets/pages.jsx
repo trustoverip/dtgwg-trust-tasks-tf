@@ -73,7 +73,7 @@ function renderSupersededBy(ref, setRoute) {
   let version = m ? m[2] : null;
   if (!version) {
     const cmpVer = (a, b) => { const pa = a.split(".").map(Number), pb = b.split(".").map(Number); return (pa[0] - pb[0]) || (pa[1] - pb[1]); };
-    const live = (window.TT_TASKS || []).filter(t => t.slug === slug && t.status !== "retired");
+    const live = (window.TT_TASKS || []).filter(t => t.slug === slug && t.status !== "retired" && t.status !== "withdrawn");
     if (live.length) version = live.reduce((a, b) => (cmpVer(a.version, b.version) >= 0 ? a : b)).version;
   }
   if (!version) return <code>{ref}</code>;
@@ -256,7 +256,7 @@ function latestPerSlug(tasks) {
   for (const t of tasks) {
     const prev = bySlug.get(t.slug);
     if (!prev) { bySlug.set(t.slug, t); continue; }
-    const pr = prev.status === "retired", tr = t.status === "retired";
+    const pr = prev.status === "retired" || prev.status === "withdrawn", tr = t.status === "retired" || t.status === "withdrawn";
     if (pr !== tr) { if (pr) bySlug.set(t.slug, t); continue; }
     if (cmpVer(t.version, prev.version) > 0) bySlug.set(t.slug, t);
   }
@@ -372,7 +372,7 @@ function VersionSelect({ versions, value, onChange }) {
       style={{ fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-sm)", padding: "0.3em 0.6em", border: "1px solid var(--tt-border)", borderRadius: "var(--tt-radius)", background: "var(--tt-surface)", color: "var(--tt-text)" }}
     >
       {versions.map(v => (
-        <option key={v.version} value={v.version}>v{v.version}{v.status === "retired" ? " (retired)" : ""}</option>
+        <option key={v.version} value={v.version}>v{v.version}{v.status === "retired" || v.status === "withdrawn" ? ` (${v.status})` : ""}</option>
       ))}
     </select>
   );
@@ -1560,7 +1560,7 @@ function SpecDetail({ task, setRoute }) {
                   {v.version === task.version
                     ? <b>v{v.version}</b>
                     : <a href={`/spec/${v.slug}/${v.version}`} onClick={(e) => { e.preventDefault(); setRoute({ name: "spec", slug: v.slug, version: v.version }); window.scrollTo(0, 0); }}>v{v.version}</a>}
-                  {v.status === "retired" && <span style={{ fontSize: "0.8em", color: "var(--tt-text-muted)" }}> (retired)</span>}
+                  {(v.status === "retired" || v.status === "withdrawn") && <span style={{ fontSize: "0.8em", color: "var(--tt-text-muted)" }}> ({v.status})</span>}
                 </React.Fragment>
               ))}
           </dd>
@@ -1607,6 +1607,18 @@ function SpecDetail({ task, setRoute }) {
                   onClick={(e) => { e.preventDefault(); setRoute({ name: "spec", slug: task.slug, version: task.wireCompatibleWith }); window.scrollTo(0, 0); }}
                 >v{task.wireCompatibleWith}</a>
                 <span style={{ color: "var(--tt-text-muted)" }}> — identical on the wire modulo casing and <code>$ref</code> re-pins; a consumer can accept v{task.wireCompatibleWith} documents by normalizing casing and retyping the URI.</span>
+              </dd>
+            </>
+          )}
+          {/* SPEC §9.4 Carried Protocols: the external protocol this spec is
+              the Trust Tasks form of. Renders only when declared. */}
+          {task.carries && (
+            <>
+              <dt>Carries</dt>
+              <dd>
+                <a href={task.carries.reference} target="_blank" rel="noreferrer">{task.carries.protocol} {task.carries.version}</a>
+                {" "}operation <code>{task.carries.operation}</code>
+                <span style={{ color: "var(--tt-text-muted)" }}> — this specification is that operation carried as a Trust Task; its meaning is the protocol's (<a href="/SPEC.md#94-carried-protocols">SPEC §9.4</a>).</span>
               </dd>
             </>
           )}

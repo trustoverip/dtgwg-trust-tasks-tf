@@ -3,11 +3,13 @@
  * Source: specs/git-ns/right/break-glass-notice/0.1/payload.schema.json
  */
 
-import type { BreakGlass, Did_GitNsV0_3 as Did, Ext, NamespaceId, Resource, Right, RightRecord_GitNsV0_4 as RightRecord } from "../../../../_shared/components.js";
+import type { BreakGlass_GitNsV0_4 as BreakGlass, Did_GitNsV0_3 as Did, Ext, NamespaceId, Resource_GitNsV0_1 as Resource, Right, RightRecord_GitNsV0_4 as RightRecord } from "../../../../_shared/components.js";
 
 
 /**
  * The VTC tells an administrator that a member broke the glass on an elevated git right, or that a break-glass record was ratified or revoked. Unsolicited: it answers no request from the recipient.
+ *
+ * @deprecated superseded by git-ns/right/break-glass-notice/0.2
  */
 export interface GitNamespacesBreakGlassNoticePayload {
   /**
@@ -43,7 +45,27 @@ export type { BreakGlass, Did, Ext, NamespaceId, Resource, Right, RightRecord };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/git-ns/right/break-glass-notice/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by git-ns/right/break-glass-notice/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by git-ns/right/break-glass-notice/0.2
+ */
 export type Payload = GitNamespacesBreakGlassNoticePayload;
 
 /**

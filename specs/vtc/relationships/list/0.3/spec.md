@@ -122,7 +122,7 @@ returns were made durable when they were lodged, and this task neither extends
 nor bounds their life.
 
 The durability worth understanding is the one a member cannot undo. A published
-VRC is withdrawn by [`revoke`](../../revoke/0.1/spec.md), which supersedes it with
+VRC is withdrawn by [`revoke`](../../revoke/0.2/spec.md), which supersedes it with
 a new signed statement rather than erasing it, so a relationship that existed
 generally remains visible as having existed. Consumers **SHOULD NOT** cache
 responses to this task beyond the render they were fetched for: a stale cache of

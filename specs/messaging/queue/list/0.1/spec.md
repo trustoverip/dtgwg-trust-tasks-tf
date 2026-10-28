@@ -51,7 +51,7 @@ related:
 
 ## Abstract
 
-The **Messaging — List Queues** Trust Task returns a mediator's accounts ranked, in descending order, by one property of one of their queues: message `count`, stored `bytes`, the age of the `oldest` message, or `saturation` against the queue's limit. It answers the first question of a queue incident — *which accounts are backing up?* — without the administrator paging every account through [`messaging/account/list`](../../../account/list/0.1/spec.md) and sorting client-side.
+The **Messaging — List Queues** Trust Task returns a mediator's accounts ranked, in descending order, by one property of one of their queues: message `count`, stored `bytes`, the age of the `oldest` message, or `saturation` against the queue's limit. It answers the first question of a queue incident — *which accounts are backing up?* — without the administrator paging every account through [`messaging/account/list`](../../../account/list/0.2/spec.md) and sorting client-side.
 
 This task is the **read-many** half of a split pair ([CONTRIBUTING-SPECS "Read-one and read-many"](/CONTRIBUTING-SPECS.md#read-one-and-read-many-tasks)). Its read-one sibling is [`messaging/queue/status`](../../status/0.1/spec.md), which returns one named account's queues with a definite `unknownAccount` when the account does not exist, a per-counterparty breakdown, and self-service access. A ranking has no per-record identity to fail on, so the two are not collapsed into one task.
 

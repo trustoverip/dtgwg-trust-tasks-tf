@@ -50,9 +50,13 @@ jobs:
         run: npm run build-ts-bindings
       - name: Check for drift
         run: |
-          if ! git diff --quiet trust-tasks-ts/src; then
-            echo "::error::TS bindings are stale. Run \`npm run build-ts-bindings\` and commit the diff. Do NOT bump @openvtc/trust-tasks — the Release PR does that; see RELEASING.md."
-            git diff trust-tasks-ts/src
+          # The name lock is generator output too: a run that names a new
+          # shared component must commit it, or the next shape of that name
+          # could rename it.
+          git add -N trust-tasks-ts/component-names.lock.json
+          if ! git diff --quiet trust-tasks-ts/src trust-tasks-ts/component-names.lock.json; then
+            echo "::error::TS bindings are stale. Run \`npm run build-ts-bindings\` and commit the diff (including trust-tasks-ts/component-names.lock.json). Do NOT bump @openvtc/trust-tasks — the Release PR does that; see RELEASING.md."
+            git diff trust-tasks-ts/src trust-tasks-ts/component-names.lock.json
             exit 1
           fi
 
@@ -149,6 +153,56 @@ jobs:
         working-directory: ${{ matrix.package }}
         run: npm test
 
+  # Rust has cargo-semver-checks (`rs API compatibility`); this is the
+  # TypeScript counterpart, on the PR so an undeclared break is caught when
+  # it is made instead of shipping as a patch. It compares the PR's public
+  # declarations — every .d.ts, since `exports` has `./*` — with the last
+  # npm release, via api-extractor doc models. Removed or changed API fails
+  # unless the PR title's `!` is scoped to `ts`; additions (a new spec
+  # version, an optional member, a value appended to a string-literal union)
+  # pass. Policy and method: trust-tasks-ts/scripts/api-compat.mjs.
+  # About a minute; api-extractor peaks near 5 GB per side, run one at a time.
+  api-compat:
+    name: ts API compatibility
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          # History and tags: a break already declared since the published
+          # release (trust-tasks-ts-v*) lets this PR's break through.
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "npm"
+      - name: Install trust-tasks-ts dev dependencies
+        working-directory: trust-tasks-ts
+        run: npm ci --no-audit --no-fund
+      - name: Test the compatibility policy
+        working-directory: trust-tasks-ts
+        run: node --test scripts/api-compat.test.mjs
+      - name: Compare the public API with the last npm release
+        working-directory: trust-tasks-ts
+        # The title is read LIVE, not from the event payload: this workflow
+        # does not run on `edited`, and "Re-run job" replays the original
+        # payload — so after retitling a PR to `feat(ts)!:`, re-running this
+        # job must see the new title. It reaches the script only through the
+        # environment, never interpolated into `run:` (see commit-lint.yml).
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          BASE_REF: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          PR_TITLE=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq .title)
+          export PR_TITLE
+          npm run api-compat
+
   # The drift job above proves the generators were re-run. It compares each
   # generator's output to itself, so an output that is consistently wrong is
   # consistently clean — which is how the response-type drop (#174) and the
@@ -169,3 +223,64 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Check bindings against specs
         run: npm run check-bindings
+      # Every TypeScript and Dart sibling's core range admits the core in this
+      # checkout, and no TypeScript sibling installs a core of its own. Both
+      # drifted unnoticed (scripts/check-sibling-core-ranges.mjs).
+      - name: Sibling packages admit the current core
+        run: npm run check-sibling-core-ranges
+
+  # Consumer-side generation (docs/design/consumer-side-generation.md,
+  # milestone 3): trust-tasks-gen-ts generates modules from registry bundles.
+  # This runs it over EVERY bundle and compares the result with the prebuilt
+  # modules scripts/build-ts-bindings.mjs commits — every module and every
+  # hoisted shared definition byte-identical, schemas JSON-equal in the same
+  # member order, the generated tree type-checked. What it compares and the
+  # differences it explains: trust-tasks-ts-gen/scripts/equivalence.mjs.
+  gen-equivalence:
+    name: trust-tasks-gen-ts equivalence
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+      - name: Install trust-tasks-ts dev dependencies (tsc)
+        working-directory: trust-tasks-ts
+        run: npm ci --no-audit --no-fund
+      - name: Install
+        working-directory: trust-tasks-ts-gen
+        run: npm ci --no-audit --no-fund
+      - name: Test
+        working-directory: trust-tasks-ts-gen
+        run: npm test
+      - name: Build the registry bundles
+        run: cargo run -q --release -p trust-tasks-codegen -- --bundles "$RUNNER_TEMP/bundles"
+      - name: Generate every bundle and compare with the prebuilt modules
+        working-directory: trust-tasks-ts-gen
+        run: npm run build && node scripts/equivalence.mjs --bundles "$RUNNER_TEMP/bundles" --work "$RUNNER_TEMP/equivalence"
+
+  # An application that pins three registry tasks and one third-party task,
+  # generates them with trust-tasks-gen-ts, type-checks, and runs a round trip
+  # through the runtime — against the runtime in this checkout, because the
+  # generated index calls `declareExtends`, which is newer than the last
+  # release. The TypeScript twin of rust.yml's `consumer-app`.
+  consumer-app-ts:
+    name: example application (trust-tasks-gen-ts)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+      - name: Build @openvtc/trust-tasks
+        working-directory: trust-tasks-ts
+        run: npm ci --no-audit --no-fund && npm run build
+      - name: Build @openvtc/trust-tasks-gen
+        working-directory: trust-tasks-ts-gen
+        run: npm ci --no-audit --no-fund && npm run build
+      - name: Generate, build and run
+        working-directory: examples/consumer-app-ts
+        run: npm ci --no-audit --no-fund && npm run all

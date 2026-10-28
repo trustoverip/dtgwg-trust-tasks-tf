@@ -56,7 +56,7 @@ Removes a policy module. The maintainer SHOULD warn (via `wouldOrphanContexts`) 
 
 ## Conformance
 
-Producer: populate `id`; SHOULD populate `expectedVersion`. Consumer: verify `PolicyAdmin`, check orphan condition, emit `sync/event/0.1` with kind `policy.changed`, hot-unload from evaluator cache.
+Producer: populate `id`; SHOULD populate `expectedVersion`. Consumer: verify `PolicyAdmin`, check orphan condition, emit `sync/event/0.2` with kind `policy.changed`, hot-unload from evaluator cache.
 
 ## Security & Privacy
 

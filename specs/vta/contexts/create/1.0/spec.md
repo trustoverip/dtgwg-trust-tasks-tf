@@ -151,7 +151,7 @@ nothing.
 Creating a context discloses nothing by itself. What it does is create a name
 that later ACL grants will reference — and a grant naming a context that was
 subsequently deleted and recreated is a grant over different contents, which is
-why [`vta/contexts/delete`](../../delete/1.0/spec.md) is specified as it is.
+why [`vta/contexts/delete`](../../delete/1.1/spec.md) is specified as it is.
 
 **Free text.** `name` is free text, bounded at 256 characters — a display name,
 not prose. It is REQUIRED, which is a departure from the SHOULD of

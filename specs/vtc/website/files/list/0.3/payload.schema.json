@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/website/files/list/0.3",
+  "title": "VTC Website Files List — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "cursor": {
+      "type": "string",
+      "description": "An opaque continuation token from a previous response's `nextCursor`; a responder MUST NOT accept a cursor it did not issue."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "description": "The most items to return, at most 1000; the responder chooses a default and MAY return fewer."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Website Files List — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "size"
+            ],
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Path relative to the site root."
+              },
+              "size": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "File size in bytes."
+              },
+              "etag": {
+                "type": "string",
+                "minLength": 1,
+                "description": "An opaque content hash for the file, matching the `ETag` a direct read of the same path returns. Lets a client detect a change — or confirm one it just wrote — without downloading the body, which is why the listing carries it rather than making the caller fetch each file to compare."
+              },
+              "updatedAt": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "description": "Files under the site root, excluding hidden files and blocklisted extensions."
+        },
+        "nextCursor": {
+          "type": "string",
+          "description": "Continuation token for the next page; pass it back as `cursor`. Absent on the last page — never `null`."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

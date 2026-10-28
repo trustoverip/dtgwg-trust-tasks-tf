@@ -85,7 +85,7 @@ the holder's own personas inside their own address book.
 The holder's own **annotations** on a contact: a **star**; a **petname** — the
 holder's private name for the contact, distinct from the nickname the contact
 chose for themselves; the holder's own **lists** ("Mentors", "Met at the spring
-meetup"), kept by [`persona/contact/lists/*`](../../lists/put/1.0/spec.md); and a
+meetup"), kept by [`persona/contact/lists/*`](../../lists/put/1.1/spec.md); and a
 **directory link** (`directoryRef`) from a contact to the entry in a community's
 member directory it was made through, so the holder's client can show a star or
 a petname beside that entry.

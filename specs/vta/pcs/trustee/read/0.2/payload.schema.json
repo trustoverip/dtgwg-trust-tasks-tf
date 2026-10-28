@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/pcs/trustee/read/0.2",
+  "title": "VTA PCS — Trustee Read — payload",
+  "description": "A trustee's client asks its VTA for a voting/trustees/status or voting/election/show request signed as the trustee, so it can follow the election's ceremony at the ballot box — on a private board as on a public one — without holding the trustee's key.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contextId",
+    "community",
+    "electionId",
+    "trustee",
+    "ballotBox",
+    "read"
+  ],
+  "properties": {
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "The VTA context the trustee's keys live in."
+    },
+    "community": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "description": "The community's DID: the registrar that registered the election."
+    },
+    "electionId": {
+      "$ref": "../../../../../voting/_shared/0.1/voting.schema.json#/$defs/ElectionId"
+    },
+    "trustee": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "pattern": "^did:",
+      "description": "The trustee's DID: a persona this VTA holds an authentication key of."
+    },
+    "ballotBox": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "pattern": "^did:",
+      "description": "The ballot box's DID: the recipient of the signed request."
+    },
+    "read": {
+      "type": "string",
+      "enum": [
+        "status",
+        "election"
+      ],
+      "description": "Which read to sign: voting/trustees/status/0.1 or voting/election/show/0.2."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "ReadDocument": {
+      "title": "ReadDocument",
+      "description": "A complete, signed voting/trustees/status/0.1 or voting/election/show/0.2 request document, ready to send to the ballot box unchanged.",
+      "type": "object",
+      "required": [
+        "id",
+        "type",
+        "issuer",
+        "recipient",
+        "issuedAt",
+        "payload",
+        "proof"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "https://trusttasks.org/spec/voting/trustees/status/0.1",
+            "https://trusttasks.org/spec/voting/election/show/0.2"
+          ]
+        },
+        "issuer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "The request's `trustee`."
+        },
+        "recipient": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "The request's `ballotBox`."
+        },
+        "issuedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "payload": {
+          "type": "object",
+          "description": "`{ community, electionId }` from the request, exactly."
+        },
+        "proof": {
+          "type": "object",
+          "description": "A Data Integrity proof by an `authentication` key of `issuer`."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA PCS — Trustee Read — response payload",
+      "description": "The signed read, to send to the ballot box.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "document"
+      ],
+      "properties": {
+        "document": {
+          "$ref": "#/$defs/ReadDocument"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

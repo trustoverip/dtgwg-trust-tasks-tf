@@ -11,6 +11,430 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.9.11 — 2026-10-28
+
+
+### Added
+
+- **vta/contexts/delete**: 1.1 — settle host copies first; abandonHostCopies (#967)
+
+1.0 removed every local record and reported a host copy it could not
+  remove in daemonCleanupErrors after the fact, so the caller learned that
+  DIDs were still resolving only once the records — and the keys that
+  could remove them — were gone. A DID whose hosting server was no longer
+  registered refused the whole deletion, with no way to complete it through
+  this task: a context whose host had gone for good could not be deleted.
+
+  1.1 settles every host copy before anything local is removed. A copy
+  that cannot be confirmed removed (host down, refusing, unanswered, or no
+  longer known to the VTA) refuses with the new
+  vta/contexts/delete:hostCleanupFailed — retryable, details pinned by a
+  detailsSchema listing each DID, its server and why — and nothing local
+  is deleted. A producer shows those DIDs to a human and asks whether to
+  wait for the host or retry with the new abandonHostCopies, which
+  completes the deletion and reports the abandoned copies in
+  daemonCleanupErrors. A host answering that it no longer holds the log has
+  removed it, so a retry after a partial settle completes. The consumer
+  SHOULD bound the time spent on hosts, in total, to answer within the
+  requester's timeout.
+
+  abandonHostCopies is an explicitness flag like force, not a privilege,
+  and a producer MUST NOT set it on a first attempt without being told to.
+  A 1.1 consumer still accepts 1.0 and answers it as 1.0 specifies.
+
+  Regenerated the Rust, TypeScript, Go and Dart bindings; 1.0 is now
+  marked superseded. The stale-reference fixer moved create/1.0 and
+  preview-delete/1.0's links to 1.1.
+
+## 0.9.10 — 2026-10-27
+
+
+### Added
+
+- **ts, go**: Trust-task-error/0.6 and the unsupportedExtension and indeterminate standard codes (#961)
+
+* feat(ts)!: trust-task-error/0.6 and the unsupportedExtension and indeterminate standard codes
+
+  Framework 0.7.0 added unsupportedExtension to the standard codes, and the
+  indeterminate ruling (SPEC §8.3) adds indeterminate: the recipient could
+  not decide because something it needed and does not control could not
+  be obtained or checked, which is neither a refusal nor a failed
+  verification. Both live in the closed code list of the trust-task-error
+  payload schema, so they need a new version.
+
+  - specs/trust-task-error/0.6: both codes appended to the enum, and
+    extends: "0.5", which the build checks. References to 0.5 across the
+    registry therefore stay current, and no other spec changes.
+  - All four libraries recognize both codes and emit 0.6:
+    trust_task_error_type_uri(), TRUST_TASK_ERROR_TYPE_URI,
+    TrustTaskErrorTypeURI and trustTaskErrorTypeUri move together.
+    Rust's StandardCode is hand-written (trust-task-error is in
+    SKIP_SLUGS) and gains UnsupportedExtension and Indeterminate, with
+    indeterminate retryable by default as §8.3 gives it.
+  - The HTTPS binding's status table maps unsupportedExtension to 422 and
+    indeterminate to 503, in the binding prose, trust-tasks-https and
+    trust_tasks_https. The Dart package spells the new codes out so it
+    still builds against a core that predates them.
+
+  Breaking for @openvtc/trust-tasks only: StandardCode is a closed union
+  there, so an exhaustive switch over it stops compiling. Rust's
+  StandardCode is #[non_exhaustive] and Go's and Dart's are open string
+  types, so the change is additive for them.
+
+  Part of trustoverip/dtgwg-trust-tasks-spec#42.
+
+- **registry**: Declare carried protocols in front matter (#959)
+
+SPEC §9.4 Carried Protocols and §7.3 item 23 add a carries front-matter
+  object naming the external protocol, version, defining reference and
+  operation a specification carries.
+
+  - spec.meta.schema.json accepts carries (all four members required).
+  - The build records it in registry.json and checks §9.4 rule 1 across
+    the tree: a slug carries one operation in every live version, and no
+    two slugs carry the same operation of the same protocol version.
+  - The spec page shows a Carries row linking the protocol.
+  - registry/authorization/0.2 and registry/recognition/0.2 declare that
+    they carry TRQP 2.0's authorization and recognition operations; their
+    TRQP field-name sections now say so and name the party mapping.
+  - CONTRIBUTING-SPECS gains "Carrying another protocol".
+  - SPEC.md is regenerated from canonical main (bdf2cdd), which this
+    needs for the §9.4 anchor.
+
+  Part of trustoverip/dtgwg-trust-tasks-spec#43.
+
+
+
+### Specifications
+
+- **policy**: A consent decision carries its quorum and self-approval rule (#960)
+
+policy/_shared/0.3 gave requireConsent.minApprovals a default of 1 and
+  requireConsent.excludeRequester a default of false. JSON Schema defaults
+  are annotations, but generators apply them, so a decision that omitted
+  either sent a quorum of one, or let the requester approve itself, with
+  nothing on the wire to show that nobody had chosen it. SPEC §6.6 rule 5
+  now forbids a governance default in a shared schema component.
+
+  - policy/_shared/0.4: both members required, defaults removed.
+    task-consent/request/0.1 already requires both, so the policy decision
+    and the consent request now agree.
+  - policy/evaluate/0.4: policy/evaluate/0.3 re-pinned to the new
+    component, which is its only change; the Security & Privacy section
+    gains the four sub-headings a new version must carry.
+  - policy/get/0.1 and policy/active/0.1 stay on 0.3: they use only
+    PolicyModule, which is unchanged.
+  - Stale references in task-consent prose moved to policy/evaluate/0.4.
+  - Rust, TypeScript, Go and Dart regenerated. 0.1 to 0.3 of
+    policy/evaluate are now marked superseded by 0.4.
+
+  Part of trustoverip/dtgwg-trust-tasks-spec#39.
+
+## 0.9.9 — 2026-10-27
+
+
+### Added
+
+- The prebuilt specification modules are deprecated in all four libraries; generate the tasks you use (#954)
+
+Milestone 5 of docs/design/consumer-side-generation.md. Every prebuilt module
+  outside the framework's own specifications (trust-task-*, trust-ceremony-*,
+  _framework/) is deprecated, so that an application is told to pin the tasks it
+  uses with the trust-tasks CLI and generate them instead. Nothing is removed:
+  the withdrawal batch that removes them is chosen later, at least 90 days after
+  this ships.
+
+  Each library marks the prebuilt entry point where its toolchain reports a
+  deprecation, never the module body, which is also what the consumer-side
+  generators emit:
+
+  - Rust: #[deprecated] on each gated family module in trust-tasks-rs's
+    specs/mod.rs (trust-tasks-codegen). It reaches every path and item under the
+    module; framework modules and trust-tasks-build's output are unmarked.
+  - TypeScript: the root index re-exports each module as
+    `import * as _X …; /** @deprecated … */ export import X = _X;`, because
+    TypeScript ignores @deprecated on `export * as`. API compatibility against
+    0.27.8: nothing removed or changed. A deep import of a module file is not
+    marked; TypeScript has no module-level deprecation.
+  - Go: a `Deprecated:` paragraph in each prebuilt package's doc, which gopls and
+    staticcheck (SA1019) report on import.
+  - Dart: @Deprecated on each prebuilt library's `library` directive, which the
+    analyzer reports on import from another package. This package's own tests
+    use them, so analysis_options ignores the same-package diagnostic SDKs
+    before 3.4 report.
+
+  The TS, Go and Dart equivalence tests mask exactly the mark; every consumer
+  generator is still held to the prebuilt tree as before. Hand-written Rust that
+  uses prebuilt modules on purpose — the acl-specimen test modules, the
+  integration tests and the examples — carries #[allow(deprecated)]; none of the
+  runtime does.
+
+  GETTING-STARTED, the four library READMEs, the design doc and CLAUDE.md say
+  so, and point at each language's generator.
+
+- **dart**: Parse every SPEC §6.1 Type URI form, so third-party specs get extended codes and extends routing (#952)
+
+The Dart runtime recognised only the public registry's Type URIs. A new
+  `TypeUri` (exported from the barrel, with `TypeUriVariant`, `TypeUriError`
+  and `TypeUriFormatException`) parses all three §6.1 forms — the registry's,
+  the path form under any authority (https URL, DID URL, …) and the URN form —
+  and refuses what trust-tasks-rs's `TypeUri` refuses: `http` in every form, a
+  `urn:` without `:spec:` or without an NID and prefix, a malformed or reserved
+  slug, and a version that is not MAJOR.MINOR.
+
+  - `slugFromTypeUri`, and with it `extendedCode` / `familyCode`, accept every
+    form; codes stay authority-free `<slug>:<local>`, as Rust's
+    `TrustTaskCode::Extended` renders them. Invalid input still throws
+    `ArgumentError`.
+  - `extensionChain`, `extendsTo` and `readForVersion` walk a declared-extension
+    chain with `TypeUri.withVersion`: same authority, form and slug, only the
+    version changed, so a chain never crosses authorities and a third-party
+    document never routes to a registry spec of the same slug.
+  - Fixes `_splitVersion`, which split the version on the last `/` and so found
+    none in a URN-form Type URI: a URN document was never routed forward.
+
+
+
+### Documentation
+
+- An extended error code is read against the Type URI it answers, in SPEC.md and all four libraries (#953)
+
+SPEC.md is regenerated from canonical main (trustoverip/dtgwg-trust-tasks-spec
+  #35): an extended code carries a slug but no authority, so a party resolves
+  it against the Type URI of the document the error reports on
+  (inResponseTo.typeUri, else the request correlated by threadId) and never by
+  its string alone; the namespace is always the slug's /-form, and the local
+  code contains no colon. The regeneration also brings in #33 (declared
+  `extends`, and `withdrawn` after a version is superseded), which the site
+  already serves.
+
+  Each library's extended-code docs say the same where a reader meets it:
+  Rust's TrustTaskCode::Extended, TypeScript's extendedCode, Go's ExtendedCode
+  and Dart's extendedCode.
+
+## 0.9.8 — 2026-10-26
+
+
+### Added
+
+- **dart**: Dart run trust_tasks:generate generates only the tasks an application pins (#942)
+
+* feat(dart): generate only the tasks an application pins, with dart run trust_tasks:generate
+
+  `trust-tasks-dart/bin/generate.dart` reads a trust-tasks.lock and the bundles
+  vendored beside it, checks each bundle's SHA-256 against the lock, and writes
+  one library per pinned version to <out>/<slug>/v<M>_<N>/payload.dart plus an
+  extends_index.dart — the same API as the prebuilt lib/specs/ libraries,
+  importing the runtime as package:trust_tasks. An independent port of
+  scripts/build-dart-bindings.mjs with bundles as input; no new dependencies
+  (SHA-256 and the lockfile reader are in-package).
+
+  scripts/check-dart-consumer-generation.mjs runs it over every bundle in the
+  registry and compares with the prebuilt tree: 458 libraries identical, 662
+  identical declaration for declaration in a different top-level order (the
+  bundle does not carry $defs order), every embedded schema JSON-equal.
+  examples/consumer-app-dart pins the same three tasks as examples/consumer-app.
+
+## 0.9.7 — 2026-10-26
+
+## 0.9.6 — 2026-10-26
+
+
+### Added
+
+- **specs**: A version may declare it extends an earlier one, and every library reads the newer version as the older (#922)
+
+* feat(specs): an extends declaration the build checks, and that keeps references along its chain current
+
+- **codegen**: Superseded and retired spec versions are deprecated in every library, and withdrawn ones leave them in a quarterly batch (#921)
+
+* feat(go): mark superseded and retired spec versions deprecated, and omit withdrawn ones
+
+  Every generated request package now exports `const Deprecation` (empty for a
+  current version, otherwise "superseded by <slug>/<M.N>", "retired; use
+  <slug>/<M.N>" or "retired"), and a deprecated version's Payload and Response
+  types carry a `// Deprecated:` paragraph. A version with `status: withdrawn`
+  gets no package at all. The rule is derived independently from front matter,
+  per SPEC "Superseded and Withdrawn Versions".
+
+- **vault**: Vault/credentials/get 0.2 returns an SD-JWT or an mdoc, not only a JSON object (#919)
+
+get/0.1 answered with `credential`, a JSON object, so a maintainer holding an
+  SD-JWT (a compact string) or an mdoc (CBOR) had no conforming answer: it could
+  neither return the body nor turn it into an object without destroying the
+  proof the body carries.
+
+  0.2 returns the body the way receive/0.1 accepts it: `credential` for a JSON
+  object, `credentialBase64` for anything else, exactly one of the two, plus a
+  required `format` (an OpenID4VC format identifier: ldp_vc, dc+sd-jwt,
+  mso_mdoc, jwt_vc_json) so a consumer never sniffs the body. The request is
+  unchanged. 0.1 is retired, superseded by 0.2; references to it now name 0.2.
+
+- **build**: Fail the build on a reference to a superseded spec version, and bring every current spec up to date (#918)
+
+A new check, scripts/lib/stale-references.mjs, run by the registry build:
+  no latest, non-retired spec may name another spec at a version that spec
+  has since superseded — in a schema, a description, a prose link or
+  mention, or an example. `npm run fix-stale-references` rewrites the text
+  references (links, mentions, descriptions; a lone version in a moved
+  link's label moves with it; a link whose #anchor the new version lacks is
+  left for a person) and lists what it will not touch: wire pins and
+  normative values (they take a new version) and examples (their payloads
+  must be checked against the new version). History is exempt — Changes
+  from / "What 0.4 changed" sections, version runs ending at the latest,
+  "since"/"added in", "or later" — and anything else deliberate goes in
+  stale-references-allowlist.json with its reason.
+
+  Run once over the registry, in place in draft specs:
+
+  - 728 text references across about 280 files, mostly prose links.
+  - Examples moved after checking their payloads against the new version:
+    trust-task-discovery's supportedTypes, trust-task-error's inResponseTo,
+    auth/oob/grant's directory listing, keys/derive-and-sign-document's
+    authenticate document.
+  - git-ns/bridge/event 0.5 says what it meant: a bridge that lists
+    git-ns/bridge/job 0.5 or later (the closePullRequest kind).
+  - Two allowlisted: rooms/records/get and list say a record written by
+    rooms/records/put/0.1 has no blobs.
+
+  New versions, because the reference is a value an implementation emits —
+  the `expects` entry of a deferred operation's next-step named
+  vtc/admin/actions/show/0.2, which #907 superseded:
+
+  - vtc/elections/create 0.3, vtc/rooms/storage/assign 0.2,
+    vtc/rooms/storage/migrate 0.3, vtc/storage/configs/create 0.3,
+    retire 0.3 and update 0.3, vtc/storage/credentials/set 0.3.
+
+- **vtc/storage**: Vtc/storage/configs/retire 0.2 — refuse while a migration targets the config (#912)
+
+* feat(vtc/storage): vtc/storage/configs/retire 0.2 — refuse while a migration targets the config
+
+  retire 0.1 refused only while rooms were assigned to the config or it was
+  the default. vtc/rooms/storage/migrate 0.2 fixes a migration's toConfig at
+  approval and keeps it across a reassignment, and a migration can wait
+  queued or paused. So: start moving room R onto config X, reassign R to Y,
+  retire X (no rooms assigned) — X leaves `active` and the move into it can
+  never finish; it pauses with cause `destination` and retries forever.
+
+  0.2 adds vtc/storage/configs/retire:migrationsInbound (retryable: false,
+  details.migrations ≥ 1): the community MUST refuse while any migration
+  whose toConfig is the config is queued, running or paused, MUST make the
+  check again when a parked retirement executes, and MUST make the check and
+  the state change as one step with respect to a migration starting.
+  Migrations off the config are unaffected. The converse order is already
+  closed by migrate 0.2's configNotActive and assign's refusal of a
+  non-active config. A community serving 0.1 beside 0.2 SHOULD apply the
+  same refusal to a 0.1 request, reporting it with the same slug-namespaced
+  code (SPEC §8.5); a 0.1 producer falls back to taskFailed.
+
+  Request and response schemas are unchanged from 0.1.
+
+- **specs**: Re-pin auth/step-up/start to approve-request 0.5, and point stale version references at current versions (#913)
+
+A sweep of the latest non-retired version of every spec for references
+  to another spec at an older version than that spec's latest.
+
+  The one wire pin, in a new version:
+
+  - auth/step-up/start 0.2: approveRequest.type is now the const
+    auth/step-up/approve-request/0.5 (was 0.3, two versions behind: 0.4
+    made `accepts` required, 0.5 renamed `ttl` to `ttlSeconds`).
+
+  Editorial, in place, in draft specs — schema descriptions that named a
+  superseded version of another spec:
+
+  - device/heartbeat 0.3 (device/wipe), git-ns/bridge/job/list 0.4
+    (bridge/job, bridge/result), persona/contact/get and list 1.1
+    (contact/put), rooms/records/get 0.2 (records/put), sync/event 0.2
+    (vault/sync), task-consent/decision 0.2 (vtc/admin/actions/list,
+    approve-response), vault/get 0.3 (vault/release), vault/sign-trust-task
+    0.2 (acl/grant, proxy-login), vault/sync 0.3 (sync/event — its "same
+    shape as sync/event/0.1" was wrong: 0.1 uses sync/_shared/0.1, vault/sync
+    0.3 uses 0.2), vtc/join-requests/submit 0.3 and wallet-session/start
+    0.1 (manifest).
+
+  Examples that carried an old Type URI as sample content, in invalid
+  examples and the matching spec.md examples: git-ns/projection/show,
+  rooms/keys/act, trust-ceremony-receipt, trust-task-discovery, and the
+  four vtc/admin/actions specs — whose embedded acl/grant payloads also
+  gain the `act`, `keys` and `capabilities` acl/grant 0.2 requires.
+
+## 0.9.5 — 2026-10-24
+
+
+### Added
+
+- **rooms**: Rooms/keys/act 0.8 — records prune and retention set (#910)
+
+rooms/keys/act's table is closed, so a key holder conforming to 0.7
+  refuses rooms/records/prune (0.1, 0.2) and rooms/records/retention/set/0.1
+  with typeNotActable. A member's own client therefore cannot make either
+  request as the member: it falls back to rooms/keys/present and signs with
+  its own key, and the host records the client key, not the member, as the
+  administrator who changed the room's retention or pruned it.
+
+  0.8 adds both to the table with action admin and a presentation inserted,
+  as their own specifications require. Both name a room, so the member is
+  resolved by Recipient item 2; the private-room same-subject binding and
+  the producer's REQUIRED reason are already covered by Recipient items 4
+  and 6. No error code is added and the schemas are 0.7's.
+
+  rooms/epoch/prune stays absent. The table section now states why a
+  records prune may ride act and an epoch prune may not: a records prune
+  removes only what the room's record retention (stated in advance,
+  readable by every member, set only by admin via retention/set) already
+  made eligible, leaves the room's keys and its ability to read its past
+  intact, carries a reason and is recorded; an epoch prune destroys key
+  history to an epoch the request names, against no rule stated in
+  advance.
+
+  A MINOR increment per SPEC §5.2; 0.7 remains published. Bindings
+  regenerated for Rust, TypeScript, Go and Dart.
+
+- **build**: Lint that every instant is named <event>At, and rename serverTime to respondedAt (#911)
+
+The wire-conventions lint gains an `instant-name` rule: a `date-time`
+  string is named `<event>At`, unless it is a bound or filter (`since`,
+  `until`, `from`, `to`, `asOf`, or a name ending in Until/Since/From/After/
+  Before/To) or the Data Integrity `created`. `timestamp-name` also refuses
+  a bare `at`.
+
+  Two specs had their own non-At instant, renamed in new versions:
+
+  - device/heartbeat 0.3: serverTime -> respondedAt
+  - messaging/ping 0.2: serverTime -> respondedAt (and its Security &
+    Privacy section now carries the four sub-headings)
+
+  External vocabularies are allowlisted with their source: TRQP's `time`,
+  `time_evaluated` and `time_requested` (registry/*), and did:webvh's
+  `versionTime` (did/log) and `latestVersionTime` (did/info).
+
+  Depends on #760, which renames the git-ns bare `at` members this rule
+  also catches.
+
+- **specs**: Naming consistency — event instants, one spelling per concept, durations name their unit, in 69 new spec versions (#907)
+
+* feat(build): the wire-conventions lint requires an integer duration to name its unit
+
+
+
+### Specifications
+
+- **git-ns**: Nested repository paths for forges with subgroups (#760)
+
+* spec(git-ns): copy each affected version to its next version, unchanged
+
+  Mechanical copy so the next commit shows only what the new versions change.
+
+## 0.9.4 — 2026-10-23
+
+
+### Added
+
+- **specs**: One spelling for instants, pagination, since and created, in 74 new spec versions (#901)
+
+* spec(auth/oob, vtc/auth): instants are RFC 3339 strings named *At
+
 ## 0.9.3 — 2026-10-23
 
 ## 0.9.2 — 2026-10-22

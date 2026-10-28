@@ -40,7 +40,7 @@ errorCodes: []
 
 The **Sync — Event** Trust Task is the push-notification half of the vault sync model. The maintainer issues one of these to every subscribing consumer whenever a `vaultUpserted`, `vaultDeleted`, `aclChanged`, or `policyChanged` event occurs. The consumer verifies and applies; there is no response.
 
-For offline catch-up — when a consumer connects after having missed events — it calls `vault/sync/0.1` to receive the same events in batched form.
+For offline catch-up — when a consumer connects after having missed events — it calls `vault/sync/0.3` to receive the same events in batched form.
 
 The two tasks reuse the same `SyncEvent` shared schema so consumers can share code paths between push and pull.
 

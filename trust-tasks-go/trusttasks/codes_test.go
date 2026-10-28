@@ -59,8 +59,8 @@ func TestNormalizeLeavesAnExtendedCodeAlone(t *testing.T) {
 
 func TestStandardCodesListsEveryCodeAndCannotBeMutatedByACaller(t *testing.T) {
 	first := tt.StandardCodes()
-	if len(first) != 14 {
-		t.Fatalf("expected the 14 §8.3 codes, got %d", len(first))
+	if len(first) != 16 {
+		t.Fatalf("expected the 16 §8.3 codes, got %d", len(first))
 	}
 	first[0] = "tampered"
 	if tt.StandardCodes()[0] != tt.CodeMalformedRequest {
@@ -195,9 +195,31 @@ func TestSlugFromTypeURIDropsTheVersionSegmentAndAnyFragment(t *testing.T) {
 	}
 }
 
-func TestSlugFromTypeURIRefusesAURIOutsideTheTrustTasksNamespace(t *testing.T) {
-	_, err := tt.SlugFromTypeURI("https://example.com/spec/acl/grant/0.1")
-	if err == nil || !strings.Contains(err.Error(), "Type URI") {
-		t.Fatalf("expected a Type URI error, got %v", err)
+func TestSlugFromTypeURIRefusesAStringThatIsNotATypeURI(t *testing.T) {
+	for _, s := range []string{
+		"not a uri",
+		"http://trusttasks.org/spec/acl/grant/0.1",
+		"https://trusttasks.org/spec/acl/grant",
+		"urn:example:tasks:acl:grant:0.1",
+	} {
+		_, err := tt.SlugFromTypeURI(s)
+		if err == nil || !strings.Contains(err.Error(), "Type URI") {
+			t.Errorf("%q: expected a Type URI error, got %v", s, err)
+		}
+	}
+}
+
+// SPEC §6.1 / §6.5: a third-party specification's Type URI is a Type URI. Its
+// slug is read in every form (this used to accept only the registry's).
+func TestSlugFromTypeURIReadsEveryForm(t *testing.T) {
+	for _, c := range []struct{ typeURI, want string }{
+		{"https://acme.example/spec/payments/settle/0.1", "payments/settle"},
+		{"did:web:acme.example/spec/payments/settle/0.1#response", "payments/settle"},
+		{"urn:example:acme:spec:payments:settle:0.1#request", "payments/settle"},
+	} {
+		got, err := tt.SlugFromTypeURI(c.typeURI)
+		if err != nil || got != c.want {
+			t.Errorf("SlugFromTypeURI(%q) = %q, %v; want %q", c.typeURI, got, err, c.want)
+		}
 	}
 }

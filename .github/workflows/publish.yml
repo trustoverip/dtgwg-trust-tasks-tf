@@ -118,7 +118,9 @@ jobs:
   publish-npm:
     name: Publish ${{ matrix.name }} to npm
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # 30, not 20: the publish is followed by up to 8 minutes of waiting for the
+    # version to become public ("Confirm the version is public on npm").
+    timeout-minutes: 30
     permissions:
       # `contents: write` so the tag can be pushed after a successful publish —
       # `<prefix>-v<version>` is what the next Release PR measures from, the npm
@@ -141,6 +143,9 @@ jobs:
           - name: "@openvtc/trust-tasks-capability-client"
             dir: trust-tasks-ts-capability-client
             prefix: trust-tasks-ts-capability-client-v
+          - name: "@openvtc/trust-tasks-gen"
+            dir: trust-tasks-ts-gen
+            prefix: trust-tasks-ts-gen-v
     concurrency:
       # Two pushes landing close together would both see the version as absent
       # from npm and both try to publish it; the loser fails on a duplicate.
@@ -186,10 +191,23 @@ jobs:
 
       # No NODE_AUTH_TOKEN: with trusted publishing npm mints a short-lived
       # token via OIDC and attaches build provenance automatically.
+      #
+      # A version npm is holding as STAGED (below) answers a second publish with
+      # an opaque 409; say what it means.
       - name: npm publish (trusted publishing)
         if: steps.decide.outputs.should_publish == 'true'
         working-directory: ${{ matrix.dir }}
-        run: npm publish --access public
+        env:
+          NAME: ${{ matrix.name }}
+          VERSION: ${{ steps.decide.outputs.version }}
+        run: |
+          set -uo pipefail
+          npm publish --access public 2>&1 | tee "$RUNNER_TEMP/npm-publish.log"
+          status=${PIPESTATUS[0]}
+          if [ "$status" -ne 0 ] && grep -q 'previously staged version' "$RUNNER_TEMP/npm-publish.log"; then
+            echo "::error::$NAME@$VERSION is already STAGED on npm, awaiting a maintainer. Approve it (npm stage list $NAME, then npm stage approve <stage-id>, with 2FA) or reject it (npm stage reject <stage-id>), then re-run this job."
+          fi
+          exit "$status"
 
       # The tag is the anchor for the NEXT Release PR: release-bump-ts.sh reads
       # commits since `trust-tasks-ts-v<version>` to decide the bump and to
@@ -212,6 +230,33 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git tag -a "$tag" -m "$NAME $VERSION"
           git push origin "$tag"
+
+      # `npm publish` succeeding does not mean the version is public. When the
+      # trusted publisher lacks "Allow npm publish" (stage-only, npm's default
+      # for configs created after 2026-09-03) or the package requires
+      # proof-of-presence, npm STAGES the upload instead: the job is green, the
+      # version is invisible, and nothing says so. 0.27.4 sat staged for 85
+      # minutes that way. So confirm it is installable, and fail loudly if not.
+      #
+      # After the tag, deliberately: a staged version already holds its version
+      # number, and the tag is what the next Release PR measures from. A re-run
+      # once it is approved sees the version on npm and skips every step.
+      - name: Confirm the version is public on npm
+        if: steps.decide.outputs.should_publish == 'true'
+        env:
+          NAME: ${{ matrix.name }}
+          VERSION: ${{ steps.decide.outputs.version }}
+        run: |
+          set -euo pipefail
+          for _ in $(seq 1 16); do
+            if [ "$(npm view "$NAME@$VERSION" version 2>/dev/null)" = "$VERSION" ]; then
+              echo "::notice::$NAME@$VERSION is public on npm."
+              exit 0
+            fi
+            sleep 30
+          done
+          echo "::error::$NAME@$VERSION was accepted by npm but is not public after 8 minutes, so npm has almost certainly STAGED it. A maintainer must approve it with 2FA (npm stage list $NAME, then npm stage approve <stage-id>) and then re-run this job. To stop CI publishes being staged, tick 'Allow npm publish' on the package's trusted publisher (npmjs.com, package Settings, Trusted publishing)."
+          exit 1
 
   # ── Go ───────────────────────────────────────────────────────────────────
   #
@@ -479,9 +524,11 @@ jobs:
   release-pr:
     name: Release PR
     runs-on: ubuntu-latest
-    # 90, not 60: the semver checks now run one after another (see "Run
-    # cargo-semver-checks one at a time"), and each takes several minutes.
-    timeout-minutes: 90
+    # The API checks moved to every pull request (`rs API compatibility` in
+    # rust.yml), so this job no longer builds rustdoc and finishes in about a
+    # minute. It took 8-13 minutes, and was repeatedly killed for memory, while
+    # release-plz ran cargo-semver-checks here.
+    timeout-minutes: 30
     # MUST run after every publish job. Each bump is measured from the tag (or,
     # for the crates, the registry version) that those jobs write, so running
     # beside them means the push that merges a release computes the next one
@@ -514,8 +561,10 @@ jobs:
           # that publishes must not be the one commit CI never built.
           token: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
 
-      # cargo-semver-checks builds rustdoc for the binding crates, whose TDK
-      # dependencies probe for libdbus-1 via pkg-config.
+      # Kept from when this job ran cargo-semver-checks, whose rustdoc builds
+      # compile the binding crates' TDK dependencies (they probe for libdbus-1
+      # via pkg-config). Nothing has shown that `release-plz update` never runs
+      # a build script, and the install is seconds.
       - name: Install libdbus-1-dev
         run: |
           # `apt-get update` exits non-zero when ANY configured source fails, and
@@ -531,11 +580,10 @@ jobs:
         with:
           node-version: "24"
 
-      # cargo-semver-checks MUST be present: without it release-plz logs
-      # "cargo-semver-checks not installed, skipping semver check" and silently
-      # falls back to guessing from commit messages — only a warning, so nothing
-      # goes red. git-cliff is for the non-Rust changelogs, from the same
-      # cliff.toml release-plz reads, so every part of a release reads alike.
+      # No cargo-semver-checks: `semver_check = false` in release-plz.toml, and
+      # the crates are checked on every PR instead (`rs API compatibility`).
+      # git-cliff is for the non-Rust changelogs, from the same cliff.toml
+      # release-plz reads, so every part of a release reads alike.
       #
       # release-plz is PINNED to 0.3.171. install-action ships the static
       # x86_64-unknown-linux-musl build, and 0.3.172 is the first to carry
@@ -550,103 +598,12 @@ jobs:
       # `release-plz update` from the musl build on a commit with unreleased
       # changes. (The publish job is unaffected — release-plz/action installs
       # its own default, 0.3.160.)
-      - name: Install release-plz, cargo-semver-checks and git-cliff
+      - name: Install release-plz and git-cliff
         uses: taiki-e/install-action@v2
         with:
-          tool: release-plz@0.3.171,cargo-semver-checks,git-cliff
+          tool: release-plz@0.3.171,git-cliff
 
-      # release-plz runs cargo-semver-checks for every changed crate AT ONCE,
-      # and each run compiles trust-tasks-rs into its own target directory.
-      # Run 39869780457 (#890's sampler) caught it: four checks in parallel,
-      # three rustc at ~3 GB and a rustdoc at ~6 GB, 16 GB of RAM and 16 GB of
-      # swap exhausted, and the kernel's OOM killer taking the runner agent
-      # down with rustdoc — the SIGTERM (exit 143) this job had been ending
-      # with. One check alone peaks at ~13 GB, which fits.
-      #
-      # release-plz has no setting for that parallelism, so the installed
-      # binary is replaced by a wrapper that takes a lock first. It replaces
-      # the binary in place rather than shadowing it on PATH because cargo
-      # looks in $CARGO_HOME/bin before PATH when resolving `cargo semver-checks`.
-      - name: Run cargo-semver-checks one at a time
-        run: |
-          real="$(command -v cargo-semver-checks)"
-          mv "$real" "$real-unserialised"
-          printf '#!/bin/sh\nexec flock %s %s "$@"\n' \
-            "$RUNNER_TEMP/cargo-semver-checks.lock" "$real-unserialised" > "$real"
-          chmod +x "$real"
-          cat "$real"
-          cargo semver-checks --version
-
-      # cargo-semver-checks on trust-tasks-rs peaks at ~12.6 GB resident
-      # (rustdoc JSON for the generated tree, current and baseline), measured
-      # locally against 0.33.1. A standard runner has 16 GB, and from #871 the
-      # job was SIGTERMed (exit 143, no error from the tool) about two minutes
-      # into the check, twice — the signature of systemd-oomd acting on memory
-      # pressure. Stop oomd so pressure alone ends nothing, and give the kernel
-      # a swapfile to spill into: slower under pressure, but it finishes.
-      # Weakening `semver_check` instead is what release-plz.toml argues
-      # against for a crate that owns its API.
-      #
-      # The swapfile goes on whichever of / and /mnt has more room, at up to
-      # 16 GB but leaving 8 GB free for the rustdoc builds themselves — the
-      # runner image's disk layout is not ours to assume.
-      - name: Add swap for cargo-semver-checks
-        run: |
-          sudo systemctl stop systemd-oomd || true
-          sudo swapoff -a
-          sudo rm -f /mnt/swapfile /swapfile
-          root_free=$(df --output=avail -BG / | tail -1 | tr -dc 0-9)
-          mnt_free=$(df --output=avail -BG /mnt | tail -1 | tr -dc 0-9)
-          if [ "$mnt_free" -gt "$root_free" ]; then dir=/mnt free=$mnt_free; else dir='' free=$root_free; fi
-          size=$(( free - 8 < 16 ? free - 8 : 16 ))
-          if [ "$size" -lt 4 ]; then
-            echo "::warning::only ${free}G free; not adding swap"
-          else
-            sudo fallocate -l "${size}G" "$dir/swapfile"
-            sudo chmod 600 "$dir/swapfile"
-            sudo mkswap "$dir/swapfile"
-            sudo swapon "$dir/swapfile"
-          fi
-          free -h
-
-      # Since 2026-10-22 this step has been ended by SIGTERM (exit 143) after
-      # ~10-13 minutes inside cargo-semver-checks, with 15 GiB of swap in place
-      # and no systemd-oomd on the image. Every later step, cleanup included,
-      # is then skipped — the runner itself going away, not a step failing — so
-      # a report step never runs. Everything is therefore printed into this
-      # step's own live log as it happens: a resource sample every 30 seconds,
-      # kernel messages about memory and kills as the kernel writes them, and
-      # on SIGTERM whatever the journal has recorded, before the step exits.
       - name: Open or update the Release PR
         env:
           GH_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
-        run: |
-          (while true; do
-            echo "[sample $(date -u +%H:%M:%S)] $(free -m | awk 'NR==2{print "mem used="$3"M avail="$7"M"} NR==3{print "swap used="$3"M"}' | paste -sd' ') $(df -BG --output=avail / | tail -1 | tr -d ' ')G free on /; top rss: $(ps -eo rss=,comm= --sort=-rss | head -3 | awk '{printf "%s=%dM ", $2, $1/1024}')"
-            sleep 30
-          done) &
-          sampler=$!
-          (sudo dmesg -w --level=err,warn,crit,alert,emerg 2>/dev/null | grep --line-buffered -iE "oom|kill|memory|hung|out of" | sed -u 's/^/[kernel] /') &
-          kernel=$!
-          # shellcheck disable=SC2329 # called from the TERM trap below
-          report() {
-            echo "[signal] $(date -u +%H:%M:%S) $1 received"
-            sudo journalctl --since "-30 min" --no-pager 2>/dev/null \
-              | grep -iE "oom|kill|sigterm|memory|shutdown|runner" | tail -n 40 | sed 's/^/[journal] /'
-          }
-          trap 'report SIGTERM; kill $sampler $kernel 2>/dev/null; exit 143' TERM
-          ./scripts/release-pr.sh &
-          wait $!
-          status=$?
-          kill $sampler $kernel 2>/dev/null || true
-          exit $status
-
-      - name: Report what ended the Release PR step
-        if: failure()
-        run: |
-          echo "::group::Kernel messages about kills and memory"
-          sudo dmesg -T | grep -iE "oom|kill|memory|out of" | tail -n 40 || true
-          echo "::endgroup::"
-          echo "::group::Journal entries about kills and memory"
-          sudo journalctl --since "-90 min" --no-pager | grep -iE "oom|kill|sigterm|memory pressure|earlyoom|nohang" | tail -n 60 || true
-          echo "::endgroup::"
+        run: ./scripts/release-pr.sh

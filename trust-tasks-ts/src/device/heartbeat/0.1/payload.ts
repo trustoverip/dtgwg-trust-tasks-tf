@@ -8,6 +8,8 @@ import type { Ext } from "../../../_shared/components.js";
 
 /**
  * Periodic check-in from a Companion or Service. Refreshes `lastSeenAt`, carries optional state digests, and gives the maintainer a chance to deliver queued operations (notably queued wipes for targets that were offline at issuance).
+ *
+ * @deprecated superseded by device/heartbeat/0.3
  */
 export interface DeviceHeartbeatPayload {
   /**
@@ -20,6 +22,7 @@ export interface DeviceHeartbeatPayload {
   vaultSeq?: number;
   ext?: Ext;
 }
+/** @deprecated superseded by device/heartbeat/0.3 */
 export interface DeviceHeartbeatResponsePayload {
   /**
    * Authoritative timestamp — consumers MAY use to detect clock drift.
@@ -54,13 +57,37 @@ export type { Ext };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/device/heartbeat/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by device/heartbeat/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by device/heartbeat/0.3
+ */
 export type Payload = DeviceHeartbeatPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/device/heartbeat/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by device/heartbeat/0.3
+ */
 export type Response = DeviceHeartbeatResponsePayload;
 
 /**

@@ -61,7 +61,7 @@ related:
 The **Rooms Keys — Welcome** Trust Task delivers an MLS Welcome to the agent that will hold a
 member's room keys, so it can join the room's group.
 
-It exists because [`rooms/keys/open`](../../open/0.1/spec.md) assumes something nothing
+It exists because [`rooms/keys/open`](../../open/0.2/spec.md) assumes something nothing
 specified: that a key-holding agent *has* the room's group. An oracle that opens records
 cannot open anything until a group arrives, and a group arrives exactly once, in a Welcome.
 
@@ -97,7 +97,7 @@ A recipient already holding group state for `roomId` for the member the invitati
 or several personas of one — keeps one group state per member per room; state it holds for
 another member is not a join by this one and **MUST NOT** cause `alreadyJoined`. Two
 group states for one member in one room is a condition nothing downstream can resolve: an
-[`open`](../../open/0.1/spec.md) call has no way to choose, and choosing wrong returns
+[`open`](../../open/0.2/spec.md) call has no way to choose, and choosing wrong returns
 "did not open" for a record the member can plainly see. Leaving and rejoining is a removal
 followed by a fresh invitation, not a second Welcome.
 

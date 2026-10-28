@@ -7,6 +7,8 @@
 /// response from a 0.1 peer.
 library;
 
+import 'type_uri.dart';
+
 /// A framework-defined standard error code (SPEC.md §8.3).
 ///
 /// ## Why an extension type and not an enum
@@ -50,6 +52,13 @@ extension type const StandardCode(String value) {
   static const StandardCode unavailable = StandardCode('unavailable');
   static const StandardCode internalError = StandardCode('internalError');
 
+  /// New in trust-task-error/0.6 (SPEC.md §4.5.2).
+  static const StandardCode unsupportedExtension =
+      StandardCode('unsupportedExtension');
+
+  /// New in trust-task-error/0.6 (SPEC.md §8.3).
+  static const StandardCode indeterminate = StandardCode('indeterminate');
+
   /// Every §8.3 code, in the order SPEC.md declares them.
   static const List<StandardCode> values = <StandardCode>[
     malformedRequest,
@@ -66,6 +75,8 @@ extension type const StandardCode(String value) {
     taskFailed,
     unavailable,
     internalError,
+    unsupportedExtension,
+    indeterminate,
   ];
 }
 
@@ -113,19 +124,21 @@ bool isStandardCode(String code) => _standard.contains(normalizeCode(code));
 /// specifications; only the first character is required to be lowercase.
 final RegExp _localRe = RegExp(r'^[a-z][A-Za-z0-9_]*$');
 
-/// One path segment of a slug: lowercase, hyphen-separated (§6.1).
-final RegExp _segmentRe = RegExp(r'^[a-z][a-z0-9]*(-[a-z0-9]+)*$');
-
-bool _validNamespace(String namespace) =>
-    namespace.isNotEmpty && namespace.split('/').every(_segmentRe.hasMatch);
-
-const String _typeUriPrefix = 'https://trusttasks.org/spec/';
-
 /// Build an extended error code under a specification's own slug (SPEC §8.5).
 ///
 /// [typeUri] is normally a generated library's `typeUri`, so the namespace
-/// cannot drift from the type's identity. The `#response` fragment is stripped:
-/// an error raised while handling a response still belongs to the bare slug.
+/// cannot drift from the type's identity. Any SPEC §6.1 form is accepted: a
+/// third-party (§6.5) specification's code is `<slug>:<local>`, authority-free,
+/// exactly as a registry specification's is. The `#response` fragment is
+/// stripped: an error raised while handling a response still belongs to the
+/// bare slug.
+///
+/// Because the code carries no authority, a received one means something only
+/// against the Type URI of the request it answers (SPEC §8.5):
+/// `vault/get:notFound` from the registry's `vault/get` and from a private one
+/// are different codes. Resolve it with `inResponseTo.typeUri` (or the request
+/// you sent), never by the string alone, and keep that Type URI beside it
+/// anywhere the code outlives the exchange.
 ///
 /// Throws [ArgumentError] if the derived slug or [local] is malformed.
 String extendedCode(String typeUri, String local) {
@@ -174,22 +187,19 @@ String familyCode(String typeUri, String namespace, String local) {
 }
 
 /// The slug of a Type URI, with any `#request` / `#response` fragment removed.
+///
+/// Accepts every SPEC §6.1 form — the public registry's, the path form under
+/// any other authority (an https URL, a DID URL, …) and the URN form, whose
+/// `:`-separated slug segments come back `/`-separated
+/// (`urn:example:tasks:spec:payments:settle:0.1` → `payments/settle`). The
+/// authority is not part of the result; use [TypeUri.parse] to keep it.
+///
+/// Throws [ArgumentError] when [typeUri] is not a Trust Task Type URI.
 String slugFromTypeUri(String typeUri) {
-  if (!typeUri.startsWith(_typeUriPrefix)) {
-    throw ArgumentError.value(typeUri, 'typeUri', 'not a Trust Task Type URI');
+  try {
+    return TypeUri.parse(typeUri).slug;
+  } on TypeUriFormatException catch (e) {
+    throw ArgumentError.value(
+        typeUri, 'typeUri', 'not a Trust Task Type URI: ${e.message}');
   }
-  var rest = typeUri.substring(_typeUriPrefix.length);
-  final hash = rest.indexOf('#');
-  if (hash >= 0) rest = rest.substring(0, hash);
-  // The trailing segment is the MAJOR.MINOR version; everything before it is
-  // the slug.
-  final parts = rest.split('/');
-  if (parts.length < 2) {
-    throw ArgumentError.value(typeUri, 'typeUri', 'carries no slug');
-  }
-  final slug = parts.take(parts.length - 1).join('/');
-  if (!_validNamespace(slug)) {
-    throw ArgumentError.value(typeUri, 'typeUri', 'yielded an invalid slug');
-  }
-  return slug;
 }

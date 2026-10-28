@@ -27,6 +27,19 @@
 //   responsePayloadSchemaJson — the same for the response variant
 //   spec / responseSpec       — SpecPolicy values carrying the §7.2 items
 //                               5b/7/8 flags and the schema above
+//   deprecation               — null, or why this version is deprecated, in
+//                               which case Payload and Response also carry
+//                               @Deprecated (see buildLifecycleIndex; a
+//                               withdrawn version is not generated at all)
+//
+//   extendsVersion            — the `MAJOR.MINOR` this version declares it
+//                               extends (SPEC §5.2 "Declared extension"), or
+//                               null. The DIRECT declaration only, not the chain.
+//
+// And one library beside them, lib/specs/extends_index.dart, mapping every bare
+// request Type URI that declares `extends` to the version it extends — the index
+// the runtime's readForVersion walks, so a library upgrade alone teaches an
+// application that x/0.3 may be read as the x/0.2 it implements.
 //
 // ── Decisions specific to Dart ─────────────────────────────────────────────
 //
@@ -37,7 +50,7 @@
 //    it needs directly and prefixes it:
 //
 //      import 'package:trust_tasks/trust_tasks.dart';
-//      import 'package:trust_tasks/specs/acl/grant/v0_1/payload.dart' as acl_grant;
+//      import 'package:trust_tasks/specs/acl/grant/v0_2/payload.dart' as acl_grant;
 //
 //    That is why each generated library may declare its own `Ext` without
 //    colliding with the other 500, exactly as the TypeScript modules may.
@@ -230,18 +243,23 @@ function responseSchemaOf(schema) {
  * the parties, so the requirement governing a *response*'s `recipient` member is
  * the one declared for the *issuer* party of the request.
  */
-function readSpecPolicy(schemaPath) {
-  const specPath = path.join(path.dirname(schemaPath), "spec.md");
-  let meta;
-  try {
-    const src = fsSync.readFileSync(specPath, "utf8");
-    if (!src.startsWith("---")) return null;
-    const end = src.indexOf("\n---", 3);
-    if (end < 0) return null;
-    meta = YAML.parse(src.slice(3, end).replace(/^\r?\n/, ""));
-  } catch {
-    return null;
+/**
+ * The version a spec declares it extends (SPEC §5.2 "Declared extension"), or
+ * null. Only the direct declaration: the runtime walks the chain itself through
+ * the generated index, one link per entry.
+ */
+function readExtends(schemaPath) {
+  const meta = readFrontMatter(path.join(path.dirname(schemaPath), "spec.md"));
+  const value = meta?.extends;
+  if (value === undefined || value === null) return null;
+  if (typeof value !== "string" || !/^\d+\.\d+$/.test(value)) {
+    throw new Error(`front matter extends must be a "MAJOR.MINOR" string, got ${JSON.stringify(value)}`);
   }
+  return value;
+}
+
+function readSpecPolicy(schemaPath) {
+  const meta = readFrontMatter(path.join(path.dirname(schemaPath), "spec.md"));
   if (!meta) return null;
 
   const partyRequirement = (member) =>
@@ -285,6 +303,126 @@ function readSpecPolicy(schemaPath) {
     isRecipientRequired: partyRequirement("recipient"),
     responseIsRecipientRequired: partyRequirement("issuer"),
   };
+}
+
+/* ── Version lifecycle (SPEC "Superseded and Withdrawn Versions") ────────── */
+
+/** Parse a spec.md's YAML front matter, or null when it has none. */
+function readFrontMatter(specPath) {
+  try {
+    const src = fsSync.readFileSync(specPath, "utf8");
+    if (!src.startsWith("---")) return null;
+    const end = src.indexOf("\n---", 3);
+    if (end < 0) return null;
+    return YAML.parse(src.slice(3, end).replace(/^\r?\n/, "")) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Index every specification version's lifecycle, keyed by slug.
+ *
+ * Built once from the whole tree, because whether a version is deprecated
+ * depends on its siblings. Another independent implementation of the rule (see
+ * decision 3 in the file header for why these are not shared); the four
+ * libraries must agree on it, and `npm run check-bindings` compares them.
+ *
+ * The rule, per SPEC "Superseded and Withdrawn Versions":
+ *
+ *   - `withdrawn` → generated not at all (no library, nothing that names it).
+ *   - The *live* versions of a slug are those neither `retired` nor `withdrawn`.
+ *   - A version is DEPRECATED when it is `retired`, or SUPERSEDED: a later live
+ *     version of the same slug exists at an equal or higher maturity
+ *     (draft < candidate < standard). Deprecation is a warning, not a removal.
+ *   - Its successor is a retired version's `supersededBy` (a bare slug resolving
+ *     to that slug's latest live version), otherwise the latest live version of
+ *     its own slug.
+ *   - The note is `retired; use S`, `retired`, or `superseded by S`, byte-exact
+ *     across all four languages.
+ */
+function buildLifecycleIndex(specMdPaths) {
+  const bySlug = new Map();
+  for (const specPath of specMdPaths) {
+    const parts = path.relative(SPECS_DIR, path.dirname(specPath)).split(path.sep);
+    if (parts.some((p) => p.startsWith("_"))) continue;
+    const version = parts.pop();
+    const m = /^(\d+)\.(\d+)$/.exec(version);
+    if (!m) continue;
+    const meta = readFrontMatter(specPath) ?? {};
+    const slug = parts.join("/");
+    if (!bySlug.has(slug)) bySlug.set(slug, []);
+    bySlug.get(slug).push({
+      version,
+      major: Number(m[1]),
+      minor: Number(m[2]),
+      status: String(meta.status ?? "draft"),
+      supersededBy: typeof meta.supersededBy === "string" ? meta.supersededBy : null,
+    });
+  }
+  for (const list of bySlug.values()) list.sort((a, b) => a.major - b.major || a.minor - b.minor);
+  return bySlug;
+}
+
+const MATURITY = { draft: 0, candidate: 1, standard: 2 };
+const isLive = (v) => v.status !== "retired" && v.status !== "withdrawn";
+
+/** `<slug>/<M.N>` for the latest live version of `slug`, or null. */
+function latestLive(index, slug) {
+  const live = (index.get(slug) ?? []).filter(isLive);
+  return live.length === 0 ? null : `${slug}/${live[live.length - 1].version}`;
+}
+
+/**
+ * The lifecycle of one version: `{ withdrawn, note }`, where `note` is the
+ * deprecation text or null for a live, current version.
+ */
+function lifecycleOf(index, slug, version) {
+  const list = index.get(slug) ?? [];
+  const self = list.find((v) => v.version === version);
+  if (!self) return { withdrawn: false, note: null };
+  if (self.status === "withdrawn") return { withdrawn: true, note: null };
+
+  if (self.status === "retired") {
+    let successor;
+    if (self.supersededBy !== null) {
+      successor = /\/\d+\.\d+$/.test(self.supersededBy)
+        ? self.supersededBy
+        : latestLive(index, self.supersededBy);
+    } else {
+      successor = latestLive(index, slug);
+    }
+    return { withdrawn: false, note: successor ? `retired; use ${successor}` : "retired" };
+  }
+
+  const rank = MATURITY[self.status] ?? 0;
+  const laterAtLeastAsMature = list.some(
+    (v) =>
+      isLive(v) &&
+      (v.major > self.major || (v.major === self.major && v.minor > self.minor)) &&
+      (MATURITY[v.status] ?? 0) >= rank,
+  );
+  if (!laterAtLeastAsMature) return { withdrawn: false, note: null };
+  return { withdrawn: false, note: `superseded by ${latestLive(index, slug)}` };
+}
+
+/**
+ * Put `@Deprecated(note)` on the declaration of each of `names` in `em.decls`,
+ * between its doc comment and the declaration line. A root may have been
+ * emitted as a class, an extension type or a typedef, so all three are matched.
+ */
+function markDeprecated(em, names, note) {
+  const annotation = `@Deprecated(${dartString(note)})`;
+  for (const name of names) {
+    const decl = new RegExp(`^(class|typedef|extension type const) ${name}\\b`);
+    em.decls = em.decls.map((d) => {
+      const lines = d.split("\n");
+      const at = lines.findIndex((l) => decl.test(l));
+      if (at < 0) return d;
+      lines.splice(at, 0, annotation);
+      return lines.join("\n");
+    });
+  }
 }
 
 /* ── Dart identifiers ────────────────────────────────────────────────────── */
@@ -820,7 +958,7 @@ function emitDeclarations(em, schema, rootHint) {
       );
     }
   }
-  return { defNames, rootName };
+  return { defNames, rootName, responseName: pending.get("Response") ?? null };
 }
 
 /** Emit `node` under the exact name `target`, which has already been reserved. */
@@ -833,8 +971,27 @@ function emitNamed(em, node, target, defNames) {
 
 /* ── File assembly ───────────────────────────────────────────────────────── */
 
+/**
+ * The prebuilt specification libraries are deprecated (milestone 5 of
+ * docs/design/consumer-side-generation.md): an application generates the
+ * tasks it pins with `dart run trust_tasks:generate` instead. `@Deprecated` on
+ * the `library` directive makes the analyzer report every import of it from
+ * another package (deprecated_member_use). The framework's own specifications
+ * and shared schemas are not deprecated: the runtime speaks them. The
+ * consumer-side generator writes no such directive, so its equivalence check
+ * (scripts/check-dart-consumer-generation.mjs) drops this block.
+ */
+const PREBUILT_DEPRECATION =
+  "The prebuilt specification libraries will be removed: pin the tasks you use with the " +
+  "trust-tasks CLI and generate them with `dart run trust_tasks:generate` (GETTING-STARTED.md).";
+
+function prebuiltLibraryDeprecation(sourceRel) {
+  if (/^specs\/(_framework\/|trust-task|trust-ceremony)/.test(sourceRel)) return [];
+  return ["", `@Deprecated(${JSON.stringify(PREBUILT_DEPRECATION).replace(/^"|"$/g, "'")})`, "library;"];
+}
+
 /** The tail every generated request library carries: URIs, schemas, policy. */
-function emitTail(slugInfo, policy, schemas, hasResponse) {
+function emitTail(slugInfo, policy, schemas, hasResponse, deprecation, extendsVersion) {
   if (!slugInfo) return [];
   const { slug, version } = slugInfo;
   const uri = `https://trusttasks.org/spec/${slug}/${version}`;
@@ -842,8 +999,45 @@ function emitTail(slugInfo, policy, schemas, hasResponse) {
 
   out.push(
     [
+      "/// Why this specification version is deprecated, or null when it is current.",
+      "///",
+      "/// Set when the version is retired, or superseded by a later version of the",
+      "/// same slug at an equal or higher maturity (SPEC \"Superseded and Withdrawn",
+      "/// Versions\"). A deprecated version is still supported; it is removed from",
+      "/// this package once withdrawn.",
+      // Typed `String?` in every library so code generic over specifications
+      // sees one type; the lint would narrow a non-null one to `String`.
+      ...(deprecation === null
+        ? []
+        : ["// ignore: unnecessary_nullable_for_final_variable_declarations"]),
+      `const String? deprecation = ${deprecation === null ? "null" : dartString(deprecation)};`,
+    ].join("\n"),
+  );
+
+  out.push(
+    [
       "/// The Trust Task type URI this library's [Payload] is carried under.",
       `const String typeUri = ${dartString(uri)};`,
+    ].join("\n"),
+  );
+
+  out.push(
+    [
+      "/// The `MAJOR.MINOR` this version declares it extends (SPEC §5.2, \"Declared",
+      "/// extension\"), or null when it declares none.",
+      "///",
+      "/// Only the direct declaration. A consumer implementing that version SHOULD",
+      "/// accept a document of this one by ignoring the payload members it does not",
+      "/// recognise; [readForVersion] does that, walking the whole chain through",
+      "/// `package:trust_tasks/specs/extends_index.dart`. Named `extendsVersion`",
+      "/// because `extends` is a reserved word.",
+      // `String?` in both forms, so code reading it is written once for every
+      // library. The lint that would narrow a non-null initialiser to `String`
+      // is silenced for exactly that reason.
+      ...(extendsVersion === null
+        ? []
+        : ["// ignore: unnecessary_nullable_for_final_variable_declarations"]),
+      `const String? extendsVersion = ${extendsVersion === null ? "null" : dartString(extendsVersion)};`,
     ].join("\n"),
   );
 
@@ -980,7 +1174,7 @@ function outputFor(schemaPath) {
 }
 
 /** Generate one Dart library from one schema. */
-function generateOne(schemaPath) {
+function generateOne(schemaPath, lifecycle) {
   const raw = JSON.parse(fsSync.readFileSync(schemaPath, "utf8"));
   const baseDir = path.dirname(schemaPath);
   const out = outputFor(schemaPath);
@@ -995,23 +1189,75 @@ function generateOne(schemaPath) {
   // else. Declaring a `Payload` for it would invent a type the spec does not
   // define.
   const rootHint = out.slugInfo ? "Payload" : null;
-  emitDeclarations(em, requestSchema, rootHint);
+  const { rootName, responseName } = emitDeclarations(em, requestSchema, rootHint);
+  const deprecation = out.slugInfo ? lifecycle.note : null;
+  if (deprecation !== null) {
+    markDeprecated(em, [rootName, responseName].filter((n) => n !== null), deprecation);
+  }
 
+  const extendsVersion = out.slugInfo ? readExtends(schemaPath) : null;
   const tail = emitTail(
     out.slugInfo,
     out.slugInfo ? readSpecPolicy(schemaPath) : null,
     { request: out.slugInfo ? requestSchema : null, response: hasResponse ? responseSchema : null },
     hasResponse,
+    deprecation,
+    extendsVersion,
   );
 
   const header = [
     "// Code generated by scripts/build-dart-bindings.mjs. DO NOT EDIT.",
     `// Source: ${em.sourceRel}`,
   ];
+  // A deprecated library names its own `Payload` / `Response` (the [Payload]
+  // link in typeUri's doc comment, the Spec tail). SDKs before 3.4 report that as
+  // deprecated_member_use_from_same_package, which `--fatal-infos` fails on in the
+  // 3.3 floor job; later SDKs do not report same-library use at all.
+  if (deprecation !== null) header.push("// ignore_for_file: deprecated_member_use_from_same_package");
+  header.push(...prebuiltLibraryDeprecation(em.sourceRel));
   if (tail.length > 0) header.push("", `import '${RUNTIME_IMPORT}';`);
 
   const body = [...em.decls, ...tail];
-  return { ...out, source: `${[...header, "", ...body.join("\n\n").split("\n")].join("\n")}\n` };
+  return {
+    ...out,
+    extendsVersion,
+    source: `${[...header, "", ...body.join("\n\n").split("\n")].join("\n")}\n`,
+  };
+}
+
+/** Where the extends index lands. Not a spec path, so it cannot collide with one. */
+const EXTENDS_INDEX_FILE = path.join(OUT_DIR, "extends_index.dart");
+
+/**
+ * The library mapping every bare request Type URI that declares `extends` to the
+ * version it extends.
+ *
+ * The smallest index that serves the runtime: Dart has no per-Type-URI index of
+ * generated modules (a consumer imports the one specification it needs), and
+ * walking a chain must not require importing every version on it. An undeclared
+ * version is simply absent, which the runtime reads as "extends nothing".
+ */
+function emitExtendsIndex(entries) {
+  const sorted = [...entries].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+  const lines = [
+    "// Code generated by scripts/build-dart-bindings.mjs. DO NOT EDIT.",
+    "// Source: the `extends` front matter of every specification under specs/.",
+    "",
+    "/// Every Trust Task version that declares `extends` (SPEC §5.2, \"Declared",
+    "/// extension\"), keyed by its bare request Type URI, mapped to the `MAJOR.MINOR`",
+    "/// it extends. A version that declares none is absent.",
+    "///",
+    "/// One link per entry; a chain is followed by looking the extended version's",
+    "/// own Type URI up again, which `readForVersion` in the runtime does.",
+    "library;",
+    "",
+    "/// See the library documentation.",
+    "const Map<String, String> extendsIndex = <String, String>{",
+    ...sorted.map(([uri, v]) => `  ${dartString(uri)}: ${dartString(v)},`),
+    "};",
+    "",
+  ];
+  return lines.join("\n");
 }
 
 /* ── Driver ──────────────────────────────────────────────────────────────── */
@@ -1056,13 +1302,28 @@ async function main() {
 
   const schemas = (await walk(SPECS_DIR, /\.schema\.json$/)).sort();
   const filtered = schemas.filter((p) => !NOT_PAYLOAD_SCHEMAS.has(path.basename(p)));
+  const lifecycleIndex = buildLifecycleIndex(await walk(SPECS_DIR, /^spec\.md$/));
   console.log(`Generating bindings for ${filtered.length} schemas...`);
 
   let ok = 0;
+  let deprecated = 0;
+  let withdrawn = 0;
   const seen = new Map();
+  const extendsEntries = [];
   for (const schemaPath of filtered) {
     try {
-      const result = generateOne(schemaPath);
+      // A withdrawn version is generated not at all. Shared schemas have no
+      // lifecycle of their own and are always generated.
+      const slugInfo = slugFromSchemaPath(schemaPath);
+      const lifecycle = slugInfo
+        ? lifecycleOf(lifecycleIndex, slugInfo.slug, slugInfo.version)
+        : { withdrawn: false, note: null };
+      if (lifecycle.withdrawn) {
+        withdrawn++;
+        continue;
+      }
+      if (lifecycle.note !== null) deprecated++;
+      const result = generateOne(schemaPath, lifecycle);
       // Snake-casing can in principle collapse two distinct on-disk names onto
       // one Dart file. Nothing in the registry does today, and a silent
       // overwrite would be very hard to spot, so check rather than trust.
@@ -1074,6 +1335,11 @@ async function main() {
         );
       }
       seen.set(result.file, path.relative(REPO_ROOT, schemaPath));
+      // trust-task-error is left out, as trust-tasks-codegen leaves it out (SKIP_SLUGS): it has no registry bundle, so the consumer-side generators cannot index it, and an error document is read by the runtime's own path, never routed by extends.
+      if (result.slugInfo && result.extendsVersion !== null && result.slugInfo.slug !== 'trust-task-error') {
+        const { slug, version } = result.slugInfo;
+        extendsEntries.push([`https://trusttasks.org/spec/${slug}/${version}`, result.extendsVersion]);
+      }
 
       await fs.mkdir(result.dir, { recursive: true });
       await fs.writeFile(result.file, result.source, "utf8");
@@ -1084,6 +1350,11 @@ async function main() {
       process.exitCode = 1;
     }
   }
+
+  if (seen.has(EXTENDS_INDEX_FILE)) {
+    throw new Error(`a schema library already occupies ${path.relative(REPO_ROOT, EXTENDS_INDEX_FILE)}`);
+  }
+  await fs.writeFile(EXTENDS_INDEX_FILE, emitExtendsIndex(extendsEntries), "utf8");
 
   // Format in-process, for the reason build-go-bindings.mjs gives at the same
   // point: a contributor without the Dart SDK would otherwise commit
@@ -1119,7 +1390,8 @@ async function main() {
   }
 
   console.log(
-    `\nGenerated ${ok} formatted Dart libraries into ${path.relative(REPO_ROOT, OUT_DIR)}`,
+    `\nGenerated ${ok} formatted Dart libraries into ${path.relative(REPO_ROOT, OUT_DIR)} ` +
+      `(${deprecated} deprecated, ${withdrawn} withdrawn and skipped)`,
   );
 }
 

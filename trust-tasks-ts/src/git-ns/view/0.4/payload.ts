@@ -3,11 +3,13 @@
  * Source: specs/git-ns/view/0.4/payload.schema.json
  */
 
-import type { Bootstrap, BreakGlass, Did_GitNsV0_3 as Did, DriftItem, Ext, ForgeAccount, ForgeHost, ForgeId, GitNamespace, NamespaceId, RepoResource, RepoSummary_GitNsV0_3 as RepoSummary, RepoVisibility, Resource, Right, RightRecord_GitNsV0_4 as RightRecord, Segment, Sync } from "../../../_shared/components.js";
+import type { Bootstrap, BreakGlass_GitNsV0_4 as BreakGlass, Did_GitNsV0_3 as Did, DriftItem_GitNsV0_1 as DriftItem, Ext, ForgeAccount_GitNsV0_1 as ForgeAccount, ForgeHost_GitNsV0_1 as ForgeHost, ForgeId_GitNsV0_1 as ForgeId, GitNamespace_GitNsV0_1 as GitNamespace, NamespaceId, RepoResource_GitNsV0_1 as RepoResource, RepoSummary_GitNsV0_3 as RepoSummary, RepoVisibility, Resource_GitNsV0_1 as Resource, Right, RightRecord_GitNsV0_4 as RightRecord, Segment_GitNsV0_1 as Segment, Sync_GitNsV0_1 as Sync } from "../../../_shared/components.js";
 
 
 /**
  * A member reads the namespaces, repositories and rights they are entitled to see, optionally narrowed to one resource, together with the forge accounts linked to their own DID.
+ *
+ * @deprecated superseded by git-ns/view/0.6
  */
 export interface GitNamespacesViewPayload {
   /**
@@ -18,6 +20,8 @@ export interface GitNamespacesViewPayload {
 }
 /**
  * What the caller may see, and the caller's own linked forge accounts.
+ *
+ * @deprecated superseded by git-ns/view/0.6
  */
 export interface GitNamespacesViewResponsePayload {
   /**
@@ -58,13 +62,37 @@ export type { Bootstrap, BreakGlass, Did, DriftItem, Ext, ForgeAccount, ForgeHos
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/git-ns/view/0.4" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by git-ns/view/0.6";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by git-ns/view/0.6
+ */
 export type Payload = GitNamespacesViewPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/git-ns/view/0.4#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by git-ns/view/0.6
+ */
 export type Response = GitNamespacesViewResponsePayload;
 
 /**

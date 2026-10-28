@@ -7,7 +7,7 @@ import type { Ext } from "../../../../../_shared/components.js";
 
 
 /**
- * Request payload for vta/services/drain/cancel. Ends a drain early, dropping the mediator now instead of at `drainsUntil`. Messages still in flight through it are lost, which is the whole reason the drain window existed.
+ * Request payload for vta/services/drain/cancel. Ends a drain early, dropping the mediator now instead of at `drainEndsAt` (`drainsUntil` in a record pinned to `vta/_shared/0.1`). Messages still in flight through it are lost, which is the whole reason the drain window existed.
  */
 export interface VTAServicesDrainCancelPayload {
   /**
@@ -33,6 +33,22 @@ export type { Ext };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/services/drain/cancel/1.0" as const;
 
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = null;
+
 /** Stable alias for this specification's request payload shape. */
 export type Payload = VTAServicesDrainCancelPayload;
 
@@ -55,7 +71,7 @@ export const PAYLOAD_SCHEMA = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/services/drain/cancel/1.0",
   "title": "VTA Services Drain — Cancel — payload",
-  "description": "Request payload for vta/services/drain/cancel. Ends a drain early, dropping the mediator now instead of at `drainsUntil`. Messages still in flight through it are lost, which is the whole reason the drain window existed.",
+  "description": "Request payload for vta/services/drain/cancel. Ends a drain early, dropping the mediator now instead of at `drainEndsAt` (`drainsUntil` in a record pinned to `vta/_shared/0.1`). Messages still in flight through it are lost, which is the whole reason the drain window existed.",
   "type": "object",
   "additionalProperties": false,
   "required": [

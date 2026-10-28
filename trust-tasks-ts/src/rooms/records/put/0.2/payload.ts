@@ -8,6 +8,8 @@ import type { AuthorityPresentation, BlobRef, DigestMultibase, Ext, SealedRecord
 
 /**
  * A member writes a record to a data room, authorized by an authority chain the room itself issued. 0.2 adds `blobs`: a record can carry a file, whose ciphertext the host stores outside the record and whose description is sealed inside it.
+ *
+ * @deprecated superseded by rooms/records/put/0.3
  */
 export interface RoomsRecordsPutPayload {
   /**
@@ -56,6 +58,8 @@ export interface RoomsRecordsPutPayload {
 }
 /**
  * Success response to rooms/records/put. Type https://trusttasks.org/spec/rooms/records/put/0.2#response.
+ *
+ * @deprecated superseded by rooms/records/put/0.3
  */
 export interface RoomsRecordsPutResponsePayload {
   /**
@@ -79,13 +83,37 @@ export type { AuthorityPresentation, BlobRef, DigestMultibase, Ext, SealedRecord
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/rooms/records/put/0.2" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by rooms/records/put/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by rooms/records/put/0.3
+ */
 export type Payload = RoomsRecordsPutPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/rooms/records/put/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by rooms/records/put/0.3
+ */
 export type Response = RoomsRecordsPutResponsePayload;
 
 /**

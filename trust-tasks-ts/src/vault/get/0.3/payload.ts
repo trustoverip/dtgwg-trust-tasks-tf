@@ -7,7 +7,7 @@ import type { AndroidApp_VaultV0_2 as AndroidApp, AttachmentRef_VaultV0_3 as Att
 
 
 /**
- * Fetch the metadata view of a single vault entry by id. Returns the same VaultEntry shape vault/list does, but for one specific entry. Secret material is NEVER returned by this task; use vault/release/0.1 to obtain secret bytes.
+ * Fetch the metadata view of a single vault entry by id. Returns the same VaultEntry shape vault/list does, but for one specific entry. Secret material is NEVER returned by this task; use vault/release/0.2 to obtain secret bytes.
  */
 export interface VaultGetPayload {
   /**
@@ -27,6 +27,22 @@ export type { AndroidApp, AttachmentRef, Did, DigestMultibase, Ext, IosApp, Secr
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vault/get/0.3" as const;
+
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = null;
 
 /** Stable alias for this specification's request payload shape. */
 export type Payload = VaultGetPayload;
@@ -50,7 +66,7 @@ export const PAYLOAD_SCHEMA = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vault/get/0.3",
   "title": "Vault Get — payload",
-  "description": "Fetch the metadata view of a single vault entry by id. Returns the same VaultEntry shape vault/list does, but for one specific entry. Secret material is NEVER returned by this task; use vault/release/0.1 to obtain secret bytes.",
+  "description": "Fetch the metadata view of a single vault entry by id. Returns the same VaultEntry shape vault/list does, but for one specific entry. Secret material is NEVER returned by this task; use vault/release/0.2 to obtain secret bytes.",
   "type": "object",
   "additionalProperties": false,
   "required": [

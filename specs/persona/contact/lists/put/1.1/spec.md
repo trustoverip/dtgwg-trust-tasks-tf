@@ -78,7 +78,7 @@ context boundary exists to keep apart.
 
 This task writes the list record — `name`, `colour`, `order`. **Membership is set
 on the contact**, by the `lists` member of
-[`persona/contact/put`](../../../put/1.1/spec.md) 1.1, so it has one writer.
+[`persona/contact/put`](../../../put/1.2/spec.md) 1.1, so it has one writer.
 
 ## Status of this Document
 

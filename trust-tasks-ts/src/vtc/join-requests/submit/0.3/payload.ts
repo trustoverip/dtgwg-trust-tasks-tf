@@ -12,7 +12,7 @@ export interface VTCJoinRequestsSubmitPayload {
    */
   vp: {};
   /**
-   * The `requirementsDigest` of the criterion this submission is made under, as vtc/join-requests/manifest/0.3 published it. Absent: the community decides the submission under the first criterion, in the order it publishes them, that the submission meets.
+   * The `requirementsDigest` of the criterion this submission is made under, as vtc/join-requests/manifest (0.3 or later) published it. Absent: the community decides the submission under the first criterion, in the order it publishes them, that the submission meets.
    */
   criterion?: DigestMultibase;
   /**
@@ -62,6 +62,22 @@ export type { DigestMultibase, Ext, Verdict, VerdictEffect, VerdictWith };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/join-requests/submit/0.3" as const;
 
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = null;
+
 /** Stable alias for this specification's request payload shape. */
 export type Payload = VTCJoinRequestsSubmitPayload;
 
@@ -96,7 +112,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "criterion": {
       "$ref": "#/$defs/DigestMultibase",
-      "description": "The `requirementsDigest` of the criterion this submission is made under, as vtc/join-requests/manifest/0.3 published it. Absent: the community decides the submission under the first criterion, in the order it publishes them, that the submission meets."
+      "description": "The `requirementsDigest` of the criterion this submission is made under, as vtc/join-requests/manifest (0.3 or later) published it. Absent: the community decides the submission under the first criterion, in the order it publishes them, that the submission meets."
     },
     "registryConsent": {
       "type": "boolean",

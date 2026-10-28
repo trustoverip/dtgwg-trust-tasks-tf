@@ -8,6 +8,8 @@ import type { ExpectedVersion_VtaV0_1 as ExpectedVersion, Ext, Key_VtaV0_1 as Ke
 
 /**
  * Write one application-state record at its `(contextId, namespace, key)` address. Exactly one of `value` (whole-record replacement) or `mergePatch` (RFC 7386 partial update) is supplied. `expectedVersion` makes the write conditional: a positive value requires the record to be at exactly that version, and zero requires that no live record exists.
+ *
+ * @deprecated superseded by vta/app-state/put/1.1
  */
 export type VTAApplicationStatePutPayload = {
   /**
@@ -40,6 +42,8 @@ export type VTAApplicationStatePutPayload = {
 
 /**
  * Success response to vta/app-state/put. Type https://trusttasks.org/spec/vta/app-state/put/1.0#response. A failed precondition is not a success: it is a trust-task-error carrying vta/app-state/put:versionConflict, whose details carry the maintainer's current version and value.
+ *
+ * @deprecated superseded by vta/app-state/put/1.1
  */
 export interface VTAApplicationStatePutResponsePayload {
   /**
@@ -76,13 +80,37 @@ export type { ExpectedVersion, Ext, Key, Namespace, Version };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/app-state/put/1.0" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vta/app-state/put/1.1";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vta/app-state/put/1.1
+ */
 export type Payload = VTAApplicationStatePutPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/app-state/put/1.0#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vta/app-state/put/1.1
+ */
 export type Response = VTAApplicationStatePutResponsePayload;
 
 /**

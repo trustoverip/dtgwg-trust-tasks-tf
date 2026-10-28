@@ -32,6 +32,8 @@ import { checkDisclosureFloor } from './lib/disclosure-floor.mjs';
 import { createErrorCodeCasingLint, checkStandardErrorCodeCasing } from './lib/error-code-casing.mjs';
 import { checkMemberCasing } from './lib/member-casing.mjs';
 import { checkWireConventions } from './lib/wire-conventions.mjs';
+import { checkStaleReferences } from './lib/stale-references.mjs';
+import { incompatibilities, frontMatterIncompatibilities } from './lib/schema-compat.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SPECS_DIR = path.join(ROOT, 'specs');
@@ -605,7 +607,7 @@ function checkIssuedAtFloor(meta, rel, hasResponse) {
   const consequential = isConsequential(meta);
   if (!consequential) return { consequential, unmet: false, frozen: false };
 
-  const frozen = meta.status === 'retired';
+  const frozen = meta.status === 'retired' || meta.status === 'withdrawn';
   if (!declared.declared) return { consequential, unmet: !frozen, frozen };
 
   const variants = hasResponse ? ['request', 'response'] : ['request'];
@@ -869,7 +871,7 @@ const FREE_TEXT_MEMBER =
   /^(note|notes|reason|rationale|description|message|comment|comments|summary|justification|text|body|remark|remarks|explanation|purpose|memo|label|caption|title)$/i;
 
 function checkFreeTextBounds(meta, schema, rel) {
-  const frozen = meta.status === 'retired';
+  const frozen = meta.status === 'retired' || meta.status === 'withdrawn';
   const offenders = [];
 
   const visit = (node, seenNodes) => {
@@ -965,7 +967,7 @@ function checkErrorCodeNamespaces(meta, rel) {
       // documents stay verifiable, and `retired` is terminal, so there is no
       // conforming version increment in which to correct one. Counted, never
       // failed, on the same reasoning as the two casing lints.
-      if (meta.status === 'retired') {
+      if (meta.status === 'retired' || meta.status === 'withdrawn') {
         shadowLint.frozen++;
         shadowLint.frozenSpecs.add(rel);
         continue;
@@ -1189,7 +1191,7 @@ function twoPartAfterRule(v) {
   return maj > fMaj || (maj === fMaj && min >= fMin);
 }
 function checkTargetFrameworkForm(v, rel, status) {
-  if (twoPartAfterRule(v) && status !== 'retired') {
+  if (twoPartAfterRule(v) && status !== 'retired' && status !== 'withdrawn') {
     fail(
       rel,
       `targetFrameworkVersion "${v}" is two-part, but framework ${v} postdates the three-part rule of ` +
@@ -1490,6 +1492,10 @@ function buildTask(entry, meta, schema, uses) {
     // dual-accept a predecessor version. Both have to reach the page to work.
     knownImplementations: meta.knownImplementations || [],
     wireCompatibleWith: meta.wireCompatibleWith || null,
+    extends: meta.extends || null,
+    // SPEC §9.4 Carried Protocols, §7.3 item 23: the external protocol and
+    // operation this specification carries, or null.
+    carries: meta.carries || null,
     supersededBy: meta.supersededBy || null,
     jsonLdContext: !!meta.jsonLdContext,
     hasResponse,
@@ -1530,7 +1536,7 @@ window.TT_STATS = (function () {
   for (const t of window.TT_TASKS) {
     const prev = bySlug.get(t.slug);
     if (!prev) { bySlug.set(t.slug, t); continue; }
-    const pr = prev.status === 'retired', tr = t.status === 'retired';
+    const pr = prev.status === 'retired' || prev.status === 'withdrawn', tr = t.status === 'retired' || t.status === 'withdrawn';
     if (pr !== tr) { if (pr) bySlug.set(t.slug, t); continue; }
     if (cmpVer(t.version, prev.version) > 0) bySlug.set(t.slug, t);
   }
@@ -2093,12 +2099,12 @@ function main() {
       continue;
     }
     // Friendlier targeted checks the JSON-Schema if/then/else can't phrase well:
-    if (meta.supersededBy && meta.status !== 'retired') {
-      fail(`${rel}/spec.md`, `supersededBy is only permitted when status is 'retired' (got status: '${meta.status}'). See SPEC §7.3 item 11.`);
+    if (meta.supersededBy && meta.status !== 'retired' && meta.status !== 'withdrawn') {
+      fail(`${rel}/spec.md`, `supersededBy is only permitted when status is 'retired' or 'withdrawn' (got status: '${meta.status}'). See SPEC §7.3 item 11.`);
       continue;
     }
-    if (meta.status === 'retired' && !meta.supersededBy) {
-      warn(`${rel}/spec.md: status is 'retired' but no supersededBy declared — SPEC §7.3 item 11 RECOMMENDS one`);
+    if ((meta.status === 'retired' || meta.status === 'withdrawn') && !meta.supersededBy) {
+      warn(`${rel}/spec.md: status is '${meta.status}' but no supersededBy declared — SPEC §7.3 item 11 RECOMMENDS one`);
     }
     checkTargetFrameworkForm(meta.targetFrameworkVersion, `${rel}/spec.md`, meta.status);
     checkErrorCodeNamespaces(meta, rel);
@@ -2194,6 +2200,13 @@ function main() {
     warn,
     log: console.log,
   });
+  checkStaleReferences({
+    specsDir: SPECS_DIR,
+    allowlistPath: path.join(ROOT, 'scripts', 'lib', 'stale-references-allowlist.json'),
+    fail,
+    warn,
+    log: console.log,
+  });
   console.log(
     `  Error code shadowing: ${shadowLint.conforming}/${shadowLint.declared} extended code(s) ` +
       `avoid the §8.3 standard vocabulary (${standardErrorCodes().codes.size} code(s), derived ` +
@@ -2233,6 +2246,76 @@ function main() {
     } else if (cmpVersion(t.wireCompatibleWith, t.version) >= 0) {
       fail(rel, `wireCompatibleWith must name a strictly earlier version of the same slug (got '${t.wireCompatibleWith}' for version '${t.version}')`);
     }
+  }
+
+  // `extends` (SPEC §5.2 "Declared extension", §7.3 item 22) is a promise the
+  // libraries ROUTE on: a consumer of the named version accepts this version's
+  // documents by ignoring the members it does not know, and the stale-references
+  // check stops asking specs that name the old version to move. So it is checked,
+  // not trusted — with the comparison that guards a released schema in place
+  // (scripts/lib/schema-compat.mjs): the named version's payload schema, Response
+  // included, must survive into this one intact, and only grow.
+  const frontMatterOf = (slug, version) => {
+    const raw = fs.readFileSync(path.join(SPECS_DIR, slug, version, 'spec.md'), 'utf8');
+    const m = raw.match(/^---\n([\s\S]*?)\n---/);
+    return m ? YAML.parse(m[1]) : {};
+  };
+  let extendsChecked = 0;
+  for (const t of tasks) {
+    if (!t.extends) continue;
+    const rel = `${t.slug}/${t.version}`;
+    if (!versionsBySlug.get(t.slug).has(t.extends)) {
+      fail(rel, `extends names version '${t.extends}', which does not exist for slug '${t.slug}'`);
+      continue;
+    }
+    if (cmpVersion(t.extends, t.version) >= 0 || t.extends.split('.')[0] !== t.version.split('.')[0]) {
+      fail(rel, `extends must name a strictly earlier version with the same MAJOR (got '${t.extends}' for version '${t.version}')`);
+      continue;
+    }
+    extendsChecked++;
+    const beforeFile = path.join(SPECS_DIR, t.slug, t.extends, 'payload.schema.json');
+    const afterFile = path.join(SPECS_DIR, t.slug, t.version, 'payload.schema.json');
+    const load = (f) => JSON.parse(fs.readFileSync(f, 'utf8'));
+    const found = [
+      ...incompatibilities(load(beforeFile), load(afterFile), { beforeFile, afterFile, loadBefore: load, loadAfter: load, acrossVersions: true }),
+      ...frontMatterIncompatibilities(frontMatterOf(t.slug, t.extends), frontMatterOf(t.slug, t.version)),
+    ];
+    for (const f of found) {
+      fail(
+        rel,
+        `declares extends: '${t.extends}', but ${f.pointer ? `${f.pointer}: ` : ''}${f.reason}. An extension may only add — ` +
+          `drop the declaration, or make the change additive.`
+      );
+    }
+  }
+  if (extendsChecked) console.log(`  Declared extensions: ${extendsChecked} version(s) checked against the version each extends`);
+
+  // `carries` (SPEC §9.4 Carried Protocols, §7.3 item 23). The meta-schema
+  // checks the shape; the rule that needs the whole tree is "one specification
+  // per operation" (§9.4 rule 1): the versions of one slug carry one operation,
+  // and no two slugs carry the same operation of the same protocol version.
+  // Withdrawn versions are history and are not compared.
+  const carriedBy = new Map();
+  let carriesDeclared = 0;
+  const bySlugOp = new Map();
+  for (const t of tasks) {
+    if (!t.carries || t.status === 'withdrawn') continue;
+    carriesDeclared++;
+    const rel = `${t.slug}/${t.version}`;
+    const op = `${t.carries.protocol}#${t.carries.operation}`;
+    const prev = bySlugOp.get(t.slug);
+    if (prev && prev.op !== op) {
+      fail(rel, `carries ${t.carries.protocol} operation '${t.carries.operation}', but ${prev.rel} carries ${prev.op.replace('#', " operation '")}'. A slug carries one operation in every version (SPEC §9.4 rule 1); a different operation is a different specification`);
+    } else if (!prev) bySlugOp.set(t.slug, { op, rel });
+    const key = `${t.carries.protocol}@${t.carries.version}#${t.carries.operation}`;
+    const other = carriedBy.get(key);
+    if (other && other.slug !== t.slug) {
+      fail(rel, `carries ${t.carries.protocol} ${t.carries.version} operation '${t.carries.operation}', which ${other.slug}/${other.version} already carries. One operation of a protocol version has one specification (SPEC §9.4 rule 1)`);
+    } else if (!other) carriedBy.set(key, t);
+  }
+  if (carriesDeclared) {
+    const protocols = [...new Set(tasks.filter((t) => t.carries && t.status !== 'withdrawn').map((t) => `${t.carries.protocol} ${t.carries.version}`))];
+    console.log(`  Carried protocols: ${carriesDeclared} version(s) carry an operation of ${protocols.join(', ')}`);
   }
 
   // related[] referential integrity

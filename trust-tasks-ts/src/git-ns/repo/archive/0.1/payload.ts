@@ -3,11 +3,13 @@
  * Source: specs/git-ns/repo/archive/0.1/payload.schema.json
  */
 
-import type { Bootstrap, Did_GitNsV0_1 as Did, DriftItem, Ext, ForgeAccount, ForgeHost, ForgeId, RepoResource, RepoSummary_GitNsV0_1 as RepoSummary, RepoVisibility, Sync } from "../../../../_shared/components.js";
+import type { Bootstrap, Did_GitNsV0_1 as Did, DriftItem_GitNsV0_1 as DriftItem, Ext, ForgeAccount_GitNsV0_1 as ForgeAccount, ForgeHost_GitNsV0_1 as ForgeHost, ForgeId_GitNsV0_1 as ForgeId, RepoResource_GitNsV0_1 as RepoResource, RepoSummary_GitNsV0_1 as RepoSummary, RepoVisibility, Sync_GitNsV0_1 as Sync } from "../../../../_shared/components.js";
 
 
 /**
  * An owner archives a repository. The forge makes it read-only, and every `git.commit.sign` right recorded on it is revoked and withdrawn from the Trust Registry.
+ *
+ * @deprecated superseded by git-ns/repo/archive/0.3
  */
 export interface GitNamespacesArchiveRepositoryPayload {
   /**
@@ -18,6 +20,8 @@ export interface GitNamespacesArchiveRepositoryPayload {
 }
 /**
  * The archived repository.
+ *
+ * @deprecated superseded by git-ns/repo/archive/0.3
  */
 export interface GitNamespacesArchiveRepositoryResponsePayload {
   /**
@@ -37,13 +41,37 @@ export type { Bootstrap, Did, DriftItem, Ext, ForgeAccount, ForgeHost, ForgeId, 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/git-ns/repo/archive/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by git-ns/repo/archive/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by git-ns/repo/archive/0.3
+ */
 export type Payload = GitNamespacesArchiveRepositoryPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/git-ns/repo/archive/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by git-ns/repo/archive/0.3
+ */
 export type Response = GitNamespacesArchiveRepositoryResponsePayload;
 
 /**

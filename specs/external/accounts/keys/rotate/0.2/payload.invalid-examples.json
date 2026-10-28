@@ -1,0 +1,127 @@
+[
+  {
+    "note": "A one-step rotation. Pinned models need the provider to trust the successor before the current key retires.",
+    "payload": {
+      "context": "community",
+      "id": "eu-s3-primary",
+      "phase": "replace"
+    }
+  },
+  {
+    "note": "A caller-supplied successor key; the custodian generates every account key.",
+    "payload": {
+      "context": "community",
+      "id": "eu-s3-primary",
+      "phase": "stage",
+      "publicKeyJwk": {
+        "kty": "EC",
+        "crv": "P-256",
+        "x": "AAAA",
+        "y": "AAAA"
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An account whose `lastProbe` carries `0.1`'s `at` instead of `probedAt`; otherwise valid.",
+    "payload": {
+      "account": {
+        "id": "eu-s3-primary",
+        "label": "EU S3 — main account",
+        "context": "community",
+        "settings": {
+          "model": "aws-roles-anywhere",
+          "region": "eu-west-1",
+          "trustAnchorArn": "arn:aws:rolesanywhere:eu-west-1:123456789012:trust-anchor/0b2f7c9e-6a51-4d3e-9b1a-3c5d7e9f1a2b",
+          "profileArn": "arn:aws:rolesanywhere:eu-west-1:123456789012:profile/5e8a1c3d-2b4f-4a6e-8c0d-1f3a5b7c9e2d",
+          "roleArn": "arn:aws:iam::123456789012:role/community-rooms-storage",
+          "bucket": "community-rooms-eu"
+        },
+        "state": "active",
+        "publicMaterial": {
+          "algorithm": "ES256",
+          "keyFingerprint": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+          "certificatePem": "-----BEGIN CERTIFICATE-----\nMIIBszCCAVmgAwIBAgIUQ29tbXVuaXR5IENBIGV4YW1wbGUwCgYIKoZIzj0EAwIw\n-----END CERTIFICATE-----\n",
+          "pendingKeyFingerprint": "zQmRq2ZwqJ3vWJrK1v8R8oPqWXhD4nVb1JmT9pV6uYh3aBc"
+        },
+        "bindings": [
+          {
+            "consumer": "did:example:community",
+            "scopeCeiling": {
+              "prefixes": [
+                "rooms/"
+              ],
+              "actions": [
+                "put",
+                "get",
+                "delete"
+              ]
+            },
+            "maxTtlSeconds": 900,
+            "ratePerMinute": 120,
+            "grantedAt": "2026-10-10T09:00:00Z"
+          }
+        ],
+        "egressHosts": [
+          "rolesanywhere.eu-west-1.amazonaws.com"
+        ],
+        "providerSetupRequired": true,
+        "createdAt": "2026-10-10T08:00:00Z",
+        "updatedAt": "2026-10-10T09:00:00Z",
+        "lastProbe": {
+          "at": "2026-10-10T10:00:03Z",
+          "ok": true,
+          "complete": true,
+          "steps": [
+            {
+              "step": "sign",
+              "ok": true
+            },
+            {
+              "step": "exchange",
+              "ok": true
+            }
+          ]
+        }
+      },
+      "setup": {
+        "model": "aws-roles-anywhere",
+        "artifacts": [
+          {
+            "name": "trust-anchor.pem",
+            "mediaType": "application/x-pem-file",
+            "content": "-----BEGIN CERTIFICATE-----\nMIIBszCCAVmgAwIBAgIUQ29tbXVuaXR5IENBIGV4YW1wbGUwCgYIKoZIzj0EAwIw\n-----END CERTIFICATE-----\n"
+          },
+          {
+            "name": "trust-policy.json",
+            "mediaType": "application/json",
+            "content": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"rolesanywhere.amazonaws.com\"},\"Action\":[\"sts:AssumeRole\",\"sts:TagSession\",\"sts:SetSourceIdentity\"],\"Condition\":{\"StringEquals\":{\"aws:PrincipalTag/x509Subject/CN\":\"eu-s3-primary\"},\"ArnEquals\":{\"aws:SourceArn\":\"arn:aws:rolesanywhere:eu-west-1:123456789012:trust-anchor/0b2f7c9e-6a51-4d3e-9b1a-3c5d7e9f1a2b\"}}}]}"
+          },
+          {
+            "name": "permissions-policy.json",
+            "mediaType": "application/json",
+            "content": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"s3:PutObject\",\"s3:GetObject\",\"s3:DeleteObject\"],\"Resource\":\"arn:aws:s3:::community-rooms-eu/rooms/*\"}]}"
+          }
+        ],
+        "steps": [
+          {
+            "description": "Create the trust anchor from the custodian's CA certificate.",
+            "command": "aws rolesanywhere create-trust-anchor --name community-eu-s3-primary --source sourceType=CERTIFICATE_BUNDLE,sourceData={x509CertificateData=file://trust-anchor.pem} --enabled"
+          },
+          {
+            "description": "Create the role, trusting only certificates for this account under that anchor.",
+            "command": "aws iam create-role --role-name community-rooms-storage --assume-role-policy-document file://trust-policy.json"
+          },
+          {
+            "description": "Allow the role only object reads, writes and deletes under rooms/ in the bucket.",
+            "command": "aws iam put-role-policy --role-name community-rooms-storage --policy-name rooms-objects --policy-document file://permissions-policy.json"
+          },
+          {
+            "description": "Create the profile that maps the anchor to the role.",
+            "command": "aws rolesanywhere create-profile --name community-eu-s3-primary --role-arns arn:aws:iam::123456789012:role/community-rooms-storage --enabled"
+          }
+        ]
+      }
+    }
+  }
+]

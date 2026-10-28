@@ -75,8 +75,9 @@ fn standard_status(code: StandardCode) -> u16 {
         | StandardCode::WrongRecipient
         | StandardCode::IdentityMismatch
         | StandardCode::Cancelled
-        | StandardCode::TaskFailed => 422,
-        StandardCode::Unavailable => 503,
+        | StandardCode::TaskFailed
+        | StandardCode::UnsupportedExtension => 422,
+        StandardCode::Unavailable | StandardCode::Indeterminate => 503,
         StandardCode::InternalError => 500,
         // `StandardCode` is `#[non_exhaustive]` (trust-tasks-rs 0.7.0): a
         // framework revision can add a code without breaking this crate. An
@@ -114,6 +115,11 @@ mod tests {
         assert_eq!(status_for_code(&StandardCode::TaskFailed.into()), 422);
         assert_eq!(status_for_code(&StandardCode::Unavailable.into()), 503);
         assert_eq!(status_for_code(&StandardCode::InternalError.into()), 500);
+        assert_eq!(
+            status_for_code(&StandardCode::UnsupportedExtension.into()),
+            422
+        );
+        assert_eq!(status_for_code(&StandardCode::Indeterminate.into()), 503);
     }
 
     /// REGRESSION: the codes that report on identity or attribution must be

@@ -8,6 +8,8 @@ import type { AppleAppAttest_DeviceV0_1 as AppleAppAttest, Capability_DeviceV0_1
 
 /**
  * List DeviceBindings known to the maintainer, optionally filtered by consumer kind, capability, status, and last-seen time.
+ *
+ * @deprecated superseded by device/list/0.3
  */
 export interface DeviceListPayload {
   consumerKindFilter?: "companion" | "service";
@@ -24,6 +26,7 @@ export interface DeviceListPayload {
   cursor?: string;
   ext?: Ext;
 }
+/** @deprecated superseded by device/list/0.3 */
 export interface DeviceListResponsePayload {
   devices: DeviceBinding[];
   truncated: boolean;
@@ -37,13 +40,37 @@ export type { AppleAppAttest, Capability, Companion, ConsumerKind, DeviceAttesta
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/device/list/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by device/list/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by device/list/0.3
+ */
 export type Payload = DeviceListPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/device/list/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by device/list/0.3
+ */
 export type Response = DeviceListResponsePayload;
 
 /**

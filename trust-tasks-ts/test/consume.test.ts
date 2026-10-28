@@ -484,11 +484,12 @@ describe("§8.2 inResponseTo", () => {
     assert.equal(err.payload.inResponseTo?.id, undefined);
   });
 
-  it("emits trust-task-error/0.5, the version whose schema has the member", () => {
+  it("emits trust-task-error/0.6, the current version, whose schema has the member", () => {
     // 0.2's payload schema is additionalProperties:false, so a document
-    // carrying inResponseTo would not validate as 0.2.
+    // carrying inResponseTo would not validate as 0.2. 0.6 extends 0.5, which
+    // added it, and adds the unsupportedExtension and indeterminate codes.
     const err = refuse(doc({}), "err-1", { code: "taskFailed", message: "failed", retryable: false }, CLOCK);
-    assert.equal(err.type, "https://trusttasks.org/spec/trust-task-error/0.5");
+    assert.equal(err.type, "https://trusttasks.org/spec/trust-task-error/0.6");
   });
 
   it("carries through the full pipeline on a framework rejection", async () => {
@@ -567,7 +568,7 @@ describe("§7.2 item 2 — payload schema validation", () => {
   });
 
   it("generated SPEC objects carry the schema", async () => {
-    const { WitnessSessionSubmit_v0_1: S } = await import("../src/index.js");
+    const { WitnessSessionSubmit_v0_2: S } = await import("../src/index.js");
     assert.ok(S.SPEC.payloadSchema !== undefined, "request SPEC must carry its schema");
     assert.ok(
       S.RESPONSE_SPEC.payloadSchema !== undefined,

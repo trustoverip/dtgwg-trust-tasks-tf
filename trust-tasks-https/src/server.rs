@@ -52,7 +52,7 @@
 
 use std::collections::{BTreeSet, HashMap};
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
+use std::sync::{Arc, OnceLock};
 use std::time::Duration;
 
 use axum::body::Bytes;
@@ -69,15 +69,21 @@ use tower::timeout::TimeoutLayer;
 use tower::ServiceBuilder;
 use trust_tasks_rs::{
     discovery::DiscoveryRegistry, document_digest, erase_verifier,
-    specs::trust_task_discovery::v0_1 as discovery,
-    specs::trust_task_discovery::v0_2 as discovery_v0_2, DocumentDigest, DynProofVerifier,
-    ErrorPayload, ErrorResponse, FreshnessPolicy, InMemoryReplayGuard, Payload, ProofVerifier,
-    RejectReason, ReplayGuard, ReplayVerdict, RequestPayload, ResolvedParties, StaleReason,
-    StandardCode, TransportHandler, TrustTask, PROOF_NOT_ACCEPTED_BY_POLICY,
+    specs::trust_task_discovery::v0_3 as discovery, DocumentDigest, DynProofVerifier, ErrorPayload,
+    ErrorResponse, FreshnessPolicy, InMemoryReplayGuard, Payload, ProofVerifier, RejectReason,
+    ReplayGuard, ReplayVerdict, RequestPayload, ResolvedParties, StaleReason, StandardCode,
+    TransportHandler, TrustTask, PROOF_NOT_ACCEPTED_BY_POLICY,
 };
 use uuid::Uuid;
 
 use crate::auth::{Auth, BearerAuth};
+
+// --- trust-task-discovery 0.1 / 0.2 (superseded) ----------------------------
+// 0.1 and 0.2 are superseded by 0.3 and served until they are withdrawn; the
+// withdrawal batch deletes `server/superseded_discovery.rs` and every block
+// marked like this one.
+mod superseded_discovery;
+// --- end trust-task-discovery 0.1 / 0.2 (superseded) ------------------------
 use crate::handler::HttpsHandler;
 use crate::status::status_for_code;
 
@@ -170,6 +176,11 @@ pub struct HttpsServerBuilder {
     /// Shared with the discovery handler closure so `.public_discovery()`
     /// can be called either side of `.enable_discovery()`.
     public_discovery: Arc<AtomicBool>,
+    /// The freshness policy the built server applies, filled in by
+    /// [`Self::build`] and read by the discovery handler
+    /// [`Self::enable_discovery`] installs, so the acceptance window it
+    /// advertises is the one enforced however the builder calls are ordered.
+    applied_freshness: Arc<OnceLock<FreshnessPolicy>>,
     request_timeout: Option<Duration>,
     max_concurrent_requests: Option<usize>,
 }
@@ -477,11 +488,14 @@ impl HttpsServerBuilder {
         self
     }
 
-    /// Register `trust-task-discovery` handlers, for both 0.1 and 0.2, that
-    /// respond with the contents of `registry` — each version in the version
-    /// it was asked. The two differ only in `frameworkVersion`, which 0.2
-    /// writes three-part (SPEC §5.1.1). Combine with [`Self::on`] in any order;
-    /// the registry is consulted afresh on every inbound query.
+    /// Register `trust-task-discovery` handlers that respond with the contents
+    /// of `registry`, each version in the version it was asked: 0.3, the
+    /// current version, and the superseded 0.2 and 0.1 until they are
+    /// withdrawn. 0.2 and 0.3 write `frameworkVersion` three-part (SPEC
+    /// §5.1.1), 0.1 `MAJOR.MINOR`; only 0.3 can carry the registry's
+    /// acceptance window ([`DiscoveryRegistry::acceptance_window_from`]).
+    /// Combine with [`Self::on`] in any order; the registry is consulted
+    /// afresh on every inbound query.
     ///
     /// Unless [`Self::public_discovery`] is set, the handler answers a
     /// caller with no transport-authenticated sender with `permissionDenied`
@@ -494,23 +508,20 @@ impl HttpsServerBuilder {
     /// For the common "advertise exactly what I handle" case, see
     /// [`Self::enable_discovery`].
     pub fn with_discovery(self, registry: DiscoveryRegistry) -> Self {
-        let public = Arc::clone(&self.public_discovery);
-        let public_v0_2 = Arc::clone(&self.public_discovery);
-        let registry_v0_2 = registry.clone();
-        self.on::<discovery::Payload, _>(move |req, ctx| {
-            refuse_unauthenticated_discovery(&public, ctx.authenticated_sender.is_none())?;
-            Ok(registry.respond_to(&req.payload))
-        })
-        .on::<discovery_v0_2::Payload, _>(move |req, ctx| {
-            refuse_unauthenticated_discovery(&public_v0_2, ctx.authenticated_sender.is_none())?;
-            Ok(registry_v0_2.respond_to_v0_2(&req.payload))
-        })
+        self.install_discovery(registry, false)
     }
 
     /// Snapshot every Type URI currently registered via [`Self::on`] and
-    /// install a `trust-task-discovery/0.1` handler that advertises them.
-    /// Call this **after** every other `.on(...)`; URIs registered
-    /// afterward will not be included.
+    /// install `trust-task-discovery` handlers that advertise them (and
+    /// discovery itself), as [`Self::with_discovery`] does. Call this
+    /// **after** every other `.on(...)`; URIs registered afterward will not
+    /// be included.
+    ///
+    /// A 0.3 response also advertises the acceptance window this server
+    /// enforces — its [`Self::freshness`] policy, whenever that is set — so a
+    /// producer holding a document can tell whether it will still be
+    /// accepted. A policy with no `max_age` has no window to state, and none
+    /// is advertised.
     ///
     /// ```rust,ignore
     /// let server = HttpsServer::builder()
@@ -527,8 +538,32 @@ impl HttpsServerBuilder {
         // somehow guessed they could ask wouldn't see their own protocol
         // listed back.
         registry.register_payload::<discovery::Payload>();
-        registry.register_payload::<discovery_v0_2::Payload>();
-        self.with_discovery(registry)
+        // --- trust-task-discovery 0.1 / 0.2 (superseded) ----------------------------
+        superseded_discovery::register(&mut registry);
+        // --- end trust-task-discovery 0.1 / 0.2 (superseded) ------------------------
+        self.install_discovery(registry, true)
+    }
+
+    /// Install the discovery handlers. With `advertise_freshness`, a 0.3
+    /// response states the window of the freshness policy the built server
+    /// applies.
+    fn install_discovery(self, registry: DiscoveryRegistry, advertise_freshness: bool) -> Self {
+        let public = Arc::clone(&self.public_discovery);
+        let applied_freshness = Arc::clone(&self.applied_freshness);
+        let this = self;
+        // --- trust-task-discovery 0.1 / 0.2 (superseded) ----------------------------
+        let this = this.with_superseded_discovery(registry.clone());
+        // --- end trust-task-discovery 0.1 / 0.2 (superseded) ------------------------
+        this.on::<discovery::Payload, _>(move |req, ctx| {
+            refuse_unauthenticated_discovery(&public, ctx.authenticated_sender.is_none())?;
+            Ok(match applied_freshness.get() {
+                Some(policy) if advertise_freshness => registry
+                    .clone()
+                    .acceptance_window_from(policy)
+                    .respond_to_v0_3(&req.payload),
+                _ => registry.respond_to_v0_3(&req.payload),
+            })
+        })
     }
 
     /// Build the server. Run it with [`HttpsServer::serve`].
@@ -540,6 +575,9 @@ impl HttpsServerBuilder {
     /// documentation before turning it off.
     pub fn build(self) -> HttpsServer {
         let auth = self.auth.unwrap_or_else(|| Box::new(BearerAuth::new()));
+        // A builder is built once, so this is the first and only `set`; the
+        // discovery handler reads the policy the server actually applies.
+        let _ = self.applied_freshness.set(self.freshness);
         HttpsServer {
             state: Arc::new(ServerState {
                 local_vid: self.local_vid,
@@ -590,6 +628,7 @@ impl HttpsServer {
             replay_guard: None,
             freshness: FreshnessPolicy::consequential(),
             public_discovery: Arc::new(AtomicBool::new(false)),
+            applied_freshness: Arc::new(OnceLock::new()),
             request_timeout: None,
             max_concurrent_requests: None,
         }

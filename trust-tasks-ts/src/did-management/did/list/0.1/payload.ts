@@ -6,6 +6,7 @@
 import type { DidRecord, Ext } from "../../../../_shared/components.js";
 
 
+/** @deprecated superseded by did-management/did/list/0.2 */
 export interface DIDManagementListPayload {
   /**
    * Admin-only filter — list slots owned by this VID.
@@ -16,6 +17,7 @@ export interface DIDManagementListPayload {
   offset?: number;
   ext?: Ext;
 }
+/** @deprecated superseded by did-management/did/list/0.2 */
 export interface DIDManagementListResponsePayload {
   records: DidRecord[];
   total: number;
@@ -28,13 +30,37 @@ export type { DidRecord, Ext };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/did-management/did/list/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by did-management/did/list/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by did-management/did/list/0.2
+ */
 export type Payload = DIDManagementListPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/did-management/did/list/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by did-management/did/list/0.2
+ */
 export type Response = DIDManagementListResponsePayload;
 
 /**

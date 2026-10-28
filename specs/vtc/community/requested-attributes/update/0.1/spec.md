@@ -57,7 +57,7 @@ related:
 
 ## Abstract
 
-The **VTC Community — Requested Attributes — Update** Trust Task replaces what the community asks prospective applicants to tell it about themselves — the list [`vtc/join-requests/manifest/0.2`](../../../../join-requests/manifest/0.2/spec.md) publishes as `requestedAttributes`, and that `vtc/join-requests/submit` checks an applicant's `attributes` against.
+The **VTC Community — Requested Attributes — Update** Trust Task replaces what the community asks prospective applicants to tell it about themselves — the list [`vtc/join-requests/manifest/0.4`](../../../../join-requests/manifest/0.4/spec.md) publishes as `requestedAttributes`, and that `vtc/join-requests/submit` checks an applicant's `attributes` against.
 
 The update replaces the whole list. An empty list means the community asks for nothing, and the manifest then publishes no `requestedAttributes`.
 

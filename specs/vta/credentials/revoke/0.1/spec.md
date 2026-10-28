@@ -53,7 +53,7 @@ knownImplementations:
 
 ## Abstract
 
-The **VTA Credentials — Revoke** Trust Task withdraws a credential a VTA previously issued via [`vta/credentials/issue`](../../issue/0.1/spec.md), ending a cross-context share before its `validUntil`. The VTA records the revocation against the credential's id; a verifier that consults the VTA — or that relies on the VTA's short credential lifetimes — will no longer treat the credential as valid.
+The **VTA Credentials — Revoke** Trust Task withdraws a credential a VTA previously issued via [`vta/credentials/issue`](../../issue/0.2/spec.md), ending a cross-context share before its `validUntil`. The VTA records the revocation against the credential's id; a verifier that consults the VTA — or that relies on the VTA's short credential lifetimes — will no longer treat the credential as valid.
 
 Revocation is **idempotent in effect** but **MUST** report `vta/credentials/revoke:alreadyRevoked` when the credential was already revoked, so the caller can distinguish "I revoked it now" from "it was already gone".
 
@@ -61,7 +61,7 @@ This task complements the VTA's authoritative control surface — removing the c
 
 ### Credentials with published status
 
-When the credential being revoked was issued under a claims profile that mandates a `credentialStatus` entry (see *Claims profiles* in [`vta/credentials/issue`](../../issue/0.1/spec.md) — currently `GovernancePolicyCredential`), recording the revocation is not enough: the consumer MUST also flip the credential's published status-list bit, and the `#response` reports the affected slot as `statusListIndex` so the caller can confirm the externally-visible effect. The slot is **never reclaimed** — reusing it would silently un-revoke the credential for any verifier holding a cached list (the same rule [`vtc/endorsements/revoke`](../../../../vtc/endorsements/revoke/0.1/spec.md) states, whose mechanics this adopts).
+When the credential being revoked was issued under a claims profile that mandates a `credentialStatus` entry (see *Claims profiles* in [`vta/credentials/issue`](../../issue/0.2/spec.md) — currently `GovernancePolicyCredential`), recording the revocation is not enough: the consumer MUST also flip the credential's published status-list bit, and the `#response` reports the affected slot as `statusListIndex` so the caller can confirm the externally-visible effect. The slot is **never reclaimed** — reusing it would silently un-revoke the credential for any verifier holding a cached list (the same rule [`vtc/endorsements/revoke`](../../../../vtc/endorsements/revoke/0.1/spec.md) states, whose mechanics this adopts).
 
 Two paths revoke a profile credential, and they differ on purpose. **Supersession** happens inside `vta/credentials/issue` (the single-active rule revokes the predecessor atomically and reports it as `supersedes`); an operator rotating policy never calls this task. **This task** is the emergency withdrawal — the policy is wrong and there is no successor yet. After it, no active policy credential exists for the domain, and a conforming enforcement component fails closed rather than reverting to local configuration.
 

@@ -8,6 +8,8 @@ import type { Ext } from "../../../../_shared/components.js";
 
 /**
  * Supplies the password for an uploaded bundle and asks the recipient to decrypt it and adopt what is inside, or to rehearse that without committing. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by vta/backup/finalize-import/1.1
  */
 export interface VTABackupFinalizeImportPayload {
   /**
@@ -29,6 +31,8 @@ export interface VTABackupFinalizeImportPayload {
 }
 /**
  * Counts and a status, never contents. This document is the operator-held record of a replacement the agent's own trail no longer describes.
+ *
+ * @deprecated superseded by vta/backup/finalize-import/1.1
  */
 export interface VTABackupFinalizeImportResponsePayload {
   /**
@@ -79,13 +83,37 @@ export type { Ext };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/backup/finalize-import/1.0" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vta/backup/finalize-import/1.1";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vta/backup/finalize-import/1.1
+ */
 export type Payload = VTABackupFinalizeImportPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/backup/finalize-import/1.0#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vta/backup/finalize-import/1.1
+ */
 export type Response = VTABackupFinalizeImportResponsePayload;
 
 /**

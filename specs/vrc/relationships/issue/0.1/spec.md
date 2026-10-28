@@ -135,7 +135,7 @@ threat.
 
 Where the parties agreed a witnessed exchange — `witnessed: true` on both the
 proposal and its acceptance — each party's witness session
-([`witness/session`](../../../../witness/session/0.1/spec.md)) completes before
+([`witness/session`](../../../../witness/session/0.2/spec.md)) completes before
 the deliveries: what a witness attests includes that the parties exchanged
 credentials under its observation, and a delivery that precedes the session is
 outside that attestation. Nothing in this document references a session — the
@@ -159,7 +159,7 @@ response because the receipt is consumed by the connected peer under transport
 authentication. A party that needs a retained, third-party-checkable record
 that the exchange completed has one already — the witness session's
 `submit#response`
-([`witness/session/submit`](../../../../witness/session/submit/0.1/spec.md)),
+([`witness/session/submit`](../../../../witness/session/submit/0.2/spec.md)),
 which declares `proof` REQUIRED for exactly that reason. Retaining an unproofed
 receipt and presenting it to a verifier who was not party to the exchange
 proves nothing, and this specification does not support that use.

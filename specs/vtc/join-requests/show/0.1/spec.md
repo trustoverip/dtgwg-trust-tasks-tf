@@ -44,7 +44,7 @@ errorCodes:
 
 ## Abstract
 
-The **VTC Join-Requests — Show** Trust Task returns one join request by `id` — the [`JoinRequest`](../../../_shared/0.1/join-request.schema.json), including the applicant's `vp` and, once decided, the `policyDecision`. The read-one companion to [`vtc/join-requests/list`](../../list/0.1/).
+The **VTC Join-Requests — Show** Trust Task returns one join request by `id` — the [`JoinRequest`](../../../_shared/0.1/join-request.schema.json), including the applicant's `vp` and, once decided, the `policyDecision`. The read-one companion to [`vtc/join-requests/list`](../../list/0.2/).
 
 ## Conformance
 
@@ -62,7 +62,7 @@ response. It returns the whole
 the applicant's submitted `vp`, the `vpClaims` projection extracted from it, the
 recorded `policyDecision`, and the `decision` block with its `code`, `reason`
 and `decidedAt`. That is every claim the applicant disclosed at
-[`submit`](../../submit/0.2/spec.md), rendered twice — once as the presentation
+[`submit`](../../submit/0.3/spec.md), rendered twice — once as the presentation
 and once in the canonical form the policy engine reads.
 
 `exposure.discloses` is declared `metadata` because the record is descriptive
@@ -87,7 +87,7 @@ credential material in `vp`, so a single `show` ties a community identity to
 whatever issuer DIDs, credential identifiers and subject identifiers the
 presentation carries — and those travel with the applicant to every other
 community they apply to. An applicant who used a per-community DID, as
-[`submit`](../../submit/0.2/spec.md) recommends, has protected their *identifier*
+[`submit`](../../submit/0.3/spec.md) recommends, has protected their *identifier*
 and not their *credentials*.
 
 The administrator declares `identifierScope: pairwise`. A community administrator
@@ -105,7 +105,7 @@ the community.
 
 The request itself is transient — the community resolves an `id`, answers, and
 keeps nothing new. The retention that matters was already incurred at
-[`submit`](../../submit/0.2/spec.md), which is `durable`: this task is the
+[`submit`](../../submit/0.3/spec.md), which is `durable`: this task is the
 interface through which that durable record stays readable, including for
 applicants who were refused.
 

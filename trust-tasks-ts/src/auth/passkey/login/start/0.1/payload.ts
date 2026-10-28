@@ -8,6 +8,8 @@ import type { Ext, PublicKeyCredentialDescriptor, PublicKeyCredentialRequestOpti
 
 /**
  * Ask the auth service to begin a WebAuthn authentication ceremony. The response carries PublicKeyCredentialRequestOptions for `navigator.credentials.get`.
+ *
+ * @deprecated superseded by auth/passkey/login/start/0.2
  */
 export interface AuthPasskeyLoginStart {
   /**
@@ -25,6 +27,8 @@ export interface AuthPasskeyLoginStart {
 }
 /**
  * Server-issued WebAuthn request options. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/login/start/0.1#response.
+ *
+ * @deprecated superseded by auth/passkey/login/start/0.2
  */
 export interface AuthPasskeyLoginStartResponsePayload {
   /**
@@ -47,13 +51,37 @@ export type { Ext, PublicKeyCredentialDescriptor, PublicKeyCredentialRequestOpti
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/passkey/login/start/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by auth/passkey/login/start/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by auth/passkey/login/start/0.2
+ */
 export type Payload = AuthPasskeyLoginStart;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/auth/passkey/login/start/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by auth/passkey/login/start/0.2
+ */
 export type Response = AuthPasskeyLoginStartResponsePayload;
 
 /**

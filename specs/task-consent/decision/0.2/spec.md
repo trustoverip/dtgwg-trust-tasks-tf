@@ -107,7 +107,7 @@ related:
 
 The **Task Consent — Decision** Trust Task is a human's answer to a pending privileged task — a
 [`task-consent/request/0.1`](../../request/0.1/spec.md), or an action parked by a Verifiable
-Trust Community and shown through [`vtc/admin/actions/list/0.1`](../../../vtc/admin/actions/list/0.1/spec.md)
+Trust Community and shown through [`vtc/admin/actions/list/0.3`](../../../vtc/admin/actions/list/0.3/spec.md)
 — and the authorization an executor consumes before running it.
 
 The invariant it serves is unchanged from 0.1:
@@ -309,4 +309,4 @@ The exchange state is short: the pending request closes on `deny`, the grant or 
 
 ### Consent/purpose
 
-The data moves so that an executor can establish that a specific, currently-enrolled approver agreed to a specific payload — and, where it asked for one, by a specific factor — and can refuse to act if any part of that fails. The accumulated record is authorization evidence, not performance data: scoring approvers on speed or agreeableness, or routing requests to the approver most likely to agree, are uses no approver assented to, and the second defeats a threshold without any signature failing to verify. Evidence data about an approver's device is for verifying this decision and **MUST NOT** be reused to track the device elsewhere. Per [SPEC.md §7.3](/SPEC.md#73-specification-requirements) item 13, this specification describes what a decision and its evidence *are*, never that either is required; whether a task must be approved, and with what factor, is the executor's policy, expressed through [`policy/evaluate`](../../../policy/evaluate/0.3/spec.md).
+The data moves so that an executor can establish that a specific, currently-enrolled approver agreed to a specific payload — and, where it asked for one, by a specific factor — and can refuse to act if any part of that fails. The accumulated record is authorization evidence, not performance data: scoring approvers on speed or agreeableness, or routing requests to the approver most likely to agree, are uses no approver assented to, and the second defeats a threshold without any signature failing to verify. Evidence data about an approver's device is for verifying this decision and **MUST NOT** be reused to track the device elsewhere. Per [SPEC.md §7.3](/SPEC.md#73-specification-requirements) item 13, this specification describes what a decision and its evidence *are*, never that either is required; whether a task must be approved, and with what factor, is the executor's policy, expressed through [`policy/evaluate`](../../../policy/evaluate/0.4/spec.md).

@@ -102,7 +102,7 @@ Per [SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements), verifying the `issu
 
 **`changed` (response)** — whether this document changed it.
 
-**`registrySync` (response)** — what the community did about its registry: `queued`, `notConfigured` or `unchanged`. `queued` means a sync job is queued, not that the registry holds the change; a member or operator who wants to know that reads [`vtc/registry/records/list`](../../../registry/records/list/0.1/spec.md) or the sync queue.
+**`registrySync` (response)** — what the community did about its registry: `queued`, `notConfigured` or `unchanged`. `queued` means a sync job is queued, not that the registry holds the change; a member or operator who wants to know that reads [`vtc/registry/records/list`](../../../registry/records/list/0.2/spec.md) or the sync queue.
 
 **`effectiveAt` (response)** — when the consent now in force was recorded.
 

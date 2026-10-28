@@ -8,6 +8,8 @@ import type { Ext } from "../../../../_shared/components.js";
 
 /**
  * Remove a global DID template from a VTA by name. Super-admin gated. The success response echoes the deleted name for audit pipelines.
+ *
+ * @deprecated retired; use vta/did-templates/delete/2.0
  */
 export interface VTADIDTemplateDeletePayload {
   /**
@@ -21,6 +23,8 @@ export interface VTADIDTemplateDeletePayload {
 }
 /**
  * Confirmation that the named global template was removed.
+ *
+ * @deprecated retired; use vta/did-templates/delete/2.0
  */
 export interface VTADIDTemplateDeleteResponsePayload {
   /**
@@ -43,13 +47,37 @@ export type { Ext };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/did-templates/delete/1.0" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "retired; use vta/did-templates/delete/2.0";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated retired; use vta/did-templates/delete/2.0
+ */
 export type Payload = VTADIDTemplateDeletePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/did-templates/delete/1.0#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated retired; use vta/did-templates/delete/2.0
+ */
 export type Response = VTADIDTemplateDeleteResponsePayload;
 
 /**

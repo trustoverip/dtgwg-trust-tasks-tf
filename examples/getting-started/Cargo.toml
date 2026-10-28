@@ -1,0 +1,22 @@
+[package]
+name = "trust-tasks-example-getting-started"
+version = "0.0.0"
+edition.workspace = true
+rust-version = "1.95"
+license.workspace = true
+repository.workspace = true
+description = "The worked example behind GETTING-STARTED.md: a signed acl/grant/0.2 round trip over HTTPS through the trust-tasks facade, with the task generated at build time from trust-tasks.lock."
+publish = false
+
+[dependencies]
+# The facade without its default `all-specs`: the runtime and the two crates
+# this example uses, and no prebuilt specification module. build.rs generates
+# the one task it speaks.
+trust-tasks = { path = "../../trust-tasks", default-features = false, features = ["https", "proof-affinidi"] }
+tokio = { version = "1", features = ["full"] }
+uuid = { version = "1", features = ["v4"] }
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
+affinidi-secrets-resolver = "0.5"
+
+[build-dependencies]
+trust-tasks-build = { path = "../../trust-tasks-build" }

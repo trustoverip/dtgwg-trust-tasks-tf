@@ -74,8 +74,13 @@ int statusForCode(String code) {
   if (normalized == StandardCode.permissionDenied.value) return 403;
   if (normalized == StandardCode.idConflict.value) return 409;
   if (normalized == StandardCode.unavailable.value) return 503;
+  // `indeterminate` (trust-task-error/0.6) is spelled out rather than read
+  // from StandardCode, so this package still builds against a core that
+  // predates it.
+  if (normalized == 'indeterminate') return 503;
   if (normalized == StandardCode.internalError.value) return 500;
   const unprocessable = {
+    'unsupportedExtension',
     'unsupportedType',
     'unsupportedVersion',
     'expired',

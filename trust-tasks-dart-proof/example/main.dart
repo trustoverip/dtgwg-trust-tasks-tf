@@ -7,14 +7,30 @@
 // eddsa-jcs-2022 under a did:key. Verifying it here needs no network: a did:key
 // carries its own public key.
 
+// The document is the cross-library eddsa-jcs-2022 fixture, which four
+// libraries reproduce byte for byte, so it is never re-signed. It is an
+// acl/grant 0.1 document, a version past its generated library's lifetime, so
+// the example consumes it in the generic form — a JSON payload and the
+// specification's policy stated directly — rather than through generated types.
+// A proof verifies over JSON, so nothing about the verification changes.
+
 import 'dart:convert';
 
-import 'package:trust_tasks/specs/acl/grant/v0_1/payload.dart' as acl_grant;
 import 'package:trust_tasks/trust_tasks.dart';
 import 'package:trust_tasks_proof/trust_tasks_proof.dart';
 
 const me = 'did:web:maintainer.example';
 const peer = 'did:key:z6MkvDqGT54cXesYGvABpF1UapVNwjCqRcafi4Px6Thv5T3Z';
+
+/// acl/grant 0.1's policy: proof, recipient and issuedAt are all REQUIRED.
+const aclGrant01 = SpecPolicy(
+  typeUri: 'https://trusttasks.org/spec/acl/grant/0.1',
+  isProofRequired: true,
+  isRecipientRequired: true,
+  isIssuedAtRequired: true,
+);
+
+typedef Json = Map<String, dynamic>;
 
 const signedJson = '''
 {
@@ -45,28 +61,26 @@ Future<void> main() async {
     // pipeline answers the peer with a bare proofInvalid (SPEC §12.4).
     print('$label: ${await verifier.verifyDetailed(json)}');
 
-    final outcome = await consumeInbound<acl_grant.Payload, acl_grant.Response>(
+    final outcome = await consumeInbound<Json, Json>(
       transport: const StaticTransport(TransportContext(issuer: peer)),
-      spec: acl_grant.spec,
+      spec: aclGrant01,
       proofPolicy: ProofPolicy.verify(verifier),
       payloadPolicy: const PayloadPolicy.acceptUnvalidated(),
       checks: notConsequentialChecks(),
-      doc: TrustTaskDocument<acl_grant.Payload>.fromJson(
-        json,
-        (p) => acl_grant.Payload.fromJson(p! as Map<String, dynamic>),
-      ),
+      doc: TrustTaskDocument<Json>.fromJson(json, (p) => p! as Json),
+      // Verify the proof over the document exactly as it arrived.
+      received: json,
       myVid: me,
       // Fixed so the example's issuedAt stays inside the freshness window. The
       // verifier keeps its own clock for the proof's `created`; pass `clock:`
       // to forDidKey to pin that too.
       now: DateTime.parse('2026-01-01T00:00:30Z'),
       newErrorId: () => 'urn:uuid:9b2c1e34-0000-4000-8000-0000000000ff',
-      payloadToJson: (p) => p.toJson(),
-      handler: (accepted, parties) async =>
-          respondWith<acl_grant.Payload, acl_grant.Response>(
+      payloadToJson: (p) => p,
+      handler: (accepted, parties) async => respondWith<Json, Json>(
         accepted,
         'urn:uuid:9b2c1e34-0000-4000-8000-000000000002',
-        acl_grant.Response(entry: accepted.payload.entry),
+        {'entry': accepted.payload['entry']},
       ),
     );
     print('  -> ${switch (outcome) {

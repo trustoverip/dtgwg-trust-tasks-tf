@@ -4,6 +4,7 @@ members = [
     "trust-tasks",
     "trust-tasks-rs",
     "trust-tasks-codegen",
+    "trust-tasks-build",
     "trust-tasks-https",
     "trust-tasks-proof",
     "trust-tasks-ceremony",
@@ -11,6 +12,9 @@ members = [
     "trust-tasks-didcomm-v1",
     "trust-tasks-tsp",
     "trust-tasks-capability-client",
+    "examples/consumer-app",
+    "examples/getting-started",
+    "trust-tasks-cli",
 ]
 
 [workspace.package]

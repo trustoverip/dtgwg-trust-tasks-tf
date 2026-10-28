@@ -1,0 +1,38 @@
+[
+  { "note": "Missing instanceId.", "payload": {} },
+  { "note": "Empty instanceId.", "payload": { "instanceId": "" } },
+  { "note": "Unknown member — the read takes no filter.", "payload": { "instanceId": "did_web_node1_example_com", "refresh": true } },
+  {
+    "note": "0.1's `lastHealthCheck` does not exist in 0.2; it is `lastHealthCheckAt` (did-management/_shared/0.3).",
+    "variant": "response",
+    "payload": {
+      "instance": {
+        "instanceId": "did_webvh_node1_example_com",
+        "did": "did:webvh:QmNodeScid3:node1.example.com",
+        "serviceType": "server",
+        "status": "active",
+        "servedDomains": [],
+        "registeredAt": "2026-09-01T10:00:00Z",
+        "lastHealthCheck": "2026-09-27T08:54:10Z"
+      }
+    }
+  },
+  {
+    "note": "0.1's `TransportObservation.at` does not exist in 0.2; it is `observedAt` (did-management/_shared/0.3).",
+    "variant": "response",
+    "payload": {
+      "instance": {
+        "instanceId": "did_webvh_node1_example_com",
+        "did": "did:webvh:QmNodeScid3:node1.example.com",
+        "serviceType": "server",
+        "status": "active",
+        "servedDomains": [],
+        "registeredAt": "2026-09-01T10:00:00Z",
+        "lastOutbound": {
+          "transport": "tsp",
+          "at": "2026-09-27T08:59:29Z"
+        }
+      }
+    }
+  }
+]

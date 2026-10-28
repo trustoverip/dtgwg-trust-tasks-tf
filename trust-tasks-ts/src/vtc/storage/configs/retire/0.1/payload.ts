@@ -8,6 +8,8 @@ import type { Ext, StorageConfigId } from "../../../../../_shared/components.js"
 
 /**
  * Take a storage config with no rooms assigned out of service. The outer document members are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by vtc/storage/configs/retire/0.3
  */
 export interface VTCStorageConfigsRetirePayload {
   configId: StorageConfigId;
@@ -17,6 +19,7 @@ export interface VTCStorageConfigsRetirePayload {
   reason: string;
   ext?: Ext;
 }
+/** @deprecated superseded by vtc/storage/configs/retire/0.3 */
 export interface VTCStorageConfigsRetireResponsePayload {
   configId: StorageConfigId;
   state: "draining" | "retired";
@@ -30,13 +33,37 @@ export type { Ext, StorageConfigId };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/storage/configs/retire/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vtc/storage/configs/retire/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vtc/storage/configs/retire/0.3
+ */
 export type Payload = VTCStorageConfigsRetirePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/storage/configs/retire/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vtc/storage/configs/retire/0.3
+ */
 export type Response = VTCStorageConfigsRetireResponsePayload;
 
 /**

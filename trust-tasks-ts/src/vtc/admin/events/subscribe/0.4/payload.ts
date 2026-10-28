@@ -8,6 +8,8 @@ import type { Ext, ResumeToken, Topic_VtcAdminEventsV0_4 as Topic } from "../../
 
 /**
  * Open an administrator console's live channel of hint-only events. The success response is the first document on a stream that then carries vtc/admin/events/event/0.4 documents; over HTTPS that stream is the streamed response of bindings/https/0.3 §2.1. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by vtc/admin/events/subscribe/0.6
  */
 export interface VTCAdminEventsSubscribePayload {
   /**
@@ -35,6 +37,8 @@ export interface VTCAdminEventsSubscribePayload {
 }
 /**
  * The subscription as granted, sent as the first document on the stream. Failures use trust-task-error and open no stream.
+ *
+ * @deprecated superseded by vtc/admin/events/subscribe/0.6
  */
 export interface VTCAdminEventsSubscribeResponsePayload {
   /**
@@ -75,13 +79,37 @@ export type { Ext, ResumeToken, Topic };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/admin/events/subscribe/0.4" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vtc/admin/events/subscribe/0.6";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vtc/admin/events/subscribe/0.6
+ */
 export type Payload = VTCAdminEventsSubscribePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/admin/events/subscribe/0.4#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vtc/admin/events/subscribe/0.6
+ */
 export type Response = VTCAdminEventsSubscribeResponsePayload;
 
 /**

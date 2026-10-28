@@ -41,21 +41,33 @@ case "$PKG" in
     # specs/** and the generator because the bindings under trust-tasks-ts/src
     # are generated from them.
     WATCH=("specs" "$PKG_DIR" "scripts/build-ts-bindings.mjs")
+    SCOPES="ts ts-bindings"
     ;;
   @openvtc/trust-tasks-proof)
     PKG_DIR="trust-tasks-ts-proof"
     TAG_PREFIX="trust-tasks-ts-proof-v"
     WATCH=("$PKG_DIR")
+    SCOPES="ts-proof"
     ;;
   @openvtc/trust-tasks-tsp)
     PKG_DIR="trust-tasks-ts-tsp"
     TAG_PREFIX="trust-tasks-ts-tsp-v"
     WATCH=("$PKG_DIR")
+    SCOPES="ts-tsp"
     ;;
   @openvtc/trust-tasks-capability-client)
     PKG_DIR="trust-tasks-ts-capability-client"
     TAG_PREFIX="trust-tasks-ts-capability-client-v"
     WATCH=("$PKG_DIR")
+    SCOPES="ts-capability-client"
+    ;;
+  @openvtc/trust-tasks-gen)
+    # Not in release-pr.sh's TS_PACKAGES (nor publish.yml's publish-npm
+    # matrix) until its manual first publish and tag seed — RELEASING.md.
+    PKG_DIR="trust-tasks-ts-gen"
+    TAG_PREFIX="trust-tasks-ts-gen-v"
+    WATCH=("$PKG_DIR")
+    SCOPES="ts-gen"
     ;;
   *)
     echo "::error::unknown TS package '$PKG'"
@@ -93,16 +105,37 @@ fi
 # ── What size of bump? ───────────────────────────────────────────────────────
 # Conventional commits, same signal release-plz reads for the crates: a `!`
 # after the type/scope or a `BREAKING CHANGE:` trailer means the compatibility
-# field moves; anything else is a patch. Note that unlike the crate side there
-# is no cargo-semver-checks equivalent here to catch an unannounced break, so
-# this is only as accurate as the commit subjects. See RELEASING.md.
+# field moves; anything else is a patch. Nothing checks the API at release
+# time, for the crates either; the per-PR `ts API compatibility` job
+# (trust-tasks-ts/scripts/api-compat.mjs) is what keeps the subjects honest,
+# by failing an undeclared break before it merges. See RELEASING.md.
 range="$tag..HEAD"
 # The log is captured first, NOT piped into `grep -q`: grep exits on its first
 # match, git log then dies of SIGPIPE, and under `pipefail` the pipeline reports
 # failure — so a breaking change was silently scored as a patch whenever the log
 # was long enough to still be writing. It happened to #610 (`feat(persona)!`).
 log=$(git log --format='%s%n%b' "$range" -- "${WATCH[@]}")
-if grep -qE '^[a-z]+(\([^)]*\))?!:|^BREAKING[ -]CHANGE' <<<"$log"; then
+# A `!` counts only when it is scoped to THIS package (SCOPES, above) or carries
+# no scope at all, or the body has a `BREAKING CHANGE:` trailer. commit-lint
+# refuses a `!` scoped to anything but a package, but history predates that:
+# `feat(vault)!:` (#919) and `fix(codegen)!:` (#917, the Rust generator) would
+# otherwise make this package a breaking release with no API change in it.
+breaking_here() {
+  local line scopes s
+  grep -qE '^BREAKING[ -]CHANGE' <<<"$log" && return 0
+  while IFS= read -r line; do
+    [[ $line =~ ^[a-z]+(\(([^\)]*)\))?!: ]] || continue
+    scopes=${BASH_REMATCH[2]}
+    [ -z "$scopes" ] && return 0
+    IFS=',' read -ra parts <<<"$scopes"
+    for s in "${parts[@]}"; do
+      s=${s// /}
+      [[ " $SCOPES " == *" $s "* ]] && return 0
+    done
+  done <<<"$log"
+  return 1
+}
+if breaking_here; then
   level=breaking
 else
   level=patch
@@ -155,6 +188,13 @@ cliff_paths=()
 for w in "${WATCH[@]}"; do
   if [ -d "$w" ]; then cliff_paths+=(--include-path "$w/**"); else cliff_paths+=(--include-path "$w"); fi
 done
+# A package first published by hand can have no changelog yet. trust-tasks-ts-gen
+# had none, and its first automated bump failed the whole Release PR job, which
+# stopped every package's release. Start one rather than fail.
+if [ ! -f "$CHANGELOG" ]; then
+  printf '# Changelog — `%s`\n' "$name" >"$CHANGELOG"
+  echo "::warning::$CHANGELOG did not exist, so it was started; give it the package's versioning preamble in the Release PR."
+fi
 if section=$(git-cliff --config cliff.toml \
   --strip header \
   --tag "v$next" \

@@ -8,6 +8,8 @@ import type { AndroidApp_VaultV0_1 as AndroidApp, ConsumerContext, Did_VaultV0_1
 
 /**
  * Consumer requests that the vault maintainer perform a login at the bound third-party site on the consumer's behalf, using the entry's secret material WITHOUT releasing it to the consumer. The maintainer returns a SessionBlob in a pluggable cipher envelope (see vault/_shared/0.1/sealed-envelope) containing the resulting cookies/headers the consumer can use to operate the session — but never the long-term credential.
+ *
+ * @deprecated superseded by vault/proxy-login/0.2
  */
 export interface VaultProxyLoginPayload {
   /**
@@ -36,6 +38,7 @@ export interface VaultProxyLoginPayload {
   ttlSecondsHint?: number;
   ext?: Ext;
 }
+/** @deprecated superseded by vault/proxy-login/0.2 */
 export interface VaultProxyLoginResponsePayload {
   /**
    * Pluggable cipher envelope containing the SessionBlob cleartext (see `vault/_shared/0.1/session-blob`). The consumer unseals to recover cookies/headers, then injects into its browser session for the bound origin. Consumers reject envelope kinds they don't implement with `vault/proxy-login:envelopeUnsupported`.
@@ -50,13 +53,37 @@ export type { AndroidApp, ConsumerContext, Did, DidcommAuthcryptEnvelope, Ext, H
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vault/proxy-login/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vault/proxy-login/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vault/proxy-login/0.2
+ */
 export type Payload = VaultProxyLoginPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vault/proxy-login/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vault/proxy-login/0.2
+ */
 export type Response = VaultProxyLoginResponsePayload;
 
 /**

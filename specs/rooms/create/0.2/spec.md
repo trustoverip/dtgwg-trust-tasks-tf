@@ -95,7 +95,7 @@ read still has someone responsible for it existing.
 `recordRetention` (new in 0.2) answers a third question, and it is the one that is **not**
 fixed. Not what the host can see, not whether the key chain reaches back, but how long the
 room keeps its records while it is live: records older than it states become eligible for
-[`rooms/records/prune`](../../records/prune/0.1/spec.md). A room states it at creation so
+[`rooms/records/prune`](../../records/prune/0.2/spec.md). A room states it at creation so
 that every member can read the rule before any record is removed under it, and a holder of
 `admin` changes it later with [`rooms/records/retention/set`](../../records/retention/set/0.1/spec.md),
 because how long a room keeps meeting notes is a decision it is entitled to revisit. Absent,

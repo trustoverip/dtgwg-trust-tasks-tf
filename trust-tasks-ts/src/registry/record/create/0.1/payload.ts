@@ -8,11 +8,14 @@ import type { Ext, RecordType, TrustRecord } from "../../../../_shared/component
 
 /**
  * An administrator asks a trust registry to create a new trust record (a recognition or authorization assertion). Idempotent per record key (entity+authority+action+resource); creating an existing key is an error.
+ *
+ * @deprecated retired; use registry/record/put/0.3
  */
 export interface RegistryRecordCreatePayload {
   record: TrustRecord;
   ext?: Ext;
 }
+/** @deprecated retired; use registry/record/put/0.3 */
 export interface RegistryRecordCreateResponsePayload {
   /**
    * Whether the record was created.
@@ -31,13 +34,37 @@ export type { Ext, RecordType, TrustRecord };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/registry/record/create/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "retired; use registry/record/put/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated retired; use registry/record/put/0.3
+ */
 export type Payload = RegistryRecordCreatePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/registry/record/create/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated retired; use registry/record/put/0.3
+ */
 export type Response = RegistryRecordCreateResponsePayload;
 
 /**

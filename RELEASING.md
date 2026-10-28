@@ -35,18 +35,46 @@ Types: `feat` `fix` `docs` `test` `ci` `build` `perf` `refactor` `chore`
 `security` `spec` `site` `revert`. (`site` is a change to the registry website
 under `website/`; it reaches no published package.)
 
-**`!` is for a package's API, not for wire behaviour.** All eight core crates
-release as one group, so one `!` makes every one of them a breaking release.
+**`!` is for a package's API, not for wire behaviour — and CI enforces it.**
+All eight core crates release as one group, and the npm, Go and Dart bump
+scripts read the same `!`, so one `!` makes every package a breaking release.
 Write it only when a library's public API breaks — a removed or renamed type,
-member or function, a changed signature. A change to what a task means on the
-wire (a new refusal, a tightened rule) that leaves the generated types as they
-were is versioned by the specification — a new task version where consumers
-must tell the two apart — and its title carries no `!`.
+member or function, a changed signature — and scope it to the package
+(`feat(rs)!:`, `fix(codegen)!:`, `feat(go-didcomm)!:`). The commit-lint job
+refuses a `!` whose scope is not a package. A specification change never needs
+one: before this was enforced, 22 titles carried a `!` for a spec change, and
+#858's cost every package a MINOR although no library API changed at all.
 
-**Enum values are append-only.** A generated Rust enum has implicit
-discriminants, so a value inserted mid-list renumbers every value after it — a
-breaking change to the crates even though the wire only grew. Add a value at
-the end. CI checks this (`npm run check-enum-append-only`).
+**A released specification changes only additively.** A released version is
+compiled into every library, so an in-place edit that changes its generated
+types breaks all of them. In place it may only gain an optional member, an
+appended enum value (never one inserted mid-list — that renumbers every
+generated Rust variant after it), an appended `oneOf`/`anyOf` branch, a loosened
+bound, a new `$defs` entry, or a description; `proofRequirement` may not change
+and declared `errorCodes` may only grow. Anything else goes in a new version
+folder, which is a new module — an additive patch for every library. CI compares
+each changed spec against the last release (`npm run check-published-schemas`);
+a version merged since the last release can still be fixed in place.
+
+**Withdrawals are the one scheduled breaking release.** A spec version
+superseded or retired for 90 days is withdrawn — dropped from all four libraries
+— in a quarterly batch: `.github/workflows/withdraw.yml` opens a pull request on
+the first day of each quarter titled `feat(rs, ts, go, dart)!: withdraw N
+specification versions …`. Merging it, then the Release PR, ships the quarter's
+removals as one MINOR of every library, announced by the deprecation notes the
+libraries have carried since each version was superseded. The batch's CI runs
+every test, so a hand-written use of a withdrawn version (a smoke test, an
+example) fails there and is moved to the successor in the same PR. The workflow
+needs `RELEASE_PLZ_TOKEN`, as the Release PR does, for its PR to trigger CI.
+Hand-written support kept on purpose for a version until its batch — the HTTPS
+servers answering `trust-task-discovery` 0.1/0.2 for older peers — sits in blocks
+opened by a `… (superseded)` comment and closed by `--- end`; the batch PR's body
+lists the files, and they are deleted in that PR. A family whose every version is
+withdrawn also loses its `trust-tasks-rs` Cargo feature (in the 2027-01-01 batch,
+`confirm`), which is a break for any consumer that enabled it — say so in the
+batch PR. `Withdrawal readiness` (`scripts/check-withdrawal-readiness.mjs`) warns
+about any other hand-written import of a due version from the moment it is due,
+and fails CI from 30 days before the batch.
 
 **`spec` is ours, not the standard's**, and release-plz does not know it — an
 unrecognised type is scored as a **patch**. That is right for an in-place schema
@@ -71,7 +99,7 @@ no hand-written entries.
 
 ## What gets published
 
-**Nine crates, one npm package, one Go module and four Dart packages.**
+**Ten crates, one npm package, one Go module and four Dart packages.**
 `trust-tasks-codegen` sets
 `publish = false` in its own `Cargo.toml` — it is the internal generator.
 
@@ -83,19 +111,25 @@ no hand-written entries.
 | `trust-tasks-proof` | crates.io — proof verification backend |
 | `trust-tasks-ceremony` | crates.io — Trust Ceremony helpers |
 | `trust-tasks-capability-client` | crates.io |
+| `trust-tasks-build` | crates.io — build-time generator: an application's `build.rs` turns the versions pinned in `trust-tasks.lock` into Rust types; its `publish` feature builds registry bundles. Not in the `core` version group (it does not depend on `trust-tasks-rs`), so it versions on its own. |
+| `trust-tasks-cli` | crates.io — the `trust-tasks` command (pins tasks, vendors bundles by digest). A binary with no library API, so `rs API compatibility` does not check it. Versions on its own. |
 | `@openvtc/trust-tasks` | npm — the TypeScript bindings |
 | `@openvtc/trust-tasks-proof` | npm — Data Integrity proof verification/signing for `@openvtc/trust-tasks`, on @noble |
 | `@openvtc/trust-tasks-tsp` | npm — the TSP transport binding, on `@openvtc/vti-tsp-js` |
 | `@openvtc/trust-tasks-capability-client` | npm — capability/`git-trust` document builders + reply parsing, no crypto |
+| `@openvtc/trust-tasks-gen` | npm — `trust-tasks-gen-ts`: generates TypeScript modules for the versions pinned in `trust-tasks.lock`, importing the runtime from `@openvtc/trust-tasks/runtime` (0.27.8 or later). First published by hand at 0.1.0 (anchor tag `trust-tasks-ts-gen-v0.1.0`); released like the other npm packages since |
 
 > ⚠️ **First publish of each new npm package is manual**, the same chicken-and-egg
 > as pub.dev: npm trusted publishing cannot create a package that does not exist.
 > Once per new package (`@openvtc/trust-tasks-proof`, `@openvtc/trust-tasks-tsp`,
-> `@openvtc/trust-tasks-capability-client`):
+> `@openvtc/trust-tasks-capability-client`, `@openvtc/trust-tasks-gen`):
 > 1. `cd <dir> && npm ci && npm run build && npm publish --access public` (scoped
 >    packages default to private; `--access public` is required).
 > 2. On npmjs.com, the package → **Settings → Trusted Publisher → GitHub Actions**,
->    repo `trustoverip/dtgwg-trust-tasks-tf`, workflow filename `publish.yml`.
+>    repo `trustoverip/dtgwg-trust-tasks-tf`, workflow filename `publish.yml`,
+>    and tick **Allow `npm publish`** under *Allowed actions*. npm leaves it
+>    unticked by default, and a trusted publisher without it *stages* every CI
+>    upload instead of publishing it — see the staged-publishing note below.
 > 3. Seed the release anchor tag once, at the published version:
 >    `git tag -a <prefix>-v<version> -m "<name> <version>" && git push origin <prefix>-v<version>`
 >    (e.g. `trust-tasks-ts-proof-v0.1.0`). `release-bump-ts.sh` measures the next
@@ -116,9 +150,38 @@ no hand-written entries.
 | `trust_tasks_https` | pub.dev — the HTTPS transport binding, from a `trust-tasks-dart-https-vX.Y.Z` tag |
 | `trust_tasks_didcomm` | pub.dev — the DIDComm v2.1 transport binding, from a `trust-tasks-dart-didcomm-vX.Y.Z` tag |
 
+> ⚠️ **A green `npm publish` can still leave the version unpublished.** npm
+> *stages* a CI upload, holding it out of public view until a maintainer
+> approves it with 2FA, when the trusted publisher lacks **Allow `npm publish`**.
+> `@openvtc/trust-tasks@0.27.4` sat staged for 85 minutes that way while every
+> job reported success. `publish-npm` therefore ends with **Confirm the version
+> is public on npm**, which waits up to 8 minutes and then fails the job. When it
+> does: `npm login` (a 2FA session — a bypass-2FA token cannot run `npm stage`),
+> then `npm stage list <package>` and `npm stage approve <stage-id>` (or
+> `npm stage reject <stage-id>`), tick **Allow `npm publish`** so it does not
+> recur, and re-run the failed job. The re-run finds the version on npm and
+> skips every step; the release tag was already pushed before the check.
+
 Adding a crate to the published set means setting `publish` back to the default
 *and* checking everything it depends on is published; crates.io requires a
 published crate's whole dependency closure to be published too.
+
+> ⚠️ **A new crate's first crates.io publish is manual**, for the same reason as
+> npm's: trusted publishing cannot create a crate that does not exist. Left to
+> release-plz, the new crate would fail mid-release with the crates before it
+> already uploaded. So a new crate lands with `release = false` in its
+> `release-plz.toml` `[[package]]` entry (as `trust-tasks-cli` and
+> `trust-tasks-build` did), and then:
+> 1. `cargo publish -p <crate>` from `main`, with a crates.io token of your own.
+> 2. On crates.io, the crate → **Settings → Trusted Publishing → GitHub**, repo
+>    `trustoverip/dtgwg-trust-tasks-tf`, workflow filename `publish.yml`.
+> 3. Seed its changelog anchor at the commit you published from:
+>    `git tag -a <crate>-v0.1.0 -m "<crate> 0.1.0" <commit> && git push origin <crate>-v0.1.0`.
+>    release-plz writes the changelog from the commits since that tag, and
+>    `rs API compatibility` compares against it.
+> 4. Delete the `release = false` line, and add the crate to `CRATES` in
+>    `scripts/check-rs-api-compat.sh` if it has a library API. The next Release
+>    PR bumps it from the published version like any other crate.
 
 ---
 
@@ -142,13 +205,12 @@ How each part of it is computed:
 
 **The crates** — `release-plz update`, reading `release-plz.toml` exactly as
 the old release-plz PR did (the `core` version group, `cliff.toml`). The bump
-levels are **derived, not guessed**:
-[`cargo-semver-checks`](https://github.com/obi1kenobi/cargo-semver-checks)
-compares each crate's public API against the version on crates.io, so a genuine
-API break moves the compatibility field whether or not anyone remembered to say
-so. Every crate here is `0.x`, where cargo treats the **minor** field as the
-compatibility boundary: `0.14.0` → `0.14.1` is compatible, `0.14.0` → `0.15.0`
-is not.
+levels come from the conventional commits, as for every other package: a `!`
+scoped to a crate (or a `BREAKING CHANGE:` trailer) moves the compatibility
+field, anything else is a patch. `semver_check` is off; what keeps the subjects
+honest is `rs API compatibility` on every pull request (below). Every crate here
+is `0.x`, where cargo treats the **minor** field as the compatibility boundary:
+`0.14.0` → `0.14.1` is compatible, `0.14.0` → `0.15.0` is not.
 
 **The npm packages** — `scripts/release-bump-ts.sh <package>`, from the
 conventional commits since the package's `<prefix>-v*` tag. The core
@@ -173,18 +235,72 @@ declarations that must stay equal: `version:` in `pubspec.yaml` and
 `packageVersion` in `lib/src/runtime/version.dart`. The others watch only their
 own directory and move `version:` alone.
 
-`release-plz` runs one `cargo-semver-checks` per changed crate, in parallel, and
-each builds rustdoc for its crate and every dependency. With `trust-tasks-rs`
-alone peaking near 13 GB, four at once exhausted the 16 GB runner and the
-kernel killed the job (exit 143, with no error in the log). `publish.yml`
-therefore wraps the binary in `flock` so they run one at a time; the Release PR
-job takes about 40 minutes as a result, and its timeout is 90.
+The Release PR job used to run `cargo-semver-checks` through release-plz, after
+every merge, over every generated module: ~12.6 GB for `trust-tasks-rs` alone,
+8 to 40 minutes (the checks had to be serialised to stop the kernel killing the
+job), and a break found only after it had merged. It now runs no API check and
+takes about a minute.
 
-> ⚠️ **Only the crates have a `cargo-semver-checks` equivalent.** The npm, Go and
-> Dart bumps are only as accurate as the commit subjects: if a change breaks one
-> of those APIs and nobody wrote `!` in the PR title, the package ships a patch.
-> Check the diff before merging. This is the one place the four parts of a
-> release differ in rigour.
+**Every library's API is checked on the pull request.** The crates have
+`rs API compatibility` (`scripts/check-rs-api-compat.sh`, cargo-semver-checks
+against each crate's last release tag); the core npm, Go and Dart packages
+each have an API compatibility job that compares the PR with the last published
+release and refuses an undeclared break. All four apply one rule: a break passes
+when the PR title carries a `!` whose scope list names the package (`feat(rs)!:`,
+`feat(ts)!:`, `feat(go)!:`, `feat(dart)!:`; the withdrawal batch's
+`feat(rs, ts, go, dart)!:` names all four), or when a change merged since that release already makes the
+next one breaking. Each reads the PR title live, so after retitling a PR, re-run
+the job. The bump scripts (`release-bump-{ts,go,dart}.sh`) count a `!` the same
+scoped way, so a spec-scoped `!` from before commit-lint enforced package scopes
+no longer makes them breaking.
+
+- **Rust** — `rs API compatibility` (`rust.yml`, `scripts/check-rs-api-compat.sh`)
+  runs `cargo-semver-checks --baseline-rev <crate>-v<x.y.z>` for each published
+  crate. `trust-tasks-rs` is compared with only the runtime, `validate` and the
+  `acl` family: the other families are the same generator's output, and a schema
+  change is judged by `check-published-schemas`. That keeps it near a minute and
+  ~200 MB, against ~12.6 GB for every family. The facade,
+  `trust-tasks-ceremony` and `trust-tasks-build` are always checked; a binding crate (which compiles every
+  family through its dependency, ~13 GB, ~5 minutes) only when the PR changes
+  it. The core crates release as one version group, so a `!` scoped to any of
+  them (`rs`, `codegen`, `https`, `didcomm`, `didcomm-v1`, `tsp`, `proof`,
+  `capability-client`) declares a break for all; `ceremony` and `build` version
+  alone. `trust-tasks-cli` is a binary with no library API and is not checked.
+  Crates with no release tag yet are skipped. Locally:
+  `PR_TITLE='fix: x' BASE_REF=origin/main scripts/check-rs-api-compat.sh`.
+- **TypeScript** — `ts API compatibility` (`ts.yml`, `trust-tasks-ts/scripts/api-compat.mjs`)
+  compares every `.d.ts` of `@openvtc/trust-tasks` (the package exports `./*`)
+  with the last npm release, using `@microsoft/api-extractor` (pinned in
+  `trust-tasks-ts`). A removed or renamed export, namespace or member, a changed
+  signature, or a required member added to an existing interface is breaking. A
+  new spec version, export or optional member passes, and so does a value
+  appended to a string-literal union or to `STANDARD_CODES` — deliberate policy,
+  the counterpart of Rust's `#[non_exhaustive]`, so a spec enum gaining a value
+  stays a patch (the unions stay closed so that a misspelled value is still a
+  compile error). Embedded JSON Schema constants are not compared;
+  `check-published-schemas` judges those. Locally:
+  `cd trust-tasks-ts && PR_TITLE='…' npm run api-compat` (about a minute, ~5 GB).
+- **Go** — `go API compatibility` (`go.yml`, `scripts/check-go-api-compat.sh`)
+  compares every package of the core module with the last `trust-tasks-go/v*`
+  tag using `golang.org/x/exp/cmd/apidiff`. A removed package or export, or a
+  changed signature or field type, is breaking. Value changes to the generated
+  `PayloadSchemaJSON`, `ResponsePayloadSchemaJSON`, `Deprecation` and `Extends`
+  constants and to `trusttasks.Version` move by design and are not counted. It
+  cannot see a behavioural break that changes no API (a spec that starts
+  requiring a proof) — declare those yourself. A Go tag can never be retracted,
+  which is why this runs before merge rather than at release.
+- **Dart** — `Dart API compatibility` (`dart.yml`, `scripts/check-dart-api.mjs`)
+  compares `trust_tasks` — the runtime and every generated library under
+  `lib/specs` — with the latest version on pub.dev, using `dart_apitool` (pinned
+  in the workflow with the SDK it runs on; move them together). A removed
+  library, class, member or value constant, a changed type, or a new required
+  parameter is breaking; a new spec version, optional member or closed value
+  passes. Locally: `dart pub global activate dart_apitool <pinned version>` and
+  `PR_TITLE='…' node scripts/check-dart-api.mjs`.
+
+The hand-written sibling packages (`-proof`, `-tsp`, `-https`, `-didcomm`,
+`-capability-client`) are not yet checked; each check's header says what
+extending it would take.
 
 > ⚠️ **A Go release cannot be unpublished.** `proxy.golang.org` caches a tag
 > permanently and by design, so a tag pushed over a tree that does not build is

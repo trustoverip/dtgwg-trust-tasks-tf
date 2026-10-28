@@ -48,6 +48,7 @@
 /// one that defaults to skipping.
 library;
 
+import 'canonical.dart';
 import 'codes.dart';
 import 'document.dart';
 import 'freshness.dart';
@@ -328,6 +329,16 @@ Refusal refuse<P>(
 /// receives the [TrustTaskDocument] object itself, which an in-memory guard can
 /// hold but a persistent one cannot serialise. Such a guard would then cache no
 /// success response, and a resend would be absorbed with nothing to return.
+///
+/// Pass [received] — the decoded JSON map [doc] was read from, exactly as it
+/// arrived — and a proof is verified over it rather than over [doc]'s typed
+/// re-encoding, which drops any member the payload type does not model and so
+/// breaks a genuine signature. [readForVersion] hands it back as
+/// [VersionAccepted.received]; for a document read forward along a declared
+/// `extends` chain it is required for a proof to verify at all, because [doc]'s
+/// payload has been pruned. A [received] whose `id` or `type` is not [doc]'s is
+/// refused `proofInvalid`: a proof over one document vouches for nothing about
+/// another.
 Future<ConsumeOutcome<R>> consumeInbound<P, R>({
   required TransportHandler transport,
   required SpecPolicy spec,
@@ -342,6 +353,7 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
   required Handler<P, R> handler,
   Clock? clock,
   Object? Function(R response)? responseToJson,
+  Map<String, dynamic>? received,
 }) async {
   ConsumeOutcome<R> route(RejectReason reason) {
     final error = reject(transport, doc, newErrorId(), reason, clock: clock);
@@ -402,7 +414,11 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
       case VerifyProof(:final verifier):
         var ok = false;
         try {
-          ok = await verifier.verify(doc.toJson(payloadToJson));
+          if (received == null) {
+            ok = await verifier.verify(doc.toJson(payloadToJson));
+          } else if (received['id'] == doc.id && received['type'] == doc.type) {
+            ok = await verifier.verify(received);
+          }
         } on Object {
           ok = false;
         }
@@ -448,7 +464,17 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
   final replay = checks.replay;
   if (replay is GuardedReplay) {
     final guard = replay.guard;
-    final digest = documentDigest(doc, payloadToJson);
+    // A document read forward along an `extends` chain has had payload members
+    // pruned, so its typed re-encoding cannot tell two documents apart that
+    // differ only in those members — an `idConflict` would be absorbed as a
+    // duplicate. Key it on what arrived instead. Only in that case: a document
+    // of the implemented version keeps the digest it always had, so a guard's
+    // existing records still match.
+    final forward =
+        received != null && bareTypeUri(doc.type) != bareTypeUri(spec.typeUri);
+    final digest = forward
+        ? sha256HexOfString(canonicalJson(received))
+        : documentDigest(doc, payloadToJson);
 
     // §7.2 (*Bounding the record*): "A consumer that can establish neither an
     // `expiresAt` nor an age for a document has no window in which to place it,

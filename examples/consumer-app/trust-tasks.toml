@@ -1,0 +1,13 @@
+registry = "https://trusttasks.org"
+
+# A third-party source (SPEC §6.5): acme's registry, here a fixture directory
+# built with `trust-tasks registry build` (see fixture-registry/specs). A real
+# one would be `url = "https://…"`.
+[sources.acme]
+path = "fixture-registry/site"
+
+[tasks]
+"acl/grant" = "0.2"
+"acme:vault/get" = "0.3"
+"keys/list" = "latest"
+"vault/get" = "0.3"

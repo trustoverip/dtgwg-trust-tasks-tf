@@ -103,7 +103,7 @@ export function createErrorCodeCasingLint(io) {
       if (!offenders.length) return;
 
       // Frozen by §5.3 — counted, never failed. See the header comment.
-      if (meta?.status === 'retired') {
+      if (meta?.status === 'retired' || meta?.status === 'withdrawn') {
         frozen += offenders.length;
         frozenSpecs.add(rel);
         return;
@@ -308,8 +308,9 @@ export function checkStandardErrorCodeCasing(entries, env, io) {
     if (wc) wireCompatTargets.add(`${e.slug}/${wc}`);
   }
   for (const e of entries) {
-    if (frontMatterField(metaSrc.get(e.rel), 'status') === 'retired') {
-      exempt.set(e.dir, 'status: retired — frozen by §5.3');
+    const status = frontMatterField(metaSrc.get(e.rel), 'status');
+    if (status === 'retired' || status === 'withdrawn') {
+      exempt.set(e.dir, `status: ${status} — frozen by §5.3`);
       continue;
     }
     if (!wireCompatTargets.has(e.rel)) continue;

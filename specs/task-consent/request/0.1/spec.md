@@ -61,11 +61,11 @@ related:
 The **Task Consent — Request** Trust Task carries one pending privileged task to
 a human. It is the first half of the delegated-execution consent flow; the
 approver's answer returns as a
-[`task-consent/decision/0.1`](../../decision/0.1/spec.md).
+[`task-consent/decision/0.2`](../../decision/0.2/spec.md).
 
 It exists because of a gap that a payload alone cannot close. When a policy
 returns `requireConsent` (see
-[`PolicyDecision`](../../../policy/_shared/0.3/policy.schema.json)), *something*
+[`PolicyDecision`](../../../policy/_shared/0.4/policy.schema.json)), *something*
 must show a person what they are agreeing to. The obvious candidate — the
 payload the requester submitted — is exactly the wrong one: it is authored by
 the least trusted party in the system, and it does not contain the task's
@@ -402,7 +402,7 @@ designed to withhold.
 The approver device's copy is exchange-scoped. `sideEffects` is `none`: raising a
 prompt persists nothing. The document is held so that a prompt can be rendered and so
 that `challenge` and `payloadDigest` can be echoed verbatim in the matching
-[`task-consent/decision`](../../decision/0.1/spec.md), and `expiresAt` closes the
+[`task-consent/decision`](../../decision/0.2/spec.md), and `expiresAt` closes the
 window — after that instant the request has lapsed and no decision is accepted for it.
 
 The consequence for a device implementer is specific: once the prompt is answered,
@@ -437,7 +437,7 @@ a requester who learns that their prose reaches a human's screen unedited has an
 incentive to use it for something other than context.
 
 Whether an approval step exists at all is not this specification's to say. A
-[`policy/evaluate`](../../../policy/evaluate/0.3/spec.md) decision of `requireConsent`
+[`policy/evaluate`](../../../policy/evaluate/0.4/spec.md) decision of `requireConsent`
 is what causes a request to be raised, and per
 [SPEC.md §7.3](/SPEC.md#73-specification-requirements) item 13 a *Trust Task
 specification* **MUST NOT** declare that a consent or approval step is required. This

@@ -25,7 +25,12 @@
  *   integer-instant   an integer/number member that is an instant: its
  *                     description says Unix/epoch seconds, or its name ends in
  *                     `At` or `Deadline`, or is `timestamp`/`notBefore`/`notAfter`.
- *   timestamp-name    a member named `timestamp`: name the event (`recordedAt`).
+ *   timestamp-name    a member named `timestamp` or a bare `at`: name the event
+ *                     (`recordedAt`, `occurredAt`).
+ *   instant-name      a `date-time` string that is neither `<event>At` nor a
+ *                     bound — `since`, `until`, `from`, `to`, `asOf`, or a name
+ *                     ending in `Until`/`Since`/`From`/`After`/`Before`/`To` —
+ *                     nor the Data Integrity `created`.
  *   page-size         `pageSize`, `pageToken`, `nextPageToken`,
  *                     `continuationToken`: use `cursor` + `limit`.
  *   offset-paging     `offset` beside `limit` or `cursor`: use `cursor`.
@@ -35,11 +40,16 @@
  *                     continuation token in a response is `nextCursor`.
  *   since-not-time    a `since` that is not a `date-time` string.
  *   created-boolean   a boolean `created`: the flag is `wasCreated`.
+ *   duration-unit     an integer duration whose name does not spell out its
+ *                     unit: `…Secs`/`…Sec`/`…Mins`/`…Msecs`, or a bare `ttl`,
+ *                     `timeout`, `duration`, `interval` or `delay`. A duration
+ *                     is `…Seconds`, `…Ms`, `…Minutes`, `…Days`.
  *
  * ── The allowlist (wire-conventions-allowlist.json) ─────────────────────────
  *
- * `exceptions`, keyed by slug, then by `<rule> <member>`, each mapped to the
- * reason the shape is deliberate (`vault/sync` keeps `truncated` because a feed
+ * `exceptions`, keyed by slug — or by a shared schema's family directory
+ * (`auth/_shared`), for a definition many specs reach — then by
+ * `<rule> <member>`, each mapped to the reason the shape is deliberate (`vault/sync` keeps `truncated` because a feed
  * that always returns its position has no cursor to omit). Keyed by slug, not
  * version, so a later version inherits the exception; an entry no longer found
  * is reported as stale. It is for shapes the conventions do not mean, never for
@@ -51,6 +61,8 @@ import path from 'node:path';
 const PAGE_SIZE_NAMES = new Set(['pageSize', 'pageToken', 'nextPageToken', 'continuationToken']);
 const EPOCH_DESCRIPTION = /unix|epoch[- ](milli)?seconds|seconds since the (unix )?epoch|integer utc/i;
 const INSTANT_NAME = /(At|Deadline)$|^(timestamp|notBefore|notAfter)$/;
+const UNITLESS_DURATION = /(Secs?|Mins|Msecs?)$|^(ttl|timeout|duration|interval|delay)$/;
+const BOUND_NAME = /^(since|until|from|to|asOf|created)$|(Until|Since|From|After|Before|To)$/;
 
 const typesOf = (node) => [].concat(node?.type ?? []);
 const isNumeric = (node) => typesOf(node).some((t) => t === 'integer' || t === 'number');
@@ -142,7 +154,11 @@ export function findingsFor(dir, specsDir) {
         if (isNumeric(member) && (EPOCH_DESCRIPTION.test(member.description ?? '') || INSTANT_NAME.test(name))) {
           push('integer-instant');
         }
-        if (name === 'timestamp') push('timestamp-name');
+        if (name === 'timestamp' || name === 'at') push('timestamp-name');
+        if (typesOf(member).includes('string') && member.format === 'date-time' && !/At$/.test(name) && !BOUND_NAME.test(name)
+            && name !== 'timestamp' && name !== 'at') {
+          push('instant-name');
+        }
         if (PAGE_SIZE_NAMES.has(name)) push('page-size');
         if (name === 'offset' && (has('limit') || has('cursor'))) push('offset-paging');
         if (name === 'nextCursor' && typesOf(member).includes('null')) push('nullable-cursor');
@@ -154,6 +170,7 @@ export function findingsFor(dir, specsDir) {
           push('since-not-time');
         }
         if (name === 'created' && typesOf(member).includes('boolean')) push('created-boolean');
+        if (isNumeric(member) && UNITLESS_DURATION.test(name)) push('duration-unit');
       }
     }
 
@@ -194,7 +211,7 @@ export function checkWireConventions({ specsDir, allowlistPath, fail, warn, log 
   const counts = { specs: 0, retired: 0, excepted: 0, offending: 0 };
 
   for (const { slug, version, dir } of latestSpecs(specsDir)) {
-    if (statusOf(dir) === 'retired') {
+    if (statusOf(dir) === 'retired' || statusOf(dir) === 'withdrawn') {
       counts.retired++;
       continue;
     }
@@ -207,9 +224,18 @@ export function checkWireConventions({ specsDir, allowlistPath, fail, warn, log 
     }
     for (const { rule, member, where } of findings) {
       const key = `${rule} ${member}`;
-      if (exceptions[slug]?.[key]) {
+      // A finding in a shared file may be excepted for that file's family
+      // directory, with the version removed (`auth/_shared`).
+      const sharedDir = where
+        .split('#')[0]
+        .split('/')
+        .slice(0, -1)
+        .filter((segment) => !/^\d+\.\d+$/.test(segment))
+        .join('/');
+      const owner = exceptions[slug]?.[key] ? slug : sharedDir.includes('_shared') && exceptions[sharedDir]?.[key] ? sharedDir : null;
+      if (owner) {
         counts.excepted++;
-        used.add(`${slug}\u0000${key}`);
+        used.add(`${owner}\u0000${key}`);
         continue;
       }
       counts.offending++;
@@ -239,7 +265,8 @@ export function checkWireConventions({ specsDir, allowlistPath, fail, warn, log 
 
 const MESSAGES = {
   'integer-instant': 'an instant is an RFC 3339 string ("format": "date-time"), never Unix seconds.',
-  'timestamp-name': 'name the event the instant records (`recordedAt`), not a bare `timestamp`.',
+  'timestamp-name': 'name the event the instant records (`recordedAt`, `occurredAt`), not a bare `timestamp` or `at`.',
+  'instant-name': 'an instant is `<event>At` (`respondedAt`, `observedAt`); only a bound or filter keeps a preposition (`since`, `validUntil`, `purgeAfter`).',
   'page-size': 'pagination is `cursor` + `limit` in the request and `nextCursor` in the response.',
   'offset-paging': 'page with an opaque `cursor`, not an `offset`.',
   'nullable-cursor': '`nextCursor` is a plain string, absent on the last page — never `null`.',
@@ -247,4 +274,5 @@ const MESSAGES = {
   'response-cursor': 'a response\'s continuation token is `nextCursor`.',
   'since-not-time': '`since` is an inclusive RFC 3339 lower bound; a cursor is `cursor`, a resume token `resumeToken`, a sync position `syncToken`.',
   'created-boolean': '`created` is a timestamp; the was-it-created response flag is `wasCreated`.',
+  'duration-unit': 'a duration names its unit, spelled out: `…Seconds`, `…Ms`, `…Minutes`, `…Days` — never `…Secs` or a bare `ttl`/`timeout`.',
 };

@@ -68,6 +68,10 @@ to register those levels (`voting/election/register:unsupportedSecrecy`).
 - **Election.** One poll, survey or election: one manifest, one roll, one board.
 - **Manifest.** What an election asks and how it is decided (`Manifest`). Its **digest** is the
   SHA-256 multihash of its RFC 8785 (JCS) canonicalization.
+- **Member names.** This document names the manifest's instants `registrationOpensAt`,
+  `votingOpensAt` and `votingClosesAt`, and a lifecycle entry's instant `occurredAt`, as
+  `voting/_shared/0.2` defines them; `voting/_shared/0.1` and the specifications pinned to it
+  carry the same members as `registrationOpens`, `votingOpens`, `votingCloses` and `at`.
 - **Ticket.** A predicate credential system (PCS) class credential, issued blind by the
   community under the class `voter/<electionId>` and its **voting key**. It admits its holder to
   vote in one election and identifies nobody.
@@ -117,10 +121,10 @@ hidden-vetting deployment.
    heads and proofs are RFC 9162 §2.1 with SHA-256.
 9. **Board order.** A board is the election's lifecycle in order, and whoever re-verifies one —
    the community certifying, an auditor — **MUST** refuse a board that breaks any of these:
-   1. an `opened` entry precedes every cast, and its `at` is not before `votingOpens`;
+   1. an `opened` entry precedes every cast, and its `occurredAt` is not before `votingOpensAt`;
    2. no cast follows the `closed`, `closedEarly` or `cancelled` entry; `closedEarly` appears
-      only where the manifest allows an early close, and a `closed` entry's `at` is not before
-      `votingCloses`;
+      only where the manifest allows an early close, and a `closed` entry's `occurredAt` is not
+      before `votingClosesAt`;
    3. on a sealed or tallied-encrypted board, the `electionKey` entry precedes `opened`, and
       every `trusteeStep` precedes the `electionKey` entry;
    4. on those boards a `decryptionAuthorized` entry follows the closing entry and precedes every
@@ -281,10 +285,10 @@ place of the ballot); a sealed cast's binds the `SealedPayload`'s.
    (`voting/trustees/justify`); anyone checks it against the commitments. A justified complaint is
    void.
 5. **Form.** When every trustee has confirmed and every complaint is justified or void, or else
-   at `votingOpens`, the **qualified** dealers are those with no unjustified complaint. The
+   at `votingOpensAt`, the **qualified** dealers are those with no unjustified complaint. The
    election key is `Y = Σ_{i∈Q} C_i0`, and trustee `j`'s verification key is `Y_j = Σ_{i∈Q}
    Σ_k j^k·C_ik`. The ballot box appends an `electionKey` entry. If fewer than `t` dealers
-   qualify, or fewer than `t` trustees have confirmed, or the key is not formed by `votingOpens`,
+   qualify, or fewer than `t` trustees have confirmed, or the key is not formed by `votingOpensAt`,
    the ceremony has **failed**: no cast is admitted and the community cancels the election. With
    at most `t − 1` corrupt trustees, `t` qualified dealers include an honest one, so no coalition
    that cannot decrypt can know `Y`: a corrupt trustee complaining of every other dealer at the

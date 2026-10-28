@@ -1,6 +1,6 @@
 {
   "name": "@openvtc/trust-tasks",
-  "version": "0.27.3",
+  "version": "0.28.1",
   "description": "Generated TypeScript bindings for the Trust Tasks framework registry.",
   "type": "module",
   "main": "./dist/index.js",
@@ -9,6 +9,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./runtime": {
+      "types": "./dist/_runtime/index.d.ts",
+      "import": "./dist/_runtime/index.js"
     },
     "./*": {
       "types": "./dist/*.d.ts",
@@ -26,9 +30,11 @@
     "build": "tsc -p tsconfig.json",
     "clean": "rm -rf dist .test-build",
     "test": "tsc -p tsconfig.test.json && node --test .test-build/test/*.test.js",
-    "smoke": "npm run build && node scripts/smoke.mjs"
+    "smoke": "npm run build && node scripts/smoke.mjs",
+    "api-compat": "node scripts/api-compat.mjs"
   },
   "devDependencies": {
+    "@microsoft/api-extractor": "7.59.4",
     "@types/node": "^26.2.0",
     "typescript": "^6.0.0"
   },

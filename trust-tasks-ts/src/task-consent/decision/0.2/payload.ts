@@ -12,7 +12,7 @@ import type { AuthenticatorAssertionResponseLogin, Decision, DigestMultibase, Ex
 export type DecisionEvidence = WebAuthn | ApproverSigned;
 
 /**
- * An enrolled approver authorizes (or refuses) one pending privileged task, bound to the exact payload it was shown. The proof on this document — not the transport session that carried it — is the authorization, and it is always made by the approver's own DID. Additive over 0.1: an OPTIONAL `evidence` member carries an additional factor (a WebAuthn assertion, or a signed step-up approver statement) the executor verifies on top of the proof, and an OPTIONAL `actionId` links the decision to a Verifiable Trust Community action (vtc/admin/actions/list/0.1). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ * An enrolled approver authorizes (or refuses) one pending privileged task, bound to the exact payload it was shown. The proof on this document — not the transport session that carried it — is the authorization, and it is always made by the approver's own DID. Additive over 0.1: an OPTIONAL `evidence` member carries an additional factor (a WebAuthn assertion, or a signed step-up approver statement) the executor verifies on top of the proof, and an OPTIONAL `actionId` links the decision to a Verifiable Trust Community action (vtc/admin/actions/list/0.3). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
  */
 export interface TaskConsentDecisionPayload {
   /**
@@ -38,7 +38,7 @@ export interface TaskConsentDecisionPayload {
 export interface WebAuthn {
   kind: "webauthn";
   /**
-   * The unmodified AuthenticatorAssertionResponse from the platform WebAuthn API, the same shape auth/step-up/approve-response/0.5 carries. The WebAuthn challenge the approver's client passed to the authenticator MUST be the UTF-8 bytes of this decision's `challenge` value, so `clientDataJSON.challenge` is their base64url (no padding) encoding; the executor, as relying party, verifies it per WebAuthn Level 2 §7.2 against a credential enrolled to the approver whose DID made the document's proof. The commitment to the payload is the executor's binding: it issued that challenge for exactly one pending request, whose `payloadDigest` is salted with it.
+   * The unmodified AuthenticatorAssertionResponse from the platform WebAuthn API, the same shape auth/step-up/approve-response/0.6 carries. The WebAuthn challenge the approver's client passed to the authenticator MUST be the UTF-8 bytes of this decision's `challenge` value, so `clientDataJSON.challenge` is their base64url (no padding) encoding; the executor, as relying party, verifies it per WebAuthn Level 2 §7.2 against a credential enrolled to the approver whose DID made the document's proof. The commitment to the payload is the executor's binding: it issued that challenge for exactly one pending request, whose `payloadDigest` is salted with it.
    */
   assertion: AuthenticatorAssertionResponseLogin;
 }
@@ -82,6 +82,22 @@ export type { AuthenticatorAssertionResponseLogin, Decision, DigestMultibase, Ex
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/task-consent/decision/0.2" as const;
 
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = null;
+
 /** Stable alias for this specification's request payload shape. */
 export type Payload = TaskConsentDecisionPayload;
 
@@ -104,7 +120,7 @@ export const PAYLOAD_SCHEMA = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/task-consent/decision/0.2",
   "title": "Task Consent Decision — payload",
-  "description": "An enrolled approver authorizes (or refuses) one pending privileged task, bound to the exact payload it was shown. The proof on this document — not the transport session that carried it — is the authorization, and it is always made by the approver's own DID. Additive over 0.1: an OPTIONAL `evidence` member carries an additional factor (a WebAuthn assertion, or a signed step-up approver statement) the executor verifies on top of the proof, and an OPTIONAL `actionId` links the decision to a Verifiable Trust Community action (vtc/admin/actions/list/0.1). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "description": "An enrolled approver authorizes (or refuses) one pending privileged task, bound to the exact payload it was shown. The proof on this document — not the transport session that carried it — is the authorization, and it is always made by the approver's own DID. Additive over 0.1: an OPTIONAL `evidence` member carries an additional factor (a WebAuthn assertion, or a signed step-up approver statement) the executor verifies on top of the proof, and an OPTIONAL `actionId` links the decision to a Verifiable Trust Community action (vtc/admin/actions/list/0.3). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -163,7 +179,7 @@ export const PAYLOAD_SCHEMA = {
             },
             "assertion": {
               "$ref": "#/$defs/AssertionResponse",
-              "description": "The unmodified AuthenticatorAssertionResponse from the platform WebAuthn API, the same shape auth/step-up/approve-response/0.5 carries. The WebAuthn challenge the approver's client passed to the authenticator MUST be the UTF-8 bytes of this decision's `challenge` value, so `clientDataJSON.challenge` is their base64url (no padding) encoding; the executor, as relying party, verifies it per WebAuthn Level 2 §7.2 against a credential enrolled to the approver whose DID made the document's proof. The commitment to the payload is the executor's binding: it issued that challenge for exactly one pending request, whose `payloadDigest` is salted with it."
+              "description": "The unmodified AuthenticatorAssertionResponse from the platform WebAuthn API, the same shape auth/step-up/approve-response/0.6 carries. The WebAuthn challenge the approver's client passed to the authenticator MUST be the UTF-8 bytes of this decision's `challenge` value, so `clientDataJSON.challenge` is their base64url (no padding) encoding; the executor, as relying party, verifies it per WebAuthn Level 2 §7.2 against a credential enrolled to the approver whose DID made the document's proof. The commitment to the payload is the executor's binding: it issued that challenge for exactly one pending request, whose `payloadDigest` is salted with it."
             }
           }
         },
@@ -347,7 +363,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             },
             "assertion": {
               "$ref": "#/$defs/AssertionResponse",
-              "description": "The unmodified AuthenticatorAssertionResponse from the platform WebAuthn API, the same shape auth/step-up/approve-response/0.5 carries. The WebAuthn challenge the approver's client passed to the authenticator MUST be the UTF-8 bytes of this decision's `challenge` value, so `clientDataJSON.challenge` is their base64url (no padding) encoding; the executor, as relying party, verifies it per WebAuthn Level 2 §7.2 against a credential enrolled to the approver whose DID made the document's proof. The commitment to the payload is the executor's binding: it issued that challenge for exactly one pending request, whose `payloadDigest` is salted with it."
+              "description": "The unmodified AuthenticatorAssertionResponse from the platform WebAuthn API, the same shape auth/step-up/approve-response/0.6 carries. The WebAuthn challenge the approver's client passed to the authenticator MUST be the UTF-8 bytes of this decision's `challenge` value, so `clientDataJSON.challenge` is their base64url (no padding) encoding; the executor, as relying party, verifies it per WebAuthn Level 2 §7.2 against a credential enrolled to the approver whose DID made the document's proof. The commitment to the payload is the executor's binding: it issued that challenge for exactly one pending request, whose `payloadDigest` is salted with it."
             }
           }
         },

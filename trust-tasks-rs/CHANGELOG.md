@@ -31,6 +31,579 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.36.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.36.0...trust-tasks-rs-v0.36.1) — 2026-10-28
+
+
+### Added
+
+- **vta/contexts/delete**: 1.1 — settle host copies first; abandonHostCopies ([#967](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/967))
+
+1.0 removed every local record and reported a host copy it could not
+  remove in daemonCleanupErrors after the fact, so the caller learned that
+  DIDs were still resolving only once the records — and the keys that
+  could remove them — were gone. A DID whose hosting server was no longer
+  registered refused the whole deletion, with no way to complete it through
+  this task: a context whose host had gone for good could not be deleted.
+
+  1.1 settles every host copy before anything local is removed. A copy
+  that cannot be confirmed removed (host down, refusing, unanswered, or no
+  longer known to the VTA) refuses with the new
+  vta/contexts/delete:hostCleanupFailed — retryable, details pinned by a
+  detailsSchema listing each DID, its server and why — and nothing local
+  is deleted. A producer shows those DIDs to a human and asks whether to
+  wait for the host or retry with the new abandonHostCopies, which
+  completes the deletion and reports the abandoned copies in
+  daemonCleanupErrors. A host answering that it no longer holds the log has
+  removed it, so a retry after a partial settle completes. The consumer
+  SHOULD bound the time spent on hosts, in total, to answer within the
+  requester's timeout.
+
+  abandonHostCopies is an explicitness flag like force, not a privilege,
+  and a producer MUST NOT set it on a first attempt without being told to.
+  A 1.1 consumer still accepts 1.0 and answers it as 1.0 specifies.
+
+  Regenerated the Rust, TypeScript, Go and Dart bindings; 1.0 is now
+  marked superseded. The stale-reference fixer moved create/1.0 and
+  preview-delete/1.0's links to 1.1.
+
+
+
+## [0.36.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.35.4...trust-tasks-rs-v0.36.0) — 2026-10-27
+
+
+### Added
+
+- **ts, go**: Trust-task-error/0.6 and the unsupportedExtension and indeterminate standard codes ([#961](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/961))
+
+* feat(ts)!: trust-task-error/0.6 and the unsupportedExtension and indeterminate standard codes
+
+  Framework 0.7.0 added unsupportedExtension to the standard codes, and the
+  indeterminate ruling (SPEC §8.3) adds indeterminate: the recipient could
+  not decide because something it needed and does not control could not
+  be obtained or checked, which is neither a refusal nor a failed
+  verification. Both live in the closed code list of the trust-task-error
+  payload schema, so they need a new version.
+
+  - specs/trust-task-error/0.6: both codes appended to the enum, and
+    extends: "0.5", which the build checks. References to 0.5 across the
+    registry therefore stay current, and no other spec changes.
+  - All four libraries recognize both codes and emit 0.6:
+    trust_task_error_type_uri(), TRUST_TASK_ERROR_TYPE_URI,
+    TrustTaskErrorTypeURI and trustTaskErrorTypeUri move together.
+    Rust's StandardCode is hand-written (trust-task-error is in
+    SKIP_SLUGS) and gains UnsupportedExtension and Indeterminate, with
+    indeterminate retryable by default as §8.3 gives it.
+  - The HTTPS binding's status table maps unsupportedExtension to 422 and
+    indeterminate to 503, in the binding prose, trust-tasks-https and
+    trust_tasks_https. The Dart package spells the new codes out so it
+    still builds against a core that predates them.
+
+  Breaking for @openvtc/trust-tasks only: StandardCode is a closed union
+  there, so an exhaustive switch over it stops compiling. Rust's
+  StandardCode is #[non_exhaustive] and Go's and Dart's are open string
+  types, so the change is additive for them.
+
+  Part of trustoverip/dtgwg-trust-tasks-spec#42.
+
+
+
+### Specifications
+
+- **policy**: A consent decision carries its quorum and self-approval rule ([#960](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/960))
+
+policy/_shared/0.3 gave requireConsent.minApprovals a default of 1 and
+  requireConsent.excludeRequester a default of false. JSON Schema defaults
+  are annotations, but generators apply them, so a decision that omitted
+  either sent a quorum of one, or let the requester approve itself, with
+  nothing on the wire to show that nobody had chosen it. SPEC §6.6 rule 5
+  now forbids a governance default in a shared schema component.
+
+  - policy/_shared/0.4: both members required, defaults removed.
+    task-consent/request/0.1 already requires both, so the policy decision
+    and the consent request now agree.
+  - policy/evaluate/0.4: policy/evaluate/0.3 re-pinned to the new
+    component, which is its only change; the Security & Privacy section
+    gains the four sub-headings a new version must carry.
+  - policy/get/0.1 and policy/active/0.1 stay on 0.3: they use only
+    PolicyModule, which is unchanged.
+  - Stale references in task-consent prose moved to policy/evaluate/0.4.
+  - Rust, TypeScript, Go and Dart regenerated. 0.1 to 0.3 of
+    policy/evaluate are now marked superseded by 0.4.
+
+  Part of trustoverip/dtgwg-trust-tasks-spec#39.
+
+
+
+## [0.35.4](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.35.3...trust-tasks-rs-v0.35.4) — 2026-10-27
+
+
+### Added
+
+- The prebuilt specification modules are deprecated in all four libraries; generate the tasks you use ([#954](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/954))
+
+Milestone 5 of docs/design/consumer-side-generation.md. Every prebuilt module
+  outside the framework's own specifications (trust-task-*, trust-ceremony-*,
+  _framework/) is deprecated, so that an application is told to pin the tasks it
+  uses with the trust-tasks CLI and generate them instead. Nothing is removed:
+  the withdrawal batch that removes them is chosen later, at least 90 days after
+  this ships.
+
+  Each library marks the prebuilt entry point where its toolchain reports a
+  deprecation, never the module body, which is also what the consumer-side
+  generators emit:
+
+  - Rust: #[deprecated] on each gated family module in trust-tasks-rs's
+    specs/mod.rs (trust-tasks-codegen). It reaches every path and item under the
+    module; framework modules and trust-tasks-build's output are unmarked.
+  - TypeScript: the root index re-exports each module as
+    `import * as _X …; /** @deprecated … */ export import X = _X;`, because
+    TypeScript ignores @deprecated on `export * as`. API compatibility against
+    0.27.8: nothing removed or changed. A deep import of a module file is not
+    marked; TypeScript has no module-level deprecation.
+  - Go: a `Deprecated:` paragraph in each prebuilt package's doc, which gopls and
+    staticcheck (SA1019) report on import.
+  - Dart: @Deprecated on each prebuilt library's `library` directive, which the
+    analyzer reports on import from another package. This package's own tests
+    use them, so analysis_options ignores the same-package diagnostic SDKs
+    before 3.4 report.
+
+  The TS, Go and Dart equivalence tests mask exactly the mark; every consumer
+  generator is still held to the prebuilt tree as before. Hand-written Rust that
+  uses prebuilt modules on purpose — the acl-specimen test modules, the
+  integration tests and the examples — carries #[allow(deprecated)]; none of the
+  runtime does.
+
+  GETTING-STARTED, the four library READMEs, the design doc and CLAUDE.md say
+  so, and point at each language's generator.
+
+
+
+### Documentation
+
+- An extended error code is read against the Type URI it answers, in SPEC.md and all four libraries ([#953](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/953))
+
+SPEC.md is regenerated from canonical main (trustoverip/dtgwg-trust-tasks-spec
+  #35): an extended code carries a slug but no authority, so a party resolves
+  it against the Type URI of the document the error reports on
+  (inResponseTo.typeUri, else the request correlated by threadId) and never by
+  its string alone; the namespace is always the slug's /-form, and the local
+  code contains no colon. The regeneration also brings in #33 (declared
+  `extends`, and `withdrawn` after a version is superseded), which the site
+  already serves.
+
+  Each library's extended-code docs say the same where a reader meets it:
+  Rust's TrustTaskCode::Extended, TypeScript's extendedCode, Go's ExtendedCode
+  and Dart's extendedCode.
+
+
+
+## [0.35.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.35.2...trust-tasks-rs-v0.35.3) — 2026-10-26
+
+
+### Documentation
+
+- How a Rust application generates only the tasks it uses ([#936](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/936))
+
+GETTING-STARTED.md gains the client-side path: trust-tasks-cli to pin, trust-tasks-rs without default features plus trust-tasks-build in build.rs, and the facade variant (`runtime_path("::trust_tasks")`). trust-tasks-rs's README points at it from its feature section. Both verified as an outside client would use them: the crates.io CLI pinning from trusttasks.org, then a build against crates.io trust-tasks-build 0.1.0 and trust-tasks-rs / trust-tasks 0.35.1.
+
+
+
+## [0.35.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.35.1...trust-tasks-rs-v0.35.2) — 2026-10-26
+
+
+### Added
+
+- **cli, build, rs**: Pin and generate tasks from third-party sources beside the registry's ([#934](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/934))
+
+* feat(cli, build, rs): pin and generate tasks from third-party sources beside the registry's
+
+  SPEC §6.1/§6.5 already allow specifications under another authority, with
+  a slug unique only within its authority. An application can now pin them
+  from a third-party registry and generate them with the official ones.
+
+  trust-tasks-cli
+  - trust-tasks.toml gains [sources.<name>] (url = "https://…" or
+    path = "<dir>"); tasks are named "<source>:<slug>", and on the command
+    line `trust-tasks add acme:payments/settle/1.0`. add, update, check,
+    fetch, list and remove all take sourced tasks; a source serves the
+    trusttasks.org layout (index.json, bundle.json, by-digest).
+  - The lock (still version 1) records [sources.*] and `source =`, sorted
+    official first, then source, slug, version; bundles vendor to
+    trust-tasks/@<source>/…. Every lock read or written is also held to
+    trust-tasks-build's reading of it.
+  - Refused: a sourced bundle under https://trusttasks.org/ (SPEC §6.5
+    item 1) and an official one outside it; a framework slug from a source;
+    two pins with one Type URI; a source named like a pinned official
+    family; a malformed source name or an http url; a bundle whose Type
+    URI, slug and version disagree with each other or the lock.
+  - `trust-tasks registry build --specs --type-uri-prefix --out
+    [--official-specs]` builds a third party's specs/ tree into the served
+    layout, by-digest store included. TRUST_TASKS_CA_FILE trusts an
+    internal CA.
+
+  trust-tasks-build
+  - Lock parsing accepts [sources.*] and `source`; a sourced task is
+    generated under a top-level module named for its source
+    (tasks::acme::payments::settle::v1_0) and read from its vendored path.
+    Identity is the bundle's Type URI in any SPEC §6.1 form; EXTENDS and
+    declare_extends() key by it.
+  - New `publish` feature: the bundle builder (front matter, policy, $ref
+    inlining incl. absolute https://trusttasks.org component refs,
+    lifecycles, canonical JSON, the served layout), moved out of
+    trust-tasks-codegen so the registry and third parties share one
+    builder. The codegen's official bundles and trust-tasks-rs modules are
+    byte-identical.
+
+  trust-tasks-rs
+  - TypeUri parses every SPEC §6.1 form — https and other path forms, DID
+    URLs, and urn:<nid>:<prefix>:spec:<seg>:…:<M.N> — and prints each back
+    exactly; http stays refused (its error text claimed otherwise).
+  - The dispatchers and read_as decide unsupportedVersion vs
+    unsupportedType by authority and slug, so another authority's acl/show
+    is an unsupported type, not an unsupported version of the registry's.
+
+  examples/consumer-app pins acme:vault/get/0.3 — the registry's slug and
+  version under https://tasks.example.com — from a fixture registry, and
+  dispatches both.
+
+
+
+## [0.35.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.35.0...trust-tasks-rs-v0.35.1) — 2026-10-26
+
+
+### Added
+
+- **rs, build, cli**: An application generates only the tasks it pins, and builds three of them in 8 s instead of 140 s ([#930](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/930))
+
+* feat(rs, build, cli): an application generates only the tasks it pins, and builds three of them in 8 s instead of 140 s
+
+  Milestone 2 of consumer-side generation (docs/design/consumer-side-generation.md).
+
+  - trust-tasks-cli: the `trust-tasks` command — add, remove, update, fetch,
+    check, list. trust-tasks.toml is the intent, trust-tasks.lock the
+    resolution; bundles are vendored by digest from the append-only
+    /specs/by-digest/ store, which deploy now writes and never deletes.
+  - trust-tasks-build: an application's build.rs generates the versions its
+    lock pins, after verifying each vendored bundle against the lock. The
+    per-module generator moved here from trust-tasks-codegen, which now goes
+    spec → bundle → generate_module and regenerates the repo byte-identically.
+  - trust-tasks-rs (additive): a hidden `__private` re-export of serde,
+    serde_json, regress and chrono, `extension::declare_extends` so the
+    dispatchers route along app-generated `extends` chains, and a hidden
+    `DeclaredErrorCode::__from_declaration`.
+  - Bundles carry `propertyOrder`, the authored member order the canonical
+    form sorts away.
+  - examples/consumer-app pins three tasks: cold build 8.1 s / 0.41 GB, against
+    140.2 s / 17.4 GB for trust-tasks-rs with every prebuilt module.
+
+  Both new crates are `release = false` until their manual first publish.
+
+- **specs**: Registry/* in lowerCamelCase, with a validity window on trust records ([#925](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/925))
+
+* feat(specs): registry/* in lowerCamelCase, with a validity window on trust records
+
+  New versions of every live registry/* spec move the family from TRQP's
+  snake_case to the registry-wide lowerCamelCase convention, and give trust
+  records an optional validity window so a query's `context.time` has
+  something to be judged against (TRQP v2.0, Identifiers: `time` is "the
+  datetime as of which the target authority statement is valid").
+
+  - registry/_shared 0.2: TrustRecord members entityId, authorityId,
+    recordType; new optional validFrom (inclusive) / validUntil (exclusive).
+  - registry/authorization 0.2, registry/recognition 0.2: entityId,
+    authorityId; time_evaluated -> evaluatedAt and time_requested -> asOf,
+    per the `<event>At` / `asOf` instant conventions. New Evaluation section:
+    outside the window the answer is false; a registry evaluating at its own
+    clock MAY start a record up to 60 s before validFrom, never extends
+    validUntil, and evaluates an explicit context.time exactly. A TRQP field
+    names table gives the mapping a registry applies on the plain HTTP
+    TRQP binding.
+  - registry/record/put 0.3, registry/record/query 0.3,
+    registry/record/delete 0.2: renamed members; put defines the window and
+    rejects validFrom >= validUntil as malformedRequest.
+  - registry/did/rotate 0.2: preRotationCount, newScid, newVersionId.
+
+  The superseded versions stay published. Stale prose links in git-trust and
+  vtc/directory/card/publish are moved to the new versions, and the TRQP
+  instant-name allowlist entries are dropped, since no current spec uses them.
+  Libraries regenerated.
+
+- **rs, https, dart-https**: Answer trust-task-discovery 0.3, and move every hand-written use off the versions the first withdrawal batch removes ([#924](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/924))
+
+* ci: warn about hand-written imports of versions due in the next withdrawal batch, and fail inside 30 days of it
+
+
+
+### Fixed
+
+- **rs**: Keep the published crate well under crates.io's 10 MB upload limit ([#926](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/926))
+
+* fix(rs): keep the published crate well under crates.io's 10 MB upload limit
+
+  `cargo package -p trust-tasks-rs` produced a 9.96 MB .crate: the next release
+  adding a few spec versions would have failed to publish. Three changes, none
+  visible in the API, take it to 7.80 MB:
+
+  - Exclude the generated conformance tests (tests/conformance, 1,057 files)
+    from the package. They run in this repository's CI; a consumer never
+    compiles another crate's integration tests.
+  - Drop the `<details><summary>JSON schema</summary>` block typify writes into
+    every generated type's doc comment. It restated the type's schema, nested
+    types included, once per enclosing type — 11–14 MB of source. The prose
+    description is kept; the schema itself is PAYLOAD_SCHEMA and the published
+    document at the Type URI.
+  - Emit PAYLOAD_SCHEMA compact rather than pretty-printed. The value is the same
+    JSON (check-bindings parses it and agrees across all four languages); only
+    the whitespace a validator never reads is gone.
+
+  Generated source: 87 MB → 71 MB. clippy --all-features -D warnings, the acl
+  tests and rustdoc -D warnings pass.
+
+
+
+## [0.35.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.34.2...trust-tasks-rs-v0.35.0) — 2026-10-26
+
+
+### Added
+
+- **specs**: A version may declare it extends an earlier one, and every library reads the newer version as the older ([#922](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/922))
+
+* feat(specs): an extends declaration the build checks, and that keeps references along its chain current
+
+- **codegen**: Superseded and retired spec versions are deprecated in every library, and withdrawn ones leave them in a quarterly batch ([#921](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/921))
+
+* feat(go): mark superseded and retired spec versions deprecated, and omit withdrawn ones
+
+  Every generated request package now exports `const Deprecation` (empty for a
+  current version, otherwise "superseded by <slug>/<M.N>", "retired; use
+  <slug>/<M.N>" or "retired"), and a deprecated version's Payload and Response
+  types carry a `// Deprecated:` paragraph. A version with `status: withdrawn`
+  gets no package at all. The rule is derived independently from front matter,
+  per SPEC "Superseded and Withdrawn Versions".
+
+- **vault**: Vault/credentials/get 0.2 returns an SD-JWT or an mdoc, not only a JSON object ([#919](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/919))
+
+get/0.1 answered with `credential`, a JSON object, so a maintainer holding an
+  SD-JWT (a compact string) or an mdoc (CBOR) had no conforming answer: it could
+  neither return the body nor turn it into an object without destroying the
+  proof the body carries.
+
+  0.2 returns the body the way receive/0.1 accepts it: `credential` for a JSON
+  object, `credentialBase64` for anything else, exactly one of the two, plus a
+  required `format` (an OpenID4VC format identifier: ldp_vc, dc+sd-jwt,
+  mso_mdoc, jwt_vc_json) so a consumer never sniffs the body. The request is
+  unchanged. 0.1 is retired, superseded by 0.2; references to it now name 0.2.
+
+- **build**: Fail the build on a reference to a superseded spec version, and bring every current spec up to date ([#918](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/918))
+
+A new check, scripts/lib/stale-references.mjs, run by the registry build:
+  no latest, non-retired spec may name another spec at a version that spec
+  has since superseded — in a schema, a description, a prose link or
+  mention, or an example. `npm run fix-stale-references` rewrites the text
+  references (links, mentions, descriptions; a lone version in a moved
+  link's label moves with it; a link whose #anchor the new version lacks is
+  left for a person) and lists what it will not touch: wire pins and
+  normative values (they take a new version) and examples (their payloads
+  must be checked against the new version). History is exempt — Changes
+  from / "What 0.4 changed" sections, version runs ending at the latest,
+  "since"/"added in", "or later" — and anything else deliberate goes in
+  stale-references-allowlist.json with its reason.
+
+  Run once over the registry, in place in draft specs:
+
+  - 728 text references across about 280 files, mostly prose links.
+  - Examples moved after checking their payloads against the new version:
+    trust-task-discovery's supportedTypes, trust-task-error's inResponseTo,
+    auth/oob/grant's directory listing, keys/derive-and-sign-document's
+    authenticate document.
+  - git-ns/bridge/event 0.5 says what it meant: a bridge that lists
+    git-ns/bridge/job 0.5 or later (the closePullRequest kind).
+  - Two allowlisted: rooms/records/get and list say a record written by
+    rooms/records/put/0.1 has no blobs.
+
+  New versions, because the reference is a value an implementation emits —
+  the `expects` entry of a deferred operation's next-step named
+  vtc/admin/actions/show/0.2, which #907 superseded:
+
+  - vtc/elections/create 0.3, vtc/rooms/storage/assign 0.2,
+    vtc/rooms/storage/migrate 0.3, vtc/storage/configs/create 0.3,
+    retire 0.3 and update 0.3, vtc/storage/credentials/set 0.3.
+
+- **vtc/storage**: Vtc/storage/configs/retire 0.2 — refuse while a migration targets the config ([#912](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/912))
+
+* feat(vtc/storage): vtc/storage/configs/retire 0.2 — refuse while a migration targets the config
+
+  retire 0.1 refused only while rooms were assigned to the config or it was
+  the default. vtc/rooms/storage/migrate 0.2 fixes a migration's toConfig at
+  approval and keeps it across a reassignment, and a migration can wait
+  queued or paused. So: start moving room R onto config X, reassign R to Y,
+  retire X (no rooms assigned) — X leaves `active` and the move into it can
+  never finish; it pauses with cause `destination` and retries forever.
+
+  0.2 adds vtc/storage/configs/retire:migrationsInbound (retryable: false,
+  details.migrations ≥ 1): the community MUST refuse while any migration
+  whose toConfig is the config is queued, running or paused, MUST make the
+  check again when a parked retirement executes, and MUST make the check and
+  the state change as one step with respect to a migration starting.
+  Migrations off the config are unaffected. The converse order is already
+  closed by migrate 0.2's configNotActive and assign's refusal of a
+  non-active config. A community serving 0.1 beside 0.2 SHOULD apply the
+  same refusal to a 0.1 request, reporting it with the same slug-namespaced
+  code (SPEC §8.5); a 0.1 producer falls back to taskFailed.
+
+  Request and response schemas are unchanged from 0.1.
+
+- **specs**: Re-pin auth/step-up/start to approve-request 0.5, and point stale version references at current versions ([#913](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/913))
+
+A sweep of the latest non-retired version of every spec for references
+  to another spec at an older version than that spec's latest.
+
+  The one wire pin, in a new version:
+
+  - auth/step-up/start 0.2: approveRequest.type is now the const
+    auth/step-up/approve-request/0.5 (was 0.3, two versions behind: 0.4
+    made `accepts` required, 0.5 renamed `ttl` to `ttlSeconds`).
+
+  Editorial, in place, in draft specs — schema descriptions that named a
+  superseded version of another spec:
+
+  - device/heartbeat 0.3 (device/wipe), git-ns/bridge/job/list 0.4
+    (bridge/job, bridge/result), persona/contact/get and list 1.1
+    (contact/put), rooms/records/get 0.2 (records/put), sync/event 0.2
+    (vault/sync), task-consent/decision 0.2 (vtc/admin/actions/list,
+    approve-response), vault/get 0.3 (vault/release), vault/sign-trust-task
+    0.2 (acl/grant, proxy-login), vault/sync 0.3 (sync/event — its "same
+    shape as sync/event/0.1" was wrong: 0.1 uses sync/_shared/0.1, vault/sync
+    0.3 uses 0.2), vtc/join-requests/submit 0.3 and wallet-session/start
+    0.1 (manifest).
+
+  Examples that carried an old Type URI as sample content, in invalid
+  examples and the matching spec.md examples: git-ns/projection/show,
+  rooms/keys/act, trust-ceremony-receipt, trust-task-discovery, and the
+  four vtc/admin/actions specs — whose embedded acl/grant payloads also
+  gain the `act`, `keys` and `capabilities` acl/grant 0.2 requires.
+
+
+
+### Fixed
+
+- **codegen**: Model an anyOf of required members as optional fields, not an untagged enum ([#917](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/917))
+
+* fix(codegen)!: model an anyOf of required members as optional fields, not an untagged enum
+
+  A payload schema saying "at least one of these members" with an `anyOf` of
+  bare `{"required": [..]}` branches was rendered by typify as an untagged
+  enum, one variant per branch holding only that branch's member under
+  `deny_unknown_fields`. A payload carrying two of the members — valid by the
+  schema, and the normal case for rooms/keys/chain/0.2's `links` + `epochFloor`
+  — deserialized into no variant.
+
+  The codegen now drops such an `anyOf` from the copy of the schema handed to
+  typify (as `desugar_oneof_with_compound_not` does for its `oneOf`). The wire
+  schema behind `ValidatedPayload::validate_value` is captured first, so the
+  constraint is still enforced at runtime.
+
+
+
+## [0.34.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.34.1...trust-tasks-rs-v0.34.2) — 2026-10-24
+
+
+### Added
+
+- **rooms**: Rooms/keys/act 0.8 — records prune and retention set ([#910](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/910))
+
+rooms/keys/act's table is closed, so a key holder conforming to 0.7
+  refuses rooms/records/prune (0.1, 0.2) and rooms/records/retention/set/0.1
+  with typeNotActable. A member's own client therefore cannot make either
+  request as the member: it falls back to rooms/keys/present and signs with
+  its own key, and the host records the client key, not the member, as the
+  administrator who changed the room's retention or pruned it.
+
+  0.8 adds both to the table with action admin and a presentation inserted,
+  as their own specifications require. Both name a room, so the member is
+  resolved by Recipient item 2; the private-room same-subject binding and
+  the producer's REQUIRED reason are already covered by Recipient items 4
+  and 6. No error code is added and the schemas are 0.7's.
+
+  rooms/epoch/prune stays absent. The table section now states why a
+  records prune may ride act and an epoch prune may not: a records prune
+  removes only what the room's record retention (stated in advance,
+  readable by every member, set only by admin via retention/set) already
+  made eligible, leaves the room's keys and its ability to read its past
+  intact, carries a reason and is recorded; an epoch prune destroys key
+  history to an epoch the request names, against no rule stated in
+  advance.
+
+  A MINOR increment per SPEC §5.2; 0.7 remains published. Bindings
+  regenerated for Rust, TypeScript, Go and Dart.
+
+- **build**: Lint that every instant is named <event>At, and rename serverTime to respondedAt ([#911](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/911))
+
+The wire-conventions lint gains an `instant-name` rule: a `date-time`
+  string is named `<event>At`, unless it is a bound or filter (`since`,
+  `until`, `from`, `to`, `asOf`, or a name ending in Until/Since/From/After/
+  Before/To) or the Data Integrity `created`. `timestamp-name` also refuses
+  a bare `at`.
+
+  Two specs had their own non-At instant, renamed in new versions:
+
+  - device/heartbeat 0.3: serverTime -> respondedAt
+  - messaging/ping 0.2: serverTime -> respondedAt (and its Security &
+    Privacy section now carries the four sub-headings)
+
+  External vocabularies are allowlisted with their source: TRQP's `time`,
+  `time_evaluated` and `time_requested` (registry/*), and did:webvh's
+  `versionTime` (did/log) and `latestVersionTime` (did/info).
+
+  Depends on #760, which renames the git-ns bare `at` members this rule
+  also catches.
+
+- **specs**: Naming consistency — event instants, one spelling per concept, durations name their unit, in 69 new spec versions ([#907](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/907))
+
+* feat(build): the wire-conventions lint requires an integer duration to name its unit
+
+
+
+### Specifications
+
+- **git-ns**: Nested repository paths for forges with subgroups ([#760](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/760))
+
+* spec(git-ns): copy each affected version to its next version, unchanged
+
+  Mechanical copy so the next commit shows only what the new versions change.
+
+
+
+## [0.34.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.34.0...trust-tasks-rs-v0.34.1) — 2026-10-23
+
+
+### Added
+
+- **specs**: One spelling for instants, pagination, since and created, in 74 new spec versions ([#901](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/901))
+
+* spec(auth/oob, vtc/auth): instants are RFC 3339 strings named *At
+
+
+
+### Documentation
+
+- Wire conventions, and contributor and release docs brought up to date ([#899](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/899))
+
+* docs: wire conventions, and contributor and release docs brought up to date
+
+  CONTRIBUTING-SPECS.md gains "Wire conventions for common members": instants
+  are RFC 3339 strings named *At, pagination is cursor + limit -> nextCursor
+  (absent on the last page), `since` is an inclusive time filter, and
+  `created` is a timestamp, with `wasCreated` for the response flag. Specs
+  that predate them get new versions in a follow-up.
+
+  The same file no longer says a merge to main publishes, no longer tells
+  spec authors to write a CHANGELOG entry, replaces the pre-0.14 warning
+  that an added member breaks Rust consumers (non_exhaustive + builders made
+  that untrue), and names all four drift jobs.
+
+
+
 ## [0.34.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.33.2...trust-tasks-rs-v0.34.0) — 2026-10-23
 
 

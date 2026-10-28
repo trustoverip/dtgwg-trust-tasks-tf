@@ -110,6 +110,36 @@ describe("§8.5 rule 2 — family namespaces", () => {
   });
 });
 
+describe("extended codes under a third-party authority (SPEC §6.5)", () => {
+  // The code is `<slug>:<local>` — authority-free, as Rust's
+  // TrustTaskCode::Extended — whichever §6.1 form the Type URI takes.
+  const FORMS = [
+    "https://trusttasks.org/spec/payments/settle/1.0",
+    "https://acme.example/tasks/spec/payments/settle/1.0",
+    "did:web:acme.example/spec/payments/settle/1.0",
+    "urn:example:acme:spec:payments:settle:1.0",
+  ];
+
+  it("extendedCode yields <slug>:<local> for every form and variant", () => {
+    for (const uri of FORMS) {
+      for (const fragment of ["", "#request", "#response"]) {
+        assert.equal(extendedCode(`${uri}${fragment}`, "insufficientFunds"), "payments/settle:insufficientFunds", uri);
+      }
+    }
+  });
+
+  it("familyCode checks the namespace against the slug in every form", () => {
+    for (const uri of FORMS) {
+      assert.equal(familyCode(uri, "payments", "currencyUnsupported"), "payments:currencyUnsupported", uri);
+      assert.throws(() => familyCode(uri, "acme", "x"), /path prefix/, uri);
+    }
+  });
+
+  it("refuses an http Type URI", () => {
+    assert.throws(() => extendedCode("http://acme.example/spec/payments/settle/1.0", "x"), /http/);
+  });
+});
+
 describe("slugFromTypeUri", () => {
   it("drops the version segment and any fragment", () => {
     assert.equal(slugFromTypeUri(GRANT), "acl/grant");
@@ -117,7 +147,21 @@ describe("slugFromTypeUri", () => {
     assert.equal(slugFromTypeUri(DELETE), "did-management/did/delete");
   });
 
-  it("refuses a URI outside the Trust Tasks namespace", () => {
-    assert.throws(() => slugFromTypeUri("https://example.com/spec/acl/grant/0.1"), /Type URI/);
+  it("accepts every SPEC §6.1 form, not only the public registry's", () => {
+    assert.equal(slugFromTypeUri("https://example.com/spec/acl/grant/0.1"), "acl/grant");
+    assert.equal(slugFromTypeUri("did:web:acme.example/spec/payments/settle/1.0#response"), "payments/settle");
+    assert.equal(slugFromTypeUri("urn:example:acme:spec:payments:settle:1.0"), "payments/settle");
+  });
+
+  it("refuses a string that is not a Type URI", () => {
+    for (const bad of [
+      "http://trusttasks.org/spec/acl/grant/0.1",
+      "urn:example:acme:payments:settle:1.0",
+      "https://trusttasks.org/spec/acl/grant/x",
+      "https://example.com/spec//0.1",
+      "not a uri",
+    ]) {
+      assert.throws(() => slugFromTypeUri(bad), /Type URI|slug|version/, bad);
+    }
   });
 });

@@ -6,6 +6,62 @@ this crate versions independently of `trust-tasks-rs` — it takes its own
 leading bump when a `trust-tasks-rs` break reaches it, rather than aligning
 to that crate's number (see the `0.6.5` → `0.7.0` release for the shape).
 
+## [0.36.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-proof-v0.36.0...trust-tasks-proof-v0.36.1) — 2026-10-28
+
+
+## [0.36.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-proof-v0.35.4...trust-tasks-proof-v0.36.0) — 2026-10-27
+
+
+## [0.35.4](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-proof-v0.35.3...trust-tasks-proof-v0.35.4) — 2026-10-27
+
+
+## [0.35.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-proof-v0.35.2...trust-tasks-proof-v0.35.3) — 2026-10-26
+
+
+### Fixed
+
+- **rs**: The transport crates depend on trust-tasks-rs's runtime only ([#939](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/939))
+
+trust-tasks-didcomm, -didcomm-v1, -tsp, -https, -proof and
+  -capability-client depended on trust-tasks-rs with its default features,
+  which are every specification family. Cargo unifies features across the
+  graph, so an application that generates only the tasks it pins
+  (trust-tasks-build) still compiled every prebuilt module as soon as it
+  depended on any transport, and the facade route in GETTING-STARTED
+  (`trust-tasks` with default-features = false and runtime_path) got every
+  family anyway.
+
+  None of these crates uses a specification module outside its tests,
+  examples and doc examples, so each now depends on the runtime alone
+  (default-features = false) and enables `acl` (and `task-consent` for
+  trust-tasks-https) as a dev-dependency feature for those.
+
+  Verified per crate in isolation, so no other workspace member can switch
+  the families back on: `cargo tree -e features` shows trust-tasks-rs with
+  no features for each, and each crate's tests, examples and doctests pass
+  with --all-features.
+
+  An application that reached a family's types only because a transport
+  switched every family on must now enable that family (or the `all-specs`
+  default) on trust-tasks-rs itself.
+
+
+
+## [0.35.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-proof-v0.35.1...trust-tasks-proof-v0.35.2) — 2026-10-26
+
+
+## [0.35.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-proof-v0.35.0...trust-tasks-proof-v0.35.1) — 2026-10-26
+
+
+## [0.35.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-proof-v0.34.2...trust-tasks-proof-v0.35.0) — 2026-10-26
+
+
+## [0.34.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-proof-v0.34.1...trust-tasks-proof-v0.34.2) — 2026-10-24
+
+
+## [0.34.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-proof-v0.34.0...trust-tasks-proof-v0.34.1) — 2026-10-23
+
+
 ## [0.34.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-proof-v0.33.2...trust-tasks-proof-v0.34.0) — 2026-10-23
 
 

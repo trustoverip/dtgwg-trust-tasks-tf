@@ -41,7 +41,7 @@ related:
 
 ## Abstract
 
-The **VTC Community — Requested Attributes — Show** Trust Task returns what the community asks a prospective applicant to tell it about themselves: a list of persona claim types (`name.display`, `address.country`), each marked required or optional and optionally with the purpose shown to the applicant. It is exactly what [`vtc/join-requests/manifest/0.2`](../../../../join-requests/manifest/0.2/spec.md) publishes as `requestedAttributes`, and what an applicant answers as `attributes` on `vtc/join-requests/submit`.
+The **VTC Community — Requested Attributes — Show** Trust Task returns what the community asks a prospective applicant to tell it about themselves: a list of persona claim types (`name.display`, `address.country`), each marked required or optional and optionally with the purpose shown to the applicant. It is exactly what [`vtc/join-requests/manifest/0.4`](../../../../join-requests/manifest/0.4/spec.md) publishes as `requestedAttributes`, and what an applicant answers as `attributes` on `vtc/join-requests/submit`.
 
 The list names claim types, never values: a community asks, and an applicant's agent answers from the persona the applicant chooses.
 

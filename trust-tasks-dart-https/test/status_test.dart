@@ -8,6 +8,8 @@ void main() {
       'permissionDenied': 403,
       'idConflict': 409,
       'unsupportedType': 422,
+      'unsupportedExtension': 422,
+      'indeterminate': 503,
       'unsupportedVersion': 422,
       'expired': 422,
       'proofRequired': 422,

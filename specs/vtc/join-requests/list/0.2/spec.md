@@ -109,7 +109,7 @@ their activity elsewhere.
 ### Retention
 
 The request is transient — a page is read and nothing is written. The durable
-retention was incurred at [`submit`](../../submit/0.2/spec.md); this task is the
+retention was incurred at [`submit`](../../submit/0.3/spec.md); this task is the
 bulk interface onto it.
 
 What deserves stating is what a single response becomes once it leaves the

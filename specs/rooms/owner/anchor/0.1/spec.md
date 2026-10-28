@@ -107,7 +107,7 @@ A recipient **SHOULD** reconcile before publishing and **MUST** report the outco
 
 ## What publishing costs
 
-`vta/webvh/dids/update/1.0` already exists, so nothing new is needed to write an anchor. What its own description says, and what a room operator has to plan around:
+`vta/webvh/dids/update/2.1` already exists, so nothing new is needed to write an anchor. What its own description says, and what a room operator has to plan around:
 
 > Supplying this **ROTATES the DID's update key** and refreshes its pre-rotation commitments, as a parallel consequence of the change.
 

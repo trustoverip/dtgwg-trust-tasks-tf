@@ -5,7 +5,7 @@ name = "trust-tasks"
 # number chased eight independently-versioned crates would be a worse front
 # door than the eight numbers it exists to hide. The versions it pins live in
 # `[dependencies]` below.
-version = "0.34.0"
+version = "0.36.1"
 edition.workspace = true
 rust-version = "1.95"
 license.workspace = true
@@ -67,31 +67,15 @@ capability-client = ["dep:trust-tasks-capability-client"]
 [dependencies]
 # Core is unconditional: there is no useful configuration of this crate that
 # does not include it, and gating it would just be a feature everyone turns on.
-trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.34", default-features = false }
+trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.36", default-features = false }
 
-trust-tasks-https = { path = "../trust-tasks-https", version = "0.34", optional = true }
-trust-tasks-didcomm = { path = "../trust-tasks-didcomm", version = "0.34", optional = true }
-trust-tasks-didcomm-v1 = { path = "../trust-tasks-didcomm-v1", version = "0.34", optional = true }
-trust-tasks-tsp = { path = "../trust-tasks-tsp", version = "0.34", optional = true }
-trust-tasks-proof = { path = "../trust-tasks-proof", version = "0.34", optional = true, default-features = false }
+trust-tasks-https = { path = "../trust-tasks-https", version = "0.36", optional = true }
+trust-tasks-didcomm = { path = "../trust-tasks-didcomm", version = "0.36", optional = true }
+trust-tasks-didcomm-v1 = { path = "../trust-tasks-didcomm-v1", version = "0.36", optional = true }
+trust-tasks-tsp = { path = "../trust-tasks-tsp", version = "0.36", optional = true }
+trust-tasks-proof = { path = "../trust-tasks-proof", version = "0.36", optional = true, default-features = false }
 trust-tasks-ceremony = { path = "../trust-tasks-ceremony", version = "0.2", optional = true }
-trust-tasks-capability-client = { path = "../trust-tasks-capability-client", version = "0.34", optional = true }
-
-[dev-dependencies]
-# Only the `acl_grant_roundtrip` example needs these. Dev-dependencies are
-# stripped at publish, so they cost a consumer nothing.
-tokio = { version = "1", features = ["full"] }
-uuid = { version = "1", features = ["v4"] }
-chrono = { version = "0.4", default-features = false, features = ["clock"] }
-affinidi-secrets-resolver = "0.5"
-
-[[example]]
-name = "acl_grant_roundtrip"
-# The example is the source of truth for GETTING-STARTED.md's Rust snippets
-# (see `tests/getting_started_snippets.rs`). It only builds with a transport
-# and a proof backend, so it is gated — `cargo clippy --workspace --all-targets
-# --all-features` in CI is what compiles it.
-required-features = ["https", "proof-affinidi"]
+trust-tasks-capability-client = { path = "../trust-tasks-capability-client", version = "0.36", optional = true }
 
 [package.metadata.docs.rs]
 all-features = true

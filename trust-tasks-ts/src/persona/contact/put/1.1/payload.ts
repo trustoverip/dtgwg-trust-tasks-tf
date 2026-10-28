@@ -8,6 +8,8 @@ import type { ClaimType, ContactDocument, DirectoryEntryId, DirectoryRef, Ext, L
 
 /**
  * File what a peer disclosed, or change the holder's own annotations on a contact, or both. Three forms. FILING (`subjectDid`, `knownByPersona`, `document`; no `contactId`) appends a revision, never overwrites, so a changed value is visible as a change rather than arriving silently — exactly as 1.0. ANNOTATING (`contactId`; no `subjectDid`, `knownByPersona`, `document` or `credentialRefs`) changes the holder's star, petname, lists, directory link or notes on an existing contact and appends no revision. LINKING (`directoryRef`, `knownByPersona`; no `contactId`, `subjectDid`, `document` or `credentialRefs`) keeps annotations on a member of a community's directory whose DID the holder has not been shown: it finds, or makes, the contact for that entry and persona, and appends no revision. In every form each annotation given replaces the stored one, each `removeX` removes one, and each annotation absent is unchanged. The outer document members are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by persona/contact/put/1.2
  */
 export type PersonaContactPutPayload = {
   contextId: string;
@@ -73,6 +75,8 @@ export type PersonaContactPutPayload = {
 
 /**
  * Success response to persona/contact/put. Type https://trusttasks.org/spec/persona/contact/put/1.1#response. Identifiers, the current revision and what changed; no claim value and no annotation text is echoed.
+ *
+ * @deprecated superseded by persona/contact/put/1.2
  */
 export interface PersonaContactPutResponsePayload {
   contactId: Ulid;
@@ -103,13 +107,37 @@ export type { ClaimType, ContactDocument, DirectoryEntryId, DirectoryRef, Ext, L
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/persona/contact/put/1.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by persona/contact/put/1.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by persona/contact/put/1.2
+ */
 export type Payload = PersonaContactPutPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/persona/contact/put/1.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by persona/contact/put/1.2
+ */
 export type Response = PersonaContactPutResponsePayload;
 
 /**

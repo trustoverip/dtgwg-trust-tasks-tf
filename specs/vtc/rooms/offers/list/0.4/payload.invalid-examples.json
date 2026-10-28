@@ -1,0 +1,44 @@
+[
+  {
+    "note": "A member DID in the request. The offers listed are the signer's; a request naming someone else asks to read their admissions.",
+    "payload": {
+      "member": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "ext": {
+        "bare-key": {
+          "anything": "here"
+        }
+      }
+    }
+  },
+  {
+    "note": "0.3's `renews` does not exist in 0.4; a renewal names the expiry of the authority it replaces as `renewsAt`.",
+    "variant": "response",
+    "payload": {
+      "items": [],
+      "renewals": [
+        {
+          "roomId": "did:webvh:example.com:rooms:wg-identity",
+          "host": "did:example:community",
+          "label": "Identity working group",
+          "visibility": "attributed",
+          "actions": [
+            "read",
+            "write"
+          ],
+          "validUntil": "2027-11-10T00:00:00Z",
+          "renews": "2026-11-10T00:00:00Z",
+          "issuedAt": "2026-10-14T09:00:00Z",
+          "credentials": {
+            "membership": "eyJhbGciOi…",
+            "authority": "eyJhbGciOi…"
+          }
+        }
+      ]
+    }
+  }
+]

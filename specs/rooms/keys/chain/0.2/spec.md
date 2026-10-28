@@ -59,7 +59,7 @@ related:
 
 A member hands their **key holder** — the party that holds their room keys and opens records on their agent's behalf — the room's epoch key chain, so that it can open records sealed before they joined.
 
-[`rooms/epoch/chain`](../../../epoch/chain/0.1/spec.md) gets the rungs from the room's host to the member. This gets them the last leg, from the member to the party that will actually use them. The two are not the same delivery and cannot be collapsed: a host is not permitted to speak to a member's key holder, and a key holder does not present the member's credentials to a host.
+[`rooms/epoch/chain`](../../../epoch/chain/0.2/spec.md) gets the rungs from the room's host to the member. This gets them the last leg, from the member to the party that will actually use them. The two are not the same delivery and cannot be collapsed: a host is not permitted to speak to a member's key holder, and a key holder does not present the member's credentials to a host.
 
 Without it a member who joins reads the room's history in their own client and their **agent** does not, which is the more confusing half of the same failure: an agent recalling from a room it is plainly a member of, finding nothing older than the day it arrived.
 
@@ -100,7 +100,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 **The entitlement is being the recipient's own principal.** A key holder holds one member's room keys, and this task extends what it can decrypt — so what authorizes it is not a credential the room issued but the standing relationship between a member and their own key holder. A conforming consumer **MUST** accept this only from the party whose keys it holds, established by the same means it establishes that for every other custody task in this family, and **MUST** refuse it for a room it holds no group state for.
 
-That is deliberately narrower than the grant used to *obtain* the rungs. Fetching them from a host takes a `read` chain the room issued ([`rooms/epoch/chain`](../../../epoch/chain/0.1/spec.md)); handing them onward takes no room credential at all, because the recipient is not being asked to believe anything about the room — it is being handed material it will verify by trying to use it.
+That is deliberately narrower than the grant used to *obtain* the rungs. Fetching them from a host takes a `read` chain the room issued ([`rooms/epoch/chain`](../../../epoch/chain/0.2/spec.md)); handing them onward takes no room credential at all, because the recipient is not being asked to believe anything about the room — it is being handed material it will verify by trying to use it.
 
 Per [SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements), verifying the VID, `issuer`, `recipient` or `proof` establishes *who sent this* and *that it is unaltered* — never that they were entitled to the outcome. Here those two happen to coincide, because the entitlement *is* an identity relationship; a consumer must still make the check deliberately rather than treat a valid proof as the answer.
 
@@ -147,7 +147,7 @@ only there: a rung below the floor is not early, it is forgotten.
 
 This is also why the recipient **MUST NOT** reject rungs it cannot currently use. A rung below a gap is not wrong; it is early, and it becomes useful the moment the gap is filled by a later delivery. Refusing it would make the natural repair — fetch more and send again — fail on the attempt that was about to succeed.
 
-Note what the recipient can honestly claim here and a host could not. The host serving [`rooms/epoch/chain`](../../../epoch/chain/0.1/spec.md) can say how many rungs it holds, and nothing about whether they *work*; a member cannot check that claim without walking them. The key holder **is** the party that walks them, so `earliestReadableEpoch` is computed from keys it actually derived.
+Note what the recipient can honestly claim here and a host could not. The host serving [`rooms/epoch/chain`](../../../epoch/chain/0.2/spec.md) can say how many rungs it holds, and nothing about whether they *work*; a member cannot check that claim without walking them. The key holder **is** the party that walks them, so `earliestReadableEpoch` is computed from keys it actually derived.
 
 ## Request
 

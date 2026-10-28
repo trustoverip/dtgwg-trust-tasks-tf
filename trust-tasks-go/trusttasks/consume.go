@@ -11,9 +11,9 @@ package trusttasks
 //
 //	guard := trusttasks.NewInMemoryReplayGuard(0) // one guard per consumer: it IS the record
 //
-//	outcome, err := trusttasks.ConsumeInbound(ctx, trusttasks.ConsumeOptions[aclgrantv0_1.Payload, aclgrantv0_1.Response]{
+//	outcome, err := trusttasks.ConsumeInbound(ctx, trusttasks.ConsumeOptions[aclgrantv0_2.Payload, aclgrantv0_2.Response]{
 //	    Transport:     transport,
-//	    Spec:          aclgrantv0_1.Spec,
+//	    Spec:          aclgrantv0_2.Spec,
 //	    ProofPolicy:   trusttasks.ProofPolicy{Kind: trusttasks.ProofVerify, Verifier: myVerifier},
 //	    PayloadPolicy: trusttasks.PayloadPolicy{Kind: trusttasks.PayloadValidate, Validator: myValidator},
 //	    Checks:        trusttasks.ConsequentialChecks(guard), // acl/grant is consequential
@@ -21,7 +21,7 @@ package trusttasks
 //	    MyVID:         "did:web:maintainer.example",
 //	    Now:           time.Now(),
 //	    NewErrorID:    uuid.NewString,
-//	    Handler: func(ctx context.Context, doc *trusttasks.Document[aclgrantv0_1.Payload], parties trusttasks.ResolvedParties) (*trusttasks.Document[aclgrantv0_1.Response], error) {
+//	    Handler: func(ctx context.Context, doc *trusttasks.Document[aclgrantv0_2.Payload], parties trusttasks.ResolvedParties) (*trusttasks.Document[aclgrantv0_2.Response], error) {
 //	        return trusttasks.RespondWith(doc, uuid.NewString(), buildResponse(parties), nil), nil
 //	    },
 //	})
@@ -340,6 +340,19 @@ type ConsumeOptions[P, R any] struct {
 
 	Doc *Document[P]
 
+	// Received is the document exactly as it arrived, when Doc was decoded from it.
+	// Optional; set it whenever the bytes are at hand, and always when Doc is
+	// [ReadForSpec]'s reading of a document of a later, extending version.
+	//
+	// When set, the proof is verified over these bytes rather than over a
+	// re-encoding of Doc. A re-encoding reproduces the signed bytes only when every
+	// member round-trips, and a pruned reading — or any typed decode, which drops
+	// the members its type does not model — does not. ConsumeInbound also checks
+	// that Doc is a reading of Received (the envelope equal, the payload a subset),
+	// and refuses proofInvalid when it is not: a proof over one document vouches
+	// for nothing about another.
+	Received json.RawMessage
+
 	// MyVID is this consumer's own VID, for the §7.2 item 5 recipient check.
 	MyVID string
 
@@ -468,9 +481,20 @@ func ConsumeInbound[P, R any](
 			if opts.ProofPolicy.Verifier == nil {
 				return zero, fmt.Errorf("%w: ProofPolicy.Verifier under ProofVerify", ErrMissingOption)
 			}
-			encoded, err := json.Marshal(doc)
-			if err != nil {
-				return zero, fmt.Errorf("trusttasks: marshal document for proof verification: %w", err)
+			encoded := opts.Received
+			if len(encoded) > 0 {
+				if !isReadingOf(doc, encoded) {
+					return route(&RejectReason{
+						Code:    CodeProofInvalid,
+						Message: ProofInvalidWireMessage,
+					}), nil
+				}
+			} else {
+				var err error
+				encoded, err = json.Marshal(doc)
+				if err != nil {
+					return zero, fmt.Errorf("trusttasks: marshal document for proof verification: %w", err)
+				}
 			}
 			if err := opts.ProofPolicy.Verifier.Verify(ctx, encoded); err != nil {
 				// A constant, never the verifier's own error text. SPEC §12.4

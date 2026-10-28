@@ -316,16 +316,22 @@ fn check_thread(
 }
 
 #[cfg(test)]
+// The specimens are prebuilt modules, deprecated in favour of generating the
+// tasks an application uses (trust-tasks-build).
+#[allow(deprecated)]
 mod tests {
     use super::*;
-    use trust_tasks_rs::specs::acl::grant::v0_1 as grant;
+    use trust_tasks_rs::specs::acl::grant::v0_2 as grant;
 
     fn entry() -> grant::AclEntry {
-        grant::AclEntry::builder()
-            .subject("did:sov:alice")
-            .role("admin")
-            .try_into()
-            .expect("acl entry builder")
+        serde_json::from_value(serde_json::json!({
+            "subject": "did:sov:alice",
+            "role": "admin",
+            "act": { "scope": "all" },
+            "keys": { "scope": "all" },
+            "capabilities": { "scope": "ceiling" }
+        }))
+        .expect("a valid acl/grant/0.2 entry")
     }
 
     fn payload() -> grant::Payload {
@@ -585,6 +591,6 @@ mod tests {
         assert_eq!(recovered.id, original.id);
         assert_eq!(recovered.thread_id, original.thread_id);
         assert_eq!(recovered.issuer, original.issuer);
-        assert_eq!(recovered.payload.entry.subject, "did:sov:alice");
+        assert_eq!(recovered.payload.entry.subject.as_str(), "did:sov:alice");
     }
 }

@@ -15,7 +15,7 @@
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use trust_tasks_rs::{
-    specs::trust_task_discovery::v0_1 as discovery, Payload, RejectReason, StandardCode, TrustTask,
+    specs::trust_task_discovery::v0_3 as discovery, Payload, RejectReason, StandardCode, TrustTask,
 };
 
 #[derive(Serialize, Deserialize)]

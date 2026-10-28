@@ -80,7 +80,7 @@ The **Device — Wipe** Trust Task instructs a Companion or Service to destroy i
 1. The target's ACL entry is **revoked at the moment the wipe is issued**, not when the target acknowledges. Existing refresh tokens expire (existing 24h TTL); proxy-login and release calls return `permissionDenied`.
 2. The maintainer rotates the **cache-key derivation root** for that device. Future sync deltas would be encrypted under a key the device can never derive again.
 3. The maintainer instructs the mediator to **refuse forwarding** of inbound traffic to the wiped device's holder DID.
-4. A `sync/event/0.1` of kind `aclChanged` with `change: "deviceWiped"` is fanned out to every other Companion, so their UIs surface the wiped device in the device-manager.
+4. A `sync/event/0.2` of kind `aclChanged` with `change: "deviceWiped"` is fanned out to every other Companion, so their UIs surface the wiped device in the device-manager.
 
 The net effect: even if the lost device is fully under attacker control and silently drops the wipe message, the attacker gets nothing of value beyond what was already in the device's RAM at the moment of loss (bounded by short release TTLs).
 
@@ -110,7 +110,7 @@ A maintainer **MAY** issue subsequent wipes to the same `deviceId` at a wider `s
 In order of preference:
 
 1. **Online (DIDComm push via mediator).** Target executes immediately.
-2. **On next heartbeat.** If the target was offline at issuance, the maintainer queues the wipe; the target fetches on its next `device/heartbeat/0.1` and executes before any other op.
+2. **On next heartbeat.** If the target was offline at issuance, the maintainer queues the wipe; the target fetches on its next `device/heartbeat/0.3` and executes before any other op.
 3. **Mediator-suppressed.** The maintainer also tells the mediator to refuse to forward subsequent inbound traffic to the wiped device's holder DID. Even if the target tries to reconnect, it cannot receive vault deltas.
 
 ## Payload

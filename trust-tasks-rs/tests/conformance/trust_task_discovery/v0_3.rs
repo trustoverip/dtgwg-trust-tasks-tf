@@ -35,7 +35,7 @@ fn request_example_3() {
 }
 #[test]
 fn response_example_1() {
-    const JSON: &str = "{\n  \"id\": \"urn:uuid:9e2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"type\": \"https://trusttasks.org/spec/trust-task-discovery/0.3#response\",\n  \"threadId\": \"urn:uuid:6e2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"issuer\": \"did:web:server.example\",\n  \"recipient\": \"did:web:client.example\",\n  \"issuedAt\": \"2026-06-20T10:00:01Z\",\n  \"payload\": {\n    \"supportedTypes\": [\n      \"https://trusttasks.org/spec/acl/change-role/0.1\",\n      \"https://trusttasks.org/spec/acl/grant/0.1\",\n      \"https://trusttasks.org/spec/acl/list/0.1\",\n      \"https://trusttasks.org/spec/acl/revoke/0.1\",\n      \"https://trusttasks.org/spec/acl/show/0.1\"\n    ]\n  }\n}\n";
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:9e2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"type\": \"https://trusttasks.org/spec/trust-task-discovery/0.3#response\",\n  \"threadId\": \"urn:uuid:6e2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"issuer\": \"did:web:server.example\",\n  \"recipient\": \"did:web:client.example\",\n  \"issuedAt\": \"2026-06-20T10:00:01Z\",\n  \"payload\": {\n    \"supportedTypes\": [\n      \"https://trusttasks.org/spec/acl/change-role/0.2\",\n      \"https://trusttasks.org/spec/acl/grant/0.2\",\n      \"https://trusttasks.org/spec/acl/list/0.3\",\n      \"https://trusttasks.org/spec/acl/revoke/0.2\",\n      \"https://trusttasks.org/spec/acl/show/0.2\"\n    ]\n  }\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Response> =
         serde_json::from_str(JSON).expect("deserialize response example");
     let rendered = serde_json::to_value(&doc).expect("re-serialize");
@@ -44,7 +44,7 @@ fn response_example_1() {
 }
 #[test]
 fn response_example_2() {
-    const JSON: &str = "{\n  \"id\": \"urn:uuid:ae2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"type\": \"https://trusttasks.org/spec/trust-task-discovery/0.3#response\",\n  \"threadId\": \"urn:uuid:7e2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"issuer\": \"did:web:server.example\",\n  \"recipient\": \"did:web:client.example\",\n  \"issuedAt\": \"2026-06-20T10:00:01Z\",\n  \"payload\": {\n    \"supportedTypes\": [\n      \"https://trusttasks.org/spec/acl/change-role/0.1\",\n      \"https://trusttasks.org/spec/acl/grant/0.1\",\n      \"https://trusttasks.org/spec/acl/list/0.1\",\n      \"https://trusttasks.org/spec/acl/revoke/0.1\",\n      \"https://trusttasks.org/spec/acl/show/0.1\"\n    ]\n  }\n}\n";
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:ae2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"type\": \"https://trusttasks.org/spec/trust-task-discovery/0.3#response\",\n  \"threadId\": \"urn:uuid:7e2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"issuer\": \"did:web:server.example\",\n  \"recipient\": \"did:web:client.example\",\n  \"issuedAt\": \"2026-06-20T10:00:01Z\",\n  \"payload\": {\n    \"supportedTypes\": [\n      \"https://trusttasks.org/spec/acl/change-role/0.2\",\n      \"https://trusttasks.org/spec/acl/grant/0.2\",\n      \"https://trusttasks.org/spec/acl/list/0.3\",\n      \"https://trusttasks.org/spec/acl/revoke/0.2\",\n      \"https://trusttasks.org/spec/acl/show/0.2\"\n    ]\n  }\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Response> =
         serde_json::from_str(JSON).expect("deserialize response example");
     let rendered = serde_json::to_value(&doc).expect("re-serialize");
@@ -53,7 +53,7 @@ fn response_example_2() {
 }
 #[test]
 fn response_example_3() {
-    const JSON: &str = "{\n  \"id\": \"urn:uuid:ce2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"type\": \"https://trusttasks.org/spec/trust-task-discovery/0.3#response\",\n  \"threadId\": \"urn:uuid:7e2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"issuer\": \"did:web:server.example\",\n  \"recipient\": \"did:web:client.example\",\n  \"issuedAt\": \"2026-06-20T10:00:01Z\",\n  \"payload\": {\n    \"frameworkVersion\": \"0.6.0\",\n    \"supportedTypes\": [\n      {\n        \"type\": \"https://trusttasks.org/spec/acl/grant/0.1\",\n        \"requiredExt\": [\"vnd.affinidi.webvh\"]\n      },\n      \"https://trusttasks.org/spec/acl/list/0.1\",\n      \"https://trusttasks.org/spec/acl/show/0.1\"\n    ]\n  }\n}\n";
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:ce2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"type\": \"https://trusttasks.org/spec/trust-task-discovery/0.3#response\",\n  \"threadId\": \"urn:uuid:7e2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"issuer\": \"did:web:server.example\",\n  \"recipient\": \"did:web:client.example\",\n  \"issuedAt\": \"2026-06-20T10:00:01Z\",\n  \"payload\": {\n    \"frameworkVersion\": \"0.6.0\",\n    \"supportedTypes\": [\n      {\n        \"type\": \"https://trusttasks.org/spec/acl/grant/0.2\",\n        \"requiredExt\": [\"vnd.affinidi.webvh\"]\n      },\n      \"https://trusttasks.org/spec/acl/list/0.3\",\n      \"https://trusttasks.org/spec/acl/show/0.2\"\n    ]\n  }\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Response> =
         serde_json::from_str(JSON).expect("deserialize response example");
     let rendered = serde_json::to_value(&doc).expect("re-serialize");
@@ -62,7 +62,7 @@ fn response_example_3() {
 }
 #[test]
 fn response_example_4() {
-    const JSON: &str = "{\n  \"id\": \"urn:uuid:de2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"type\": \"https://trusttasks.org/spec/trust-task-discovery/0.3#response\",\n  \"threadId\": \"urn:uuid:6e2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"issuer\": \"did:web:server.example\",\n  \"recipient\": \"did:web:client.example\",\n  \"issuedAt\": \"2026-06-20T10:00:01Z\",\n  \"payload\": {\n    \"frameworkVersion\": \"0.6.0\",\n    \"acceptanceWindow\": {\n      \"maxAgeSeconds\": 600,\n      \"clockSkewSeconds\": 60\n    },\n    \"supportedTypes\": [\n      {\n        \"type\": \"https://trusttasks.org/spec/acl/grant/0.1\",\n        \"acceptanceWindow\": {\n          \"maxAgeSeconds\": 120,\n          \"clockSkewSeconds\": 30\n        }\n      },\n      \"https://trusttasks.org/spec/acl/list/0.1\",\n      \"https://trusttasks.org/spec/acl/show/0.1\"\n    ]\n  }\n}\n";
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:de2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"type\": \"https://trusttasks.org/spec/trust-task-discovery/0.3#response\",\n  \"threadId\": \"urn:uuid:6e2c5e2a-1b81-4d3e-9b51-7a3c89e3d1f2\",\n  \"issuer\": \"did:web:server.example\",\n  \"recipient\": \"did:web:client.example\",\n  \"issuedAt\": \"2026-06-20T10:00:01Z\",\n  \"payload\": {\n    \"frameworkVersion\": \"0.6.0\",\n    \"acceptanceWindow\": {\n      \"maxAgeSeconds\": 600,\n      \"clockSkewSeconds\": 60\n    },\n    \"supportedTypes\": [\n      {\n        \"type\": \"https://trusttasks.org/spec/acl/grant/0.2\",\n        \"acceptanceWindow\": {\n          \"maxAgeSeconds\": 120,\n          \"clockSkewSeconds\": 30\n        }\n      },\n      \"https://trusttasks.org/spec/acl/list/0.3\",\n      \"https://trusttasks.org/spec/acl/show/0.2\"\n    ]\n  }\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Response> =
         serde_json::from_str(JSON).expect("deserialize response example");
     let rendered = serde_json::to_value(&doc).expect("re-serialize");
@@ -120,31 +120,31 @@ fn rejects_invalid_response_examples() {
     let fixtures: &[(&str, &str)] = &[
         (
             "acceptanceWindow without clockSkewSeconds — both members are required, so a discoverer never has to guess whether an absent tolerance means zero or the framework's typical sixty seconds.",
-            "{\n  \"acceptanceWindow\": {\n    \"maxAgeSeconds\": 600\n  },\n  \"supportedTypes\": [\n    \"https://trusttasks.org/spec/acl/grant/0.1\"\n  ]\n}",
+            "{\n  \"acceptanceWindow\": {\n    \"maxAgeSeconds\": 600\n  },\n  \"supportedTypes\": [\n    \"https://trusttasks.org/spec/acl/grant/0.2\"\n  ]\n}",
         ),
         (
             "acceptanceWindow with a zero maxAgeSeconds — a window no document can be accepted in is not a window, and a producer reading it would re-issue without end.",
-            "{\n  \"acceptanceWindow\": {\n    \"clockSkewSeconds\": 60,\n    \"maxAgeSeconds\": 0\n  },\n  \"supportedTypes\": [\n    \"https://trusttasks.org/spec/acl/grant/0.1\"\n  ]\n}",
+            "{\n  \"acceptanceWindow\": {\n    \"clockSkewSeconds\": 60,\n    \"maxAgeSeconds\": 0\n  },\n  \"supportedTypes\": [\n    \"https://trusttasks.org/spec/acl/grant/0.2\"\n  ]\n}",
         ),
         (
             "Negative clockSkewSeconds — a tolerance is a width, never a shift, and a negative one would narrow the window below maxAgeSeconds without saying so.",
-            "{\n  \"acceptanceWindow\": {\n    \"clockSkewSeconds\": -60,\n    \"maxAgeSeconds\": 600\n  },\n  \"supportedTypes\": [\n    \"https://trusttasks.org/spec/acl/grant/0.1\"\n  ]\n}",
+            "{\n  \"acceptanceWindow\": {\n    \"clockSkewSeconds\": -60,\n    \"maxAgeSeconds\": 600\n  },\n  \"supportedTypes\": [\n    \"https://trusttasks.org/spec/acl/grant/0.2\"\n  ]\n}",
         ),
         (
             "Fractional seconds — the window is carried in whole seconds; a fractional value is a different unit someone forgot to convert.",
-            "{\n  \"acceptanceWindow\": {\n    \"clockSkewSeconds\": 60,\n    \"maxAgeSeconds\": 600.5\n  },\n  \"supportedTypes\": [\n    \"https://trusttasks.org/spec/acl/grant/0.1\"\n  ]\n}",
+            "{\n  \"acceptanceWindow\": {\n    \"clockSkewSeconds\": 60,\n    \"maxAgeSeconds\": 600.5\n  },\n  \"supportedTypes\": [\n    \"https://trusttasks.org/spec/acl/grant/0.2\"\n  ]\n}",
         ),
         (
             "A duration string instead of seconds — the members are integers, not ISO 8601 durations, so a discoverer does arithmetic rather than parsing.",
-            "{\n  \"acceptanceWindow\": {\n    \"clockSkewSeconds\": 60,\n    \"maxAgeSeconds\": \"PT10M\"\n  },\n  \"supportedTypes\": [\n    \"https://trusttasks.org/spec/acl/grant/0.1\"\n  ]\n}",
+            "{\n  \"acceptanceWindow\": {\n    \"clockSkewSeconds\": 60,\n    \"maxAgeSeconds\": \"PT10M\"\n  },\n  \"supportedTypes\": [\n    \"https://trusttasks.org/spec/acl/grant/0.2\"\n  ]\n}",
         ),
         (
             "Unknown member inside acceptanceWindow — the object is closed, so a misspelt member (maxAge for maxAgeSeconds) is refused rather than read as an absent one.",
-            "{\n  \"acceptanceWindow\": {\n    \"clockSkewSeconds\": 60,\n    \"maxAge\": 600,\n    \"maxAgeSeconds\": 600\n  },\n  \"supportedTypes\": [\n    \"https://trusttasks.org/spec/acl/grant/0.1\"\n  ]\n}",
+            "{\n  \"acceptanceWindow\": {\n    \"clockSkewSeconds\": 60,\n    \"maxAge\": 600,\n    \"maxAgeSeconds\": 600\n  },\n  \"supportedTypes\": [\n    \"https://trusttasks.org/spec/acl/grant/0.2\"\n  ]\n}",
         ),
         (
             "Entry-level acceptanceWindow missing maxAgeSeconds — the per-entry override has the same shape as the response-level member.",
-            "{\n  \"supportedTypes\": [\n    {\n      \"acceptanceWindow\": {\n        \"clockSkewSeconds\": 60\n      },\n      \"type\": \"https://trusttasks.org/spec/acl/grant/0.1\"\n    }\n  ]\n}",
+            "{\n  \"supportedTypes\": [\n    {\n      \"acceptanceWindow\": {\n        \"clockSkewSeconds\": 60\n      },\n      \"type\": \"https://trusttasks.org/spec/acl/grant/0.2\"\n    }\n  ]\n}",
         ),
     ];
     for (i, (note, raw)) in fixtures.iter().enumerate() {

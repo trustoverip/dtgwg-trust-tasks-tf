@@ -14,9 +14,11 @@
 //! are enabled, and a single-family build such as
 //! `--no-default-features --features acl` skips it instead of failing.
 #![cfg(all(feature = "keys", feature = "vta", feature = "vtc"))]
-
+// Exercises the prebuilt specification modules on purpose; they are deprecated
+// in favour of generating the tasks an application uses (trust-tasks-build).
+#![allow(deprecated)]
 use trust_tasks_rs::specs::keys::revoke::v0_1 as keys_revoke;
-use trust_tasks_rs::specs::trust_task_discovery::v0_1 as discovery;
+use trust_tasks_rs::specs::trust_task_discovery::v0_3 as discovery;
 use trust_tasks_rs::specs::vta::management::reload_services::v1_0 as reload_services;
 use trust_tasks_rs::specs::vtc::join_requests::withdraw::v0_1 as withdraw;
 use trust_tasks_rs::{DeclaredErrorCode, ErrorPayload, Payload, TrustTaskCode};

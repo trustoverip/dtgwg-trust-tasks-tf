@@ -3,11 +3,13 @@
  * Source: specs/vta/pcs/trustee/deal/0.2/payload.schema.json
  */
 
-import type { BoardVisibility, ChoiceQuestion, ElectionId, Ext, Key_VotingV0_1 as Key, Manifest, Question, QuestionOption, RankingQuestion, Revote, RollRule, ScoreQuestion, SecrecyLevel, SignedRequest, TextQuestion, TrusteeCeremony, Trustees } from "../../../../../_shared/components.js";
+import type { BoardVisibility, ChoiceQuestion, ElectionId, Ext, Key_VotingV0_1 as Key, Manifest_VotingV0_1 as Manifest, Question, QuestionOption, RankingQuestion, Revote, RollRule, ScoreQuestion, SecrecyLevel, SignedRequest, TextQuestion, TrusteeCeremony, Trustees } from "../../../../../_shared/components.js";
 
 
 /**
  * The trustee's VTA deals its contribution to the election key and returns the voting/trustees/deal request signed as the trustee.
+ *
+ * @deprecated superseded by vta/pcs/trustee/deal/0.3
  */
 export interface VTAPCSTrusteeDealPayload {
   /**
@@ -30,6 +32,7 @@ export interface VTAPCSTrusteeDealPayload {
   ceremony: TrusteeCeremony;
   ext?: Ext;
 }
+/** @deprecated superseded by vta/pcs/trustee/deal/0.3 */
 export interface VTAPCSTrusteeDealResponsePayload {
   document: DealDocument;
   ext?: Ext;
@@ -66,13 +69,37 @@ export type { BoardVisibility, ChoiceQuestion, ElectionId, Ext, Key, Manifest, Q
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/pcs/trustee/deal/0.2" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vta/pcs/trustee/deal/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vta/pcs/trustee/deal/0.3
+ */
 export type Payload = VTAPCSTrusteeDealPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/pcs/trustee/deal/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vta/pcs/trustee/deal/0.3
+ */
 export type Response = VTAPCSTrusteeDealResponsePayload;
 
 /**

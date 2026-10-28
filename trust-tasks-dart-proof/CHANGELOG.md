@@ -10,6 +10,68 @@ Publishing is triggered by the `trust-tasks-dart-proof-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.1.7 — 2026-10-27
+
+## 0.1.6 — 2026-10-27
+
+
+### Added
+
+- The prebuilt specification modules are deprecated in all four libraries; generate the tasks you use (#954)
+
+Milestone 5 of docs/design/consumer-side-generation.md. Every prebuilt module
+  outside the framework's own specifications (trust-task-*, trust-ceremony-*,
+  _framework/) is deprecated, so that an application is told to pin the tasks it
+  uses with the trust-tasks CLI and generate them instead. Nothing is removed:
+  the withdrawal batch that removes them is chosen later, at least 90 days after
+  this ships.
+
+  Each library marks the prebuilt entry point where its toolchain reports a
+  deprecation, never the module body, which is also what the consumer-side
+  generators emit:
+
+  - Rust: #[deprecated] on each gated family module in trust-tasks-rs's
+    specs/mod.rs (trust-tasks-codegen). It reaches every path and item under the
+    module; framework modules and trust-tasks-build's output are unmarked.
+  - TypeScript: the root index re-exports each module as
+    `import * as _X …; /** @deprecated … */ export import X = _X;`, because
+    TypeScript ignores @deprecated on `export * as`. API compatibility against
+    0.27.8: nothing removed or changed. A deep import of a module file is not
+    marked; TypeScript has no module-level deprecation.
+  - Go: a `Deprecated:` paragraph in each prebuilt package's doc, which gopls and
+    staticcheck (SA1019) report on import.
+  - Dart: @Deprecated on each prebuilt library's `library` directive, which the
+    analyzer reports on import from another package. This package's own tests
+    use them, so analysis_options ignores the same-package diagnostic SDKs
+    before 3.4 report.
+
+  The TS, Go and Dart equivalence tests mask exactly the mark; every consumer
+  generator is still held to the prebuilt tree as before. Hand-written Rust that
+  uses prebuilt modules on purpose — the acl-specimen test modules, the
+  integration tests and the examples — carries #[allow(deprecated)]; none of the
+  runtime does.
+
+  GETTING-STARTED, the four library READMEs, the design doc and CLAUDE.md say
+  so, and point at each language's generator.
+
+## 0.1.5 — 2026-10-26
+
+## 0.1.4 — 2026-10-26
+
+
+### Added
+
+- **codegen**: Superseded and retired spec versions are deprecated in every library, and withdrawn ones leave them in a quarterly batch (#921)
+
+* feat(go): mark superseded and retired spec versions deprecated, and omit withdrawn ones
+
+  Every generated request package now exports `const Deprecation` (empty for a
+  current version, otherwise "superseded by <slug>/<M.N>", "retired; use
+  <slug>/<M.N>" or "retired"), and a deprecated version's Payload and Response
+  types carry a `// Deprecated:` paragraph. A version with `status: withdrawn`
+  gets no package at all. The rule is derived independently from front matter,
+  per SPEC "Superseded and Withdrawn Versions".
+
 ## 0.1.3 — 2026-10-23
 
 

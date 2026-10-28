@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tasks.acme.example/spec/payments/_shared/1.0/money",
+  "title": "Money — shared definitions for acme's payments/* family",
+  "$defs": {
+    "Money": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["currency", "amount"],
+      "properties": {
+        "currency": { "type": "string", "pattern": "^[A-Z]{3}$" },
+        "amount": { "type": "string", "pattern": "^[0-9]+(\\.[0-9]+)?$" }
+      }
+    }
+  }
+}

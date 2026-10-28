@@ -84,6 +84,9 @@ where
 }
 
 #[cfg(test)]
+// The specimens are prebuilt modules, deprecated in favour of generating the
+// tasks an application uses (trust-tasks-build).
+#[allow(deprecated)]
 mod tests {
     use super::*;
 
@@ -186,45 +189,28 @@ mod tests {
     #[test]
     #[cfg(feature = "acl")]
     fn works_with_codegen_acl_entry_shape() {
-        use crate::specs::acl::grant::v0_1 as grant;
+        use crate::specs::acl::grant::v0_2 as grant;
 
-        let admin = grant::AclEntry {
-            allowed_keys: None,
-            subject: "did:web:alice.example".into(),
-            role: "admin".into(),
-            scopes: vec![],
-            label: None,
-            created_at: None,
-            created_by: None,
-            updated_at: None,
-            updated_by: None,
-            expires_at: None,
-            approve: None,
-            step_up: None,
-            ext: None,
+        let entry = |subject: &str, role: &str| -> grant::AclEntry {
+            serde_json::from_value(serde_json::json!({
+                "subject": subject,
+                "role": role,
+                "act": { "scope": "all" },
+                "keys": { "scope": "all" },
+                "capabilities": { "scope": "ceiling" }
+            }))
+            .expect("a valid acl/grant/0.2 entry")
         };
-        let member = grant::AclEntry {
-            allowed_keys: None,
-            subject: "did:web:bob.example".into(),
-            role: "member".into(),
-            scopes: vec![],
-            label: None,
-            created_at: None,
-            created_by: None,
-            updated_at: None,
-            updated_by: None,
-            expires_at: None,
-            approve: None,
-            step_up: None,
-            ext: None,
-        };
+
+        let admin = entry("did:web:alice.example", "admin");
+        let member = entry("did:web:bob.example", "member");
         let entries = [admin, member];
 
         assert_eq!(
             reject_last_authority(
                 entries.iter(),
-                |e: &&grant::AclEntry| e.role == "admin",
-                |e: &&grant::AclEntry| e.subject == "did:web:alice.example",
+                |e: &&grant::AclEntry| e.role.as_str() == "admin",
+                |e: &&grant::AclEntry| e.subject.as_str() == "did:web:alice.example",
             ),
             Some("acl/revoke:last_authority_protected")
         );

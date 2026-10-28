@@ -14,12 +14,19 @@
     "build-ts-bindings": "node scripts/build-ts-bindings.mjs",
     "build-go-bindings": "node scripts/build-go-bindings.mjs",
     "build-dart-bindings": "node scripts/build-dart-bindings.mjs",
+    "build-bundles": "cargo run -q --release -p trust-tasks-codegen -- --bundles website/specs",
+    "check-bundles": "node scripts/check-bundles.mjs",
     "test:infra": "node --test infra/cloudfront/*.test.mjs",
     "validate-ceremonies": "node scripts/validate-ceremonies.mjs",
     "test-ceremonies": "node scripts/validate-ceremonies.mjs --test",
     "check-dart-packages": "node scripts/check-dart-packages.mjs",
+    "check-sibling-core-ranges": "node scripts/check-sibling-core-ranges.mjs",
     "check-bindings": "node scripts/check-bindings-conformance.mjs",
-    "check-enum-append-only": "node scripts/check-enum-append-only.mjs"
+    "check-published-schemas": "node scripts/check-published-schemas.mjs",
+    "fix-stale-references": "node scripts/fix-stale-references.mjs",
+    "extends-candidates": "node scripts/extends-candidates.mjs",
+    "withdraw-due": "node scripts/withdraw-due.mjs",
+    "check-withdrawal-readiness": "node scripts/check-withdrawal-readiness.mjs"
   },
   "engines": {
     "node": ">=24"

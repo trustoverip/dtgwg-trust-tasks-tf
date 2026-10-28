@@ -50,7 +50,7 @@ related:
 
 ## Abstract
 
-The grant is the heart of the key-grant sign-in. The member does not hand the browser a session; the member signs a statement naming the browser's own key, and only the holder of that key can turn the statement into a session ([`auth/oob/redeem`](../../redeem/0.1/spec.md)). The grant binds:
+The grant is the heart of the key-grant sign-in. The member does not hand the browser a session; the member signs a statement naming the browser's own key, and only the holder of that key can turn the statement into a session ([`auth/oob/redeem`](../../redeem/0.2/spec.md)). The grant binds:
 
 - the **request** (`requestId`);
 - the **starter key** that may act (`sessionKey`) and the **lock** that delivered it (`approverKey`);
@@ -118,7 +118,7 @@ A conforming **consumer** (the service, executing `auth/oob/respond` and accepti
    4. the task is not excluded by item 6.
 5. **MUST** authorize a document accepted under item 4 by the member's standing **read at execution time** — never by a copy taken at sign-in — and only by the standing the session's surface carries: a service that runs separate surfaces for different audiences (a member portal and an administration console) **MUST NOT** let a key delegated by a sign-in to one reach authority the member holds only on another. Whatever the scope names, the key reaches no further than the member could reach on that surface with their own key.
 6. **Exclusions.** **MUST NOT** accept a document signed by the starter key, whatever `signingScope` names:
-   1. where any specification requires a proof by a key the signer's DID document lists under `assertionMethod` — in particular [`auth/step-up/approve-response`](../../../step-up/approve-response/0.5/spec.md), [`task-consent/decision`](../../../../task-consent/decision/0.1/spec.md), [`confirm/response`](../../../../confirm/response/0.1/spec.md) and this specification — nor as satisfying any requirement for a user-verified gesture or step-up;
+   1. where any specification requires a proof by a key the signer's DID document lists under `assertionMethod` — in particular [`auth/step-up/approve-response`](../../../step-up/approve-response/0.6/spec.md), [`task-consent/decision`](../../../../task-consent/decision/0.2/spec.md), [`confirm/response`](../../../../confirm/response/0.1/spec.md) and this specification — nor as satisfying any requirement for a user-verified gesture or step-up;
    2. for an operation that confers, withdraws or changes authority, for the member or anyone else: a role, a capability, an access-control entry, a membership, a group membership that carries a role or a capability, a credential, a key, a delegation or a session. Asking for a credential the member receives only as an offer their own agent must accept, and ending the renewal of the member's own credential, confer and withdraw nothing in this sense: the key never receives or accepts the credential — so joining or leaving a group that carries no role or capability is not excluded here;
    3. for an operation that gives, changes or withdraws a consent, or that publishes the member's data beyond the service's own members;
    4. for an operation that asserts, in the member's name and to another party, an identifier, a key or a statement that party will rely on as the member's — for example a reply identifier handed to another member as the member's own.
@@ -184,7 +184,7 @@ Not a grant: a `vtc/directory/entries/list` request, issued and signed by the st
 ```json
 {
   "id": "urn:uuid:1f2e3d4c-5b6a-4798-8a7b-6c5d4e3f2a01",
-  "type": "https://trusttasks.org/spec/vtc/directory/entries/list/0.1",
+  "type": "https://trusttasks.org/spec/vtc/directory/entries/list/0.2",
   "issuer": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
   "recipient": "did:web:community.example",
   "issuedAt": "2026-10-10T10:05:00Z",

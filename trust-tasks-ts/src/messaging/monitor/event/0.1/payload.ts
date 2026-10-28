@@ -3,9 +3,10 @@
  * Source: specs/messaging/monitor/event/0.1/payload.schema.json
  */
 
-import type { Ext, MonitorEvent, TrafficChannel, TrafficDirection, TrafficOutcome, TrafficStage, Vid, WireProtocol } from "../../../../_shared/components.js";
+import type { Ext, MonitorEvent_MessagingV0_1 as MonitorEvent, TrafficChannel, TrafficDirection, TrafficOutcome, TrafficStage, Vid, WireProtocol } from "../../../../_shared/components.js";
 
 
+/** @deprecated superseded by messaging/monitor/event/0.2 */
 export interface MessagingTrafficMonitorEventPayload {
   subscriptionId: string;
   /**
@@ -38,7 +39,27 @@ export type { Ext, MonitorEvent, TrafficChannel, TrafficDirection, TrafficOutcom
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/messaging/monitor/event/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by messaging/monitor/event/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by messaging/monitor/event/0.2
+ */
 export type Payload = MessagingTrafficMonitorEventPayload;
 
 /**

@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/pcs/trustee/justify/0.3",
+  "title": "VTA PCS — Trustee Justify — payload",
+  "description": "The dealer's VTA reveals the share it dealt to a trustee that complained, and returns the voting/trustees/justify request signed as the dealer.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contextId",
+    "community",
+    "electionId",
+    "trustee",
+    "manifest",
+    "ceremony",
+    "recipient"
+  ],
+  "properties": {
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "The VTA context the trustee's keys live in."
+    },
+    "community": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "description": "The community's DID."
+    },
+    "electionId": {
+      "$ref": "../../../../../voting/_shared/0.2/voting.schema.json#/$defs/ElectionId"
+    },
+    "trustee": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "description": "The trustee's DID: a persona this VTA holds, named in the manifest's `trustees.dids`."
+    },
+    "manifest": {
+      "$ref": "../../../../../voting/_shared/0.2/voting.schema.json#/$defs/Manifest"
+    },
+    "ceremony": {
+      "$ref": "../../../../../voting/_shared/0.2/voting.schema.json#/$defs/TrusteeCeremony",
+      "description": "The ceremony as the board holds it: voting/trustees/status's `steps`, passed on unchanged. The VTA verifies every step as its trustee's before taking it."
+    },
+    "recipient": {
+      "$ref": "../../../../../voting/_shared/0.2/voting.schema.json#/$defs/TrusteeIndex"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA PCS — Trustee Justify — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "document"
+      ],
+      "properties": {
+        "document": {
+          "title": "JustifyDocument",
+          "description": "The voting/trustees/justify request, signed as the trustee.",
+          "type": "object",
+          "required": [
+            "id",
+            "type",
+            "issuer",
+            "recipient",
+            "issuedAt",
+            "payload",
+            "proof"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+            },
+            "type": {
+              "const": "https://trusttasks.org/spec/voting/trustees/justify/0.1"
+            },
+            "issuer": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048,
+              "description": "The signer."
+            },
+            "recipient": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048,
+              "description": "The ballot box."
+            },
+            "issuedAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "expiresAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "payload": {
+              "type": "object",
+              "description": "That task's request payload."
+            },
+            "proof": {
+              "type": "object",
+              "description": "A Data Integrity proof by an `authentication` key of `issuer`."
+            }
+          }
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

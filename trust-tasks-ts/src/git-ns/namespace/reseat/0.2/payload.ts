@@ -3,11 +3,13 @@
  * Source: specs/git-ns/namespace/reseat/0.2/payload.schema.json
  */
 
-import type { Did_GitNsV0_3 as Did, Ext, NamespaceId, Resource, Right, RightRecord_GitNsV0_3 as RightRecord } from "../../../../_shared/components.js";
+import type { Did_GitNsV0_3 as Did, Ext, NamespaceId, Resource_GitNsV0_1 as Resource, Right, RightRecord_GitNsV0_3 as RightRecord } from "../../../../_shared/components.js";
 
 
 /**
  * A community administrator recovers a headless bound namespace — one with no live git.ns.admin — by granting git.ns.admin on it to a current member. Refused unless the namespace is headless.
+ *
+ * @deprecated superseded by git-ns/namespace/reseat/0.4
  */
 export interface GitNamespacesReseatNamespacePayload {
   /**
@@ -26,6 +28,8 @@ export interface GitNamespacesReseatNamespacePayload {
 }
 /**
  * The recorded git.ns.admin right.
+ *
+ * @deprecated superseded by git-ns/namespace/reseat/0.4
  */
 export interface GitNamespacesReseatNamespaceResponsePayload {
   /**
@@ -41,13 +45,37 @@ export type { Did, Ext, NamespaceId, Resource, Right, RightRecord };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/git-ns/namespace/reseat/0.2" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by git-ns/namespace/reseat/0.4";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by git-ns/namespace/reseat/0.4
+ */
 export type Payload = GitNamespacesReseatNamespacePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/git-ns/namespace/reseat/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by git-ns/namespace/reseat/0.4
+ */
 export type Response = GitNamespacesReseatNamespaceResponsePayload;
 
 /**

@@ -161,7 +161,7 @@ The consumer rejects a document that has expired:
   "payload": {
     "code": "proofRequired",
     "inResponseTo": {
-      "typeUri": "https://trusttasks.org/spec/acl/grant/0.1",
+      "typeUri": "https://trusttasks.org/spec/acl/grant/0.2",
       "id": "urn:uuid:4f3c9e2a-1b81-4d3e-9b51-7a3c89e3d1f2"
     },
     "message": "specification declares proof REQUIRED and the document carried none",

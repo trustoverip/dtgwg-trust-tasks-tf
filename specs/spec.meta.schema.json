@@ -64,9 +64,10 @@
         "draft",
         "candidate",
         "standard",
-        "retired"
+        "retired",
+        "withdrawn"
       ],
-      "description": "Lifecycle status per SPEC \u00a75.3. `retired` is terminal; a retired spec SHOULD declare `supersededBy`."
+      "description": "Lifecycle status per SPEC \u00a75.3. `retired` may move only to `withdrawn`, which is terminal: a version superseded or retired for at least 90 days, flipped in a quarterly batch (scripts/withdraw-due.mjs) and no longer generated into the libraries. A retired or withdrawn spec SHOULD declare `supersededBy`."
     },
     "targetFrameworkVersion": {
       "type": "string",
@@ -611,10 +612,27 @@
       "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
       "description": "Declares that this version is wire-identical to the named earlier version of the same slug, modulo the mechanical normalizations of SPEC \u00a74.10 \u2014 casing of member names and enumerated values \u2014 and framework/shared-schema `$ref` re-pins. Advisory: consumers MAY dual-accept documents of the named version by normalizing casing and retyping the URI, without a hand-written adapter. New versions should not need this field \u2014 editorial changes to a `draft` spec are made in place per SPEC \u00a75.2; it exists for wire-identical versions minted before that rule."
     },
+    "extends": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
+      "description": "Declares that this version is a backwards-compatible extension of the named earlier version of the same slug and MAJOR (SPEC \u00a75.2 Declared extension, \u00a77.3 item 22): it keeps every member, type, required member, enumerated value, constraint and definition of that version and only adds \u2014 an optional member, an appended enumerated value or oneOf/anyOf branch, a loosened bound, a new definition \u2014 with the same proof requirement and every declared error code. Binding even at draft. Consumers of the named version accept this version's documents by ignoring unknown members, and a reference to the named version is satisfied by this one, so the change cascades nowhere. The build checks the promise against the two payload schemas (scripts/lib/schema-compat.mjs)."
+    },
+    "carries": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protocol", "version", "reference", "operation"],
+      "description": "Declares that this specification carries one operation of a protocol defined outside the framework, as a member of that protocol's protocol family (SPEC \u00a79.4 Carried Protocols, \u00a77.3 item 23). The specification maps each field of the operation to a member, adds no meaning, reports every answer of the operation in its success response, and makes no departure from the protocol.",
+      "properties": {
+        "protocol": { "type": "string", "minLength": 1, "maxLength": 128, "description": "The carried protocol's name, as its owner publishes it (for example `TRQP`)." },
+        "version": { "type": "string", "minLength": 1, "maxLength": 32, "description": "The version of the carried protocol this specification carries. A change to the protocol that changes this operation's fields or answers is carried by a new version of the specification." },
+        "reference": { "type": "string", "format": "uri", "description": "A URI of the document that defines the carried protocol at that version." },
+        "operation": { "type": "string", "minLength": 1, "maxLength": 128, "description": "The carried protocol's own name for the operation this specification carries. One specification carries one operation." }
+      }
+    },
     "supersededBy": {
       "type": "string",
       "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*(/(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*))?$",
-      "description": "Successor reference for a `retired` specification, per SPEC \u00a77.3 item 11. `<slug>` form points at the latest non-retired version of that slug; `<slug>/<MAJOR.MINOR>` pins to a specific version. The build script enforces that this field is only set when `status: retired`."
+      "description": "Successor reference for a `retired` or `withdrawn` specification, per SPEC \u00a77.3 item 11. `<slug>` form points at the latest version of that slug that is neither retired nor withdrawn; `<slug>/<MAJOR.MINOR>` pins to a specific version. The build script enforces that this field is only set when `status` is `retired` or `withdrawn`."
     },
     "bearer": {
       "type": "boolean",

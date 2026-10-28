@@ -51,11 +51,11 @@ related:
 
 ## Abstract
 
-The **VTA Passkey-VM — Enroll Challenge** Trust Task is step 1 of the two-step ceremony that publishes a WebAuthn passkey as a `Multikey` verificationMethod (purpose `authentication`) on a VTA-managed DID. A *DID administrator* asks the *VTA* for a fresh WebAuthn registration challenge bound to a specific DID; the VTA returns the challenge and the relying-party / user parameters the browser needs to call `navigator.credentials.create`. The administrator's browser runs the WebAuthn ceremony and then completes enrolment with [`vta/passkey-vms/enroll-submit`](../../enroll-submit/0.1/spec.md), echoing the `ceremonyId` returned here.
+The **VTA Passkey-VM — Enroll Challenge** Trust Task is step 1 of the two-step ceremony that publishes a WebAuthn passkey as a `Multikey` verificationMethod (purpose `authentication`) on a VTA-managed DID. A *DID administrator* asks the *VTA* for a fresh WebAuthn registration challenge bound to a specific DID; the VTA returns the challenge and the relying-party / user parameters the browser needs to call `navigator.credentials.create`. The administrator's browser runs the WebAuthn ceremony and then completes enrolment with [`vta/passkey-vms/enroll-submit`](../../enroll-submit/0.2/spec.md), echoing the `ceremonyId` returned here.
 
 Once enrolment completes, any verifier that resolves the DID can validate a WebAuthn assertion against the embedded public key — there is no callback to the VTA and no shared secret.
 
-This task is **not idempotent**: each invocation mints a fresh, single-use ceremony. The returned `ceremonyId` is consumed by exactly one [`enroll-submit`](../../enroll-submit/0.1/spec.md) and cannot be reused.
+This task is **not idempotent**: each invocation mints a fresh, single-use ceremony. The returned `ceremonyId` is consumed by exactly one [`enroll-submit`](../../enroll-submit/0.2/spec.md) and cannot be reused.
 
 ## Status of this Document
 
@@ -70,7 +70,7 @@ A conforming **producer** (the DID administrator) **MUST**:
 1. Emit a *Trust Task document* whose `type` is `https://trusttasks.org/spec/vta/passkey-vms/enroll-challenge/0.1`, with itself as `issuer` and the VTA as `recipient`.
 2. Populate `payload.did` with the DID the new verificationMethod is to be added to.
 3. Include a `proof` member per [SPEC.md §4.7](/SPEC.md#47-proof).
-4. Treat the returned `ceremonyId` as a single-use, short-lived secret and present it unchanged to [`enroll-submit`](../../enroll-submit/0.1/spec.md).
+4. Treat the returned `ceremonyId` as a single-use, short-lived secret and present it unchanged to [`enroll-submit`](../../enroll-submit/0.2/spec.md).
 
 A conforming **consumer** (the VTA) **MUST**:
 
@@ -84,7 +84,7 @@ A conforming **consumer** (the VTA) **MUST**:
 
 * **DID administrator.** The party invoking the task; identified by `issuer`. Holds the admin role on the target DID's context.
 * **VTA.** The Verifiable Trust Agent that manages the DID and runs the WebAuthn ceremony; identified by `recipient`.
-* **Ceremony.** A single-use server-side registration state that binds a `challenge`, the target DID, and the eventual [`enroll-submit`](../../enroll-submit/0.1/spec.md) together. Identified by `ceremonyId`.
+* **Ceremony.** A single-use server-side registration state that binds a `challenge`, the target DID, and the eventual [`enroll-submit`](../../enroll-submit/0.2/spec.md) together. Identified by `ceremonyId`.
 
 ## Request
 
@@ -118,7 +118,7 @@ A *request* document carries `type: https://trusttasks.org/spec/vta/passkey-vms/
 
 A success *response* document carries `type: https://trusttasks.org/spec/vta/passkey-vms/enroll-challenge/0.1#response`, with a payload that validates against the `$anchor: "response"` sub-schema in `payload.schema.json`.
 
-The response carries the WebAuthn registration parameters. All byte-valued members (`challenge`, `userHandle`) are base64url-encoded with no padding; the browser decodes them and passes them to `navigator.credentials.create`. The producer **MUST** echo `ceremonyId` unchanged into the subsequent [`enroll-submit`](../../enroll-submit/0.1/spec.md).
+The response carries the WebAuthn registration parameters. All byte-valued members (`challenge`, `userHandle`) are base64url-encoded with no padding; the browser decodes them and passes them to `navigator.credentials.create`. The producer **MUST** echo `ceremonyId` unchanged into the subsequent [`enroll-submit`](../../enroll-submit/0.2/spec.md).
 
 Failures use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response` variant.
 
@@ -189,7 +189,7 @@ and **MUST NOT** be treated as an authenticator of anything.
 `navigator.credentials.create`. A VTA **MUST NOT** use it to smuggle WebAuthn
 parameters this schema does not name — a client that honours them is running a
 registration ceremony this specification did not describe, and the anti-tamper
-gate at [`enroll-submit`](../../enroll-submit/0.1/spec.md) checks the key, not the
+gate at [`enroll-submit`](../../enroll-submit/0.2/spec.md) checks the key, not the
 ceremony's shape.
 
 Three members of the response are free text and are bounded at 64 characters
@@ -219,7 +219,7 @@ so that a re-registration replaces rather than duplicates.
 
 The interesting separation in this task is between the administrator and the
 subject. The target `did` at `subjectPath` is or will be publicly resolvable, and
-[`enroll-submit`](../../enroll-submit/0.1/spec.md) writes into its document
+[`enroll-submit`](../../enroll-submit/0.2/spec.md) writes into its document
 permanently. The administrator's own identifier goes nowhere near it. That is what
 `identifierScope: pairwise` on the DID administrator records: nothing in this task
 requires the administrator to be recognisable outside its relationship with this
@@ -232,7 +232,7 @@ it, and does not become public as a side effect of the key becoming public.
 
 Exchange-scoped, and unusually cleanly so. The VTA holds the ceremony — the
 `ceremonyId` bound to its challenge, the target DID, and the label — only until
-[`enroll-submit`](../../enroll-submit/0.1/spec.md) consumes it or it expires. The
+[`enroll-submit`](../../enroll-submit/0.2/spec.md) consumes it or it expires. The
 `challenge` **MUST** carry at least 32 random bytes so that replay is infeasible
 within that window, and the ceremony is single-use: the VTA **MUST** reject a
 re-used or expired one (`vta/passkey-vms/enroll-submit:unknownCeremony`). Note that

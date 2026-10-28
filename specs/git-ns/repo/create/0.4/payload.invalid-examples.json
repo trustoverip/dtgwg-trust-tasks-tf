@@ -1,0 +1,73 @@
+[
+  {
+    "note": "`name` is lowercase.",
+    "payload": {
+      "namespace": "ns_01J8Z6Q4M2",
+      "name": "Gadgets",
+      "visibility": "public"
+    }
+  },
+  {
+    "note": "`name` is one segment; the namespace supplies forge and owner.",
+    "payload": {
+      "namespace": "ns_01J8Z6Q4M2",
+      "name": "acme/gadgets",
+      "visibility": "public"
+    }
+  },
+  {
+    "note": "`name` cannot start with a dot, which also rules out `.` and `..`.",
+    "payload": {
+      "namespace": "ns_01J8Z6Q4M2",
+      "name": "..",
+      "visibility": "public"
+    }
+  },
+  {
+    "note": "`visibility` is `public` or `private`; forge-specific values such as `internal` are not modelled.",
+    "payload": {
+      "namespace": "ns_01J8Z6Q4M2",
+      "name": "gadgets",
+      "visibility": "internal"
+    }
+  },
+  {
+    "note": "`visibility` is required: a forge default would make it depend on where the repository is created.",
+    "payload": {
+      "namespace": "ns_01J8Z6Q4M2",
+      "name": "gadgets"
+    }
+  },
+  {
+    "note": "`owners`, when present, names at least one owner; omit it for the requester alone.",
+    "payload": {
+      "namespace": "ns_01J8Z6Q4M2",
+      "name": "gadgets",
+      "visibility": "public",
+      "owners": []
+    }
+  },
+  {
+    "note": "`owners` names each owner once.",
+    "payload": {
+      "namespace": "ns_01J8Z6Q4M2",
+      "name": "gadgets",
+      "visibility": "public",
+      "owners": [
+        "did:webvh:QmBobScid2:acme-vtc.example:bob",
+        "did:webvh:QmBobScid2:acme-vtc.example:bob"
+      ]
+    }
+  },
+  {
+    "note": "An owner is a bare DID, never a DID URL such as a verification-method id.",
+    "payload": {
+      "namespace": "ns_01J8Z6Q4M2",
+      "name": "gadgets",
+      "visibility": "public",
+      "owners": [
+        "did:webvh:QmBobScid2:acme-vtc.example:bob#key-1"
+      ]
+    }
+  }
+]

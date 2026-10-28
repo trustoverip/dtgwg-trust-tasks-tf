@@ -84,6 +84,12 @@ Versions live side-by-side in their own folders (`specs/acl/grant/0.1/`, `specs/
 - `MINOR` bump = backwards-compatible change.
 - `MAJOR` bump = breaking change, reset `MINOR` to 0.
 - Editorial/normalization changes to a `status: draft` spec — normalizing casing to the canonical convention below, re-pinning a framework or shared-schema `$ref` with no wire effect, rewording descriptions — are made **in place**. Do **not** create a new version folder for them ([SPEC.md §5.2](SPEC.md#52-compatibility-rules)).
+- **Once a version is released, it changes in place only additively.** A released version is compiled into the Rust, TypeScript, Go and Dart libraries, so an in-place change their generated types can see — a member removed, renamed or made required or optional, a type, `title`, pattern or format changed, an enum value inserted before another, a bound narrowed or dropped, `proofRequirement` changed, a declared error code dropped — is a breaking release of every one of them. That holds even where SPEC §5.2's `draft` allowance would let the *spec* change in place. In place, a released version may gain an optional member, an appended enum value or `oneOf`/`anyOf` branch, a loosened bound, a new `$defs` entry, or a description; anything else goes in a **new version folder** — a new module, which every library takes as an additive patch. CI compares each changed spec with the last release (`npm run check-published-schemas`); a version merged since the last release has reached no library yet and can still be fixed in place. Never put a `!` in the PR title for a spec change — see [RELEASING.md](RELEASING.md).
+- **When a new MINOR only adds, declare `extends`.** `extends: "0.2"` in the front matter of `0.3` promises that `0.3` keeps every member, type, required member, enum value, constraint and definition of `0.2` and only adds — an optional member, an appended enum value or `oneOf`/`anyOf` branch, a loosened bound, a new `$defs` entry — with the same `proofRequirement`, every declared error code, and no member changing meaning ([SPEC.md §5.2](SPEC.md#52-compatibility-rules), "Declared extension"). It is binding even at `draft`, and the build checks the schemas bear it out. In return: a consumer still implementing `0.2` accepts `0.3` documents (the libraries route them, ignoring members they do not know), and every spec that names `0.2` stays current — an additive change cascades nowhere. `npm run extends-candidates` lists existing version pairs whose schemas already qualify; declare one only after reading both, since the build cannot check meaning.
+- **A new version makes every reference to the old one stale, and the build says so.** Other specs name yours by version — a Type URI in a schema `const`, a link in their prose, a description, a sample document. The stale-references check (`scripts/lib/stale-references.mjs`) fails the build on any such reference, in the latest version of any non-retired spec, to a version you have superseded. `npm run fix-stale-references` rewrites the prose links, mentions and descriptions for you, and lists what it will not touch:
+  - a **wire pin** (a schema `const`/`enum`/`pattern`/`$ref`) or a **normative value** (a full Type URI in prose, or a version in a MUST/SHOULD sentence — the `expects` entry a deferred operation sends, say): moving it changes what conforms, so the referencing spec takes a new version too, with a `## Changes from` section saying so;
+  - an **example** carrying a Type URI: its payload was written for the old version, so check it against the new one before moving it.
+  An old version named on purpose — in a `## Changes from` or `### What 0.4 changed` section, in a version run ending at the latest, after `since`/`added in`, before `or later` — is left alone. Anything else deliberate goes in `scripts/lib/stale-references-allowlist.json` with the reason.
 - See [SPEC.md §5.2](SPEC.md#52-compatibility-rules) for the precise compatibility rules consumers will apply to your version bump. (That is the *spec's* version, which you do own — unlike the library versions, which the Release PR assigns; see [RELEASING.md](RELEASING.md).)
 
 ## `spec.md` front matter
@@ -188,6 +194,24 @@ A specification that defines a fire-and-forget task (no success response documen
 Every example block **SHOULD** be a complete JSON object — including framework members like `id`, `type`, `issuer`, `recipient`, `issuedAt`, and (where required) `proof` — so a reader can copy, modify, and use it directly. Pair request and response examples by `threadId` so the round trip is visible. Comment briefly before each example on what it demonstrates.
 
 See `specs/acl/grant/0.1/spec.md` for a worked example.
+
+## Decisions, holds and repeated requests
+
+Three framework rules decide which reply form a task uses. Settle them when you design the schema, not when an implementer asks.
+
+**A decision is an outcome, not an error** ([SPEC.md §8](SPEC.md#8-error-responses), "A decision is not a failure"). If your task exists to produce a decision (admit or refuse, accept or reject, authorized or not), every decision it can produce, a negative one included, goes in `$defs.Response`, typically as an enumerated `decision` member. Do not declare an `errorCodes` entry for one. `permissionDenied` and your task-specific codes mean the task was not performed: the requester may not ask, or you could not complete it. A signed negative decision is evidence a relying party can keep and cite; a decision hidden in an error code is one a client that does not know the code reads as `taskFailed`. `registry/authorization`'s `authorized: false` is the pattern.
+
+**A hold is a next step, not an error** ([SPEC.md §8.6](SPEC.md#86-reserved-response-type-slugs), "A hold is a next step"). If your task can be held for an approval, a consent decision or a step-up, say in prose that the consumer answers with `trust-task-next-step`, and what its `expects` names. Do not declare a `stepUpRequired`- or `consentRequired`-style error code for the hold. Declining the approval is a refusal, answered `permissionDenied`.
+
+**Say what a repeated request yields** ([SPEC.md §7.2](SPEC.md#72-consumer-requirements), "A target already in the requested state"). For each operation, state which kind it is:
+
+| Kind | Examples | A request for a state that already holds |
+|---|---|---|
+| Setting a state | revoke, deactivate, disable, enable, set | Succeeds. The response **MAY** say whether anything changed (`newlyRevoked`, `changed`). |
+| Creating something | register, grant, create, issue | Refused with a task-specific code (`alreadyRegistered`, `alreadyGranted`). |
+| Missing target | any | Refused with a task-specific code, which **MAY** be the same as "exists but you may not see it". |
+
+`keys/revoke/0.1`, `git-trust/grant/0.1` and `vtc/relationships/revoke/0.1` show each kind.
 
 ## The `## Authorization` section
 
@@ -318,11 +342,16 @@ follow it; a new spec or a new version follows it from the start.
   "date-time"`, the same encoding the framework uses for `issuedAt`,
   `expiresAt` and `retryAfter` — never Unix seconds. An instant that records
   when something happens is named `<event>At` (`recordedAt`, `sessionEndsAt`,
-  `decisionClosesAt`), not a bare `timestamp`. Range bounds and filters keep
+  `decisionClosesAt`), not a bare `timestamp` or `at`. Range bounds and filters keep
   their prepositions (`since`, `until`, `validFrom`, `validUntil`), and a name
   an external vocabulary defines (`created`, `notBefore`) is carried verbatim.
-  A duration is not an instant: it stays an integer and names its unit
-  (`latencyMs`, `retentionDays`).
+  The lint reads a name as a bound when it is `since`, `until`, `from`, `to`
+  or `asOf`, or ends in `Until`, `Since`, `From`, `After`, `Before` or `To`;
+  an external name outside that shape goes in
+  `scripts/lib/wire-conventions-allowlist.json` with the vocabulary it comes from.
+  A duration is not an instant: it stays an integer and names its unit,
+  spelled out (`latencyMs`, `ttlSeconds`, `retentionDays`) — never `…Secs`, and
+  never a bare `ttl` or `timeout`.
 - **Pagination is `cursor` + `limit` → `nextCursor`.** The request takes an
   optional opaque `cursor`, from a previous response's `nextCursor`, which a
   responder **MUST NOT** accept unless it issued it, and an optional `limit`,
@@ -394,6 +423,8 @@ A definition used by **more than one task in a family** — a record shape retur
 
 Inline copies drift: an edit to one task's copy silently forks the wire shape the family's other tasks still validate against, and the divergence is invisible until an implementer round-trips a record between the two. The `_shared/` component versions independently (pin a specific version — [SPEC §6.6](SPEC.md#66-shared-schema-components) forbids "latest" references), and the registry build indexes it and shows which tasks depend on it. A definition used by exactly one task stays a local `$def` in that task's schema.
 
+**No governance defaults** ([SPEC §6.6](SPEC.md#66-shared-schema-components) rule 5). A shared component **MUST NOT** put a `default` on a threshold or quorum, a TTL or validity period, a role, an evaluation order, or any other value a community's policy chooses. Make the member required instead. JSON Schema's `default` is only an annotation, but code generators and form builders apply it, so `"default": 1` on `minApprovals` sends a quorum of one for every producer that left the member out. In your own payload schema the rule is a **SHOULD NOT**, and if you do supply such a default, state the value in prose as your specification's choice.
+
 ### Opting into the framework `ext` extension slot
 
 If your spec needs to accommodate ecosystem-defined fields without forking — the typical example is a maintainer that wants to require a custom policy field on every inbound document — opt into the framework's `ext` slot ([SPEC §4.5.1](SPEC.md#451-the-ext-extension-member)) rather than minting your own extension shape. Reference the framework `Ext` `$def` from your payload schema (and from any nested object that should carry per-instance ecosystem data):
@@ -415,6 +446,30 @@ If your spec needs to accommodate ecosystem-defined fields without forking — t
 The codegen resolves the cross-file `$ref` by splicing the shared `Ext` `$def` into your spec's generated schema and Rust types. The producer/consumer rules around namespacing ("reverse-DNS lowercase keys", "consumers MUST ignore unrecognized namespaces", "MAY require their own namespace") are framework-wide and apply uniformly — your spec inherits them by referencing `Ext`.
 
 Spec authors **MUST NOT** define cross-spec semantics for any `ext.*` key; ecosystem semantics belong to the namespace controller. Spec authors **MAY** include a non-normative example showing the `ext` shape an ecosystem might use, but the example should be clearly marked as illustrative.
+
+## Carrying another protocol (`carries`)
+
+If your task is an operation of a protocol defined outside the framework (ToIP TRQP, IEEE 7012 MyTerms, and so on), it is a member of that protocol's *protocol family* ([SPEC.md §9.4](SPEC.md#94-carried-protocols)). Declare it:
+
+```yaml
+carries:
+  protocol: TRQP
+  version: "2.0"
+  reference: https://trustoverip.github.io/tswg-trust-registry-protocol/
+  operation: authorization
+```
+
+and meet the seven rules of §9.4:
+
+- **One spec per operation.** One request and its answer, and no operations the protocol does not define. The build refuses a slug whose versions carry different operations, and two slugs carrying the same operation of the same protocol version.
+- **A field mapping table** in the prose, from each of the protocol's fields to the member that carries it. Renaming to lowerCamelCase is fine; new meaning is not.
+- **Every answer is the success response**, negative ones included. `trust-task-error` is only for "not performed".
+- **Name the protocol version**, and move to a new spec version when the protocol changes the operation (`extends` when it only adds).
+- **Map the parties** in `parties`, and say what supplies any identifier the protocol needs that the envelope does not carry.
+- **No departures.** Anything the protocol does not define, such as an extra check or step, is a separate spec without `carries`, which a ceremony can compose with this one.
+- **The protocol's conformance is the protocol's.**
+
+`registry/authorization/0.2` and `registry/recognition/0.2` are the worked examples. Where the protocol's owner takes part, prefer that they publish the family under their own authority ([SPEC §6.5](SPEC.md#65-private-and-unpublished-trust-task-specifications)).
 
 ## Task-specific error codes (optional)
 
@@ -534,7 +589,7 @@ Maturity bumps are PRs like any other. The build script enforces the values; the
 
 ## Retiring a spec
 
-`retired` is a **terminal** status — once a spec is retired it stays retired. Retirement signals "no longer recommended for new use" while keeping the spec's prose and schema available so already-issued documents remain verifiable.
+`retired` can move only to `withdrawn` (below) — once a spec is retired it never returns to an earlier status. Retirement signals "no longer recommended for new use" while keeping the spec's prose and schema available so already-issued documents remain verifiable.
 
 Three cases trigger retirement in practice:
 
@@ -552,3 +607,12 @@ supersededBy: acl/grant/1.0      # or just `acl/grant` for "latest non-retired v
 The bare-URL redirect (`https://trusttasks.org/spec/<slug>`) skips retired versions automatically. Consumer tooling reads `supersededBy` to direct implementers at the recommended replacement.
 
 A retired spec **MUST NOT** transition back to `draft`, `candidate`, or `standard`. If you need to revive functionality, publish a fresh `MAJOR.MINOR` of the slug and let it progress through the lifecycle from `draft`.
+
+## Superseded, deprecated and withdrawn versions
+
+A version is **superseded** as soon as a later version of its slug exists that is neither retired nor withdrawn and is at least as mature (a `draft` is superseded by any later version; a `standard` only by a later `standard`). You do not mark it — publishing the successor is what supersedes it. From then on:
+
+- **The libraries mark it deprecated.** The Rust, TypeScript, Go and Dart generators each give a superseded or retired version a deprecation note — `superseded by acl/grant/0.3`, `retired; use acl/grant/0.3`, or `retired` — as a constant (`DEPRECATION`, `Deprecation`, `deprecation`) and as `#[deprecated]` / `@deprecated` / `// Deprecated:` / `@Deprecated` on its root types. That is a compiler warning for a consumer, not a break, and `npm run check-bindings` holds the four notes equal.
+- **After 90 days it is withdrawn, in a quarterly batch.** On the first day of each quarter `.github/workflows/withdraw.yml` runs `npm run withdraw-due` — every version superseded or retired for at least 90 days becomes `status: withdrawn`, with a `supersededBy` naming its successor — regenerates the libraries without them, and opens one pull request. Its schema and prose stay published, so already-issued documents remain verifiable, but it is no longer generated into any library. Removing a module breaks the libraries' users, so this is the one scheduled breaking release a quarter rather than a trickle of them; preview the next batch with `npm run withdraw-due -- --dry --as-of 2027-01-01`.
+
+`withdrawn` is terminal. Never set it by hand outside the batch, and never on a version something still pins on the wire — the stale-references check (above) makes sure nothing current does.

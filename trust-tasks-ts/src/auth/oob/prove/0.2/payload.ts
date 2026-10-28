@@ -8,6 +8,8 @@ import type { Ext, OobKey, Origin, Purpose, Requester, RequestId, SameNetwork, S
 
 /**
  * The lock holder proves membership and the number on the starter's screen by carrying a signed auth/oob/identify document, and gets back the service-signed step 2. Issued and signed by the lock key `K_a`. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, parentThreadId, proof) are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by auth/oob/prove/0.3
  */
 export interface AuthOOBProvePayload {
   /**
@@ -18,6 +20,8 @@ export interface AuthOOBProvePayload {
 }
 /**
  * Step 2 of the disclosure ladder, signed by the service's assertionMethod key: the step 1 members unchanged, plus the starter's key, where the request came from, which DID was identified and, optionally, the task families the starter key would sign for. The SHA-256 of its JCS canonical form, proof included, is the grant's `contextDigest`.
+ *
+ * @deprecated superseded by auth/oob/prove/0.3
  */
 export interface AuthOOBProveResponsePayloadStep2 {
   requestId: RequestId;
@@ -50,13 +54,37 @@ export type { Ext, OobKey, Origin, Purpose, Requester, RequestId, SameNetwork, S
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/oob/prove/0.2" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by auth/oob/prove/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by auth/oob/prove/0.3
+ */
 export type Payload = AuthOOBProvePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/auth/oob/prove/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by auth/oob/prove/0.3
+ */
 export type Response = AuthOOBProveResponsePayloadStep2;
 
 /**
