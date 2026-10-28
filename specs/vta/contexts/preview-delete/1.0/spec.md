@@ -44,7 +44,7 @@ related:
 ## Abstract
 
 **VTA Contexts — Preview Delete** answers the question
-[`vta/contexts/delete`](../../delete/1.0/spec.md) does not give you a second
+[`vta/contexts/delete`](../../delete/1.1/spec.md) does not give you a second
 chance to ask: what would be destroyed.
 
 It returns the keys, published DIDs and DID templates the context holds, and
@@ -81,7 +81,7 @@ This is stated because the narrower reading is the natural one and is
 dangerous. A preview scoped to the named context alone reports "holds nothing"
 for a context whose children hold a great deal, and a caller acting on that
 answer — including one deciding whether the deletion needs the explicit `force`
-that `vta/contexts/delete/1.0` requires — is deciding about the wrong thing. A
+that `vta/contexts/delete/1.1` requires — is deciding about the wrong thing. A
 preview that under-reports is worse than no preview, because it is a promise
 the operator acted on.
 
