@@ -31,6 +31,43 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.36.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.36.0...trust-tasks-rs-v0.36.1) — 2026-10-28
+
+
+### Added
+
+- **vta/contexts/delete**: 1.1 — settle host copies first; abandonHostCopies ([#967](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/967))
+
+1.0 removed every local record and reported a host copy it could not
+  remove in daemonCleanupErrors after the fact, so the caller learned that
+  DIDs were still resolving only once the records — and the keys that
+  could remove them — were gone. A DID whose hosting server was no longer
+  registered refused the whole deletion, with no way to complete it through
+  this task: a context whose host had gone for good could not be deleted.
+
+  1.1 settles every host copy before anything local is removed. A copy
+  that cannot be confirmed removed (host down, refusing, unanswered, or no
+  longer known to the VTA) refuses with the new
+  vta/contexts/delete:hostCleanupFailed — retryable, details pinned by a
+  detailsSchema listing each DID, its server and why — and nothing local
+  is deleted. A producer shows those DIDs to a human and asks whether to
+  wait for the host or retry with the new abandonHostCopies, which
+  completes the deletion and reports the abandoned copies in
+  daemonCleanupErrors. A host answering that it no longer holds the log has
+  removed it, so a retry after a partial settle completes. The consumer
+  SHOULD bound the time spent on hosts, in total, to answer within the
+  requester's timeout.
+
+  abandonHostCopies is an explicitness flag like force, not a privilege,
+  and a producer MUST NOT set it on a first attempt without being told to.
+  A 1.1 consumer still accepts 1.0 and answers it as 1.0 specifies.
+
+  Regenerated the Rust, TypeScript, Go and Dart bindings; 1.0 is now
+  marked superseded. The stale-reference fixer moved create/1.0 and
+  preview-delete/1.0's links to 1.1.
+
+
+
 ## [0.36.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.35.4...trust-tasks-rs-v0.36.0) — 2026-10-27
 
 
