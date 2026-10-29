@@ -1,0 +1,8 @@
+registry = "https://trusttasks.org"
+
+[tasks]
+"acl/list" = "0.1"
+"keys/sign-document" = "0.1"
+"rooms/blobs/chunk" = "0.1"
+"sync/event" = "0.1"
+"vault/get" = "0.3"

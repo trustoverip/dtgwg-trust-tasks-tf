@@ -179,6 +179,12 @@ jobs:
         run: cargo run -p trust-tasks-example-consumer-app
       - name: cargo test -p trust-tasks-build --all-features
         run: cargo test -p trust-tasks-build --all-features
+      # The generated `schema_index` (`Config::index(true)`) against
+      # `trust_tasks_rs::schema_index`, URI for URI (tests/index_equivalence.rs).
+      # The test enables the prebuilt families it compares with; the binary
+      # above does not.
+      - name: cargo test -p trust-tasks-example-consumer-app
+        run: cargo test -p trust-tasks-example-consumer-app
       # The example's third-party fixture registry is what its specs build to
       # (`trust-tasks registry build`, the publisher's side), and the vendored
       # bundles are what the lock pins — offline, as an application's CI runs it.
@@ -192,6 +198,7 @@ jobs:
           git diff --exit-code -- examples/consumer-app/fixture-registry
           test -z "$(git status --porcelain -- examples/consumer-app/fixture-registry)"
           cargo run -q -p trust-tasks-cli -- -C examples/consumer-app check
+          cargo run -q -p trust-tasks-cli -- -C examples/consumer-app/index-equivalence check
 
   doc:
     name: cargo doc
