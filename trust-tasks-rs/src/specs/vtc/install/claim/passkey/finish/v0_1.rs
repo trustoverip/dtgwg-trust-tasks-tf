@@ -116,7 +116,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
             })
     }
 }
-///Complete first-administrator enrolment with a passkey: submit the WebAuthn attestation, from whose Ed25519 key the administrator's did:key is derived, and receive a setup-session token. The passkey ceremony of vtc/install/claim/finish 0.2, unchanged on the wire. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+///Complete first-administrator enrolment with a passkey: submit the WebAuthn registration, from whose credential public key — Ed25519 or P-256 — the administrator's did:key is derived, and receive a setup-session token. The passkey ceremony of vtc/install/claim/finish 0.2, widened from Ed25519 alone to P-256. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
@@ -130,7 +130,7 @@ pub struct Payload {
     ///From vtc/install/claim/passkey/start.
     #[serde(rename = "registrationId")]
     pub registration_id: PayloadRegistrationId,
-    ///RegisterPublicKeyCredential from navigator.credentials.create() (opaque here).
+    ///RegisterPublicKeyCredential from navigator.credentials.create() (opaque here). Its credential public key is a COSE key for EdDSA/Ed25519 (alg -8) or ES256/P-256 (alg -7); any other is refused with unsupportedAlgorithm.
     #[serde(rename = "webauthnResponse")]
     pub webauthn_response: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
 }
@@ -263,7 +263,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRegistrationId {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
-    ///Candidate admin DID derived from the passkey's Ed25519 public key.
+    ///The administrator's DID: the did:key of the passkey credential's own public key — Ed25519 (multicodec 0xed01, did:key:z6Mk…) or P-256, compressed (multicodec 0x1200, did:key:zDn…). Derived by the community from the registered key, never taken from the install token.
     #[serde(rename = "adminDid")]
     pub admin_did: ResponseAdminDid,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -277,7 +277,7 @@ impl Response {
         Default::default()
     }
 }
-///Candidate admin DID derived from the passkey's Ed25519 public key.
+///The administrator's DID: the did:key of the passkey credential's own public key — Ed25519 (multicodec 0xed01, did:key:z6Mk…) or P-256, compressed (multicodec 0x1200, did:key:zDn…). Derived by the community from the registered key, never taken from the install token.
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
@@ -297,9 +297,13 @@ impl ::std::str::FromStr for ResponseAdminDid {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
-            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^did:key:z").unwrap());
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^did:key:z(6Mk|Dn)[1-9A-HJ-NP-Za-km-z]+$").unwrap()
+            });
         if PATTERN.find(value).is_none() {
-            return Err("doesn't match pattern \"^did:key:z\"".into());
+            return Err(
+                "doesn't match pattern \"^did:key:z(6Mk|Dn)[1-9A-HJ-NP-Za-km-z]+$\"".into(),
+            );
         }
         Ok(Self(value.to_string()))
     }
@@ -558,7 +562,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"adminDid\":{\"description\":\"Candidate admin DID derived from the passkey's Ed25519 public key.\",\"pattern\":\"^did:key:z\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"setupSessionToken\":{\"description\":\"EdDSA JWT (aud=vtc-install-session, 5min TTL) consumed by admin/bootstrap.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"adminDid\",\"setupSessionToken\"],\"title\":\"VTC Install Claim Passkey Finish — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/install/claim/passkey/finish/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Complete first-administrator enrolment with a passkey: submit the WebAuthn attestation, from whose Ed25519 key the administrator's did:key is derived, and receive a setup-session token. The passkey ceremony of vtc/install/claim/finish 0.2, unchanged on the wire. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"installToken\":{\"description\":\"The install JWT the claim was started with.\",\"minLength\":1,\"type\":\"string\"},\"registrationId\":{\"description\":\"From vtc/install/claim/passkey/start.\",\"minLength\":1,\"type\":\"string\"},\"webauthnResponse\":{\"description\":\"RegisterPublicKeyCredential from navigator.credentials.create() (opaque here).\",\"type\":\"object\"}},\"required\":[\"installToken\",\"registrationId\",\"webauthnResponse\"],\"title\":\"VTC Install Claim Passkey Finish — payload\",\"type\":\"object\"}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"adminDid\":{\"description\":\"The administrator's DID: the did:key of the passkey credential's own public key — Ed25519 (multicodec 0xed01, did:key:z6Mk…) or P-256, compressed (multicodec 0x1200, did:key:zDn…). Derived by the community from the registered key, never taken from the install token.\",\"pattern\":\"^did:key:z(6Mk|Dn)[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"setupSessionToken\":{\"description\":\"EdDSA JWT (aud=vtc-install-session, 5min TTL) consumed by admin/bootstrap.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"adminDid\",\"setupSessionToken\"],\"title\":\"VTC Install Claim Passkey Finish — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/install/claim/passkey/finish/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Complete first-administrator enrolment with a passkey: submit the WebAuthn registration, from whose credential public key — Ed25519 or P-256 — the administrator's did:key is derived, and receive a setup-session token. The passkey ceremony of vtc/install/claim/finish 0.2, widened from Ed25519 alone to P-256. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"installToken\":{\"description\":\"The install JWT the claim was started with.\",\"minLength\":1,\"type\":\"string\"},\"registrationId\":{\"description\":\"From vtc/install/claim/passkey/start.\",\"minLength\":1,\"type\":\"string\"},\"webauthnResponse\":{\"description\":\"RegisterPublicKeyCredential from navigator.credentials.create() (opaque here). Its credential public key is a COSE key for EdDSA/Ed25519 (alg -8) or ES256/P-256 (alg -7); any other is refused with unsupportedAlgorithm.\",\"type\":\"object\"}},\"required\":[\"installToken\",\"registrationId\",\"webauthnResponse\"],\"title\":\"VTC Install Claim Passkey Finish — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -568,7 +572,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"adminDid\":{\"description\":\"Candidate admin DID derived from the passkey's Ed25519 public key.\",\"pattern\":\"^did:key:z\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"setupSessionToken\":{\"description\":\"EdDSA JWT (aud=vtc-install-session, 5min TTL) consumed by admin/bootstrap.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"adminDid\",\"setupSessionToken\"],\"title\":\"VTC Install Claim Passkey Finish — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"adminDid\":{\"description\":\"The administrator's DID: the did:key of the passkey credential's own public key — Ed25519 (multicodec 0xed01, did:key:z6Mk…) or P-256, compressed (multicodec 0x1200, did:key:zDn…). Derived by the community from the registered key, never taken from the install token.\",\"pattern\":\"^did:key:z(6Mk|Dn)[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"setupSessionToken\":{\"description\":\"EdDSA JWT (aud=vtc-install-session, 5min TTL) consumed by admin/bootstrap.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"adminDid\",\"setupSessionToken\"],\"title\":\"VTC Install Claim Passkey Finish — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {
@@ -585,6 +589,7 @@ pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
     error_codes::INVALID_TOKEN,
     error_codes::REGISTRATION_MISMATCH,
     error_codes::BINDING_INVALID,
+    error_codes::UNSUPPORTED_ALGORITHM,
 ];
 /// One constant per extended error code this specification declares
 /// (SPEC §7.3 item 9), named for its local part.
@@ -615,11 +620,21 @@ pub mod error_codes {
     };
     /// `vtc/install/claim/passkey/finish:bindingInvalid`
     ///
-    /// The WebAuthn attestation failed verification.
+    /// The WebAuthn registration failed verification — its client data is not a `webauthn.create` over this registration's challenge and the community's origin, its authenticator data is not for the community's RP ID, its attestation statement does not verify, or its credential public key is malformed.
     ///
     /// Declared `retryable: false`.
     pub const BINDING_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/install/claim/passkey/finish:bindingInvalid",
+        retryable: false,
+        details_schema: ::core::option::Option::None,
+    };
+    /// `vtc/install/claim/passkey/finish:unsupportedAlgorithm`
+    ///
+    /// The registered credential's public key is neither EdDSA over Ed25519 (COSE alg -8, OKP crv 6) nor ES256 over P-256 (COSE alg -7, EC2 crv 1), so no did:key this task defines can name it. Nothing was consumed: register a passkey with one of the two (start offers only those) and finish again.
+    ///
+    /// Declared `retryable: false`.
+    pub const UNSUPPORTED_ALGORITHM: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/install/claim/passkey/finish:unsupportedAlgorithm",
         retryable: false,
         details_schema: ::core::option::Option::None,
     };

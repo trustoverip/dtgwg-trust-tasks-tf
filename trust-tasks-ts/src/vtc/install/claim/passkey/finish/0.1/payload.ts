@@ -7,7 +7,7 @@ import type { Ext } from "../../../../../../_shared/components.js";
 
 
 /**
- * Complete first-administrator enrolment with a passkey: submit the WebAuthn attestation, from whose Ed25519 key the administrator's did:key is derived, and receive a setup-session token. The passkey ceremony of vtc/install/claim/finish 0.2, unchanged on the wire. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ * Complete first-administrator enrolment with a passkey: submit the WebAuthn registration, from whose credential public key — Ed25519 or P-256 — the administrator's did:key is derived, and receive a setup-session token. The passkey ceremony of vtc/install/claim/finish 0.2, widened from Ed25519 alone to P-256. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
  */
 export interface VTCInstallClaimPasskeyFinishPayload {
   /**
@@ -19,14 +19,14 @@ export interface VTCInstallClaimPasskeyFinishPayload {
    */
   registrationId: string;
   /**
-   * RegisterPublicKeyCredential from navigator.credentials.create() (opaque here).
+   * RegisterPublicKeyCredential from navigator.credentials.create() (opaque here). Its credential public key is a COSE key for EdDSA/Ed25519 (alg -8) or ES256/P-256 (alg -7); any other is refused with unsupportedAlgorithm.
    */
   webauthnResponse: {};
   ext?: Ext;
 }
 export interface VTCInstallClaimPasskeyFinishResponsePayload {
   /**
-   * Candidate admin DID derived from the passkey's Ed25519 public key.
+   * The administrator's DID: the did:key of the passkey credential's own public key — Ed25519 (multicodec 0xed01, did:key:z6Mk…) or P-256, compressed (multicodec 0x1200, did:key:zDn…). Derived by the community from the registered key, never taken from the install token.
    */
   adminDid: string;
   /**
@@ -80,7 +80,7 @@ export const PAYLOAD_SCHEMA = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/install/claim/passkey/finish/0.1",
   "title": "VTC Install Claim Passkey Finish — payload",
-  "description": "Complete first-administrator enrolment with a passkey: submit the WebAuthn attestation, from whose Ed25519 key the administrator's did:key is derived, and receive a setup-session token. The passkey ceremony of vtc/install/claim/finish 0.2, unchanged on the wire. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "description": "Complete first-administrator enrolment with a passkey: submit the WebAuthn registration, from whose credential public key — Ed25519 or P-256 — the administrator's did:key is derived, and receive a setup-session token. The passkey ceremony of vtc/install/claim/finish 0.2, widened from Ed25519 alone to P-256. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -101,7 +101,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "webauthnResponse": {
       "type": "object",
-      "description": "RegisterPublicKeyCredential from navigator.credentials.create() (opaque here)."
+      "description": "RegisterPublicKeyCredential from navigator.credentials.create() (opaque here). Its credential public key is a COSE key for EdDSA/Ed25519 (alg -8) or ES256/P-256 (alg -7); any other is refused with unsupportedAlgorithm."
     },
     "ext": {
       "$ref": "#/$defs/Ext"
@@ -120,8 +120,8 @@ export const PAYLOAD_SCHEMA = {
       "properties": {
         "adminDid": {
           "type": "string",
-          "pattern": "^did:key:z",
-          "description": "Candidate admin DID derived from the passkey's Ed25519 public key."
+          "pattern": "^did:key:z(6Mk|Dn)[1-9A-HJ-NP-Za-km-z]+$",
+          "description": "The administrator's DID: the did:key of the passkey credential's own public key — Ed25519 (multicodec 0xed01, did:key:z6Mk…) or P-256, compressed (multicodec 0x1200, did:key:zDn…). Derived by the community from the registered key, never taken from the install token."
         },
         "setupSessionToken": {
           "type": "string",
@@ -163,8 +163,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "properties": {
         "adminDid": {
           "type": "string",
-          "pattern": "^did:key:z",
-          "description": "Candidate admin DID derived from the passkey's Ed25519 public key."
+          "pattern": "^did:key:z(6Mk|Dn)[1-9A-HJ-NP-Za-km-z]+$",
+          "description": "The administrator's DID: the did:key of the passkey credential's own public key — Ed25519 (multicodec 0xed01, did:key:z6Mk…) or P-256, compressed (multicodec 0x1200, did:key:zDn…). Derived by the community from the registered key, never taken from the install token."
         },
         "setupSessionToken": {
           "type": "string",

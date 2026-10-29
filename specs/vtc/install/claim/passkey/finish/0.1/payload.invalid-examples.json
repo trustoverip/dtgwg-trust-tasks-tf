@@ -14,5 +14,13 @@
       "installToken": "e",
       "registrationId": "r"
     }
+  },
+  {
+    "note": "An administrator DID that is not the did:key of an Ed25519 or P-256 key. The DID is derived from the passkey's own public key, and only those two key types name one; a did:webvh or a secp256k1 did:key here was taken from somewhere other than the credential.",
+    "variant": "response",
+    "payload": {
+      "adminDid": "did:webvh:QmAliceScid4:wallet.example:alice",
+      "setupSessionToken": "eyJhbGciOiJFZERTQSJ9.e30.c2ln"
+    }
   }
 ]

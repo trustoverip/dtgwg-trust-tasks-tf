@@ -7,7 +7,7 @@ import type { Ext } from "../../../../../../_shared/components.js";
 
 
 /**
- * Begin claiming a fresh community with a passkey: exchange the install token (and its claim code, when the token was issued with one) for a WebAuthn registration challenge. The passkey ceremony of vtc/install/claim/start 0.2, unchanged on the wire. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ * Begin claiming a fresh community with a passkey: exchange the install token (and its claim code, when the token was issued with one) for a WebAuthn registration challenge. The passkey ceremony of vtc/install/claim/start 0.2, with the administrator's DID derived from the passkey's own key — Ed25519 or P-256 — and never named by the token. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
  */
 export interface VTCInstallClaimPasskeyStartPayload {
   /**
@@ -30,7 +30,7 @@ export interface VTCInstallClaimPasskeyStartResponsePayload {
    */
   registrationId: string;
   /**
-   * WebAuthn PublicKeyCredentialCreationOptions (opaque here); pubKeyCredParams = [{public-key, -8}].
+   * WebAuthn PublicKeyCredentialCreationOptions (opaque here). pubKeyCredParams lists exactly EdDSA (-8, Ed25519) and ES256 (-7, P-256), the two algorithms whose key the administrator's did:key can name; user.id, user.name and user.displayName name no DID.
    */
   options: {};
   ext?: Ext;
@@ -80,7 +80,7 @@ export const PAYLOAD_SCHEMA = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/install/claim/passkey/start/0.1",
   "title": "VTC Install Claim Passkey Start — payload",
-  "description": "Begin claiming a fresh community with a passkey: exchange the install token (and its claim code, when the token was issued with one) for a WebAuthn registration challenge. The passkey ceremony of vtc/install/claim/start 0.2, unchanged on the wire. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "description": "Begin claiming a fresh community with a passkey: exchange the install token (and its claim code, when the token was issued with one) for a WebAuthn registration challenge. The passkey ceremony of vtc/install/claim/start 0.2, with the administrator's DID derived from the passkey's own key — Ed25519 or P-256 — and never named by the token. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -119,7 +119,7 @@ export const PAYLOAD_SCHEMA = {
         },
         "options": {
           "type": "object",
-          "description": "WebAuthn PublicKeyCredentialCreationOptions (opaque here); pubKeyCredParams = [{public-key, -8}]."
+          "description": "WebAuthn PublicKeyCredentialCreationOptions (opaque here). pubKeyCredParams lists exactly EdDSA (-8, Ed25519) and ES256 (-7, P-256), the two algorithms whose key the administrator's did:key can name; user.id, user.name and user.displayName name no DID."
         },
         "ext": {
           "$ref": "#/$defs/Ext"
@@ -161,7 +161,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "options": {
           "type": "object",
-          "description": "WebAuthn PublicKeyCredentialCreationOptions (opaque here); pubKeyCredParams = [{public-key, -8}]."
+          "description": "WebAuthn PublicKeyCredentialCreationOptions (opaque here). pubKeyCredParams lists exactly EdDSA (-8, Ed25519) and ES256 (-7, P-256), the two algorithms whose key the administrator's did:key can name; user.id, user.name and user.displayName name no DID."
         },
         "ext": {
           "$ref": "#/$defs/Ext"

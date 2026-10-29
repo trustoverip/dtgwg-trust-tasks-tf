@@ -17,7 +17,16 @@ fn request_example_1() {
 }
 #[test]
 fn response_example_1() {
-    const JSON: &str = "{\n  \"id\": \"urn:uuid:7c1e2d3f-4a5b-4c6d-8e7f-90a1b2c3d412\",\n  \"type\": \"https://trusttasks.org/spec/vtc/install/claim/passkey/finish/0.1#response\",\n  \"issuer\": \"did:webvh:QmVtcScid7:acme-vtc.example\",\n  \"recipient\": \"did:key:z6MkfqzP7fJmYmN4KZrC8k1c7gTCh5Yy2nNw9Sz4o8bqvEhJ\",\n  \"issuedAt\": \"2026-10-01T09:01:06Z\",\n  \"threadId\": \"urn:uuid:7c1e2d3f-4a5b-4c6d-8e7f-90a1b2c3d41f\",\n  \"payload\": {\n    \"adminDid\": \"did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK\",\n    \"setupSessionToken\": \"eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJ2dGMtaW5zdGFsbC1zZXNzaW9uIn0.c2lnbmF0dXJl\"\n  }\n}\n";
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:7c1e2d3f-4a5b-4c6d-8e7f-90a1b2c3d412\",\n  \"type\": \"https://trusttasks.org/spec/vtc/install/claim/passkey/finish/0.1#response\",\n  \"issuer\": \"did:webvh:QmVtcScid7:acme-vtc.example\",\n  \"recipient\": \"did:key:z6MkfqzP7fJmYmN4KZrC8k1c7gTCh5Yy2nNw9Sz4o8bqvEhJ\",\n  \"issuedAt\": \"2026-10-01T09:01:06Z\",\n  \"threadId\": \"urn:uuid:7c1e2d3f-4a5b-4c6d-8e7f-90a1b2c3d41f\",\n  \"payload\": {\n    \"adminDid\": \"did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK\",\n    \"setupSessionToken\": \"eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJ2dGMtaW5zdGFsbC1zZXNzaW9uIn0.c2lnbmF0dXJl\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"verificationMethod\": \"did:webvh:QmVtcScid7:acme-vtc.example#key-0\",\n    \"created\": \"2026-10-01T09:01:06Z\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z3Fq…\"\n  }\n}\n";
+    let doc: trust_tasks_rs::TrustTask<spec::Response> =
+        serde_json::from_str(JSON).expect("deserialize response example");
+    let rendered = serde_json::to_value(&doc).expect("re-serialize");
+    let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
+    assert_eq!(rendered, expected, "response example failed round-trip");
+}
+#[test]
+fn response_example_2() {
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:7c1e2d3f-4a5b-4c6d-8e7f-90a1b2c3d422\",\n  \"type\": \"https://trusttasks.org/spec/vtc/install/claim/passkey/finish/0.1#response\",\n  \"issuer\": \"did:webvh:QmVtcScid7:acme-vtc.example\",\n  \"recipient\": \"did:key:z6MkfqzP7fJmYmN4KZrC8k1c7gTCh5Yy2nNw9Sz4o8bqvEhJ\",\n  \"issuedAt\": \"2026-10-01T09:01:06Z\",\n  \"threadId\": \"urn:uuid:7c1e2d3f-4a5b-4c6d-8e7f-90a1b2c3d42f\",\n  \"payload\": {\n    \"adminDid\": \"did:key:zDnaerDaTF5BXEavCrfRZEk316dpbLsfPDZ3WJ5hRTPFU2169\",\n    \"setupSessionToken\": \"eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJ2dGMtaW5zdGFsbC1zZXNzaW9uIn0.c2lnbmF0dXJl\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"verificationMethod\": \"did:webvh:QmVtcScid7:acme-vtc.example#key-0\",\n    \"created\": \"2026-10-01T09:01:06Z\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z2Kd…\"\n  }\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Response> =
         serde_json::from_str(JSON).expect("deserialize response example");
     let rendered = serde_json::to_value(&doc).expect("re-serialize");
@@ -53,6 +62,38 @@ fn rejects_invalid_examples() {
         assert!(
             !(serde_ok && schema_ok),
             "invalid-example #{} ({:?}) was accepted by both serde and JSON Schema; \
+                         the fixture's stated failure class is no longer caught:\n{}",
+            i + 1,
+            note,
+            raw
+        );
+    }
+}
+/// Each `"variant": "response"` fixture in
+/// `payload.invalid-examples.json` MUST be rejected as a
+/// response payload by at least one of: serde deserialization
+/// into `Response`, or JSON-Schema validation against the
+/// `$anchor: "response"` sub-schema (validate feature).
+#[cfg(feature = "validate")]
+#[test]
+fn rejects_invalid_response_examples() {
+    use trust_tasks_rs::validate::ValidatedPayload;
+    let fixtures: &[(&str, &str)] = &[
+        (
+            "An administrator DID that is not the did:key of an Ed25519 or P-256 key. The DID is derived from the passkey's own public key, and only those two key types name one; a did:webvh or a secp256k1 did:key here was taken from somewhere other than the credential.",
+            "{\n  \"adminDid\": \"did:webvh:QmAliceScid4:wallet.example:alice\",\n  \"setupSessionToken\": \"eyJhbGciOiJFZERTQSJ9.e30.c2ln\"\n}",
+        ),
+    ];
+    for (i, (note, raw)) in fixtures.iter().enumerate() {
+        let value: serde_json::Value = match serde_json::from_str(raw) {
+            Ok(v) => v,
+            Err(_) => continue,
+        };
+        let serde_ok = serde_json::from_value::<spec::Response>(value.clone()).is_ok();
+        let schema_ok = spec::Response::validate_value(&value).is_ok();
+        assert!(
+            !(serde_ok && schema_ok),
+            "invalid response example #{} ({:?}) was accepted by both serde and JSON Schema; \
                          the fixture's stated failure class is no longer caught:\n{}",
             i + 1,
             note,
