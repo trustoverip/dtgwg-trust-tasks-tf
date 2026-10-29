@@ -7,7 +7,7 @@ import type { DigestMultibase } from "../../../_shared/components.js";
 
 
 /**
- * The request payload of peer-check/ask: a short yes-or-no question one party puts to another, with an unguessable challenge. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. The asker is the `issuer`, the party being asked is the `recipient`, and the document MUST carry `expiresAt`.
+ * The request payload of peer-check/ask: a short yes-or-no question one party puts to another, with an unguessable challenge. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. The asker is the `issuer`, the party being asked is the `recipient`, and the payload MUST carry `expiresAt`, the deadline for the answer. The envelope `expiresAt` keeps its framework meaning (SPEC §4.2): after it the responder does not prompt for the request.
  */
 export interface PeerCheckAskPayload {
   /**
@@ -22,9 +22,13 @@ export interface PeerCheckAskPayload {
    * OPTIONAL extra context from the asker. It is UNTRUSTED display text: the responder's device MUST render it as plain text, attributed to the asker and visually distinct from anything the device itself asserts, and MUST NOT interpret it as markup, a link, or an instruction.
    */
   note?: string;
+  /**
+   * The answer deadline. After this instant the pending question lapses: the responder does not prompt for it and the asker accepts no answer. It is the task's own deadline (SPEC §7.3 item 16); the envelope `expiresAt` bounds only acceptance of the request document.
+   */
+  expiresAt: string;
 }
 /**
- * The success-response payload: the responder's answer, signed by the responder. Failures use trust-task-error, not this shape. A responder that declines because it does not recognise the question answers with `decision: denied`; an error is for a document the responder could not act on at all.
+ * The success-response payload: the responder's answer, signed by the responder. Failures use trust-task-error, not this shape. A responder that declines because it does not recognise the question answers with `decision: notConfirmed`; an error is for a document the responder could not act on at all.
  */
 export interface PeerCheckAskResponsePayload {
   /**
@@ -32,19 +36,19 @@ export interface PeerCheckAskResponsePayload {
    */
   challenge: string;
   /**
-   * The task digest (SPEC §4.9.3) of the request document this answers: multibase(multihash(H(JCS(request without its top-level proof)))). It binds the answer to the exact question, challenge, note, parties and expiry the responder was shown, so a yes given to one ask cannot be presented as a yes to another.
+   * The task digest (SPEC §4.9.3) of the request document this answers: multibase(multihash(H(JCS(request without its top-level proof)))). It binds the answer to the exact question, challenge, note, parties and deadline the responder was shown, so a yes given to one ask cannot be presented as a yes to another.
    */
   requestDigest: DigestMultibase;
   /**
-   * The responder's answer. `approved` means yes to the question as asked; `denied` means no.
+   * The responder's answer. `confirmed` means yes to the question as asked; `notConfirmed` means no.
    */
-  decision: "approved" | "denied";
+  decision: "confirmed" | "notConfirmed";
   /**
-   * When the responder gave the answer, RFC 3339. Informational for the asker; freshness is judged against the request's `expiresAt` and the asker's own clock.
+   * When the responder gave the answer, RFC 3339. Informational for the asker; freshness is judged against the request's `payload.expiresAt` and the asker's own clock. It is the time of the user's answer; the envelope `issuedAt` is when the responder signed the document, which may be later.
    */
   respondedAt: string;
   /**
-   * OPTIONAL, and only meaningful with `decision: denied`; an asker MUST ignore it, and a responder MUST NOT send it, with `approved` (the schema does not enforce this). `notRecognised` — the responder does not recognise what the question describes; `declined` — the responder recognises it and says no; `other` — anything else. An enumeration rather than prose, so an asker never renders responder-authored text.
+   * OPTIONAL, and only with `decision: notConfirmed`, which the schema enforces; a document carrying it beside `confirmed` is invalid. `notRecognised` — the responder does not recognise what the question describes; `declined` — the responder recognises it and says no; `other` — anything else. An enumeration rather than prose, so an asker never renders responder-authored text.
    */
   deniedReason?: "notRecognised" | "declined" | "other";
 }
@@ -93,12 +97,13 @@ export const PAYLOAD_SCHEMA = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/peer-check/ask/0.1",
   "title": "Peer Check — Ask — payload",
-  "description": "The request payload of peer-check/ask: a short yes-or-no question one party puts to another, with an unguessable challenge. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. The asker is the `issuer`, the party being asked is the `recipient`, and the document MUST carry `expiresAt`.",
+  "description": "The request payload of peer-check/ask: a short yes-or-no question one party puts to another, with an unguessable challenge. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. The asker is the `issuer`, the party being asked is the `recipient`, and the payload MUST carry `expiresAt`, the deadline for the answer. The envelope `expiresAt` keeps its framework meaning (SPEC §4.2): after it the responder does not prompt for the request.",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "challenge",
-    "question"
+    "question",
+    "expiresAt"
   ],
   "properties": {
     "challenge": {
@@ -117,6 +122,11 @@ export const PAYLOAD_SCHEMA = {
       "minLength": 1,
       "maxLength": 500,
       "description": "OPTIONAL extra context from the asker. It is UNTRUSTED display text: the responder's device MUST render it as plain text, attributed to the asker and visually distinct from anything the device itself asserts, and MUST NOT interpret it as markup, a link, or an instruction."
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The answer deadline. After this instant the pending question lapses: the responder does not prompt for it and the asker accepts no answer. It is the task's own deadline (SPEC §7.3 item 16); the envelope `expiresAt` bounds only acceptance of the request document."
     }
   },
   "$defs": {
@@ -131,7 +141,16 @@ export const PAYLOAD_SCHEMA = {
         "decision",
         "respondedAt"
       ],
-      "description": "The success-response payload: the responder's answer, signed by the responder. Failures use trust-task-error, not this shape. A responder that declines because it does not recognise the question answers with `decision: denied`; an error is for a document the responder could not act on at all.",
+      "description": "The success-response payload: the responder's answer, signed by the responder. Failures use trust-task-error, not this shape. A responder that declines because it does not recognise the question answers with `decision: notConfirmed`; an error is for a document the responder could not act on at all.",
+      "dependentSchemas": {
+        "deniedReason": {
+          "properties": {
+            "decision": {
+              "const": "notConfirmed"
+            }
+          }
+        }
+      },
       "properties": {
         "challenge": {
           "type": "string",
@@ -140,20 +159,20 @@ export const PAYLOAD_SCHEMA = {
         },
         "requestDigest": {
           "$ref": "#/$defs/DigestMultibase",
-          "description": "The task digest (SPEC §4.9.3) of the request document this answers: multibase(multihash(H(JCS(request without its top-level proof)))). It binds the answer to the exact question, challenge, note, parties and expiry the responder was shown, so a yes given to one ask cannot be presented as a yes to another."
+          "description": "The task digest (SPEC §4.9.3) of the request document this answers: multibase(multihash(H(JCS(request without its top-level proof)))). It binds the answer to the exact question, challenge, note, parties and deadline the responder was shown, so a yes given to one ask cannot be presented as a yes to another."
         },
         "decision": {
           "type": "string",
           "enum": [
-            "approved",
-            "denied"
+            "confirmed",
+            "notConfirmed"
           ],
-          "description": "The responder's answer. `approved` means yes to the question as asked; `denied` means no."
+          "description": "The responder's answer. `confirmed` means yes to the question as asked; `notConfirmed` means no."
         },
         "respondedAt": {
           "type": "string",
           "format": "date-time",
-          "description": "When the responder gave the answer, RFC 3339. Informational for the asker; freshness is judged against the request's `expiresAt` and the asker's own clock."
+          "description": "When the responder gave the answer, RFC 3339. Informational for the asker; freshness is judged against the request's `payload.expiresAt` and the asker's own clock. It is the time of the user's answer; the envelope `issuedAt` is when the responder signed the document, which may be later."
         },
         "deniedReason": {
           "type": "string",
@@ -162,7 +181,7 @@ export const PAYLOAD_SCHEMA = {
             "declined",
             "other"
           ],
-          "description": "OPTIONAL, and only meaningful with `decision: denied`; an asker MUST ignore it, and a responder MUST NOT send it, with `approved` (the schema does not enforce this). `notRecognised` — the responder does not recognise what the question describes; `declined` — the responder recognises it and says no; `other` — anything else. An enumeration rather than prose, so an asker never renders responder-authored text."
+          "description": "OPTIONAL, and only with `decision: notConfirmed`, which the schema enforces; a document carrying it beside `confirmed` is invalid. `notRecognised` — the responder does not recognise what the question describes; `declined` — the responder recognises it and says no; `other` — anything else. An enumeration rather than prose, so an asker never renders responder-authored text."
         }
       }
     },
@@ -195,7 +214,16 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "decision",
         "respondedAt"
       ],
-      "description": "The success-response payload: the responder's answer, signed by the responder. Failures use trust-task-error, not this shape. A responder that declines because it does not recognise the question answers with `decision: denied`; an error is for a document the responder could not act on at all.",
+      "description": "The success-response payload: the responder's answer, signed by the responder. Failures use trust-task-error, not this shape. A responder that declines because it does not recognise the question answers with `decision: notConfirmed`; an error is for a document the responder could not act on at all.",
+      "dependentSchemas": {
+        "deniedReason": {
+          "properties": {
+            "decision": {
+              "const": "notConfirmed"
+            }
+          }
+        }
+      },
       "properties": {
         "challenge": {
           "type": "string",
@@ -204,20 +232,20 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "requestDigest": {
           "$ref": "#/$defs/DigestMultibase",
-          "description": "The task digest (SPEC §4.9.3) of the request document this answers: multibase(multihash(H(JCS(request without its top-level proof)))). It binds the answer to the exact question, challenge, note, parties and expiry the responder was shown, so a yes given to one ask cannot be presented as a yes to another."
+          "description": "The task digest (SPEC §4.9.3) of the request document this answers: multibase(multihash(H(JCS(request without its top-level proof)))). It binds the answer to the exact question, challenge, note, parties and deadline the responder was shown, so a yes given to one ask cannot be presented as a yes to another."
         },
         "decision": {
           "type": "string",
           "enum": [
-            "approved",
-            "denied"
+            "confirmed",
+            "notConfirmed"
           ],
-          "description": "The responder's answer. `approved` means yes to the question as asked; `denied` means no."
+          "description": "The responder's answer. `confirmed` means yes to the question as asked; `notConfirmed` means no."
         },
         "respondedAt": {
           "type": "string",
           "format": "date-time",
-          "description": "When the responder gave the answer, RFC 3339. Informational for the asker; freshness is judged against the request's `expiresAt` and the asker's own clock."
+          "description": "When the responder gave the answer, RFC 3339. Informational for the asker; freshness is judged against the request's `payload.expiresAt` and the asker's own clock. It is the time of the user's answer; the envelope `issuedAt` is when the responder signed the document, which may be later."
         },
         "deniedReason": {
           "type": "string",
@@ -226,7 +254,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "declined",
             "other"
           ],
-          "description": "OPTIONAL, and only meaningful with `decision: denied`; an asker MUST ignore it, and a responder MUST NOT send it, with `approved` (the schema does not enforce this). `notRecognised` — the responder does not recognise what the question describes; `declined` — the responder recognises it and says no; `other` — anything else. An enumeration rather than prose, so an asker never renders responder-authored text."
+          "description": "OPTIONAL, and only with `decision: notConfirmed`, which the schema enforces; a document carrying it beside `confirmed` is invalid. `notRecognised` — the responder does not recognise what the question describes; `declined` — the responder recognises it and says no; `other` — anything else. An enumeration rather than prose, so an asker never renders responder-authored text."
         }
       }
     },

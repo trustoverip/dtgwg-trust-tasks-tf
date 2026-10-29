@@ -107,7 +107,7 @@ impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
             })
     }
 }
-///The request payload of peer-check/ask: a short yes-or-no question one party puts to another, with an unguessable challenge. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. The asker is the `issuer`, the party being asked is the `recipient`, and the document MUST carry `expiresAt`.
+///The request payload of peer-check/ask: a short yes-or-no question one party puts to another, with an unguessable challenge. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. The asker is the `issuer`, the party being asked is the `recipient`, and the payload MUST carry `expiresAt`, the deadline for the answer. The envelope `expiresAt` keeps its framework meaning (SPEC §4.2): after it the responder does not prompt for the request.
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
@@ -115,6 +115,9 @@ impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
 pub struct Payload {
     ///An unguessable value the asker generates for this one question: at least 128 bits from a cryptographically secure random source, encoded base64url without padding (22 to 86 characters). The responder echoes it unchanged in its answer.
     pub challenge: PayloadChallenge,
+    ///The answer deadline. After this instant the pending question lapses: the responder does not prompt for it and the asker accepts no answer. It is the task's own deadline (SPEC §7.3 item 16); the envelope `expiresAt` bounds only acceptance of the request document.
+    #[serde(rename = "expiresAt")]
+    pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
     ///OPTIONAL extra context from the asker. It is UNTRUSTED display text: the responder's device MUST render it as plain text, attributed to the asker and visually distinct from anything the device itself asserts, and MUST NOT interpret it as markup, a link, or an instruction.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub note: ::std::option::Option<PayloadNote>,
@@ -311,7 +314,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadQuestion {
             })
     }
 }
-///The success-response payload: the responder's answer, signed by the responder. Failures use trust-task-error, not this shape. A responder that declines because it does not recognise the question answers with `decision: denied`; an error is for a document the responder could not act on at all.
+///The success-response payload: the responder's answer, signed by the responder. Failures use trust-task-error, not this shape. A responder that declines because it does not recognise the question answers with `decision: notConfirmed`; an error is for a document the responder could not act on at all.
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
@@ -319,19 +322,19 @@ impl<'de> ::serde::Deserialize<'de> for PayloadQuestion {
 pub struct Response {
     ///The `challenge` of the request, echoed unchanged. The asker rejects an answer whose challenge it did not issue, or has already consumed.
     pub challenge: ResponseChallenge,
-    ///The responder's answer. `approved` means yes to the question as asked; `denied` means no.
+    ///The responder's answer. `confirmed` means yes to the question as asked; `notConfirmed` means no.
     pub decision: ResponseDecision,
-    ///OPTIONAL, and only meaningful with `decision: denied`; an asker MUST ignore it, and a responder MUST NOT send it, with `approved` (the schema does not enforce this). `notRecognised` — the responder does not recognise what the question describes; `declined` — the responder recognises it and says no; `other` — anything else. An enumeration rather than prose, so an asker never renders responder-authored text.
+    ///OPTIONAL, and only with `decision: notConfirmed`, which the schema enforces; a document carrying it beside `confirmed` is invalid. `notRecognised` — the responder does not recognise what the question describes; `declined` — the responder recognises it and says no; `other` — anything else. An enumeration rather than prose, so an asker never renders responder-authored text.
     #[serde(
         rename = "deniedReason",
         default,
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub denied_reason: ::std::option::Option<ResponseDeniedReason>,
-    ///The task digest (SPEC §4.9.3) of the request document this answers: multibase(multihash(H(JCS(request without its top-level proof)))). It binds the answer to the exact question, challenge, note, parties and expiry the responder was shown, so a yes given to one ask cannot be presented as a yes to another.
+    ///The task digest (SPEC §4.9.3) of the request document this answers: multibase(multihash(H(JCS(request without its top-level proof)))). It binds the answer to the exact question, challenge, note, parties and deadline the responder was shown, so a yes given to one ask cannot be presented as a yes to another.
     #[serde(rename = "requestDigest")]
     pub request_digest: DigestMultibase,
-    ///When the responder gave the answer, RFC 3339. Informational for the asker; freshness is judged against the request's `expiresAt` and the asker's own clock.
+    ///When the responder gave the answer, RFC 3339. Informational for the asker; freshness is judged against the request's `payload.expiresAt` and the asker's own clock. It is the time of the user's answer; the envelope `issuedAt` is when the responder signed the document, which may be later.
     #[serde(rename = "respondedAt")]
     pub responded_at: ::chrono::DateTime<::chrono::offset::Utc>,
 }
@@ -401,7 +404,7 @@ impl<'de> ::serde::Deserialize<'de> for ResponseChallenge {
             })
     }
 }
-///The responder's answer. `approved` means yes to the question as asked; `denied` means no.
+///The responder's answer. `confirmed` means yes to the question as asked; `notConfirmed` means no.
 ///
 #[derive(
     ::serde::Deserialize,
@@ -417,16 +420,16 @@ impl<'de> ::serde::Deserialize<'de> for ResponseChallenge {
 )]
 #[non_exhaustive]
 pub enum ResponseDecision {
-    #[serde(rename = "approved")]
-    Approved,
-    #[serde(rename = "denied")]
-    Denied,
+    #[serde(rename = "confirmed")]
+    Confirmed,
+    #[serde(rename = "notConfirmed")]
+    NotConfirmed,
 }
 impl ::std::fmt::Display for ResponseDecision {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         match *self {
-            Self::Approved => f.write_str("approved"),
-            Self::Denied => f.write_str("denied"),
+            Self::Confirmed => f.write_str("confirmed"),
+            Self::NotConfirmed => f.write_str("notConfirmed"),
         }
     }
 }
@@ -434,8 +437,8 @@ impl ::std::str::FromStr for ResponseDecision {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         match value {
-            "approved" => Ok(Self::Approved),
-            "denied" => Ok(Self::Denied),
+            "confirmed" => Ok(Self::Confirmed),
+            "notConfirmed" => Ok(Self::NotConfirmed),
             _ => Err("invalid value".into()),
         }
     }
@@ -462,7 +465,7 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseDecision {
         value.parse()
     }
 }
-///OPTIONAL, and only meaningful with `decision: denied`; an asker MUST ignore it, and a responder MUST NOT send it, with `approved` (the schema does not enforce this). `notRecognised` — the responder does not recognise what the question describes; `declined` — the responder recognises it and says no; `other` — anything else. An enumeration rather than prose, so an asker never renders responder-authored text.
+///OPTIONAL, and only with `decision: notConfirmed`, which the schema enforces; a document carrying it beside `confirmed` is invalid. `notRecognised` — the responder does not recognise what the question describes; `declined` — the responder recognises it and says no; `other` — anything else. An enumeration rather than prose, so an asker never renders responder-authored text.
 ///
 #[derive(
     ::serde::Deserialize,
@@ -532,6 +535,8 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Payload {
         challenge: ::std::result::Result<super::PayloadChallenge, ::std::string::String>,
+        expires_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
         note:
             ::std::result::Result<::std::option::Option<super::PayloadNote>, ::std::string::String>,
         question: ::std::result::Result<super::PayloadQuestion, ::std::string::String>,
@@ -540,6 +545,7 @@ pub mod builder {
         fn default() -> Self {
             Self {
                 challenge: Err("no value supplied for challenge".to_string()),
+                expires_at: Err("no value supplied for expires_at".to_string()),
                 note: Ok(Default::default()),
                 question: Err("no value supplied for question".to_string()),
             }
@@ -554,6 +560,16 @@ pub mod builder {
             self.challenge = value
                 .try_into()
                 .map_err(|e| format!("error converting supplied value for challenge: {e}"));
+            self
+        }
+        pub fn expires_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.expires_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for expires_at: {e}"));
             self
         }
         pub fn note<T>(mut self, value: T) -> Self
@@ -582,6 +598,7 @@ pub mod builder {
         fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
             Ok(Self {
                 challenge: value.challenge?,
+                expires_at: value.expires_at?,
                 note: value.note?,
                 question: value.question?,
             })
@@ -591,6 +608,7 @@ pub mod builder {
         fn from(value: super::Payload) -> Self {
             Self {
                 challenge: Ok(value.challenge),
+                expires_at: Ok(value.expires_at),
                 note: Ok(value.note),
                 question: Ok(value.question),
             }
@@ -701,7 +719,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success-response payload: the responder's answer, signed by the responder. Failures use trust-task-error, not this shape. A responder that declines because it does not recognise the question answers with `decision: denied`; an error is for a document the responder could not act on at all.\",\"properties\":{\"challenge\":{\"description\":\"The `challenge` of the request, echoed unchanged. The asker rejects an answer whose challenge it did not issue, or has already consumed.\",\"pattern\":\"^[A-Za-z0-9_-]{22,86}$\",\"type\":\"string\"},\"decision\":{\"description\":\"The responder's answer. `approved` means yes to the question as asked; `denied` means no.\",\"enum\":[\"approved\",\"denied\"],\"type\":\"string\"},\"deniedReason\":{\"description\":\"OPTIONAL, and only meaningful with `decision: denied`; an asker MUST ignore it, and a responder MUST NOT send it, with `approved` (the schema does not enforce this). `notRecognised` — the responder does not recognise what the question describes; `declined` — the responder recognises it and says no; `other` — anything else. An enumeration rather than prose, so an asker never renders responder-authored text.\",\"enum\":[\"notRecognised\",\"declined\",\"other\"],\"type\":\"string\"},\"requestDigest\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"The task digest (SPEC §4.9.3) of the request document this answers: multibase(multihash(H(JCS(request without its top-level proof)))). It binds the answer to the exact question, challenge, note, parties and expiry the responder was shown, so a yes given to one ask cannot be presented as a yes to another.\"},\"respondedAt\":{\"description\":\"When the responder gave the answer, RFC 3339. Informational for the asker; freshness is judged against the request's `expiresAt` and the asker's own clock.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"challenge\",\"requestDigest\",\"decision\",\"respondedAt\"],\"title\":\"Peer Check Ask Response Payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/peer-check/ask/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The request payload of peer-check/ask: a short yes-or-no question one party puts to another, with an unguessable challenge. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. The asker is the `issuer`, the party being asked is the `recipient`, and the document MUST carry `expiresAt`.\",\"properties\":{\"challenge\":{\"description\":\"An unguessable value the asker generates for this one question: at least 128 bits from a cryptographically secure random source, encoded base64url without padding (22 to 86 characters). The responder echoes it unchanged in its answer.\",\"pattern\":\"^[A-Za-z0-9_-]{22,86}$\",\"type\":\"string\"},\"note\":{\"description\":\"OPTIONAL extra context from the asker. It is UNTRUSTED display text: the responder's device MUST render it as plain text, attributed to the asker and visually distinct from anything the device itself asserts, and MUST NOT interpret it as markup, a link, or an instruction.\",\"maxLength\":500,\"minLength\":1,\"type\":\"string\"},\"question\":{\"description\":\"What the asker wants confirmed, in one short sentence, for example \\\"Did you just ask me to send you a one-time code?\\\". It is asker-authored text the responder's device displays attributed to the asker, never as a statement the device itself vouches for.\",\"maxLength\":200,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"challenge\",\"question\"],\"title\":\"Peer Check — Ask — payload\",\"type\":\"object\"}\n",
+        "{\"$defs\":{\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"dependentSchemas\":{\"deniedReason\":{\"properties\":{\"decision\":{\"const\":\"notConfirmed\"}}}},\"description\":\"The success-response payload: the responder's answer, signed by the responder. Failures use trust-task-error, not this shape. A responder that declines because it does not recognise the question answers with `decision: notConfirmed`; an error is for a document the responder could not act on at all.\",\"properties\":{\"challenge\":{\"description\":\"The `challenge` of the request, echoed unchanged. The asker rejects an answer whose challenge it did not issue, or has already consumed.\",\"pattern\":\"^[A-Za-z0-9_-]{22,86}$\",\"type\":\"string\"},\"decision\":{\"description\":\"The responder's answer. `confirmed` means yes to the question as asked; `notConfirmed` means no.\",\"enum\":[\"confirmed\",\"notConfirmed\"],\"type\":\"string\"},\"deniedReason\":{\"description\":\"OPTIONAL, and only with `decision: notConfirmed`, which the schema enforces; a document carrying it beside `confirmed` is invalid. `notRecognised` — the responder does not recognise what the question describes; `declined` — the responder recognises it and says no; `other` — anything else. An enumeration rather than prose, so an asker never renders responder-authored text.\",\"enum\":[\"notRecognised\",\"declined\",\"other\"],\"type\":\"string\"},\"requestDigest\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"The task digest (SPEC §4.9.3) of the request document this answers: multibase(multihash(H(JCS(request without its top-level proof)))). It binds the answer to the exact question, challenge, note, parties and deadline the responder was shown, so a yes given to one ask cannot be presented as a yes to another.\"},\"respondedAt\":{\"description\":\"When the responder gave the answer, RFC 3339. Informational for the asker; freshness is judged against the request's `payload.expiresAt` and the asker's own clock. It is the time of the user's answer; the envelope `issuedAt` is when the responder signed the document, which may be later.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"challenge\",\"requestDigest\",\"decision\",\"respondedAt\"],\"title\":\"Peer Check Ask Response Payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/peer-check/ask/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The request payload of peer-check/ask: a short yes-or-no question one party puts to another, with an unguessable challenge. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3. The asker is the `issuer`, the party being asked is the `recipient`, and the payload MUST carry `expiresAt`, the deadline for the answer. The envelope `expiresAt` keeps its framework meaning (SPEC §4.2): after it the responder does not prompt for the request.\",\"properties\":{\"challenge\":{\"description\":\"An unguessable value the asker generates for this one question: at least 128 bits from a cryptographically secure random source, encoded base64url without padding (22 to 86 characters). The responder echoes it unchanged in its answer.\",\"pattern\":\"^[A-Za-z0-9_-]{22,86}$\",\"type\":\"string\"},\"expiresAt\":{\"description\":\"The answer deadline. After this instant the pending question lapses: the responder does not prompt for it and the asker accepts no answer. It is the task's own deadline (SPEC §7.3 item 16); the envelope `expiresAt` bounds only acceptance of the request document.\",\"format\":\"date-time\",\"type\":\"string\"},\"note\":{\"description\":\"OPTIONAL extra context from the asker. It is UNTRUSTED display text: the responder's device MUST render it as plain text, attributed to the asker and visually distinct from anything the device itself asserts, and MUST NOT interpret it as markup, a link, or an instruction.\",\"maxLength\":500,\"minLength\":1,\"type\":\"string\"},\"question\":{\"description\":\"What the asker wants confirmed, in one short sentence, for example \\\"Did you just ask me to send you a one-time code?\\\". It is asker-authored text the responder's device displays attributed to the asker, never as a statement the device itself vouches for.\",\"maxLength\":200,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"challenge\",\"question\",\"expiresAt\"],\"title\":\"Peer Check — Ask — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -710,7 +728,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success-response payload: the responder's answer, signed by the responder. Failures use trust-task-error, not this shape. A responder that declines because it does not recognise the question answers with `decision: denied`; an error is for a document the responder could not act on at all.\",\"properties\":{\"challenge\":{\"description\":\"The `challenge` of the request, echoed unchanged. The asker rejects an answer whose challenge it did not issue, or has already consumed.\",\"pattern\":\"^[A-Za-z0-9_-]{22,86}$\",\"type\":\"string\"},\"decision\":{\"description\":\"The responder's answer. `approved` means yes to the question as asked; `denied` means no.\",\"enum\":[\"approved\",\"denied\"],\"type\":\"string\"},\"deniedReason\":{\"description\":\"OPTIONAL, and only meaningful with `decision: denied`; an asker MUST ignore it, and a responder MUST NOT send it, with `approved` (the schema does not enforce this). `notRecognised` — the responder does not recognise what the question describes; `declined` — the responder recognises it and says no; `other` — anything else. An enumeration rather than prose, so an asker never renders responder-authored text.\",\"enum\":[\"notRecognised\",\"declined\",\"other\"],\"type\":\"string\"},\"requestDigest\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"The task digest (SPEC §4.9.3) of the request document this answers: multibase(multihash(H(JCS(request without its top-level proof)))). It binds the answer to the exact question, challenge, note, parties and expiry the responder was shown, so a yes given to one ask cannot be presented as a yes to another.\"},\"respondedAt\":{\"description\":\"When the responder gave the answer, RFC 3339. Informational for the asker; freshness is judged against the request's `expiresAt` and the asker's own clock.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"challenge\",\"requestDigest\",\"decision\",\"respondedAt\"],\"title\":\"Peer Check Ask Response Payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
+        "{\"$defs\":{\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"dependentSchemas\":{\"deniedReason\":{\"properties\":{\"decision\":{\"const\":\"notConfirmed\"}}}},\"description\":\"The success-response payload: the responder's answer, signed by the responder. Failures use trust-task-error, not this shape. A responder that declines because it does not recognise the question answers with `decision: notConfirmed`; an error is for a document the responder could not act on at all.\",\"properties\":{\"challenge\":{\"description\":\"The `challenge` of the request, echoed unchanged. The asker rejects an answer whose challenge it did not issue, or has already consumed.\",\"pattern\":\"^[A-Za-z0-9_-]{22,86}$\",\"type\":\"string\"},\"decision\":{\"description\":\"The responder's answer. `confirmed` means yes to the question as asked; `notConfirmed` means no.\",\"enum\":[\"confirmed\",\"notConfirmed\"],\"type\":\"string\"},\"deniedReason\":{\"description\":\"OPTIONAL, and only with `decision: notConfirmed`, which the schema enforces; a document carrying it beside `confirmed` is invalid. `notRecognised` — the responder does not recognise what the question describes; `declined` — the responder recognises it and says no; `other` — anything else. An enumeration rather than prose, so an asker never renders responder-authored text.\",\"enum\":[\"notRecognised\",\"declined\",\"other\"],\"type\":\"string\"},\"requestDigest\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"The task digest (SPEC §4.9.3) of the request document this answers: multibase(multihash(H(JCS(request without its top-level proof)))). It binds the answer to the exact question, challenge, note, parties and deadline the responder was shown, so a yes given to one ask cannot be presented as a yes to another.\"},\"respondedAt\":{\"description\":\"When the responder gave the answer, RFC 3339. Informational for the asker; freshness is judged against the request's `payload.expiresAt` and the asker's own clock. It is the time of the user's answer; the envelope `issuedAt` is when the responder signed the document, which may be later.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"challenge\",\"requestDigest\",\"decision\",\"respondedAt\"],\"title\":\"Peer Check Ask Response Payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {
