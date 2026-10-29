@@ -76,6 +76,8 @@ The founder thus leaves the claim as an administrator who can already answer the
 - `installToken` is no longer carried: the claim opened by `claimId` is bound to it. `registrationId` is renamed `claimId`.
 - `adminDid` in the response is the founder's DID, not one derived by the community.
 
+The passkey ceremony of 0.2 is not replaced by this one: it continues as [`vtc/install/claim/passkey/finish`](../../passkey/finish/0.1/spec.md), a slug of its own, so that this version does not supersede it.
+
 ## Conformance
 
 The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY** and **OPTIONAL** in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/info/bcp14) when, and only when, they appear in all capitals.

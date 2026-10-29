@@ -5482,6 +5482,18 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vtc/install/claim/finish/0.3#response" => <crate::specs::vtc::install::claim::finish::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/install/claim/passkey/finish/0.1" => <crate::specs::vtc::install::claim::passkey::finish::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/install/claim/passkey/finish/0.1#response" => <crate::specs::vtc::install::claim::passkey::finish::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/install/claim/passkey/start/0.1" => <crate::specs::vtc::install::claim::passkey::start::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/install/claim/passkey/start/0.1#response" => <crate::specs::vtc::install::claim::passkey::start::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/install/claim/start/0.1" => <crate::specs::vtc::install::claim::start::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
@@ -11959,6 +11971,20 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         }
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/install/claim/passkey/finish/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtc::install::claim::passkey::finish::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/install/claim/passkey/start/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtc::install::claim::passkey::start::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/install/claim/start/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::vtc::install::claim::start::v0_1::Payload,
         >()),
@@ -17834,6 +17860,16 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/install/claim/finish/0.3" => {
             Some(crate::specs::vtc::install::claim::finish::v0_3::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/install/claim/passkey/finish/0.1" => {
+            Some(crate::specs::vtc::install::claim::passkey::finish::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/install/claim/passkey/start/0.1" => {
+            Some(crate::specs::vtc::install::claim::passkey::start::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]

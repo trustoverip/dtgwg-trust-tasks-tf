@@ -1,0 +1,18 @@
+[
+  {
+    "note": "Unknown top-level member is rejected.",
+    "payload": {
+      "installToken": "e",
+      "registrationId": "r",
+      "webauthnResponse": {},
+      "__x__": true
+    }
+  },
+  {
+    "note": "`webauthnResponse` is required — it is the attestation that carries the whole proof of control.",
+    "payload": {
+      "installToken": "e",
+      "registrationId": "r"
+    }
+  }
+]

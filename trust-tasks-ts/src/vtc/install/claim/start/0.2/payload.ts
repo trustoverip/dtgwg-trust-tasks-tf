@@ -6,7 +6,7 @@
 import type { Ext } from "../../../../../_shared/components.js";
 
 
-/** @deprecated superseded by vtc/install/claim/start/0.3 */
+/** @deprecated retired; use vtc/install/claim/passkey/start/0.1 */
 export interface VTCInstallClaimStartPayload {
   /**
    * The EdDSA-signed install JWT (aud=vtc-install) printed by vtc setup.
@@ -22,7 +22,7 @@ export interface VTCInstallClaimStartPayload {
   claimSecret?: string;
   ext?: Ext;
 }
-/** @deprecated superseded by vtc/install/claim/start/0.3 */
+/** @deprecated retired; use vtc/install/claim/passkey/start/0.1 */
 export interface VTCInstallClaimStartResponsePayload {
   /**
    * Echoes the install token's jti (a UUID); pass it back to claim/finish.
@@ -55,12 +55,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by vtc/install/claim/start/0.3";
+export const DEPRECATION: string | null = "retired; use vtc/install/claim/passkey/start/0.1";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by vtc/install/claim/start/0.3
+ * @deprecated retired; use vtc/install/claim/passkey/start/0.1
  */
 export type Payload = VTCInstallClaimStartPayload;
 
@@ -70,7 +70,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/install/claim/
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by vtc/install/claim/start/0.3
+ * @deprecated retired; use vtc/install/claim/passkey/start/0.1
  */
 export type Response = VTCInstallClaimStartResponsePayload;
 

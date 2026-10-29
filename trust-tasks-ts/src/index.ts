@@ -3206,6 +3206,12 @@ export import VtcInstallClaimFinish_v0_2 = _VtcInstallClaimFinish_v0_2;
 import * as _VtcInstallClaimFinish_v0_3 from "./vtc/install/claim/finish/0.3/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtcInstallClaimFinish_v0_3 = _VtcInstallClaimFinish_v0_3;
+import * as _VtcInstallClaimPasskeyFinish_v0_1 from "./vtc/install/claim/passkey/finish/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcInstallClaimPasskeyFinish_v0_1 = _VtcInstallClaimPasskeyFinish_v0_1;
+import * as _VtcInstallClaimPasskeyStart_v0_1 from "./vtc/install/claim/passkey/start/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcInstallClaimPasskeyStart_v0_1 = _VtcInstallClaimPasskeyStart_v0_1;
 import * as _VtcInstallClaimStart_v0_1 from "./vtc/install/claim/start/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtcInstallClaimStart_v0_1 = _VtcInstallClaimStart_v0_1;
