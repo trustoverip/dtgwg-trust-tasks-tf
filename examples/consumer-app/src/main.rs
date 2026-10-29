@@ -21,7 +21,8 @@
 //!
 //! It plays both parties in one process: a producer builds requests and
 //! serializes them; a consumer parses the bytes, routes them with a
-//! `Dispatcher`, applies each version's policy, and answers.
+//! `Dispatcher`, applies each version's policy, and answers. Last, it looks
+//! tasks up by Type URI alone in the generated `tasks::schema_index`.
 
 use std::num::NonZeroU64;
 
@@ -186,6 +187,38 @@ fn main() -> Result<(), Error> {
         reply["payload"]["code"]
     );
     assert_eq!(reply["payload"]["code"], "malformedRequest");
+
+    // 7. By Type URI alone: `tasks::schema_index` (build.rs turns it on) is
+    //    `trust_tasks_rs::schema_index` for the locked versions — which the
+    //    runtime's own index, with no prebuilt family compiled, cannot be. A
+    //    gate that validates by URI uses it, and refuses what it does not
+    //    know rather than letting it through unvalidated.
+    for (uri, locked) in [
+        (keys_list::Payload::TYPE_URI, true),
+        (keys_list::Response::TYPE_URI, true),
+        (acme_vault_get::Payload::TYPE_URI, true),
+        ("https://trusttasks.org/spec/vault/upsert/0.4", false),
+    ] {
+        let schema = tasks::schema_index::schema_for(uri);
+        assert_eq!(schema.is_some(), locked, "{uri}");
+        println!(
+            "index      {uri} → {}",
+            if schema.is_some() {
+                "schema"
+            } else {
+                "unknown: refuse"
+            }
+        );
+    }
+    assert_eq!(
+        tasks::schema_index::spec_policy_for(grant::Payload::TYPE_URI),
+        Some(trust_tasks_rs::SpecPolicy::of::<grant::Payload>())
+    );
+    assert_eq!(
+        tasks::schema_index::error_codes_for(vault_get::Payload::TYPE_URI),
+        Some(vault_get::ERROR_CODES)
+    );
+    assert_eq!(tasks::schema_index::TYPE_URIS.len(), 8);
 
     println!("round trip ok: 4 generated tasks from two authorities, nothing else compiled");
     Ok(())
