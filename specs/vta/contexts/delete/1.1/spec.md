@@ -101,7 +101,14 @@ the host and retrying with `abandonHostCopies`. The unregistered server is one
 more such failure rather than a refusal of its own. A host that answers that it
 no longer holds the log has removed it.
 
-A 1.1 consumer **MUST** still accept 1.0 and answer it as 1.0 specifies.
+1.1 supersedes 1.0, and a producer **SHOULD** send 1.1. A 1.1 consumer's
+obligation to 1.0 lasts only until 1.0 is withdrawn. Until then it accepts a
+1.0 document, because [SPEC §5.2](/SPEC.md#52-compatibility-rules) requires an
+implementation to accept every earlier `MINOR`, and answers it as 1.0
+specifies. Once 1.0 is withdrawn
+([SPEC §5.3.3](/SPEC.md#533-superseded-and-withdrawn-versions)), a consumer
+**MAY** refuse it with `unsupportedVersion`, and a producer **MUST NOT** send
+it.
 
 ## Status of this Document
 
