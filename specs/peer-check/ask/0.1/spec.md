@@ -16,9 +16,11 @@ parties:
   - role: Asker
     requirement: REQUIRED
     member: issuer
+    identifierScope: any
   - role: Responder
     requirement: REQUIRED
     member: recipient
+    identifierScope: any
 proofRequirement:
   request: REQUIRED
   response: REQUIRED
@@ -49,8 +51,8 @@ retention:
   class: exchange
   rationale: >-
     Both sides need the documents only for the life of the pending exchange: the responder to render the prompt, the
-    asker until it has checked the answer or the question's deadline has passed. An asker that keeps a `confirmed` answer as a record
-    does so for its own purposes; this task asks it to keep nothing.
+    asker until it has checked the answer or the question's deadline has passed. An asker that keeps a `confirmed` answer as a
+    record does so for its own purposes; this task asks it to keep nothing.
 errorCodes:
   - code: peer-check/ask:noSurface
     meaning: The responder's device cannot show a prompt now (locked, headless, or no consent surface available). No question was put to the user.
@@ -70,7 +72,7 @@ Someone phones, messages or video-calls you and asks for something. You want to 
 
 It is a Trust Task, rather than an API call, because the value is in the signed answer: it can be checked by the asker alone, with any DID method, and it is bound to one exact question so it cannot be reused for another.
 
-This task is deliberately generic. It does not say what the question is about, and it does not authorise anything: it records that the holder of one key, using that key's device, gave one deliberate answer to one question at one time. See [Security & Privacy](#security--privacy) for what that does and does not prove.
+This task is deliberately generic. It does not say what the question is about, and it does not authorize anything: it records that the holder of one key, using that key's device, gave one deliberate answer to one question at one time. See [Security & Privacy](#security--privacy) for what that does and does not prove.
 
 ## Status of this Document
 
@@ -85,16 +87,16 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 A conforming **asker** (the request's `issuer`, the response's consumer):
 
 1. **MUST** generate `challenge` from a cryptographically secure random source with at least 128 bits of entropy, a fresh value for every request.
-2. **MUST** set `payload.expiresAt`, the deadline for the answer, and **SHOULD** keep the window short (minutes, not hours). It **SHOULD** also set the envelope `expiresAt`, which keeps its framework meaning ([SPEC §4.2](/SPEC.md#42-top-level-members)): after it the responder does not prompt for the request.
-3. **MUST** sign the request, and **MUST** set `recipient` to the DID of the party it intends to ask.
+2. **MUST** set `payload.expiresAt`, the deadline for the answer, and **SHOULD** keep the window short (minutes, not hours). It **SHOULD** also set the envelope `expiresAt`, which keeps its framework meaning ([SPEC §4.2](/SPEC.md#42-top-level-members)): after it the responder does not prompt for the request. The envelope bound is normally the shorter of the two, because it bounds acceptance of one document while the payload deadline bounds the answer.
+3. **MUST** sign the request, and **MUST** set `recipient` to the DID of the party it intends to ask. If the responder holds the request (see responder item 6), the asker **MAY** resubmit it in the same thread, as a new document with a fresh `id` and the same `threadId` ([SPEC §8.6](/SPEC.md#86-reserved-response-type-slugs)). A resubmission **MUST** carry the same `challenge` and the same `payload.expiresAt` as the original, and the asker **MUST** keep every document it sent in the thread until the exchange is concluded.
 4. **MUST** treat the answer as valid only if every one of these holds, and **MUST** otherwise treat the exchange as unanswered:
    1. the response's `proof` verifies, with `proofPurpose` `authentication`, and its `verificationMethod` is listed under the `authentication` relationship of the DID document of the party the request was addressed to;
    2. the response's `issuer` equals that request `recipient`, and its `threadId` pairs it with the request ([SPEC §4.9](/SPEC.md#49-the-threadid-member));
-   3. `payload.challenge` equals the challenge the asker issued for this request, and the asker has not already accepted an answer for it;
-   4. `payload.requestDigest` reproduces over the request document the asker sent, per [SPEC §4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names), comparing decoded multihash bytes;
-   5. the answer arrived before the request's `payload.expiresAt`, by the asker's own clock; and
+   3. `payload.challenge` equals the challenge the asker issued for this thread, which is the same on every document it sent in it, and the asker has not already accepted an answer for it;
+   4. `payload.requestDigest` reproduces, per [SPEC §4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names) and comparing decoded multihash bytes, over a request document the asker sent in this thread: the original or a resubmission, whichever the answer responds to;
+   5. the answer arrived before the `payload.expiresAt` of the request (the same value on every document in the thread), by the asker's own clock; and
    6. the signing key was valid for the responder's DID **at the time of the check**. The asker resolves the DID document when it verifies, not from a copy cached when the exchange began, so a key revoked or rotated away in between is refused.
-5. **MUST** consume the challenge when it accepts or rejects an answer, so that a second answer for the same challenge is refused.
+5. **MUST** consume the challenge when it accepts or rejects an answer, so that a second answer for the same challenge is refused. The challenge belongs to the thread, not to one document: a next step and a resubmission do not consume it.
 6. **MUST NOT** treat `confirmed` as proof that the person it is talking to is who they claim to be. See [Security & Privacy](#security--privacy).
 
 A conforming **responder** (the request's `recipient`, the response's producer):
@@ -102,10 +104,10 @@ A conforming **responder** (the request's `recipient`, the response's producer):
 1. **MUST** verify the request's `proof` and that neither `payload.expiresAt` nor, where present, the envelope `expiresAt` has passed before showing anything to its user, and **MUST NOT** prompt for a request it cannot verify.
 2. **MUST** show `question` to its user attributed to the asker's verified identity, and **MUST** show `note`, where present, as plain text visually distinct from `question`, never as markup, a link or an instruction.
 3. **SHOULD** require a deliberate user action to answer, gated by a user-presence check such as device unlock or biometrics, so that an answer cannot be produced by software acting without the user. A responder that cannot do so SHOULD say so in its own interface; this task has no member for declaring it, because such a declaration would be unverifiable.
-4. **MUST** answer with the exact `challenge` and the task digest of the request document as it received it, and **MUST** sign the response with a key listed under the `authentication` relationship of its own DID.
+4. **MUST** answer with the exact `challenge` and the task digest of the request document it is answering, which for a resubmission is that resubmission, and **MUST** sign the response with a key listed under the `authentication` relationship of its own DID.
 5. **MUST NOT** answer `confirmed` on a timeout, a default, or any path that did not involve the user's explicit choice. An unanswered prompt is not an answer.
-6. A request whose prompt is open and waiting on the user is **held**, and a hold is a next step ([SPEC §8.6](/SPEC.md#86-reserved-response-type-slugs)): the responder **MUST** answer the request with `trust-task-next-step` carrying `continuation: resubmit`, and **MUST NOT** answer with an error response. It answers a resubmission in the same thread with the decision once it is known, or with a further next step while the prompt is still open. On an asynchronous transport where the asker sees nothing until the decision exists, silence is all the asker sees until the decision arrives. If `payload.expiresAt` passes with the prompt unanswered, the question lapses, the responder sends no `confirmed` answer, and the asker treats the exchange as unanswered.
-7. **MAY** stay silent instead of sending `peer-check/ask:askerNotAccepted` (see [Responder disclosure](#responder-disclosure)).
+6. A request whose prompt is open and waiting on the user is **held**, and a hold is a next step ([SPEC §8.6](/SPEC.md#86-reserved-response-type-slugs)): the responder **MUST** answer with a next step (`trust-task-next-step` carrying `continuation: resubmit`) where the transport carries a reply, and **MUST NOT** answer with an error response. A resubmission is a new document with a fresh `id` on the same `threadId`. It **MUST** carry the same `challenge` and `payload.expiresAt` as the original, and the responder **MUST NOT** raise a second prompt for a challenge it already has open. The responder answers a resubmission with the decision once it is known, or with a further next step while the prompt is open; the decision's `requestDigest` is the digest of the document it answers. Where the binding lets a consumer send nothing, as an asynchronous transport does, the responder **MAY** send no document until the decision exists, and silence is all the asker sees until then. If `payload.expiresAt` passes with the prompt unanswered, the question lapses, the responder sends no `confirmed` answer, and the asker treats the exchange as unanswered.
+7. **MAY** stay silent instead of sending `peer-check/ask:askerNotAccepted` (see [Responder disclosure](#responder-disclosure)), but only where the binding lets a consumer not reply; over a synchronous transport such as HTTPS the consumer has to answer something. A responder that stays silent **MUST** apply its asker policy before sending any hold: a next step tells the asker its request was accepted, so an asker that is then refused by silence would have been shown a hold first.
 
 ## Definitions
 
@@ -117,13 +119,13 @@ The asker is the `issuer` of the request, the responder is its `recipient`, and 
 - **`payload.expiresAt`** — REQUIRED. The answer deadline: after it the question lapses, the responder does not prompt and the asker accepts no answer. This is the task's own deadline ([SPEC §7.3](/SPEC.md#73-specification-requirements) item 16), in the style of `task-consent/request/0.1`.
 - **`expiresAt`** (envelope) — keeps its framework meaning ([SPEC §4.2](/SPEC.md#42-top-level-members)): after it the responder does not prompt for a stale request. A consumer that has begun work does not abandon it because the envelope `expiresAt` has since passed, and the asker does not read it as the answer deadline.
 - **`requestDigest`** — the task digest of the request document, computed as [SPEC §4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names) defines it, so the answer commits to every member of the request, the parties and the deadline.
-- **`decision`** — `confirmed` or `notConfirmed`. It answers the question asked; it is not an authorisation.
-- **`respondedAt`** — when the user answered. The envelope `issuedAt` is when the responder signed the document, which can be later; both are kept so the asker can tell the user's answer time from the signing time.
-- **`deniedReason`** — OPTIONAL, only with `notConfirmed`: `notRecognised`, `declined` or `other`. The schema enforces the pairing with `dependentSchemas`: a document carrying it beside `confirmed` is invalid.
+- **`decision`** — `confirmed` or `notConfirmed`. It answers the question asked; it is not an authorization. A `notConfirmed` is a successful response and not a `permissionDenied` refusal ([SPEC §8](/SPEC.md#8-error-responses), "A decision is not a failure"): it answers the question the asker put, and the task has run to its outcome; it does not refuse to run the task.
+- **`respondedAt`** — when the user answered. The envelope `issuedAt` is when the responder signed the document, which can be later, so the asker can tell the user's answer time from the signing time.
+- **`notConfirmedReason`** — OPTIONAL, only with `notConfirmed`: `notRecognized`, `declined` or `other`. The schema enforces the pairing with `dependentSchemas`: a document carrying it beside `confirmed` is invalid.
 
 ## Request
 
-The asker is the producer and the responder the recipient. The request payload is described by [`payload.schema.json`](payload.schema.json). The document MUST carry `issuedAt`, `payload.expiresAt` and a `proof`; the proof below is abbreviated for the example.
+The asker is the producer and the responder the recipient. The request payload is described by [`payload.schema.json`](payload.schema.json). The document MUST carry `issuedAt`, `payload.expiresAt` and a `proof`. The `proofValue`s in the examples are illustrative, not real signatures. The envelope `expiresAt` bounds acceptance of the request document and is normally the shorter of the two bounds, as here: it falls before `payload.expiresAt`, which is the answer deadline. The `requestDigest` values in the responses are computed from this request, without its `proof`, as [SPEC §4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names) defines it (JCS, SHA-256 multihash, base58btc).
 
 ### The asker puts a question to the responder
 
@@ -134,7 +136,7 @@ The asker is the producer and the responder the recipient. The request payload i
   "issuer": "did:web:alice.example",
   "recipient": "did:web:bob.example",
   "issuedAt": "2026-10-28T14:00:00Z",
-  "expiresAt": "2026-10-28T14:05:00Z",
+  "expiresAt": "2026-10-28T14:01:00Z",
   "payload": {
     "challenge": "q7Xk2mRt9LwB4vNf8ZpYhA",
     "question": "Did you just ask me to send you a one-time code?",
@@ -168,7 +170,7 @@ The responder is the producer, the asker the recipient. The response payload is 
   "issuedAt": "2026-10-28T14:00:20Z",
   "payload": {
     "challenge": "q7Xk2mRt9LwB4vNf8ZpYhA",
-    "requestDigest": "zQmaoDjqe8muePtetx54p69mGtegPHFcqwQAWz6SsTh2gUD",
+    "requestDigest": "zQmUx7yNt9vtv1PSxdf3BzoUYnejvfm2PfW5aqV6qaxbLUG",
     "decision": "confirmed",
     "respondedAt": "2026-10-28T14:00:19Z"
   },
@@ -195,10 +197,10 @@ The responder is the producer, the asker the recipient. The response payload is 
   "issuedAt": "2026-10-28T14:00:25Z",
   "payload": {
     "challenge": "q7Xk2mRt9LwB4vNf8ZpYhA",
-    "requestDigest": "zQmaoDjqe8muePtetx54p69mGtegPHFcqwQAWz6SsTh2gUD",
+    "requestDigest": "zQmUx7yNt9vtv1PSxdf3BzoUYnejvfm2PfW5aqV6qaxbLUG",
     "decision": "notConfirmed",
     "respondedAt": "2026-10-28T14:00:24Z",
-    "deniedReason": "notRecognised"
+    "notConfirmedReason": "notRecognized"
   },
   "proof": {
     "type": "DataIntegrityProof",
@@ -235,14 +237,24 @@ While the prompt is open, the responder answers with a next step, not an error. 
       "typeUri": "https://trusttasks.org/spec/peer-check/ask/0.1#request",
       "id": "urn:uuid:5b0c7a1e-3d52-4f0e-9a6b-8e41c2d97f10"
     }
+  },
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-jcs-2022",
+    "created": "2026-10-28T14:00:05Z",
+    "verificationMethod": "did:web:bob.example#key-1",
+    "proofPurpose": "authentication",
+    "proofValue": "z5Kt9mWqXc3HnRb7eLfYv2pDsA8uJgTzQ4oNiMxE6yCrUkVhB1aFw3SjP9LdGq7ZnT2vXe5YsRb8KuMhCf4AiWp6o"
   }
 }
 ```
 
+The next step is signed where the transport does not itself authenticate the responder, so the asker can tell a real hold from a message anyone on the channel could have typed. The resubmission it asks for carries the same `challenge` and `payload.expiresAt` as the original, and the responder does not raise a second prompt for it.
+
 ## Relationship to other tasks
 
-- **`confirm/request` and `confirm/response` 0.1 (retired).** Those asked a *relying party* to obtain a user's consent to an action. They were retired in favour of `task-consent` ([#156](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/156)) because a requester-authored `reason` is the least trustworthy basis for a consent decision. This task does not ask for consent to an action and does not authorise anything; it asks a peer a question about what the *peer* did, and treats the asker's text as untrusted throughout. It reuses none of the retired members' semantics for `reason`, `actionType` or `actionDetails`.
-- **`task-consent/*`.** An executor asks an enrolled approver device to authorise one pending privileged task, with effects computed by the executor. Here there is no executor, no pending task, no approver set and no enrolment: two peers who already share a channel.
+- **`confirm/request` and `confirm/response` 0.1 (retired).** Those asked a *relying party* to obtain a user's consent to an action. They were retired in favor of `task-consent` ([#156](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/156)) because a requester-authored `reason` is the least trustworthy basis for a consent decision. This task does not ask for consent to an action and does not authorize anything; it asks a peer a question about what the *peer* did, and treats the asker's text as untrusted throughout. It reuses none of the retired members' semantics for `reason`, `actionType` or `actionDetails`.
+- **`task-consent/*`.** An executor asks an enrolled approver device to authorize one pending privileged task, with effects computed by the executor. Here there is no executor, no pending task, no approver set and no enrolment: two peers who already share a channel.
 - **`auth/step-up/*`.** Raises the assurance level of a session. This task has no session.
 - **`consent/approve-request`, `vrc/relationships/propose`.** Different parties and purposes; neither asks a peer whether they just did something.
 
@@ -274,7 +286,7 @@ Responders **SHOULD** gate the answer behind a user-presence check (device unloc
 
 ### Responder disclosure
 
-Each refusal tells the asker something about the responder, in the manner of [SPEC §12.6](/SPEC.md#126-error-response-identity-leakage). `askerNotAccepted` tells an asker that the responder exists, is reachable, and has a policy about that asker; `noSurface` tells it that the responder's device is locked, headless or otherwise unable to prompt now. A party probing for reachability or device state can use either as an oracle. A responder that does not want to give that answer **MAY** stay silent instead of sending `askerNotAccepted` (and `noSurface`), at the cost of the asker not learning that no question was put; the asker treats silence as unanswered.
+Each refusal tells the asker something about the responder, in the manner of [SPEC §12.6](/SPEC.md#126-error-response-identity-leakage). `askerNotAccepted` tells an asker that the responder exists, is reachable, and has a policy about that asker; `noSurface` tells it that the responder's device is locked, headless or otherwise unable to prompt now, and because it is retryable it lets the asker ask again to watch that state change. A party probing for reachability or device state can use either as an oracle. A responder that does not want to give the `askerNotAccepted` answer **MAY** stay silent instead, where the binding lets a consumer not reply, at the cost of the asker not learning that no question was put; the asker treats silence as unanswered. On a synchronous transport such as HTTPS the responder has to answer, and `askerNotAccepted` is the answer this task provides. `noSurface` is not covered by that allowance: it describes device state, not asker policy.
 
 ### Out-of-band channel
 

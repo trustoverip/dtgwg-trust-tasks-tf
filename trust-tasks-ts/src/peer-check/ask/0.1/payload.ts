@@ -28,7 +28,7 @@ export interface PeerCheckAskPayload {
   expiresAt: string;
 }
 /**
- * The success-response payload: the responder's answer, signed by the responder. Failures use trust-task-error, not this shape. A responder that declines because it does not recognise the question answers with `decision: notConfirmed`; an error is for a document the responder could not act on at all.
+ * The success-response payload: the responder's answer, signed by the responder. Failures use trust-task-error, not this shape. A responder that declines because it does not recognize the question answers with `decision: notConfirmed`; an error is for a document the responder could not act on at all.
  */
 export interface PeerCheckAskResponsePayload {
   /**
@@ -48,9 +48,9 @@ export interface PeerCheckAskResponsePayload {
    */
   respondedAt: string;
   /**
-   * OPTIONAL, and only with `decision: notConfirmed`, which the schema enforces; a document carrying it beside `confirmed` is invalid. `notRecognised` — the responder does not recognise what the question describes; `declined` — the responder recognises it and says no; `other` — anything else. An enumeration rather than prose, so an asker never renders responder-authored text.
+   * OPTIONAL, and only with `decision: notConfirmed`, which the schema enforces; a document carrying it beside `confirmed` is invalid. `notRecognized` — the responder does not recognize what the question describes; `declined` — the responder recognizes it and says no; `other` — anything else. An enumeration rather than prose, so an asker never renders responder-authored text.
    */
-  deniedReason?: "notRecognised" | "declined" | "other";
+  notConfirmedReason?: "notRecognized" | "declined" | "other";
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
@@ -141,9 +141,9 @@ export const PAYLOAD_SCHEMA = {
         "decision",
         "respondedAt"
       ],
-      "description": "The success-response payload: the responder's answer, signed by the responder. Failures use trust-task-error, not this shape. A responder that declines because it does not recognise the question answers with `decision: notConfirmed`; an error is for a document the responder could not act on at all.",
+      "description": "The success-response payload: the responder's answer, signed by the responder. Failures use trust-task-error, not this shape. A responder that declines because it does not recognize the question answers with `decision: notConfirmed`; an error is for a document the responder could not act on at all.",
       "dependentSchemas": {
-        "deniedReason": {
+        "notConfirmedReason": {
           "properties": {
             "decision": {
               "const": "notConfirmed"
@@ -174,14 +174,14 @@ export const PAYLOAD_SCHEMA = {
           "format": "date-time",
           "description": "When the responder gave the answer, RFC 3339. Informational for the asker; freshness is judged against the request's `payload.expiresAt` and the asker's own clock. It is the time of the user's answer; the envelope `issuedAt` is when the responder signed the document, which may be later."
         },
-        "deniedReason": {
+        "notConfirmedReason": {
           "type": "string",
           "enum": [
-            "notRecognised",
+            "notRecognized",
             "declined",
             "other"
           ],
-          "description": "OPTIONAL, and only with `decision: notConfirmed`, which the schema enforces; a document carrying it beside `confirmed` is invalid. `notRecognised` — the responder does not recognise what the question describes; `declined` — the responder recognises it and says no; `other` — anything else. An enumeration rather than prose, so an asker never renders responder-authored text."
+          "description": "OPTIONAL, and only with `decision: notConfirmed`, which the schema enforces; a document carrying it beside `confirmed` is invalid. `notRecognized` — the responder does not recognize what the question describes; `declined` — the responder recognizes it and says no; `other` — anything else. An enumeration rather than prose, so an asker never renders responder-authored text."
         }
       }
     },
@@ -214,9 +214,9 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "decision",
         "respondedAt"
       ],
-      "description": "The success-response payload: the responder's answer, signed by the responder. Failures use trust-task-error, not this shape. A responder that declines because it does not recognise the question answers with `decision: notConfirmed`; an error is for a document the responder could not act on at all.",
+      "description": "The success-response payload: the responder's answer, signed by the responder. Failures use trust-task-error, not this shape. A responder that declines because it does not recognize the question answers with `decision: notConfirmed`; an error is for a document the responder could not act on at all.",
       "dependentSchemas": {
-        "deniedReason": {
+        "notConfirmedReason": {
           "properties": {
             "decision": {
               "const": "notConfirmed"
@@ -247,14 +247,14 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "format": "date-time",
           "description": "When the responder gave the answer, RFC 3339. Informational for the asker; freshness is judged against the request's `payload.expiresAt` and the asker's own clock. It is the time of the user's answer; the envelope `issuedAt` is when the responder signed the document, which may be later."
         },
-        "deniedReason": {
+        "notConfirmedReason": {
           "type": "string",
           "enum": [
-            "notRecognised",
+            "notRecognized",
             "declined",
             "other"
           ],
-          "description": "OPTIONAL, and only with `decision: notConfirmed`, which the schema enforces; a document carrying it beside `confirmed` is invalid. `notRecognised` — the responder does not recognise what the question describes; `declined` — the responder recognises it and says no; `other` — anything else. An enumeration rather than prose, so an asker never renders responder-authored text."
+          "description": "OPTIONAL, and only with `decision: notConfirmed`, which the schema enforces; a document carrying it beside `confirmed` is invalid. `notRecognized` — the responder does not recognize what the question describes; `declined` — the responder recognizes it and says no; `other` — anything else. An enumeration rather than prose, so an asker never renders responder-authored text."
         }
       }
     },

@@ -43,7 +43,7 @@
     "note": "decision must be confirmed or notConfirmed; `maybe` is not an answer.",
     "payload": {
       "challenge": "q7Xk2mRt9LwB4vNf8ZpYhA",
-      "requestDigest": "zQmaoDjqe8muePtetx54p69mGtegPHFcqwQAWz6SsTh2gUD",
+      "requestDigest": "zQmUx7yNt9vtv1PSxdf3BzoUYnejvfm2PfW5aqV6qaxbLUG",
       "decision": "maybe",
       "respondedAt": "2026-10-28T14:00:20Z"
     }
@@ -59,13 +59,13 @@
   },
   {
     "variant": "response",
-    "note": "deniedReason is only meaningful beside notConfirmed; dependentSchemas rejects it beside confirmed.",
+    "note": "notConfirmedReason is only meaningful beside notConfirmed; dependentSchemas rejects it beside confirmed.",
     "payload": {
       "challenge": "q7Xk2mRt9LwB4vNf8ZpYhA",
-      "requestDigest": "zQmaoDjqe8muePtetx54p69mGtegPHFcqwQAWz6SsTh2gUD",
+      "requestDigest": "zQmUx7yNt9vtv1PSxdf3BzoUYnejvfm2PfW5aqV6qaxbLUG",
       "decision": "confirmed",
       "respondedAt": "2026-10-28T14:00:20Z",
-      "deniedReason": "declined"
+      "notConfirmedReason": "declined"
     }
   }
 ]

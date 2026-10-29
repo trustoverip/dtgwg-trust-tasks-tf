@@ -8,7 +8,7 @@
 use trust_tasks_rs::specs::peer_check::ask::v0_1 as spec;
 #[test]
 fn request_example_1() {
-    const JSON: &str = "{\n  \"id\": \"urn:uuid:5b0c7a1e-3d52-4f0e-9a6b-8e41c2d97f10\",\n  \"type\": \"https://trusttasks.org/spec/peer-check/ask/0.1#request\",\n  \"issuer\": \"did:web:alice.example\",\n  \"recipient\": \"did:web:bob.example\",\n  \"issuedAt\": \"2026-10-28T14:00:00Z\",\n  \"expiresAt\": \"2026-10-28T14:05:00Z\",\n  \"payload\": {\n    \"challenge\": \"q7Xk2mRt9LwB4vNf8ZpYhA\",\n    \"question\": \"Did you just ask me to send you a one-time code?\",\n    \"note\": \"I am on the phone with someone who sounds like you and wants a code.\",\n    \"expiresAt\": \"2026-10-28T14:03:00Z\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2026-10-28T14:00:00Z\",\n    \"verificationMethod\": \"did:web:alice.example#key-1\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z3FXQjecWufY46yg5abdVZsXqLhxhueuSoZgNRBCx7tRzqXRDgZ3wM1u8TRBo2s7YC5TrRTUq5J9pi9pTMpDfdyMg\"\n  }\n}\n";
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:5b0c7a1e-3d52-4f0e-9a6b-8e41c2d97f10\",\n  \"type\": \"https://trusttasks.org/spec/peer-check/ask/0.1#request\",\n  \"issuer\": \"did:web:alice.example\",\n  \"recipient\": \"did:web:bob.example\",\n  \"issuedAt\": \"2026-10-28T14:00:00Z\",\n  \"expiresAt\": \"2026-10-28T14:01:00Z\",\n  \"payload\": {\n    \"challenge\": \"q7Xk2mRt9LwB4vNf8ZpYhA\",\n    \"question\": \"Did you just ask me to send you a one-time code?\",\n    \"note\": \"I am on the phone with someone who sounds like you and wants a code.\",\n    \"expiresAt\": \"2026-10-28T14:03:00Z\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2026-10-28T14:00:00Z\",\n    \"verificationMethod\": \"did:web:alice.example#key-1\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z3FXQjecWufY46yg5abdVZsXqLhxhueuSoZgNRBCx7tRzqXRDgZ3wM1u8TRBo2s7YC5TrRTUq5J9pi9pTMpDfdyMg\"\n  }\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Payload> =
         serde_json::from_str(JSON).expect("deserialize request example");
     let rendered = serde_json::to_value(&doc).expect("re-serialize");
@@ -17,7 +17,7 @@ fn request_example_1() {
 }
 #[test]
 fn response_example_1() {
-    const JSON: &str = "{\n  \"id\": \"urn:uuid:8d2e6f43-91a7-4c1b-b7d0-2f6a93c15e88\",\n  \"type\": \"https://trusttasks.org/spec/peer-check/ask/0.1#response\",\n  \"threadId\": \"urn:uuid:5b0c7a1e-3d52-4f0e-9a6b-8e41c2d97f10\",\n  \"issuer\": \"did:web:bob.example\",\n  \"recipient\": \"did:web:alice.example\",\n  \"issuedAt\": \"2026-10-28T14:00:20Z\",\n  \"payload\": {\n    \"challenge\": \"q7Xk2mRt9LwB4vNf8ZpYhA\",\n    \"requestDigest\": \"zQmaoDjqe8muePtetx54p69mGtegPHFcqwQAWz6SsTh2gUD\",\n    \"decision\": \"confirmed\",\n    \"respondedAt\": \"2026-10-28T14:00:19Z\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2026-10-28T14:00:20Z\",\n    \"verificationMethod\": \"did:web:bob.example#key-1\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z4oey5q2M3XKaxup7gH9dCtMhJEHgjqQkWtM2ohbSiDJ7jPLXsCjGrfG5Yp8XiL1aVZUgQjSBUUk3sQCm2VXrY8qk\"\n  }\n}\n";
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:8d2e6f43-91a7-4c1b-b7d0-2f6a93c15e88\",\n  \"type\": \"https://trusttasks.org/spec/peer-check/ask/0.1#response\",\n  \"threadId\": \"urn:uuid:5b0c7a1e-3d52-4f0e-9a6b-8e41c2d97f10\",\n  \"issuer\": \"did:web:bob.example\",\n  \"recipient\": \"did:web:alice.example\",\n  \"issuedAt\": \"2026-10-28T14:00:20Z\",\n  \"payload\": {\n    \"challenge\": \"q7Xk2mRt9LwB4vNf8ZpYhA\",\n    \"requestDigest\": \"zQmUx7yNt9vtv1PSxdf3BzoUYnejvfm2PfW5aqV6qaxbLUG\",\n    \"decision\": \"confirmed\",\n    \"respondedAt\": \"2026-10-28T14:00:19Z\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2026-10-28T14:00:20Z\",\n    \"verificationMethod\": \"did:web:bob.example#key-1\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z4oey5q2M3XKaxup7gH9dCtMhJEHgjqQkWtM2ohbSiDJ7jPLXsCjGrfG5Yp8XiL1aVZUgQjSBUUk3sQCm2VXrY8qk\"\n  }\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Response> =
         serde_json::from_str(JSON).expect("deserialize response example");
     let rendered = serde_json::to_value(&doc).expect("re-serialize");
@@ -26,7 +26,7 @@ fn response_example_1() {
 }
 #[test]
 fn response_example_2() {
-    const JSON: &str = "{\n  \"id\": \"urn:uuid:1a9c4b07-6e33-4d2a-8f15-b0c7d3e29a64\",\n  \"type\": \"https://trusttasks.org/spec/peer-check/ask/0.1#response\",\n  \"threadId\": \"urn:uuid:5b0c7a1e-3d52-4f0e-9a6b-8e41c2d97f10\",\n  \"issuer\": \"did:web:bob.example\",\n  \"recipient\": \"did:web:alice.example\",\n  \"issuedAt\": \"2026-10-28T14:00:25Z\",\n  \"payload\": {\n    \"challenge\": \"q7Xk2mRt9LwB4vNf8ZpYhA\",\n    \"requestDigest\": \"zQmaoDjqe8muePtetx54p69mGtegPHFcqwQAWz6SsTh2gUD\",\n    \"decision\": \"notConfirmed\",\n    \"respondedAt\": \"2026-10-28T14:00:24Z\",\n    \"deniedReason\": \"notRecognised\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2026-10-28T14:00:25Z\",\n    \"verificationMethod\": \"did:web:bob.example#key-1\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z2mDfC3vL8nQe7sYxKp4WuTb1RhA9GjZc6VoNiXdE5yUtMqFkS3aPrHw8LJgB2zCn4TvQe6YsDxKu7MhRf9AiWp3o\"\n  }\n}\n";
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:1a9c4b07-6e33-4d2a-8f15-b0c7d3e29a64\",\n  \"type\": \"https://trusttasks.org/spec/peer-check/ask/0.1#response\",\n  \"threadId\": \"urn:uuid:5b0c7a1e-3d52-4f0e-9a6b-8e41c2d97f10\",\n  \"issuer\": \"did:web:bob.example\",\n  \"recipient\": \"did:web:alice.example\",\n  \"issuedAt\": \"2026-10-28T14:00:25Z\",\n  \"payload\": {\n    \"challenge\": \"q7Xk2mRt9LwB4vNf8ZpYhA\",\n    \"requestDigest\": \"zQmUx7yNt9vtv1PSxdf3BzoUYnejvfm2PfW5aqV6qaxbLUG\",\n    \"decision\": \"notConfirmed\",\n    \"respondedAt\": \"2026-10-28T14:00:24Z\",\n    \"notConfirmedReason\": \"notRecognized\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2026-10-28T14:00:25Z\",\n    \"verificationMethod\": \"did:web:bob.example#key-1\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z2mDfC3vL8nQe7sYxKp4WuTb1RhA9GjZc6VoNiXdE5yUtMqFkS3aPrHw8LJgB2zCn4TvQe6YsDxKu7MhRf9AiWp3o\"\n  }\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Response> =
         serde_json::from_str(JSON).expect("deserialize response example");
     let rendered = serde_json::to_value(&doc).expect("re-serialize");
@@ -93,15 +93,15 @@ fn rejects_invalid_response_examples() {
     let fixtures: &[(&str, &str)] = &[
         (
             "decision must be confirmed or notConfirmed; `maybe` is not an answer.",
-            "{\n  \"challenge\": \"q7Xk2mRt9LwB4vNf8ZpYhA\",\n  \"decision\": \"maybe\",\n  \"requestDigest\": \"zQmaoDjqe8muePtetx54p69mGtegPHFcqwQAWz6SsTh2gUD\",\n  \"respondedAt\": \"2026-10-28T14:00:20Z\"\n}",
+            "{\n  \"challenge\": \"q7Xk2mRt9LwB4vNf8ZpYhA\",\n  \"decision\": \"maybe\",\n  \"requestDigest\": \"zQmUx7yNt9vtv1PSxdf3BzoUYnejvfm2PfW5aqV6qaxbLUG\",\n  \"respondedAt\": \"2026-10-28T14:00:20Z\"\n}",
         ),
         (
             "requestDigest is required; without it an answer is not bound to the exact request and could be replayed against another ask.",
             "{\n  \"challenge\": \"q7Xk2mRt9LwB4vNf8ZpYhA\",\n  \"decision\": \"confirmed\",\n  \"respondedAt\": \"2026-10-28T14:00:20Z\"\n}",
         ),
         (
-            "deniedReason is only meaningful beside notConfirmed; dependentSchemas rejects it beside confirmed.",
-            "{\n  \"challenge\": \"q7Xk2mRt9LwB4vNf8ZpYhA\",\n  \"decision\": \"confirmed\",\n  \"deniedReason\": \"declined\",\n  \"requestDigest\": \"zQmaoDjqe8muePtetx54p69mGtegPHFcqwQAWz6SsTh2gUD\",\n  \"respondedAt\": \"2026-10-28T14:00:20Z\"\n}",
+            "notConfirmedReason is only meaningful beside notConfirmed; dependentSchemas rejects it beside confirmed.",
+            "{\n  \"challenge\": \"q7Xk2mRt9LwB4vNf8ZpYhA\",\n  \"decision\": \"confirmed\",\n  \"notConfirmedReason\": \"declined\",\n  \"requestDigest\": \"zQmUx7yNt9vtv1PSxdf3BzoUYnejvfm2PfW5aqV6qaxbLUG\",\n  \"respondedAt\": \"2026-10-28T14:00:20Z\"\n}",
         ),
     ];
     for (i, (note, raw)) in fixtures.iter().enumerate() {
