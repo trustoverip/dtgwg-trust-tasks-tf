@@ -17,7 +17,7 @@ fn request_example_1() {
 }
 #[test]
 fn response_example_1() {
-    const JSON: &str = "{\n  \"id\": \"urn:uuid:7c1e2d3f-4a5b-4c6d-8e7f-90a1b2c3d402\",\n  \"type\": \"https://trusttasks.org/spec/vtc/install/claim/passkey/start/0.1#response\",\n  \"issuer\": \"did:webvh:QmVtcScid7:acme-vtc.example\",\n  \"recipient\": \"did:key:z6MkfqzP7fJmYmN4KZrC8k1c7gTCh5Yy2nNw9Sz4o8bqvEhJ\",\n  \"issuedAt\": \"2026-10-01T09:00:01Z\",\n  \"threadId\": \"urn:uuid:7c1e2d3f-4a5b-4c6d-8e7f-90a1b2c3d4ff\",\n  \"payload\": {\n    \"registrationId\": \"3f2a9c1e-5b7d-4e8f-a0b1-c2d3e4f5a6b7\",\n    \"options\": {\n      \"publicKey\": {\n        \"rp\": { \"id\": \"acme-vtc.example\", \"name\": \"Acme community\" },\n        \"challenge\": \"Q2xhaW1SZWdpc3RyYXRpb25DaGFsbGVuZ2U\",\n        \"user\": { \"id\": \"PyqcHlt9To-gscLT5PWmtw\", \"name\": \"first administrator\", \"displayName\": \"first administrator\" },\n        \"pubKeyCredParams\": [\n          { \"type\": \"public-key\", \"alg\": -8 },\n          { \"type\": \"public-key\", \"alg\": -7 }\n        ]\n      }\n    }\n  }\n}\n";
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:7c1e2d3f-4a5b-4c6d-8e7f-90a1b2c3d402\",\n  \"type\": \"https://trusttasks.org/spec/vtc/install/claim/passkey/start/0.1#response\",\n  \"issuer\": \"did:webvh:QmVtcScid7:acme-vtc.example\",\n  \"recipient\": \"did:key:z6MkfqzP7fJmYmN4KZrC8k1c7gTCh5Yy2nNw9Sz4o8bqvEhJ\",\n  \"issuedAt\": \"2026-10-01T09:00:01Z\",\n  \"threadId\": \"urn:uuid:7c1e2d3f-4a5b-4c6d-8e7f-90a1b2c3d4ff\",\n  \"payload\": {\n    \"registrationId\": \"3f2a9c1e-5b7d-4e8f-a0b1-c2d3e4f5a6b7\",\n    \"options\": {\n      \"publicKey\": {\n        \"rp\": { \"id\": \"acme-vtc.example\", \"name\": \"Acme community\" },\n        \"challenge\": \"Q2xhaW1SZWdpc3RyYXRpb25DaGFsbGVuZ2U\",\n        \"user\": { \"id\": \"PyqcHlt9To-gscLT5PWmtw\", \"name\": \"first administrator\", \"displayName\": \"first administrator\" },\n        \"pubKeyCredParams\": [\n          { \"type\": \"public-key\", \"alg\": -8 },\n          { \"type\": \"public-key\", \"alg\": -7 }\n        ]\n      }\n    },\n    \"assertionOptions\": {\n      \"publicKey\": {\n        \"rpId\": \"acme-vtc.example\",\n        \"challenge\": \"UG9zc2Vzc2lvbkNoYWxsZW5nZU5vbmNlOTg3\",\n        \"userVerification\": \"preferred\"\n      }\n    }\n  }\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Response> =
         serde_json::from_str(JSON).expect("deserialize response example");
     let rendered = serde_json::to_value(&doc).expect("re-serialize");
@@ -50,6 +50,38 @@ fn rejects_invalid_examples() {
         assert!(
             !(serde_ok && schema_ok),
             "invalid-example #{} ({:?}) was accepted by both serde and JSON Schema; \
+                         the fixture's stated failure class is no longer caught:\n{}",
+            i + 1,
+            note,
+            raw
+        );
+    }
+}
+/// Each `"variant": "response"` fixture in
+/// `payload.invalid-examples.json` MUST be rejected as a
+/// response payload by at least one of: serde deserialization
+/// into `Response`, or JSON-Schema validation against the
+/// `$anchor: "response"` sub-schema (validate feature).
+#[cfg(feature = "validate")]
+#[test]
+fn rejects_invalid_response_examples() {
+    use trust_tasks_rs::validate::ValidatedPayload;
+    let fixtures: &[(&str, &str)] = &[
+        (
+            "A response with no assertion options. Possession of the passkey is proven by an assertion over a challenge the community issued; without one the installer has nothing to sign, and a registration alone — under the `none` attestation format — proves no possession.",
+            "{\n  \"options\": {\n    \"publicKey\": {}\n  },\n  \"registrationId\": \"3f2a9c1e-5b7d-4e8f-a0b1-c2d3e4f5a6b7\"\n}",
+        ),
+    ];
+    for (i, (note, raw)) in fixtures.iter().enumerate() {
+        let value: serde_json::Value = match serde_json::from_str(raw) {
+            Ok(v) => v,
+            Err(_) => continue,
+        };
+        let serde_ok = serde_json::from_value::<spec::Response>(value.clone()).is_ok();
+        let schema_ok = spec::Response::validate_value(&value).is_ok();
+        assert!(
+            !(serde_ok && schema_ok),
+            "invalid response example #{} ({:?}) was accepted by both serde and JSON Schema; \
                          the fixture's stated failure class is no longer caught:\n{}",
             i + 1,
             note,

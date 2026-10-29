@@ -8,7 +8,7 @@
 use trust_tasks_rs::specs::vtc::install::claim::passkey::finish::v0_1 as spec;
 #[test]
 fn request_example_1() {
-    const JSON: &str = "{\n  \"id\": \"urn:uuid:7c1e2d3f-4a5b-4c6d-8e7f-90a1b2c3d411\",\n  \"type\": \"https://trusttasks.org/spec/vtc/install/claim/passkey/finish/0.1\",\n  \"issuer\": \"did:key:z6MkfqzP7fJmYmN4KZrC8k1c7gTCh5Yy2nNw9Sz4o8bqvEhJ\",\n  \"recipient\": \"did:webvh:QmVtcScid7:acme-vtc.example\",\n  \"issuedAt\": \"2026-10-01T09:01:05Z\",\n  \"threadId\": \"urn:uuid:7c1e2d3f-4a5b-4c6d-8e7f-90a1b2c3d41f\",\n  \"payload\": {\n    \"installToken\": \"eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJ2dGMtaW5zdGFsbCJ9.c2lnbmF0dXJl\",\n    \"registrationId\": \"3f2a9c1e-5b7d-4e8f-a0b1-c2d3e4f5a6b7\",\n    \"webauthnResponse\": {\n      \"id\": \"a1b2c3d4e5f6\",\n      \"rawId\": \"a1b2c3d4e5f6\",\n      \"type\": \"public-key\",\n      \"response\": {\n        \"clientDataJSON\": \"eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIn0\",\n        \"attestationObject\": \"o2NmbXRkbm9uZWdhdHRTdG10oGhhdXRoRGF0YQ\"\n      }\n    }\n  }\n}\n";
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:7c1e2d3f-4a5b-4c6d-8e7f-90a1b2c3d411\",\n  \"type\": \"https://trusttasks.org/spec/vtc/install/claim/passkey/finish/0.1\",\n  \"issuer\": \"did:key:z6MkfqzP7fJmYmN4KZrC8k1c7gTCh5Yy2nNw9Sz4o8bqvEhJ\",\n  \"recipient\": \"did:webvh:QmVtcScid7:acme-vtc.example\",\n  \"issuedAt\": \"2026-10-01T09:01:05Z\",\n  \"threadId\": \"urn:uuid:7c1e2d3f-4a5b-4c6d-8e7f-90a1b2c3d41f\",\n  \"payload\": {\n    \"installToken\": \"eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJ2dGMtaW5zdGFsbCJ9.c2lnbmF0dXJl\",\n    \"registrationId\": \"3f2a9c1e-5b7d-4e8f-a0b1-c2d3e4f5a6b7\",\n    \"webauthnResponse\": {\n      \"id\": \"a1b2c3d4e5f6\",\n      \"rawId\": \"a1b2c3d4e5f6\",\n      \"type\": \"public-key\",\n      \"response\": {\n        \"clientDataJSON\": \"eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIn0\",\n        \"attestationObject\": \"o2NmbXRkbm9uZWdhdHRTdG10oGhhdXRoRGF0YQ\"\n      }\n    },\n    \"webauthnAssertion\": {\n      \"id\": \"a1b2c3d4e5f6\",\n      \"rawId\": \"a1b2c3d4e5f6\",\n      \"type\": \"public-key\",\n      \"response\": {\n        \"clientDataJSON\": \"eyJ0eXBlIjoid2ViYXV0aG4uZ2V0In0\",\n        \"authenticatorData\": \"SZYN5YgOjGh0NBcPZHZgW4_krrmihjLHmVzzuoMdl2MFAAAAAQ\",\n        \"signature\": \"MEUCIQDx3tH8hK0aV4wQ5mF2bYc9Zp7nL1rS6eG0jK3uW8yTqAIgV5nM2kQ7rP0sL9xH4cB1aD6eF3gJ8iK5oR2tU7vY0wE\"\n      }\n    }\n  }\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Payload> =
         serde_json::from_str(JSON).expect("deserialize request example");
     let rendered = serde_json::to_value(&doc).expect("re-serialize");
@@ -45,11 +45,15 @@ fn rejects_invalid_examples() {
     let fixtures: &[(&str, &str)] = &[
         (
             "Unknown top-level member is rejected.",
-            "{\n  \"__x__\": true,\n  \"installToken\": \"e\",\n  \"registrationId\": \"r\",\n  \"webauthnResponse\": {}\n}",
+            "{\n  \"__x__\": true,\n  \"installToken\": \"e\",\n  \"registrationId\": \"r\",\n  \"webauthnAssertion\": {},\n  \"webauthnResponse\": {}\n}",
         ),
         (
-            "`webauthnResponse` is required — it is the attestation that carries the whole proof of control.",
-            "{\n  \"installToken\": \"e\",\n  \"registrationId\": \"r\"\n}",
+            "`webauthnResponse` is required — the registration carries the credential public key the administrator's DID is derived from.",
+            "{\n  \"installToken\": \"e\",\n  \"registrationId\": \"r\",\n  \"webauthnAssertion\": {}\n}",
+        ),
+        (
+            "No assertion. A registration under the `none` attestation format signs nothing, so without an assertion over the community's challenge nothing proves the installer holds the private key the administrator's DID names.",
+            "{\n  \"installToken\": \"e\",\n  \"registrationId\": \"r\",\n  \"webauthnResponse\": {}\n}",
         ),
     ];
     for (i, (note, raw)) in fixtures.iter().enumerate() {
