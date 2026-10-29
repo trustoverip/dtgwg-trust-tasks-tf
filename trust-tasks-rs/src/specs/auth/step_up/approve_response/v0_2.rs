@@ -4,7 +4,7 @@
 #![allow(deprecated)]
 /// Why this specification version is deprecated (SPEC "Superseded and
 /// Withdrawn Versions"), or `None` while it is current.
-pub const DEPRECATION: Option<&str> = Some("superseded by auth/step-up/approve-response/0.6");
+pub const DEPRECATION: Option<&str> = Some("superseded by auth/step-up/approve-response/0.7");
 #[allow(unused_imports)]
 use serde::{Deserialize, Serialize};
 /// Error types.
@@ -253,7 +253,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by auth/step-up/approve-response/0.6")]
+#[deprecated(note = "superseded by auth/step-up/approve-response/0.7")]
 pub struct Payload {
     ///Echoed from the matching approve-request. The relying party verifies it equals the bound challenge.
     pub challenge: PayloadChallenge,
@@ -591,7 +591,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubject {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by auth/step-up/approve-response/0.6")]
+#[deprecated(note = "superseded by auth/step-up/approve-response/0.7")]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,

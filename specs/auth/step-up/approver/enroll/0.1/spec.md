@@ -140,7 +140,7 @@ The authority this task presupposes is **a step-up factor the subject already ho
 The reference implementation — a VTC — obtains that evidence as an **operation-bound step-up** delivered inline ([`approve-request/0.4`](../../../approve-request/0.5/spec.md) *Inline delivery*):
 
 1. The subject sends the enrolment, typically without `statement`. The relying party finds no approval bound to its terms and refuses with `permissionDenied`, carrying `details.stepUpRequest`: an `approve-request/0.4` payload for the subject, with a fresh `challenge`, `boundTo` its own salted digest of the type and terms, and `accepts` the kinds the subject's existing factors can answer — `approverSigned` naming the subject's live approvers, `webauthn` for a step-up passkey.
-2. The subject answers with an [`approve-response/0.6`](../../../approve-response/0.6/spec.md) from an existing factor, and the relying party records the approval. Nothing is elevated.
+2. The subject answers with an [`approve-response/0.7`](../../../approve-response/0.7/spec.md) from an existing factor, and the relying party records the approval. Nothing is elevated.
 3. The new approver signs its enrolment statement over the same `challenge`, bound to the terms digest, and the subject re-sends the enrolment with that statement. The relying party recognises the terms, verifies the statement, removes the approval and writes the binding.
 
 The approver being replaced may be the factor that answers step 2: a subject rotating an approver they still hold uses it one last time. Which factors a relying party accepts, and whether it asks for this evidence at all, is its own policy; this section describes the evidence the task assumes.

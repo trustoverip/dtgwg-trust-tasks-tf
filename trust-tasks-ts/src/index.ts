@@ -292,6 +292,9 @@ export import AuthStepUpApproveResponse_v0_5 = _AuthStepUpApproveResponse_v0_5;
 import * as _AuthStepUpApproveResponse_v0_6 from "./auth/step-up/approve-response/0.6/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import AuthStepUpApproveResponse_v0_6 = _AuthStepUpApproveResponse_v0_6;
+import * as _AuthStepUpApproveResponse_v0_7 from "./auth/step-up/approve-response/0.7/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import AuthStepUpApproveResponse_v0_7 = _AuthStepUpApproveResponse_v0_7;
 import * as _ApproverShared_v0_1 from "./auth/step-up/approver/_shared/0.1/approver.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import ApproverShared_v0_1 = _ApproverShared_v0_1;

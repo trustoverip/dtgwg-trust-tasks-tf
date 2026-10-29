@@ -198,6 +198,7 @@ mod auth {
             mod v0_4;
             mod v0_5;
             mod v0_6;
+            mod v0_7;
         }
         mod approver {
             mod attest {
