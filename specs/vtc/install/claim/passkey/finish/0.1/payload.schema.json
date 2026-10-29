@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/install/claim/passkey/finish/0.1",
+  "title": "VTC Install Claim Passkey Finish — payload",
+  "description": "Complete first-administrator enrolment with a passkey: submit the WebAuthn registration, from whose credential public key — Ed25519 or P-256 — the administrator's did:key is derived, and receive a setup-session token. The passkey ceremony of vtc/install/claim/finish 0.2, widened from Ed25519 alone to P-256. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "installToken",
+    "registrationId",
+    "webauthnResponse"
+  ],
+  "properties": {
+    "installToken": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The install JWT the claim was started with."
+    },
+    "registrationId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "From vtc/install/claim/passkey/start."
+    },
+    "webauthnResponse": {
+      "type": "object",
+      "description": "RegisterPublicKeyCredential from navigator.credentials.create() (opaque here). Its credential public key is a COSE key for EdDSA/Ed25519 (alg -8) or ES256/P-256 (alg -7); any other is refused with unsupportedAlgorithm."
+    },
+    "ext": {
+      "$ref": "../../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Install Claim Passkey Finish — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "adminDid",
+        "setupSessionToken"
+      ],
+      "properties": {
+        "adminDid": {
+          "type": "string",
+          "pattern": "^did:key:z(6Mk|Dn)[1-9A-HJ-NP-Za-km-z]+$",
+          "description": "The administrator's DID: the did:key of the passkey credential's own public key — Ed25519 (multicodec 0xed01, did:key:z6Mk…) or P-256, compressed (multicodec 0x1200, did:key:zDn…). Derived by the community from the registered key, never taken from the install token."
+        },
+        "setupSessionToken": {
+          "type": "string",
+          "minLength": 1,
+          "description": "EdDSA JWT (aud=vtc-install-session, 5min TTL) consumed by admin/bootstrap."
+        },
+        "ext": {
+          "$ref": "../../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

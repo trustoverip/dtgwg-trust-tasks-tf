@@ -13,7 +13,7 @@ import (
 
 // Response VTC Install Claim Start — response payload
 //
-// Deprecated: superseded by vtc/install/claim/start/0.3
+// Deprecated: retired; use vtc/install/claim/passkey/start/0.1
 type Response struct {
 	// Echoes the install token's jti (a UUID); pass it back to claim/finish.
 	RegistrationID string `json:"registrationId"`
@@ -30,7 +30,7 @@ type Ext = map[string]json.RawMessage
 
 // Payload VTC Install Claim Start — payload
 //
-// Deprecated: superseded by vtc/install/claim/start/0.3
+// Deprecated: retired; use vtc/install/claim/passkey/start/0.1
 type Payload struct {
 	// The EdDSA-signed install JWT (aud=vtc-install) printed by vtc setup.
 	InstallToken string `json:"installToken"`
@@ -62,7 +62,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = "superseded by vtc/install/claim/start/0.3"
+const Deprecation = "retired; use vtc/install/claim/passkey/start/0.1"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/install/claim/start/0.2#response"

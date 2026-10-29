@@ -2347,6 +2347,14 @@ mod vtc {
                 mod v0_2;
                 mod v0_3;
             }
+            mod passkey {
+                mod finish {
+                    mod v0_1;
+                }
+                mod start {
+                    mod v0_1;
+                }
+            }
             mod start {
                 mod v0_1;
                 mod v0_2;

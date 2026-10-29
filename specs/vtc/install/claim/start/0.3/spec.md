@@ -36,7 +36,7 @@ errorCodes:
     meaning: The install token is missing, malformed, expired or already consumed, or the claim code does not match it. Deliberately one code for all of these, so an unauthenticated start is no oracle for which half was wrong.
     retryable: false
   - code: vtc/install/claim/start:tokenNamesNoDid
-    meaning: The install token was issued for a passkey claim and names no administrator DID. Claim it with vtc/install/claim/start 0.2, or have the operator issue a token naming the founder's DID.
+    meaning: The install token was issued for a passkey claim and names no administrator DID. Claim it with vtc/install/claim/passkey/start, or have the operator issue a token naming the founder's DID.
     retryable: false
 related:
   - vtc/install/claim/finish
@@ -55,7 +55,7 @@ The installer presents the single-use install token and the claim code printed b
 0.2 noted that a future version **MAY** let an installer claim admin under a DID they already control, as "a genuinely separate proof — a different key, held elsewhere … proof of ownership over a verification method present in the DID's **active** DID document, signed outside the WebAuthn ceremony", and left it absent rather than approximated. This is that version.
 
 - The response returns a `challenge` for the founder's step-up approver, not WebAuthn creation options.
-- The install token **MUST** name the founder's DID (`tokenNamesNoDid` otherwise); a passkey install keeps using 0.2.
+- The install token **MUST** name the founder's DID (`tokenNamesNoDid` otherwise). A passkey install is the ceremony of 0.2, which continues as [`vtc/install/claim/passkey/start`](../../passkey/start/0.1/spec.md) — a slug of its own, so that this version does not supersede it.
 - `installToken` and `claimSecret` are renamed `token` and `claimCode`, the names the step-up approver redemption uses, and `claimCode` is **required**: binding a step-up factor rests on two channels.
 
 ## Status of this Document
