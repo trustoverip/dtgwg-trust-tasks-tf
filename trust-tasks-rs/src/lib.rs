@@ -59,6 +59,7 @@ pub mod guards;
 pub mod handlers;
 pub mod replay;
 pub mod specs;
+pub mod type_index;
 
 #[cfg(feature = "validate")]
 #[cfg_attr(docsrs, doc(cfg(feature = "validate")))]
