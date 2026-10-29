@@ -66,7 +66,7 @@ This specification defines that signature. An `attest` document is issued and si
 
 | Purpose | Carried in | `challenge` | `boundTo` |
 |---|---|---|---|
-| `stepUp` | [`auth/step-up/approve-response/0.6`](../../../approve-response/0.6/spec.md) `evidence.statement` | the approve-request's `challenge` | the approve-request's `boundTo` — the relying party's salted wire digest of the operation |
+| `stepUp` | [`auth/step-up/approve-response/0.7`](../../../approve-response/0.7/spec.md) `evidence.statement` | the approve-request's `challenge` | the approve-request's `boundTo` — the relying party's salted wire digest of the operation |
 | `decision` | [`task-consent/decision/0.2`](../../../../../task-consent/decision/0.2/spec.md) `evidence.statement` (`kind: approverSigned`) | the decision's `challenge` | the decision's `payloadDigest` |
 | `enrol` | [`redeem/finish/0.1`](../../redeem/finish/0.1/spec.md), [`enroll/0.1`](../../enroll/0.1/spec.md), [`vtc/install/claim/finish/0.3`](../../../../../vtc/install/claim/finish/0.3/spec.md) | the challenge the enrolment's start issued | the enrolment id — `enrollmentId`, `claimId`, or the terms digest [`enroll/0.1`](../../enroll/0.1/spec.md) defines |
 

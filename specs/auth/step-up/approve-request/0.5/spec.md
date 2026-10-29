@@ -60,7 +60,7 @@ related:
 
 The **Auth — Step-up Approve Request** Trust Task is the first half of an out-of-band step-up flow. The relying party (typically an auth service holding a subject's session at AAL 1) sends this document to an *approver* — usually the subject's wallet or a Verifiable-Trust Agent acting for the subject — asking the approver to ratify an AAL elevation, or — bound to one operation — to approve that one act.
 
-The approver SHOULD show the `reason` to a human and obtain consent. If consent is granted, the approver returns an [`auth/step-up/approve-response/0.6`](../../approve-response/0.6/spec.md) signed by the **approver's** key, carrying the evidence the relying party asked for. That signed response is the cryptographic gate the relying party uses to elevate the session or authorize the operation.
+The approver SHOULD show the `reason` to a human and obtain consent. If consent is granted, the approver returns an [`auth/step-up/approve-response/0.7`](../../approve-response/0.7/spec.md) backed by the **approver's** own evidence — a proof by the approver's own DID, or a WebAuthn assertion by a passkey registered to the approver — of the kind the relying party asked for. That response is the cryptographic gate the relying party uses to elevate the session or authorize the operation.
 
 **0.3 let a step-up be bound to one operation that has no session**, with `boundTo` naming the operation and `sessionId` omitted, and defined how the request travels inline, in the refusal of the operation it is for (see [Inline delivery](#inline-delivery)).
 
@@ -121,7 +121,7 @@ The approve-response document arrives out-of-band — typically via the approver
 
 A relying party that refuses an operation because it needs a step-up bound to that operation, and has no push channel to the approver, **MAY** carry this task's payload in the refusal instead of sending it as a document. It does so in an *error response* ([SPEC.md §8](/SPEC.md#8-error-responses)) answering the operation, with `details.stepUpRequest` set to a payload valid against this specification's schema, with `boundTo` present and `sessionId` absent.
 
-The producer of the refused operation is then the approver's agent: it surfaces the request to its human, obtains the evidence — a passkey gesture over `challenge`, or an approver's statement over it — returns an [`approve-response/0.6`](../../approve-response/0.6/spec.md) to the relying party, and on a `recorded` acknowledgement re-sends the same operation.
+The producer of the refused operation is then the approver's agent: it surfaces the request to its human, obtains the evidence — a passkey gesture over `challenge`, or an approver's statement over it — returns an [`approve-response/0.7`](../../approve-response/0.7/spec.md) to the relying party, and on a `recorded` acknowledgement re-sends the same operation.
 
 - An inline request carries no `proof` of its own. It is authenticated by the channel it arrived on: it is the relying party's own reply to a request the producer addressed to that relying party. A producer **MUST NOT** surface a `stepUpRequest` it received any other way, and **MUST** check that its `subject` is the party the producer acts for.
 - The `reason` in an inline request is still what the human consents to, and the rules in [Security & Privacy](#security--privacy) apply to it unchanged.
