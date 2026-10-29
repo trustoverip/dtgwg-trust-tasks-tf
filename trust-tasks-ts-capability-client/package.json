@@ -1,6 +1,6 @@
 {
   "name": "@openvtc/trust-tasks-capability-client",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Client-side wire helpers for the capability Trust Task families (governance/capability/* and git-trust/*): document builders and reply classification, no crypto.",
   "type": "module",
   "license": "Apache-2.0",

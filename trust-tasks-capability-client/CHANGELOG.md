@@ -3,6 +3,47 @@
 All notable changes to `trust-tasks-capability-client` are documented in this
 file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.36.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-capability-client-v0.36.1...trust-tasks-capability-client-v0.36.2) — 2026-10-29
+
+
+### Fixed
+
+- Stamp issuedAt in whole seconds in every library ([#970](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/970)) ([#979](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/979))
+
+Rust wrote `issuedAt` with `Utc::now()`, which chrono serializes at the
+  clock's precision: nine fractional digits on Linux, on every error response
+  `dispatch_or_reject` / `reject_with` built and every response `respond_with`
+  built. TypeScript wrote milliseconds with `toISOString()`. SPEC §13.1 item 3
+  calls a full-precision timestamp a fingerprint and lets a producer round
+  `issuedAt` down; readers with a narrower RFC 3339 profile refused these
+  documents.
+
+  Every instant the framework stamps is now UTC in whole seconds, rounded
+  down, the form Go (`SystemClock`) and Dart (`systemClock`) already wrote:
+
+  - trust-tasks-rs: new `issued_at_now()`, used by `reject_with_recipient`,
+    `respond_with` and the dispatchers' error responses.
+  - trust-tasks-https: the client's default `issuedAt` and the server's two
+    fallback error documents.
+  - trust-tasks-capability-client: built documents and `new_attempt`.
+  - @openvtc/trust-tasks: new `issuedAtNow()`, the default clock of
+    `rejectWithRecipient` / `rejectWith` / `respondWith`.
+  - @openvtc/trust-tasks-capability-client: built documents and `newAttempt`.
+
+  A whole second is inside every acceptance window a consumer applies, so no
+  specification has to opt in; the minute or hour §13.1 permits is left to a
+  specification that states its skew. Rounding down never future-dates a
+  document (§7.2 item 13). Readers are unchanged and keep accepting any RFC
+  3339 precision and offset; received documents are never re-stamped, so
+  proofs and item-11 digests are unaffected.
+
+  The same vectors are pinned in all four libraries (tests/issued_at_precision.rs,
+  test/issued-at.test.ts, trusttasks/issued_at_test.go,
+  test/issued_at_test.dart): what is written, and that 0, 1, 3, 6 and 9
+  fractional digits and an offset are all read.
+
+
+
 ## [0.36.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-capability-client-v0.36.0...trust-tasks-capability-client-v0.36.1) — 2026-10-28
 
 
