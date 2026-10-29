@@ -45,16 +45,18 @@ class Response {
 }
 
 /// Complete first-administrator enrolment with a passkey: submit the WebAuthn
-/// registration, from whose credential public key — Ed25519 or P-256 — the
-/// administrator's did:key is derived, and receive a setup-session token. The passkey
-/// ceremony of vtc/install/claim/finish 0.2, widened from Ed25519 alone to P-256. The
-/// outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof)
-/// are owned by the framework — SPEC §6.3.
+/// registration and one assertion proving possession of the registered key, from whose
+/// credential public key — Ed25519 or P-256 — the administrator's did:key is derived,
+/// and receive a setup-session token. The passkey ceremony of vtc/install/claim/finish
+/// 0.2, widened from Ed25519 alone to P-256. The outer document members (id, type,
+/// issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC
+/// §6.3.
 class Payload {
   const Payload({
     required this.installToken,
     required this.registrationId,
     required this.webauthnResponse,
+    required this.webauthnAssertion,
     this.ext,
   });
 
@@ -63,6 +65,7 @@ class Payload {
         installToken: json['installToken'] as String,
         registrationId: json['registrationId'] as String,
         webauthnResponse: json['webauthnResponse'] as Map<String, dynamic>,
+        webauthnAssertion: json['webauthnAssertion'] as Map<String, dynamic>,
         ext: json['ext'] as Map<String, dynamic>?,
       );
 
@@ -76,6 +79,13 @@ class Payload {
   /// credential public key is a COSE key for EdDSA/Ed25519 (alg -8) or ES256/P-256 (alg
   /// -7); any other is refused with unsupportedAlgorithm.
   final Map<String, dynamic> webauthnResponse;
+
+  /// PublicKeyCredential from navigator.credentials.get() (opaque here): one assertion
+  /// by the credential just registered, over the assertion challenge
+  /// vtc/install/claim/passkey/start issued. Verified against the key the
+  /// administrator's DID is derived from; it is the proof of possession, whatever the
+  /// registration's attestation format.
+  final Map<String, dynamic> webauthnAssertion;
   final Ext? ext;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
@@ -83,6 +93,7 @@ class Payload {
         'installToken': installToken,
         'registrationId': registrationId,
         'webauthnResponse': webauthnResponse,
+        'webauthnAssertion': webauthnAssertion,
         if (ext != null) 'ext': ext!,
       };
 }
@@ -121,7 +132,7 @@ const String responseTypeUri =
 /// exclusion — so without it every such rule is unenforced. Cross-file \$refs are
 /// already inlined, so it needs no resolver.
 const String payloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/vtc/install/claim/passkey/finish/0.1","title":"VTC Install Claim Passkey Finish — payload","description":"Complete first-administrator enrolment with a passkey: submit the WebAuthn registration, from whose credential public key — Ed25519 or P-256 — the administrator\'s did:key is derived, and receive a setup-session token. The passkey ceremony of vtc/install/claim/finish 0.2, widened from Ed25519 alone to P-256. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.","type":"object","additionalProperties":false,"required":["installToken","registrationId","webauthnResponse"],"properties":{"installToken":{"type":"string","minLength":1,"description":"The install JWT the claim was started with."},"registrationId":{"type":"string","minLength":1,"description":"From vtc/install/claim/passkey/start."},"webauthnResponse":{"type":"object","description":"RegisterPublicKeyCredential from navigator.credentials.create() (opaque here). Its credential public key is a COSE key for EdDSA/Ed25519 (alg -8) or ES256/P-256 (alg -7); any other is refused with unsupportedAlgorithm."},"ext":{"\$ref":"#/\$defs/Ext"}},"\$defs":{"Response":{"\$anchor":"response","title":"VTC Install Claim Passkey Finish — response payload","type":"object","additionalProperties":false,"required":["adminDid","setupSessionToken"],"properties":{"adminDid":{"type":"string","pattern":"^did:key:z(6Mk|Dn)[1-9A-HJ-NP-Za-km-z]+\$","description":"The administrator\'s DID: the did:key of the passkey credential\'s own public key — Ed25519 (multicodec 0xed01, did:key:z6Mk…) or P-256, compressed (multicodec 0x1200, did:key:zDn…). Derived by the community from the registered key, never taken from the install token."},"setupSessionToken":{"type":"string","minLength":1,"description":"EdDSA JWT (aud=vtc-install-session, 5min TTL) consumed by admin/bootstrap."},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/vtc/install/claim/passkey/finish/0.1","title":"VTC Install Claim Passkey Finish — payload","description":"Complete first-administrator enrolment with a passkey: submit the WebAuthn registration and one assertion proving possession of the registered key, from whose credential public key — Ed25519 or P-256 — the administrator\'s did:key is derived, and receive a setup-session token. The passkey ceremony of vtc/install/claim/finish 0.2, widened from Ed25519 alone to P-256. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.","type":"object","additionalProperties":false,"required":["installToken","registrationId","webauthnResponse","webauthnAssertion"],"properties":{"installToken":{"type":"string","minLength":1,"description":"The install JWT the claim was started with."},"registrationId":{"type":"string","minLength":1,"description":"From vtc/install/claim/passkey/start."},"webauthnResponse":{"type":"object","description":"RegisterPublicKeyCredential from navigator.credentials.create() (opaque here). Its credential public key is a COSE key for EdDSA/Ed25519 (alg -8) or ES256/P-256 (alg -7); any other is refused with unsupportedAlgorithm."},"webauthnAssertion":{"type":"object","description":"PublicKeyCredential from navigator.credentials.get() (opaque here): one assertion by the credential just registered, over the assertion challenge vtc/install/claim/passkey/start issued. Verified against the key the administrator\'s DID is derived from; it is the proof of possession, whatever the registration\'s attestation format."},"ext":{"\$ref":"#/\$defs/Ext"}},"\$defs":{"Response":{"\$anchor":"response","title":"VTC Install Claim Passkey Finish — response payload","type":"object","additionalProperties":false,"required":["adminDid","setupSessionToken"],"properties":{"adminDid":{"type":"string","pattern":"^did:key:z(6Mk|Dn)[1-9A-HJ-NP-Za-km-z]+\$","description":"The administrator\'s DID: the did:key of the passkey credential\'s own public key — Ed25519 (multicodec 0xed01, did:key:z6Mk…) or P-256, compressed (multicodec 0x1200, did:key:zDn…). Derived by the community from the registered key, never taken from the install token."},"setupSessionToken":{"type":"string","minLength":1,"description":"EdDSA JWT (aud=vtc-install-session, 5min TTL) consumed by admin/bootstrap."},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
 
 /// As [payloadSchemaJson], for the success-response variant.
 const String responsePayloadSchemaJson =
