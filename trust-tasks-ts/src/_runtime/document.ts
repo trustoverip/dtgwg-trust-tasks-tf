@@ -348,6 +348,22 @@ export function enforceSpecPolicy<P>(
 }
 
 /**
+ * The instant a document this library stamps carries in `issuedAt`: now, in
+ * **whole seconds** (`2026-10-28T05:14:12Z`).
+ *
+ * SPEC §13.1 item 3: a full-precision timestamp is a fingerprint — two documents
+ * with unrelated identifiers and the same millisecond came from the same
+ * process — and a producer MAY round `issuedAt` down. `toISOString()` writes
+ * milliseconds, which is that fingerprint, so the builders below default to
+ * this instead. Rounding down never dates a document in the future (§7.2 item
+ * 13). The Rust, Go and Dart libraries write the same form. Readers still take
+ * any RFC 3339 precision.
+ */
+export function issuedAtNow(): string {
+  return new Date(Math.floor(Date.now() / 1000) * 1000).toISOString().replace(".000Z", "Z");
+}
+
+/**
  * Build the error response for `request`, addressed to an explicit `recipient`.
  *
  * ⚠ Prefer {@link rejectWith} for ordinary refusals. This form exists for
@@ -359,7 +375,7 @@ export function rejectWithRecipient<P>(
   id: string,
   payload: ErrorPayload,
   recipient: string | undefined,
-  now: () => string = () => new Date().toISOString(),
+  now: () => string = issuedAtNow,
 ): ErrorResponse {
   // §8.2 — name the document this error reports on, so it means something to a
   // party that did not see the request. Filled here rather than left to the
@@ -434,7 +450,7 @@ export function respondWith<P, R>(
   request: TrustTaskDocument<P>,
   id: string,
   payload: R,
-  now: () => string = () => new Date().toISOString(),
+  now: () => string = issuedAtNow,
 ): TrustTaskDocument<R> {
   const bare = request.type.split("#")[0]!;
   const response: TrustTaskDocument<R> = {

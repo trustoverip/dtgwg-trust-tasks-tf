@@ -249,7 +249,7 @@ impl HttpsClient {
             request.recipient = self.server_vid.clone();
         }
         if request.issued_at.is_none() {
-            request.issued_at = Some(chrono::Utc::now());
+            request.issued_at = Some(trust_tasks_rs::issued_at_now());
         }
 
         // Apply binding-specific outbound prep.

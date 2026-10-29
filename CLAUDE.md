@@ -469,6 +469,22 @@ four libraries act on it:
 `npm run extends-candidates` lists version pairs whose schemas already qualify;
 only an author can declare one, because the promise also covers meaning.
 
+## Instants the libraries write: whole seconds
+
+Every `issuedAt` a library stamps — error responses, success responses,
+requests the HTTPS client and the capability clients fill in — is UTC in whole
+seconds, rounded down: `2026-10-28T05:14:12Z`. SPEC §13.1 item 3 calls a
+full-precision timestamp a fingerprint, and readers with a narrower RFC 3339
+profile refused Rust's nanoseconds (#970). Rust stamps through
+`trust_tasks_rs::issued_at_now()`, TypeScript through `issuedAtNow()`, Go
+through `SystemClock`, Dart through `systemClock`; never write `Utc::now()` or
+`toISOString()` into a document field. **Readers take every RFC 3339
+precision and offset**, and a received document is never re-stamped (its
+proof and its item-11 digest cover what was sent). The same vectors are
+pinned in each library: `tests/issued_at_precision.rs`,
+`test/issued-at.test.ts`, `trusttasks/issued_at_test.go`,
+`test/issued_at_test.dart` — change one, change all four.
+
 ## Declared error codes are generated — Rust only, so far
 
 A spec's `errorCodes` front matter (SPEC §7.3 item 9) reaches `trust-tasks-rs`:

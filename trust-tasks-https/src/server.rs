@@ -1192,7 +1192,7 @@ fn build_error_response(
                 trust_tasks_rs::trust_task_error_type_uri(),
                 ErrorPayload::from(reason),
             );
-            doc.issued_at = Some(chrono::Utc::now());
+            doc.issued_at = Some(trust_tasks_rs::issued_at_now());
             doc
         }
     }
@@ -1220,7 +1220,7 @@ fn suppressed_error_response(new_id: &str) -> ErrorResponse {
             reason: String::new(),
         }),
     );
-    doc.issued_at = Some(chrono::Utc::now());
+    doc.issued_at = Some(trust_tasks_rs::issued_at_now());
     doc
 }
 
