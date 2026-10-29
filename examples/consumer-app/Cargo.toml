@@ -19,3 +19,17 @@ serde_json = "1"
 
 [build-dependencies]
 trust-tasks-build = { path = "../../trust-tasks-build" }
+
+[dev-dependencies]
+# tests/index_equivalence.rs compares the generated index with the prebuilt
+# one, which needs the families it covers (and `validate`, which gates
+# `schema_index`). Resolver 2 enables these for the test build only, so the
+# binary still compiles none of the prebuilt modules.
+trust-tasks-rs = { path = "../../trust-tasks-rs", default-features = false, features = [
+    "validate",
+    "acl",
+    "keys",
+    "rooms",
+    "sync",
+    "vault",
+] }

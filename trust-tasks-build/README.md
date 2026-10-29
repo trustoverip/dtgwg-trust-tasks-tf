@@ -56,6 +56,40 @@ own: generated code reaches them through `trust-tasks-rs`.
 `Config` also takes `.lockfile(path)`, `.bundle_dir(path)` and `.out_dir(path)`
 when the files are not in the default places.
 
+## The Type URI index — `.index(true)`
+
+An application that validates, sizes or applies policy to a document by its
+Type URI — before it has a type to name — wants `trust_tasks_rs::schema_index`.
+That only knows the prebuilt families compiled into `trust-tasks-rs`, so once
+an application drops them for generated tasks it answers `None` for every one
+of its own, and a gate reading `None` as "no schema, skip validation" fails
+open. Turn the index on:
+
+```rust
+trust_tasks_build::Config::new().index(true).compile()?;
+```
+
+and the generated file also carries `tasks::schema_index`, a drop-in over
+exactly the locked versions:
+
+| Item | Answers as `trust_tasks_rs::schema_index`… |
+|---|---|
+| `schema_for(uri) -> Option<&'static str>` | the bare Type URI for the request schema, `…#response` for the response |
+| `spec_policy_for(uri) -> Option<SpecPolicy>` | request URIs only |
+| `error_codes_for(uri) -> Option<&'static [DeclaredErrorCode]>` | request URIs only; `Some(&[])` for a spec that declares none |
+| `max_document_bytes_for(uri) -> Option<usize>` | either side |
+| `TYPE_URIS: &[&str]` | every request and `#response` URI it knows, in lock order |
+| `INDEX: &[trust_tasks_rs::type_index::IndexEntry]` | the same answers as data, one entry per URI |
+
+`INDEX` is for an application split into several generated crates: its
+entries are a `trust_tasks_rs` type, so a facade combines the crates' tables
+without a hand-written merge —
+`trust_tasks_rs::type_index::lookup(&[vault_tasks::schema_index::INDEX, keys_tasks::schema_index::INDEX], uri)`
+returns the first entry for `uri`. The framework's own specifications cannot be
+locked and are not in the index: `trust_tasks_rs::schema_index` (feature
+`validate`) answers for them. Off by default, and with it off the generated
+file is unchanged.
+
 ## What it checks
 
 Before generating anything, every vendored bundle is checked against the digest

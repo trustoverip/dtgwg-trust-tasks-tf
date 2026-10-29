@@ -1,0 +1,81 @@
+[
+  {
+    "note": "No member. Removal names whom it removes; a recipient asked to choose would be deciding who leaves.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "host": "did:webvh:example.com:northwind-community",
+      "signingKeyId": "room-northwind-signing"
+    }
+  },
+  {
+    "note": "No host. Removal is an epoch advance at the room's host; without one there is nowhere to advance, and a local-only removal would seal to keys no other member holds.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "member": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "signingKeyId": "room-northwind-signing"
+    }
+  },
+  {
+    "note": "A member that is not a DID. A leaf identifies a party by DID; a name identifies nobody the group knows.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "host": "did:webvh:example.com:northwind-community",
+      "member": "bob",
+      "signingKeyId": "room-northwind-signing"
+    }
+  },
+  {
+    "note": "An unbounded reason. Free text carried to another party is bounded (SPEC §7.3 item 19).",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "host": "did:webvh:example.com:northwind-community",
+      "member": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "reason": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "signingKeyId": "room-northwind-signing"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "host": "did:webvh:example.com:northwind-community",
+      "member": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "ext": {
+        "bare-key": {
+          "anything": "here"
+        }
+      },
+      "signingKeyId": "room-northwind-signing"
+    }
+  },
+  {
+    "note": "A mirror that is not a DID. A host is addressed by its DID; a URL here would be a location the recipient is induced to call.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "host": "did:webvh:example.com:northwind-community",
+      "member": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "signingKeyId": "room-northwind-signing",
+      "mirrors": [
+        "https://mirror.example"
+      ]
+    }
+  },
+  {
+    "note": "A response that does not say whether the member was withdrawn. Since 0.4 a private room's removal withdraws nothing, and a response a surface could read either way would let it report a withdrawal that never happened.",
+    "variant": "response",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board-papers",
+      "member": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "epoch": 7
+    }
+  },
+  {
+    "note": "A response with no epoch. Every removal, on either tier, advances the room, and the epoch is what the removed member holds no key for.",
+    "variant": "response",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board-papers",
+      "member": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "withdrawn": false
+    }
+  }
+]

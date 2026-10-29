@@ -1792,6 +1792,9 @@ export import RoomsOwnerGroupRemove_v0_2 = _RoomsOwnerGroupRemove_v0_2;
 import * as _RoomsOwnerGroupRemove_v0_3 from "./rooms/owner/group/remove/0.3/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomsOwnerGroupRemove_v0_3 = _RoomsOwnerGroupRemove_v0_3;
+import * as _RoomsOwnerGroupRemove_v0_4 from "./rooms/owner/group/remove/0.4/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import RoomsOwnerGroupRemove_v0_4 = _RoomsOwnerGroupRemove_v0_4;
 import * as _RoomsOwnerGroupRenew_v0_1 from "./rooms/owner/group/renew/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomsOwnerGroupRenew_v0_1 = _RoomsOwnerGroupRenew_v0_1;
