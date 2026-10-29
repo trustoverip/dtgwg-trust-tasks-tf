@@ -278,7 +278,7 @@ impl<P> TrustTask<P> {
     ///   per SPEC.md §4.9.
     /// * `issuer` → this request's `recipient` (the rejecting consumer).
     /// * `recipient` → this request's `issuer` (the original producer).
-    /// * `issuedAt` → [`Utc::now`].
+    /// * `issuedAt` → [`issued_at_now`]: now, in whole seconds (SPEC §13.1).
     ///
     /// `payload` is taken as-is. Pass an [`ErrorPayload`] you constructed
     /// directly, the output of [`ErrorPayload::from`] applied to a
@@ -359,7 +359,7 @@ impl<P> TrustTask<P> {
             type_uri: trust_task_error_type_uri(),
             issuer: self.recipient.clone(),
             recipient,
-            issued_at: Some(Utc::now()),
+            issued_at: Some(issued_at_now()),
             expires_at: None,
             payload,
             context: None,
@@ -379,7 +379,7 @@ impl<P> TrustTask<P> {
     ///   per SPEC.md §4.9.
     /// * `issuer` → this request's `recipient` (the responding party).
     /// * `recipient` → this request's `issuer` (the original producer).
-    /// * `issuedAt` → [`Utc::now`].
+    /// * `issuedAt` → [`issued_at_now`]: now, in whole seconds (SPEC §13.1).
     ///
     /// `R` is the response payload type defined by the originating *Trust
     /// Task specification*'s `$anchor: "response"` sub-schema. A spec that
@@ -398,7 +398,7 @@ impl<P> TrustTask<P> {
             type_uri: self.type_uri.with_response(),
             issuer: self.recipient.clone(),
             recipient: self.issuer.clone(),
-            issued_at: Some(Utc::now()),
+            issued_at: Some(issued_at_now()),
             expires_at: None,
             payload,
             context: None,
@@ -406,6 +406,33 @@ impl<P> TrustTask<P> {
             extra: Default::default(),
         }
     }
+}
+
+/// The instant a document this library stamps carries in `issuedAt`: now,
+/// truncated to the **whole second**.
+///
+/// SPEC §13.1 item 3: "A full-precision timestamp is a fingerprint: two
+/// documents bearing unrelated identifiers and the same millisecond were
+/// produced by the same process", and a producer **MAY** round `issuedAt`
+/// *down* to a coarser granularity while it stays inside the consumer's
+/// acceptance window. `chrono` writes `Utc::now()` at the clock's precision —
+/// nine fractional digits on Linux — so every error response, response and
+/// request this library stamped carried that fingerprint, and a reader with a
+/// narrower RFC 3339 profile refused it (#970).
+///
+/// A whole second is the coarsest value that is safe without knowing the
+/// specification: §13.1 leaves the minute or the hour to a specification
+/// that says how much skew its consumers allow, and a second is inside every
+/// window a consumer applies. The Go and Dart libraries stamp the same form
+/// (`2026-10-28T05:14:12Z`), and so does the TypeScript one.
+///
+/// Rounding **down** never dates a document in the future, which §7.2 item 13
+/// refuses. Readers are unaffected: [`TrustTask`] parses `issuedAt` and
+/// `expiresAt` at any RFC 3339 precision, and a document received is never
+/// re-stamped.
+pub fn issued_at_now() -> DateTime<Utc> {
+    use chrono::SubsecRound;
+    Utc::now().trunc_subsecs(0)
 }
 
 /// The `type` URI every error response this library emits carries.

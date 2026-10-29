@@ -77,7 +77,9 @@ pub use consume::{
     ProofPolicy, PROOF_NOT_ACCEPTED_BY_POLICY,
 };
 pub use dispatcher::Dispatcher;
-pub use document::{trust_task_error_type_uri, ErrorResponse, JsonLdContext, TrustTask};
+pub use document::{
+    issued_at_now, trust_task_error_type_uri, ErrorResponse, JsonLdContext, TrustTask,
+};
 pub use error::{
     DeclaredErrorCode, ErrorPayload, InResponseTo, ParseCodeError, RejectReason, StandardCode,
     TrustTaskCode, IDENTITY_MISMATCH_WIRE_MESSAGE, PROOF_INVALID_WIRE_MESSAGE, STALE_WIRE_MESSAGE,

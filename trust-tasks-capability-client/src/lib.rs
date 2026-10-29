@@ -145,7 +145,7 @@ pub fn build_document(
     let mut doc = TrustTask::new(fresh_id(), type_uri, payload);
     doc.issuer = Some(issuer_did.to_string());
     doc.recipient = Some(recipient_did.to_string());
-    doc.issued_at = Some(chrono::Utc::now());
+    doc.issued_at = Some(trust_tasks_rs::issued_at_now());
     doc
 }
 
@@ -186,7 +186,7 @@ pub fn build_document(
 pub fn new_attempt(previous: &TrustTask<Value>) -> TrustTask<Value> {
     let mut next = previous.clone();
     next.id = fresh_id();
-    next.issued_at = Some(chrono::Utc::now());
+    next.issued_at = Some(trust_tasks_rs::issued_at_now());
     next.proof = None;
     next
 }

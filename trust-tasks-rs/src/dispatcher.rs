@@ -28,7 +28,6 @@
 
 use std::collections::{HashMap, HashSet};
 
-use chrono::Utc;
 use serde_json::Value;
 
 use crate::document::{trust_task_error_type_uri, ErrorResponse, TrustTask};
@@ -287,7 +286,7 @@ pub(crate) fn build_error_response(
         type_uri: trust_task_error_type_uri(),
         issuer: request_recipient,
         recipient: request_issuer,
-        issued_at: Some(Utc::now()),
+        issued_at: Some(crate::document::issued_at_now()),
         expires_at: None,
         payload,
         context: None,
