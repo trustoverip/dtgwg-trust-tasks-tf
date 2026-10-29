@@ -3356,6 +3356,9 @@ export import VtcMembersRenew_v0_1 = _VtcMembersRenew_v0_1;
 import * as _VtcMembersRequestVmc_v0_1 from "./vtc/members/request-vmc/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtcMembersRequestVmc_v0_1 = _VtcMembersRequestVmc_v0_1;
+import * as _VtcMembersRoleSet_v0_1 from "./vtc/members/role/set/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcMembersRoleSet_v0_1 = _VtcMembersRoleSet_v0_1;
 import * as _VtcMembersRotateChallenge_v0_1 from "./vtc/members/rotate-challenge/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtcMembersRotateChallenge_v0_1 = _VtcMembersRotateChallenge_v0_1;

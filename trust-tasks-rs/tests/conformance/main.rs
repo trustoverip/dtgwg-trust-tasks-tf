@@ -2489,6 +2489,11 @@ mod vtc {
         mod request_vmc {
             mod v0_1;
         }
+        mod role {
+            mod set {
+                mod v0_1;
+            }
+        }
         mod rotate {
             mod v0_1;
         }
