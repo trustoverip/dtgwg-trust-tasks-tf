@@ -7,7 +7,7 @@ import type { Ext } from "../../../../../../_shared/components.js";
 
 
 /**
- * Begin claiming a fresh community with a passkey: exchange the install token (and its claim code, when the token was issued with one) for a WebAuthn registration challenge. The passkey ceremony of vtc/install/claim/start 0.2, with the administrator's DID derived from the passkey's own key — Ed25519 or P-256 — and never named by the token. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ * Begin claiming a fresh community with a passkey: exchange the install token (and its claim code, when the token was issued with one) for a WebAuthn registration challenge, and the assertion challenge with which the installer will prove possession of the passkey. The passkey ceremony of vtc/install/claim/start 0.2, with the administrator's DID derived from the passkey's own key — Ed25519 or P-256 — and never named by the token. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
  */
 export interface VTCInstallClaimPasskeyStartPayload {
   /**
@@ -33,6 +33,10 @@ export interface VTCInstallClaimPasskeyStartResponsePayload {
    * WebAuthn PublicKeyCredentialCreationOptions (opaque here). pubKeyCredParams lists exactly EdDSA (-8, Ed25519) and ES256 (-7, P-256), the two algorithms whose key the administrator's did:key can name; user.id, user.name and user.displayName name no DID.
    */
   options: {};
+  /**
+   * WebAuthn PublicKeyCredentialRequestOptions (opaque here) for the one assertion that proves possession of the passkey just registered: a fresh challenge of at least 128 bits, distinct from the creation challenge, single-use and bound to this registration, with the community's rpId. allowCredentials is omitted — the credential does not exist yet — and the installer's page sets it to the rawId navigator.credentials.create() returned.
+   */
+  assertionOptions: {};
   ext?: Ext;
 }
 
@@ -80,7 +84,7 @@ export const PAYLOAD_SCHEMA = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/install/claim/passkey/start/0.1",
   "title": "VTC Install Claim Passkey Start — payload",
-  "description": "Begin claiming a fresh community with a passkey: exchange the install token (and its claim code, when the token was issued with one) for a WebAuthn registration challenge. The passkey ceremony of vtc/install/claim/start 0.2, with the administrator's DID derived from the passkey's own key — Ed25519 or P-256 — and never named by the token. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "description": "Begin claiming a fresh community with a passkey: exchange the install token (and its claim code, when the token was issued with one) for a WebAuthn registration challenge, and the assertion challenge with which the installer will prove possession of the passkey. The passkey ceremony of vtc/install/claim/start 0.2, with the administrator's DID derived from the passkey's own key — Ed25519 or P-256 — and never named by the token. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -109,7 +113,8 @@ export const PAYLOAD_SCHEMA = {
       "additionalProperties": false,
       "required": [
         "registrationId",
-        "options"
+        "options",
+        "assertionOptions"
       ],
       "properties": {
         "registrationId": {
@@ -120,6 +125,10 @@ export const PAYLOAD_SCHEMA = {
         "options": {
           "type": "object",
           "description": "WebAuthn PublicKeyCredentialCreationOptions (opaque here). pubKeyCredParams lists exactly EdDSA (-8, Ed25519) and ES256 (-7, P-256), the two algorithms whose key the administrator's did:key can name; user.id, user.name and user.displayName name no DID."
+        },
+        "assertionOptions": {
+          "type": "object",
+          "description": "WebAuthn PublicKeyCredentialRequestOptions (opaque here) for the one assertion that proves possession of the passkey just registered: a fresh challenge of at least 128 bits, distinct from the creation challenge, single-use and bound to this registration, with the community's rpId. allowCredentials is omitted — the credential does not exist yet — and the installer's page sets it to the rawId navigator.credentials.create() returned."
         },
         "ext": {
           "$ref": "#/$defs/Ext"
@@ -151,7 +160,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "additionalProperties": false,
       "required": [
         "registrationId",
-        "options"
+        "options",
+        "assertionOptions"
       ],
       "properties": {
         "registrationId": {
@@ -162,6 +172,10 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "options": {
           "type": "object",
           "description": "WebAuthn PublicKeyCredentialCreationOptions (opaque here). pubKeyCredParams lists exactly EdDSA (-8, Ed25519) and ES256 (-7, P-256), the two algorithms whose key the administrator's did:key can name; user.id, user.name and user.displayName name no DID."
+        },
+        "assertionOptions": {
+          "type": "object",
+          "description": "WebAuthn PublicKeyCredentialRequestOptions (opaque here) for the one assertion that proves possession of the passkey just registered: a fresh challenge of at least 128 bits, distinct from the creation challenge, single-use and bound to this registration, with the community's rpId. allowCredentials is omitted — the credential does not exist yet — and the installer's page sets it to the rawId navigator.credentials.create() returned."
         },
         "ext": {
           "$ref": "#/$defs/Ext"

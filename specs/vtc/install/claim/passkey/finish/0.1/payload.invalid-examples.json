@@ -5,14 +5,16 @@
       "installToken": "e",
       "registrationId": "r",
       "webauthnResponse": {},
-      "__x__": true
+      "__x__": true,
+      "webauthnAssertion": {}
     }
   },
   {
-    "note": "`webauthnResponse` is required — it is the attestation that carries the whole proof of control.",
+    "note": "`webauthnResponse` is required — the registration carries the credential public key the administrator's DID is derived from.",
     "payload": {
       "installToken": "e",
-      "registrationId": "r"
+      "registrationId": "r",
+      "webauthnAssertion": {}
     }
   },
   {
@@ -21,6 +23,14 @@
     "payload": {
       "adminDid": "did:webvh:QmAliceScid4:wallet.example:alice",
       "setupSessionToken": "eyJhbGciOiJFZERTQSJ9.e30.c2ln"
+    }
+  },
+  {
+    "note": "No assertion. A registration under the `none` attestation format signs nothing, so without an assertion over the community's challenge nothing proves the installer holds the private key the administrator's DID names.",
+    "payload": {
+      "installToken": "e",
+      "registrationId": "r",
+      "webauthnResponse": {}
     }
   }
 ]

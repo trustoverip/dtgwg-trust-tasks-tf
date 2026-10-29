@@ -2,7 +2,7 @@
 slug: vtc/install/claim/passkey/finish
 version: "0.1"
 title: VTC Install Claim — Passkey — Finish
-summary: Complete first-administrator enrolment with a passkey — submit the WebAuthn registration, derive the administrator's did:key from the credential's own Ed25519 or P-256 public key, and receive a setup-session token.
+summary: Complete first-administrator enrolment with a passkey — submit the WebAuthn registration and one assertion proving possession of its key, derive the administrator's did:key from the credential's own Ed25519 or P-256 public key, and receive a setup-session token.
 status: draft
 targetFrameworkVersion: "0.6.0"
 category: governance
@@ -24,12 +24,12 @@ issuedAtRequirement:
   rationale: Claim completion binds an installation to its owner once. A replayed completion re-binds an installation that may have been transferred, and the claim is what every later authorisation in the community is rooted in.
 sideEffects:
   level: mutating
-  rationale: "Consumes the install token, registers the passkey, derives the administrator's DID from it and mints a short-lived setup-session token; the administrator entry itself is written by vtc/admin/bootstrap."
+  rationale: "Consumes the install token, registers the passkey, derives the administrator's DID from it and mints a short-lived setup-session token. The first administrator's entry is written by vtc/admin/bootstrap; an additional administrator's, on a community that already has one, is written here."
 exposure:
   discloses: secret
   ingests: secret
   actsAsSubject: false
-  rationale: "The response carries the setup-session token, a short-lived bearer credential that vtc/admin/bootstrap consumes to write the first administrator. The request carries the install token, which authorises the claim, and the WebAuthn attestation."
+  rationale: "The response carries the setup-session token, a short-lived bearer credential that vtc/admin/bootstrap consumes to write the first administrator. The request carries the install token, which authorises the claim, the WebAuthn registration and an assertion by the registered key."
 retention:
   class: durable
   rationale: "The claim — which passkey, on which install token — is the audit record every later authorisation in the community is rooted in, and the passkey is kept as the administrator's credential."
@@ -43,6 +43,9 @@ errorCodes:
   - code: vtc/install/claim/passkey/finish:bindingInvalid
     meaning: The WebAuthn registration failed verification — its client data is not a `webauthn.create` over this registration's challenge and the community's origin, its authenticator data is not for the community's RP ID, its attestation statement does not verify, or its credential public key is malformed.
     retryable: false
+  - code: vtc/install/claim/passkey/finish:possessionUnproven
+    meaning: "`webauthnAssertion` does not prove possession of the registered key: it is not a `webauthn.get` over the assertion challenge vtc/install/claim/passkey/start issued for this registration and the community's origin, it names another credential, its authenticator data is not for the community's RP ID or lacks user presence, or its signature does not verify under the registered public key. Nothing was consumed and no administrator was written. The assertion challenge is spent: start again."
+    retryable: false
   - code: vtc/install/claim/passkey/finish:unsupportedAlgorithm
     meaning: "The registered credential's public key is neither EdDSA over Ed25519 (COSE alg -8, OKP crv 6) nor ES256 over P-256 (COSE alg -7, EC2 crv 1), so no did:key this task defines can name it. Nothing was consumed: register a passkey with one of the two (start offers only those) and finish again."
     retryable: false
@@ -54,15 +57,16 @@ related:
 
 ## Abstract
 
-The **VTC Install Claim — Passkey — Finish** Trust Task completes first-administrator enrolment by passkey. The installer submits the `installToken`, the `registrationId` from [`vtc/install/claim/passkey/start`](../../start/0.1/spec.md) and the `webauthnResponse`. The community derives the administrator's DID from the passkey credential's own public key — the `did:key` of an Ed25519 or P-256 key — and returns it with a short-lived `setupSessionToken`, which [`vtc/admin/bootstrap`](../../../../../admin/bootstrap/0.1/spec.md) consumes to write the administrator entry.
+The **VTC Install Claim — Passkey — Finish** Trust Task completes first-administrator enrolment by passkey. The installer submits the `installToken`, the `registrationId` from [`vtc/install/claim/passkey/start`](../../start/0.1/spec.md), the `webauthnResponse` that registered the passkey, and a `webauthnAssertion` — one signature by the new passkey over a second challenge start issued — which proves the installer holds its private key. The community derives the administrator's DID from the passkey credential's own public key — the `did:key` of an Ed25519 or P-256 key — and returns it with a short-lived `setupSessionToken`, which [`vtc/admin/bootstrap`](../../../../../admin/bootstrap/0.1/spec.md) consumes to write the administrator entry.
 
 ### Changes from vtc/install/claim/finish 0.2
 
 This is the ceremony of [`vtc/install/claim/finish`](../../../finish/0.2/spec.md) `0.2`, under a slug of its own so that it is not superseded by the wallet ceremony of `vtc/install/claim/finish` `0.3`. [`passkey/start`](../../start/0.1/spec.md) says why the two ceremonies cannot share a version. `vtc/install/claim/finish` `0.2` is retired in favour of this task.
 
-The payload members are unchanged. Two rules moved:
+The request gains one member, `webauthnAssertion`; the response is unchanged. Three rules moved:
 
 - **The key may be Ed25519 or P-256.** `0.2` derived the administrator's `did:key` from an Ed25519 passkey alone, and almost no platform authenticator creates one. This task also accepts ES256 and names that key by its own P-256 `did:key` (`zDn…`), so the response `adminDid` pattern admits both prefixes. Any other algorithm is refused with the new code `unsupportedAlgorithm`. The installer's authenticator holds a key from outside the community, and a key held outside it may be P-256 when it is named by its own `did:key`.
+- **Possession is proven before any authority is granted.** `0.2` took the registration as proof that the installer held the passkey. Under the `none` attestation format, which most platform passkeys use, nothing signs anything at registration, so it proves no such thing. This task requires one WebAuthn assertion by the registered credential over a fresh challenge from the community, verified against the derived key, before a setup-session token is minted or an administrator entry written (`possessionUnproven` otherwise).
 - **The response requires a proof.** `0.2` declared `exposure.discloses: none` and an optional proof for a response that carries a bearer setup-session token; the token is secret material, and a response carrying it is signed, as `vtc/install/claim/finish` `0.3`'s is.
 
 ## Status of this Document
@@ -73,13 +77,13 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-m
 
 The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY** and **OPTIONAL** in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/info/bcp14) when, and only when, they appear in all capitals.
 
-A conforming **producer** supplies all three members, `webauthnResponse` exactly as `navigator.credentials.create()` returned it, encoded as JSON.
+A conforming **producer** supplies all four members: `webauthnResponse` exactly as `navigator.credentials.create()` returned it, and `webauthnAssertion` exactly as `navigator.credentials.get()` returned it when called with start's `assertionOptions` and `allowCredentials` naming only the credential just created. Both are encoded as JSON.
 
 A conforming **consumer**, in this order:
 
 1. **MUST** verify the install token → `invalidToken`.
 2. **MUST** match `registrationId` to an open registration for that token → `registrationMismatch`.
-3. **MUST** verify the registration as a WebAuthn relying party verifies a new credential ([WebAuthn Level 3 §7.1](https://www.w3.org/TR/webauthn-3/#sctn-registering-a-new-credential)) → `bindingInvalid`: `clientDataJSON.type` is `webauthn.create`, its `challenge` is the one [`start`](../../start/0.1/spec.md) issued for this registration and its `origin` is the community's; the authenticator data's RP ID hash is the community's RP ID and its user-present flag is set; and the attestation statement verifies under its format. **This registration is the proof of control:** the credential public key it carries is the key the administrator's DID will name, bound by the registration to this registration's challenge. No other evidence of control over the DID is taken or needed.
+3. **MUST** verify the registration as a WebAuthn relying party verifies a new credential ([WebAuthn Level 3 §7.1](https://www.w3.org/TR/webauthn-3/#sctn-registering-a-new-credential)) → `bindingInvalid`: `clientDataJSON.type` is `webauthn.create`, its `challenge` is the one [`start`](../../start/0.1/spec.md) issued for this registration and its `origin` is the community's; the authenticator data's RP ID hash is the community's RP ID and its user-present flag is set; and the attestation statement verifies under its format. The registration establishes **which key** the administrator's DID will name; it does not, by itself, prove the installer holds that key (item 6 does).
 4. **MUST** read the credential public key from the attested credential data and refuse with `unsupportedAlgorithm`, consuming nothing, unless it is one of:
    - COSE `alg` -8 (EdDSA), `kty` 1 (OKP), `crv` 6 (Ed25519), with a 32-byte `x`;
    - COSE `alg` -7 (ES256), `kty` 2 (EC2), `crv` 1 (P-256), with 32-byte `x` and `y` naming a point on the curve.
@@ -90,17 +94,20 @@ A conforming **consumer**, in this order:
    - **P-256:** the varint of multicodec `0x1200` (`p256-pub`; bytes `0x80 0x24`) followed by the 33-byte SEC1 **compressed** point — `0x02` when `y` is even, `0x03` when odd, then `x` — a DID beginning `did:key:zDn`.
 
    It **MUST NOT** take the DID, or anything it is derived from, from the install token or from the request outside the attested credential data.
-6. **MUST** consume the install token, keep the credential as the administrator's passkey, mint a setup-session token (aud=vtc-install-session, 5-minute TTL) that names the derived DID, and sign the response (`proof` is REQUIRED on it).
+6. **MUST** verify `webauthnAssertion` as a WebAuthn relying party verifies an authentication assertion ([WebAuthn Level 3 §7.2](https://www.w3.org/TR/webauthn-3/#sctn-verifying-assertion)), against the credential just registered → `possessionUnproven`: its credential id is the registered credential's; `clientDataJSON.type` is `webauthn.get`, its `challenge` is the assertion challenge start issued for this registration and its `origin` is the community's; the authenticator data's RP ID hash is the community's RP ID and its user-present flag is set; and its signature over the authenticator data concatenated with the SHA-256 of `clientDataJSON` verifies under the registered public key — EdDSA over Ed25519, or ECDSA over P-256 with SHA-256 (a DER-encoded signature, as WebAuthn carries it). **This assertion is the proof of possession**, and the registration and the assertion together are the proof of control of the key the administrator's DID names. It holds whatever the registration's attestation format. The assertion challenge is single-use: a refused assertion spends it, and the installer starts again.
+7. **MUST NOT** mint a setup-session token, write an administrator entry, or consume the install token before item 6 succeeds.
+8. **MUST** then consume the install token, keep the credential as the administrator's passkey, mint a setup-session token (aud=vtc-install-session, 5-minute TTL) that names the derived DID, and sign the response (`proof` is REQUIRED on it).
+9. **MUST**, when the community already has an administrator — the install token is an invitation of an additional administrator, minted by an administrator or by the operator — write that administrator's entry here, for the derived DID with the authority the invitation was issued with, since [`vtc/admin/bootstrap`](../../../../../admin/bootstrap/0.1/spec.md) is single-use and answers `alreadyBootstrapped`. On a community with no administrator, bootstrap writes the entry from the setup-session token. Either way the entry names the derived DID, and is written only after item 6.
 
 ## Authorization
 
 *Declared under [SPEC §7.3](/SPEC.md#73-specification-requirements) item 15.*
 
-The authorization evidence this task presupposes is three things together, none of which is sufficient alone: a valid **install token**, a matching **`registrationId`**, and a verifying **WebAuthn registration**.
+The authorization evidence this task presupposes is three things together, none of which is sufficient alone: a valid **install token**, a matching **`registrationId`**, a verifying **WebAuthn registration**, and an **assertion** by the registered key over the community's challenge.
 
-The combination is the point. The token establishes that this installation was expected, the registration match that this is the claim it was expected for, and the registration that this ceremony's authenticator produced the key the administrator's DID is derived from. Each failure has its own code (`invalidToken`, `registrationMismatch`, `bindingInvalid`, and `unsupportedAlgorithm` for a key no `did:key` here can name) so an operator can tell which assumption broke.
+The combination is the point. The token establishes that this installation was expected, the registration match that this is the claim it was expected for, the registration which key the administrator's DID is derived from, and the assertion that the installer holds that key's private half. Each failure has its own code (`invalidToken`, `registrationMismatch`, `bindingInvalid`, `possessionUnproven`, and `unsupportedAlgorithm` for a key no `did:key` here can name) so an operator can tell which assumption broke.
 
-There is no fourth piece of evidence binding a DID, and the install token names none, because the DID is derived from the registered key: a separate signature by that key would be the key asserting control of itself twice. A founder who claims under a DID they already control proves control of it separately, with [`vtc/install/claim/start`](../../../start/0.3/spec.md) and [`finish`](../../../finish/0.3/spec.md) `0.3`.
+There is no further evidence binding a DID, and the install token names none, because the DID is derived from the registered key: once possession of that key is proven, control of the DID is proven with it. A founder who claims under a DID they already control proves control of it separately, with [`vtc/install/claim/start`](../../../start/0.3/spec.md) and [`finish`](../../../finish/0.3/spec.md) `0.3`.
 
 The authorization decision is the *consumer*'s alone. This section describes the evidence the task assumes, not an obligation to authorize any particular party, and per [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10 verifying the `proof` establishes who asked, never that they may.
 
@@ -128,6 +135,16 @@ The installer (`issuer`) sends the request to the community (`recipient`). The p
       "response": {
         "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIn0",
         "attestationObject": "o2NmbXRkbm9uZWdhdHRTdG10oGhhdXRoRGF0YQ"
+      }
+    },
+    "webauthnAssertion": {
+      "id": "a1b2c3d4e5f6",
+      "rawId": "a1b2c3d4e5f6",
+      "type": "public-key",
+      "response": {
+        "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uZ2V0In0",
+        "authenticatorData": "SZYN5YgOjGh0NBcPZHZgW4_krrmihjLHmVzzuoMdl2MFAAAAAQ",
+        "signature": "MEUCIQDx3tH8hK0aV4wQ5mF2bYc9Zp7nL1rS6eG0jK3uW8yTqAIgV5nM2kQ7rP0sL9xH4cB1aD6eF3gJ8iK5oR2tU7vY0wE"
       }
     }
   }
@@ -192,13 +209,13 @@ A platform authenticator chose ES256; the administrator's DID is the P-256 key's
 
 ## Security & Privacy
 
-**Proof of control.** The WebAuthn registration is the proof of control: it carries the credential public key, bound to this registration's challenge, and the administrator's DID is derived from that key alone — so the DID names the authenticator's key and no other. Where the attestation statement is signed (`packed` self-attestation by the credential key, or an attestation key), that signature covers the challenge through `clientDataHash`. Under the `none` format, which most platform passkeys use, nothing signs the challenge at registration: the binding rests on the client data the browser produced for the community's origin, and possession of the private key is first exercised when the administrator authenticates with the passkey. A deployment that wants possession proven before the administrator entry exists can require a signed attestation format, or an assertion before [`vtc/admin/bootstrap`](../../../../../admin/bootstrap/0.1/spec.md). The setup-session token is short-lived and single-audience, limiting the window in which bootstrap can run.
+**Possession before authority.** The registration names the key; the assertion proves the installer holds it. Under the `none` attestation format, which most platform passkeys use, nothing signs the challenge at registration — a registration response could carry a public key whose private half the sender never held. So the community issues a second, fresh challenge at [`start`](../../start/0.1/spec.md) and requires one assertion over it by the registered credential, verified against the very key the administrator's DID is derived from, before it mints a setup-session token or writes any administrator entry (items 6 and 7). Possession is therefore proven before any authority is granted, whatever the attestation format; a signed attestation adds evidence about the authenticator, not about possession. The setup-session token is short-lived and single-audience, limiting the window in which bootstrap can run.
 
 **What this does not prove.** The administrator's DID is *assigned by* this ceremony, not *asserted by* the installer. Nothing here demonstrates control of any pre-existing identity. A deployment that needs an operator to claim administration under a DID they already hold uses [`vtc/install/claim/finish`](../../../finish/0.3/spec.md) `0.3`, which proves ownership of a verification method in that DID's live document.
 
 ### Data carried
 
-The request carries the install token, the registration handle and the WebAuthn attestation, which includes the passkey's public key and authenticator data. The response carries the derived DID — an Ed25519 or P-256 `did:key` — and the setup-session token, a short-lived bearer credential for one bootstrap.
+The request carries the install token, the registration handle, the WebAuthn registration — the passkey's public key and authenticator data — and one assertion: authenticator data, client data and a signature over the community's challenge. The response carries the derived DID — an Ed25519 or P-256 `did:key` — and the setup-session token, a short-lived bearer credential for one bootstrap.
 
 ### Correlation
 

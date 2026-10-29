@@ -116,7 +116,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
             })
     }
 }
-///Begin claiming a fresh community with a passkey: exchange the install token (and its claim code, when the token was issued with one) for a WebAuthn registration challenge. The passkey ceremony of vtc/install/claim/start 0.2, with the administrator's DID derived from the passkey's own key — Ed25519 or P-256 — and never named by the token. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+///Begin claiming a fresh community with a passkey: exchange the install token (and its claim code, when the token was issued with one) for a WebAuthn registration challenge, and the assertion challenge with which the installer will prove possession of the passkey. The passkey ceremony of vtc/install/claim/start 0.2, with the administrator's DID derived from the passkey's own key — Ed25519 or P-256 — and never named by the token. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
@@ -274,6 +274,9 @@ impl<'de> ::serde::Deserialize<'de> for PayloadInstallToken {
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct Response {
+    ///WebAuthn PublicKeyCredentialRequestOptions (opaque here) for the one assertion that proves possession of the passkey just registered: a fresh challenge of at least 128 bits, distinct from the creation challenge, single-use and bound to this registration, with the community's rpId. allowCredentials is omitted — the credential does not exist yet — and the installer's page sets it to the rawId navigator.credentials.create() returned.
+    #[serde(rename = "assertionOptions")]
+    pub assertion_options: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///WebAuthn PublicKeyCredentialCreationOptions (opaque here). pubKeyCredParams lists exactly EdDSA (-8, Ed25519) and ES256 (-7, P-256), the two algorithms whose key the administrator's did:key can name; user.id, user.name and user.displayName name no DID.
@@ -419,6 +422,10 @@ pub mod builder {
     }
     #[derive(Clone, Debug)]
     pub struct Response {
+        assertion_options: ::std::result::Result<
+            ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            ::std::string::String,
+        >,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         options: ::std::result::Result<
             ::serde_json::Map<::std::string::String, ::serde_json::Value>,
@@ -430,6 +437,7 @@ pub mod builder {
     impl ::std::default::Default for Response {
         fn default() -> Self {
             Self {
+                assertion_options: Err("no value supplied for assertion_options".to_string()),
                 ext: Ok(Default::default()),
                 options: Err("no value supplied for options".to_string()),
                 registration_id: Err("no value supplied for registration_id".to_string()),
@@ -437,6 +445,18 @@ pub mod builder {
         }
     }
     impl Response {
+        pub fn assertion_options<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.assertion_options = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for assertion_options: {e}"));
+            self
+        }
         pub fn ext<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
@@ -474,6 +494,7 @@ pub mod builder {
         type Error = super::error::ConversionError;
         fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
             Ok(Self {
+                assertion_options: value.assertion_options?,
                 ext: value.ext?,
                 options: value.options?,
                 registration_id: value.registration_id?,
@@ -483,6 +504,7 @@ pub mod builder {
     impl ::std::convert::From<super::Response> for Response {
         fn from(value: super::Response) -> Self {
             Self {
+                assertion_options: Ok(value.assertion_options),
                 ext: Ok(value.ext),
                 options: Ok(value.options),
                 registration_id: Ok(value.registration_id),
@@ -495,7 +517,7 @@ impl crate::Payload for Payload {
         "https://trusttasks.org/spec/vtc/install/claim/passkey/start/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"options\":{\"description\":\"WebAuthn PublicKeyCredentialCreationOptions (opaque here). pubKeyCredParams lists exactly EdDSA (-8, Ed25519) and ES256 (-7, P-256), the two algorithms whose key the administrator's did:key can name; user.id, user.name and user.displayName name no DID.\",\"type\":\"object\"},\"registrationId\":{\"description\":\"Echoes the install token's jti (a UUID); pass it back to vtc/install/claim/passkey/finish.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"registrationId\",\"options\"],\"title\":\"VTC Install Claim Passkey Start — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/install/claim/passkey/start/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Begin claiming a fresh community with a passkey: exchange the install token (and its claim code, when the token was issued with one) for a WebAuthn registration challenge. The passkey ceremony of vtc/install/claim/start 0.2, with the administrator's DID derived from the passkey's own key — Ed25519 or P-256 — and never named by the token. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"claimSecret\":{\"description\":\"A short code the operator receives **out of band**, alongside the install URL but through a separate channel.\\n\\nThe second factor on a claim: the URL alone is deliberately insufficient, so a stolen or forwarded install link cannot claim the passkey by itself. A maintainer that mints one shows the plaintext once and stores only a hash; a claim that omits or fails it is refused before any registration challenge is issued.\\n\\nOptional in the schema because a maintainer may issue tokens without one — but a maintainer that does issue one MUST require it, and SHOULD issue one for any invite that travels over a channel it does not control.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"installToken\":{\"description\":\"The EdDSA-signed install JWT (aud=vtc-install) printed by vtc setup.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"installToken\"],\"title\":\"VTC Install Claim Passkey Start — payload\",\"type\":\"object\"}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"assertionOptions\":{\"description\":\"WebAuthn PublicKeyCredentialRequestOptions (opaque here) for the one assertion that proves possession of the passkey just registered: a fresh challenge of at least 128 bits, distinct from the creation challenge, single-use and bound to this registration, with the community's rpId. allowCredentials is omitted — the credential does not exist yet — and the installer's page sets it to the rawId navigator.credentials.create() returned.\",\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"options\":{\"description\":\"WebAuthn PublicKeyCredentialCreationOptions (opaque here). pubKeyCredParams lists exactly EdDSA (-8, Ed25519) and ES256 (-7, P-256), the two algorithms whose key the administrator's did:key can name; user.id, user.name and user.displayName name no DID.\",\"type\":\"object\"},\"registrationId\":{\"description\":\"Echoes the install token's jti (a UUID); pass it back to vtc/install/claim/passkey/finish.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"registrationId\",\"options\",\"assertionOptions\"],\"title\":\"VTC Install Claim Passkey Start — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/install/claim/passkey/start/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Begin claiming a fresh community with a passkey: exchange the install token (and its claim code, when the token was issued with one) for a WebAuthn registration challenge, and the assertion challenge with which the installer will prove possession of the passkey. The passkey ceremony of vtc/install/claim/start 0.2, with the administrator's DID derived from the passkey's own key — Ed25519 or P-256 — and never named by the token. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"claimSecret\":{\"description\":\"A short code the operator receives **out of band**, alongside the install URL but through a separate channel.\\n\\nThe second factor on a claim: the URL alone is deliberately insufficient, so a stolen or forwarded install link cannot claim the passkey by itself. A maintainer that mints one shows the plaintext once and stores only a hash; a claim that omits or fails it is refused before any registration challenge is issued.\\n\\nOptional in the schema because a maintainer may issue tokens without one — but a maintainer that does issue one MUST require it, and SHOULD issue one for any invite that travels over a channel it does not control.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"installToken\":{\"description\":\"The EdDSA-signed install JWT (aud=vtc-install) printed by vtc setup.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"installToken\"],\"title\":\"VTC Install Claim Passkey Start — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -503,7 +525,7 @@ impl crate::Payload for Response {
         "https://trusttasks.org/spec/vtc/install/claim/passkey/start/0.1#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"options\":{\"description\":\"WebAuthn PublicKeyCredentialCreationOptions (opaque here). pubKeyCredParams lists exactly EdDSA (-8, Ed25519) and ES256 (-7, P-256), the two algorithms whose key the administrator's did:key can name; user.id, user.name and user.displayName name no DID.\",\"type\":\"object\"},\"registrationId\":{\"description\":\"Echoes the install token's jti (a UUID); pass it back to vtc/install/claim/passkey/finish.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"registrationId\",\"options\"],\"title\":\"VTC Install Claim Passkey Start — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"assertionOptions\":{\"description\":\"WebAuthn PublicKeyCredentialRequestOptions (opaque here) for the one assertion that proves possession of the passkey just registered: a fresh challenge of at least 128 bits, distinct from the creation challenge, single-use and bound to this registration, with the community's rpId. allowCredentials is omitted — the credential does not exist yet — and the installer's page sets it to the rawId navigator.credentials.create() returned.\",\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"options\":{\"description\":\"WebAuthn PublicKeyCredentialCreationOptions (opaque here). pubKeyCredParams lists exactly EdDSA (-8, Ed25519) and ES256 (-7, P-256), the two algorithms whose key the administrator's did:key can name; user.id, user.name and user.displayName name no DID.\",\"type\":\"object\"},\"registrationId\":{\"description\":\"Echoes the install token's jti (a UUID); pass it back to vtc/install/claim/passkey/finish.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"registrationId\",\"options\",\"assertionOptions\"],\"title\":\"VTC Install Claim Passkey Start — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {
