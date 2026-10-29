@@ -1,0 +1,44 @@
+[
+  {
+    "note": "fromRole missing — the compare-and-swap is the point of the task, so a move that does not say what it moves from must not validate.",
+    "payload": { "subject": "did:web:bob.example", "toRole": "admin" }
+  },
+  {
+    "note": "subject is not a DID — the schema pins `^did:` so a member name or label cannot stand in for the identifier the entry is keyed by.",
+    "payload": { "subject": "bob", "fromRole": "member", "toRole": "admin" }
+  },
+  {
+    "note": "Empty toRole — minLength 1; an empty role would read as 'no role' to a lenient consumer.",
+    "payload": { "subject": "did:web:bob.example", "fromRole": "member", "toRole": "" }
+  },
+  {
+    "note": "Unknown top-level member — additionalProperties: false; an administrative role must be moved with acl/change-role, not smuggled in beside the community role.",
+    "payload": { "subject": "did:web:bob.example", "fromRole": "member", "toRole": "admin", "adminRole": "community-admin" }
+  },
+  {
+    "note": "Bare ext key — SPEC §4.5.1 requires every ext key to be reverse-DNS namespaced.",
+    "payload": { "subject": "did:web:bob.example", "fromRole": "member", "toRole": "admin", "ext": { "bare": true } }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `changed` — a requester must be able to tell a no-op from a move without diffing roles.",
+    "payload": {
+      "subject": "did:web:bob.example",
+      "role": "admin",
+      "previousRole": "member",
+      "entry": { "subject": "did:web:bob.example", "role": "community-admin", "act": { "scope": "all" }, "keys": { "scope": "none" }, "capabilities": { "scope": "ceiling" } }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Unknown approval value — the Approval enum is closed to policyAllowed, approved and waived.",
+    "payload": {
+      "subject": "did:web:bob.example",
+      "role": "admin",
+      "previousRole": "member",
+      "changed": true,
+      "approval": "selfApproved",
+      "entry": { "subject": "did:web:bob.example", "role": "community-admin", "act": { "scope": "all" }, "keys": { "scope": "none" }, "capabilities": { "scope": "ceiling" } }
+    }
+  }
+]
