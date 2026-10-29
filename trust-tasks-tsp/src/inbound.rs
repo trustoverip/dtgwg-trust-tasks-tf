@@ -59,10 +59,11 @@ use affinidi_tsp::{PrivateVid, ResolvedVid};
 use chrono::{DateTime, Utc};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
+use serde_json::Value;
 use trust_tasks_rs::{
-    consume_inbound, ConsumeChecks, ConsumeOutcome, ErrorResponse, FreshnessPolicy,
-    InMemoryReplayGuard, Payload, PayloadPolicy, PayloadValidator, ProofPolicy, ProofVerifier,
-    ReplayGuard, ReplayPolicy, ResolvedParties, TrustTask,
+    consume_dispatched, consume_inbound, AsyncDispatcher, ConsumeChecks, ConsumeOutcome,
+    ErrorResponse, FreshnessPolicy, InMemoryReplayGuard, Payload, PayloadPolicy, PayloadValidator,
+    ProofPolicy, ProofVerifier, ReplayGuard, ReplayPolicy, ResolvedParties, TrustTask,
 };
 
 use crate::error::TspError;
@@ -327,6 +328,97 @@ impl TspConsumer {
             now,
             error_id_factory,
             handler,
+        )
+        .await
+    }
+
+    /// [`receive`](Self::receive) for a consumer that takes a document of
+    /// **any** type and routes it on its `type` — answering a type it has no
+    /// handler for with `unsupportedType`, and a known one at an unhandled
+    /// version with `unsupportedVersion`.
+    ///
+    /// The document is opened untyped and handed to
+    /// [`consume_dispatched`], which reads each specification's declarations
+    /// off `dispatcher`'s registrations and runs the same pipeline as
+    /// [`receive`](Self::receive) — this consumer's freshness policy and
+    /// duplicate-execution record included, and every refusal before the
+    /// record is written. The proof is verified over the document as received.
+    ///
+    /// `context` builds the dispatcher's per-document `Ctx` from the resolved
+    /// parties. Every outcome, an error response included, is a
+    /// `TrustTask` this crate's [`pack_trust_task`](crate::pack_trust_task)
+    /// seals back to the sender.
+    #[allow(clippy::too_many_arguments)]
+    pub async fn receive_dispatched<Ctx, R, V, W>(
+        &self,
+        wire: &[u8],
+        recipient: &PrivateVid,
+        sender: &ResolvedVid,
+        my_vid: &str,
+        proof_policy: ProofPolicy<'_, V>,
+        payload_policy: PayloadPolicy<'_, W>,
+        dispatcher: &AsyncDispatcher<Ctx, Result<TrustTask<R>, ErrorResponse>>,
+        now: DateTime<Utc>,
+        error_id_factory: impl FnOnce() -> String,
+        context: impl FnOnce(ResolvedParties) -> Ctx,
+    ) -> Result<ConsumeOutcome<R>, TspError>
+    where
+        R: Serialize,
+        V: ProofVerifier + ?Sized,
+        W: PayloadValidator + ?Sized,
+    {
+        let (doc, received, transport) = unpack_received::<Value>(wire, recipient, sender)?;
+        Ok(self
+            .consume_dispatched(
+                &transport,
+                doc,
+                my_vid,
+                proof_policy.with_received(&received),
+                payload_policy,
+                dispatcher,
+                now,
+                error_id_factory,
+                context,
+            )
+            .await)
+    }
+
+    /// The guarded, dispatched pipeline over a document the caller opened
+    /// itself — [`consume`](Self::consume) for a `TrustTask<Value>`. See
+    /// [`receive_dispatched`](Self::receive_dispatched).
+    ///
+    /// Pass [`ProofPolicy::VerifyReceived`] with the document as it arrived:
+    /// a forward-routed payload is pruned before the handler sees it, and a
+    /// proof covers what was signed.
+    #[allow(clippy::too_many_arguments)]
+    pub async fn consume_dispatched<Ctx, R, V, W>(
+        &self,
+        transport: &TspHandler,
+        doc: TrustTask<Value>,
+        my_vid: &str,
+        proof_policy: ProofPolicy<'_, V>,
+        payload_policy: PayloadPolicy<'_, W>,
+        dispatcher: &AsyncDispatcher<Ctx, Result<TrustTask<R>, ErrorResponse>>,
+        now: DateTime<Utc>,
+        error_id_factory: impl FnOnce() -> String,
+        context: impl FnOnce(ResolvedParties) -> Ctx,
+    ) -> ConsumeOutcome<R>
+    where
+        R: Serialize,
+        V: ProofVerifier + ?Sized,
+        W: PayloadValidator + ?Sized,
+    {
+        consume_dispatched(
+            transport,
+            proof_policy,
+            payload_policy,
+            self.checks(),
+            dispatcher,
+            doc,
+            my_vid,
+            now,
+            error_id_factory,
+            context,
         )
         .await
     }

@@ -80,10 +80,12 @@ use chrono::{DateTime, Utc};
 use serde::Serialize;
 use serde_json::Value;
 
+use crate::async_dispatch::AsyncDispatcher;
+use crate::dispatcher::{build_error_response, RequestOrigin};
 use crate::document::{ErrorResponse, TrustTask};
-use crate::error::RejectReason;
+use crate::error::{ErrorPayload, RejectReason};
 use crate::freshness::{FreshnessPolicy, StaleReason};
-use crate::payload::Payload;
+use crate::payload::{Payload, SpecPolicy};
 use crate::proof::{ProofVerifier, VerificationError};
 use crate::replay::{document_digest, DocumentDigest, ReplayGuard, ReplayPolicy, ReplayVerdict};
 use crate::transport::{ResolvedParties, TransportHandler};
@@ -432,6 +434,202 @@ where
     F: FnOnce(TrustTask<P>, ResolvedParties) -> Fut,
     Fut: Future<Output = Result<TrustTask<R>, ErrorResponse>>,
 {
+    consume_core(
+        transport,
+        policy,
+        payload_policy,
+        checks,
+        doc,
+        my_vid,
+        now,
+        error_id_factory,
+        SpecFacts {
+            policy: SpecPolicy::of::<P>(),
+            schema: P::PAYLOAD_SCHEMA,
+        },
+        is_received_form_of::<P>,
+        handler,
+    )
+    .await
+}
+
+/// [`consume_inbound`] for a consumer that takes a document of **any** type
+/// and routes it on its `type` with an [`AsyncDispatcher`].
+///
+/// This is the consumer [`SpecPolicy`] describes: one that holds a
+/// `TrustTask<serde_json::Value>`, so it has no `P` to read a specification's
+/// declarations from. Here they come from the dispatcher instead — each
+/// [`AsyncDispatcher::on_async::<P>`](AsyncDispatcher::on_async) registration
+/// records `P`'s payload schema and [`SpecPolicy`] — and the rest is
+/// [`consume_inbound`]'s pipeline, run by the same code: freshness, the §4.8.1
+/// cross-check, proof verification, the per-spec checks and the §7.2 item 11
+/// duplicate-execution record, in the same order.
+///
+/// # Order
+///
+/// 1. **Item 3 — routing.** A `type` whose slug no handler is registered for
+///    is refused `unsupportedType`; a registered slug at a `MAJOR.MINOR` that
+///    neither has a handler nor reaches one along its declared extension chain
+///    (SPEC §5.2) is refused `unsupportedVersion`. A forward-routed payload is
+///    pruned to what the implemented version knows, as
+///    [`AsyncDispatcher::dispatch`] does.
+/// 2. **The payload deserializes** into the registered `P` — the part of item
+///    2 the typed path performs by parsing — or the document is
+///    `malformedRequest`.
+/// 3. Everything [`consume_inbound`] does, with the registered `P`'s schema
+///    and policy.
+/// 4. The handler, through [`AsyncDispatcher::dispatch`], with the context
+///    `context` builds from the resolved parties.
+///
+/// Every refusal in 1–3 happens **before** the record is written, so an
+/// unrouteable or malformed document never burns its `id`.
+///
+/// # Handlers
+///
+/// The dispatcher's return type is the handler's answer:
+/// `Result<TrustTask<R>, ErrorResponse>`, typically with `R = Value` so that
+/// handlers for different specifications can share one dispatcher. `context`
+/// receives the SPEC §4.8.1-resolved parties — what [`consume_inbound`] hands
+/// its handler — and returns the dispatcher's `Ctx`: `|parties| parties`
+/// where that is all a handler needs, or a tuple with shared state.
+///
+/// `error_id_factory` is invoked at most once, for whichever error response
+/// is built.
+#[allow(clippy::too_many_arguments)]
+pub async fn consume_dispatched<Ctx, R, T, V, W>(
+    transport: &T,
+    policy: ProofPolicy<'_, V>,
+    payload_policy: PayloadPolicy<'_, W>,
+    checks: ConsumeChecks<'_>,
+    dispatcher: &AsyncDispatcher<Ctx, Result<TrustTask<R>, ErrorResponse>>,
+    mut doc: TrustTask<Value>,
+    my_vid: &str,
+    now: DateTime<Utc>,
+    error_id_factory: impl FnOnce() -> String,
+    context: impl FnOnce(ResolvedParties) -> Ctx,
+) -> ConsumeOutcome<R>
+where
+    R: Serialize,
+    T: TransportHandler + Sync + ?Sized,
+    V: ProofVerifier + ?Sized,
+    W: PayloadValidator + ?Sized,
+{
+    // §7.2 item 3. Answered before anything else, as the HTTPS server does:
+    // there is no specification to apply the remaining checks under.
+    let (target, forwarded) = match dispatcher.route(&doc.type_uri) {
+        Ok(route) => route,
+        Err(reason) => return route_rejection(transport, &doc, reason, error_id_factory),
+    };
+    let facts = dispatcher.facts(&target);
+    let prune = |payload: &mut Value| {
+        if forwarded {
+            if let Some(schema) = facts.schema {
+                crate::extension::prune_payload(payload, schema);
+            }
+        }
+    };
+    prune(&mut doc.payload);
+
+    // The typed path's parse, done here so a payload the handler's `P` cannot
+    // hold is refused before the record rather than after it.
+    if let Err(reason) = (facts.check)(&doc.payload) {
+        return route_rejection(transport, &doc, reason, error_id_factory);
+    }
+
+    // One factory, two possible callers: the pipeline (a refusal before the
+    // handler) and the dispatch below (a refusal after it). Exactly one of
+    // them can need it, since a pipeline refusal returns without dispatching.
+    let ids = std::sync::Mutex::new(Some(error_id_factory));
+    let take_id = || {
+        ids.lock()
+            .ok()
+            .and_then(|mut factory| factory.take())
+            .map(|factory| factory())
+            .unwrap_or_default()
+    };
+
+    consume_core(
+        transport,
+        policy,
+        payload_policy,
+        checks,
+        doc,
+        my_vid,
+        now,
+        take_id,
+        SpecFacts {
+            policy: facts.policy,
+            schema: facts.schema,
+        },
+        // The proof was made over the document as received; the document being
+        // consumed is that one with its payload pruned along a forward route.
+        |received: &Value, doc: &TrustTask<Value>| {
+            let Ok(mut parsed) = serde_json::from_value::<TrustTask<Value>>(received.clone())
+            else {
+                return false;
+            };
+            prune(&mut parsed.payload);
+            match (serde_json::to_value(&parsed), serde_json::to_value(doc)) {
+                (Ok(a), Ok(b)) => a == b,
+                _ => false,
+            }
+        },
+        |doc: TrustTask<Value>, parties: ResolvedParties| {
+            let origin = RequestOrigin::of(&doc);
+            let ctx = context(parties);
+            async move {
+                match dispatcher.dispatch(doc, ctx).await {
+                    Ok(answer) => answer,
+                    // Unreachable in practice: routing, the payload parse and
+                    // the policy were all checked above, against the same
+                    // registration. Answered rather than assumed away.
+                    Err(reason) => Err(build_error_response(
+                        take_id(),
+                        origin,
+                        ErrorPayload::from(reason),
+                    )),
+                }
+            }
+        },
+    )
+    .await
+}
+
+/// What the per-specification checks of the pipeline read off the type being
+/// consumed: from `P` on the typed path, from the dispatcher's registration on
+/// the dispatched one. One struct, so the two paths run one body.
+struct SpecFacts {
+    policy: SpecPolicy,
+    schema: Option<&'static str>,
+}
+
+/// The body of [`consume_inbound`] and [`consume_dispatched`]. Everything that
+/// differs between a typed and a routed document is in `spec` and
+/// `is_received_form`; every check, its order, and the item-11 record are
+/// here once.
+#[allow(clippy::too_many_arguments)]
+async fn consume_core<P, R, T, V, W, F, Fut>(
+    transport: &T,
+    policy: ProofPolicy<'_, V>,
+    payload_policy: PayloadPolicy<'_, W>,
+    checks: ConsumeChecks<'_>,
+    doc: TrustTask<P>,
+    my_vid: &str,
+    now: DateTime<Utc>,
+    error_id_factory: impl FnOnce() -> String,
+    spec: SpecFacts,
+    is_received_form: impl FnOnce(&Value, &TrustTask<P>) -> bool,
+    handler: F,
+) -> ConsumeOutcome<R>
+where
+    P: Serialize + Send + Sync,
+    R: Serialize,
+    T: TransportHandler + Sync + ?Sized,
+    V: ProofVerifier + ?Sized,
+    W: PayloadValidator + ?Sized,
+    F: FnOnce(TrustTask<P>, ResolvedParties) -> Fut,
+    Fut: Future<Output = Result<TrustTask<R>, ErrorResponse>>,
+{
     let ConsumeChecks { freshness, replay } = checks;
     // §7.2 item 2 — payload schema. Runs first, in the spec's own order, and
     // before any check that consults the payload's meaning: a document whose
@@ -439,7 +637,7 @@ where
     // malformed rather than reasoned about. Deserialization into `P` already
     // carried most of this; see `PayloadPolicy` for what is left.
     if let PayloadPolicy::Validate(validator) = payload_policy {
-        if let Some(schema) = P::PAYLOAD_SCHEMA {
+        if let Some(schema) = spec.schema {
             match serde_json::to_value(&doc.payload) {
                 Ok(value) => {
                     if let Err(reason) = validator.validate(schema, &value) {
@@ -509,7 +707,7 @@ where
             }
         }
         (ProofPolicy::VerifyReceived(v, received), Some(_)) => {
-            let verified = if is_received_form_of(received, &doc) {
+            let verified = if is_received_form(received, &doc) {
                 v.verify_received(received).await
             } else {
                 Err(VerificationError::Other(
@@ -544,11 +742,12 @@ where
     }
 
     // §7.2 items 5b + 7A + 8 — the flag-driven per-spec checks, in one place
-    // (`TrustTask::enforce_spec_policy`) shared with binding pipelines such as
-    // the HTTPS server, so the typed check set cannot diverge between paths.
-    // The non-typed checks above (expiry, cross-check, proof verification) are
-    // applied per-pipeline; this runs after them.
-    if let Err(reason) = doc.enforce_spec_policy() {
+    // (`SpecPolicy::enforce`, which `TrustTask::enforce_spec_policy` also runs)
+    // shared with binding pipelines such as the HTTPS server, so the check set
+    // cannot diverge between paths. The non-typed checks above (expiry,
+    // cross-check, proof verification) are applied per-pipeline; this runs
+    // after them.
+    if let Err(reason) = spec.policy.enforce(&doc) {
         return route_rejection(transport, &doc, reason, error_id_factory);
     }
 

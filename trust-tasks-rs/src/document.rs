@@ -449,17 +449,25 @@ pub fn issued_at_now() -> DateTime<Utc> {
 /// The TypeScript counterpart is `TRUST_TASK_ERROR_TYPE_URI` in
 /// `trust-tasks-ts/src/_runtime/document.ts`, kept equal to this value.
 ///
-/// `0.5` because this library populates the `inResponseTo` member of §8.2 and
-/// can emit `idConflict` (§8.3), which is absent from `0.3`'s code enum and
-/// does not match its extended-code pattern — a document carrying it would not
-/// validate as `0.3`. Per §5.2 forward-minor compatibility a `0.3` consumer
-/// SHOULD accept it.
+/// `0.6` because this library populates the `inResponseTo` member of §8.2 and
+/// can emit every standard code `0.6` lists. Per §5.2 forward-minor
+/// compatibility a consumer of an earlier `0.x` SHOULD accept it, and `0.6`
+/// declares `extends: "0.5"`.
+///
+/// The value is [`TRUST_TASK_ERROR_TYPE_URI`], which is also
+/// [`ErrorPayload`]'s [`Payload::TYPE_URI`], so the URI an error response is
+/// stamped with and the URI its payload type routes on cannot differ.
 pub fn trust_task_error_type_uri() -> TypeUri {
-    // The `trust-task-error` slug is a framework-defined reserved name, so
-    // `TypeUri::canonical` accepts it.
-    TypeUri::canonical("trust-task-error", 0, 6)
-        .expect("trust-task-error/0.6 is a valid framework Type URI")
+    <ErrorPayload as Payload>::type_uri()
 }
+
+/// The `trust-task-error` Type URI this library emits — see
+/// [`trust_task_error_type_uri`], which parses it.
+///
+/// `check-bindings` reads the version from this line and holds it equal to
+/// `TRUST_TASK_ERROR_TYPE_URI` (TypeScript), `TrustTaskErrorTypeURI` (Go) and
+/// `trustTaskErrorTypeUri` (Dart).
+pub const TRUST_TASK_ERROR_TYPE_URI: &str = "https://trusttasks.org/spec/trust-task-error/0.6";
 
 impl fmt::Display for ErrorResponse {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

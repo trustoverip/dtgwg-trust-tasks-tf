@@ -1149,7 +1149,9 @@ for (const [uri, mod] of dartByUri) {
   const goSrc = fs.readFileSync(GO_DOC, "utf8");
   const dartSrc = fs.readFileSync(DART_DOC, "utf8");
 
-  const rsMatch = rsSrc.match(/TypeUri::canonical\("trust-task-error",\s*(\d+),\s*(\d+)\)/);
+  const rsMatch = rsSrc.match(
+    /TRUST_TASK_ERROR_TYPE_URI: &str\s*=\s*"https:\/\/trusttasks\.org\/spec\/trust-task-error\/(\d+)\.(\d+)"/,
+  );
   const tsMatch = tsSrc.match(
     /TRUST_TASK_ERROR_TYPE_URI\s*=\s*"https:\/\/trusttasks\.org\/spec\/trust-task-error\/(\d+\.\d+)"/,
   );
@@ -1168,7 +1170,7 @@ for (const [uri, mod] of dartByUri) {
   const dartVersion = dartMatch ? dartMatch[1] : null;
 
   if (!rsVersion) {
-    fail(path.relative(ROOT, RS_DOC), "no TypeUri::canonical(\"trust-task-error\", MAJOR, MINOR) found — trust_task_error_type_uri() is the crate's only statement of which error specification it emits");
+    fail(path.relative(ROOT, RS_DOC), "no TRUST_TASK_ERROR_TYPE_URI found — it is the crate's only statement of which error specification it emits (trust_task_error_type_uri() and ErrorPayload's Payload::TYPE_URI both read it)");
   }
   if (!tsVersion) {
     fail(path.relative(ROOT, TS_DOC), "no TRUST_TASK_ERROR_TYPE_URI found — it is the package's only statement of which error specification it emits");
@@ -1182,7 +1184,7 @@ for (const [uri, mod] of dartByUri) {
   }
 
   const emitted = [
-    ["trust-tasks-rs", rsVersion, "document.rs, trust_task_error_type_uri"],
+    ["trust-tasks-rs", rsVersion, "document.rs, TRUST_TASK_ERROR_TYPE_URI"],
     ["@openvtc/trust-tasks", tsVersion, "_runtime/document.ts, TRUST_TASK_ERROR_TYPE_URI"],
     ["trust-tasks-go", goVersion, "trusttasks/document.go, TrustTaskErrorTypeURI"],
     ["trust_tasks", dartVersion, "lib/src/runtime/document.dart, trustTaskErrorTypeUri"],
