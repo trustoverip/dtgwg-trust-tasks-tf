@@ -13,7 +13,7 @@ use affinidi_messaging_didcomm::{DIDCommAgent, Message, UnpackResult};
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use base64::Engine as _;
 use serde::{de::DeserializeOwned, Serialize};
-use trust_tasks_rs::{Payload, TrustTask};
+use trust_tasks_rs::TrustTask;
 
 use crate::error::DidcommError;
 use crate::handler::DidcommHandler;
@@ -34,6 +34,10 @@ pub const ENVELOPE_TYPE: &str = "https://trusttasks.org/binding/didcomm/0.1/enve
 /// (via `agent.add_identity` / `agent.add_peer` respectively).
 ///
 /// Returns the JWE-encoded string ready for transport.
+///
+/// `doc` may be any serializable document — a typed one, a
+/// `TrustTask<serde_json::Value>`, or the [`ErrorResponse`](trust_tasks_rs::ErrorResponse)
+/// a dispatcher returns.
 pub fn pack_trust_task<P>(
     doc: &TrustTask<P>,
     agent: &DIDCommAgent,
@@ -41,7 +45,7 @@ pub fn pack_trust_task<P>(
     recipient_did: &str,
 ) -> Result<String, DidcommError>
 where
-    P: Payload + Serialize,
+    P: Serialize,
 {
     let body = serde_json::to_value(doc).map_err(DidcommError::SerialiseBody)?;
     // Binding §3.1 — populate the DIDComm thread headers *from* the framework
@@ -100,13 +104,18 @@ where
 /// The returned [`DidcommHandler`] is ready to feed into
 /// [`TransportHandler::resolve_parties`](trust_tasks_rs::TransportHandler::resolve_parties),
 /// [`TrustTask::validate_basic`], and the rest of the §7.2 pipeline.
+///
+/// `P` is any deserializable payload: a generated type, or
+/// `serde_json::Value` for a consumer that routes on `type` itself — see
+/// [`DidcommConsumer::receive_dispatched`](crate::DidcommConsumer::receive_dispatched), which also keeps
+/// the §7.2 item 11 record.
 pub fn unpack_trust_task<P>(
     wire: &str,
     agent: &DIDCommAgent,
     expected_sender_did: Option<&str>,
 ) -> Result<(TrustTask<P>, DidcommHandler), DidcommError>
 where
-    P: Payload + DeserializeOwned,
+    P: DeserializeOwned,
 {
     unpack_received(wire, agent, expected_sender_did).map(|(doc, _, handler)| (doc, handler))
 }
@@ -119,7 +128,7 @@ pub(crate) fn unpack_received<P>(
     expected_sender_did: Option<&str>,
 ) -> Result<(TrustTask<P>, serde_json::Value, DidcommHandler), DidcommError>
 where
-    P: Payload + DeserializeOwned,
+    P: DeserializeOwned,
 {
     let (message, peer_did, local_did) = match agent.unpack(wire, expected_sender_did)? {
         UnpackResult::Encrypted {
@@ -385,7 +394,7 @@ pub fn unpack_trust_task_from<P>(
     allowlist: &SenderAllowlist,
 ) -> Result<(TrustTask<P>, DidcommHandler), DidcommError>
 where
-    P: Payload + DeserializeOwned,
+    P: DeserializeOwned,
 {
     unpack_received_from(wire, agent, allowlist).map(|(doc, _, handler)| (doc, handler))
 }
@@ -397,7 +406,7 @@ pub(crate) fn unpack_received_from<P>(
     allowlist: &SenderAllowlist,
 ) -> Result<(TrustTask<P>, serde_json::Value, DidcommHandler), DidcommError>
 where
-    P: Payload + DeserializeOwned,
+    P: DeserializeOwned,
 {
     let advertised = advertised_sender_did(wire)?;
     if !allowlist.permits(&advertised) {

@@ -14,7 +14,7 @@ use affinidi_tsp::{MessageType, PrivateVid, ResolvedVid};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use serde_json::json;
-use trust_tasks_rs::{Payload, TrustTask};
+use trust_tasks_rs::TrustTask;
 
 use crate::error::TspError;
 use crate::handler::TspHandler;
@@ -32,13 +32,17 @@ pub const ENVELOPE_TYPE: &str = "https://trusttasks.org/binding/tsp/0.1/envelope
 /// keys); `recipient` is the consumer's [`ResolvedVid`] (its public encryption
 /// key), as obtained from a TSP VID resolver. Returns the raw TSP message bytes
 /// (CESR qb2) ready for transport.
+///
+/// `doc` may be any serializable document — a typed one, a
+/// `TrustTask<serde_json::Value>`, or the [`ErrorResponse`](trust_tasks_rs::ErrorResponse)
+/// a dispatcher returns.
 pub fn pack_trust_task<P>(
     doc: &TrustTask<P>,
     sender: &PrivateVid,
     recipient: &ResolvedVid,
 ) -> Result<Vec<u8>, TspError>
 where
-    P: Payload + Serialize,
+    P: Serialize,
 {
     Ok(pack_inner_direct(doc, sender, recipient)?.bytes)
 }
@@ -60,7 +64,7 @@ pub fn pack_trust_task_nested<P>(
     intermediary: &ResolvedVid,
 ) -> Result<Vec<u8>, TspError>
 where
-    P: Payload + Serialize,
+    P: Serialize,
 {
     let inner = pack_inner_direct(doc, sender, recipient)?;
     let outer = routed::pack_nested(
@@ -92,7 +96,7 @@ pub fn pack_trust_task_routed<P>(
     onward_route: &[String],
 ) -> Result<Vec<u8>, TspError>
 where
-    P: Payload + Serialize,
+    P: Serialize,
 {
     let inner = pack_inner_direct(doc, sender, recipient)?;
     let routed = routed::pack_routed(
@@ -114,7 +118,7 @@ fn pack_inner_direct<P>(
     recipient: &ResolvedVid,
 ) -> Result<PackedMessage, TspError>
 where
-    P: Payload + Serialize,
+    P: Serialize,
 {
     let document = serde_json::to_value(doc).map_err(TspError::SerialiseBody)?;
     let envelope = json!({ "type": ENVELOPE_TYPE, "document": document });
@@ -142,13 +146,18 @@ where
 ///
 /// Rejects non-`Direct` carriage and any envelope whose cleartext sender does
 /// not match the verified `sender`, and verifies the envelope `type`.
+///
+/// `P` is any deserializable payload: a generated type, or
+/// `serde_json::Value` for a consumer that routes on `type` itself — see
+/// [`TspConsumer::receive_dispatched`](crate::TspConsumer::receive_dispatched), which also keeps
+/// the §7.2 item 11 record.
 pub fn unpack_trust_task<P>(
     wire: &[u8],
     recipient: &PrivateVid,
     sender: &ResolvedVid,
 ) -> Result<(TrustTask<P>, TspHandler), TspError>
 where
-    P: Payload + DeserializeOwned,
+    P: DeserializeOwned,
 {
     unpack_received(wire, recipient, sender).map(|(doc, _, handler)| (doc, handler))
 }
@@ -161,7 +170,7 @@ pub(crate) fn unpack_received<P>(
     sender: &ResolvedVid,
 ) -> Result<(TrustTask<P>, serde_json::Value, TspHandler), TspError>
 where
-    P: Payload + DeserializeOwned,
+    P: DeserializeOwned,
 {
     let unpacked = direct::unpack(wire, &recipient.decryption_key, &sender.signing_key)?;
 
