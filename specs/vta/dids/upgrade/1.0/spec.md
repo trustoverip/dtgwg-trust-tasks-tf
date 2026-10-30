@@ -108,15 +108,21 @@ The entry:
    every role and a routine update key with its committed successor; from level 2 to 3, the
    `attestation` keys and the routine update key and successor — by the new level's origin
    rules ([§5.1](../../_shared/0.1/CONVENTIONS.md#51-generated-and-derived-roles-and-why));
-2. **removes the keys it replaces** from every relationship and from `keyRoles`, retiring
-   them, or, with `previousKeys: revoke`, revoking them from `compromisedSince`;
+2. **settles the keys it replaces**, as `previousKeys` says: retiring them (RECOMMENDED),
+   revoking them from `compromisedSince`, or, from level 1 only, keeping the single key
+   as the `operational` key;
 3. **declares the new level** in `keyAssurance`, and at level 3 commits the recovery key and
    names a witness.
 
 No key keeps its place unless its custody already meets the new level. The single key of a
-level-1 identity takes no role: it has signed attestation artefacts and been held by the
-service process, so making it the `operational` key would let it go on being accepted, by
-anyone holding the old document, for what it may no longer sign (VTI-KEY-071).
+level-1 identity has signed attestation artefacts and been held by the service process, so
+it can never become an `attestation` or `update` key. It **SHOULD** be retired, because a
+raise is the natural moment for a clean cut. It **MAY** be kept, as the `operational` key
+and nothing else: that is the custody it already had, and VTI-KEY-201 keeps everything it
+signed before the raise an artefact of the lower level, which a verifier requiring the new
+level refuses whether the key is present or not. Keeping it spares the operator a traffic-key
+rotation and nothing more. The choice is a SHOULD rather than a MUST so that the cost of
+raising never includes a re-issue the operator did not need.
 
 The raise does not certify the identity's past. What the replaced keys signed stays an
 artefact of the lower level (VTI-KEY-201): a verifier that requires the new level refuses it,
@@ -145,9 +151,13 @@ A conforming **consumer** (the VTA) **MUST**:
 3. Mint a new routine update key and its committed successor by the new level's origin rules,
    and move the update authority to it in the same entry, authorized by the identity's
    current update authority.
-4. Remove every replaced key from its relationship and from `keyRoles`: retired, or with
-   `previousKeys: revoke` revoked as [§9.1](../../_shared/0.1/CONVENTIONS.md#91-how-a-revocation-is-recorded)
-   records, with `compromisedSince` required and not in the future.
+4. Settle every replaced key as `previousKeys` says. `retire`: remove it from its
+   relationship and from `keyRoles`, with overlap. `revoke`: revoke it as
+   [§9.1](../../_shared/0.1/CONVENTIONS.md#91-how-a-revocation-is-recorded) records, with
+   `compromisedSince` required and not in the future. `keep`: from level 1 only, leave the
+   single key in `authentication`, list it under `keyRoles.operational`, mint no other
+   `operational` key for its algorithm, and refuse `keep` from level 2
+   (`vta/dids:notApplicableToRole`). Recommend `retire` in the preview.
 5. Render `keyAssurance` with `toLevel`. At level 3: require `recoveryCommitment`, verify its
    proof of possession over the `previewId` and refuse a key in its own boundary
    (`vta/dids:recoveryCommitmentRequired`); name it in `keyAssurance.recoveryCommitment`;

@@ -365,6 +365,16 @@ A VTA creating a key-role identity **MUST**:
    when none is named.
 6. Do all of this under preview and approval (§6), so the approver sees the exact public
    keys and document.
+7. Honour the template's level floor. A template **MAY** carry, in `defaults`,
+   `"keyAssurance": { "level": <2|3>, "minimum": <1|2|3> }`. `level` is the default a
+   client offers when its caller names none; it binds no one. `minimum` binds: a VTA
+   **MUST** refuse a creation whose `assuranceLevel` is below it
+   (`vta/dids/create:assuranceLevelBelowTemplate`). A template cannot cap a level, so a
+   caller may always ask for more. This is the same one-way rule the template shape already
+   applies to `portable`: a template can tighten what a caller asked for, never loosen it.
+   The right level depends on what the service does — a mediator confers nothing, a
+   community's credentials are relied on for years — and the template is what knows which
+   kind of service it describes (VTI-KEY-196).
 
 A level-1 identity is not created by this family: it is what the method-specific creation
 tasks produce (for did:webvh, `vta/webvh/dids/create`), and what `upgrade` raises.

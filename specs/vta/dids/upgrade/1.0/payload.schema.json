@@ -36,9 +36,10 @@
       "type": "string",
       "enum": [
         "retire",
-        "revoke"
+        "revoke",
+        "keep"
       ],
-      "description": "What becomes of every key the raise replaces. `retire` — removed from the document; what it signed stays valid at the lower level (VTI-KEY-201). `revoke` — it may have been exposed: kept in `verificationMethod` with `revoked` set to `compromisedSince` (CONVENTIONS.md §9.1), and everything it signed must be re-issued. Stated explicitly, because the two have opposite effects on every credential in force."
+      "description": "What becomes of every key the raise replaces. `retire` (RECOMMENDED) — removed from the document with overlap; what it signed stays valid at the lower level (VTI-KEY-201). `revoke` — it may have been exposed: kept in `verificationMethod` with `revoked` set to `compromisedSince` (CONVENTIONS.md §9.1), and everything it signed must be re-issued. `keep` — from level 1 only: the single key stays, bound as the `operational` key and nothing else, the custody it already had; refused from level 2 (`vta/dids:notApplicableToRole`). Stated explicitly, because the three have different effects on every credential in force."
     },
     "compromisedSince": {
       "type": "string",

@@ -73,6 +73,9 @@ errorCodes:
   - code: "vta/dids:assuranceLevelMismatch"
     meaning: "A recovery commitment was given for a level-2 identity."
     retryable: false
+  - code: "vta/dids/create:assuranceLevelBelowTemplate"
+    meaning: "`assuranceLevel` is below the floor the template sets in `defaults.keyAssurance.minimum` (CONVENTIONS.md §4 item 7)."
+    retryable: false
   - code: "vta/dids:witnessRequired"
     meaning: "A level-3 identity under a method with witnesses, and `methodParameters` names no witness enforcing CONVENTIONS.md §5.4."
     retryable: false
@@ -139,8 +142,10 @@ A conforming **consumer** (the VTA) **MUST**:
    `methodParameters` against the profile's `CreateParameters`.
 2. Resolve `template` in `templateContext`'s scope (else the global scope) and refuse it
    unless it is a key-role template ([conventions §4](../../_shared/0.1/CONVENTIONS.md#4-creation)
-   items 1–2). Render its `document` with the VTA's template renderer, which checks the
-   variables, and with nothing that names a key.
+   items 1–2). Refuse `assuranceLevel` below the template's `defaults.keyAssurance.minimum`
+   (conventions §4 item 7, `vta/dids/create:assuranceLevelBelowTemplate`). Render its
+   `document` with the VTA's template renderer, which checks the variables, and with nothing
+   that names a key.
 3. Mint one key per algorithm per role in the layout, by the role's origin
    ([§5.1](../../_shared/0.1/CONVENTIONS.md#51-generated-and-derived-roles-and-why)),
    **when the preview is computed**, held `pending`. Refuse an algorithm it cannot mint for
