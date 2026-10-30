@@ -9,7 +9,7 @@ import type { Ext } from "../../../../_shared/components.js";
 /**
  * A member's own client asks the member's key holder to complete one host-bound room request — or one of the two requests by which a member takes up a community's offer of admission to a room — as the member: the member's own authority narrowed to the one action the request's type needs, the member as issuer, and the member's signature. The outer document members are owned by the framework — SPEC §6.3.
  *
- * @deprecated superseded by rooms/keys/act/0.8
+ * @deprecated superseded by rooms/keys/act/0.9
  */
 export interface RoomsKeysActPayload {
   document: UnsignedRoomRequest;
@@ -50,7 +50,7 @@ export interface UnsignedRoomRequest {
 /**
  * Success response to rooms/keys/act. Type https://trusttasks.org/spec/rooms/keys/act/0.5#response. The request, completed as the member, for the caller to send to its recipient unaltered.
  *
- * @deprecated superseded by rooms/keys/act/0.8
+ * @deprecated superseded by rooms/keys/act/0.9
  */
 export interface RoomsKeysActResponsePayload {
   /**
@@ -88,12 +88,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by rooms/keys/act/0.8";
+export const DEPRECATION: string | null = "superseded by rooms/keys/act/0.9";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by rooms/keys/act/0.8
+ * @deprecated superseded by rooms/keys/act/0.9
  */
 export type Payload = RoomsKeysActPayload;
 
@@ -103,7 +103,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/rooms/keys/act/0.5
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by rooms/keys/act/0.8
+ * @deprecated superseded by rooms/keys/act/0.9
  */
 export type Response = RoomsKeysActResponsePayload;
 
