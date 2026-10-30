@@ -11,6 +11,69 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.28.4 — 2026-10-30
+
+
+### Added
+
+- **vta/webvh/dids/update**: 1.1 lists or removes an existing log's did:scid alias (#992)
+
+* feat(vta/webvh/dids/update): 1.1 lists or removes an existing log's did:scid alias
+
+  Every did:webvh log is also a did:scid:vh:1 identity, but the two are distinct
+  subjects until the did:webvh document lists the did:scid DID URL in
+  alsoKnownAs (VTI-KEY-164). create/1.2 lists it in the first entry by default;
+  a log created before it, or without it, had no way to get it but sending a
+  whole replacement document with a hand-built DID URL — and the src encoding
+  (`%3A` for a port, `/` for each `:`) is exactly what a client gets wrong.
+
+  1.1 adds `scidAlsoKnownAs` (boolean): true lists the DID URL for the log's
+  current location (replacing one left from before a move), false removes
+  every did:scid entry naming this SCID. The agent derives the DID URL; the
+  caller never writes it. The response reports `scidAlsoKnownAs` and
+  `scidDidUrl`. New codes: `scidAliasRequired` (removing the alias of an
+  identity the agent presents as did:scid, VTI-KEY-166) and `noChange` (an
+  entry identical to the latest is not published, so the update key is not
+  rotated for nothing).
+
+  This is the pre-key-role path: vta/dids/update refuses every identity created
+  before key roles (notKeyRoleIdentity), which is every did:webvh DID that
+  exists today. Only adds, so 1.1 extends 1.0. All four bindings regenerated.
+
+- **peer-check**: Peer-check/ask 0.1 — a signed yes or no from a peer's own device (#973)
+
+* feat(peer-check): peer-check/ask 0.1 — a signed yes or no from a peer's own device
+
+  One party asks another a short question, such as "did you just ask me
+  for this?", over a channel they already share. The responder's device
+  prompts its user and returns a signed answer that echoes the challenge
+  and carries the task digest of the request, so the asker can verify it
+  against the responder's DID and it cannot be replayed against another
+  ask.
+
+  Draft. Specification, schema, negative examples and the regenerated Rust,
+  TypeScript, Go and Dart bindings.
+
+- **rooms/keys/act**: 0.9 completes rooms/records/put/0.4 (#990)
+
+rooms/records/put/0.4 (#987) lets a record on an open room carry a file,
+  its description and random file key in cleartext.file. 0.8's table is
+  closed (Recipient item 1) and names records/put at 0.1–0.3 only, so a
+  conforming key holder refuses 0.4 with typeNotActable: a member whose keys
+  their key holder holds could upload an open room's blob (upload/begin/0.2
+  is in the table) but never write the record that names it, and the blob
+  would sit unreferenced until collected.
+
+  0.9 adds rooms/records/put/0.4 to the put row, write, presentation
+  inserted, completed exactly as 0.3. The key holder neither mints nor checks
+  the file key: the producer mints it (put 0.4 Producer item 7), the host
+  checks the record (Host item 12), and the key holder signs what it was
+  handed unaltered (Recipient item 6).
+
+  Schemas are 0.8's and no error code is added; the table only widens, so
+  0.9 declares extends: "0.8" and every spec naming 0.8 stays current. All
+  four bindings regenerated.
+
 ## 0.28.3 — 2026-10-30
 
 
