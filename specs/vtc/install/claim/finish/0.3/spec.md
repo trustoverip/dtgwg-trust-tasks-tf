@@ -25,7 +25,7 @@ issuedAtRequirement:
   rationale: Claim completion binds an installation to its owner once. A replayed completion re-binds an installation that may have been transferred, and the claim is what every later authorisation in the community is rooted in.
 sideEffects:
   level: mutating
-  rationale: "Binds the founder's step-up approver, pending bootstrap, and mints a short-lived setup-session token; the administrator entry itself is written by vtc/admin/bootstrap."
+  rationale: "Binds the founder's step-up approver and mints a short-lived setup-session token. On a fresh community the binding waits for vtc/admin/bootstrap, which writes the administrator entry; on an invitation, whose administrator entry already exists, it takes effect here."
 exposure:
   discloses: secret
   ingests: metadata
@@ -94,8 +94,9 @@ A conforming **consumer** (the community), in this order:
 3. **MUST** resolve that DID afresh — not from a cache populated before this request — and verify the proof against a verification method of the **live** document, under the relationship its `proofPurpose` names ([SPEC §4.7.3](/SPEC.md#473-proof-purpose-and-verification-relationship)). Resolution failure → `didUnresolvable`; a verification method absent from the live document, or a proof that does not verify → the framework `proofInvalid`; a key that is not a verification method of the DID's own document → `subjectMismatch`. Material supplied in the request is never the document checked against.
 4. **MUST** verify `statement` as `attest/0.1` requires of its consumer, over the object exactly as received, with `issuer` equal to `approverDid`, `purpose` `enrol`, `subject` the founder's DID, `audience` and `recipient` its own DID, `challenge` the claim's and `boundTo` equal to `claimId` → `statementInvalid`.
 5. **MUST** refuse with `approverNotDistinct` when `approverDid` is the founder's DID or appears in the live document as a verification method.
-6. **MUST** consume the claim, bind the approver to the founder's DID with `enrolledVia: install`, and mint a setup-session token (aud=vtc-install-session, 5-minute TTL) that names the founder's DID, atomically. The binding **MUST** take effect only when vtc/admin/bootstrap consumes that token and writes the administrator entry, and **MUST** be discarded if the token expires unused, so an abandoned claim leaves no factor behind.
-7. **MUST** record an audit event naming the founder's DID, the approver DID and the install token's jti.
+6. **MUST** consume the claim, bind the approver to the founder's DID with `enrolledVia: install`, and mint a setup-session token (aud=vtc-install-session, 5-minute TTL) that names the founder's DID, atomically. On a community with no administrator, the binding **MUST** take effect only when vtc/admin/bootstrap consumes that token and writes the administrator entry, and **MUST** be discarded if the token expires unused, so an abandoned claim leaves no factor behind.
+7. **MUST**, when the community already has an administrator — the install token is an invitation of an additional administrator under a DID it names ([`vtc/admin/invites/create`](../../../../admin/invites/create/0.1/spec.md)), whose administrator entry the invitation wrote — make the binding take effect here, with the claim, since [`vtc/admin/bootstrap`](../../../../admin/bootstrap/0.1/spec.md) is single-use and answers `alreadyBootstrapped` on such a community. The invited administrator leaves the claim able to answer step-ups, as a founder leaves bootstrap. The setup-session token is still minted and returned; it confers nothing on such a community.
+8. **MUST** record an audit event naming the founder's DID, the approver DID and the install token's jti.
 
 A co-administrator named at install claims the same way, with a token naming their DID.
 
@@ -188,7 +189,7 @@ The community answers with the sub-schema reachable via `$anchor: "response"`, a
 
 **The founder's first factor rests on the install token, not on their key.** Binding a step-up approver on the strength of the founder's own signature would let whoever stole that key mint a factor for it. Here the anchor is the operator's token and claim code; the founder's signature only attributes the claim, and the statement only proves possession.
 
-**An abandoned claim leaves nothing.** The approver binding takes effect with the administrator entry, so a claim whose bootstrap never runs leaves neither an administrator nor a factor.
+**An abandoned claim leaves nothing.** The approver binding takes effect with the administrator entry, so a claim whose bootstrap never runs leaves neither an administrator nor a factor. An invitation's administrator entry exists before the claim, written by the invitation, so its binding takes effect at the claim (consumer item 7): waiting for a bootstrap that the community refuses would leave the invited administrator with no factor at all.
 
 **Free text.** `label` is bounded at 64 characters, authored by the founder and untrusted; it is retained with the binding.
 
