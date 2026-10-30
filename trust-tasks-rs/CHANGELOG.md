@@ -31,6 +31,73 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.36.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.36.2...trust-tasks-rs-v0.36.3) — 2026-10-30
+
+
+### Added
+
+- **rooms/records/put**: 0.4 lets an open room's record carry a file ([#987](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/987))
+
+An open room could hold notes and nothing else. A file's description
+  (FileManifest) could only travel inside a sealed record body, and its key could
+  only be derived from the room's per-epoch storage key, and an open room has
+  neither: no sealed body, and no group to derive a key from. rooms/blobs/* never
+  cared about the tier; the gap was entirely on the record side.
+
+  - rooms/records/put/0.4 (extends 0.3): cleartext gains an optional `file`, a
+    FileManifest, and `blobs` may name that file's blob. On an open room the
+    host, which can read the record, refuses with malformedRequest a record whose
+    `blobs` is not exactly `cleartext.file.blobRef`, names a blob without a
+    `file`, or whose `file` carries no `fileKey`.
+  - rooms/_shared/0.1 FileManifest gains an optional `fileKey` (additive): on an
+    open room the uploader mints the file key at random for that one file and
+    carries it there; it MUST be absent from a sealed body, where the key is
+    derived. Padding, STREAM, associated data and reading are unchanged, so
+    there is one blob format and one reader for every tier. The key in the clear
+    withholds nothing from the host, which the open tier never did, but keeps
+    the stored blob opaque to a party holding only the storage.
+  - The descriptions of `name` and `digest` now say what holds on each tier.
+
+  All four bindings regenerated.
+
+- **vtc/admin/invites**: Create and list 0.2 — passkey invitations, with did optional ([#989](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/989))
+
+* feat(vtc/admin/invites): create and list 0.2 — passkey invitations, with did optional
+
+  vtc/admin/invites/create 0.1 required `did`, so an administrator could invite
+  only someone who already held a DID in a wallet; a passkey invitation — whose
+  administrator DID is derived from the passkey registered at
+  vtc/install/claim/passkey/finish 0.1 — could be issued only by the operator on
+  the host.
+
+  create 0.2:
+  - `did` is optional. Present: a wallet invitation (claimed with
+    vtc/install/claim/{start,finish} 0.3). Absent: a passkey invitation.
+  - `did`, when present, must begin `did:`.
+  - Both kinds confer the same authority: an administrator entry with the
+    community's full administrative authority, delegated by the inviter,
+    labelled with `label`. A wallet invitation writes it now for a DID with no
+    entry; a passkey invitation records it with the invitation and
+    passkey/finish item 9 writes it for the derived DID.
+  - A passkey invitation costs what an entry-writing wallet invitation costs
+    (the inviter's step-up, another administrator's consent): at its claim no
+    administrator is present to authorise it, so issuing it is the grant.
+  - The response gains a required `kind` (`wallet` | `passkey`);
+    `aclEntryCreated` is always false for a passkey invitation.
+
+  list 0.2 (with vtc/_shared/0.2/invite): each InviteSummary gains a required
+  `kind`; a passkey invitation's `targetDid` is absent until it is consumed, then
+  the derived DID.
+
+  revoke is unchanged (it takes only `jti`); its prose now links the 0.2
+  versions.
+
+- **vta/dids**: Method-neutral key-role family, creation and recovery, with per-method profiles ([#986](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/986))
+
+* feat(vta/dids): method-neutral key-role family, creation and recovery, with per-method profiles
+
+
+
 ## [0.36.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.36.1...trust-tasks-rs-v0.36.2) — 2026-10-29
 
 
