@@ -317,3 +317,41 @@ The response reports the entry and both forms:
   }
 }
 ```
+
+## Security & Privacy
+
+### Data carried
+
+The request carries the subject DID, an optional proposed document, method
+parameters, an audit label, the concurrency precondition and the alias flag. It
+carries no key material: the agent holds the update key and is never given
+another. The response carries the new version id, key counts, the published
+entry and both forms of the identity. The document and the log are public by
+construction. A producer **MUST NOT** put secrets in `label`, which is recorded
+for audit.
+
+Every published entry moves the update key to its committed successor. Listing
+or removing the alias is no exception, which is why the agent refuses an entry
+that would change nothing (`noChange`) rather than rotate the key for it.
+
+### Correlation
+
+Listing the `did:scid` alias tells every resolver of the `did:webvh` form that
+the subject also answers to the `did:scid` DID, and the reverse, from the
+version that lists it. A subject that wants the two kept apart does not list it,
+or removes it; removal ends the link for later versions but cannot withdraw the
+versions that stated it, which stay in the public log.
+
+### Retention
+
+The published entry is permanent: it can be superseded, never retracted. The
+agent's audit record keeps who asked for the update, against which version, and
+with what label.
+
+### Consent/purpose
+
+The request is made for one purpose, changing the named identity's published
+state. A consent surface showing it to a person **MUST** say that publishing
+rotates the identity's update key, including when the only change asked for is
+the alias, and **SHOULD** say which form the identity will be linked to and from
+which version.
