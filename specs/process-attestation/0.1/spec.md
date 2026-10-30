@@ -60,6 +60,28 @@ retention:
   rationale: >-
     A Verifier retains the response as its record of the determination it relied
     on, and the value of that record is precisely that it outlives the exchange.
+outcomeEvidence:
+  response: https://trusttasks.org/spec/process-attestation/0.1#response
+  binding:
+    challenge:
+      initiating: /payload/challenge
+      response: /payload/challenge
+  rationale: >-
+    A Verifier retains the response as its record that an attestation exchange
+    about this artifact completed, and a party outside the exchange — an
+    authorship credential's `taskContext`, a publisher's audit record — may cite
+    it. The response reproduces, under the Holder's proof, the challenge the
+    request freshly supplied. The challenge form is permitted (SPEC §7.3 item
+    20.5.2) because the Verifier that minted the challenge is the party whose
+    record the citation rests on.
+maxDocumentBytes:
+  response: 294912
+  rationale: >-
+    The largest member a response can carry is an inline receipt,
+    `receiptReference.data`, bounded at 262144 characters of base64url text. The
+    rest of the document — artifact, challenge, assessment, disclosed aggregates
+    and the proof — fits in the remaining 32 KiB. A receipt larger than the inline
+    bound MUST use the `uri` form, so no chunked transfer is needed.
 errorCodes: []
 related:
   - trust-ceremony-receipt
@@ -116,6 +138,8 @@ A conforming Holder:
 5. MUST NOT include `assessment`, `receiptReference` or `disclosed` when `result`
    is `unavailable`.
 6. MUST attach a `proof` to the response.
+7. SHOULD include `digestMultibase` in a `uri` receipt reference, computed over
+   the exact bytes the URI serves.
 
 A conforming Verifier:
 
@@ -131,6 +155,12 @@ A conforming Verifier:
    relying on `assessment`, and MUST NOT rely on `assessment` unless the receipt
    binds the same artifact the request identified.
 5. MUST NOT infer from `unavailable` that no receipt exists.
+6. MUST, where `receiptReference.digestMultibase` is present, compare it against
+   the digest of the receipt bytes it dereferences before relying on them, and
+   MUST treat a mismatch as unverifiable.
+7. MUST NOT treat the `integrity` disclosure category as verification of the
+   receipt. Its members are the Holder's own report of its receipt's state; rule 4
+   is what verifies the receipt.
 
 ## Authorization
 
@@ -218,13 +248,27 @@ The payload members:
   to mean.
 - **`receiptReference`** is present only when `result` is `attested`. It is a tagged
   union of `uri` and `inline`; `inline` exists for Verifiers that cannot dereference
-  a URI at verification time and is bounded accordingly.
+  a URI at verification time and is bounded accordingly. The `uri` form SHOULD
+  carry `digestMultibase`, the digest of the receipt bytes the URI serves: the
+  response's proof covers the URI, not what the URI serves, so without it the
+  retained response cannot later show which receipt it referred to (Verifier
+  rule 6). A response carrying an inline receipt is bounded at 294912 bytes
+  ([SPEC §7.3 item 21](/SPEC.md#73-specification-requirements)); the front matter
+  declares it, and a consumer MUST NOT refuse a smaller response on size alone.
 - **`disclosed`** carries the requested categories, and only those.
 
 `unavailable` is a task-level **result**, not the [SPEC §8.3](/SPEC.md#83-standard-error-codes)
 error code that shares its spelling. A result travels in a `#response` document and
 means the Holder answered; the error code travels in a `trust-task-error` document
 and means it did not. Do not map one onto the other.
+
+A Verifier's retained response is this exchange's *outcome evidence*
+([SPEC §4.9.4](/SPEC.md#494-evidence-that-a-cited-exchange-completed)). The front
+matter declares how it is bound to the request: the response reproduces, under the
+Holder's proof, the `challenge` the request freshly supplied
+([SPEC §7.3 item 20](/SPEC.md#73-specification-requirements)). A credential or
+record that cites this exchange names the request's `id` and relies on that
+reproduction; sharing a `threadId` is not a binding.
 
 Malformed requests, unsupported versions, and a missing required proof are answered
 with `trust-task-error` carrying the standard §8.3 codes (`malformedRequest`,
@@ -249,14 +293,14 @@ specification defines no extended error codes of its own.
       "algorithm": "sha-256"
     },
     "assessment": {
-      "primitive": "https://lf-decentralized-trust-labs.github.io/proof-of-effort/",
-      "determination": "V1_VerifiedHuman",
-      "confidence": 94
+      "primitive": "https://writerslogic.com/.well-known/rats-eat-profile-pop-1.0.json",
+      "determination": "authentic"
     },
     "receiptReference": {
       "type": "uri",
       "uri": "https://evidence.author.example/r/4b8e1f05.cpoe",
-      "mediaType": "application/cpoe+cose"
+      "mediaType": "application/cpoe+cbor",
+      "digestMultibase": "zQmetCf1LCufxasVAmp4cSBLsbD7wdQJkj6wxFjc3Mkhnuy"
     },
     "disclosed": {
       "document": {
@@ -321,7 +365,7 @@ request never reached task semantics and no `#response` document is produced.
 ```json
 {
   "id": "c05f9a3b-71d4-4e28-9a6f-3e8b0d52147c",
-  "type": "https://trusttasks.org/spec/trust-task-error/0.5",
+  "type": "https://trusttasks.org/spec/trust-task-error/0.6",
   "issuer": "did:web:author.example",
   "recipient": "did:web:verifier.example",
   "issuedAt": "2026-09-09T14:02:12Z",
@@ -337,6 +381,58 @@ request never reached task semantics and no `#response` document is produced.
 `retryable` is `true` because the Verifier can reissue with a conforming challenge.
 A Verifier MUST NOT read this as `unavailable`: an error means the Holder did not
 answer the question, not that it has no receipt.
+
+## Profile: CPoE
+
+This section is informative. It states how a Holder whose capture primitive is
+Cryptographic Proof of Effort (CPoE — the `proof-of-effort` specifications and
+the WritersProof implementation) fills the members this specification leaves to
+the primitive, so that two implementations of this task over CPoE agree.
+
+**`assessment.primitive`** is
+`https://writerslogic.com/.well-known/rats-eat-profile-pop-1.0.json`, the
+profile under which a CPoE attestation result is issued. The document is
+dereferenceable and self-describing. The `urn:ietf:params:` identifiers the
+CPoE drafts name are not registered and are not used here.
+
+**`assessment.determination`** is the attestation result's verdict: one of
+`authentic`, `inconclusive`, `suspicious` or `invalid`. The six-value forensic
+ladder a CPoE verifier computes internally is not a wire vocabulary — its top
+rung is unreachable for a third-party verifier — and a Holder does not carry it
+here. `assessment.confidence` is omitted: CPoE defines no numeric confidence for
+a verdict.
+
+**`receiptReference`** names one of two objects, told apart by `mediaType`:
+
+| Receipt | `mediaType` | Extension | What a Verifier verifies |
+|---|---|---|---|
+| Evidence packet | `application/cpoe+cbor` | `.cpoe` | The packet under the CPoE protocol specification; the Verifier appraises it itself. |
+| C2PA manifest store | `application/c2pa` | `.c2pa` | The manifest's claim signature and its hard binding to the artifact, with the evidence carried in a `com.writerslogic.process-proof` assertion (the label proposed to CAWG as `cawg.process-proof`). Preferred where the Verifier already runs a C2PA validator: the hard binding establishes that the receipt binds the artifact asked about (Verifier rule 4) without parsing CPoE. |
+
+A Holder serving the `uri` form sets `digestMultibase` over the bytes served
+(Holder rule 7).
+
+**An artifact that carries its own receipt.** A text document with a proof block
+appended, or a file with an embedded C2PA manifest, is delivered with its manifest
+inside it. `artifact.digest` is then over the delivered bytes, block included, and
+the Holder presents the extracted manifest store as the `application/c2pa` receipt.
+Verifier rule 4 is discharged by the manifest's hard binding — `c2pa.hash.data`
+with the block's range excluded — and not by comparing the receipt's digest with the
+artifact's. The evidence packet inside that manifest commits to the document text
+without the block, so for such an artifact the packet on its own is not the receipt.
+
+**Disclosure categories** map as follows:
+
+| Category | Members | CPoE source |
+|---|---|---|
+| `document` | `mediaType` | The media type recorded for the tracked document. |
+| `timeline` | `startedAt`, `endedAt`, `checkpointCount` | The packet's session start, its creation instant, and its checkpoint count. |
+| `integrity` | `chainValid`, `signatureValid`, `keyCustody` | The Holder's own appraisal of the checkpoint chain and packet signature, and the custody of the signing key: `software` for a software-only key, `tpm` for a TPM-resident key, `secureEnclave` for an Apple Secure Enclave key. A report, not a verification (Verifier rule 7). |
+| `anchors` | `kind`, `anchoredAt` | One entry per external time anchor: `rfc3161` for a timestamp-authority response, `opentimestamps` for an OpenTimestamps proof, `roughtime` for a Roughtime sample, `blockchain` for a direct chain anchor. |
+
+Raw behavioural samples, keystroke timing and behavioural fingerprints never
+leave the Holder — the same commitment the CPoE evidence packet and the
+`com.writerslogic.process-proof` assertion make.
 
 ## Security & Privacy
 

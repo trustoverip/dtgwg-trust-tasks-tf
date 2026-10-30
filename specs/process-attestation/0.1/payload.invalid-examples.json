@@ -51,5 +51,174 @@
       "artifact": { "digest": "hcHFbGVGLXVQqZ8mRk2vN4pT7sYwD1jB6xK0aC3eI9M" },
       "challenge": "9tKpX2mQzR7vLbN4hJ8cWfA6dY0sE5uT3gO1iZ"
     }
+  },
+  {
+    "note": "Attested result without `assessment`. The determination is what an attested response exists to carry; an attested result that omits it is not a weaker answer but a malformed one.",
+    "variant": "response",
+    "payload": {
+      "result": "attested",
+      "challenge": "9tKpX2mQzR7vLbN4hJ8cWfA6dY0sE5uT3gO1iZ",
+      "artifact": { "digest": "hcHFbGVGLXVQqZ8mRk2vN4pT7sYwD1jB6xK0aC3eI9M", "algorithm": "sha-256" },
+      "receiptReference": {
+        "type": "uri",
+        "uri": "https://evidence.author.example/r/4b8e1f05.cpoe",
+        "mediaType": "application/cpoe+cbor"
+      }
+    }
+  },
+  {
+    "note": "Attested result without `receiptReference`. Verifier rule 4 cannot run on an assessment that names no receipt to verify it against.",
+    "variant": "response",
+    "payload": {
+      "result": "attested",
+      "challenge": "9tKpX2mQzR7vLbN4hJ8cWfA6dY0sE5uT3gO1iZ",
+      "artifact": { "digest": "hcHFbGVGLXVQqZ8mRk2vN4pT7sYwD1jB6xK0aC3eI9M", "algorithm": "sha-256" },
+      "assessment": {
+        "primitive": "https://writerslogic.com/.well-known/rats-eat-profile-pop-1.0.json",
+        "determination": "authentic"
+      }
+    }
+  },
+  {
+    "note": "`unavailable` carrying `assessment`. The Unavailable branch closes over its three members (additionalProperties: false), so a Holder cannot disclose a determination while claiming to have none — Holder rule 5.",
+    "variant": "response",
+    "payload": {
+      "result": "unavailable",
+      "challenge": "9tKpX2mQzR7vLbN4hJ8cWfA6dY0sE5uT3gO1iZ",
+      "artifact": { "digest": "hcHFbGVGLXVQqZ8mRk2vN4pT7sYwD1jB6xK0aC3eI9M", "algorithm": "sha-256" },
+      "assessment": {
+        "primitive": "https://writerslogic.com/.well-known/rats-eat-profile-pop-1.0.json",
+        "determination": "authentic"
+      }
+    }
+  },
+  {
+    "note": "`disclosed` on an `unavailable` result. Same rule: nothing is disclosed about a receipt the Holder says it does not hold.",
+    "variant": "response",
+    "payload": {
+      "result": "unavailable",
+      "challenge": "9tKpX2mQzR7vLbN4hJ8cWfA6dY0sE5uT3gO1iZ",
+      "artifact": { "digest": "hcHFbGVGLXVQqZ8mRk2vN4pT7sYwD1jB6xK0aC3eI9M", "algorithm": "sha-256" },
+      "disclosed": { "document": { "mediaType": "text/markdown" } }
+    }
+  },
+  {
+    "note": "`result` outside the two defined values. `result` is the branch discriminator; a third value matches neither branch of the oneOf.",
+    "variant": "response",
+    "payload": {
+      "result": "pending",
+      "challenge": "9tKpX2mQzR7vLbN4hJ8cWfA6dY0sE5uT3gO1iZ",
+      "artifact": { "digest": "hcHFbGVGLXVQqZ8mRk2vN4pT7sYwD1jB6xK0aC3eI9M", "algorithm": "sha-256" }
+    }
+  },
+  {
+    "note": "`confidence` above 100. An integer percentage is bounded at both ends; 101 is a producer bug, not a very confident primitive.",
+    "variant": "response",
+    "payload": {
+      "result": "attested",
+      "challenge": "9tKpX2mQzR7vLbN4hJ8cWfA6dY0sE5uT3gO1iZ",
+      "artifact": { "digest": "hcHFbGVGLXVQqZ8mRk2vN4pT7sYwD1jB6xK0aC3eI9M", "algorithm": "sha-256" },
+      "assessment": {
+        "primitive": "https://writerslogic.com/.well-known/rats-eat-profile-pop-1.0.json",
+        "determination": "authentic",
+        "confidence": 101
+      },
+      "receiptReference": {
+        "type": "uri",
+        "uri": "https://evidence.author.example/r/4b8e1f05.cpoe",
+        "mediaType": "application/cpoe+cbor"
+      }
+    }
+  },
+  {
+    "note": "Inline receipt `data` is standard base64 with padding. The pattern is base64url unpadded, so a producer emitting standard base64 is rejected rather than decoded to different bytes.",
+    "variant": "response",
+    "payload": {
+      "result": "attested",
+      "challenge": "9tKpX2mQzR7vLbN4hJ8cWfA6dY0sE5uT3gO1iZ",
+      "artifact": { "digest": "hcHFbGVGLXVQqZ8mRk2vN4pT7sYwD1jB6xK0aC3eI9M", "algorithm": "sha-256" },
+      "assessment": {
+        "primitive": "https://writerslogic.com/.well-known/rats-eat-profile-pop-1.0.json",
+        "determination": "authentic"
+      },
+      "receiptReference": { "type": "inline", "mediaType": "application/cpoe+cbor", "data": "AQID+/8=" }
+    }
+  },
+  {
+    "note": "Receipt `digestMultibase` is bare hex. The framework DigestMultibase definition requires a multibase-encoded multihash so the algorithm travels in-band; raw hex hard-codes one.",
+    "variant": "response",
+    "payload": {
+      "result": "attested",
+      "challenge": "9tKpX2mQzR7vLbN4hJ8cWfA6dY0sE5uT3gO1iZ",
+      "artifact": { "digest": "hcHFbGVGLXVQqZ8mRk2vN4pT7sYwD1jB6xK0aC3eI9M", "algorithm": "sha-256" },
+      "assessment": {
+        "primitive": "https://writerslogic.com/.well-known/rats-eat-profile-pop-1.0.json",
+        "determination": "authentic"
+      },
+      "receiptReference": {
+        "type": "uri",
+        "uri": "https://evidence.author.example/r/4b8e1f05.cpoe",
+        "mediaType": "application/cpoe+cbor",
+        "digestMultibase": "2d711642b726b04401627ca9fbac32f5c8530fb1903cc4db02258717921a4881"
+      }
+    }
+  },
+  {
+    "note": "Unknown `keyCustody`. The custody enum is closed so a primitive cannot invent a tier a Verifier's policy has never ranked.",
+    "variant": "response",
+    "payload": {
+      "result": "attested",
+      "challenge": "9tKpX2mQzR7vLbN4hJ8cWfA6dY0sE5uT3gO1iZ",
+      "artifact": { "digest": "hcHFbGVGLXVQqZ8mRk2vN4pT7sYwD1jB6xK0aC3eI9M", "algorithm": "sha-256" },
+      "assessment": {
+        "primitive": "https://writerslogic.com/.well-known/rats-eat-profile-pop-1.0.json",
+        "determination": "authentic"
+      },
+      "receiptReference": {
+        "type": "uri",
+        "uri": "https://evidence.author.example/r/4b8e1f05.cpoe",
+        "mediaType": "application/cpoe+cbor"
+      },
+      "disclosed": {
+        "integrity": { "chainValid": true, "signatureValid": true, "keyCustody": "hsm" }
+      }
+    }
+  },
+  {
+    "note": "Unknown anchor `kind`. Anchors are an enum so a Verifier knows which verification procedure each entry calls for; `ntp` is not an anchor.",
+    "variant": "response",
+    "payload": {
+      "result": "attested",
+      "challenge": "9tKpX2mQzR7vLbN4hJ8cWfA6dY0sE5uT3gO1iZ",
+      "artifact": { "digest": "hcHFbGVGLXVQqZ8mRk2vN4pT7sYwD1jB6xK0aC3eI9M", "algorithm": "sha-256" },
+      "assessment": {
+        "primitive": "https://writerslogic.com/.well-known/rats-eat-profile-pop-1.0.json",
+        "determination": "authentic"
+      },
+      "receiptReference": {
+        "type": "uri",
+        "uri": "https://evidence.author.example/r/4b8e1f05.cpoe",
+        "mediaType": "application/cpoe+cbor"
+      },
+      "disclosed": { "anchors": [{ "kind": "ntp", "anchoredAt": "2026-09-08T11:50:00Z" }] }
+    }
+  },
+  {
+    "note": "Response `challenge` below the 16-character floor. The response echoes the request's challenge, and the floor applies on both sides so a Holder cannot shorten what it echoes.",
+    "variant": "response",
+    "payload": {
+      "result": "attested",
+      "challenge": "tooshort",
+      "artifact": { "digest": "hcHFbGVGLXVQqZ8mRk2vN4pT7sYwD1jB6xK0aC3eI9M", "algorithm": "sha-256" },
+      "assessment": {
+        "primitive": "https://writerslogic.com/.well-known/rats-eat-profile-pop-1.0.json",
+        "determination": "authentic"
+      },
+      "receiptReference": {
+        "type": "uri",
+        "uri": "https://evidence.author.example/r/4b8e1f05.cpoe",
+        "mediaType": "application/cpoe+cbor"
+      }
+    }
   }
 ]
