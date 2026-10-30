@@ -1,0 +1,79 @@
+{
+  "slug": "understanding/proof-of-understanding",
+  "version": "0.1",
+  "title": "Proof of Understanding",
+  "summary": "A joining party is offered the terms that would govern an engagement, demonstrates it understood them, and the two parties seal a bilateral agreement whose propose/accept/counter-once/refuse shape follows IEEE 7012-2025 clause 5's handshake — extended, in the spirit of that standard, to any two parties this framework connects rather than only an individual and an organization. See understanding/seal's own Relationship to IEEE 7012-2025 section for exactly what follows the standard and what this specification adds or departs from, including a disclosed departure from 7012's neutral-roster assumption.",
+  "status": "draft",
+  "targetFrameworkVersion": "0.6.0",
+  "authors": [
+    "Brendan A. Miller (code+os@brendanmiller.com)"
+  ],
+  "keywords": [
+    "understanding",
+    "myterms",
+    "ieee-7012",
+    "consent",
+    "onboarding",
+    "governance"
+  ],
+  "roles": {
+    "joining-party": {
+      "description": "The person, organization, or agent seeking to begin an engagement. Takes IEEE 7012-2025's first-party/proposer role throughout, per understanding/seal's Relationship to IEEE 7012-2025 section.",
+      "cardinality": "one"
+    },
+    "host": {
+      "description": "The party whose relationship requirements would govern the engagement. Takes IEEE 7012-2025's second-party/responder role throughout.",
+      "cardinality": "one"
+    }
+  },
+  "steps": {
+    "offer": {
+      "kind": "task",
+      "type": "https://trusttasks.org/spec/understanding/offer/0.1",
+      "issuer": "joining-party",
+      "recipient": "host",
+      "description": "The joining party asks to begin an engagement; the host responds with a resolvable, versioned, hash-pinned reference to the terms that would govern it. Opens the enactment.",
+      "prev": []
+    },
+    "exchange": {
+      "kind": "task",
+      "type": "https://trusttasks.org/spec/understanding/exchange/0.1",
+      "issuer": "joining-party",
+      "recipient": "host",
+      "description": "The joining party answers from the offered terms, demonstrating comprehension rather than merely acknowledging receipt; the host records whether the answers show it. This comprehension check is this framework's own addition and is not itself required or addressed by IEEE 7012-2025, whose own approach to making a choice safe without testing it is to keep the roster of possible agreements small rather than examine understanding of the one picked.",
+      "prev": ["offer"]
+    },
+    "seal": {
+      "kind": "task",
+      "type": "https://trusttasks.org/spec/understanding/seal/0.1",
+      "issuer": "joining-party",
+      "recipient": "host",
+      "description": "The two parties record a bilateral agreement grounded in the passed exchange. The host may accept, refuse, or counter with exactly one alternative agreement; a countered proposal may be answered with at most one further request re-proposing the countered terms — IEEE 7012-2025 §5.3.1's three-way choice (accept, a single alternative, reject) under §5.2.2's rule that there is no negotiation beyond the single choice by either party. Every decision — accepted, countered or refused — is carried in this step's success response as `decision` (SPEC §8, \"A decision is not a failure\"). This ceremony's completion predicate (below) checks only that the seal step's exchange is present, per this evidence layer's own limits (it cannot express a check over response content) — a relying party MUST additionally confirm, from the step's own documents, that its terminal document is the understanding/seal/0.1#response that decides the request it names and carries `decision: \"accepted\"`, since ceremony-level completion alone does not distinguish a sealed agreement from a refused or countered-and-abandoned one.",
+      "prev": ["exchange"],
+      "terminal": true,
+      "compensatable": false
+    }
+  },
+  "completion": {
+    "allOf": ["offer", "exchange", "seal"]
+  },
+  "evidence": {
+    "level": "chained"
+  },
+  "maxDuration": "P1D",
+  "enactmentPrivacy": "shared",
+  "sideEffects": {
+    "level": "mutating",
+    "rationale": "max() over the steps: exchange records an outcome and seal records the host's decision on a bilateral agreement (accepted, countered or refused). offer alone has no side effect. No step in this ceremony is destructive."
+  },
+  "exposure": {
+    "discloses": "metadata",
+    "actsAsSubject": false,
+    "rationale": "max() over the steps: offer, exchange, and seal each disclose only metadata — terms references, comprehension answers, and the agreement reference (or, on the error paths, a refusal or a counter-proposal, also metadata-only). This ceremony no longer includes a step that discloses secret material or acts as the subject of an access grant; graduated access following a seal is out of scope for this ceremony (see understanding/seal's Abstract) and is expected to be conferred separately by a Verifiable Authority Credential citing this ceremony's seal step, not modeled here. enactmentPrivacy is shared because all three steps reach the same two parties, and a single correlatable record of the engagement is the point: it is what makes the seal citable as evidence (see understanding/seal's Correlation section)."
+  },
+  "related": [
+    "understanding/offer",
+    "understanding/exchange",
+    "understanding/seal"
+  ]
+}

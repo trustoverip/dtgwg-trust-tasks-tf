@@ -65,6 +65,7 @@ all-specs = [
     "rooms",
     "sync",
     "task-consent",
+    "understanding",
     "vault",
     "vetting",
     "voting",
@@ -100,6 +101,7 @@ registry = []
 rooms = []
 sync = []
 task-consent = []
+understanding = []
 vault = []
 vetting = []
 voting = []
