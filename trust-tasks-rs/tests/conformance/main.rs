@@ -1987,6 +1987,7 @@ mod vta {
             }
             mod update {
                 mod v1_0;
+                mod v1_1;
                 mod v2_0;
                 mod v2_1;
             }
