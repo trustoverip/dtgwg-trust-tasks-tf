@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/admin/invites/create/0.2",
+  "title": "VTC Admin Invites Create — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "did": { "type": "string", "minLength": 1, "pattern": "^did:", "description": "The DID a **wallet** invitation is for: the invitee claims it by signing as this DID (vtc/install/claim/start and finish 0.3). Absent, the invitation is a **passkey** invitation, and the administrator's DID is derived from the passkey the invitee registers (vtc/install/claim/passkey/start and finish 0.1)." },
+    "ttlSeconds": { "type": "integer", "minimum": 1, "maximum": 86400, "description": "Invite lifetime. Capped at 24 hours." },
+    "label": { "type": "string", "minLength": 1, "maxLength": 256, "description": "Operator-facing note, recorded as the label of the administrator entry the invitation writes." },
+    "ext": { "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Admin Invites Create — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["jti", "kind", "installUrl", "claimCode", "expiresAt", "aclEntryCreated"],
+      "properties": {
+        "jti": { "type": "string", "minLength": 1, "description": "Invite identifier; the revoke target." },
+        "kind": { "$ref": "../../../../_shared/0.2/invite.schema.json#/$defs/InviteKind" },
+        "installUrl": { "type": "string", "minLength": 1, "description": "One-shot enrolment URL. Returned once and never retrievable again." },
+        "claimCode": { "type": "string", "minLength": 1, "description": "Secret that authorises the enrolment. Returned once." },
+        "expiresAt": { "type": "string", "format": "date-time", "description": "When the invite lapses." },
+        "aclEntryCreated": { "type": "boolean", "description": "True when this call wrote an administrator entry: a wallet invitation for a DID that held none. Always false for a passkey invitation, whose entry is written when it is claimed." },
+        "ext": { "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}
