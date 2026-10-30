@@ -20,6 +20,19 @@ test("a string-literal tuple (STANDARD_CODES) may be appended to, not reordered 
   assert.equal(compareText('readonly ["a", "b"]', 'readonly ["a"]'), "changed");
 });
 
+test("an object type may gain optional members, inside a type alias too", () => {
+  const uri = '{ type: "uri"; uri: string; mediaType?: string; }';
+  const inline = '{ type: "inline"; mediaType: string; data: string; }';
+  const was = `export type R = ${uri} | ${inline};`;
+  const now = `export type R = { type: "uri"; uri: string; mediaType?: string; digestMultibase?: DigestMultibase; } | ${inline};`;
+  assert.equal(compareText(was, now), "widened");
+  assert.equal(compareText(now, was), "changed");
+  assert.equal(compareText(was, `export type R = { type: "uri"; uri: string; mediaType?: string; digest: string; } | ${inline};`), "changed");
+  assert.equal(compareText(was, `export type R = { type: "uri"; uri: string; mediaType?: number; } | ${inline};`), "changed");
+  assert.equal(compareText('{ kind: "a"; }', '{ kind: "a" | "b"; at?: string; }'), "widened");
+  assert.equal(compareText("{ a: string; }", "{ a: string; b?: { c: string; }; }"), "changed");
+});
+
 test("any other signature change is a change", () => {
   assert.equal(compareText("x: string;", "x: number;"), "changed");
   assert.equal(compareText("x?: string;", "x: string;"), "changed");
