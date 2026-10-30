@@ -157,6 +157,14 @@ That the values are returned exactly once, and never again by `list`, keeps the 
 
 The request carries an optional DID, a lifetime and an optional label. The response carries the install URL, the claim code, the invite's identifier, its kind and expiry, and whether an entry was written.
 
+### Correlation
+
+A wallet invitation links the community to the DID it names, which the inviter chose; a passkey invitation names no DID, and the DID its claim derives is new and specific to that passkey. The install URL and claim code are random and link nothing.
+
 ### Retention
 
 The invite is kept, with the authority it confers, until it is revoked; once consumed or expired it is kept as audit history, as [`list`](../../list/0.2/spec.md) describes.
+
+### Consent/purpose
+
+The install URL and claim code exist to admit one administrator, once, and **MUST NOT** be accepted for anything else. The invitee consents by claiming; until then the invitation grants nothing to anyone.

@@ -76,3 +76,19 @@ Consumer: verify the caller may manage administrator invites. Return every invit
 ## Security & Privacy
 
 Invite records name the DIDs granted administrator access, so the list is admin-class metadata. It deliberately does **not** disclose the claim code or install URL: those are minted once by `create` and never retrievable afterwards, so a leaked list cannot be replayed into an enrolment.
+
+### Data carried
+
+Each entry carries an invite's identifier, kind and status, its expiry or consumption time, and — when known — the administrator's DID.
+
+### Correlation
+
+The list links each consumed invitation to the administrator DID that claimed it, which is the audit trail it exists to keep. It discloses that only to a caller who may manage administrator invites.
+
+### Retention
+
+The task stores nothing. The rows it reads are kept until revoked, as [`create`](../../create/0.2/spec.md) describes.
+
+### Consent/purpose
+
+The list exists so an administrator can see, and revoke, the invitations that would admit administrators.
