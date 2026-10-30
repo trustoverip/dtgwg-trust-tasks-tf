@@ -3,13 +3,14 @@
 This document holds the invariants shared by every task that creates a **key-role
 identity** or reads or changes its keys, whatever DID method the identity uses:
 
-- [`vta/dids/create/1.0`](../../create/1.0/spec.md) — create a key-role identity from a key-role DID template;
+- [`vta/dids/create/1.1`](../../create/1.1/spec.md) — create a key-role identity, at key assurance level 2 or 3, from a key-role DID template;
+- [`vta/dids/upgrade/1.0`](../../upgrade/1.0/spec.md) — raise an identity's key assurance level in place: from 1 to 2 or 3, or from 2 to 3;
 - [`vta/dids/keys/list/1.0`](../../keys/list/1.0/spec.md) — the roles, their keys, the recovery commitment and the rotation history;
 - [`vta/dids/keys/add/1.0`](../../keys/add/1.0/spec.md) — add a key to a role (a post-quantum key beside a classical one);
 - [`vta/dids/keys/rotate/1.0`](../../keys/rotate/1.0/spec.md) — a planned rotation of one role, staged and overlapped, including the replacement of the recovery commitment;
 - [`vta/dids/keys/retire/1.0`](../../keys/retire/1.0/spec.md) — a planned retirement, which is also how a rotation completes or aborts;
 - [`vta/dids/keys/revoke/1.0`](../../keys/revoke/1.0/spec.md) — revocation for compromise, including recovery of the update authority;
-- [`vta/dids/recover/1.0`](../../recover/1.0/spec.md) — a replacement VTA takes over an identity whose VTA was lost, with the recovery key;
+- [`vta/dids/recover/1.0`](../../recover/1.0/spec.md) — a replacement VTA takes over a level-3 identity whose VTA was lost, with the recovery key;
 - [`vta/dids/update/1.0`](../../update/1.0/spec.md) — changes that are not key changes.
 
 Each task references this file rather than restating it; conformance is anchored here.
@@ -36,7 +37,7 @@ a rule nobody can tell when to relax, so each section cites the threat it answer
 
 | Asset | Why it matters | Held by |
 |---|---|---|
-| **A1 — the change authority** (`update`) | Whoever holds it decides every key the identity has, forever. Its theft is the theft of the identity. | The VTA, with a recovery key outside it |
+| **A1 — the change authority** (`update`) | Whoever holds it decides every key the identity has, forever. Its theft is the theft of the identity. | The VTA; at level 3, with a recovery key outside it |
 | **A2 — the community's seal** (`attestation`) | It signs decisions others rely on long after delivery and without contacting the node: credentials, endorsements, **status lists**. A forged status list silently re-admits everyone suspended. | The VTA only |
 | **A3 — the node's voice** (`operational`) | It signs what the node says now: Trust Task requests and responses, messages, notices. Forgery impersonates the node in conversations, not in decisions. | The node's service process |
 | **A4 — confidentiality** (`messaging`) | It opens what is sent to the node. | The node's service process |
@@ -63,9 +64,9 @@ a rule nobody can tell when to relax, so each section cites the threat it answer
 |---|---|---|
 | T1 | A key exposed to routine traffic can never sign an attestation artefact or change the identity: roles are separate relationships, separate material, separate custody | §2, §5 |
 | T1 | The service process holds `operational` and `messaging` keys only; it obtains attestations by asking the VTA, which parses, constrains and records | §5.1 |
-| T2 | The change authority survives a VTA compromise only through a recovery key in another protection boundary, and a witness that will not let the recovery commitment be dropped | §5.3, §5.4 |
-| T3 | `attestation` and `update` keys are generated, not derived, and nothing that unlocks them is in a backup; a backup restores only what the service process could already reveal | §5.1, §5.5 |
-| T4 | Loss is recovered by the recovery key and re-issuance, never by restore | §9.5 |
+| T2 | At level 3, the change authority survives a VTA compromise only through a recovery key in another protection boundary, and a witness that will not let the recovery commitment be dropped or the level lowered. Below level 3 a VTA compromise is the identity's loss | §3.4, §5.3, §5.4 |
+| T3 | At level 3, `attestation` and `update` keys are generated, not derived, and nothing that unlocks them is in a backup; a backup restores only what the service process could already reveal. At level 2 a backup carries them, by the operator's choice | §3.4, §5.1, §5.5 |
+| T4 | At level 3, loss is recovered by the recovery key and re-issuance, never by restore; at levels 1 and 2, by restore | §3.4, §9.5 |
 | T5 | Changes to the seal and the change authority need a super-admin, a bound step-up, and for the change authority a quorum; revocation stays reachable with less | §6, §7 |
 | T6 | Approvals bind to a VTA-computed preview; only the approver's own evidence counts; a delegated key is never an approver | §6 |
 | T7 | Planned rotations publish before use and overlap past a cache horizon; revocations take effect at once and verifiers re-resolve | §10 |
@@ -82,10 +83,17 @@ Stated so nobody believes otherwise:
   operational key being used to sign an attestation (a misuse, not a theft) and keeps the
   attestation key out of backups, but a full compromise of a VTA yields its own seal. Only
   the recovery key (§5.3) survives it.
+- **Any identity below level 3 under T2.** Its routine successor and every role key are in
+  the VTA, so a party holding the VTA holds the identity. The operator's remedy is
+  deactivation and a successor identity (§9.4).
 - **did:webvh under T2 without witnesses.** Every did:webvh entry is authorized by a
   committed key, and the routine successor sits in the VTA. A party holding the VTA can
-  append an entry that drops the recovery commitment before the operator uses it. Witnesses
-  enforcing §5.4 close this; without them the recovery key protects against loss (T4) only.
+  append an entry that drops the recovery commitment, or lowers the level, before the
+  operator uses it. That is why level 3 requires a witness enforcing §5.4; without one the
+  recovery key would protect against loss (T4) only.
+- **What a level does not show.** A verifier can check a level's structure, not its custody:
+  which process holds a key, whether it was generated, whether it is in a backup, and where
+  the recovery key is are the operator's statements (§3.4.4).
 - **An operator who approves what they did not read.** Binding makes an approval exact; it
   cannot make it considered.
 
@@ -100,10 +108,10 @@ makes:
 
 | Role | Relationship | Proof purpose | Used for | Custody | Origin |
 |---|---|---|---|---|---|
-| `attestation` | `assertionMethod` | `assertionMethod` | Attestation artefacts (VTI-KEY-080): credentials, endorsements, status lists — through the VTA's signing service only | The VTA only | **Generated** |
+| `attestation` | `assertionMethod` | `assertionMethod` | Attestation artefacts (VTI-KEY-080): credentials, endorsements, status lists — through the VTA's signing service only | The VTA only | **Generated** at level 3; derived or generated at level 2 |
 | `operational` | `authentication` | `authentication` | The node's own traffic (VTI-KEY-081) | May be held by the node's service process | Derived |
 | `messaging` | `keyAgreement` | none | Key agreement; signs nothing | May be held by the node's service process | Derived (X25519 in its own right) |
-| `update` | none — the method's change authority (method profile) | as the method defines | Authorizing changes to the identifier | The VTA (routine) and a recovery custodian (recovery) | **Generated** |
+| `update` | none — the method's change authority (method profile) | as the method defines | Authorizing changes to the identifier | The VTA (routine) and, at level 3, a recovery custodian (recovery) | **Generated** at level 3; derived or generated at level 2 |
 | `authenticator` | `authentication` | none — WebAuthn assertions only | A person's sign-in and step-up evidence | The person's authenticator | Enrolled, never generated by the VTA |
 
 Consequences a conforming VTA **MUST** honour:
@@ -147,27 +155,26 @@ how algorithms change.
 
 ### 3.1 Only key-role identities
 
-These tasks operate **only** on a **key-role identity**: one whose every published
-verification method is bound to exactly one role as §2 requires, with `keyRoles` in
-agreement, whose change authority is held as §5.3 requires, and whose method has an
-eligible profile. A DID created before key roles — one key in both `authentication` and
-`assertionMethod`, also holding the update authority — or any DID whose document breaks §2,
-is not converted in place. Every task in this family, `keys/list` included, **MUST** refuse
-it with `vta/dids:notKeyRoleIdentity`, and **MUST NOT** guess roles for its keys or repair
-it (VTI-KEY-146 to VTI-KEY-148).
+These tasks operate **only** on a **key-role identity**: a service DID at key assurance
+level 2 or 3 (§3.4), whose every published verification method is bound to exactly one
+role as §2 requires, with `keyRoles` in agreement, whose change authority is held as §5.3
+requires at its level, and whose method has an eligible profile. A level-1 identity — one
+key in both `authentication` and `assertionMethod`, also holding the update authority, as
+every DID created before key roles is — is conformant (VTI-KEY-146), and is not a key-role
+identity. Every task in this family except [`upgrade`](../../upgrade/1.0/spec.md),
+`keys/list` included, **MUST** refuse it with `vta/dids:notKeyRoleIdentity`, and **MUST
+NOT** guess roles for its keys or repair it. So **MUST** they refuse any document that
+declares level 2 or 3 and breaks §2.
 
-The reason there is no migration: the pre-role key has had operational custody (T1), so it
-cannot be retrofitted as an `attestation` key, and it was never destroyed, so its
-retirement bounds nothing it signed (VTI-KEY-132). The remedy is a new identity created by
-[`vta/dids/create`](../../create/1.0/spec.md). A client **MUST** word the refusal as that
-instruction — "This DID was created before key roles. Create a new identity for this
-community" — and not as a failure to retry.
+`upgrade` raises a level-1 identity in place, with fresh keys for every role (§3.5). A
+client **MUST** word the refusal as that instruction — "This DID has a single key (level 1).
+Raise it to level 2 with `dids upgrade`, or create a new identity" — and not as a failure to
+retry.
 
-A pre-role identity keeps being managed by the method-specific tasks it was created with
+A level-1 identity keeps being managed by the method-specific tasks it was created with
 (for did:webvh, `vta/webvh/dids/update/1.0` and `vta/webvh/dids/rotate-keys/1.0`) until it
-is replaced and deactivated. A VTA **MUST** refuse those tasks for a key-role identity with
-the framework's `unsupportedVersion`, because they cannot change one role without the
-others.
+is raised. A VTA **MUST** refuse those tasks for a key-role identity with the framework's
+`unsupportedVersion`, because they cannot change one role without the others.
 
 ### 3.2 Eligibility
 
@@ -226,9 +233,111 @@ method never changes this document or the task schemas:
 A VTA **MUST** validate `methodParameters` against the profile's schema and refuse any
 member it does not define with `vta/dids:methodParameterUnsupported`.
 
+### 3.4 Key assurance levels
+
+The VTI specification sorts DIDs into three classes (VTI-KEY-190 to VTI-KEY-193):
+**relationship** DIDs (pairwise, `did:peer`, per-community — one key is normal), **persona**
+DIDs (a person's own identity — one key or passkeys, with `keyRoles` marking only
+`authenticator`), and **service** DIDs (a VTA, VTC, VTN, registry, host service, mediator or
+integration). These tasks serve service DIDs, and a service DID has a **key assurance
+level** its operator chooses (VTI-KEY-194). Every level is conformant; each verifier's
+policy decides which level it accepts for which use (VTI-KEY-200).
+
+| Level | Name | What the VTA holds and how | Protects against | After the VTA is lost | After the VTA is compromised |
+|---|---|---|---|---|---|
+| 1 | single key | One signing key for everything; no `keyRoles` | — | restore | the identity is lost |
+| 2 | role-separated | `keyRoles`; `attestation` and `update` keys held only by the VTA, which **MAY** derive them from the seed and **MAY** keep them in its own backup | T1 | restore | deactivate; successor identity |
+| 3 | recoverable | Level 2, with `attestation` and `update` keys generated, never in a backup, protected at rest independently of the seed; a recovery key held by a recovery custodian (§5.6); a witness enforcing §5.4 | T1, T2, T3, T4 | recover (§9.5) | recover (§9.4) |
+
+Each layer answers one threat: role separation with VTA custody answers T1; generation and
+exclusion from backups answer T3; the recovery key answers T2 and T4. The recovery key is
+required at level 3 only, because only there are the keys out of the backup: at level 2 a
+lost VTA's keys come back with its backup, so its loss needs no recovery key.
+
+#### 3.4.1 What each level requires of these tasks
+
+| Rule | Level 2 | Level 3 |
+|---|---|---|
+| §2 roles, §15 `keyRoles` | ✓ | ✓ |
+| §5.1 origin of `attestation`, `update` | derived or generated | generated |
+| §5.2 protection at rest independent of the seed | — | ✓ |
+| §5.3 routine successor committed | ✓ (may be derived) | ✓ (generated) |
+| §5.3 recovery commitment, §9.4 `scope: boundary`, `recover` | — : refused with `vta/dids:assuranceLevelMismatch` | ✓ |
+| §5.4 witness enforcing the level | SHOULD | **MUST** (`vta/dids:witnessRequired`) |
+| §5.4 witness enforcing the recovery commitment | — | **MUST** |
+| §5.5 `inBackups: false`, never exportable | exportable only in the VTA's own backup | ✓ |
+| §6 preview, bound step-up, quorum | as §6.5 | as §6.5 |
+
+#### 3.4.2 The declaration
+
+A VTA **MUST** render, in every version of a level-2 or level-3 identity, a top-level
+`keyAssurance` member of the document (VTI-KEY-197):
+
+```json
+"keyAssurance": { "level": 3, "recoveryCommitment": "<the recovery commitment, as the method profile writes it>" }
+```
+
+or, where a threshold custodian holds the recovery key (§5.7):
+
+```json
+"keyAssurance": { "level": 3, "recoveryCommitment": { "threshold": 2, "commitments": ["<member 1's commitment>", "<member 2's>", "<member 3's>"] } }
+```
+
+`level` is `2` or `3`; `recoveryCommitment` is present at level 3 only, and names which of
+the method's next-key commitments in the same version are recovery commitments — one, or a
+threshold over several. Nothing else may be in it. Its JSON-LD term is `{ "@id": "https://w3id.org/vti#keyAssurance",
+"@type": "@json" }`, in the VTI key-roles context beside `keyRoles` (§15). A document
+without `keyAssurance` is at level 1.
+
+#### 3.4.3 How a verifier establishes the level
+
+A verifier takes the declared level and caps it at what the document and history show
+(VTI-KEY-199): level 2 needs `keyRoles` and no method in two relationships; level 3 needs
+`recoveryCommitment` among the version's next-key commitments and not the only one, a
+witnessed version where the method has witnesses, and a commitment that changed only in an
+entry authorized by the previous recovery key or witnessed. A version declaring a lower
+level than an earlier one makes every later version level 1. It judges an attestation
+artefact at the level of the versions in which the artefact's key is bound (VTI-KEY-201).
+
+#### 3.4.4 What stays the operator's statement
+
+From the document and the history a verifier cannot learn: which process holds a key; whether
+the `attestation` and `update` keys were generated, are out of every backup and are protected
+at rest independently of the seed; where the recovery key is, and which kind of custodian
+holds it; whether the witness is outside the VTA's boundary and applies §5.4. A VTA
+**MUST** therefore declare a level only where it holds the identity as that level requires,
+and **MUST NOT** publish anything about custody to support the declaration (§15,
+VTI-KEY-150).
+
+### 3.5 Raising a level
+
+A level is raised in place by [`vta/dids/upgrade`](../../upgrade/1.0/spec.md), never
+lowered (VTI-KEY-147, VTI-KEY-148). The raise is one change, authorized by the identity's
+current update authority, that:
+
+1. mints fresh keys for every role whose custody the new level tightens — from level 1,
+   every role, with a routine update key and its committed successor; from level 2 to 3,
+   the `attestation` keys and the routine update key and successor;
+2. removes every replaced key from its relationship and `keyRoles` — retired, or, where it
+   may have been exposed, revoked with a compromise time (§9);
+3. renders `keyAssurance` with the new level and, at level 3, commits the recovery key with
+   its proof of possession (§5.3) and names a witness enforcing §5.4.
+
+No key keeps its place across a raise unless its custody already meets the new level: the
+`operational` and `messaging` keys of a level-2 identity stay at level 3; the single key of a
+level-1 identity takes no role at all, because it has signed attestation artefacts and been
+held by the service process (VTI-KEY-071). An attestation artefact signed before the raise
+stays an artefact of the lower level, because its key is bound only there; the node
+re-signs every status list at once and re-issues what its relying parties need at the
+higher level (VTI-KEY-149).
+
+A VTA **MUST** refuse, with `vta/dids:assuranceLevelMismatch`, any change that would render
+a lower level than the identity's current one, and any request to raise to a level the
+identity already has. To lower a level, an operator creates a new identity.
+
 ## 4. Creation
 
-A key-role identity is created by [`vta/dids/create`](../../create/1.0/spec.md) from a
+A key-role identity is created, at level 2 or 3, by [`vta/dids/create`](../../create/1.1/spec.md) from a
 **key-role DID template**: a `schemaVersion` 3 template
 ([`vta/_shared/0.9/did-template.schema.json`](../../../_shared/0.9/did-template.schema.json))
 whose `keyRoles` block is a list of `RoleLayout`s and whose `document` carries **no** key
@@ -255,10 +364,26 @@ A VTA creating a key-role identity **MUST**:
 3. Mint every key fresh, by its role's origin (§5.1). A creation **MUST NOT** accept a
    caller-supplied key, key identifier, document carrying keys, or existing history to
    adopt: none of them can show the custody §5 requires.
-4. Commit, in the first version, a routine update successor and the recovery commitment
-   (§5.3).
-5. Do all of this under preview and approval (§6), so the approver sees the exact public
+4. Commit, in the first version, a routine update successor, and at level 3 the recovery
+   commitment (§5.3); render `keyAssurance` (§3.4.2).
+5. At level 3, refuse a method with witnesses unless `methodParameters` names at least one
+   witness enforcing §5.4 (`vta/dids:witnessRequired`); at level 2, warn `noWitnesses`
+   when none is named.
+6. Do all of this under preview and approval (§6), so the approver sees the exact public
    keys and document.
+7. Honour the template's level floor. A template **MAY** carry, in `defaults`,
+   `"keyAssurance": { "level": <2|3>, "minimum": <1|2|3> }`. `level` is the default a
+   client offers when its caller names none; it binds no one. `minimum` binds: a VTA
+   **MUST** refuse a creation whose `assuranceLevel` is below it
+   (`vta/dids/create:assuranceLevelBelowTemplate`). A template cannot cap a level, so a
+   caller may always ask for more. This is the same one-way rule the template shape already
+   applies to `portable`: a template can tighten what a caller asked for, never loosen it.
+   The right level depends on what the service does — a mediator confers nothing, a
+   community's credentials are relied on for years — and the template is what knows which
+   kind of service it describes (VTI-KEY-196).
+
+A level-1 identity is not created by this family: it is what the method-specific creation
+tasks produce (for did:webvh, `vta/webvh/dids/create`), and what `upgrade` raises.
 
 ## 5. Custody
 
@@ -266,9 +391,9 @@ A VTA creating a key-role identity **MUST**:
 
 | Role | Origin | Why |
 |---|---|---|
-| `attestation` | Generated from the VTA's CSPRNG inside its boundary (`origin: internal`) | T3: a derived key is reproducible from the seed, so every backup and every copy of the seed is a second seal kept wherever backups are kept. Generation removes that copy. The cost — a lost VTA loses the key — is paid by re-issuance (§9.5), which exists anyway. |
-| `update` (routine) | Generated, as `attestation` | T3, and the change authority is worth more than the seal. Its loss is paid by the recovery key. |
-| `update` (recovery) | Generated by the recovery custodian, never by this VTA | T2/T4: it is worth exactly as much as its independence from the VTA. |
+| `attestation` | Level 3: generated from the VTA's CSPRNG inside its boundary (`origin: internal`). Level 2: derived from the context's base or generated, at the VTA's choice | T3: a derived key is reproducible from the seed, so every backup and every copy of the seed is a second seal kept wherever backups are kept. Generation removes that copy. The cost — a lost VTA loses the key — is paid by re-issuance (§9.5), which exists anyway. Level 2 accepts T3 to keep restore working. |
+| `update` (routine) | As `attestation`, by level | T3, and the change authority is worth more than the seal. At level 3 its loss is paid by the recovery key; at level 2, by restore. |
+| `update` (recovery) | Level 3 only. Generated by the recovery custodian, never by this VTA | T2/T4: it is worth exactly as much as its independence from the VTA. |
 | `operational`, `messaging` | Derived from the context's derivation base (VTI-KEY-030) | They are already exposed to the service process (T1), so a backup adds no exposure the service does not, and restoring them restores the node's voice and mailbox without republishing. Their compromise is bounded by §2: they can neither seal nor change the identity. |
 
 A derived `messaging` key is derived as X25519 at its own path; it is **never** the
@@ -300,17 +425,21 @@ credentials that read it; a mnemonic printed and locked away is a second boundar
 VTA is a stronger boundary — the host operator cannot read inside it — but it is still one:
 the enclave holds every key it generates.
 
-Within one boundary, a generated key **MUST** be protected at rest under a key that is not
-derivable from the VTA's seed and is not present in any backup (VTI-KEY-118). Otherwise a
-backup plus the seed decrypts what generation was meant to make unrecoverable (T3). A VTA
-that cannot do this — a plain VTA, or one whose store key is derived from its seed —
-**MUST** report the key's `protection` truthfully and warn `protectionBelowPolicy`.
+At level 3, within one boundary, a generated key **MUST** be protected at rest under a key
+that is not derivable from the VTA's seed and is not present in any backup (VTI-KEY-118).
+Otherwise a backup plus the seed decrypts what generation was meant to make unrecoverable
+(T3). A VTA that cannot do this — a plain VTA, or one whose store key is derived from its
+seed — **MUST** report the key's `protection` truthfully and warn `protectionBelowPolicy`.
+At level 2 the store's own protection is enough, because the key is in the backup by
+design; the preview warns `roleKeysInBackups` instead.
 
 ### 5.3 The change authority: a routine key and a recovery key
 
 Pre-rotation protects an identity only if the key that authorizes the next change is not
 reachable by whoever compromised the current one. A VTA cannot meet that alone, because a
-VTA is one boundary (§5.2). So the `update` role has two classes of key:
+VTA is one boundary (§5.2). At level 2 the `update` role has only routine keys, and the
+identity is protected against T1 and a leaked routine key, not against T2. At level 3 it
+has two classes of key:
 
 - **Routine** (`updateKeyClass: routine`): generated and held by the VTA. It authorizes the
   identity's ordinary changes. Its committed successor is also generated and held by the
@@ -318,16 +447,18 @@ VTA is one boundary (§5.2). So the `update` role has two classes of key:
 - **Recovery** (`updateKeyClass: recovery`): generated and held by a **recovery custodian**
   in a boundary other than the VTA's (VTI-KEY-116). The VTA holds only its commitment.
 
-A conforming VTA **MUST**:
+A conforming VTA **MUST**, at level 3:
 
-1. Commit, in **every** version of a key-role identity, both a routine successor and the
-   recovery key, as the method profile says how (`recoveryCommitted: true`).
+1. Commit, in **every** version, both a routine successor and the recovery key, as the
+   method profile says how (`recoveryCommitted: true`), and name the recovery commitment in
+   `keyAssurance.recoveryCommitment` (§3.4.2).
 2. Carry the recovery commitment forward **unchanged** in every change it makes, except a
    change that uses the recovery key (§9.4) or replaces the commitment
    ([`keys/rotate`](../../keys/rotate/1.0/spec.md) with `role: update` and
-   `recoveryCommitment`).
-3. Refuse to create a key-role identity, and refuse any change, that would leave it with
-   no recovery commitment, with `vta/dids:recoveryCommitmentRequired`.
+   `recoveryCommitment`) — by an entry the current recovery key authorizes
+   (`useRecoveryKey: true`), or, where that key is lost, with the quorum of §6.5.
+3. Refuse to create or raise a level-3 identity, and refuse any change, that would leave it
+   with no recovery commitment, with `vta/dids:recoveryCommitmentRequired`.
 4. Accept a recovery commitment only with a **proof of possession** of the recovery key,
    over the request's `previewId`, so that a typing error cannot commit the identity to a
    key nobody holds. The VTA verifies the proof and then discards the public key unless
@@ -337,22 +468,36 @@ A conforming VTA **MUST**:
    `vta/dids:recoveryCommitmentRequired`. It cannot always tell; a recovery key the VTA
    generated, it always can.
 
-**A VTA with only one boundary** — every VTA today — therefore never holds the recovery
-key. Its operator supplies the commitment at creation from a custodian of their choosing,
-and the VTA refuses to create a key-role identity without one. This is deliberate: an
-identity whose every successor key sits in its VTA has pre-rotation in form and nothing in
-substance, and a lost VTA takes it with it.
+A VTA never holds a level-3 identity's recovery key. Its operator supplies the commitment
+at creation, or when raising to level 3, from a custodian of their choosing (§5.6), and the
+VTA refuses a level-3 identity without one. This is deliberate: an identity whose every
+successor key sits in its VTA has pre-rotation in form and nothing in substance against T2.
+A request that carries a recovery commitment for a level-2 identity is refused with
+`vta/dids:assuranceLevelMismatch`: a level-2 identity with a recovery key would have the
+recovery key's cost, without level 3's backup exclusion or witness, and a verifier could not
+tell it from level 2.
 
 ### 5.4 Witnesses and the recovery commitment
 
 Item 2 above binds a conforming VTA. A compromised one (T2) is not conforming: holding the
-routine successor, it can append a change that drops the recovery commitment, after which
-the recovery key authorizes nothing. Where the method has witnesses (did:webvh witnesses,
-KERI witnesses), a key-role identity **SHOULD** be witnessed by at least one witness in a
-boundary other than the VTA's whose policy refuses a change that removes or replaces the
-recovery commitment unless that change is authorized by the recovery key or carries the
-approvals `keys/rotate` records for a replacement. A VTA **MUST** warn `noWitnesses` on
-every preview of an unwitnessed identity.
+routine successor, it can append a change that drops the recovery commitment, or lowers the
+level, after which the recovery key authorizes nothing. Where the method has witnesses
+(did:webvh witnesses, KERI witnesses), a level-3 identity **MUST** be witnessed by at least
+one witness in a boundary other than the VTA's (VTI-KEY-129) whose policy refuses a change
+that:
+
+1. declares a lower level than the change before it;
+2. declares level 3 without naming, in `keyAssurance.recoveryCommitment`, one of its own
+   next-key commitments distinct from the others; or
+3. names a different recovery commitment, or none, unless the change is authorized by the
+   previous recovery key, or the witness is shown the approvals `keys/rotate` recorded for
+   a replacement.
+
+A level-2 identity **SHOULD** be witnessed by a witness applying item 1. A VTA **MUST**
+refuse to create, raise to or keep a level-3 identity without such a witness
+(`vta/dids:witnessRequired`) — including an `update` that would remove the last one — and
+**MUST** warn `noWitnesses` on every preview of an unwitnessed level-2 identity. The witness
+**MAY** be operated by the recovery custodian, which is already outside the VTA's boundary.
 
 Where the method lets the next-key threshold require more than one key (KERI), the profile
 **SHOULD** make every rotation of the change authority require the recovery custodian, and
@@ -360,8 +505,10 @@ use routine keys only for changes that do not rotate it; that closes T2 without 
 
 ### 5.5 Exportability and backups
 
-1. `attestation` and `update` keys **MUST** be reported `exportable: false`,
-   `neverExportable: true`, `inBackups: false` from the moment they are generated. An
+1. `attestation` and `update` keys **MUST** be reported `exportable: false` and
+   `neverExportable: true` from the moment they are minted, and at level 3 `inBackups:
+   false`. At level 2 they **MAY** be in the VTA's own backup (`inBackups: true`) and in no
+   other backup, export or transfer. An
    attestation key is used only by the VTA's signing service, for material it has parsed as
    an attestation artefact of that identity (VTI-VTA-009); a routine update key only to
    authorize that identity's changes.
@@ -369,8 +516,8 @@ use routine keys only for changes that do not rotate it; that closes T2 without 
    **MUST** answer `keys/export-secret:neverExportable` and
    [`keys/set-exportability`](../../../../keys/set-exportability/0.1/spec.md) with
    `exportable: true` **MUST** answer `keys/set-exportability:notPermittedForThisKey`,
-   whatever the caller's authority. No provisioning bundle (VTI-VTA-033) and no backup
-   (VTI-KEY-112) may carry them, nor anything that unlocks them.
+   whatever the caller's authority. No provisioning bundle (VTI-VTA-033) may carry them,
+   and at level 3 no backup (VTI-KEY-112), nor anything that unlocks them.
 3. [`keys/revoke`](../../../../keys/revoke/0.1/spec.md) **MUST** refuse a key published in a
    role of an identity, with `keys/revoke:boundToIdentifier`; withdrawing it is
    [`vta/dids/keys/revoke`](../../keys/revoke/1.0/spec.md), which changes the document and
@@ -381,6 +528,76 @@ use routine keys only for changes that do not rotate it; that closes T2 without 
    anything received after `compromisedSince`.
 5. No response of any task in this family carries private key material, in any member or in
    `ext`.
+
+### 5.6 Recovery custodians
+
+At level 3 the recovery key is held by one of three kinds of custodian (VTI-KEY-205), which
+the operator declares in `RecoveryCommitment.custodian` (`RecoveryCustodianKind`). The VTA
+cannot verify the declaration; it verifies the proof of possession, refuses a key it
+generated or can derive, records the kind in custody, and never publishes it.
+
+| Kind | What it is | How it signs a recovery change |
+|---|---|---|
+| `separateKey` | A key held away from every VTA of the identity: a passphrase-encrypted key file kept offline, a hardware token, a key service whose credentials no such VTA holds, or a key from a recovery mnemonic generated for it on a machine no such VTA controls. **Never** a key from the VTA's own seed | Out of band: the operator takes `RecoverySigningRequest` to the key, checks it there, and returns `recoveryProof` |
+| `vta` | A second VTA with its own seed, operator and host, holding the key with level-3 custody | The custodian VTA checks the change itself and asks its own operator (VTI-KEY-206); the request **MAY** be sent to `custodian.did` |
+| `thresholdGroup` | n members, each a `separateKey` or `vta` custodian holding a whole key of its own, of which t must authorize (§5.7) | Every member checks the change and asks its own operator; the entry carries t of their proofs, which the witness and verifiers count |
+
+Whatever the kind, the custodian **MUST** check the change itself (VTI-KEY-128): that it
+reveals the key the custodian holds and commits to a fresh one held as §5.3 requires. A
+recovery key, of any kind, is an Ed25519 key under the did:webvh profile; nothing on the wire
+differs by kind except the declaration and, for a threshold custodian, the number of
+commitments and proofs.
+
+### 5.7 Threshold custodians
+
+A threshold custodian (VTI-KEY-210 to VTI-KEY-221) is n **members**, each a `separateKey` or
+`vta` custodian in its own protection boundary, each holding **one whole recovery key of its
+own**, of which any t — 2 ≤ t < n — must authorize a recovery. It is a condition over whole
+keys, not a threshold signature scheme: nothing is shared, nothing is assembled, each member
+signs the exact entry with its own key, and every proof names its signer. For this family:
+
+- the group is offered as a `RecoveryCommitment` in its **threshold form**: `threshold`, and
+  `members`, each a key with its own `keyType`, `publicKeyMultibase`, `proofOfPossession` and
+  `custodian` (`separateKey` or `vta`). The VTA computes **n** commitments, verifies every
+  proof of possession over the same `previewId`, refuses any member key it generated or can
+  derive, and keeps only the commitments and the custody records;
+- `keyAssurance.recoveryCommitment` is rendered as `{ "threshold": t, "commitments": [...] }`
+  naming every member's commitment (§3.4.2), and every commitment is carried forward
+  unchanged until the group changes;
+- a recovery, or a replacement of the recovery commitment, is an entry whose proof set
+  carries proofs by **at least t distinct members** (VTI-KEY-215). The recovering VTA sends
+  each `vta` member the `RecoverySigningRequest`; each fetches the history, computes the
+  entry and checks it itself, asks its own operator, and returns its proof (VTI-KEY-214). A
+  `separateKey` member signs out of band. The VTA assembles the proofs into the entry and
+  returns them as `recoveryProof`;
+- the method's own proof is one of the t (for did:webvh, by a member key the entry names in
+  `updateKeys`); the witness and every VTI verifier count the rest, and count only distinct
+  members whose keys the previous version committed (VTI-KEY-212);
+- the group's size and threshold are visible in the document; which VTAs hold the keys is
+  not published (VTI-KEY-150). The signers' public keys are revealed at use, like any
+  pre-rotation key, and are replaced;
+- adding or removing a member, or changing t, is a replacement of the recovery commitment
+  authorized by t current members, committing fresh keys for the whole new group
+  (VTI-KEY-218). Fewer than t members reachable means the change waits; nothing lowers the
+  threshold (VTI-KEY-217).
+
+Each member's key is of an algorithm the method profile admits for the proof it makes. Under
+the did:webvh profile that is `ed25519` for every key the method counts; a member **MAY** add
+an ML-DSA proof to the set for verifiers whose policy requires one (VTI-KEY-219). Under the
+did:webs profile the condition is the method's own `nt` threshold.
+
+The group's rules — distinct boundaries with no subject approving at t members
+(VTI-KEY-211), each member's key in level-3 custody (VTI-KEY-213), each member checking the
+entry itself (VTI-KEY-214), the signing request as a Trust Task over TSP or DIDComm
+(VTI-KEY-216) — bind the members, and need **no ceremony tasks**: the only message between
+VTAs is the `RecoverySigningRequest` that already exists. Reconstructing a split key to sign
+(Shamir, SLIP-39) is not a threshold custodian (VTI-KEY-220) and is declared as `separateKey`;
+neither is a threshold signature scheme that yields one signature from shares, which an
+earlier draft used and this version drops.
+
+A threshold custodian **MUST NOT** hold an `attestation` key and **SHOULD NOT** hold the
+routine update keys under did:webvh (VTI-KEY-221): every entry would be a t-member ceremony
+that reveals t committed keys.
 
 ## 6. Approval
 
@@ -482,11 +699,15 @@ The floor the VTI specification sets for a VTA's policy (VTI-KEY-180 to VTI-KEY-
 
 | Change | Authority (§7) | Bound step-up | Quorum |
 |---|---|---|---|
-| `create` | context `admin` | **MUST** | MAY |
+| `create`, level 2 | context `admin` | SHOULD | MAY |
+| `create`, level 3 | context `admin` | **MUST** | MAY |
+| `upgrade` to level 2 | `super-admin` | **MUST** | SHOULD (2) |
+| `upgrade` to level 3 | `super-admin`, plus the recovery key's proof of possession | **MUST** | **MUST** (2) where two eligible approvers exist |
 | Add, rotate, retire — `operational`, `messaging` | context `admin` | SHOULD | MAY |
 | Add, rotate, retire — `attestation` | `super-admin` | **MUST** | SHOULD (2) |
 | Rotate `update` (routine) | `super-admin` | **MUST** | SHOULD (2) |
-| Replace the recovery commitment | `super-admin`, plus the new key's proof of possession | **MUST** | **MUST** (2) where two eligible approvers exist |
+| Replace the recovery commitment, authorized by the current recovery key | `super-admin`, plus the new key's proof of possession and the custodian's recovery proof | **MUST** | **MUST NOT** be required: the custodian's own check is the second approval, and a threshold custodian's t approvals are a quorum (VTI-KEY-181) |
+| Replace the recovery commitment, recovery key lost | `super-admin`, plus the new key's proof of possession | **MUST** | **MUST** (2) where two eligible approvers exist |
 | Revoke — any role but `update` | context `admin` | **MUST** | **MUST NOT** be required |
 | Revoke `update`; recover | `super-admin`, plus the recovery custodian's proof where it is used | **MUST** | **MUST NOT** be required |
 | `update` (non-key members) | context `admin` | SHOULD | MAY |
@@ -513,6 +734,7 @@ Authority is checked against the caller's entry in the VTA's access-control list
 | `keys/revoke` | context `admin`, `super-admin` | context `admin`, `super-admin` | `super-admin` | context `admin`, `super-admin`, or the person the identity represents |
 | `recover` | — | — | `super-admin` of the recovering VTA | — |
 | `create`, `update` | context `admin`, `super-admin` | | | |
+| `upgrade` | `super-admin` | | | |
 
 - A VTA **MAY** narrow any cell and **MAY** delegate the `attestation` column to a named
   context administrator by an explicit ACL scope. It **MUST NOT** widen a cell by default,
@@ -586,8 +808,8 @@ new identity.
 - **`key`** — one routine update key is believed exposed, the VTA's boundary is not (a key
   leaked through a signing side channel, say). The VTA moves the authority to its committed
   routine successor and commits fresh successors, carrying the recovery commitment forward.
-- **`boundary`** — the VTA's boundary may be compromised, so its routine successor is too.
-  Only the recovery key can authorize the change. The VTA computes the change — revealing
+- **`boundary`** — level 3 only. The VTA's boundary may be compromised, so its routine
+  successor is too. Only the recovery key can authorize the change. The VTA computes the change — revealing
   the recovery key, revoking the routine keys, publishing replacements for every role key
   the compromise reached, and committing a fresh routine successor **and a fresh recovery
   commitment** supplied with its proof of possession — and answers `awaitingRecoveryProof`
@@ -595,14 +817,21 @@ new identity.
   it, and the proof is returned as `recoveryProof` on the apply request. A recovery key is
   used once: every change that reveals it commits a new one (VTI-KEY-128).
 
-Where no uncompromised committed key remains — the recovery key is lost or exposed too —
-the identity **MUST** be deactivated and a successor identity created (VTI-KEY-124). A VTA
-**MUST NOT** go on operating an identity whose history it no longer solely controls.
+At level 2 there is no recovery key, so `scope: boundary` is refused with
+`vta/dids:assuranceLevelMismatch`: a level-2 identity whose VTA may be compromised **MUST**
+be deactivated, if the operator still can, and a successor identity created
+(VTI-KEY-124) — the method-specific deactivation (for did:webvh, `vta/webvh/dids/delete`)
+is the instrument. Where no uncompromised committed key remains at level 3 — the recovery
+key is lost or exposed too — the same applies. A VTA **MUST NOT** go on operating an
+identity whose history it no longer solely controls.
 
 ### 9.5 Loss of the VTA
 
-When a VTA is lost (T4), its generated keys are gone and nothing restores them: they are
-not in any backup (§5.5). A replacement VTA takes the identity over with
+At level 1 and level 2, a lost VTA is recovered by restoring its backup, which carries the
+identity's keys; `recover` refuses such an identity with `vta/dids:assuranceLevelMismatch`.
+
+At level 3, when a VTA is lost (T4), its generated keys are gone and nothing restores them:
+they are not in any backup (§5.5). A replacement VTA takes the identity over with
 [`vta/dids/recover`](../../recover/1.0/spec.md): it obtains the identity's history, generates
 new `attestation`, routine `update` and — where the lost VTA's seed is not available —
 `operational` and `messaging` keys, and computes one change that reveals the recovery key,
@@ -684,6 +913,7 @@ A VTA **MUST** append an audit row ([`audit/_shared/0.1`](../../../../audit/_sha
 | `action` | When |
 |---|---|
 | `did.create` | An identity was created, left pending, or refused |
+| `did.upgrade` | An identity's key assurance level was raised, left pending, or refused |
 | `did.keys.preview` | A preview was computed and stored |
 | `did.keys.approval` | An approval bound to a preview was recorded or declined, with its evidence kind |
 | `did.keys.add`, `did.keys.rotate`, `did.keys.retire`, `did.keys.revoke`, `did.update` | A change was applied, left pending, or refused |
@@ -839,6 +1069,12 @@ task that can reach one **MUST** declare it.
 - code: vta/dids:notApplicableToRole
   meaning: The operation or a member given does not apply to this role.
   retryable: false
+- code: vta/dids:assuranceLevelMismatch
+  meaning: The operation or a member given needs a different key assurance level from the identity's or the request's — a recovery commitment, `scope: boundary` or `recover` below level 3, or a change that would lower the level.
+  retryable: false
+- code: vta/dids:witnessRequired
+  meaning: A level-3 identity under a method with witnesses must be witnessed by a witness enforcing the level and the recovery commitment; the request names none, or would remove the last.
+  retryable: false
 ```
 
 ## 18. Adding a method
@@ -850,3 +1086,12 @@ schemas changes: `DidMethodName` is a pattern, `methodParameters` is validated a
 profile, and `PublishedArtifact` and `RecoverySigningRequest` carry the method's own forms
 as data. A profile that cannot meet §3.2 says so and declares the method ineligible, which
 is also a profile: the refusal it produces is then a statement, not an accident.
+
+## 19. Threshold custodians need no ceremony tasks
+
+An earlier draft outlined a `vta/threshold/*` family — distributed key generation, signing
+rounds, refresh and liveness — for a threshold custodian built on a threshold signature
+scheme. This version's threshold custodian is a condition over whole keys (§5.7), so none of
+that exists: each member signs the entry with its own key, the only message between VTAs is
+the `RecoverySigningRequest` the family already defines, and liveness is each member signing
+a domain-separated challenge that is never a change of any identity (VTI-KEY-217).

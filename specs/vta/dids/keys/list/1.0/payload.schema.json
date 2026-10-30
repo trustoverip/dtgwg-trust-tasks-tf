@@ -59,6 +59,10 @@
           "type": "string",
           "description": "The version the answer describes. Pass it as `expectedVersionId` to a change made on its strength."
         },
+        "assuranceLevel": {
+          "$ref": "../../../_shared/0.1/key-roles.schema.json#/$defs/KeyAssuranceLevel",
+          "description": "The key assurance level the identity's latest version declares, as a verifier would establish it (CONVENTIONS.md §3.4.3). In both projections: the document already publishes it."
+        },
         "projection": {
           "$ref": "../../../_shared/0.1/key-roles.schema.json#/$defs/KeyListProjection"
         },

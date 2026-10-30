@@ -992,6 +992,10 @@ export type JoinRequestId = string;
  */
 export type JoinRequestMessage = string;
 /**
+ * A service DID's key assurance level (VTI-KEY-194; CONVENTIONS.md §3.4). `1` — single key: no `keyRoles`, one key signs everything. `2` — role-separated: `keyRoles`, with the `attestation` and `update` keys held by the VTA, which may derive them and back them up. `3` — recoverable: level 2 with those keys generated and in no backup, a recovery key held by a recovery custodian outside the VTA, and a witness enforcing it. Declared in the document's `keyAssurance` member.
+ */
+export type KeyAssuranceLevel = 1 | 2 | 3;
+/**
  * `planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same change. `addition` — a key joined a role without anything leaving it. `recovery` — the identifier's update authority moved to the committed recovery key, because the VTA's own update keys were lost or may be in someone else's hands.
  */
 export type KeyChangeKind = "planned" | "compromise" | "addition" | "recovery";
@@ -1351,7 +1355,7 @@ export type Petname = string;
  */
 export type PlaceName = string;
 /**
- * Conditions a human should be shown before approving. `singleKeyRole` — the role will hold one active key. `algorithmNotInAcceptedSet` — a verifier population the VTA knows of does not accept the new key's algorithm. `roleWillHaveNoClassicalKey` — every remaining key is post-quantum. `attestationReissuanceRequired` — revoking this attestation key obliges re-issuance and re-signed status lists (VTI-KEY-133). `selfPublish` — the VTA will not publish the change; the operator must. `noWitnesses` — the identifier has no witnesses, so a party holding the VTA's routine update key can drop the recovery commitment unobserved (CONVENTIONS.md §5.3). `protectionBelowPolicy` — a key will be held at a `ProtectionClass` below what the VTA's policy recommends for its role (a plain VTA holding an attestation key). `recoveryKeyRevealed` — this change uses the recovery key, which must be replaced by a fresh recovery commitment in the same change.
+ * Conditions a human should be shown before approving. `singleKeyRole` — the role will hold one active key. `algorithmNotInAcceptedSet` — a verifier population the VTA knows of does not accept the new key's algorithm. `roleWillHaveNoClassicalKey` — every remaining key is post-quantum. `attestationReissuanceRequired` — revoking this attestation key obliges re-issuance and re-signed status lists (VTI-KEY-133). `selfPublish` — the VTA will not publish the change; the operator must. `noWitnesses` — the identifier has no witnesses, so a party holding the VTA's routine update key can lower its level unobserved (CONVENTIONS.md §5.4); a level-3 identity is refused instead (`vta/dids:witnessRequired`). `protectionBelowPolicy` — a key will be held at a `ProtectionClass` below what the VTA's policy recommends for its role (a plain VTA holding an attestation key). `recoveryKeyRevealed` — this change uses the recovery key, which must be replaced by a fresh recovery commitment in the same change. `roleKeysInBackups` — at level 2, the identity's `attestation` and `update` keys will be in this VTA's backups, so a backup and what unlocks it are a copy of the identity's seal and change authority (CONVENTIONS.md §3.4).
  */
 export type PreviewWarning =
   | "singleKeyRole"
@@ -1361,7 +1365,8 @@ export type PreviewWarning =
   | "selfPublish"
   | "noWitnesses"
   | "protectionBelowPolicy"
-  | "recoveryKeyRevealed";
+  | "recoveryKeyRevealed"
+  | "roleKeysInBackups";
 /**
  * One line of a profile, in exactly one of four forms. Together they are the whole of a profile's flexibility, and each exists for a case the others handle badly.
  *
@@ -1588,6 +1593,10 @@ export type RecordType = "authorization" | "recognition";
  * The instant after which the record's author no longer stands behind it as current. OPTIONAL; absent means the record does not expire. A reader hides a record whose `validUntil` has passed from default listings, search and recall, and shows it only on explicit request (`SealedRecordBody`, **Expiry**). No host enforces it.
  */
 export type RecordValidUntil = string;
+/**
+ * The kinds of recovery custodian VTI-KEY-205 admits (CONVENTIONS.md §5.6). `separateKey` — a key held away from every VTA of the identity: an offline key file, a hardware token, a key service whose credentials no such VTA holds, or a key from a recovery mnemonic no such VTA has seen. `vta` — a second VTA with its own seed, operator and host. `thresholdGroup` — a threshold custodian: t of n VTAs holding FROST shares of the key (§5.7).
+ */
+export type RecoveryCustodianKind = "separateKey" | "vta" | "thresholdGroup";
 /**
  * What it takes to let a value LEAVE. Distinct from `Sensitivity`, which governs showing it to the holder.
  *
@@ -8979,7 +8988,7 @@ export interface HpkeArmoredEnvelope_VaultV0_2 {
 }
 export interface IdentityChange {
   /**
-   * `addKey` — a verification method joins its role's relationship and `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves its relationship and `keyRoles`, and stays in `verificationMethod` with `revoked` set to the compromise time (CONVENTIONS.md §9.1). `rotateUpdateKey` — the identifier's update authority moves to a committed routine successor. `commitUpdateKey` — a new routine successor is committed. `replaceRecoveryCommitment` — the recovery commitment changes. `useRecoveryKey` — the change is authorized by the recovery key, which the identifier then reveals.
+   * `addKey` — a verification method joins its role's relationship and `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves its relationship and `keyRoles`, and stays in `verificationMethod` with `revoked` set to the compromise time (CONVENTIONS.md §9.1). `rotateUpdateKey` — the identifier's update authority moves to a committed routine successor. `commitUpdateKey` — a new routine successor is committed. `replaceRecoveryCommitment` — the recovery commitment changes. `useRecoveryKey` — the change is authorized by the recovery key, which the identifier then reveals. `declareAssuranceLevel` — the document's `keyAssurance` declares a new, higher key assurance level (CONVENTIONS.md §3.4); `role` is `update`, and `assuranceLevel` carries the level.
    */
   op:
     | "addKey"
@@ -8988,13 +8997,18 @@ export interface IdentityChange {
     | "rotateUpdateKey"
     | "commitUpdateKey"
     | "replaceRecoveryCommitment"
-    | "useRecoveryKey";
+    | "useRecoveryKey"
+    | "declareAssuranceLevel";
   role: IdentityKeyRole;
   verificationMethod?: string;
   keyType?: KeyType;
   publicKeyMultibase?: string;
   commitment?: string;
   relationships?: DidVerificationRelationship[];
+  /**
+   * `declareAssuranceLevel` only: the level declared.
+   */
+  assuranceLevel?: KeyAssuranceLevel;
 }
 /**
  * What a change would publish, computed by the VTA by running the handler it would run to apply it (CONVENTIONS.md §6.1). This is what a consent surface renders and what an approval is bound to.
@@ -9024,6 +9038,10 @@ export interface IdentityChangePreview {
    */
   updateKeyRotates: boolean;
   recoverySigning?: RecoverySigningRequest;
+  /**
+   * The key assurance level the resulting document declares (CONVENTIONS.md §3.4).
+   */
+  assuranceLevel?: KeyAssuranceLevel;
 }
 /**
  * How a key is held. Present only in the custody projection. Carries no key material, and a conforming VTA MUST NOT place any in `ext`.
@@ -9035,7 +9053,7 @@ export interface IdentityKeyCustody {
   keyId?: string;
   origin?: KeyOrigin;
   /**
-   * Whether the custodian would release the private half. Always `false` for `attestation` and `update` keys. Stated explicitly, never absent.
+   * Whether the custodian would release the private half by any operation other than the VTA's own backup. Always `false` for `attestation` and `update` keys. Stated explicitly, never absent.
    */
   exportable: boolean;
   /**
@@ -9043,7 +9061,7 @@ export interface IdentityKeyCustody {
    */
   neverExportable: boolean;
   /**
-   * Whether the key, or material it can be re-derived or decrypted from, is in the VTA's backups or any state transfer. Always `false` for `attestation` and `update` keys (VTI-KEY-112).
+   * Whether the key, or material it can be re-derived or decrypted from, is in the VTA's backups or any state transfer. Always `false` for `attestation` and `update` keys of a level-3 identity (VTI-KEY-112); at level 2 such a key may be in the VTA's own backup and nowhere else (CONVENTIONS.md §5.5).
    */
   inBackups: boolean;
   protection: ProtectionClass;
@@ -9055,6 +9073,10 @@ export interface IdentityKeyCustody {
    * True once the private half has been destroyed — a retired `attestation` or `messaging` key. The record survives so the key's past signatures stay attributable.
    */
   destroyed?: boolean;
+  /**
+   * The recovery update key only: the kind of recovery custodian the operator declared when committing it (CONVENTIONS.md §5.6). Custody projection only; never published.
+   */
+  custodian?: RecoveryCustodian;
 }
 /**
  * One key in one role. A key is in exactly one role for its whole life; a change of role is a retirement from one and an addition to another, with fresh material under a fresh identifier.
@@ -9567,7 +9589,7 @@ export interface KeyRoleSummary {
    */
   keys: IdentityRoleKey[];
   /**
-   * `update` only: whether the identifier's latest version commits to a recovery key in a boundary other than the VTA's (CONVENTIONS.md §5.3). `false` is a defect the VTA reports rather than hides.
+   * `update` only: whether the identifier's latest version commits to a recovery key in a boundary other than the VTA's (CONVENTIONS.md §5.3). Always `true` at level 3, where `false` is a defect the VTA reports rather than hides; always `false` at level 2.
    */
   recoveryCommitted?: boolean;
   /**
@@ -11264,7 +11286,7 @@ export interface RecordedApproval {
   recordedAt?: string;
 }
 /**
- * A recovery key offered for commitment (CONVENTIONS.md §5.3). The VTA computes the method's commitment from it, verifies `proofOfPossession`, and then keeps only the commitment. The key MUST be held by a custodian in a protection boundary other than the VTA's; a VTA MUST refuse one it generated or can derive (`vta/dids:recoveryCommitmentRequired`).
+ * A recovery key offered for commitment at level 3 (CONVENTIONS.md §5.3). The VTA computes the method's commitment from it, verifies `proofOfPossession`, and then keeps only the commitment. The key MUST be held by a recovery custodian in a protection boundary other than the VTA's (§5.6); a VTA MUST refuse one it generated or can derive (`vta/dids:recoveryCommitmentRequired`). A threshold custodian's key is an ordinary Ed25519 key, and its proof of possession an ordinary Ed25519 signature (§5.7).
  */
 export interface RecoveryCommitment {
   keyType: KeyType;
@@ -11280,6 +11302,27 @@ export interface RecoveryCommitment {
    * Operator-facing name of the custodian. Custody projection only; never published.
    */
   label?: string;
+  custodian?: RecoveryCustodian;
+}
+/**
+ * What the operator declares about who holds a recovery key. The VTA cannot verify it — it verifies the proof of possession and refuses a key it generated or can derive — and uses it to route a recovery signing request and to report custody. Custody projection only; never published (VTI-KEY-150, VTI-KEY-206).
+ */
+export interface RecoveryCustodian {
+  kind: RecoveryCustodianKind;
+  /**
+   * `vta` only: the custodian VTA's DID, to which the recovering or revoking VTA MAY send the recovery signing request. Absent, the request is carried out of band.
+   */
+  did?: string;
+  /**
+   * `thresholdGroup` only: the participants' VTA DIDs, n of them. A threshold group has at least three participants, because 2 ≤ t < n (VTI-KEY-210).
+   *
+   * @minItems 3
+   */
+  participants?: [string, string, string, ...string[]];
+  /**
+   * `thresholdGroup` only: t, the number of participants that together sign. MUST be less than the number of `participants`.
+   */
+  threshold?: number;
 }
 /**
  * What a recovery custodian must sign for a change that only the recovery key may authorize (CONVENTIONS.md §5.4, §9.4). The custodian MUST check `unsignedChange` itself — render it to its human, confirm that it reveals the recovery key it holds and commits to a fresh recovery key it also holds — and MUST NOT sign on the strength of this request's description alone.
