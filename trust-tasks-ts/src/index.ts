@@ -2741,6 +2741,9 @@ export import VtaWebvhDidsRotateKeys_v2_0 = _VtaWebvhDidsRotateKeys_v2_0;
 import * as _VtaWebvhDidsUpdate_v1_0 from "./vta/webvh/dids/update/1.0/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtaWebvhDidsUpdate_v1_0 = _VtaWebvhDidsUpdate_v1_0;
+import * as _VtaWebvhDidsUpdate_v1_1 from "./vta/webvh/dids/update/1.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtaWebvhDidsUpdate_v1_1 = _VtaWebvhDidsUpdate_v1_1;
 import * as _VtaWebvhDidsUpdate_v2_0 from "./vta/webvh/dids/update/2.0/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtaWebvhDidsUpdate_v2_0 = _VtaWebvhDidsUpdate_v2_0;

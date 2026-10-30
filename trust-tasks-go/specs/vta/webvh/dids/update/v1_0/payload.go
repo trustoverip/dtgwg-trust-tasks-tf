@@ -13,6 +13,8 @@ import (
 
 // Response The published entry. camelCase per the framework convention — note the counts
 // are the state AFTER the update, including the rotation the caller did not ask for.
+//
+// Deprecated: superseded by vta/webvh/dids/update/1.1
 type Response struct {
 	DID string `json:"did"`
 
@@ -43,6 +45,8 @@ type Ext = map[string]json.RawMessage
 
 // Payload Ask a Verifiable Trust Agent to publish a new entry in a did:webvh log it holds
 // the update key for. The agent decides whether to do so; the caller proposes.
+//
+// Deprecated: superseded by vta/webvh/dids/update/1.1
 type Payload struct {
 	// The did:webvh being updated. The agent MUST verify it speaks for this subject.
 	DID string `json:"did"`
@@ -96,7 +100,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by vta/webvh/dids/update/1.1"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/webvh/dids/update/1.0#response"

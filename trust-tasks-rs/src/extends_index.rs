@@ -15,6 +15,7 @@ pub(crate) fn declared_extends(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vta/did-templates/get/3.2" => Some("3.1"),
         "https://trusttasks.org/spec/vta/did-templates/list/3.2" => Some("3.1"),
         "https://trusttasks.org/spec/vta/did-templates/update/3.2" => Some("3.1"),
+        "https://trusttasks.org/spec/vta/webvh/dids/update/1.1" => Some("1.0"),
         _ => None,
     }
 }
