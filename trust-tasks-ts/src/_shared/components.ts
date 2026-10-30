@@ -8570,11 +8570,13 @@ export interface FieldVisibility {
   [k: string]: Audience | undefined;
 }
 /**
- * The `file` member of a sealed record body: everything that describes a file, sealed with the record, signed by the record's author, and never seen by the host. Defined here so that clients interoperate; no host task carries it, because the host receives only ciphertext.
+ * Everything that describes a file. On an `attributed` or `private` room it is the `file` member of the sealed record body: sealed with the record, signed by the record's author, and never seen by the host. On an `open` room it is the `file` member of the record's `cleartext` (rooms/records/put/0.4), carrying its own `fileKey`, and the host reads it like the rest of the record. Defined here so that clients interoperate.
  *
  * **Byte encodings.** In every derivation below, `fileId` is its **32 decoded bytes**, never its base64url text; `roomId` is the **UTF-8 bytes** of the room identifier exactly as it appears on the wire; string constants are their ASCII bytes; `u8`, `u32be` and `u64be` are unsigned integers of that width, big-endian. Epochs are unsigned 64-bit on the wire. An implementation that holds epochs in a narrower type **MUST** refuse a value it cannot represent with `malformedRequest` (or, reading a manifest, refuse the file), and **MUST NOT** truncate it.
  *
  * **The file key.** `file_key = HKDF-SHA256(ikm = storage_key(epoch), salt = fileId, info = "openvtc/room/file/v1" || roomId || u64be(epoch))`, where `storage_key(epoch)` is the room's per-epoch storage key, the one records are sealed under. It is derived per file and never stored. It is bound to the room and the epoch, so a key released for one room cannot open a blob relocated from another, and releasing it exposes one file and nothing else.
+ *
+ * **The file key on an `open` room.** An open room has no group and so no storage key to derive from. There the uploader mints the file key itself — 32 bytes from a cryptographically secure random source, for this file only — and carries it in `fileKey`; a reader uses that key and derives nothing. Everything else below (padding, STREAM, the associated data, reading) is the same on every tier, with `epoch` the room's epoch when the file was written. `fileKey` **MUST** be present in an open room's manifest and **MUST** be absent from a sealed record body's, where the key is derived; a reader **MUST** refuse a file whose manifest breaks either rule. The key in the clear withholds nothing from the host or from anyone it serves the record to — the open tier withholds nothing from them — but it keeps the stored blob opaque to whoever holds only the storage, and keeps one blob format, and one reader, for every tier.
  *
  * **Padding.** With `padding: "padme"`, the plaintext of length `L = size` is extended with zero bytes to `padme(L)`: for `L < 2`, `padme(L) = L`; otherwise `E = floor(log2 L)`, `S = floor(log2 E) + 1`, `z = E − S`, `mask = 2^z − 1`, and `padme(L) = (L + mask) & ~mask`. The padded length is `padme(size)`; without padding it is `size`. Padding bytes **MUST** be zero.
  *
@@ -8593,7 +8595,7 @@ export interface FileManifest {
    */
   fileId: string;
   /**
-   * The file's name as the uploader gave it. Sealed: the host never sees it. Readers MUST treat it as untrusted text: strip path separators before using it as a local file name, and never interpret it as markup.
+   * The file's name as the uploader gave it. Sealed on `attributed` and `private` rooms, where the host never sees it; in the clear on `open` ones. Readers MUST treat it as untrusted text: strip path separators before using it as a local file name, and never interpret it as markup.
    */
   name: string;
   /**
@@ -8605,7 +8607,7 @@ export interface FileManifest {
    */
   size: number;
   /**
-   * Digest of the plaintext bytes. Signed, with the rest of the record body, by the record's author, so a reader that verifies it knows which member put exactly these bytes there.
+   * Digest of the plaintext bytes. On `attributed` and `private` rooms it is signed, with the rest of the record body, by the record's author, so a reader that verifies it knows which member put exactly these bytes there. On an `open` room it is the writer's claim as the host stores it, like the rest of the record.
    */
   digest: DigestMultibase;
   /**
@@ -8621,6 +8623,10 @@ export interface FileManifest {
    */
   padding?: "none" | "padme";
   blobRef: BlobRef;
+  /**
+   * The file key itself, 32 bytes base64url without padding: present on an `open` room only, where there is no storage key to derive it from. Minted by the uploader from a cryptographically secure random source for this one file and never reused. MUST be absent on `attributed` and `private` rooms, where the key is derived and never stored.
+   */
+  fileKey?: string;
 }
 /**
  * A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.
