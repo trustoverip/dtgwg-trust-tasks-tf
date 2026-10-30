@@ -1,0 +1,44 @@
+{
+  "id": "4b8e1f05-6c3d-42a9-8e71-0d5f2a7c91b3",
+  "type": "https://trusttasks.org/spec/process-attestation/0.1#response",
+  "issuer": "did:key:z6MkvDqGT54cXesYGvABpF1UapVNwjCqRcafi4Px6Thv5T3Z",
+  "recipient": "did:web:verifier.example",
+  "issuedAt": "2026-09-09T14:02:14Z",
+  "threadId": "1c9d4e60-8a2f-4b13-bd77-2e5a6c0918af",
+  "payload": {
+    "result": "attested",
+    "challenge": "9tKpX2mQzR7vLbN4hJ8cWfA6dY0sE5uT3gO1iZ",
+    "artifact": {
+      "digest": "hcHFbGVGLXVQqZ8mRk2vN4pT7sYwD1jB6xK0aC3eI9M",
+      "algorithm": "sha-256"
+    },
+    "assessment": {
+      "primitive": "https://writerslogic.com/.well-known/rats-eat-profile-pop-1.0.json",
+      "determination": "authentic"
+    },
+    "receiptReference": {
+      "type": "uri",
+      "uri": "https://evidence.author.example/r/4b8e1f05.cpoe",
+      "mediaType": "application/cpoe+cbor",
+      "digestMultibase": "zQmetCf1LCufxasVAmp4cSBLsbD7wdQJkj6wxFjc3Mkhnuy"
+    },
+    "disclosed": {
+      "document": {
+        "mediaType": "text/markdown"
+      },
+      "timeline": {
+        "startedAt": "2026-09-08T09:14:02Z",
+        "endedAt": "2026-09-08T11:47:35Z",
+        "checkpointCount": 4100
+      }
+    }
+  },
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-jcs-2022",
+    "created": "2026-09-09T14:02:14Z",
+    "verificationMethod": "did:key:z6MkvDqGT54cXesYGvABpF1UapVNwjCqRcafi4Px6Thv5T3Z#z6MkvDqGT54cXesYGvABpF1UapVNwjCqRcafi4Px6Thv5T3Z",
+    "proofPurpose": "authentication",
+    "proofValue": "z65ZGFYVTws2DT6Lk2Md3p7w4Pf7FfmfCEiHxguMnQoRWs3RS2av5pvmLnyarYn5LZ91tFJ1baRknQvCikEoe9gGV"
+  }
+}

@@ -17,7 +17,7 @@ fn request_example_1() {
 }
 #[test]
 fn response_example_1() {
-    const JSON: &str = "{\n  \"id\": \"4b8e1f05-6c3d-42a9-8e71-0d5f2a7c91b3\",\n  \"type\": \"https://trusttasks.org/spec/process-attestation/0.1#response\",\n  \"issuer\": \"did:web:author.example\",\n  \"recipient\": \"did:web:verifier.example\",\n  \"issuedAt\": \"2026-09-09T14:02:14Z\",\n  \"threadId\": \"1c9d4e60-8a2f-4b13-bd77-2e5a6c0918af\",\n  \"payload\": {\n    \"result\": \"attested\",\n    \"challenge\": \"9tKpX2mQzR7vLbN4hJ8cWfA6dY0sE5uT3gO1iZ\",\n    \"artifact\": {\n      \"digest\": \"hcHFbGVGLXVQqZ8mRk2vN4pT7sYwD1jB6xK0aC3eI9M\",\n      \"algorithm\": \"sha-256\"\n    },\n    \"assessment\": {\n      \"primitive\": \"https://lf-decentralized-trust-labs.github.io/proof-of-effort/\",\n      \"determination\": \"V1_VerifiedHuman\",\n      \"confidence\": 94\n    },\n    \"receiptReference\": {\n      \"type\": \"uri\",\n      \"uri\": \"https://evidence.author.example/r/4b8e1f05.cpoe\",\n      \"mediaType\": \"application/cpoe+cose\"\n    },\n    \"disclosed\": {\n      \"document\": {\n        \"mediaType\": \"text/markdown\"\n      },\n      \"timeline\": {\n        \"startedAt\": \"2026-09-08T09:14:02Z\",\n        \"endedAt\": \"2026-09-08T11:47:35Z\",\n        \"checkpointCount\": 41\n      }\n    }\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2026-09-09T14:02:14Z\",\n    \"verificationMethod\": \"did:web:author.example#key-1\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z4oey6cnBVUCyx9YKvQZ8mR2vN4pT7sYwD1jB6xK0aC3eI9Mh\"\n  }\n}\n";
+    const JSON: &str = "{\n  \"id\": \"4b8e1f05-6c3d-42a9-8e71-0d5f2a7c91b3\",\n  \"type\": \"https://trusttasks.org/spec/process-attestation/0.1#response\",\n  \"issuer\": \"did:web:author.example\",\n  \"recipient\": \"did:web:verifier.example\",\n  \"issuedAt\": \"2026-09-09T14:02:14Z\",\n  \"threadId\": \"1c9d4e60-8a2f-4b13-bd77-2e5a6c0918af\",\n  \"payload\": {\n    \"result\": \"attested\",\n    \"challenge\": \"9tKpX2mQzR7vLbN4hJ8cWfA6dY0sE5uT3gO1iZ\",\n    \"artifact\": {\n      \"digest\": \"hcHFbGVGLXVQqZ8mRk2vN4pT7sYwD1jB6xK0aC3eI9M\",\n      \"algorithm\": \"sha-256\"\n    },\n    \"assessment\": {\n      \"primitive\": \"https://writerslogic.com/.well-known/rats-eat-profile-pop-1.0.json\",\n      \"determination\": \"authentic\"\n    },\n    \"receiptReference\": {\n      \"type\": \"uri\",\n      \"uri\": \"https://evidence.author.example/r/4b8e1f05.cpoe\",\n      \"mediaType\": \"application/cpoe+cbor\",\n      \"digestMultibase\": \"zQmetCf1LCufxasVAmp4cSBLsbD7wdQJkj6wxFjc3Mkhnuy\"\n    },\n    \"disclosed\": {\n      \"document\": {\n        \"mediaType\": \"text/markdown\"\n      },\n      \"timeline\": {\n        \"startedAt\": \"2026-09-08T09:14:02Z\",\n        \"endedAt\": \"2026-09-08T11:47:35Z\",\n        \"checkpointCount\": 41\n      }\n    }\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2026-09-09T14:02:14Z\",\n    \"verificationMethod\": \"did:web:author.example#key-1\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z4oey6cnBVUCyx9YKvQZ8mR2vN4pT7sYwD1jB6xK0aC3eI9Mh\"\n  }\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Response> =
         serde_json::from_str(JSON).expect("deserialize response example");
     let rendered = serde_json::to_value(&doc).expect("re-serialize");
@@ -82,6 +82,78 @@ fn rejects_invalid_examples() {
         assert!(
             !(serde_ok && schema_ok),
             "invalid-example #{} ({:?}) was accepted by both serde and JSON Schema; \
+                         the fixture's stated failure class is no longer caught:\n{}",
+            i + 1,
+            note,
+            raw
+        );
+    }
+}
+/// Each `"variant": "response"` fixture in
+/// `payload.invalid-examples.json` MUST be rejected as a
+/// response payload by at least one of: serde deserialization
+/// into `Response`, or JSON-Schema validation against the
+/// `$anchor: "response"` sub-schema (validate feature).
+#[cfg(feature = "validate")]
+#[test]
+fn rejects_invalid_response_examples() {
+    use trust_tasks_rs::validate::ValidatedPayload;
+    let fixtures: &[(&str, &str)] = &[
+        (
+            "Attested result without `assessment`. The determination is what an attested response exists to carry; an attested result that omits it is not a weaker answer but a malformed one.",
+            "{\n  \"artifact\": {\n    \"algorithm\": \"sha-256\",\n    \"digest\": \"hcHFbGVGLXVQqZ8mRk2vN4pT7sYwD1jB6xK0aC3eI9M\"\n  },\n  \"challenge\": \"9tKpX2mQzR7vLbN4hJ8cWfA6dY0sE5uT3gO1iZ\",\n  \"receiptReference\": {\n    \"mediaType\": \"application/cpoe+cbor\",\n    \"type\": \"uri\",\n    \"uri\": \"https://evidence.author.example/r/4b8e1f05.cpoe\"\n  },\n  \"result\": \"attested\"\n}",
+        ),
+        (
+            "Attested result without `receiptReference`. Verifier rule 4 cannot run on an assessment that names no receipt to verify it against.",
+            "{\n  \"artifact\": {\n    \"algorithm\": \"sha-256\",\n    \"digest\": \"hcHFbGVGLXVQqZ8mRk2vN4pT7sYwD1jB6xK0aC3eI9M\"\n  },\n  \"assessment\": {\n    \"determination\": \"authentic\",\n    \"primitive\": \"https://writerslogic.com/.well-known/rats-eat-profile-pop-1.0.json\"\n  },\n  \"challenge\": \"9tKpX2mQzR7vLbN4hJ8cWfA6dY0sE5uT3gO1iZ\",\n  \"result\": \"attested\"\n}",
+        ),
+        (
+            "`unavailable` carrying `assessment`. The Unavailable branch closes over its three members (additionalProperties: false), so a Holder cannot disclose a determination while claiming to have none — Holder rule 5.",
+            "{\n  \"artifact\": {\n    \"algorithm\": \"sha-256\",\n    \"digest\": \"hcHFbGVGLXVQqZ8mRk2vN4pT7sYwD1jB6xK0aC3eI9M\"\n  },\n  \"assessment\": {\n    \"determination\": \"authentic\",\n    \"primitive\": \"https://writerslogic.com/.well-known/rats-eat-profile-pop-1.0.json\"\n  },\n  \"challenge\": \"9tKpX2mQzR7vLbN4hJ8cWfA6dY0sE5uT3gO1iZ\",\n  \"result\": \"unavailable\"\n}",
+        ),
+        (
+            "`disclosed` on an `unavailable` result. Same rule: nothing is disclosed about a receipt the Holder says it does not hold.",
+            "{\n  \"artifact\": {\n    \"algorithm\": \"sha-256\",\n    \"digest\": \"hcHFbGVGLXVQqZ8mRk2vN4pT7sYwD1jB6xK0aC3eI9M\"\n  },\n  \"challenge\": \"9tKpX2mQzR7vLbN4hJ8cWfA6dY0sE5uT3gO1iZ\",\n  \"disclosed\": {\n    \"document\": {\n      \"mediaType\": \"text/markdown\"\n    }\n  },\n  \"result\": \"unavailable\"\n}",
+        ),
+        (
+            "`result` outside the two defined values. `result` is the branch discriminator; a third value matches neither branch of the oneOf.",
+            "{\n  \"artifact\": {\n    \"algorithm\": \"sha-256\",\n    \"digest\": \"hcHFbGVGLXVQqZ8mRk2vN4pT7sYwD1jB6xK0aC3eI9M\"\n  },\n  \"challenge\": \"9tKpX2mQzR7vLbN4hJ8cWfA6dY0sE5uT3gO1iZ\",\n  \"result\": \"pending\"\n}",
+        ),
+        (
+            "`confidence` above 100. An integer percentage is bounded at both ends; 101 is a producer bug, not a very confident primitive.",
+            "{\n  \"artifact\": {\n    \"algorithm\": \"sha-256\",\n    \"digest\": \"hcHFbGVGLXVQqZ8mRk2vN4pT7sYwD1jB6xK0aC3eI9M\"\n  },\n  \"assessment\": {\n    \"confidence\": 101,\n    \"determination\": \"authentic\",\n    \"primitive\": \"https://writerslogic.com/.well-known/rats-eat-profile-pop-1.0.json\"\n  },\n  \"challenge\": \"9tKpX2mQzR7vLbN4hJ8cWfA6dY0sE5uT3gO1iZ\",\n  \"receiptReference\": {\n    \"mediaType\": \"application/cpoe+cbor\",\n    \"type\": \"uri\",\n    \"uri\": \"https://evidence.author.example/r/4b8e1f05.cpoe\"\n  },\n  \"result\": \"attested\"\n}",
+        ),
+        (
+            "Inline receipt `data` is standard base64 with padding. The pattern is base64url unpadded, so a producer emitting standard base64 is rejected rather than decoded to different bytes.",
+            "{\n  \"artifact\": {\n    \"algorithm\": \"sha-256\",\n    \"digest\": \"hcHFbGVGLXVQqZ8mRk2vN4pT7sYwD1jB6xK0aC3eI9M\"\n  },\n  \"assessment\": {\n    \"determination\": \"authentic\",\n    \"primitive\": \"https://writerslogic.com/.well-known/rats-eat-profile-pop-1.0.json\"\n  },\n  \"challenge\": \"9tKpX2mQzR7vLbN4hJ8cWfA6dY0sE5uT3gO1iZ\",\n  \"receiptReference\": {\n    \"data\": \"AQID+/8=\",\n    \"mediaType\": \"application/cpoe+cbor\",\n    \"type\": \"inline\"\n  },\n  \"result\": \"attested\"\n}",
+        ),
+        (
+            "Receipt `digestMultibase` is bare hex. The framework DigestMultibase definition requires a multibase-encoded multihash so the algorithm travels in-band; raw hex hard-codes one.",
+            "{\n  \"artifact\": {\n    \"algorithm\": \"sha-256\",\n    \"digest\": \"hcHFbGVGLXVQqZ8mRk2vN4pT7sYwD1jB6xK0aC3eI9M\"\n  },\n  \"assessment\": {\n    \"determination\": \"authentic\",\n    \"primitive\": \"https://writerslogic.com/.well-known/rats-eat-profile-pop-1.0.json\"\n  },\n  \"challenge\": \"9tKpX2mQzR7vLbN4hJ8cWfA6dY0sE5uT3gO1iZ\",\n  \"receiptReference\": {\n    \"digestMultibase\": \"2d711642b726b04401627ca9fbac32f5c8530fb1903cc4db02258717921a4881\",\n    \"mediaType\": \"application/cpoe+cbor\",\n    \"type\": \"uri\",\n    \"uri\": \"https://evidence.author.example/r/4b8e1f05.cpoe\"\n  },\n  \"result\": \"attested\"\n}",
+        ),
+        (
+            "Unknown `keyCustody`. The custody enum is closed so a primitive cannot invent a tier a Verifier's policy has never ranked.",
+            "{\n  \"artifact\": {\n    \"algorithm\": \"sha-256\",\n    \"digest\": \"hcHFbGVGLXVQqZ8mRk2vN4pT7sYwD1jB6xK0aC3eI9M\"\n  },\n  \"assessment\": {\n    \"determination\": \"authentic\",\n    \"primitive\": \"https://writerslogic.com/.well-known/rats-eat-profile-pop-1.0.json\"\n  },\n  \"challenge\": \"9tKpX2mQzR7vLbN4hJ8cWfA6dY0sE5uT3gO1iZ\",\n  \"disclosed\": {\n    \"integrity\": {\n      \"chainValid\": true,\n      \"keyCustody\": \"hsm\",\n      \"signatureValid\": true\n    }\n  },\n  \"receiptReference\": {\n    \"mediaType\": \"application/cpoe+cbor\",\n    \"type\": \"uri\",\n    \"uri\": \"https://evidence.author.example/r/4b8e1f05.cpoe\"\n  },\n  \"result\": \"attested\"\n}",
+        ),
+        (
+            "Unknown anchor `kind`. Anchors are an enum so a Verifier knows which verification procedure each entry calls for; `ntp` is not an anchor.",
+            "{\n  \"artifact\": {\n    \"algorithm\": \"sha-256\",\n    \"digest\": \"hcHFbGVGLXVQqZ8mRk2vN4pT7sYwD1jB6xK0aC3eI9M\"\n  },\n  \"assessment\": {\n    \"determination\": \"authentic\",\n    \"primitive\": \"https://writerslogic.com/.well-known/rats-eat-profile-pop-1.0.json\"\n  },\n  \"challenge\": \"9tKpX2mQzR7vLbN4hJ8cWfA6dY0sE5uT3gO1iZ\",\n  \"disclosed\": {\n    \"anchors\": [\n      {\n        \"anchoredAt\": \"2026-09-08T11:50:00Z\",\n        \"kind\": \"ntp\"\n      }\n    ]\n  },\n  \"receiptReference\": {\n    \"mediaType\": \"application/cpoe+cbor\",\n    \"type\": \"uri\",\n    \"uri\": \"https://evidence.author.example/r/4b8e1f05.cpoe\"\n  },\n  \"result\": \"attested\"\n}",
+        ),
+        (
+            "Response `challenge` below the 16-character floor. The response echoes the request's challenge, and the floor applies on both sides so a Holder cannot shorten what it echoes.",
+            "{\n  \"artifact\": {\n    \"algorithm\": \"sha-256\",\n    \"digest\": \"hcHFbGVGLXVQqZ8mRk2vN4pT7sYwD1jB6xK0aC3eI9M\"\n  },\n  \"assessment\": {\n    \"determination\": \"authentic\",\n    \"primitive\": \"https://writerslogic.com/.well-known/rats-eat-profile-pop-1.0.json\"\n  },\n  \"challenge\": \"tooshort\",\n  \"receiptReference\": {\n    \"mediaType\": \"application/cpoe+cbor\",\n    \"type\": \"uri\",\n    \"uri\": \"https://evidence.author.example/r/4b8e1f05.cpoe\"\n  },\n  \"result\": \"attested\"\n}",
+        ),
+    ];
+    for (i, (note, raw)) in fixtures.iter().enumerate() {
+        let value: serde_json::Value = match serde_json::from_str(raw) {
+            Ok(v) => v,
+            Err(_) => continue,
+        };
+        let serde_ok = serde_json::from_value::<spec::Response>(value.clone()).is_ok();
+        let schema_ok = spec::Response::validate_value(&value).is_ok();
+        assert!(
+            !(serde_ok && schema_ok),
+            "invalid response example #{} ({:?}) was accepted by both serde and JSON Schema; \
                          the fixture's stated failure class is no longer caught:\n{}",
             i + 1,
             note,

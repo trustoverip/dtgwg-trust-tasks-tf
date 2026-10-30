@@ -186,6 +186,10 @@
             "mediaType": {
               "type": "string",
               "maxLength": 255
+            },
+            "digestMultibase": {
+              "$ref": "../../_framework/0.3/framework.schema.json#/$defs/DigestMultibase",
+              "description": "Digest of the exact receipt bytes the URI serves. The response's proof covers the URI and not what it serves, so this is what lets a retained response show which receipt it referred to; a Verifier that dereferences the URI compares before relying on the bytes (Verifier rule 6)."
             }
           }
         },
@@ -276,7 +280,8 @@
                 "secureEnclave"
               ]
             }
-          }
+          },
+          "description": "The Holder's own report of its receipt's state. It is not verification: a Verifier relies on its own verification of the receipt (Verifier rules 4 and 7)."
         },
         "anchors": {
           "type": "array",
@@ -292,8 +297,10 @@
                 "enum": [
                   "rfc3161",
                   "opentimestamps",
-                  "roughtime"
-                ]
+                  "roughtime",
+                  "blockchain"
+                ],
+                "description": "The anchoring mechanism. `rfc3161` is a timestamp-authority response, `opentimestamps` an OpenTimestamps proof, `roughtime` a Roughtime sample, `blockchain` a direct chain anchor. Appended values are additive; a reader passes an unrecognised one through."
               },
               "anchoredAt": {
                 "type": "string",

@@ -19241,6 +19241,9 @@ pub fn max_document_bytes_for(type_uri: &str) -> Option<usize> {
         #[cfg(feature = "keys")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/keys/sign-jws/0.1#response" => <crate::specs::keys::sign_jws::v0_1::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "process-attestation")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/process-attestation/0.1#response" => <crate::specs::process_attestation::v0_1::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/blobs/chunk/0.1#response" => <crate::specs::rooms::blobs::chunk::v0_1::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
