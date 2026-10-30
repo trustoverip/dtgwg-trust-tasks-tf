@@ -4048,6 +4048,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vta/did-templates/create/3.1#response" => <crate::specs::vta::did_templates::create::v3_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/did-templates/create/3.2" => <crate::specs::vta::did_templates::create::v3_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/did-templates/create/3.2#response" => <crate::specs::vta::did_templates::create::v3_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/did-templates/delete/1.0" => <crate::specs::vta::did_templates::delete::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
@@ -4084,6 +4090,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vta/did-templates/get/3.1#response" => <crate::specs::vta::did_templates::get::v3_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/did-templates/get/3.2" => <crate::specs::vta::did_templates::get::v3_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/did-templates/get/3.2#response" => <crate::specs::vta::did_templates::get::v3_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/did-templates/list/1.0" => <crate::specs::vta::did_templates::list::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
@@ -4106,6 +4118,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/did-templates/list/3.1#response" => <crate::specs::vta::did_templates::list::v3_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/did-templates/list/3.2" => <crate::specs::vta::did_templates::list::v3_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/did-templates/list/3.2#response" => <crate::specs::vta::did_templates::list::v3_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/did-templates/render/1.0" => <crate::specs::vta::did_templates::render::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -4142,6 +4160,60 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/did-templates/update/3.1#response" => <crate::specs::vta::did_templates::update::v3_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/did-templates/update/3.2" => <crate::specs::vta::did_templates::update::v3_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/did-templates/update/3.2#response" => <crate::specs::vta::did_templates::update::v3_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/create/1.0" => <crate::specs::vta::dids::create::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/create/1.0#response" => <crate::specs::vta::dids::create::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/keys/add/1.0" => <crate::specs::vta::dids::keys::add::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/keys/add/1.0#response" => <crate::specs::vta::dids::keys::add::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/keys/list/1.0" => <crate::specs::vta::dids::keys::list::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/keys/list/1.0#response" => <crate::specs::vta::dids::keys::list::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/keys/retire/1.0" => <crate::specs::vta::dids::keys::retire::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/keys/retire/1.0#response" => <crate::specs::vta::dids::keys::retire::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/keys/revoke/1.0" => <crate::specs::vta::dids::keys::revoke::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/keys/revoke/1.0#response" => <crate::specs::vta::dids::keys::revoke::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/keys/rotate/1.0" => <crate::specs::vta::dids::keys::rotate::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/keys/rotate/1.0#response" => <crate::specs::vta::dids::keys::rotate::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/recover/1.0" => <crate::specs::vta::dids::recover::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/recover/1.0#response" => <crate::specs::vta::dids::recover::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/update/1.0" => <crate::specs::vta::dids::update::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/update/1.0#response" => <crate::specs::vta::dids::update::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/health/details/0.1" => <crate::specs::vta::health::details::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -10587,6 +10659,13 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         }
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/did-templates/create/3.2" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vta::did_templates::create::v3_2::Payload,
+            >())
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/did-templates/delete/1.0" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::vta::did_templates::delete::v1_0::Payload,
@@ -10621,6 +10700,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/did-templates/get/3.2" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::did_templates::get::v3_2::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/did-templates/list/1.0" => Some(crate::SpecPolicy::of::<
             crate::specs::vta::did_templates::list::v1_0::Payload,
         >()),
@@ -10638,6 +10722,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/did-templates/list/3.1" => Some(crate::SpecPolicy::of::<
             crate::specs::vta::did_templates::list::v3_1::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/did-templates/list/3.2" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::did_templates::list::v3_2::Payload,
         >()),
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
@@ -10681,6 +10770,53 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
                 crate::specs::vta::did_templates::update::v3_1::Payload,
             >())
         }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/did-templates/update/3.2" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vta::did_templates::update::v3_2::Payload,
+            >())
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/create/1.0" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::dids::create::v1_0::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/keys/add/1.0" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::dids::keys::add::v1_0::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/keys/list/1.0" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::dids::keys::list::v1_0::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/keys/retire/1.0" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::dids::keys::retire::v1_0::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/keys/revoke/1.0" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::dids::keys::revoke::v1_0::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/keys/rotate/1.0" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::dids::keys::rotate::v1_0::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/recover/1.0" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::dids::recover::v1_0::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/update/1.0" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::dids::update::v1_0::Payload,
+        >()),
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/health/details/0.1" => Some(crate::SpecPolicy::of::<
@@ -16690,6 +16826,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/did-templates/create/3.2" => {
+            Some(crate::specs::vta::did_templates::create::v3_2::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/did-templates/delete/1.0" => {
             Some(crate::specs::vta::did_templates::delete::v1_0::ERROR_CODES)
         }
@@ -16720,6 +16861,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/did-templates/get/3.2" => {
+            Some(crate::specs::vta::did_templates::get::v3_2::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/did-templates/list/1.0" => {
             Some(crate::specs::vta::did_templates::list::v1_0::ERROR_CODES)
         }
@@ -16737,6 +16883,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/did-templates/list/3.1" => {
             Some(crate::specs::vta::did_templates::list::v3_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/did-templates/list/3.2" => {
+            Some(crate::specs::vta::did_templates::list::v3_2::ERROR_CODES)
         }
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
@@ -16767,6 +16918,51 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/did-templates/update/3.1" => {
             Some(crate::specs::vta::did_templates::update::v3_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/did-templates/update/3.2" => {
+            Some(crate::specs::vta::did_templates::update::v3_2::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/create/1.0" => {
+            Some(crate::specs::vta::dids::create::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/keys/add/1.0" => {
+            Some(crate::specs::vta::dids::keys::add::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/keys/list/1.0" => {
+            Some(crate::specs::vta::dids::keys::list::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/keys/retire/1.0" => {
+            Some(crate::specs::vta::dids::keys::retire::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/keys/revoke/1.0" => {
+            Some(crate::specs::vta::dids::keys::revoke::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/keys/rotate/1.0" => {
+            Some(crate::specs::vta::dids::keys::rotate::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/recover/1.0" => {
+            Some(crate::specs::vta::dids::recover::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/update/1.0" => {
+            Some(crate::specs::vta::dids::update::v1_0::ERROR_CODES)
         }
         #[cfg(feature = "vta")]
         #[cfg(not(test))]

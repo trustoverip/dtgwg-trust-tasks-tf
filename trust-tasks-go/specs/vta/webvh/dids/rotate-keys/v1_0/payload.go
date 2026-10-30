@@ -13,8 +13,6 @@ import (
 
 // Response Success response to vta/webvh/dids/rotate-keys. Type
 // https://trusttasks.org/spec/vta/webvh/dids/rotate-keys/1.0#response.
-//
-// Deprecated: superseded by vta/webvh/dids/rotate-keys/2.0
 type Response struct {
 	DID string `json:"did"`
 
@@ -43,8 +41,6 @@ type Ext = map[string]json.RawMessage
 
 // Payload Rotate a did:webvh's signing keys by appending a log entry that moves to the
 // pre-committed successor.
-//
-// Deprecated: superseded by vta/webvh/dids/rotate-keys/2.0
 type Payload struct {
 	DID string `json:"did"`
 
@@ -71,7 +67,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = "superseded by vta/webvh/dids/rotate-keys/2.0"
+const Deprecation = ""
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/webvh/dids/rotate-keys/1.0#response"

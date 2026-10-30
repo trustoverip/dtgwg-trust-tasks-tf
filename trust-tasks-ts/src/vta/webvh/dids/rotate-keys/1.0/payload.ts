@@ -8,8 +8,6 @@ import type { Ext } from "../../../../../_shared/components.js";
 
 /**
  * Rotate a did:webvh's signing keys by appending a log entry that moves to the pre-committed successor.
- *
- * @deprecated superseded by vta/webvh/dids/rotate-keys/2.0
  */
 export interface VTAWebVHDIDsRotateKeysPayload {
   did: string;
@@ -22,8 +20,6 @@ export interface VTAWebVHDIDsRotateKeysPayload {
 }
 /**
  * Success response to vta/webvh/dids/rotate-keys. Type https://trusttasks.org/spec/vta/webvh/dids/rotate-keys/1.0#response.
- *
- * @deprecated superseded by vta/webvh/dids/rotate-keys/2.0
  */
 export interface VTAWebVHDIDsRotateKeysResponsePayload {
   did: string;
@@ -68,23 +64,15 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by vta/webvh/dids/rotate-keys/2.0";
+export const DEPRECATION: string | null = null;
 
-/**
- * Stable alias for this specification's request payload shape.
- *
- * @deprecated superseded by vta/webvh/dids/rotate-keys/2.0
- */
+/** Stable alias for this specification's request payload shape. */
 export type Payload = VTAWebVHDIDsRotateKeysPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/webvh/dids/rotate-keys/1.0#response" as const;
 
-/**
- * Stable alias for this specification's success-response payload shape.
- *
- * @deprecated superseded by vta/webvh/dids/rotate-keys/2.0
- */
+/** Stable alias for this specification's success-response payload shape. */
 export type Response = VTAWebVHDIDsRotateKeysResponsePayload;
 
 /**

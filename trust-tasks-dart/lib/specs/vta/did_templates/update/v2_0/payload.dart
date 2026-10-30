@@ -101,7 +101,7 @@ class DidTemplateRecord {
 /// flattened at the top level alongside the resolved scope and provenance metadata
 /// (createdAt/createdBy preserved, updatedAt advanced). Same shape returned by
 /// create/get.
-@Deprecated('superseded by vta/did-templates/update/3.1')
+@Deprecated('superseded by vta/did-templates/update/3.2')
 typedef Response = DidTemplateRecord;
 
 /// Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a
@@ -198,7 +198,7 @@ class DidTemplate {
 /// resource id within the selected scope and MUST equal `template.name`; the VTA
 /// replaces the stored body, preserving createdAt/createdBy and advancing updatedAt.
 /// The success response is the persisted DidTemplateRecord.
-@Deprecated('superseded by vta/did-templates/update/3.1')
+@Deprecated('superseded by vta/did-templates/update/3.2')
 class Payload {
   const Payload({
     this.contextId,
@@ -248,7 +248,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by vta/did-templates/update/3.1';
+const String? deprecation = 'superseded by vta/did-templates/update/3.2';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri =

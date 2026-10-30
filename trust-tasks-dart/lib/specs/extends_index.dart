@@ -10,4 +10,9 @@
 library;
 
 /// See the library documentation.
-const Map<String, String> extendsIndex = <String, String>{};
+const Map<String, String> extendsIndex = <String, String>{
+  'https://trusttasks.org/spec/vta/did-templates/create/3.2': '3.1',
+  'https://trusttasks.org/spec/vta/did-templates/get/3.2': '3.1',
+  'https://trusttasks.org/spec/vta/did-templates/list/3.2': '3.1',
+  'https://trusttasks.org/spec/vta/did-templates/update/3.2': '3.1',
+};

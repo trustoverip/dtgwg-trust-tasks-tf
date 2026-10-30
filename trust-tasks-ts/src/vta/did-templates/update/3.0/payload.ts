@@ -9,7 +9,7 @@ import type { Builtin_VtaV0_1 as Builtin, Context_VtaV0_1 as Context, DidTemplat
 /**
  * Replace an existing DID template on a VTA. Omit `contextId` to replace in the global scope (super-admin gated); set it to replace a template scoped to that context (gated on the context's admin, or a super-admin). The `name` is the resource id within the selected scope and MUST equal `template.name`; the VTA replaces the stored body, preserving createdAt/createdBy and advancing updatedAt. The success response is the persisted DidTemplateRecord.
  *
- * @deprecated superseded by vta/did-templates/update/3.1
+ * @deprecated superseded by vta/did-templates/update/3.2
  */
 export interface VTADIDTemplateUpdatePayload {
   /**
@@ -50,12 +50,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by vta/did-templates/update/3.1";
+export const DEPRECATION: string | null = "superseded by vta/did-templates/update/3.2";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by vta/did-templates/update/3.1
+ * @deprecated superseded by vta/did-templates/update/3.2
  */
 export type Payload = VTADIDTemplateUpdatePayload;
 
@@ -65,7 +65,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/did-templates/
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by vta/did-templates/update/3.1
+ * @deprecated superseded by vta/did-templates/update/3.2
  */
 export type Response = DidTemplateRecord;
 

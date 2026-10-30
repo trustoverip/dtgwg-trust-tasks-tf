@@ -8,6 +8,8 @@ import type { DidDocumentChange, DidDocumentPreview, DidVerificationRelationship
 
 /**
  * Retire one key from a did:webvh by planned retirement: remove it from its role, its relationship, keyRoles and the document. Completes a rotation (retire the predecessor), aborts one (retire the successor), or removes an added key. What the key signed while published stays valid.
+ *
+ * @deprecated retired; use vta/dids/keys/retire/1.0
  */
 export interface VTAWebVHDIDsKeysRetirePayload {
   /**
@@ -46,6 +48,8 @@ export interface VTAWebVHDIDsKeysRetirePayload {
 }
 /**
  * Success response. Type https://trusttasks.org/spec/vta/webvh/dids/keys/retire/1.0#response. A refusal is a `trust-task-error` document, never this.
+ *
+ * @deprecated retired; use vta/dids/keys/retire/1.0
  */
 export interface VTAWebVHDIDsKeysRetireResponsePayload {
   did: string;
@@ -98,15 +102,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "retired; use vta/dids/keys/retire/1.0";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated retired; use vta/dids/keys/retire/1.0
+ */
 export type Payload = VTAWebVHDIDsKeysRetirePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/webvh/dids/keys/retire/1.0#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated retired; use vta/dids/keys/retire/1.0
+ */
 export type Response = VTAWebVHDIDsKeysRetireResponsePayload;
 
 /**

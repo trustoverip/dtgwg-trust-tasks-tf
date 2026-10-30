@@ -15,7 +15,7 @@ import (
 // top level alongside the resolved scope and provenance metadata. Same shape returned by
 // get/update.
 //
-// Deprecated: superseded by vta/did-templates/create/3.1
+// Deprecated: superseded by vta/did-templates/create/3.2
 type Response = DIDTemplateRecord
 
 // DIDTemplateRecord A persisted template. The DidTemplate fields are flattened at the top
@@ -94,7 +94,7 @@ type DIDTemplate struct {
 // within the selected scope; the VTA refuses duplicates (use update to replace). The
 // success response is the persisted DidTemplateRecord.
 //
-// Deprecated: superseded by vta/did-templates/create/3.1
+// Deprecated: superseded by vta/did-templates/create/3.2
 type Payload struct {
 	// Scope selector. Absent: the global scope, gated on a super-administrator. Present: the
 	// context the template is scoped to, gated on that context's administrator (or a
@@ -124,7 +124,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = "superseded by vta/did-templates/create/3.1"
+const Deprecation = "superseded by vta/did-templates/create/3.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/did-templates/create/2.0#response"

@@ -1674,6 +1674,7 @@ mod vta {
             mod v1_0;
             mod v2_0;
             mod v3_1;
+            mod v3_2;
         }
         mod delete {
             mod v1_0;
@@ -1683,11 +1684,13 @@ mod vta {
             mod v1_0;
             mod v2_0;
             mod v3_1;
+            mod v3_2;
         }
         mod list {
             mod v1_0;
             mod v2_0;
             mod v3_1;
+            mod v3_2;
         }
         mod render {
             mod v1_0;
@@ -1697,6 +1700,35 @@ mod vta {
             mod v1_0;
             mod v2_0;
             mod v3_1;
+            mod v3_2;
+        }
+    }
+    mod dids {
+        mod create {
+            mod v1_0;
+        }
+        mod keys {
+            mod add {
+                mod v1_0;
+            }
+            mod list {
+                mod v1_0;
+            }
+            mod retire {
+                mod v1_0;
+            }
+            mod revoke {
+                mod v1_0;
+            }
+            mod rotate {
+                mod v1_0;
+            }
+        }
+        mod recover {
+            mod v1_0;
+        }
+        mod update {
+            mod v1_0;
         }
     }
     mod health {

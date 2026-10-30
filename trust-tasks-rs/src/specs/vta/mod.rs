@@ -6,6 +6,7 @@ pub mod backup;
 pub mod contexts;
 pub mod credentials;
 pub mod did_templates;
+pub mod dids;
 pub mod health;
 pub mod management;
 pub mod memory;
