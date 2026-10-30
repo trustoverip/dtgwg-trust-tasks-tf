@@ -2074,9 +2074,11 @@ mod vtc {
         mod invites {
             mod create {
                 mod v0_1;
+                mod v0_2;
             }
             mod list {
                 mod v0_1;
+                mod v0_2;
             }
             mod revoke {
                 mod v0_1;

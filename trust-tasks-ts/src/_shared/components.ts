@@ -975,6 +975,10 @@ export type ImageMediaType = "image/png" | "image/jpeg" | "image/webp" | "image/
  */
 export type Introductions = "anyone" | "groups" | "connections" | "off";
 /**
+ * `wallet`: the invitation names a DID, and is claimed by signing as it (vtc/install/claim/start and finish 0.3). `passkey`: it names none, and the administrator's DID is the `did:key` of the passkey registered at its claim (vtc/install/claim/passkey/start and finish 0.1).
+ */
+export type InviteKind = "wallet" | "passkey";
+/**
  * `issued` is outstanding and revocable; `consumed` and `expired` are terminal.
  */
 export type InviteStatus = "issued" | "consumed" | "expired";
@@ -9235,6 +9239,29 @@ export interface InviteSummary_VtcV0_1 {
   status: InviteStatus;
   /**
    * The admin DID this invite enrols a passkey for.
+   */
+  targetDid?: string;
+  /**
+   * When an `issued` invite lapses.
+   */
+  expiresAt?: string;
+  /**
+   * When the invite was redeemed, if it was.
+   */
+  consumedAt?: string;
+}
+/**
+ * One outstanding or historical admin invite. Consumed rows are retained as audit history.
+ */
+export interface InviteSummary_VtcV0_2 {
+  /**
+   * Unique invite identifier; the revoke target.
+   */
+  jti: string;
+  kind: InviteKind;
+  status: InviteStatus;
+  /**
+   * The administrator's DID: for a wallet invitation the DID it names; for a passkey invitation the DID derived from the passkey that claimed it, so absent until it is consumed.
    */
   targetDid?: string;
   /**

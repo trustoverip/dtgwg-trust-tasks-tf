@@ -2843,6 +2843,9 @@ export import VettingAutoGrantShared_v0_1 = _VettingAutoGrantShared_v0_1;
 import * as _WebsiteTransferShared_v0_1 from "./vtc/_shared/0.1/website-transfer.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import WebsiteTransferShared_v0_1 = _WebsiteTransferShared_v0_1;
+import * as _InviteShared_v0_2 from "./vtc/_shared/0.2/invite.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import InviteShared_v0_2 = _InviteShared_v0_2;
 import * as _RoomStorageShared_v0_2 from "./vtc/_shared/0.2/room-storage.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomStorageShared_v0_2 = _RoomStorageShared_v0_2;
@@ -2957,9 +2960,15 @@ export import VtcAdminEventsSubscribe_v0_6 = _VtcAdminEventsSubscribe_v0_6;
 import * as _VtcAdminInvitesCreate_v0_1 from "./vtc/admin/invites/create/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtcAdminInvitesCreate_v0_1 = _VtcAdminInvitesCreate_v0_1;
+import * as _VtcAdminInvitesCreate_v0_2 from "./vtc/admin/invites/create/0.2/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcAdminInvitesCreate_v0_2 = _VtcAdminInvitesCreate_v0_2;
 import * as _VtcAdminInvitesList_v0_1 from "./vtc/admin/invites/list/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtcAdminInvitesList_v0_1 = _VtcAdminInvitesList_v0_1;
+import * as _VtcAdminInvitesList_v0_2 from "./vtc/admin/invites/list/0.2/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcAdminInvitesList_v0_2 = _VtcAdminInvitesList_v0_2;
 import * as _VtcAdminInvitesRevoke_v0_1 from "./vtc/admin/invites/revoke/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtcAdminInvitesRevoke_v0_1 = _VtcAdminInvitesRevoke_v0_1;
