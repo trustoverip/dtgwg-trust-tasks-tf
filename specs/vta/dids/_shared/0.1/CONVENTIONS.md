@@ -842,7 +842,7 @@ task that can reach one **MUST** declare it.
 ## 18. Adding a method
 
 A method is added by publishing its profile — a `method-profiles/<name>.md` under §3.3's
-headings and, where it takes parameters, a `method-profiles/<name>.schema.json` — in a new
+headings and, where it takes parameters, a `method-profiles/<name>-parameters.schema.json` — in a new
 version of this shared folder. Nothing in this document, the shared schema or the task
 schemas changes: `DidMethodName` is a pattern, `methodParameters` is validated against the
 profile, and `PublishedArtifact` and `RecoverySigningRequest` carry the method's own forms

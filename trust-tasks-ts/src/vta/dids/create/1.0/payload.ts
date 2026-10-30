@@ -30,7 +30,7 @@ export interface VTADIDsCreatePayload {
     [k: string]: unknown | undefined;
   };
   /**
-   * Validated against the method profile's `CreateParameters` schema (method-profiles/<method>.schema.json); a member it does not define is refused with `vta/dids:methodParameterUnsupported`.
+   * Validated against the method profile's `CreateParameters` schema (method-profiles/<method>-parameters.schema.json); a member it does not define is refused with `vta/dids:methodParameterUnsupported`.
    */
   methodParameters?: {};
   recoveryCommitment: RecoveryCommitment;
@@ -160,7 +160,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "methodParameters": {
       "type": "object",
-      "description": "Validated against the method profile's `CreateParameters` schema (method-profiles/<method>.schema.json); a member it does not define is refused with `vta/dids:methodParameterUnsupported`."
+      "description": "Validated against the method profile's `CreateParameters` schema (method-profiles/<method>-parameters.schema.json); a member it does not define is refused with `vta/dids:methodParameterUnsupported`."
     },
     "recoveryCommitment": {
       "$ref": "#/$defs/RecoveryCommitment"

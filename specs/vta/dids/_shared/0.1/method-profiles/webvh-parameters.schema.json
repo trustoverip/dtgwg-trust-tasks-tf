@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://trusttasks.org/spec/vta/dids/_shared/0.1/method-profiles/webvh",
+  "$id": "https://trusttasks.org/spec/vta/dids/_shared/0.1/method-profiles/webvh-parameters",
   "title": "Method parameters — did:webvh and did:scid:vh key-role identities",
   "description": "The schemas `methodParameters` is validated against for `vta/dids/create` and `vta/dids/update` when the identity's method is `webvh` or `scid:vh` (webvh.md §8). A member not defined here is refused with `vta/dids:methodParameterUnsupported`.",
   "$defs": {

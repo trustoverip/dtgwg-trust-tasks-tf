@@ -19,7 +19,7 @@ export interface VTADIDsUpdatePayload {
    */
   document?: {};
   /**
-   * Validated against the method profile's `UpdateParameters` schema (method-profiles/<method>.schema.json); a member it does not define, or one fixed at creation, is refused with `vta/dids:methodParameterUnsupported`.
+   * Validated against the method profile's `UpdateParameters` schema (method-profiles/<method>-parameters.schema.json); a member it does not define, or one fixed at creation, is refused with `vta/dids:methodParameterUnsupported`.
    */
   methodParameters?: {};
   /**
@@ -128,7 +128,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "methodParameters": {
       "type": "object",
-      "description": "Validated against the method profile's `UpdateParameters` schema (method-profiles/<method>.schema.json); a member it does not define, or one fixed at creation, is refused with `vta/dids:methodParameterUnsupported`."
+      "description": "Validated against the method profile's `UpdateParameters` schema (method-profiles/<method>-parameters.schema.json); a member it does not define, or one fixed at creation, is refused with `vta/dids:methodParameterUnsupported`."
     },
     "label": {
       "type": "string",

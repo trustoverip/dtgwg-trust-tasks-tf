@@ -108,7 +108,7 @@ holds.
 
 ## 8. Method parameters
 
-[`webvh.schema.json`](webvh.schema.json): `CreateParameters` (hosting service or
+[`webvh-parameters.schema.json`](webvh-parameters.schema.json): `CreateParameters` (hosting service or
 self-publication location, domain, path, `portable`, the presented form, the `did:scid`
 alias, witnesses, watchers, `ttlSeconds`) and `UpdateParameters` (witnesses, watchers,
 `ttlSeconds`). `portable`, `presentAs` and `scidAlsoKnownAs` are fixed at creation; an

@@ -37,7 +37,7 @@
     },
     "methodParameters": {
       "type": "object",
-      "description": "Validated against the method profile's `CreateParameters` schema (method-profiles/<method>.schema.json); a member it does not define is refused with `vta/dids:methodParameterUnsupported`."
+      "description": "Validated against the method profile's `CreateParameters` schema (method-profiles/<method>-parameters.schema.json); a member it does not define is refused with `vta/dids:methodParameterUnsupported`."
     },
     "recoveryCommitment": {
       "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/RecoveryCommitment"

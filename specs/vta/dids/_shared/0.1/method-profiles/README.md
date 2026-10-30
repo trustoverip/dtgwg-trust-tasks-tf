@@ -14,7 +14,7 @@ Ineligible by construction, with no profile needed (CONVENTIONS.md §3.2): `did:
 `vta/dids:methodNotEligible`.
 
 To add a method, write `<name>.md` under the nine headings below and, where it takes
-parameters, `<name>.schema.json` defining `CreateParameters` and `UpdateParameters`
+parameters, `<name>-parameters.schema.json` defining `CreateParameters` and `UpdateParameters`
 (CONVENTIONS.md §18):
 
 1. Eligibility
