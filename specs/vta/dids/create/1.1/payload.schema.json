@@ -48,7 +48,7 @@
       "description": "The key assurance level of the new identity (VTI-KEY-194; CONVENTIONS.md §3.4). `2` — role-separated: the `attestation` and `update` keys are held only by the VTA, which may derive them and keep them in its own backup; no recovery key. `3` — recoverable: those keys are generated and in no backup, `recoveryCommitment` is required, and under a method with witnesses `methodParameters` must name a witness enforcing CONVENTIONS.md §5.4. A level-1 identity is created by the method-specific creation tasks, not this one."
     },
     "recoveryCommitment": {
-      "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/RecoveryCommitment",
+      "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/RecoveryCommitmentOrThreshold",
       "description": "REQUIRED when `assuranceLevel` is 3, refused with `vta/dids:assuranceLevelMismatch` when it is 2. The recovery key, from a recovery custodian of a kind CONVENTIONS.md §5.6 admits, with `custodian` declaring which."
     },
     "label": {

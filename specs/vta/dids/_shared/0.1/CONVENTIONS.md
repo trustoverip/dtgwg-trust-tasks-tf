@@ -277,9 +277,15 @@ A VTA **MUST** render, in every version of a level-2 or level-3 identity, a top-
 "keyAssurance": { "level": 3, "recoveryCommitment": "<the recovery commitment, as the method profile writes it>" }
 ```
 
+or, where a threshold custodian holds the recovery key (§5.7):
+
+```json
+"keyAssurance": { "level": 3, "recoveryCommitment": { "threshold": 2, "commitments": ["<member 1's commitment>", "<member 2's>", "<member 3's>"] } }
+```
+
 `level` is `2` or `3`; `recoveryCommitment` is present at level 3 only, and names which of
-the method's next-key commitments in the same version is the recovery commitment. Nothing
-else may be in it. Its JSON-LD term is `{ "@id": "https://w3id.org/vti#keyAssurance",
+the method's next-key commitments in the same version are recovery commitments — one, or a
+threshold over several. Nothing else may be in it. Its JSON-LD term is `{ "@id": "https://w3id.org/vti#keyAssurance",
 "@type": "@json" }`, in the VTI key-roles context beside `keyRoles` (§15). A document
 without `keyAssurance` is at level 1.
 
@@ -534,47 +540,64 @@ generated or can derive, records the kind in custody, and never publishes it.
 |---|---|---|
 | `separateKey` | A key held away from every VTA of the identity: a passphrase-encrypted key file kept offline, a hardware token, a key service whose credentials no such VTA holds, or a key from a recovery mnemonic generated for it on a machine no such VTA controls. **Never** a key from the VTA's own seed | Out of band: the operator takes `RecoverySigningRequest` to the key, checks it there, and returns `recoveryProof` |
 | `vta` | A second VTA with its own seed, operator and host, holding the key with level-3 custody | The custodian VTA checks the change itself and asks its own operator (VTI-KEY-206); the request **MAY** be sent to `custodian.did` |
-| `thresholdGroup` | t of n VTAs holding FROST shares of the key (§5.7) | Every participant checks the change and asks its own operator; t of them sign together |
+| `thresholdGroup` | n members, each a `separateKey` or `vta` custodian holding a whole key of its own, of which t must authorize (§5.7) | Every member checks the change and asks its own operator; the entry carries t of their proofs, which the witness and verifiers count |
 
 Whatever the kind, the custodian **MUST** check the change itself (VTI-KEY-128): that it
 reveals the key the custodian holds and commits to a fresh one held as §5.3 requires. A
 recovery key, of any kind, is an Ed25519 key under the did:webvh profile; nothing on the wire
-differs by kind except the declaration.
+differs by kind except the declaration and, for a threshold custodian, the number of
+commitments and proofs.
 
 ### 5.7 Threshold custodians
 
-A threshold custodian (VTI-KEY-210 to VTI-KEY-221) is n VTAs, each in its own protection
-boundary, holding shares of one Ed25519 key under FROST(Ed25519, SHA-512) (RFC 9591), any t
-of which — 2 ≤ t < n — sign together. The key is generated without a dealer and never exists
-in one place. A group signature is an ordinary Ed25519 signature, so for this family:
+A threshold custodian (VTI-KEY-210 to VTI-KEY-221) is n **members**, each a `separateKey` or
+`vta` custodian in its own protection boundary, each holding **one whole recovery key of its
+own**, of which any t — 2 ≤ t < n — must authorize a recovery. It is a condition over whole
+keys, not a threshold signature scheme: nothing is shared, nothing is assembled, each member
+signs the exact entry with its own key, and every proof names its signer. For this family:
 
-- the group's key is offered as an ordinary `RecoveryCommitment` (`keyType: ed25519`), with
-  `custodian: { kind: thresholdGroup, threshold, participants }`;
-- its `proofOfPossession` is a group signature over the usual message, made in a signing
-  session whose participants each check the `previewId` they are signing for;
-- its `recoveryProof` is a group signature over the method's proof input, made by
-  participants that each obtained the history, computed the message and checked the change
-  themselves (VTI-KEY-214);
-- nothing published — the document, the history, a witness's view — shows that the key is
-  a group's.
+- the group is offered as a `RecoveryCommitment` in its **threshold form**: `threshold`, and
+  `members`, each a key with its own `keyType`, `publicKeyMultibase`, `proofOfPossession` and
+  `custodian` (`separateKey` or `vta`). The VTA computes **n** commitments, verifies every
+  proof of possession over the same `previewId`, refuses any member key it generated or can
+  derive, and keeps only the commitments and the custody records;
+- `keyAssurance.recoveryCommitment` is rendered as `{ "threshold": t, "commitments": [...] }`
+  naming every member's commitment (§3.4.2), and every commitment is carried forward
+  unchanged until the group changes;
+- a recovery, or a replacement of the recovery commitment, is an entry whose proof set
+  carries proofs by **at least t distinct members** (VTI-KEY-215). The recovering VTA sends
+  each `vta` member the `RecoverySigningRequest`; each fetches the history, computes the
+  entry and checks it itself, asks its own operator, and returns its proof (VTI-KEY-214). A
+  `separateKey` member signs out of band. The VTA assembles the proofs into the entry and
+  returns them as `recoveryProof`;
+- the method's own proof is one of the t (for did:webvh, by a member key the entry names in
+  `updateKeys`); the witness and every VTI verifier count the rest, and count only distinct
+  members whose keys the previous version committed (VTI-KEY-212);
+- the group's size and threshold are visible in the document; which VTAs hold the keys is
+  not published (VTI-KEY-150). The signers' public keys are revealed at use, like any
+  pre-rotation key, and are replaced;
+- adding or removing a member, or changing t, is a replacement of the recovery commitment
+  authorized by t current members, committing fresh keys for the whole new group
+  (VTI-KEY-218). Fewer than t members reachable means the change waits; nothing lowers the
+  threshold (VTI-KEY-217).
 
-What this family requires of a VTA on whose identity a threshold custodian holds the
-recovery key is only what it requires for any recovery key: the proof of possession, the
-carry-forward, and verification of the recovery proof. The group's own rules — distinct
-boundaries with no subject approving at t participants (VTI-KEY-211), dealerless key
-generation with verified proofs and transcript agreement (VTI-KEY-212), shares in no backup
-(VTI-KEY-213), single-use nonces deleted on use, abort or restart (VTI-KEY-215),
-identifiable abort (VTI-KEY-216), Trust Tasks over TSP or DIDComm between participants
-(VTI-KEY-217), refresh without changing the key (VTI-KEY-218), waiting rather than falling
-back when fewer than t answer (VTI-KEY-219) — bind the participants, through the ceremony
-tasks outlined in §19. Reconstructing a split key to sign (Shamir, SLIP-39) is not a
-threshold custodian (VTI-KEY-220) and is declared as `separateKey`.
+Each member's key is of an algorithm the method profile admits for the proof it makes. Under
+the did:webvh profile that is `ed25519` for every key the method counts; a member **MAY** add
+an ML-DSA proof to the set for verifiers whose policy requires one (VTI-KEY-219). Under the
+did:webs profile the condition is the method's own `nt` threshold.
 
-A threshold custodian **SHOULD NOT** hold an `attestation` key (VTI-KEY-221): it signs every
-credential and status-list update, so issuance would stop whenever fewer than t operators
-answer, and its compromise is recoverable by revocation and re-issuance anyway. A routine
-update key **MAY** be held by one, but under the did:webvh profile every change moves the
-update authority, so that costs a key generation per change (profile §2).
+The group's rules — distinct boundaries with no subject approving at t members
+(VTI-KEY-211), each member's key in level-3 custody (VTI-KEY-213), each member checking the
+entry itself (VTI-KEY-214), the signing request as a Trust Task over TSP or DIDComm
+(VTI-KEY-216) — bind the members, and need **no ceremony tasks**: the only message between
+VTAs is the `RecoverySigningRequest` that already exists. Reconstructing a split key to sign
+(Shamir, SLIP-39) is not a threshold custodian (VTI-KEY-220) and is declared as `separateKey`;
+neither is a threshold signature scheme that yields one signature from shares, which an
+earlier draft used and this version drops.
+
+A threshold custodian **MUST NOT** hold an `attestation` key and **SHOULD NOT** hold the
+routine update keys under did:webvh (VTI-KEY-221): every entry would be a t-member ceremony
+that reveals t committed keys.
 
 ## 6. Approval
 
@@ -1064,27 +1087,11 @@ profile, and `PublishedArtifact` and `RecoverySigningRequest` carry the method's
 as data. A profile that cannot meet §3.2 says so and declares the method ineligible, which
 is also a profile: the refusal it produces is then a statement, not an accident.
 
-## 19. Threshold ceremonies — outline, not yet specified
+## 19. Threshold custodians need no ceremony tasks
 
-The tasks a threshold custodian's participants exchange are not specified in this version.
-This section records their shape so the family's wire surface (§5.7) can be checked against
-it; each becomes a Trust Task specification of its own, under a `vta/threshold/*` family,
-before any implementation. All of them run VTA to VTA over TSP, falling back to DIDComm
-authenticated encryption, never HTTPS (VTI-KEY-217); every request is from a participant of
-the group, authenticated by its VTA DID, and refused if already accepted.
-
-| Task (provisional) | Rounds | Carries | Notes |
-|---|---|---|---|
-| `vta/threshold/dkg/commit` | 1 | the sender's polynomial commitments and proof of knowledge (FROST20 round 1) | broadcast; each participant verifies every proof |
-| `vta/threshold/dkg/share` | 2 | the sender's secret share for one recipient | encrypted end to end to that recipient; checked against the sender's commitments |
-| `vta/threshold/dkg/confirm` | 3 | a digest of every commitment the sender received, and the group key it computed | all must agree before any participant accepts the key (VTI-KEY-212) |
-| `vta/threshold/sign/request` | — | the identity, the unsigned change and proof options, or the proof-of-possession message's `previewId` | each participant fetches the history, recomputes the message and asks its operator (VTI-KEY-214) |
-| `vta/threshold/sign/commit` | 1 | the participant's nonce commitments for this session | single-use; never persisted (VTI-KEY-215) |
-| `vta/threshold/sign/share` | 2 | the participant's signature share, over the commitment list it checked | the coordinator verifies each share before aggregating (VTI-KEY-216) |
-| `vta/threshold/refresh/*` | as dkg | new shares of the same key for the new set | old shares deleted on completion (VTI-KEY-218) |
-| `vta/threshold/liveness` | as sign | a signature over a domain-separated challenge that is never a change of any identity | how a group learns it is down to t before it is below t (VTI-KEY-219) |
-
-The coordinator of a signing — a participant, or the VTA that needs the signature (the
-recovering VTA in [`recover`](../../recover/1.0/spec.md)) — sees only public values. A VTA
-that holds no share and coordinates a recovery receives the aggregated signature and returns
-it as `recoveryProof`, exactly as it would a single custodian's.
+An earlier draft outlined a `vta/threshold/*` family — distributed key generation, signing
+rounds, refresh and liveness — for a threshold custodian built on a threshold signature
+scheme. This version's threshold custodian is a condition over whole keys (§5.7), so none of
+that exists: each member signs the entry with its own key, the only message between VTAs is
+the `RecoverySigningRequest` the family already defines, and liveness is each member signing
+a domain-separated challenge that is never a change of any identity (VTI-KEY-217).

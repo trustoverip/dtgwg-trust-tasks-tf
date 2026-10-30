@@ -142,11 +142,12 @@ A conforming **consumer** (the recovering VTA) **MUST**:
 Whatever the custodian's kind
 ([conventions §5.6](../../_shared/0.1/CONVENTIONS.md#56-recovery-custodians)), `recoveryProof`
 has the same form. A separately held key's custodian signs out of band; a second VTA may be
-sent the `RecoverySigningRequest`; for a threshold custodian, this VTA may coordinate the
-signing among the participants, seeing only public values, and each participant fetches the
-history and checks the change itself before contributing (VTI-KEY-214;
-[§5.7](../../_shared/0.1/CONVENTIONS.md#57-threshold-custodians)). Fewer than t participants
-reachable means the recovery waits; nothing reconstructs the key (VTI-KEY-219).
+sent the `RecoverySigningRequest`; for a threshold custodian, this VTA sends it to each `vta`
+member and collects their proofs, each member having fetched the history and checked the
+change itself before signing with its own key (VTI-KEY-214;
+[§5.7](../../_shared/0.1/CONVENTIONS.md#57-threshold-custodians)), and `recoveryProof` is the
+proof set of at least t of them. Fewer than t members reachable means the recovery waits;
+nothing lowers the threshold (VTI-KEY-217).
 
 ## Authorization
 

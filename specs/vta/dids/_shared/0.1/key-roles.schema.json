@@ -593,7 +593,7 @@
         "keyType",
         "publicKeyMultibase"
       ],
-      "description": "A recovery key offered for commitment at level 3 (CONVENTIONS.md §5.3). The VTA computes the method's commitment from it, verifies `proofOfPossession`, and then keeps only the commitment. The key MUST be held by a recovery custodian in a protection boundary other than the VTA's (§5.6); a VTA MUST refuse one it generated or can derive (`vta/dids:recoveryCommitmentRequired`). A threshold custodian's key is an ordinary Ed25519 key, and its proof of possession an ordinary Ed25519 signature (§5.7).",
+      "description": "A recovery key offered for commitment at level 3 (CONVENTIONS.md §5.3). The VTA computes the method's commitment from it, verifies `proofOfPossession`, and then keeps only the commitment. The key MUST be held by a recovery custodian in a protection boundary other than the VTA's (§5.6); a VTA MUST refuse one it generated or can derive (`vta/dids:recoveryCommitmentRequired`). For a threshold custodian, offer a `ThresholdRecoveryCommitment` instead (§5.7).",
       "properties": {
         "keyType": {
           "$ref": "../../../../keys/_shared/0.1/key-record.schema.json#/$defs/KeyType"
@@ -750,7 +750,7 @@
         "vta",
         "thresholdGroup"
       ],
-      "description": "The kinds of recovery custodian VTI-KEY-205 admits (CONVENTIONS.md §5.6). `separateKey` — a key held away from every VTA of the identity: an offline key file, a hardware token, a key service whose credentials no such VTA holds, or a key from a recovery mnemonic no such VTA has seen. `vta` — a second VTA with its own seed, operator and host. `thresholdGroup` — a threshold custodian: t of n VTAs holding FROST shares of the key (§5.7)."
+      "description": "The kinds of recovery custodian VTI-KEY-205 admits (CONVENTIONS.md §5.6). `separateKey` — a key held away from every VTA of the identity: an offline key file, a hardware token, a key service whose credentials no such VTA holds, or a key from a recovery mnemonic no such VTA has seen. `vta` — a second VTA with its own seed, operator and host. `thresholdGroup` — a threshold custodian: n members, each a `separateKey` or `vta` custodian holding a whole key of its own, of which t must authorize (§5.7); offered as a `ThresholdRecoveryCommitment`."
     },
     "RecoveryCustodian": {
       "title": "RecoveryCustodian",
@@ -777,14 +777,90 @@
             "type": "string",
             "minLength": 1
           },
-          "description": "`thresholdGroup` only: the participants' VTA DIDs, n of them. A threshold group has at least three participants, because 2 ≤ t < n (VTI-KEY-210)."
+          "description": "`thresholdGroup` only, in custody records: the members' VTA DIDs where members are VTAs. n is at least three, because 2 ≤ t < n (VTI-KEY-210)."
         },
         "threshold": {
           "type": "integer",
           "minimum": 2,
-          "description": "`thresholdGroup` only: t, the number of participants that together sign. MUST be less than the number of `participants`."
+          "description": "`thresholdGroup` only: t, the number of members that must authorize. MUST be less than the number of members."
         }
       }
+    },
+    "ThresholdRecoveryMember": {
+      "title": "ThresholdRecoveryMember",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "keyType",
+        "publicKeyMultibase"
+      ],
+      "description": "One member of a threshold custodian: a whole recovery key of its own, with its own proof of possession over the same `previewId`, held by a `separateKey` or `vta` custodian (CONVENTIONS.md §5.7).",
+      "properties": {
+        "keyType": {
+          "$ref": "../../../../keys/_shared/0.1/key-record.schema.json#/$defs/KeyType"
+        },
+        "publicKeyMultibase": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The recovery key's public half. Not published by the VTA where the method commits by hash."
+        },
+        "proofOfPossession": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Multibase signature by the recovery key over the UTF-8 bytes of `vta-dids-recovery-commitment/v1`, a zero byte, and the request's `previewId`. Absent on a dry run, which is how the `previewId` is obtained; REQUIRED on the apply request, and the only member besides `previewId`, `dryRun` and `recoveryProof` that may differ between the two."
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 256,
+          "description": "Operator-facing name of the custodian. Custody projection only; never published."
+        },
+        "custodian": {
+          "$ref": "#/$defs/RecoveryCustodian",
+          "description": "Who holds this member's key: `separateKey` or `vta` (never `thresholdGroup`), with `did` for a VTA member. Custody projection only; never published."
+        }
+      }
+    },
+    "ThresholdRecoveryCommitment": {
+      "title": "ThresholdRecoveryCommitment",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "threshold",
+        "members"
+      ],
+      "description": "A threshold custodian offered for commitment at level 3 (CONVENTIONS.md §5.7, VTI-KEY-210): n members, each a whole recovery key of its own, of which t must authorize a recovery. The VTA computes one commitment per member, verifies every proof of possession over the same `previewId`, refuses any member key it generated or can derive, and renders `keyAssurance.recoveryCommitment` as `{ threshold, commitments }`. A condition over whole keys: nothing is shared, nothing is assembled.",
+      "properties": {
+        "threshold": {
+          "type": "integer",
+          "minimum": 2,
+          "description": "t: how many distinct members must sign a recovery entry. MUST be less than the number of `members`."
+        },
+        "members": {
+          "type": "array",
+          "minItems": 3,
+          "items": {
+            "$ref": "#/$defs/ThresholdRecoveryMember"
+          },
+          "description": "The n members, n ≥ 3, each in its own protection boundary (VTI-KEY-211)."
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 256,
+          "description": "Operator-facing name of the group. Custody projection only; never published."
+        }
+      }
+    },
+    "RecoveryCommitmentOrThreshold": {
+      "title": "RecoveryCommitmentOrThreshold",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/RecoveryCommitment"
+        },
+        {
+          "$ref": "#/$defs/ThresholdRecoveryCommitment"
+        }
+      ],
+      "description": "A single recovery key (§5.6 kinds `separateKey` and `vta`) or a threshold custodian (§5.7)."
     }
   }
 }

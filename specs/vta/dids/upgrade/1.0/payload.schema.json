@@ -47,7 +47,7 @@
       "description": "REQUIRED when `previousKeys` is `revoke`, refused otherwise: the compromise time (VTI-KEY-121). Err early; where it cannot be established, the time the key was first published."
     },
     "recoveryCommitment": {
-      "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/RecoveryCommitment",
+      "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/RecoveryCommitmentOrThreshold",
       "description": "REQUIRED when `toLevel` is 3, refused otherwise (`vta/dids:assuranceLevelMismatch`): the recovery key, from a custodian of a kind CONVENTIONS.md §5.6 admits."
     },
     "methodParameters": {

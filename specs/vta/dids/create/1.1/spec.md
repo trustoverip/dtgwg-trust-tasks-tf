@@ -206,10 +206,13 @@ REQUIRED; `payload.recoveryCommitment` is REQUIRED at level 3 and refused at lev
     "assuranceLevel": 3,
     "methodParameters": { "serverId": "webvh-host-1", "ttlSeconds": 3600, "witnesses": { "threshold": 1, "witnesses": ["did:key:z6MkWitnessOne"] } },
     "recoveryCommitment": {
-      "keyType": "ed25519",
-      "publicKeyMultibase": "z6MkRecoveryGroupKey",
+      "threshold": 2,
       "label": "Recovery group: three member VTAs",
-      "custodian": { "kind": "thresholdGroup", "threshold": 2, "participants": ["did:webvh:QmA:vta-a.example", "did:webvh:QmB:vta-b.example", "did:webvh:QmC:vta-c.example"] }
+      "members": [
+        { "keyType": "ed25519", "publicKeyMultibase": "z6MkMemberA", "custodian": { "kind": "vta", "did": "did:webvh:QmA:vta-a.example" } },
+        { "keyType": "ed25519", "publicKeyMultibase": "z6MkMemberB", "custodian": { "kind": "vta", "did": "did:webvh:QmB:vta-b.example" } },
+        { "keyType": "ed25519", "publicKeyMultibase": "z6MkMemberC", "custodian": { "kind": "vta", "did": "did:webvh:QmC:vta-c.example" } }
+      ]
     },
     "dryRun": true
   },
@@ -225,9 +228,9 @@ REQUIRED; `payload.recoveryCommitment` is REQUIRED at level 3 and refused at lev
 ```
 
 The apply request repeats the payload without `dryRun`, with the `previewId` the preview
-returned and `recoveryCommitment.proofOfPossession` added. For a threshold custodian, the
-proof of possession is the group's signature, which t participants produce after each has
-checked the `previewId` it signs for ([conventions §5.7](../../_shared/0.1/CONVENTIONS.md#57-threshold-custodians)).
+returned and `recoveryCommitment.proofOfPossession` added. For a threshold custodian, every
+member adds its own `proofOfPossession` over the same `previewId`, after checking what it
+signs for ([conventions §5.7](../../_shared/0.1/CONVENTIONS.md#57-threshold-custodians)).
 
 ### Preview the creation of a VTC's identity at level 2
 

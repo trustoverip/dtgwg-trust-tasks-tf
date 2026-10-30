@@ -48,7 +48,7 @@
       "description": "Validated against the profile's `UpdateParameters`, for a recovery that also moves hosting or witnesses."
     },
     "recoveryCommitment": {
-      "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/RecoveryCommitment",
+      "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/RecoveryCommitmentOrThreshold",
       "description": "The fresh recovery key that replaces the one this recovery uses (VTI-KEY-128)."
     },
     "recoveryProof": {

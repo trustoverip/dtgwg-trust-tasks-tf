@@ -118,8 +118,8 @@ For `update` there is no overlap, and two things can be asked for:
   current recovery key authorizes it (`useRecoveryKey: true`): the change reveals that key,
   the custodian checks and signs it as for a recovery
   ([conventions §5.6](../../../_shared/0.1/CONVENTIONS.md#56-recovery-custodians)), and a
-  witness can verify it from the entry alone. A threshold custodian's t participants each
-  check and approve it, which is the two-approver rule enforced by the signature. Only where
+  witness can verify it from the entry alone. A threshold custodian's t members each
+  check, approve and sign it, which is the two-approver rule counted by the witness. Only where
   the recovery key is lost is the replacement authorized by the routine key, and then the
   VTI specification requires a quorum where two approvers exist (VTI-KEY-181).
 
