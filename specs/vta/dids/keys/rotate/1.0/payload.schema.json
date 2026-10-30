@@ -16,7 +16,7 @@
       "description": "The key-role identity, by DID (for a `did:scid` identity, the DID without `src`)."
     },
     "role": {
-      "$ref": "../../../_shared/0.1/key-roles.schema.json#/$defs/KeyRole",
+      "$ref": "../../../_shared/0.1/key-roles.schema.json#/$defs/IdentityKeyRole",
       "description": "The one role to rotate. `authenticator` is refused (`vta/dids:notApplicableToRole`)."
     },
     "replace": {
@@ -94,14 +94,14 @@
           "minLength": 1
         },
         "outcome": {
-          "$ref": "../../../_shared/0.1/key-roles.schema.json#/$defs/KeyRoleChangeOutcome"
+          "$ref": "../../../_shared/0.1/key-roles.schema.json#/$defs/KeyChangeOutcome"
         },
         "preview": {
-          "$ref": "../../../_shared/0.1/key-roles.schema.json#/$defs/DidDocumentPreview",
+          "$ref": "../../../_shared/0.1/key-roles.schema.json#/$defs/IdentityChangePreview",
           "description": "Present when `outcome` is `preview`, `pendingApproval` or `awaitingRecoveryProof`: the plan, and what an approval is bound to."
         },
         "approvals": {
-          "$ref": "../../../_shared/0.1/key-roles.schema.json#/$defs/KeyRoleApprovalState",
+          "$ref": "../../../_shared/0.1/key-roles.schema.json#/$defs/KeyChangeApprovalState",
           "description": "Present when `outcome` is `pendingApproval`."
         },
         "newVersionId": {
@@ -111,12 +111,12 @@
         "keys": {
           "type": "array",
           "items": {
-            "$ref": "../../../_shared/0.1/key-roles.schema.json#/$defs/RoleKey"
+            "$ref": "../../../_shared/0.1/key-roles.schema.json#/$defs/IdentityRoleKey"
           },
           "description": "Every key whose state this change sets or would set, after the change."
         },
         "rotation": {
-          "$ref": "../../../_shared/0.1/key-roles.schema.json#/$defs/RotationRecord"
+          "$ref": "../../../_shared/0.1/key-roles.schema.json#/$defs/KeyChangeRecord"
         },
         "publication": {
           "$ref": "../../../_shared/0.1/key-roles.schema.json#/$defs/Publication",

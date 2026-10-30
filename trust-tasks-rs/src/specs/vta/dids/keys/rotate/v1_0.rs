@@ -97,223 +97,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ApprovalEvidenceKind {
         value.parse()
     }
 }
-///`DidDocumentChange`
-///
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[serde(deny_unknown_fields)]
-#[non_exhaustive]
-pub struct DidDocumentChange {
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub commitment: ::std::option::Option<::std::string::String>,
-    #[serde(
-        rename = "keyType",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub key_type: ::std::option::Option<KeyType>,
-    ///`addKey` — a verification method joins its role's relationship and `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves its relationship and `keyRoles`, and stays in `verificationMethod` with `revoked` set to the compromise time (CONVENTIONS.md §9.1). `rotateUpdateKey` — the identifier's update authority moves to a committed routine successor. `commitUpdateKey` — a new routine successor is committed. `replaceRecoveryCommitment` — the recovery commitment changes. `useRecoveryKey` — the change is authorized by the recovery key, which the identifier then reveals.
-    pub op: DidDocumentChangeOp,
-    #[serde(
-        rename = "publicKeyMultibase",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub public_key_multibase: ::std::option::Option<::std::string::String>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub relationships: ::std::option::Option<Vec<DidVerificationRelationship>>,
-    pub role: KeyRole,
-    #[serde(
-        rename = "verificationMethod",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub verification_method: ::std::option::Option<::std::string::String>,
-}
-impl DidDocumentChange {
-    pub fn builder() -> builder::DidDocumentChange {
-        Default::default()
-    }
-}
-///`addKey` — a verification method joins its role's relationship and `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves its relationship and `keyRoles`, and stays in `verificationMethod` with `revoked` set to the compromise time (CONVENTIONS.md §9.1). `rotateUpdateKey` — the identifier's update authority moves to a committed routine successor. `commitUpdateKey` — a new routine successor is committed. `replaceRecoveryCommitment` — the recovery commitment changes. `useRecoveryKey` — the change is authorized by the recovery key, which the identifier then reveals.
-///
-#[derive(
-    ::serde::Deserialize,
-    ::serde::Serialize,
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Hash,
-    Ord,
-    PartialEq,
-    PartialOrd,
-)]
-#[non_exhaustive]
-pub enum DidDocumentChangeOp {
-    #[serde(rename = "addKey")]
-    AddKey,
-    #[serde(rename = "retireKey")]
-    RetireKey,
-    #[serde(rename = "revokeKey")]
-    RevokeKey,
-    #[serde(rename = "rotateUpdateKey")]
-    RotateUpdateKey,
-    #[serde(rename = "commitUpdateKey")]
-    CommitUpdateKey,
-    #[serde(rename = "replaceRecoveryCommitment")]
-    ReplaceRecoveryCommitment,
-    #[serde(rename = "useRecoveryKey")]
-    UseRecoveryKey,
-}
-impl ::std::fmt::Display for DidDocumentChangeOp {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        match *self {
-            Self::AddKey => f.write_str("addKey"),
-            Self::RetireKey => f.write_str("retireKey"),
-            Self::RevokeKey => f.write_str("revokeKey"),
-            Self::RotateUpdateKey => f.write_str("rotateUpdateKey"),
-            Self::CommitUpdateKey => f.write_str("commitUpdateKey"),
-            Self::ReplaceRecoveryCommitment => f.write_str("replaceRecoveryCommitment"),
-            Self::UseRecoveryKey => f.write_str("useRecoveryKey"),
-        }
-    }
-}
-impl ::std::str::FromStr for DidDocumentChangeOp {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        match value {
-            "addKey" => Ok(Self::AddKey),
-            "retireKey" => Ok(Self::RetireKey),
-            "revokeKey" => Ok(Self::RevokeKey),
-            "rotateUpdateKey" => Ok(Self::RotateUpdateKey),
-            "commitUpdateKey" => Ok(Self::CommitUpdateKey),
-            "replaceRecoveryCommitment" => Ok(Self::ReplaceRecoveryCommitment),
-            "useRecoveryKey" => Ok(Self::UseRecoveryKey),
-            _ => Err("invalid value".into()),
-        }
-    }
-}
-impl ::std::convert::TryFrom<&str> for DidDocumentChangeOp {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for DidDocumentChangeOp {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for DidDocumentChangeOp {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-///What a change would publish, computed by the VTA by running the handler it would run to apply it (CONVENTIONS.md §6.1). This is what a consent surface renders and what an approval is bound to.
-///
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[serde(deny_unknown_fields)]
-#[non_exhaustive]
-pub struct DidDocumentPreview {
-    ///The version identifier the plan was computed against. Absent only for a creation. The plan is void once the identifier moves past it.
-    #[serde(
-        rename = "baseVersionId",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub base_version_id: ::std::option::Option<::std::string::String>,
-    ///Every change the plan would make, including the ones the caller did not ask for — in particular any movement of the update authority the method requires.
-    pub changes: ::std::vec::Vec<DidDocumentChange>,
-    ///The complete identifier document the change would publish, `keyRoles` included. Public data by construction.
-    pub document: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
-    #[serde(rename = "expiresAt")]
-    pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    pub method: DidMethodName,
-    ///Opaque, unguessable identifier of this exact plan. Carried back by the apply request; every approval and any recovery proof is bound to it.
-    #[serde(rename = "previewId")]
-    pub preview_id: DidDocumentPreviewPreviewId,
-    #[serde(
-        rename = "recoverySigning",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub recovery_signing: ::std::option::Option<RecoverySigningRequest>,
-    ///True when applying the plan also moves the identifier's update authority to a committed successor — every change under did:webvh pre-rotation, never a KERI interaction event. Stated as its own member because it is the consequence a reviewer most often misses.
-    #[serde(rename = "updateKeyRotates")]
-    pub update_key_rotates: bool,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub warnings: ::std::option::Option<Vec<PreviewWarning>>,
-}
-impl DidDocumentPreview {
-    pub fn builder() -> builder::DidDocumentPreview {
-        Default::default()
-    }
-}
-///Opaque, unguessable identifier of this exact plan. Carried back by the apply request; every approval and any recovery proof is bound to it.
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct DidDocumentPreviewPreviewId(::std::string::String);
-impl ::std::ops::Deref for DidDocumentPreviewPreviewId {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<DidDocumentPreviewPreviewId> for ::std::string::String {
-    fn from(value: DidDocumentPreviewPreviewId) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for DidDocumentPreviewPreviewId {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() < 16usize {
-            return Err("shorter than 16 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for DidDocumentPreviewPreviewId {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for DidDocumentPreviewPreviewId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for DidDocumentPreviewPreviewId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for DidDocumentPreviewPreviewId {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
 ///The DID method an identity uses, as the method profile that governs it is named: `webvh` for a did:webvh identity, `scid:vh` for the did:scid:vh:1 form of one, `webs` for did:webs. Deliberately a pattern and not an enumeration: a method is added by publishing its profile under method-profiles/, never by changing this schema. A VTA MUST refuse a method it holds no profile for, or whose profile declares it ineligible, with `vta/dids:methodNotEligible`.
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -534,6 +317,1309 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
             })
     }
 }
+///`IdentityChange`
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct IdentityChange {
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub commitment: ::std::option::Option<::std::string::String>,
+    #[serde(
+        rename = "keyType",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub key_type: ::std::option::Option<KeyType>,
+    ///`addKey` — a verification method joins its role's relationship and `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves its relationship and `keyRoles`, and stays in `verificationMethod` with `revoked` set to the compromise time (CONVENTIONS.md §9.1). `rotateUpdateKey` — the identifier's update authority moves to a committed routine successor. `commitUpdateKey` — a new routine successor is committed. `replaceRecoveryCommitment` — the recovery commitment changes. `useRecoveryKey` — the change is authorized by the recovery key, which the identifier then reveals.
+    pub op: IdentityChangeOp,
+    #[serde(
+        rename = "publicKeyMultibase",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub public_key_multibase: ::std::option::Option<::std::string::String>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub relationships: ::std::option::Option<Vec<DidVerificationRelationship>>,
+    pub role: IdentityKeyRole,
+    #[serde(
+        rename = "verificationMethod",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub verification_method: ::std::option::Option<::std::string::String>,
+}
+impl IdentityChange {
+    pub fn builder() -> builder::IdentityChange {
+        Default::default()
+    }
+}
+///`addKey` — a verification method joins its role's relationship and `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves its relationship and `keyRoles`, and stays in `verificationMethod` with `revoked` set to the compromise time (CONVENTIONS.md §9.1). `rotateUpdateKey` — the identifier's update authority moves to a committed routine successor. `commitUpdateKey` — a new routine successor is committed. `replaceRecoveryCommitment` — the recovery commitment changes. `useRecoveryKey` — the change is authorized by the recovery key, which the identifier then reveals.
+///
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+#[non_exhaustive]
+pub enum IdentityChangeOp {
+    #[serde(rename = "addKey")]
+    AddKey,
+    #[serde(rename = "retireKey")]
+    RetireKey,
+    #[serde(rename = "revokeKey")]
+    RevokeKey,
+    #[serde(rename = "rotateUpdateKey")]
+    RotateUpdateKey,
+    #[serde(rename = "commitUpdateKey")]
+    CommitUpdateKey,
+    #[serde(rename = "replaceRecoveryCommitment")]
+    ReplaceRecoveryCommitment,
+    #[serde(rename = "useRecoveryKey")]
+    UseRecoveryKey,
+}
+impl ::std::fmt::Display for IdentityChangeOp {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::AddKey => f.write_str("addKey"),
+            Self::RetireKey => f.write_str("retireKey"),
+            Self::RevokeKey => f.write_str("revokeKey"),
+            Self::RotateUpdateKey => f.write_str("rotateUpdateKey"),
+            Self::CommitUpdateKey => f.write_str("commitUpdateKey"),
+            Self::ReplaceRecoveryCommitment => f.write_str("replaceRecoveryCommitment"),
+            Self::UseRecoveryKey => f.write_str("useRecoveryKey"),
+        }
+    }
+}
+impl ::std::str::FromStr for IdentityChangeOp {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "addKey" => Ok(Self::AddKey),
+            "retireKey" => Ok(Self::RetireKey),
+            "revokeKey" => Ok(Self::RevokeKey),
+            "rotateUpdateKey" => Ok(Self::RotateUpdateKey),
+            "commitUpdateKey" => Ok(Self::CommitUpdateKey),
+            "replaceRecoveryCommitment" => Ok(Self::ReplaceRecoveryCommitment),
+            "useRecoveryKey" => Ok(Self::UseRecoveryKey),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for IdentityChangeOp {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for IdentityChangeOp {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for IdentityChangeOp {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///What a change would publish, computed by the VTA by running the handler it would run to apply it (CONVENTIONS.md §6.1). This is what a consent surface renders and what an approval is bound to.
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct IdentityChangePreview {
+    ///The version identifier the plan was computed against. Absent only for a creation. The plan is void once the identifier moves past it.
+    #[serde(
+        rename = "baseVersionId",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub base_version_id: ::std::option::Option<::std::string::String>,
+    ///Every change the plan would make, including the ones the caller did not ask for — in particular any movement of the update authority the method requires.
+    pub changes: ::std::vec::Vec<IdentityChange>,
+    ///The complete identifier document the change would publish, `keyRoles` included. Public data by construction.
+    pub document: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    #[serde(rename = "expiresAt")]
+    pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
+    pub method: DidMethodName,
+    ///Opaque, unguessable identifier of this exact plan. Carried back by the apply request; every approval and any recovery proof is bound to it.
+    #[serde(rename = "previewId")]
+    pub preview_id: IdentityChangePreviewPreviewId,
+    #[serde(
+        rename = "recoverySigning",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub recovery_signing: ::std::option::Option<RecoverySigningRequest>,
+    ///True when applying the plan also moves the identifier's update authority to a committed successor — every change under did:webvh pre-rotation, never a KERI interaction event. Stated as its own member because it is the consequence a reviewer most often misses.
+    #[serde(rename = "updateKeyRotates")]
+    pub update_key_rotates: bool,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub warnings: ::std::option::Option<Vec<PreviewWarning>>,
+}
+impl IdentityChangePreview {
+    pub fn builder() -> builder::IdentityChangePreview {
+        Default::default()
+    }
+}
+///Opaque, unguessable identifier of this exact plan. Carried back by the apply request; every approval and any recovery proof is bound to it.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct IdentityChangePreviewPreviewId(::std::string::String);
+impl ::std::ops::Deref for IdentityChangePreviewPreviewId {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<IdentityChangePreviewPreviewId> for ::std::string::String {
+    fn from(value: IdentityChangePreviewPreviewId) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for IdentityChangePreviewPreviewId {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() < 16usize {
+            return Err("shorter than 16 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for IdentityChangePreviewPreviewId {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for IdentityChangePreviewPreviewId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for IdentityChangePreviewPreviewId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for IdentityChangePreviewPreviewId {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///How a key is held. Present only in the custody projection. Carries no key material, and a conforming VTA MUST NOT place any in `ext`.
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct IdentityKeyCustody {
+    ///Opaque, VTA-assigned label of the protection boundary holding the key (CONVENTIONS.md §5.2). Two keys with the same label are lost or compromised together. A recovery update key MUST carry a label different from every routine update key's. Custody projection only; never published.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub boundary: ::std::option::Option<IdentityKeyCustodyBoundary>,
+    ///True once the private half has been destroyed — a retired `attestation` or `messaging` key. The record survives so the key's past signatures stay attributable.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub destroyed: ::std::option::Option<bool>,
+    ///Whether the custodian would release the private half. Always `false` for `attestation` and `update` keys. Stated explicitly, never absent.
+    pub exportable: bool,
+    ///Whether the key, or material it can be re-derived or decrypted from, is in the VTA's backups or any state transfer. Always `false` for `attestation` and `update` keys (VTI-KEY-112).
+    #[serde(rename = "inBackups")]
+    pub in_backups: bool,
+    ///The custodian record identifier (`keys/*`'s `keyId`) behind this key. Absent for a key this VTA does not hold (`protection: externalCustodian`).
+    #[serde(
+        rename = "keyId",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub key_id: ::std::option::Option<IdentityKeyCustodyKeyId>,
+    ///True when no authority can make the key exportable. `true` implies `exportable: false`.
+    #[serde(rename = "neverExportable")]
+    pub never_exportable: bool,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub origin: ::std::option::Option<KeyOrigin>,
+    pub protection: ProtectionClass,
+}
+impl IdentityKeyCustody {
+    pub fn builder() -> builder::IdentityKeyCustody {
+        Default::default()
+    }
+}
+///Opaque, VTA-assigned label of the protection boundary holding the key (CONVENTIONS.md §5.2). Two keys with the same label are lost or compromised together. A recovery update key MUST carry a label different from every routine update key's. Custody projection only; never published.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct IdentityKeyCustodyBoundary(::std::string::String);
+impl ::std::ops::Deref for IdentityKeyCustodyBoundary {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<IdentityKeyCustodyBoundary> for ::std::string::String {
+    fn from(value: IdentityKeyCustodyBoundary) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for IdentityKeyCustodyBoundary {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 128usize {
+            return Err("longer than 128 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for IdentityKeyCustodyBoundary {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for IdentityKeyCustodyBoundary {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for IdentityKeyCustodyBoundary {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for IdentityKeyCustodyBoundary {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///The custodian record identifier (`keys/*`'s `keyId`) behind this key. Absent for a key this VTA does not hold (`protection: externalCustodian`).
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct IdentityKeyCustodyKeyId(::std::string::String);
+impl ::std::ops::Deref for IdentityKeyCustodyKeyId {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<IdentityKeyCustodyKeyId> for ::std::string::String {
+    fn from(value: IdentityKeyCustodyKeyId) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for IdentityKeyCustodyKeyId {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for IdentityKeyCustodyKeyId {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for IdentityKeyCustodyKeyId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for IdentityKeyCustodyKeyId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for IdentityKeyCustodyKeyId {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///The named key role a key occupies in an identity (CONVENTIONS.md §2; VTI-KEY-070 onward). `attestation` — the only keys in `assertionMethod`; sign the identity's attestation artefacts (credentials, endorsements, status lists) through the VTA's signing service and nowhere else. Generated inside the VTA, never derived, never exportable, never in a backup. `operational` — the only keys the identity's own process uses in `authentication`; sign the node's own traffic (Trust Task requests and responses, DIDComm and TSP signatures, invitations, notices, audit checkpoints). Derived. `messaging` — the only keys in `keyAgreement`; sign nothing. X25519, derived or generated in its own right and never converted from a signing key. `update` — the identifier's change authority as its DID method states it (a did:webvh log's `updateKeys` and `nextKeyHashes`, a KERI key event log's current and next keys); never a role-bound verification method, never in `keyRoles`. Generated inside the VTA, never derived, never exportable, never in a backup, and always accompanied by a committed recovery key held outside the VTA's protection boundary. `authenticator` — a key held on a person's own authenticator (a WebAuthn passkey), listed in `authentication` of that person's identity only; used only to verify the person's WebAuthn assertions (sign-in and step-up evidence) and never to accept a Data Integrity proof. The VTA never holds its private half, so it is enrolled by the passkey ceremony and never generated, added or rotated by these tasks. Never permitted on the durable identity of a VTA, a VTC or a VTN. No role permits `capabilityInvocation` or `capabilityDelegation` (VTI-KEY-075). The set is an extensible registry: a consumer that meets a role it does not implement MUST rely on the key for nothing, and MUST NOT map it onto a role it does know (VTI-KEY-074).
+///
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+#[non_exhaustive]
+pub enum IdentityKeyRole {
+    #[serde(rename = "attestation")]
+    Attestation,
+    #[serde(rename = "operational")]
+    Operational,
+    #[serde(rename = "messaging")]
+    Messaging,
+    #[serde(rename = "update")]
+    Update,
+    #[serde(rename = "authenticator")]
+    Authenticator,
+}
+impl ::std::fmt::Display for IdentityKeyRole {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Attestation => f.write_str("attestation"),
+            Self::Operational => f.write_str("operational"),
+            Self::Messaging => f.write_str("messaging"),
+            Self::Update => f.write_str("update"),
+            Self::Authenticator => f.write_str("authenticator"),
+        }
+    }
+}
+impl ::std::str::FromStr for IdentityKeyRole {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "attestation" => Ok(Self::Attestation),
+            "operational" => Ok(Self::Operational),
+            "messaging" => Ok(Self::Messaging),
+            "update" => Ok(Self::Update),
+            "authenticator" => Ok(Self::Authenticator),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for IdentityKeyRole {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for IdentityKeyRole {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for IdentityKeyRole {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///One key in one role. A key is in exactly one role for its whole life; a change of role is a retirement from one and an addition to another, with fresh material under a fresh identifier.
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct IdentityRoleKey {
+    ///For a `staged` key: when the VTA will begin using it — no earlier than the publishing change's cache horizon.
+    #[serde(
+        rename = "activatesAt",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub activates_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    ///For a `committed` update key: the commitment the identifier publishes (a did:webvh `nextKeyHashes` entry, a KERI next-key digest), in the method's own encoding.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub commitment: ::std::option::Option<IdentityRoleKeyCommitment>,
+    ///For a `revoked` key: the compromise time (VTI-KEY-121), published as the verification method's `revoked` value. Where it cannot be established, the time the key was first published.
+    #[serde(
+        rename = "compromisedSince",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub compromised_since: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub custody: ::std::option::Option<IdentityKeyCustody>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub ext: ::std::option::Option<Ext>,
+    #[serde(rename = "keyType")]
+    pub key_type: KeyType,
+    ///Operator-facing label. Custody projection only.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub label: ::std::option::Option<IdentityRoleKeyLabel>,
+    ///The public half, multibase-encoded, exactly as published. Absent for a `committed` update key, whose public half the identifier has not yet revealed.
+    #[serde(
+        rename = "publicKeyMultibase",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub public_key_multibase: ::std::option::Option<IdentityRoleKeyPublicKeyMultibase>,
+    ///The method's version identifier of the change that first published the key or its commitment (method-profiles/: a did:webvh `versionId`, a KERI event's sequence number and digest). Absent while `pending`.
+    #[serde(
+        rename = "publishedInVersionId",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub published_in_version_id: ::std::option::Option<::std::string::String>,
+    ///The relationships the key is (or, while `pending`, will be) listed in: always exactly its role's one relationship. Empty for `update`, `retired` and `revoked` keys.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub relationships: ::std::option::Option<Vec<DidVerificationRelationship>>,
+    ///Version identifier of the change that retired or revoked the key.
+    #[serde(
+        rename = "removedInVersionId",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub removed_in_version_id: ::std::option::Option<::std::string::String>,
+    ///For a `retiring` key: the end of its overlap. Custody projection only.
+    #[serde(
+        rename = "retireAfter",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub retire_after: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    pub role: IdentityKeyRole,
+    ///The rotation this key was introduced or retired by.
+    #[serde(
+        rename = "rotationId",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub rotation_id: ::std::option::Option<::std::string::String>,
+    pub state: KeyLifecycleState,
+    #[serde(
+        rename = "updateKeyClass",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub update_key_class: ::std::option::Option<UpdateKeyClass>,
+    ///The full verification-method identifier (`did#fragment`) the document publishes the key under and lists in `keyRoles`. Absent for `update` keys, which are never role-bound verification methods (VTI-KEY-093). A VTA minting a method SHOULD derive its fragment from the key (VTI-KEY-150).
+    #[serde(
+        rename = "verificationMethod",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub verification_method: ::std::option::Option<IdentityRoleKeyVerificationMethod>,
+}
+impl IdentityRoleKey {
+    pub fn builder() -> builder::IdentityRoleKey {
+        Default::default()
+    }
+}
+///For a `committed` update key: the commitment the identifier publishes (a did:webvh `nextKeyHashes` entry, a KERI next-key digest), in the method's own encoding.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct IdentityRoleKeyCommitment(::std::string::String);
+impl ::std::ops::Deref for IdentityRoleKeyCommitment {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<IdentityRoleKeyCommitment> for ::std::string::String {
+    fn from(value: IdentityRoleKeyCommitment) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for IdentityRoleKeyCommitment {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for IdentityRoleKeyCommitment {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for IdentityRoleKeyCommitment {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for IdentityRoleKeyCommitment {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for IdentityRoleKeyCommitment {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///Operator-facing label. Custody projection only.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct IdentityRoleKeyLabel(::std::string::String);
+impl ::std::ops::Deref for IdentityRoleKeyLabel {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<IdentityRoleKeyLabel> for ::std::string::String {
+    fn from(value: IdentityRoleKeyLabel) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for IdentityRoleKeyLabel {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 256usize {
+            return Err("longer than 256 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for IdentityRoleKeyLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for IdentityRoleKeyLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for IdentityRoleKeyLabel {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for IdentityRoleKeyLabel {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///The public half, multibase-encoded, exactly as published. Absent for a `committed` update key, whose public half the identifier has not yet revealed.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct IdentityRoleKeyPublicKeyMultibase(::std::string::String);
+impl ::std::ops::Deref for IdentityRoleKeyPublicKeyMultibase {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<IdentityRoleKeyPublicKeyMultibase> for ::std::string::String {
+    fn from(value: IdentityRoleKeyPublicKeyMultibase) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for IdentityRoleKeyPublicKeyMultibase {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for IdentityRoleKeyPublicKeyMultibase {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for IdentityRoleKeyPublicKeyMultibase {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for IdentityRoleKeyPublicKeyMultibase {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for IdentityRoleKeyPublicKeyMultibase {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///The full verification-method identifier (`did#fragment`) the document publishes the key under and lists in `keyRoles`. Absent for `update` keys, which are never role-bound verification methods (VTI-KEY-093). A VTA minting a method SHOULD derive its fragment from the key (VTI-KEY-150).
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct IdentityRoleKeyVerificationMethod(::std::string::String);
+impl ::std::ops::Deref for IdentityRoleKeyVerificationMethod {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<IdentityRoleKeyVerificationMethod> for ::std::string::String {
+    fn from(value: IdentityRoleKeyVerificationMethod) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for IdentityRoleKeyVerificationMethod {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for IdentityRoleKeyVerificationMethod {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for IdentityRoleKeyVerificationMethod {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for IdentityRoleKeyVerificationMethod {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for IdentityRoleKeyVerificationMethod {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///Approval progress of a change the VTA's policy gates on approvals (CONVENTIONS.md §6).
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct KeyChangeApprovalState {
+    ///The approvals recorded. Custody projection only; omitted from a response to anyone who is not themselves an eligible approver of this change.
+    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
+    pub approvals: ::std::vec::Vec<RecordedApproval>,
+    ///When the preview, and every approval bound to it, stops being usable.
+    #[serde(rename = "expiresAt")]
+    pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
+    ///Distinct approvals recorded so far, the initiator's own included.
+    pub received: u64,
+    ///Distinct approvals the VTA's policy requires.
+    pub required: ::std::num::NonZeroU64,
+}
+impl KeyChangeApprovalState {
+    pub fn builder() -> builder::KeyChangeApprovalState {
+        Default::default()
+    }
+}
+///`planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same change. `addition` — a key joined a role without anything leaving it. `recovery` — the identifier's update authority moved to the committed recovery key, because the VTA's own update keys were lost or may be in someone else's hands.
+///
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+#[non_exhaustive]
+pub enum KeyChangeKind {
+    #[serde(rename = "planned")]
+    Planned,
+    #[serde(rename = "compromise")]
+    Compromise,
+    #[serde(rename = "addition")]
+    Addition,
+    #[serde(rename = "recovery")]
+    Recovery,
+}
+impl ::std::fmt::Display for KeyChangeKind {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Planned => f.write_str("planned"),
+            Self::Compromise => f.write_str("compromise"),
+            Self::Addition => f.write_str("addition"),
+            Self::Recovery => f.write_str("recovery"),
+        }
+    }
+}
+impl ::std::str::FromStr for KeyChangeKind {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "planned" => Ok(Self::Planned),
+            "compromise" => Ok(Self::Compromise),
+            "addition" => Ok(Self::Addition),
+            "recovery" => Ok(Self::Recovery),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for KeyChangeKind {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for KeyChangeKind {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for KeyChangeKind {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///`preview` — nothing was written; the response carries the plan. `applied` — the change was made (and published, unless `publication.selfPublish`). `pendingApproval` — the plan is recorded and awaits further approvals. `awaitingRecoveryProof` — the plan is approved and waits for the recovery custodian's proof (`preview.recoverySigning`); nothing is published until it arrives.
+///
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+#[non_exhaustive]
+pub enum KeyChangeOutcome {
+    #[serde(rename = "preview")]
+    Preview,
+    #[serde(rename = "applied")]
+    Applied,
+    #[serde(rename = "pendingApproval")]
+    PendingApproval,
+    #[serde(rename = "awaitingRecoveryProof")]
+    AwaitingRecoveryProof,
+}
+impl ::std::fmt::Display for KeyChangeOutcome {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Preview => f.write_str("preview"),
+            Self::Applied => f.write_str("applied"),
+            Self::PendingApproval => f.write_str("pendingApproval"),
+            Self::AwaitingRecoveryProof => f.write_str("awaitingRecoveryProof"),
+        }
+    }
+}
+impl ::std::str::FromStr for KeyChangeOutcome {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "preview" => Ok(Self::Preview),
+            "applied" => Ok(Self::Applied),
+            "pendingApproval" => Ok(Self::PendingApproval),
+            "awaitingRecoveryProof" => Ok(Self::AwaitingRecoveryProof),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for KeyChangeOutcome {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for KeyChangeOutcome {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for KeyChangeOutcome {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///One change to a role's key set, from preview to completion. The identifier's history is the authority for what was published; this record adds which change was which and, in the custody projection, who asked, who approved, and why.
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct KeyChangeRecord {
+    ///When the successor becomes `active` and the predecessor `retiring`; never before `cacheHorizonAt`.
+    #[serde(
+        rename = "activatesAt",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub activates_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub approvals: ::std::option::Option<KeyChangeApprovalState>,
+    ///Custody projection only. Whether the VTA retires the predecessor itself at `overlapUntil`.
+    #[serde(
+        rename = "autoRetire",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub auto_retire: ::std::option::Option<bool>,
+    ///Planned rotations: the publishing change's cache horizon (CONVENTIONS.md §10.1). The switch and any retirement happen no earlier.
+    #[serde(
+        rename = "cacheHorizonAt",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub cache_horizon_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    #[serde(
+        rename = "endedAt",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub ended_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    #[serde(
+        rename = "endedInVersionId",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub ended_in_version_id: ::std::option::Option<::std::string::String>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub ext: ::std::option::Option<Ext>,
+    ///Custody projection only. VID of the administrator whose signed request started the change.
+    #[serde(
+        rename = "initiatedBy",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub initiated_by: ::std::option::Option<::std::string::String>,
+    pub kind: KeyChangeKind,
+    ///Custody projection only. End of the overlap.
+    #[serde(
+        rename = "overlapUntil",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub overlap_until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    ///Verification-method identifiers (for `update`, public keys or commitments) leaving the role.
+    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
+    pub predecessors: ::std::vec::Vec<::std::string::String>,
+    ///Custody projection only. The operator's stated reason. Never published.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub reason: ::std::option::Option<KeyChangeRecordReason>,
+    pub role: IdentityKeyRole,
+    #[serde(rename = "rotationId")]
+    pub rotation_id: KeyChangeRecordRotationId,
+    #[serde(
+        rename = "startedAt",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub started_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    #[serde(
+        rename = "startedInVersionId",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub started_in_version_id: ::std::option::Option<::std::string::String>,
+    pub state: KeyChangeState,
+    ///Verification-method identifiers (for `update`, public keys or commitments) entering the role.
+    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
+    pub successors: ::std::vec::Vec<::std::string::String>,
+}
+impl KeyChangeRecord {
+    pub fn builder() -> builder::KeyChangeRecord {
+        Default::default()
+    }
+}
+///Custody projection only. The operator's stated reason. Never published.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct KeyChangeRecordReason(::std::string::String);
+impl ::std::ops::Deref for KeyChangeRecordReason {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<KeyChangeRecordReason> for ::std::string::String {
+    fn from(value: KeyChangeRecordReason) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for KeyChangeRecordReason {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 1024usize {
+            return Err("longer than 1024 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for KeyChangeRecordReason {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for KeyChangeRecordReason {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for KeyChangeRecordReason {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for KeyChangeRecordReason {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///`KeyChangeRecordRotationId`
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct KeyChangeRecordRotationId(::std::string::String);
+impl ::std::ops::Deref for KeyChangeRecordRotationId {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<KeyChangeRecordRotationId> for ::std::string::String {
+    fn from(value: KeyChangeRecordRotationId) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for KeyChangeRecordRotationId {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for KeyChangeRecordRotationId {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for KeyChangeRecordRotationId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for KeyChangeRecordRotationId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for KeyChangeRecordRotationId {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///`pendingApproval` — awaiting the approvals the VTA's policy requires; nothing is published. `awaitingRecoveryProof` — approved, and waiting for the recovery custodian's proof over the change; nothing is published. `staged` — successor published, not yet used. `overlapping` — successor active, predecessor `retiring`. `completed` — every predecessor retired, or the change is published and any overlap it began has ended. `aborted` — the successor was retired instead of the predecessor, or a revocation superseded the change. `expired` — the approvals or the recovery proof did not arrive before the preview expired; nothing was published.
+///
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+#[non_exhaustive]
+pub enum KeyChangeState {
+    #[serde(rename = "pendingApproval")]
+    PendingApproval,
+    #[serde(rename = "awaitingRecoveryProof")]
+    AwaitingRecoveryProof,
+    #[serde(rename = "staged")]
+    Staged,
+    #[serde(rename = "overlapping")]
+    Overlapping,
+    #[serde(rename = "completed")]
+    Completed,
+    #[serde(rename = "aborted")]
+    Aborted,
+    #[serde(rename = "expired")]
+    Expired,
+}
+impl ::std::fmt::Display for KeyChangeState {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::PendingApproval => f.write_str("pendingApproval"),
+            Self::AwaitingRecoveryProof => f.write_str("awaitingRecoveryProof"),
+            Self::Staged => f.write_str("staged"),
+            Self::Overlapping => f.write_str("overlapping"),
+            Self::Completed => f.write_str("completed"),
+            Self::Aborted => f.write_str("aborted"),
+            Self::Expired => f.write_str("expired"),
+        }
+    }
+}
+impl ::std::str::FromStr for KeyChangeState {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "pendingApproval" => Ok(Self::PendingApproval),
+            "awaitingRecoveryProof" => Ok(Self::AwaitingRecoveryProof),
+            "staged" => Ok(Self::Staged),
+            "overlapping" => Ok(Self::Overlapping),
+            "completed" => Ok(Self::Completed),
+            "aborted" => Ok(Self::Aborted),
+            "expired" => Ok(Self::Expired),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for KeyChangeState {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for KeyChangeState {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for KeyChangeState {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///Where a key is in its role's lifecycle (CONVENTIONS.md §8, §10). `pending` — planned by a preview or a change awaiting approval; not published; custody projection only. `staged` — published and bound to its role but not yet used, until the publishing change's cache horizon. `active` — the key the VTA uses for new signatures (for `messaging`, advertises for new sessions; for `update`, the current authority). `retiring` — still published but never used to sign again; a retiring `messaging` key still decrypts until retirement. `retired` — removed by planned rotation; what it signed while published stays valid, judged against the identifier version current at issuance. `revoked` — withdrawn for compromise, recorded with `compromisedSince`; what it signed from then on establishes nothing. `committed` — an `update` key the identifier commits to as a successor but has not revealed (a did:webvh `nextKeyHashes` entry, a KERI next-key digest). `retired` and `revoked` are terminal.
+///
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+#[non_exhaustive]
+pub enum KeyLifecycleState {
+    #[serde(rename = "pending")]
+    Pending,
+    #[serde(rename = "staged")]
+    Staged,
+    #[serde(rename = "active")]
+    Active,
+    #[serde(rename = "retiring")]
+    Retiring,
+    #[serde(rename = "retired")]
+    Retired,
+    #[serde(rename = "revoked")]
+    Revoked,
+    #[serde(rename = "committed")]
+    Committed,
+}
+impl ::std::fmt::Display for KeyLifecycleState {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Pending => f.write_str("pending"),
+            Self::Staged => f.write_str("staged"),
+            Self::Active => f.write_str("active"),
+            Self::Retiring => f.write_str("retiring"),
+            Self::Retired => f.write_str("retired"),
+            Self::Revoked => f.write_str("revoked"),
+            Self::Committed => f.write_str("committed"),
+        }
+    }
+}
+impl ::std::str::FromStr for KeyLifecycleState {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "pending" => Ok(Self::Pending),
+            "staged" => Ok(Self::Staged),
+            "active" => Ok(Self::Active),
+            "retiring" => Ok(Self::Retiring),
+            "retired" => Ok(Self::Retired),
+            "revoked" => Ok(Self::Revoked),
+            "committed" => Ok(Self::Committed),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for KeyLifecycleState {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for KeyLifecycleState {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for KeyLifecycleState {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
 ///Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.
 ///
 #[derive(
@@ -602,170 +1688,6 @@ impl ::std::convert::TryFrom<::std::string::String> for KeyOrigin {
 impl ::std::default::Default for KeyOrigin {
     fn default() -> Self {
         KeyOrigin::Derived
-    }
-}
-///The named key role a key occupies in an identity (CONVENTIONS.md §2; VTI-KEY-070 onward). `attestation` — the only keys in `assertionMethod`; sign the identity's attestation artefacts (credentials, endorsements, status lists) through the VTA's signing service and nowhere else. Generated inside the VTA, never derived, never exportable, never in a backup. `operational` — the only keys the identity's own process uses in `authentication`; sign the node's own traffic (Trust Task requests and responses, DIDComm and TSP signatures, invitations, notices, audit checkpoints). Derived. `messaging` — the only keys in `keyAgreement`; sign nothing. X25519, derived or generated in its own right and never converted from a signing key. `update` — the identifier's change authority as its DID method states it (a did:webvh log's `updateKeys` and `nextKeyHashes`, a KERI key event log's current and next keys); never a role-bound verification method, never in `keyRoles`. Generated inside the VTA, never derived, never exportable, never in a backup, and always accompanied by a committed recovery key held outside the VTA's protection boundary. `authenticator` — a key held on a person's own authenticator (a WebAuthn passkey), listed in `authentication` of that person's identity only; used only to verify the person's WebAuthn assertions (sign-in and step-up evidence) and never to accept a Data Integrity proof. The VTA never holds its private half, so it is enrolled by the passkey ceremony and never generated, added or rotated by these tasks. Never permitted on the durable identity of a VTA, a VTC or a VTN. No role permits `capabilityInvocation` or `capabilityDelegation` (VTI-KEY-075). The set is an extensible registry: a consumer that meets a role it does not implement MUST rely on the key for nothing, and MUST NOT map it onto a role it does know (VTI-KEY-074).
-///
-#[derive(
-    ::serde::Deserialize,
-    ::serde::Serialize,
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Hash,
-    Ord,
-    PartialEq,
-    PartialOrd,
-)]
-#[non_exhaustive]
-pub enum KeyRole {
-    #[serde(rename = "attestation")]
-    Attestation,
-    #[serde(rename = "operational")]
-    Operational,
-    #[serde(rename = "messaging")]
-    Messaging,
-    #[serde(rename = "update")]
-    Update,
-    #[serde(rename = "authenticator")]
-    Authenticator,
-}
-impl ::std::fmt::Display for KeyRole {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        match *self {
-            Self::Attestation => f.write_str("attestation"),
-            Self::Operational => f.write_str("operational"),
-            Self::Messaging => f.write_str("messaging"),
-            Self::Update => f.write_str("update"),
-            Self::Authenticator => f.write_str("authenticator"),
-        }
-    }
-}
-impl ::std::str::FromStr for KeyRole {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        match value {
-            "attestation" => Ok(Self::Attestation),
-            "operational" => Ok(Self::Operational),
-            "messaging" => Ok(Self::Messaging),
-            "update" => Ok(Self::Update),
-            "authenticator" => Ok(Self::Authenticator),
-            _ => Err("invalid value".into()),
-        }
-    }
-}
-impl ::std::convert::TryFrom<&str> for KeyRole {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for KeyRole {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for KeyRole {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-///Approval progress of a change the VTA's policy gates on approvals (CONVENTIONS.md §6).
-///
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[serde(deny_unknown_fields)]
-#[non_exhaustive]
-pub struct KeyRoleApprovalState {
-    ///The approvals recorded. Custody projection only; omitted from a response to anyone who is not themselves an eligible approver of this change.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub approvals: ::std::vec::Vec<RecordedApproval>,
-    ///When the preview, and every approval bound to it, stops being usable.
-    #[serde(rename = "expiresAt")]
-    pub expires_at: ::chrono::DateTime<::chrono::offset::Utc>,
-    ///Distinct approvals recorded so far, the initiator's own included.
-    pub received: u64,
-    ///Distinct approvals the VTA's policy requires.
-    pub required: ::std::num::NonZeroU64,
-}
-impl KeyRoleApprovalState {
-    pub fn builder() -> builder::KeyRoleApprovalState {
-        Default::default()
-    }
-}
-///`preview` — nothing was written; the response carries the plan. `applied` — the change was made (and published, unless `publication.selfPublish`). `pendingApproval` — the plan is recorded and awaits further approvals. `awaitingRecoveryProof` — the plan is approved and waits for the recovery custodian's proof (`preview.recoverySigning`); nothing is published until it arrives.
-///
-#[derive(
-    ::serde::Deserialize,
-    ::serde::Serialize,
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Hash,
-    Ord,
-    PartialEq,
-    PartialOrd,
-)]
-#[non_exhaustive]
-pub enum KeyRoleChangeOutcome {
-    #[serde(rename = "preview")]
-    Preview,
-    #[serde(rename = "applied")]
-    Applied,
-    #[serde(rename = "pendingApproval")]
-    PendingApproval,
-    #[serde(rename = "awaitingRecoveryProof")]
-    AwaitingRecoveryProof,
-}
-impl ::std::fmt::Display for KeyRoleChangeOutcome {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        match *self {
-            Self::Preview => f.write_str("preview"),
-            Self::Applied => f.write_str("applied"),
-            Self::PendingApproval => f.write_str("pendingApproval"),
-            Self::AwaitingRecoveryProof => f.write_str("awaitingRecoveryProof"),
-        }
-    }
-}
-impl ::std::str::FromStr for KeyRoleChangeOutcome {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        match value {
-            "preview" => Ok(Self::Preview),
-            "applied" => Ok(Self::Applied),
-            "pendingApproval" => Ok(Self::PendingApproval),
-            "awaitingRecoveryProof" => Ok(Self::AwaitingRecoveryProof),
-            _ => Err("invalid value".into()),
-        }
-    }
-}
-impl ::std::convert::TryFrom<&str> for KeyRoleChangeOutcome {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for KeyRoleChangeOutcome {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for KeyRoleChangeOutcome {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
     }
 }
 ///Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support.
@@ -916,7 +1838,7 @@ pub struct Payload {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub replace: ::std::option::Option<Vec<PayloadReplaceItem>>,
     ///The one role to rotate. `authenticator` is refused (`vta/dids:notApplicableToRole`).
-    pub role: KeyRole,
+    pub role: IdentityKeyRole,
 }
 impl Payload {
     pub fn builder() -> builder::Payload {
@@ -2029,13 +2951,13 @@ impl<'de> ::serde::Deserialize<'de> for RecoverySigningRequestUnsignedChange {
 pub struct Response {
     ///Present when `outcome` is `pendingApproval`.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub approvals: ::std::option::Option<KeyRoleApprovalState>,
+    pub approvals: ::std::option::Option<KeyChangeApprovalState>,
     pub did: ResponseDid,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
     ///Every key whose state this change sets or would set, after the change.
     #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub keys: ::std::vec::Vec<RoleKey>,
+    pub keys: ::std::vec::Vec<IdentityRoleKey>,
     ///Present when `outcome` is `applied`: the version identifier of the change. Pass it as the next change's `expectedVersionId`.
     #[serde(
         rename = "newVersionId",
@@ -2043,15 +2965,15 @@ pub struct Response {
         skip_serializing_if = "::std::option::Option::is_none"
     )]
     pub new_version_id: ::std::option::Option<::std::string::String>,
-    pub outcome: KeyRoleChangeOutcome,
+    pub outcome: KeyChangeOutcome,
     ///Present when `outcome` is `preview`, `pendingApproval` or `awaitingRecoveryProof`: the plan, and what an approval is bound to.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub preview: ::std::option::Option<DidDocumentPreview>,
+    pub preview: ::std::option::Option<IdentityChangePreview>,
     ///Present when `outcome` is `applied`.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub publication: ::std::option::Option<Publication>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub rotation: ::std::option::Option<RotationRecord>,
+    pub rotation: ::std::option::Option<KeyChangeRecord>,
 }
 impl Response {
     pub fn builder() -> builder::Response {
@@ -2115,928 +3037,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseDid {
             .map_err(|e: self::error::ConversionError| {
                 <D::Error as ::serde::de::Error>::custom(e.to_string())
             })
-    }
-}
-///One key in one role. A key is in exactly one role for its whole life; a change of role is a retirement from one and an addition to another, with fresh material under a fresh identifier.
-///
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[serde(deny_unknown_fields)]
-#[non_exhaustive]
-pub struct RoleKey {
-    ///For a `staged` key: when the VTA will begin using it — no earlier than the publishing change's cache horizon.
-    #[serde(
-        rename = "activatesAt",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub activates_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-    ///For a `committed` update key: the commitment the identifier publishes (a did:webvh `nextKeyHashes` entry, a KERI next-key digest), in the method's own encoding.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub commitment: ::std::option::Option<RoleKeyCommitment>,
-    ///For a `revoked` key: the compromise time (VTI-KEY-121), published as the verification method's `revoked` value. Where it cannot be established, the time the key was first published.
-    #[serde(
-        rename = "compromisedSince",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub compromised_since: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub custody: ::std::option::Option<RoleKeyCustody>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub ext: ::std::option::Option<Ext>,
-    #[serde(rename = "keyType")]
-    pub key_type: KeyType,
-    ///Operator-facing label. Custody projection only.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub label: ::std::option::Option<RoleKeyLabel>,
-    ///The public half, multibase-encoded, exactly as published. Absent for a `committed` update key, whose public half the identifier has not yet revealed.
-    #[serde(
-        rename = "publicKeyMultibase",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub public_key_multibase: ::std::option::Option<RoleKeyPublicKeyMultibase>,
-    ///The method's version identifier of the change that first published the key or its commitment (method-profiles/: a did:webvh `versionId`, a KERI event's sequence number and digest). Absent while `pending`.
-    #[serde(
-        rename = "publishedInVersionId",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub published_in_version_id: ::std::option::Option<::std::string::String>,
-    ///The relationships the key is (or, while `pending`, will be) listed in: always exactly its role's one relationship. Empty for `update`, `retired` and `revoked` keys.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub relationships: ::std::option::Option<Vec<DidVerificationRelationship>>,
-    ///Version identifier of the change that retired or revoked the key.
-    #[serde(
-        rename = "removedInVersionId",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub removed_in_version_id: ::std::option::Option<::std::string::String>,
-    ///For a `retiring` key: the end of its overlap. Custody projection only.
-    #[serde(
-        rename = "retireAfter",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub retire_after: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-    pub role: KeyRole,
-    ///The rotation this key was introduced or retired by.
-    #[serde(
-        rename = "rotationId",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub rotation_id: ::std::option::Option<::std::string::String>,
-    pub state: RoleKeyState,
-    #[serde(
-        rename = "updateKeyClass",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub update_key_class: ::std::option::Option<UpdateKeyClass>,
-    ///The full verification-method identifier (`did#fragment`) the document publishes the key under and lists in `keyRoles`. Absent for `update` keys, which are never role-bound verification methods (VTI-KEY-093). A VTA minting a method SHOULD derive its fragment from the key (VTI-KEY-150).
-    #[serde(
-        rename = "verificationMethod",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub verification_method: ::std::option::Option<RoleKeyVerificationMethod>,
-}
-impl RoleKey {
-    pub fn builder() -> builder::RoleKey {
-        Default::default()
-    }
-}
-///For a `committed` update key: the commitment the identifier publishes (a did:webvh `nextKeyHashes` entry, a KERI next-key digest), in the method's own encoding.
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct RoleKeyCommitment(::std::string::String);
-impl ::std::ops::Deref for RoleKeyCommitment {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<RoleKeyCommitment> for ::std::string::String {
-    fn from(value: RoleKeyCommitment) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for RoleKeyCommitment {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() < 1usize {
-            return Err("shorter than 1 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for RoleKeyCommitment {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for RoleKeyCommitment {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for RoleKeyCommitment {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for RoleKeyCommitment {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///How a key is held. Present only in the custody projection. Carries no key material, and a conforming VTA MUST NOT place any in `ext`.
-///
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[serde(deny_unknown_fields)]
-#[non_exhaustive]
-pub struct RoleKeyCustody {
-    ///Opaque, VTA-assigned label of the protection boundary holding the key (CONVENTIONS.md §5.2). Two keys with the same label are lost or compromised together. A recovery update key MUST carry a label different from every routine update key's. Custody projection only; never published.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub boundary: ::std::option::Option<RoleKeyCustodyBoundary>,
-    ///True once the private half has been destroyed — a retired `attestation` or `messaging` key. The record survives so the key's past signatures stay attributable.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub destroyed: ::std::option::Option<bool>,
-    ///Whether the custodian would release the private half. Always `false` for `attestation` and `update` keys. Stated explicitly, never absent.
-    pub exportable: bool,
-    ///Whether the key, or material it can be re-derived or decrypted from, is in the VTA's backups or any state transfer. Always `false` for `attestation` and `update` keys (VTI-KEY-112).
-    #[serde(rename = "inBackups")]
-    pub in_backups: bool,
-    ///The custodian record identifier (`keys/*`'s `keyId`) behind this key. Absent for a key this VTA does not hold (`protection: externalCustodian`).
-    #[serde(
-        rename = "keyId",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub key_id: ::std::option::Option<RoleKeyCustodyKeyId>,
-    ///True when no authority can make the key exportable. `true` implies `exportable: false`.
-    #[serde(rename = "neverExportable")]
-    pub never_exportable: bool,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub origin: ::std::option::Option<KeyOrigin>,
-    pub protection: ProtectionClass,
-}
-impl RoleKeyCustody {
-    pub fn builder() -> builder::RoleKeyCustody {
-        Default::default()
-    }
-}
-///Opaque, VTA-assigned label of the protection boundary holding the key (CONVENTIONS.md §5.2). Two keys with the same label are lost or compromised together. A recovery update key MUST carry a label different from every routine update key's. Custody projection only; never published.
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct RoleKeyCustodyBoundary(::std::string::String);
-impl ::std::ops::Deref for RoleKeyCustodyBoundary {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<RoleKeyCustodyBoundary> for ::std::string::String {
-    fn from(value: RoleKeyCustodyBoundary) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for RoleKeyCustodyBoundary {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 128usize {
-            return Err("longer than 128 characters".into());
-        }
-        if value.chars().count() < 1usize {
-            return Err("shorter than 1 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for RoleKeyCustodyBoundary {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for RoleKeyCustodyBoundary {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for RoleKeyCustodyBoundary {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for RoleKeyCustodyBoundary {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///The custodian record identifier (`keys/*`'s `keyId`) behind this key. Absent for a key this VTA does not hold (`protection: externalCustodian`).
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct RoleKeyCustodyKeyId(::std::string::String);
-impl ::std::ops::Deref for RoleKeyCustodyKeyId {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<RoleKeyCustodyKeyId> for ::std::string::String {
-    fn from(value: RoleKeyCustodyKeyId) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for RoleKeyCustodyKeyId {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() < 1usize {
-            return Err("shorter than 1 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for RoleKeyCustodyKeyId {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for RoleKeyCustodyKeyId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for RoleKeyCustodyKeyId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for RoleKeyCustodyKeyId {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///Operator-facing label. Custody projection only.
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct RoleKeyLabel(::std::string::String);
-impl ::std::ops::Deref for RoleKeyLabel {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<RoleKeyLabel> for ::std::string::String {
-    fn from(value: RoleKeyLabel) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for RoleKeyLabel {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 256usize {
-            return Err("longer than 256 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for RoleKeyLabel {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for RoleKeyLabel {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for RoleKeyLabel {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for RoleKeyLabel {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///The public half, multibase-encoded, exactly as published. Absent for a `committed` update key, whose public half the identifier has not yet revealed.
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct RoleKeyPublicKeyMultibase(::std::string::String);
-impl ::std::ops::Deref for RoleKeyPublicKeyMultibase {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<RoleKeyPublicKeyMultibase> for ::std::string::String {
-    fn from(value: RoleKeyPublicKeyMultibase) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for RoleKeyPublicKeyMultibase {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() < 1usize {
-            return Err("shorter than 1 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for RoleKeyPublicKeyMultibase {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for RoleKeyPublicKeyMultibase {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for RoleKeyPublicKeyMultibase {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for RoleKeyPublicKeyMultibase {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///Where a key is in its role's lifecycle (CONVENTIONS.md §8, §10). `pending` — planned by a preview or a change awaiting approval; not published; custody projection only. `staged` — published and bound to its role but not yet used, until the publishing change's cache horizon. `active` — the key the VTA uses for new signatures (for `messaging`, advertises for new sessions; for `update`, the current authority). `retiring` — still published but never used to sign again; a retiring `messaging` key still decrypts until retirement. `retired` — removed by planned rotation; what it signed while published stays valid, judged against the identifier version current at issuance. `revoked` — withdrawn for compromise, recorded with `compromisedSince`; what it signed from then on establishes nothing. `committed` — an `update` key the identifier commits to as a successor but has not revealed (a did:webvh `nextKeyHashes` entry, a KERI next-key digest). `retired` and `revoked` are terminal.
-///
-#[derive(
-    ::serde::Deserialize,
-    ::serde::Serialize,
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Hash,
-    Ord,
-    PartialEq,
-    PartialOrd,
-)]
-#[non_exhaustive]
-pub enum RoleKeyState {
-    #[serde(rename = "pending")]
-    Pending,
-    #[serde(rename = "staged")]
-    Staged,
-    #[serde(rename = "active")]
-    Active,
-    #[serde(rename = "retiring")]
-    Retiring,
-    #[serde(rename = "retired")]
-    Retired,
-    #[serde(rename = "revoked")]
-    Revoked,
-    #[serde(rename = "committed")]
-    Committed,
-}
-impl ::std::fmt::Display for RoleKeyState {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        match *self {
-            Self::Pending => f.write_str("pending"),
-            Self::Staged => f.write_str("staged"),
-            Self::Active => f.write_str("active"),
-            Self::Retiring => f.write_str("retiring"),
-            Self::Retired => f.write_str("retired"),
-            Self::Revoked => f.write_str("revoked"),
-            Self::Committed => f.write_str("committed"),
-        }
-    }
-}
-impl ::std::str::FromStr for RoleKeyState {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        match value {
-            "pending" => Ok(Self::Pending),
-            "staged" => Ok(Self::Staged),
-            "active" => Ok(Self::Active),
-            "retiring" => Ok(Self::Retiring),
-            "retired" => Ok(Self::Retired),
-            "revoked" => Ok(Self::Revoked),
-            "committed" => Ok(Self::Committed),
-            _ => Err("invalid value".into()),
-        }
-    }
-}
-impl ::std::convert::TryFrom<&str> for RoleKeyState {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for RoleKeyState {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for RoleKeyState {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-///The full verification-method identifier (`did#fragment`) the document publishes the key under and lists in `keyRoles`. Absent for `update` keys, which are never role-bound verification methods (VTI-KEY-093). A VTA minting a method SHOULD derive its fragment from the key (VTI-KEY-150).
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct RoleKeyVerificationMethod(::std::string::String);
-impl ::std::ops::Deref for RoleKeyVerificationMethod {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<RoleKeyVerificationMethod> for ::std::string::String {
-    fn from(value: RoleKeyVerificationMethod) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for RoleKeyVerificationMethod {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() < 1usize {
-            return Err("shorter than 1 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for RoleKeyVerificationMethod {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for RoleKeyVerificationMethod {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for RoleKeyVerificationMethod {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for RoleKeyVerificationMethod {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///`planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same change. `addition` — a key joined a role without anything leaving it. `recovery` — the identifier's update authority moved to the committed recovery key, because the VTA's own update keys were lost or may be in someone else's hands.
-///
-#[derive(
-    ::serde::Deserialize,
-    ::serde::Serialize,
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Hash,
-    Ord,
-    PartialEq,
-    PartialOrd,
-)]
-#[non_exhaustive]
-pub enum RotationKind {
-    #[serde(rename = "planned")]
-    Planned,
-    #[serde(rename = "compromise")]
-    Compromise,
-    #[serde(rename = "addition")]
-    Addition,
-    #[serde(rename = "recovery")]
-    Recovery,
-}
-impl ::std::fmt::Display for RotationKind {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        match *self {
-            Self::Planned => f.write_str("planned"),
-            Self::Compromise => f.write_str("compromise"),
-            Self::Addition => f.write_str("addition"),
-            Self::Recovery => f.write_str("recovery"),
-        }
-    }
-}
-impl ::std::str::FromStr for RotationKind {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        match value {
-            "planned" => Ok(Self::Planned),
-            "compromise" => Ok(Self::Compromise),
-            "addition" => Ok(Self::Addition),
-            "recovery" => Ok(Self::Recovery),
-            _ => Err("invalid value".into()),
-        }
-    }
-}
-impl ::std::convert::TryFrom<&str> for RotationKind {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for RotationKind {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for RotationKind {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-///One change to a role's key set, from preview to completion. The identifier's history is the authority for what was published; this record adds which change was which and, in the custody projection, who asked, who approved, and why.
-///
-#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[serde(deny_unknown_fields)]
-#[non_exhaustive]
-pub struct RotationRecord {
-    ///When the successor becomes `active` and the predecessor `retiring`; never before `cacheHorizonAt`.
-    #[serde(
-        rename = "activatesAt",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub activates_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub approvals: ::std::option::Option<KeyRoleApprovalState>,
-    ///Custody projection only. Whether the VTA retires the predecessor itself at `overlapUntil`.
-    #[serde(
-        rename = "autoRetire",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub auto_retire: ::std::option::Option<bool>,
-    ///Planned rotations: the publishing change's cache horizon (CONVENTIONS.md §10.1). The switch and any retirement happen no earlier.
-    #[serde(
-        rename = "cacheHorizonAt",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub cache_horizon_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-    #[serde(
-        rename = "endedAt",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub ended_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-    #[serde(
-        rename = "endedInVersionId",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub ended_in_version_id: ::std::option::Option<::std::string::String>,
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub ext: ::std::option::Option<Ext>,
-    ///Custody projection only. VID of the administrator whose signed request started the change.
-    #[serde(
-        rename = "initiatedBy",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub initiated_by: ::std::option::Option<::std::string::String>,
-    pub kind: RotationKind,
-    ///Custody projection only. End of the overlap.
-    #[serde(
-        rename = "overlapUntil",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub overlap_until: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-    ///Verification-method identifiers (for `update`, public keys or commitments) leaving the role.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub predecessors: ::std::vec::Vec<::std::string::String>,
-    ///Custody projection only. The operator's stated reason. Never published.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub reason: ::std::option::Option<RotationRecordReason>,
-    pub role: KeyRole,
-    #[serde(rename = "rotationId")]
-    pub rotation_id: RotationRecordRotationId,
-    #[serde(
-        rename = "startedAt",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub started_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-    #[serde(
-        rename = "startedInVersionId",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub started_in_version_id: ::std::option::Option<::std::string::String>,
-    pub state: RotationState,
-    ///Verification-method identifiers (for `update`, public keys or commitments) entering the role.
-    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
-    pub successors: ::std::vec::Vec<::std::string::String>,
-}
-impl RotationRecord {
-    pub fn builder() -> builder::RotationRecord {
-        Default::default()
-    }
-}
-///Custody projection only. The operator's stated reason. Never published.
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct RotationRecordReason(::std::string::String);
-impl ::std::ops::Deref for RotationRecordReason {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<RotationRecordReason> for ::std::string::String {
-    fn from(value: RotationRecordReason) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for RotationRecordReason {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 1024usize {
-            return Err("longer than 1024 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for RotationRecordReason {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for RotationRecordReason {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for RotationRecordReason {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for RotationRecordReason {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///`RotationRecordRotationId`
-///
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct RotationRecordRotationId(::std::string::String);
-impl ::std::ops::Deref for RotationRecordRotationId {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<RotationRecordRotationId> for ::std::string::String {
-    fn from(value: RotationRecordRotationId) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for RotationRecordRotationId {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() < 1usize {
-            return Err("shorter than 1 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for RotationRecordRotationId {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for RotationRecordRotationId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for RotationRecordRotationId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for RotationRecordRotationId {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///`pendingApproval` — awaiting the approvals the VTA's policy requires; nothing is published. `awaitingRecoveryProof` — approved, and waiting for the recovery custodian's proof over the change; nothing is published. `staged` — successor published, not yet used. `overlapping` — successor active, predecessor `retiring`. `completed` — every predecessor retired, or the change is published and any overlap it began has ended. `aborted` — the successor was retired instead of the predecessor, or a revocation superseded the change. `expired` — the approvals or the recovery proof did not arrive before the preview expired; nothing was published.
-///
-#[derive(
-    ::serde::Deserialize,
-    ::serde::Serialize,
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    Hash,
-    Ord,
-    PartialEq,
-    PartialOrd,
-)]
-#[non_exhaustive]
-pub enum RotationState {
-    #[serde(rename = "pendingApproval")]
-    PendingApproval,
-    #[serde(rename = "awaitingRecoveryProof")]
-    AwaitingRecoveryProof,
-    #[serde(rename = "staged")]
-    Staged,
-    #[serde(rename = "overlapping")]
-    Overlapping,
-    #[serde(rename = "completed")]
-    Completed,
-    #[serde(rename = "aborted")]
-    Aborted,
-    #[serde(rename = "expired")]
-    Expired,
-}
-impl ::std::fmt::Display for RotationState {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-        match *self {
-            Self::PendingApproval => f.write_str("pendingApproval"),
-            Self::AwaitingRecoveryProof => f.write_str("awaitingRecoveryProof"),
-            Self::Staged => f.write_str("staged"),
-            Self::Overlapping => f.write_str("overlapping"),
-            Self::Completed => f.write_str("completed"),
-            Self::Aborted => f.write_str("aborted"),
-            Self::Expired => f.write_str("expired"),
-        }
-    }
-}
-impl ::std::str::FromStr for RotationState {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        match value {
-            "pendingApproval" => Ok(Self::PendingApproval),
-            "awaitingRecoveryProof" => Ok(Self::AwaitingRecoveryProof),
-            "staged" => Ok(Self::Staged),
-            "overlapping" => Ok(Self::Overlapping),
-            "completed" => Ok(Self::Completed),
-            "aborted" => Ok(Self::Aborted),
-            "expired" => Ok(Self::Expired),
-            _ => Err("invalid value".into()),
-        }
-    }
-}
-impl ::std::convert::TryFrom<&str> for RotationState {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for RotationState {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for RotationState {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
     }
 }
 ///For an `update` key only (CONVENTIONS.md §5.3). `routine` — generated and held by the VTA, which authorizes the identity's ordinary changes with it. `recovery` — held by a recovery custodian in a protection boundary other than the VTA's; the VTA holds only its commitment, carries that commitment forward in every change it makes, and can use the key only by asking the custodian for a proof (`RecoverySigningRequest`).
@@ -3103,14 +3103,14 @@ impl ::std::convert::TryFrom<::std::string::String> for UpdateKeyClass {
 /// Types for composing complex structures.
 pub mod builder {
     #[derive(Clone, Debug)]
-    pub struct DidDocumentChange {
+    pub struct IdentityChange {
         commitment: ::std::result::Result<
             ::std::option::Option<::std::string::String>,
             ::std::string::String,
         >,
         key_type:
             ::std::result::Result<::std::option::Option<super::KeyType>, ::std::string::String>,
-        op: ::std::result::Result<super::DidDocumentChangeOp, ::std::string::String>,
+        op: ::std::result::Result<super::IdentityChangeOp, ::std::string::String>,
         public_key_multibase: ::std::result::Result<
             ::std::option::Option<::std::string::String>,
             ::std::string::String,
@@ -3119,13 +3119,13 @@ pub mod builder {
             ::std::option::Option<Vec<super::DidVerificationRelationship>>,
             ::std::string::String,
         >,
-        role: ::std::result::Result<super::KeyRole, ::std::string::String>,
+        role: ::std::result::Result<super::IdentityKeyRole, ::std::string::String>,
         verification_method: ::std::result::Result<
             ::std::option::Option<::std::string::String>,
             ::std::string::String,
         >,
     }
-    impl ::std::default::Default for DidDocumentChange {
+    impl ::std::default::Default for IdentityChange {
         fn default() -> Self {
             Self {
                 commitment: Ok(Default::default()),
@@ -3138,7 +3138,7 @@ pub mod builder {
             }
         }
     }
-    impl DidDocumentChange {
+    impl IdentityChange {
         pub fn commitment<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
@@ -3161,7 +3161,7 @@ pub mod builder {
         }
         pub fn op<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<super::DidDocumentChangeOp>,
+            T: ::std::convert::TryInto<super::IdentityChangeOp>,
             T::Error: ::std::fmt::Display,
         {
             self.op = value
@@ -3193,7 +3193,7 @@ pub mod builder {
         }
         pub fn role<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<super::KeyRole>,
+            T: ::std::convert::TryInto<super::IdentityKeyRole>,
             T::Error: ::std::fmt::Display,
         {
             self.role = value
@@ -3212,10 +3212,10 @@ pub mod builder {
             self
         }
     }
-    impl ::std::convert::TryFrom<DidDocumentChange> for super::DidDocumentChange {
+    impl ::std::convert::TryFrom<IdentityChange> for super::IdentityChange {
         type Error = super::error::ConversionError;
         fn try_from(
-            value: DidDocumentChange,
+            value: IdentityChange,
         ) -> ::std::result::Result<Self, super::error::ConversionError> {
             Ok(Self {
                 commitment: value.commitment?,
@@ -3228,8 +3228,8 @@ pub mod builder {
             })
         }
     }
-    impl ::std::convert::From<super::DidDocumentChange> for DidDocumentChange {
-        fn from(value: super::DidDocumentChange) -> Self {
+    impl ::std::convert::From<super::IdentityChange> for IdentityChange {
+        fn from(value: super::IdentityChange) -> Self {
             Self {
                 commitment: Ok(value.commitment),
                 key_type: Ok(value.key_type),
@@ -3242,13 +3242,13 @@ pub mod builder {
         }
     }
     #[derive(Clone, Debug)]
-    pub struct DidDocumentPreview {
+    pub struct IdentityChangePreview {
         base_version_id: ::std::result::Result<
             ::std::option::Option<::std::string::String>,
             ::std::string::String,
         >,
         changes:
-            ::std::result::Result<::std::vec::Vec<super::DidDocumentChange>, ::std::string::String>,
+            ::std::result::Result<::std::vec::Vec<super::IdentityChange>, ::std::string::String>,
         document: ::std::result::Result<
             ::serde_json::Map<::std::string::String, ::serde_json::Value>,
             ::std::string::String,
@@ -3257,7 +3257,7 @@ pub mod builder {
             ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
         method: ::std::result::Result<super::DidMethodName, ::std::string::String>,
         preview_id:
-            ::std::result::Result<super::DidDocumentPreviewPreviewId, ::std::string::String>,
+            ::std::result::Result<super::IdentityChangePreviewPreviewId, ::std::string::String>,
         recovery_signing: ::std::result::Result<
             ::std::option::Option<super::RecoverySigningRequest>,
             ::std::string::String,
@@ -3268,7 +3268,7 @@ pub mod builder {
             ::std::string::String,
         >,
     }
-    impl ::std::default::Default for DidDocumentPreview {
+    impl ::std::default::Default for IdentityChangePreview {
         fn default() -> Self {
             Self {
                 base_version_id: Ok(Default::default()),
@@ -3283,7 +3283,7 @@ pub mod builder {
             }
         }
     }
-    impl DidDocumentPreview {
+    impl IdentityChangePreview {
         pub fn base_version_id<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
@@ -3296,7 +3296,7 @@ pub mod builder {
         }
         pub fn changes<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::DidDocumentChange>>,
+            T: ::std::convert::TryInto<::std::vec::Vec<super::IdentityChange>>,
             T::Error: ::std::fmt::Display,
         {
             self.changes = value
@@ -3338,7 +3338,7 @@ pub mod builder {
         }
         pub fn preview_id<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<super::DidDocumentPreviewPreviewId>,
+            T: ::std::convert::TryInto<super::IdentityChangePreviewPreviewId>,
             T::Error: ::std::fmt::Display,
         {
             self.preview_id = value
@@ -3377,10 +3377,10 @@ pub mod builder {
             self
         }
     }
-    impl ::std::convert::TryFrom<DidDocumentPreview> for super::DidDocumentPreview {
+    impl ::std::convert::TryFrom<IdentityChangePreview> for super::IdentityChangePreview {
         type Error = super::error::ConversionError;
         fn try_from(
-            value: DidDocumentPreview,
+            value: IdentityChangePreview,
         ) -> ::std::result::Result<Self, super::error::ConversionError> {
             Ok(Self {
                 base_version_id: value.base_version_id?,
@@ -3395,8 +3395,8 @@ pub mod builder {
             })
         }
     }
-    impl ::std::convert::From<super::DidDocumentPreview> for DidDocumentPreview {
-        fn from(value: super::DidDocumentPreview) -> Self {
+    impl ::std::convert::From<super::IdentityChangePreview> for IdentityChangePreview {
+        fn from(value: super::IdentityChangePreview) -> Self {
             Self {
                 base_version_id: Ok(value.base_version_id),
                 changes: Ok(value.changes),
@@ -3411,7 +3411,467 @@ pub mod builder {
         }
     }
     #[derive(Clone, Debug)]
-    pub struct KeyRoleApprovalState {
+    pub struct IdentityKeyCustody {
+        boundary: ::std::result::Result<
+            ::std::option::Option<super::IdentityKeyCustodyBoundary>,
+            ::std::string::String,
+        >,
+        destroyed: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        exportable: ::std::result::Result<bool, ::std::string::String>,
+        in_backups: ::std::result::Result<bool, ::std::string::String>,
+        key_id: ::std::result::Result<
+            ::std::option::Option<super::IdentityKeyCustodyKeyId>,
+            ::std::string::String,
+        >,
+        never_exportable: ::std::result::Result<bool, ::std::string::String>,
+        origin:
+            ::std::result::Result<::std::option::Option<super::KeyOrigin>, ::std::string::String>,
+        protection: ::std::result::Result<super::ProtectionClass, ::std::string::String>,
+    }
+    impl ::std::default::Default for IdentityKeyCustody {
+        fn default() -> Self {
+            Self {
+                boundary: Ok(Default::default()),
+                destroyed: Ok(Default::default()),
+                exportable: Err("no value supplied for exportable".to_string()),
+                in_backups: Err("no value supplied for in_backups".to_string()),
+                key_id: Ok(Default::default()),
+                never_exportable: Err("no value supplied for never_exportable".to_string()),
+                origin: Ok(Default::default()),
+                protection: Err("no value supplied for protection".to_string()),
+            }
+        }
+    }
+    impl IdentityKeyCustody {
+        pub fn boundary<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::IdentityKeyCustodyBoundary>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.boundary = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for boundary: {e}"));
+            self
+        }
+        pub fn destroyed<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.destroyed = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for destroyed: {e}"));
+            self
+        }
+        pub fn exportable<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.exportable = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for exportable: {e}"));
+            self
+        }
+        pub fn in_backups<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.in_backups = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for in_backups: {e}"));
+            self
+        }
+        pub fn key_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::IdentityKeyCustodyKeyId>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.key_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for key_id: {e}"));
+            self
+        }
+        pub fn never_exportable<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<bool>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.never_exportable = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for never_exportable: {e}"));
+            self
+        }
+        pub fn origin<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::KeyOrigin>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.origin = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for origin: {e}"));
+            self
+        }
+        pub fn protection<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ProtectionClass>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.protection = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for protection: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<IdentityKeyCustody> for super::IdentityKeyCustody {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: IdentityKeyCustody,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                boundary: value.boundary?,
+                destroyed: value.destroyed?,
+                exportable: value.exportable?,
+                in_backups: value.in_backups?,
+                key_id: value.key_id?,
+                never_exportable: value.never_exportable?,
+                origin: value.origin?,
+                protection: value.protection?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::IdentityKeyCustody> for IdentityKeyCustody {
+        fn from(value: super::IdentityKeyCustody) -> Self {
+            Self {
+                boundary: Ok(value.boundary),
+                destroyed: Ok(value.destroyed),
+                exportable: Ok(value.exportable),
+                in_backups: Ok(value.in_backups),
+                key_id: Ok(value.key_id),
+                never_exportable: Ok(value.never_exportable),
+                origin: Ok(value.origin),
+                protection: Ok(value.protection),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct IdentityRoleKey {
+        activates_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        commitment: ::std::result::Result<
+            ::std::option::Option<super::IdentityRoleKeyCommitment>,
+            ::std::string::String,
+        >,
+        compromised_since: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        custody: ::std::result::Result<
+            ::std::option::Option<super::IdentityKeyCustody>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        key_type: ::std::result::Result<super::KeyType, ::std::string::String>,
+        label: ::std::result::Result<
+            ::std::option::Option<super::IdentityRoleKeyLabel>,
+            ::std::string::String,
+        >,
+        public_key_multibase: ::std::result::Result<
+            ::std::option::Option<super::IdentityRoleKeyPublicKeyMultibase>,
+            ::std::string::String,
+        >,
+        published_in_version_id: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        relationships: ::std::result::Result<
+            ::std::option::Option<Vec<super::DidVerificationRelationship>>,
+            ::std::string::String,
+        >,
+        removed_in_version_id: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        retire_after: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        role: ::std::result::Result<super::IdentityKeyRole, ::std::string::String>,
+        rotation_id: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        state: ::std::result::Result<super::KeyLifecycleState, ::std::string::String>,
+        update_key_class: ::std::result::Result<
+            ::std::option::Option<super::UpdateKeyClass>,
+            ::std::string::String,
+        >,
+        verification_method: ::std::result::Result<
+            ::std::option::Option<super::IdentityRoleKeyVerificationMethod>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for IdentityRoleKey {
+        fn default() -> Self {
+            Self {
+                activates_at: Ok(Default::default()),
+                commitment: Ok(Default::default()),
+                compromised_since: Ok(Default::default()),
+                custody: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                key_type: Err("no value supplied for key_type".to_string()),
+                label: Ok(Default::default()),
+                public_key_multibase: Ok(Default::default()),
+                published_in_version_id: Ok(Default::default()),
+                relationships: Ok(Default::default()),
+                removed_in_version_id: Ok(Default::default()),
+                retire_after: Ok(Default::default()),
+                role: Err("no value supplied for role".to_string()),
+                rotation_id: Ok(Default::default()),
+                state: Err("no value supplied for state".to_string()),
+                update_key_class: Ok(Default::default()),
+                verification_method: Ok(Default::default()),
+            }
+        }
+    }
+    impl IdentityRoleKey {
+        pub fn activates_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.activates_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for activates_at: {e}"));
+            self
+        }
+        pub fn commitment<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::IdentityRoleKeyCommitment>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.commitment = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for commitment: {e}"));
+            self
+        }
+        pub fn compromised_since<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.compromised_since = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for compromised_since: {e}"));
+            self
+        }
+        pub fn custody<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::IdentityKeyCustody>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.custody = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for custody: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn key_type<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::KeyType>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.key_type = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for key_type: {e}"));
+            self
+        }
+        pub fn label<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::IdentityRoleKeyLabel>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.label = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for label: {e}"));
+            self
+        }
+        pub fn public_key_multibase<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<super::IdentityRoleKeyPublicKeyMultibase>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.public_key_multibase = value.try_into().map_err(|e| {
+                format!("error converting supplied value for public_key_multibase: {e}")
+            });
+            self
+        }
+        pub fn published_in_version_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.published_in_version_id = value.try_into().map_err(|e| {
+                format!("error converting supplied value for published_in_version_id: {e}")
+            });
+            self
+        }
+        pub fn relationships<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<Vec<super::DidVerificationRelationship>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.relationships = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for relationships: {e}"));
+            self
+        }
+        pub fn removed_in_version_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.removed_in_version_id = value.try_into().map_err(|e| {
+                format!("error converting supplied value for removed_in_version_id: {e}")
+            });
+            self
+        }
+        pub fn retire_after<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.retire_after = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for retire_after: {e}"));
+            self
+        }
+        pub fn role<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::IdentityKeyRole>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.role = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for role: {e}"));
+            self
+        }
+        pub fn rotation_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.rotation_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for rotation_id: {e}"));
+            self
+        }
+        pub fn state<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::KeyLifecycleState>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.state = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for state: {e}"));
+            self
+        }
+        pub fn update_key_class<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::UpdateKeyClass>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.update_key_class = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for update_key_class: {e}"));
+            self
+        }
+        pub fn verification_method<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<super::IdentityRoleKeyVerificationMethod>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.verification_method = value.try_into().map_err(|e| {
+                format!("error converting supplied value for verification_method: {e}")
+            });
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<IdentityRoleKey> for super::IdentityRoleKey {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: IdentityRoleKey,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                activates_at: value.activates_at?,
+                commitment: value.commitment?,
+                compromised_since: value.compromised_since?,
+                custody: value.custody?,
+                ext: value.ext?,
+                key_type: value.key_type?,
+                label: value.label?,
+                public_key_multibase: value.public_key_multibase?,
+                published_in_version_id: value.published_in_version_id?,
+                relationships: value.relationships?,
+                removed_in_version_id: value.removed_in_version_id?,
+                retire_after: value.retire_after?,
+                role: value.role?,
+                rotation_id: value.rotation_id?,
+                state: value.state?,
+                update_key_class: value.update_key_class?,
+                verification_method: value.verification_method?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::IdentityRoleKey> for IdentityRoleKey {
+        fn from(value: super::IdentityRoleKey) -> Self {
+            Self {
+                activates_at: Ok(value.activates_at),
+                commitment: Ok(value.commitment),
+                compromised_since: Ok(value.compromised_since),
+                custody: Ok(value.custody),
+                ext: Ok(value.ext),
+                key_type: Ok(value.key_type),
+                label: Ok(value.label),
+                public_key_multibase: Ok(value.public_key_multibase),
+                published_in_version_id: Ok(value.published_in_version_id),
+                relationships: Ok(value.relationships),
+                removed_in_version_id: Ok(value.removed_in_version_id),
+                retire_after: Ok(value.retire_after),
+                role: Ok(value.role),
+                rotation_id: Ok(value.rotation_id),
+                state: Ok(value.state),
+                update_key_class: Ok(value.update_key_class),
+                verification_method: Ok(value.verification_method),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct KeyChangeApprovalState {
         approvals:
             ::std::result::Result<::std::vec::Vec<super::RecordedApproval>, ::std::string::String>,
         expires_at:
@@ -3419,7 +3879,7 @@ pub mod builder {
         received: ::std::result::Result<u64, ::std::string::String>,
         required: ::std::result::Result<::std::num::NonZeroU64, ::std::string::String>,
     }
-    impl ::std::default::Default for KeyRoleApprovalState {
+    impl ::std::default::Default for KeyChangeApprovalState {
         fn default() -> Self {
             Self {
                 approvals: Ok(Default::default()),
@@ -3429,7 +3889,7 @@ pub mod builder {
             }
         }
     }
-    impl KeyRoleApprovalState {
+    impl KeyChangeApprovalState {
         pub fn approvals<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<::std::vec::Vec<super::RecordedApproval>>,
@@ -3471,10 +3931,10 @@ pub mod builder {
             self
         }
     }
-    impl ::std::convert::TryFrom<KeyRoleApprovalState> for super::KeyRoleApprovalState {
+    impl ::std::convert::TryFrom<KeyChangeApprovalState> for super::KeyChangeApprovalState {
         type Error = super::error::ConversionError;
         fn try_from(
-            value: KeyRoleApprovalState,
+            value: KeyChangeApprovalState,
         ) -> ::std::result::Result<Self, super::error::ConversionError> {
             Ok(Self {
                 approvals: value.approvals?,
@@ -3484,13 +3944,333 @@ pub mod builder {
             })
         }
     }
-    impl ::std::convert::From<super::KeyRoleApprovalState> for KeyRoleApprovalState {
-        fn from(value: super::KeyRoleApprovalState) -> Self {
+    impl ::std::convert::From<super::KeyChangeApprovalState> for KeyChangeApprovalState {
+        fn from(value: super::KeyChangeApprovalState) -> Self {
             Self {
                 approvals: Ok(value.approvals),
                 expires_at: Ok(value.expires_at),
                 received: Ok(value.received),
                 required: Ok(value.required),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct KeyChangeRecord {
+        activates_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        approvals: ::std::result::Result<
+            ::std::option::Option<super::KeyChangeApprovalState>,
+            ::std::string::String,
+        >,
+        auto_retire: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        cache_horizon_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        ended_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        ended_in_version_id: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        initiated_by: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        kind: ::std::result::Result<super::KeyChangeKind, ::std::string::String>,
+        overlap_until: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        predecessors:
+            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+        reason: ::std::result::Result<
+            ::std::option::Option<super::KeyChangeRecordReason>,
+            ::std::string::String,
+        >,
+        role: ::std::result::Result<super::IdentityKeyRole, ::std::string::String>,
+        rotation_id: ::std::result::Result<super::KeyChangeRecordRotationId, ::std::string::String>,
+        started_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        started_in_version_id: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        state: ::std::result::Result<super::KeyChangeState, ::std::string::String>,
+        successors:
+            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
+    }
+    impl ::std::default::Default for KeyChangeRecord {
+        fn default() -> Self {
+            Self {
+                activates_at: Ok(Default::default()),
+                approvals: Ok(Default::default()),
+                auto_retire: Ok(Default::default()),
+                cache_horizon_at: Ok(Default::default()),
+                ended_at: Ok(Default::default()),
+                ended_in_version_id: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                initiated_by: Ok(Default::default()),
+                kind: Err("no value supplied for kind".to_string()),
+                overlap_until: Ok(Default::default()),
+                predecessors: Ok(Default::default()),
+                reason: Ok(Default::default()),
+                role: Err("no value supplied for role".to_string()),
+                rotation_id: Err("no value supplied for rotation_id".to_string()),
+                started_at: Ok(Default::default()),
+                started_in_version_id: Ok(Default::default()),
+                state: Err("no value supplied for state".to_string()),
+                successors: Ok(Default::default()),
+            }
+        }
+    }
+    impl KeyChangeRecord {
+        pub fn activates_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.activates_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for activates_at: {e}"));
+            self
+        }
+        pub fn approvals<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::KeyChangeApprovalState>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.approvals = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for approvals: {e}"));
+            self
+        }
+        pub fn auto_retire<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.auto_retire = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for auto_retire: {e}"));
+            self
+        }
+        pub fn cache_horizon_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.cache_horizon_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for cache_horizon_at: {e}"));
+            self
+        }
+        pub fn ended_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ended_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ended_at: {e}"));
+            self
+        }
+        pub fn ended_in_version_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ended_in_version_id = value.try_into().map_err(|e| {
+                format!("error converting supplied value for ended_in_version_id: {e}")
+            });
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn initiated_by<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.initiated_by = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for initiated_by: {e}"));
+            self
+        }
+        pub fn kind<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::KeyChangeKind>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.kind = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for kind: {e}"));
+            self
+        }
+        pub fn overlap_until<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.overlap_until = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for overlap_until: {e}"));
+            self
+        }
+        pub fn predecessors<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.predecessors = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for predecessors: {e}"));
+            self
+        }
+        pub fn reason<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::KeyChangeRecordReason>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.reason = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for reason: {e}"));
+            self
+        }
+        pub fn role<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::IdentityKeyRole>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.role = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for role: {e}"));
+            self
+        }
+        pub fn rotation_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::KeyChangeRecordRotationId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.rotation_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for rotation_id: {e}"));
+            self
+        }
+        pub fn started_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.started_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for started_at: {e}"));
+            self
+        }
+        pub fn started_in_version_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.started_in_version_id = value.try_into().map_err(|e| {
+                format!("error converting supplied value for started_in_version_id: {e}")
+            });
+            self
+        }
+        pub fn state<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::KeyChangeState>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.state = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for state: {e}"));
+            self
+        }
+        pub fn successors<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.successors = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for successors: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<KeyChangeRecord> for super::KeyChangeRecord {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: KeyChangeRecord,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                activates_at: value.activates_at?,
+                approvals: value.approvals?,
+                auto_retire: value.auto_retire?,
+                cache_horizon_at: value.cache_horizon_at?,
+                ended_at: value.ended_at?,
+                ended_in_version_id: value.ended_in_version_id?,
+                ext: value.ext?,
+                initiated_by: value.initiated_by?,
+                kind: value.kind?,
+                overlap_until: value.overlap_until?,
+                predecessors: value.predecessors?,
+                reason: value.reason?,
+                role: value.role?,
+                rotation_id: value.rotation_id?,
+                started_at: value.started_at?,
+                started_in_version_id: value.started_in_version_id?,
+                state: value.state?,
+                successors: value.successors?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::KeyChangeRecord> for KeyChangeRecord {
+        fn from(value: super::KeyChangeRecord) -> Self {
+            Self {
+                activates_at: Ok(value.activates_at),
+                approvals: Ok(value.approvals),
+                auto_retire: Ok(value.auto_retire),
+                cache_horizon_at: Ok(value.cache_horizon_at),
+                ended_at: Ok(value.ended_at),
+                ended_in_version_id: Ok(value.ended_in_version_id),
+                ext: Ok(value.ext),
+                initiated_by: Ok(value.initiated_by),
+                kind: Ok(value.kind),
+                overlap_until: Ok(value.overlap_until),
+                predecessors: Ok(value.predecessors),
+                reason: Ok(value.reason),
+                role: Ok(value.role),
+                rotation_id: Ok(value.rotation_id),
+                started_at: Ok(value.started_at),
+                started_in_version_id: Ok(value.started_in_version_id),
+                state: Ok(value.state),
+                successors: Ok(value.successors),
             }
         }
     }
@@ -3534,7 +4314,7 @@ pub mod builder {
             ::std::option::Option<Vec<super::PayloadReplaceItem>>,
             ::std::string::String,
         >,
-        role: ::std::result::Result<super::KeyRole, ::std::string::String>,
+        role: ::std::result::Result<super::IdentityKeyRole, ::std::string::String>,
     }
     impl ::std::default::Default for Payload {
         fn default() -> Self {
@@ -3693,7 +4473,7 @@ pub mod builder {
         }
         pub fn role<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<super::KeyRole>,
+            T: ::std::convert::TryInto<super::IdentityKeyRole>,
             T::Error: ::std::fmt::Display,
         {
             self.role = value
@@ -4145,25 +4925,25 @@ pub mod builder {
     #[derive(Clone, Debug)]
     pub struct Response {
         approvals: ::std::result::Result<
-            ::std::option::Option<super::KeyRoleApprovalState>,
+            ::std::option::Option<super::KeyChangeApprovalState>,
             ::std::string::String,
         >,
         did: ::std::result::Result<super::ResponseDid, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
-        keys: ::std::result::Result<::std::vec::Vec<super::RoleKey>, ::std::string::String>,
+        keys: ::std::result::Result<::std::vec::Vec<super::IdentityRoleKey>, ::std::string::String>,
         new_version_id: ::std::result::Result<
             ::std::option::Option<::std::string::String>,
             ::std::string::String,
         >,
-        outcome: ::std::result::Result<super::KeyRoleChangeOutcome, ::std::string::String>,
+        outcome: ::std::result::Result<super::KeyChangeOutcome, ::std::string::String>,
         preview: ::std::result::Result<
-            ::std::option::Option<super::DidDocumentPreview>,
+            ::std::option::Option<super::IdentityChangePreview>,
             ::std::string::String,
         >,
         publication:
             ::std::result::Result<::std::option::Option<super::Publication>, ::std::string::String>,
         rotation: ::std::result::Result<
-            ::std::option::Option<super::RotationRecord>,
+            ::std::option::Option<super::KeyChangeRecord>,
             ::std::string::String,
         >,
     }
@@ -4185,7 +4965,7 @@ pub mod builder {
     impl Response {
         pub fn approvals<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::KeyRoleApprovalState>>,
+            T: ::std::convert::TryInto<::std::option::Option<super::KeyChangeApprovalState>>,
             T::Error: ::std::fmt::Display,
         {
             self.approvals = value
@@ -4215,7 +4995,7 @@ pub mod builder {
         }
         pub fn keys<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::vec::Vec<super::RoleKey>>,
+            T: ::std::convert::TryInto<::std::vec::Vec<super::IdentityRoleKey>>,
             T::Error: ::std::fmt::Display,
         {
             self.keys = value
@@ -4235,7 +5015,7 @@ pub mod builder {
         }
         pub fn outcome<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<super::KeyRoleChangeOutcome>,
+            T: ::std::convert::TryInto<super::KeyChangeOutcome>,
             T::Error: ::std::fmt::Display,
         {
             self.outcome = value
@@ -4245,7 +5025,7 @@ pub mod builder {
         }
         pub fn preview<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::DidDocumentPreview>>,
+            T: ::std::convert::TryInto<::std::option::Option<super::IdentityChangePreview>>,
             T::Error: ::std::fmt::Display,
         {
             self.preview = value
@@ -4265,7 +5045,7 @@ pub mod builder {
         }
         pub fn rotation<T>(mut self, value: T) -> Self
         where
-            T: ::std::convert::TryInto<::std::option::Option<super::RotationRecord>>,
+            T: ::std::convert::TryInto<::std::option::Option<super::KeyChangeRecord>>,
             T::Error: ::std::fmt::Display,
         {
             self.rotation = value
@@ -4305,780 +5085,6 @@ pub mod builder {
             }
         }
     }
-    #[derive(Clone, Debug)]
-    pub struct RoleKey {
-        activates_at: ::std::result::Result<
-            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-            ::std::string::String,
-        >,
-        commitment: ::std::result::Result<
-            ::std::option::Option<super::RoleKeyCommitment>,
-            ::std::string::String,
-        >,
-        compromised_since: ::std::result::Result<
-            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-            ::std::string::String,
-        >,
-        custody: ::std::result::Result<
-            ::std::option::Option<super::RoleKeyCustody>,
-            ::std::string::String,
-        >,
-        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
-        key_type: ::std::result::Result<super::KeyType, ::std::string::String>,
-        label: ::std::result::Result<
-            ::std::option::Option<super::RoleKeyLabel>,
-            ::std::string::String,
-        >,
-        public_key_multibase: ::std::result::Result<
-            ::std::option::Option<super::RoleKeyPublicKeyMultibase>,
-            ::std::string::String,
-        >,
-        published_in_version_id: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
-            ::std::string::String,
-        >,
-        relationships: ::std::result::Result<
-            ::std::option::Option<Vec<super::DidVerificationRelationship>>,
-            ::std::string::String,
-        >,
-        removed_in_version_id: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
-            ::std::string::String,
-        >,
-        retire_after: ::std::result::Result<
-            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-            ::std::string::String,
-        >,
-        role: ::std::result::Result<super::KeyRole, ::std::string::String>,
-        rotation_id: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
-            ::std::string::String,
-        >,
-        state: ::std::result::Result<super::RoleKeyState, ::std::string::String>,
-        update_key_class: ::std::result::Result<
-            ::std::option::Option<super::UpdateKeyClass>,
-            ::std::string::String,
-        >,
-        verification_method: ::std::result::Result<
-            ::std::option::Option<super::RoleKeyVerificationMethod>,
-            ::std::string::String,
-        >,
-    }
-    impl ::std::default::Default for RoleKey {
-        fn default() -> Self {
-            Self {
-                activates_at: Ok(Default::default()),
-                commitment: Ok(Default::default()),
-                compromised_since: Ok(Default::default()),
-                custody: Ok(Default::default()),
-                ext: Ok(Default::default()),
-                key_type: Err("no value supplied for key_type".to_string()),
-                label: Ok(Default::default()),
-                public_key_multibase: Ok(Default::default()),
-                published_in_version_id: Ok(Default::default()),
-                relationships: Ok(Default::default()),
-                removed_in_version_id: Ok(Default::default()),
-                retire_after: Ok(Default::default()),
-                role: Err("no value supplied for role".to_string()),
-                rotation_id: Ok(Default::default()),
-                state: Err("no value supplied for state".to_string()),
-                update_key_class: Ok(Default::default()),
-                verification_method: Ok(Default::default()),
-            }
-        }
-    }
-    impl RoleKey {
-        pub fn activates_at<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<
-                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-            >,
-            T::Error: ::std::fmt::Display,
-        {
-            self.activates_at = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for activates_at: {e}"));
-            self
-        }
-        pub fn commitment<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<super::RoleKeyCommitment>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.commitment = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for commitment: {e}"));
-            self
-        }
-        pub fn compromised_since<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<
-                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-            >,
-            T::Error: ::std::fmt::Display,
-        {
-            self.compromised_since = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for compromised_since: {e}"));
-            self
-        }
-        pub fn custody<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<super::RoleKeyCustody>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.custody = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for custody: {e}"));
-            self
-        }
-        pub fn ext<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.ext = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for ext: {e}"));
-            self
-        }
-        pub fn key_type<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::KeyType>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.key_type = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for key_type: {e}"));
-            self
-        }
-        pub fn label<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<super::RoleKeyLabel>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.label = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for label: {e}"));
-            self
-        }
-        pub fn public_key_multibase<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<super::RoleKeyPublicKeyMultibase>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.public_key_multibase = value.try_into().map_err(|e| {
-                format!("error converting supplied value for public_key_multibase: {e}")
-            });
-            self
-        }
-        pub fn published_in_version_id<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.published_in_version_id = value.try_into().map_err(|e| {
-                format!("error converting supplied value for published_in_version_id: {e}")
-            });
-            self
-        }
-        pub fn relationships<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<
-                ::std::option::Option<Vec<super::DidVerificationRelationship>>,
-            >,
-            T::Error: ::std::fmt::Display,
-        {
-            self.relationships = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for relationships: {e}"));
-            self
-        }
-        pub fn removed_in_version_id<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.removed_in_version_id = value.try_into().map_err(|e| {
-                format!("error converting supplied value for removed_in_version_id: {e}")
-            });
-            self
-        }
-        pub fn retire_after<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<
-                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-            >,
-            T::Error: ::std::fmt::Display,
-        {
-            self.retire_after = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for retire_after: {e}"));
-            self
-        }
-        pub fn role<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::KeyRole>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.role = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for role: {e}"));
-            self
-        }
-        pub fn rotation_id<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.rotation_id = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for rotation_id: {e}"));
-            self
-        }
-        pub fn state<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::RoleKeyState>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.state = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for state: {e}"));
-            self
-        }
-        pub fn update_key_class<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<super::UpdateKeyClass>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.update_key_class = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for update_key_class: {e}"));
-            self
-        }
-        pub fn verification_method<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<super::RoleKeyVerificationMethod>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.verification_method = value.try_into().map_err(|e| {
-                format!("error converting supplied value for verification_method: {e}")
-            });
-            self
-        }
-    }
-    impl ::std::convert::TryFrom<RoleKey> for super::RoleKey {
-        type Error = super::error::ConversionError;
-        fn try_from(value: RoleKey) -> ::std::result::Result<Self, super::error::ConversionError> {
-            Ok(Self {
-                activates_at: value.activates_at?,
-                commitment: value.commitment?,
-                compromised_since: value.compromised_since?,
-                custody: value.custody?,
-                ext: value.ext?,
-                key_type: value.key_type?,
-                label: value.label?,
-                public_key_multibase: value.public_key_multibase?,
-                published_in_version_id: value.published_in_version_id?,
-                relationships: value.relationships?,
-                removed_in_version_id: value.removed_in_version_id?,
-                retire_after: value.retire_after?,
-                role: value.role?,
-                rotation_id: value.rotation_id?,
-                state: value.state?,
-                update_key_class: value.update_key_class?,
-                verification_method: value.verification_method?,
-            })
-        }
-    }
-    impl ::std::convert::From<super::RoleKey> for RoleKey {
-        fn from(value: super::RoleKey) -> Self {
-            Self {
-                activates_at: Ok(value.activates_at),
-                commitment: Ok(value.commitment),
-                compromised_since: Ok(value.compromised_since),
-                custody: Ok(value.custody),
-                ext: Ok(value.ext),
-                key_type: Ok(value.key_type),
-                label: Ok(value.label),
-                public_key_multibase: Ok(value.public_key_multibase),
-                published_in_version_id: Ok(value.published_in_version_id),
-                relationships: Ok(value.relationships),
-                removed_in_version_id: Ok(value.removed_in_version_id),
-                retire_after: Ok(value.retire_after),
-                role: Ok(value.role),
-                rotation_id: Ok(value.rotation_id),
-                state: Ok(value.state),
-                update_key_class: Ok(value.update_key_class),
-                verification_method: Ok(value.verification_method),
-            }
-        }
-    }
-    #[derive(Clone, Debug)]
-    pub struct RoleKeyCustody {
-        boundary: ::std::result::Result<
-            ::std::option::Option<super::RoleKeyCustodyBoundary>,
-            ::std::string::String,
-        >,
-        destroyed: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
-        exportable: ::std::result::Result<bool, ::std::string::String>,
-        in_backups: ::std::result::Result<bool, ::std::string::String>,
-        key_id: ::std::result::Result<
-            ::std::option::Option<super::RoleKeyCustodyKeyId>,
-            ::std::string::String,
-        >,
-        never_exportable: ::std::result::Result<bool, ::std::string::String>,
-        origin:
-            ::std::result::Result<::std::option::Option<super::KeyOrigin>, ::std::string::String>,
-        protection: ::std::result::Result<super::ProtectionClass, ::std::string::String>,
-    }
-    impl ::std::default::Default for RoleKeyCustody {
-        fn default() -> Self {
-            Self {
-                boundary: Ok(Default::default()),
-                destroyed: Ok(Default::default()),
-                exportable: Err("no value supplied for exportable".to_string()),
-                in_backups: Err("no value supplied for in_backups".to_string()),
-                key_id: Ok(Default::default()),
-                never_exportable: Err("no value supplied for never_exportable".to_string()),
-                origin: Ok(Default::default()),
-                protection: Err("no value supplied for protection".to_string()),
-            }
-        }
-    }
-    impl RoleKeyCustody {
-        pub fn boundary<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<super::RoleKeyCustodyBoundary>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.boundary = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for boundary: {e}"));
-            self
-        }
-        pub fn destroyed<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<bool>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.destroyed = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for destroyed: {e}"));
-            self
-        }
-        pub fn exportable<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<bool>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.exportable = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for exportable: {e}"));
-            self
-        }
-        pub fn in_backups<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<bool>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.in_backups = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for in_backups: {e}"));
-            self
-        }
-        pub fn key_id<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<super::RoleKeyCustodyKeyId>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.key_id = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for key_id: {e}"));
-            self
-        }
-        pub fn never_exportable<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<bool>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.never_exportable = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for never_exportable: {e}"));
-            self
-        }
-        pub fn origin<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<super::KeyOrigin>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.origin = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for origin: {e}"));
-            self
-        }
-        pub fn protection<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::ProtectionClass>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.protection = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for protection: {e}"));
-            self
-        }
-    }
-    impl ::std::convert::TryFrom<RoleKeyCustody> for super::RoleKeyCustody {
-        type Error = super::error::ConversionError;
-        fn try_from(
-            value: RoleKeyCustody,
-        ) -> ::std::result::Result<Self, super::error::ConversionError> {
-            Ok(Self {
-                boundary: value.boundary?,
-                destroyed: value.destroyed?,
-                exportable: value.exportable?,
-                in_backups: value.in_backups?,
-                key_id: value.key_id?,
-                never_exportable: value.never_exportable?,
-                origin: value.origin?,
-                protection: value.protection?,
-            })
-        }
-    }
-    impl ::std::convert::From<super::RoleKeyCustody> for RoleKeyCustody {
-        fn from(value: super::RoleKeyCustody) -> Self {
-            Self {
-                boundary: Ok(value.boundary),
-                destroyed: Ok(value.destroyed),
-                exportable: Ok(value.exportable),
-                in_backups: Ok(value.in_backups),
-                key_id: Ok(value.key_id),
-                never_exportable: Ok(value.never_exportable),
-                origin: Ok(value.origin),
-                protection: Ok(value.protection),
-            }
-        }
-    }
-    #[derive(Clone, Debug)]
-    pub struct RotationRecord {
-        activates_at: ::std::result::Result<
-            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-            ::std::string::String,
-        >,
-        approvals: ::std::result::Result<
-            ::std::option::Option<super::KeyRoleApprovalState>,
-            ::std::string::String,
-        >,
-        auto_retire: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
-        cache_horizon_at: ::std::result::Result<
-            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-            ::std::string::String,
-        >,
-        ended_at: ::std::result::Result<
-            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-            ::std::string::String,
-        >,
-        ended_in_version_id: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
-            ::std::string::String,
-        >,
-        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
-        initiated_by: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
-            ::std::string::String,
-        >,
-        kind: ::std::result::Result<super::RotationKind, ::std::string::String>,
-        overlap_until: ::std::result::Result<
-            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-            ::std::string::String,
-        >,
-        predecessors:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
-        reason: ::std::result::Result<
-            ::std::option::Option<super::RotationRecordReason>,
-            ::std::string::String,
-        >,
-        role: ::std::result::Result<super::KeyRole, ::std::string::String>,
-        rotation_id: ::std::result::Result<super::RotationRecordRotationId, ::std::string::String>,
-        started_at: ::std::result::Result<
-            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-            ::std::string::String,
-        >,
-        started_in_version_id: ::std::result::Result<
-            ::std::option::Option<::std::string::String>,
-            ::std::string::String,
-        >,
-        state: ::std::result::Result<super::RotationState, ::std::string::String>,
-        successors:
-            ::std::result::Result<::std::vec::Vec<::std::string::String>, ::std::string::String>,
-    }
-    impl ::std::default::Default for RotationRecord {
-        fn default() -> Self {
-            Self {
-                activates_at: Ok(Default::default()),
-                approvals: Ok(Default::default()),
-                auto_retire: Ok(Default::default()),
-                cache_horizon_at: Ok(Default::default()),
-                ended_at: Ok(Default::default()),
-                ended_in_version_id: Ok(Default::default()),
-                ext: Ok(Default::default()),
-                initiated_by: Ok(Default::default()),
-                kind: Err("no value supplied for kind".to_string()),
-                overlap_until: Ok(Default::default()),
-                predecessors: Ok(Default::default()),
-                reason: Ok(Default::default()),
-                role: Err("no value supplied for role".to_string()),
-                rotation_id: Err("no value supplied for rotation_id".to_string()),
-                started_at: Ok(Default::default()),
-                started_in_version_id: Ok(Default::default()),
-                state: Err("no value supplied for state".to_string()),
-                successors: Ok(Default::default()),
-            }
-        }
-    }
-    impl RotationRecord {
-        pub fn activates_at<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<
-                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-            >,
-            T::Error: ::std::fmt::Display,
-        {
-            self.activates_at = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for activates_at: {e}"));
-            self
-        }
-        pub fn approvals<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<super::KeyRoleApprovalState>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.approvals = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for approvals: {e}"));
-            self
-        }
-        pub fn auto_retire<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<bool>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.auto_retire = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for auto_retire: {e}"));
-            self
-        }
-        pub fn cache_horizon_at<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<
-                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-            >,
-            T::Error: ::std::fmt::Display,
-        {
-            self.cache_horizon_at = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for cache_horizon_at: {e}"));
-            self
-        }
-        pub fn ended_at<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<
-                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-            >,
-            T::Error: ::std::fmt::Display,
-        {
-            self.ended_at = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for ended_at: {e}"));
-            self
-        }
-        pub fn ended_in_version_id<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.ended_in_version_id = value.try_into().map_err(|e| {
-                format!("error converting supplied value for ended_in_version_id: {e}")
-            });
-            self
-        }
-        pub fn ext<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.ext = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for ext: {e}"));
-            self
-        }
-        pub fn initiated_by<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.initiated_by = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for initiated_by: {e}"));
-            self
-        }
-        pub fn kind<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::RotationKind>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.kind = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for kind: {e}"));
-            self
-        }
-        pub fn overlap_until<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<
-                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-            >,
-            T::Error: ::std::fmt::Display,
-        {
-            self.overlap_until = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for overlap_until: {e}"));
-            self
-        }
-        pub fn predecessors<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.predecessors = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for predecessors: {e}"));
-            self
-        }
-        pub fn reason<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<super::RotationRecordReason>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.reason = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for reason: {e}"));
-            self
-        }
-        pub fn role<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::KeyRole>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.role = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for role: {e}"));
-            self
-        }
-        pub fn rotation_id<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::RotationRecordRotationId>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.rotation_id = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for rotation_id: {e}"));
-            self
-        }
-        pub fn started_at<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<
-                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
-            >,
-            T::Error: ::std::fmt::Display,
-        {
-            self.started_at = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for started_at: {e}"));
-            self
-        }
-        pub fn started_in_version_id<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.started_in_version_id = value.try_into().map_err(|e| {
-                format!("error converting supplied value for started_in_version_id: {e}")
-            });
-            self
-        }
-        pub fn state<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::RotationState>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.state = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for state: {e}"));
-            self
-        }
-        pub fn successors<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::vec::Vec<::std::string::String>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.successors = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for successors: {e}"));
-            self
-        }
-    }
-    impl ::std::convert::TryFrom<RotationRecord> for super::RotationRecord {
-        type Error = super::error::ConversionError;
-        fn try_from(
-            value: RotationRecord,
-        ) -> ::std::result::Result<Self, super::error::ConversionError> {
-            Ok(Self {
-                activates_at: value.activates_at?,
-                approvals: value.approvals?,
-                auto_retire: value.auto_retire?,
-                cache_horizon_at: value.cache_horizon_at?,
-                ended_at: value.ended_at?,
-                ended_in_version_id: value.ended_in_version_id?,
-                ext: value.ext?,
-                initiated_by: value.initiated_by?,
-                kind: value.kind?,
-                overlap_until: value.overlap_until?,
-                predecessors: value.predecessors?,
-                reason: value.reason?,
-                role: value.role?,
-                rotation_id: value.rotation_id?,
-                started_at: value.started_at?,
-                started_in_version_id: value.started_in_version_id?,
-                state: value.state?,
-                successors: value.successors?,
-            })
-        }
-    }
-    impl ::std::convert::From<super::RotationRecord> for RotationRecord {
-        fn from(value: super::RotationRecord) -> Self {
-            Self {
-                activates_at: Ok(value.activates_at),
-                approvals: Ok(value.approvals),
-                auto_retire: Ok(value.auto_retire),
-                cache_horizon_at: Ok(value.cache_horizon_at),
-                ended_at: Ok(value.ended_at),
-                ended_in_version_id: Ok(value.ended_in_version_id),
-                ext: Ok(value.ext),
-                initiated_by: Ok(value.initiated_by),
-                kind: Ok(value.kind),
-                overlap_until: Ok(value.overlap_until),
-                predecessors: Ok(value.predecessors),
-                reason: Ok(value.reason),
-                role: Ok(value.role),
-                rotation_id: Ok(value.rotation_id),
-                started_at: Ok(value.started_at),
-                started_in_version_id: Ok(value.started_in_version_id),
-                state: Ok(value.state),
-                successors: Ok(value.successors),
-            }
-        }
-    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/dids/keys/rotate/1.0";
@@ -5086,7 +5092,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"ApprovalEvidenceKind\":{\"description\":\"The evidence an approval was recorded on, as `auth/step-up/approve-response` names it. Only the approver's own evidence is ever recorded: a proof by a key the VTA records as acting for an approver — a console signing key or any other delegation — is never an approval (CONVENTIONS.md §6.3).\",\"enum\":[\"didSigned\",\"webauthn\",\"approverSigned\"],\"title\":\"ApprovalEvidenceKind\",\"type\":\"string\"},\"DidDocumentChange\":{\"additionalProperties\":false,\"properties\":{\"commitment\":{\"type\":\"string\"},\"keyType\":{\"$ref\":\"#/$defs/KeyType\"},\"op\":{\"description\":\"`addKey` — a verification method joins its role's relationship and `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves its relationship and `keyRoles`, and stays in `verificationMethod` with `revoked` set to the compromise time (CONVENTIONS.md §9.1). `rotateUpdateKey` — the identifier's update authority moves to a committed routine successor. `commitUpdateKey` — a new routine successor is committed. `replaceRecoveryCommitment` — the recovery commitment changes. `useRecoveryKey` — the change is authorized by the recovery key, which the identifier then reveals.\",\"enum\":[\"addKey\",\"retireKey\",\"revokeKey\",\"rotateUpdateKey\",\"commitUpdateKey\",\"replaceRecoveryCommitment\",\"useRecoveryKey\"],\"type\":\"string\"},\"publicKeyMultibase\":{\"type\":\"string\"},\"relationships\":{\"items\":{\"$ref\":\"#/$defs/DidVerificationRelationship\"},\"type\":\"array\",\"uniqueItems\":true},\"role\":{\"$ref\":\"#/$defs/KeyRole\"},\"verificationMethod\":{\"type\":\"string\"}},\"required\":[\"op\",\"role\"],\"title\":\"DidDocumentChange\",\"type\":\"object\"},\"DidDocumentPreview\":{\"additionalProperties\":false,\"description\":\"What a change would publish, computed by the VTA by running the handler it would run to apply it (CONVENTIONS.md §6.1). This is what a consent surface renders and what an approval is bound to.\",\"properties\":{\"baseVersionId\":{\"description\":\"The version identifier the plan was computed against. Absent only for a creation. The plan is void once the identifier moves past it.\",\"type\":\"string\"},\"changes\":{\"description\":\"Every change the plan would make, including the ones the caller did not ask for — in particular any movement of the update authority the method requires.\",\"items\":{\"$ref\":\"#/$defs/DidDocumentChange\"},\"type\":\"array\"},\"document\":{\"description\":\"The complete identifier document the change would publish, `keyRoles` included. Public data by construction.\",\"type\":\"object\"},\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"method\":{\"$ref\":\"#/$defs/DidMethodName\"},\"previewId\":{\"description\":\"Opaque, unguessable identifier of this exact plan. Carried back by the apply request; every approval and any recovery proof is bound to it.\",\"minLength\":16,\"type\":\"string\"},\"recoverySigning\":{\"$ref\":\"#/$defs/RecoverySigningRequest\"},\"updateKeyRotates\":{\"description\":\"True when applying the plan also moves the identifier's update authority to a committed successor — every change under did:webvh pre-rotation, never a KERI interaction event. Stated as its own member because it is the consequence a reviewer most often misses.\",\"type\":\"boolean\"},\"warnings\":{\"items\":{\"$ref\":\"#/$defs/PreviewWarning\"},\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"previewId\",\"method\",\"expiresAt\",\"changes\",\"document\",\"updateKeyRotates\"],\"title\":\"DidDocumentPreview\",\"type\":\"object\"},\"DidMethodName\":{\"description\":\"The DID method an identity uses, as the method profile that governs it is named: `webvh` for a did:webvh identity, `scid:vh` for the did:scid:vh:1 form of one, `webs` for did:webs. Deliberately a pattern and not an enumeration: a method is added by publishing its profile under method-profiles/, never by changing this schema. A VTA MUST refuse a method it holds no profile for, or whose profile declares it ineligible, with `vta/dids:methodNotEligible`.\",\"pattern\":\"^[a-z0-9]+(:[a-z0-9]+)*$\",\"title\":\"DidMethodName\",\"type\":\"string\"},\"DidVerificationRelationship\":{\"description\":\"A DID Core verification relationship.\",\"enum\":[\"authentication\",\"assertionMethod\",\"keyAgreement\",\"capabilityInvocation\",\"capabilityDelegation\"],\"title\":\"DidVerificationRelationship\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"KeyOrigin\":{\"default\":\"derived\",\"description\":\"Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.\",\"enum\":[\"derived\",\"imported\",\"internal\"],\"title\":\"KeyOrigin\",\"type\":\"string\"},\"KeyRole\":{\"description\":\"The named key role a key occupies in an identity (CONVENTIONS.md §2; VTI-KEY-070 onward). `attestation` — the only keys in `assertionMethod`; sign the identity's attestation artefacts (credentials, endorsements, status lists) through the VTA's signing service and nowhere else. Generated inside the VTA, never derived, never exportable, never in a backup. `operational` — the only keys the identity's own process uses in `authentication`; sign the node's own traffic (Trust Task requests and responses, DIDComm and TSP signatures, invitations, notices, audit checkpoints). Derived. `messaging` — the only keys in `keyAgreement`; sign nothing. X25519, derived or generated in its own right and never converted from a signing key. `update` — the identifier's change authority as its DID method states it (a did:webvh log's `updateKeys` and `nextKeyHashes`, a KERI key event log's current and next keys); never a role-bound verification method, never in `keyRoles`. Generated inside the VTA, never derived, never exportable, never in a backup, and always accompanied by a committed recovery key held outside the VTA's protection boundary. `authenticator` — a key held on a person's own authenticator (a WebAuthn passkey), listed in `authentication` of that person's identity only; used only to verify the person's WebAuthn assertions (sign-in and step-up evidence) and never to accept a Data Integrity proof. The VTA never holds its private half, so it is enrolled by the passkey ceremony and never generated, added or rotated by these tasks. Never permitted on the durable identity of a VTA, a VTC or a VTN. No role permits `capabilityInvocation` or `capabilityDelegation` (VTI-KEY-075). The set is an extensible registry: a consumer that meets a role it does not implement MUST rely on the key for nothing, and MUST NOT map it onto a role it does know (VTI-KEY-074).\",\"enum\":[\"attestation\",\"operational\",\"messaging\",\"update\",\"authenticator\"],\"title\":\"KeyRole\",\"type\":\"string\"},\"KeyRoleApprovalState\":{\"additionalProperties\":false,\"description\":\"Approval progress of a change the VTA's policy gates on approvals (CONVENTIONS.md §6).\",\"properties\":{\"approvals\":{\"description\":\"The approvals recorded. Custody projection only; omitted from a response to anyone who is not themselves an eligible approver of this change.\",\"items\":{\"$ref\":\"#/$defs/RecordedApproval\"},\"type\":\"array\"},\"expiresAt\":{\"description\":\"When the preview, and every approval bound to it, stops being usable.\",\"format\":\"date-time\",\"type\":\"string\"},\"received\":{\"description\":\"Distinct approvals recorded so far, the initiator's own included.\",\"minimum\":0,\"type\":\"integer\"},\"required\":{\"description\":\"Distinct approvals the VTA's policy requires.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"required\",\"received\",\"expiresAt\"],\"title\":\"KeyRoleApprovalState\",\"type\":\"object\"},\"KeyRoleChangeOutcome\":{\"description\":\"`preview` — nothing was written; the response carries the plan. `applied` — the change was made (and published, unless `publication.selfPublish`). `pendingApproval` — the plan is recorded and awaits further approvals. `awaitingRecoveryProof` — the plan is approved and waits for the recovery custodian's proof (`preview.recoverySigning`); nothing is published until it arrives.\",\"enum\":[\"preview\",\"applied\",\"pendingApproval\",\"awaitingRecoveryProof\"],\"title\":\"KeyRoleChangeOutcome\",\"type\":\"string\"},\"KeyType\":{\"description\":\"Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support.\",\"enum\":[\"ed25519\",\"x25519\",\"p256\",\"mldsa44\",\"mldsa65\"],\"title\":\"KeyType\",\"type\":\"string\"},\"PreviewWarning\":{\"description\":\"Conditions a human should be shown before approving. `singleKeyRole` — the role will hold one active key. `algorithmNotInAcceptedSet` — a verifier population the VTA knows of does not accept the new key's algorithm. `roleWillHaveNoClassicalKey` — every remaining key is post-quantum. `attestationReissuanceRequired` — revoking this attestation key obliges re-issuance and re-signed status lists (VTI-KEY-133). `selfPublish` — the VTA will not publish the change; the operator must. `noWitnesses` — the identifier has no witnesses, so a party holding the VTA's routine update key can drop the recovery commitment unobserved (CONVENTIONS.md §5.3). `protectionBelowPolicy` — a key will be held at a `ProtectionClass` below what the VTA's policy recommends for its role (a plain VTA holding an attestation key). `recoveryKeyRevealed` — this change uses the recovery key, which must be replaced by a fresh recovery commitment in the same change.\",\"enum\":[\"singleKeyRole\",\"algorithmNotInAcceptedSet\",\"roleWillHaveNoClassicalKey\",\"attestationReissuanceRequired\",\"selfPublish\",\"noWitnesses\",\"protectionBelowPolicy\",\"recoveryKeyRevealed\"],\"title\":\"PreviewWarning\",\"type\":\"string\"},\"ProtectionClass\":{\"description\":\"How a private half is protected (CONVENTIONS.md §5.2). `software` — stored by the VTA without encryption independent of the host (a plain VTA). `encryptedAtRest` — wrapped under a key the VTA holds outside its store (a hardened VTA). `enclave` — held only inside an attested trusted execution environment, wrapped under a key released only to its measurement (a TEE VTA). `hardwareModule` — held by a hardware security module or cloud key service that performs the operation without releasing the key. `externalCustodian` — not held by this VTA at all: a recovery update key, or an `authenticator` key on a person's device.\",\"enum\":[\"software\",\"encryptedAtRest\",\"enclave\",\"hardwareModule\",\"externalCustodian\"],\"title\":\"ProtectionClass\",\"type\":\"string\"},\"Publication\":{\"additionalProperties\":false,\"description\":\"How the change reaches resolvers.\",\"properties\":{\"artifacts\":{\"description\":\"Present when `selfPublish` is true.\",\"items\":{\"$ref\":\"#/$defs/PublishedArtifact\"},\"type\":\"array\"},\"selfPublish\":{\"description\":\"True when no hosting service holds the identifier for the VTA: the caller must publish `artifacts`, and until it does resolvers see the previous version.\",\"type\":\"boolean\"}},\"required\":[\"selfPublish\"],\"title\":\"Publication\",\"type\":\"object\"},\"PublishedArtifact\":{\"additionalProperties\":false,\"description\":\"A file the identifier's method publishes, as the method profile names it (`did.jsonl` for did:webvh, `did.json` and `keri.cesr` for did:webs).\",\"properties\":{\"content\":{\"description\":\"The artefact's content, or for an append-only artefact the appended part, as text.\",\"type\":\"string\"},\"mediaType\":{\"minLength\":1,\"type\":\"string\"},\"name\":{\"maxLength\":128,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"name\",\"mediaType\",\"content\"],\"title\":\"PublishedArtifact\",\"type\":\"object\"},\"RecordedApproval\":{\"additionalProperties\":false,\"properties\":{\"approver\":{\"description\":\"VID of the approver.\",\"minLength\":1,\"type\":\"string\"},\"evidence\":{\"$ref\":\"#/$defs/ApprovalEvidenceKind\"},\"recordedAt\":{\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"approver\",\"evidence\"],\"title\":\"RecordedApproval\",\"type\":\"object\"},\"RecoveryCommitment\":{\"additionalProperties\":false,\"description\":\"A recovery key offered for commitment (CONVENTIONS.md §5.3). The VTA computes the method's commitment from it, verifies `proofOfPossession`, and then keeps only the commitment. The key MUST be held by a custodian in a protection boundary other than the VTA's; a VTA MUST refuse one it generated or can derive (`vta/dids:recoveryCommitmentRequired`).\",\"properties\":{\"keyType\":{\"$ref\":\"#/$defs/KeyType\"},\"label\":{\"description\":\"Operator-facing name of the custodian. Custody projection only; never published.\",\"maxLength\":256,\"type\":\"string\"},\"proofOfPossession\":{\"description\":\"Multibase signature by the recovery key over the UTF-8 bytes of `vta-dids-recovery-commitment/v1`, a zero byte, and the request's `previewId`. Absent on a dry run, which is how the `previewId` is obtained; REQUIRED on the apply request, and the only member besides `previewId`, `dryRun` and `recoveryProof` that may differ between the two.\",\"minLength\":1,\"type\":\"string\"},\"publicKeyMultibase\":{\"description\":\"The recovery key's public half. Not published by the VTA where the method commits by hash.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"keyType\",\"publicKeyMultibase\"],\"title\":\"RecoveryCommitment\",\"type\":\"object\"},\"RecoverySigningRequest\":{\"additionalProperties\":false,\"description\":\"What a recovery custodian must sign for a change that only the recovery key may authorize (CONVENTIONS.md §5.4, §9.4). The custodian MUST check `unsignedChange` itself — render it to its human, confirm that it reveals the recovery key it holds and commits to a fresh recovery key it also holds — and MUST NOT sign on the strength of this request's description alone.\",\"properties\":{\"commitment\":{\"description\":\"The recovery commitment the identifier publishes; the custodian's key MUST be the one it commits to.\",\"minLength\":1,\"type\":\"string\"},\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"keyType\":{\"$ref\":\"#/$defs/KeyType\"},\"proofOptions\":{\"description\":\"The proof the method requires over `unsignedChange`, without its signature value, as the method profile defines it (for did:webvh, a Data Integrity proof configuration with `proofPurpose: assertionMethod` and the recovery key's `did:key` as `verificationMethod`).\",\"type\":\"object\"},\"unsignedChange\":{\"description\":\"The change exactly as it will be published, without the recovery proof, as JSON text in the method's own form (a did:webvh log entry, a KERI rotation event).\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"commitment\",\"keyType\",\"unsignedChange\",\"proofOptions\"],\"title\":\"RecoverySigningRequest\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"approvals\":{\"$ref\":\"#/$defs/KeyRoleApprovalState\",\"description\":\"Present when `outcome` is `pendingApproval`.\"},\"did\":{\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keys\":{\"description\":\"Every key whose state this change sets or would set, after the change.\",\"items\":{\"$ref\":\"#/$defs/RoleKey\"},\"type\":\"array\"},\"newVersionId\":{\"description\":\"Present when `outcome` is `applied`: the version identifier of the change. Pass it as the next change's `expectedVersionId`.\",\"type\":\"string\"},\"outcome\":{\"$ref\":\"#/$defs/KeyRoleChangeOutcome\"},\"preview\":{\"$ref\":\"#/$defs/DidDocumentPreview\",\"description\":\"Present when `outcome` is `preview`, `pendingApproval` or `awaitingRecoveryProof`: the plan, and what an approval is bound to.\"},\"publication\":{\"$ref\":\"#/$defs/Publication\",\"description\":\"Present when `outcome` is `applied`.\"},\"rotation\":{\"$ref\":\"#/$defs/RotationRecord\"}},\"required\":[\"did\",\"outcome\"],\"title\":\"VTA DIDs — Keys Rotate — response payload\",\"type\":\"object\"},\"RoleKey\":{\"additionalProperties\":false,\"description\":\"One key in one role. A key is in exactly one role for its whole life; a change of role is a retirement from one and an addition to another, with fresh material under a fresh identifier.\",\"properties\":{\"activatesAt\":{\"description\":\"For a `staged` key: when the VTA will begin using it — no earlier than the publishing change's cache horizon.\",\"format\":\"date-time\",\"type\":\"string\"},\"commitment\":{\"description\":\"For a `committed` update key: the commitment the identifier publishes (a did:webvh `nextKeyHashes` entry, a KERI next-key digest), in the method's own encoding.\",\"minLength\":1,\"type\":\"string\"},\"compromisedSince\":{\"description\":\"For a `revoked` key: the compromise time (VTI-KEY-121), published as the verification method's `revoked` value. Where it cannot be established, the time the key was first published.\",\"format\":\"date-time\",\"type\":\"string\"},\"custody\":{\"$ref\":\"#/$defs/RoleKeyCustody\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keyType\":{\"$ref\":\"#/$defs/KeyType\"},\"label\":{\"description\":\"Operator-facing label. Custody projection only.\",\"maxLength\":256,\"type\":\"string\"},\"publicKeyMultibase\":{\"description\":\"The public half, multibase-encoded, exactly as published. Absent for a `committed` update key, whose public half the identifier has not yet revealed.\",\"minLength\":1,\"type\":\"string\"},\"publishedInVersionId\":{\"description\":\"The method's version identifier of the change that first published the key or its commitment (method-profiles/: a did:webvh `versionId`, a KERI event's sequence number and digest). Absent while `pending`.\",\"type\":\"string\"},\"relationships\":{\"description\":\"The relationships the key is (or, while `pending`, will be) listed in: always exactly its role's one relationship. Empty for `update`, `retired` and `revoked` keys.\",\"items\":{\"$ref\":\"#/$defs/DidVerificationRelationship\"},\"type\":\"array\",\"uniqueItems\":true},\"removedInVersionId\":{\"description\":\"Version identifier of the change that retired or revoked the key.\",\"type\":\"string\"},\"retireAfter\":{\"description\":\"For a `retiring` key: the end of its overlap. Custody projection only.\",\"format\":\"date-time\",\"type\":\"string\"},\"role\":{\"$ref\":\"#/$defs/KeyRole\"},\"rotationId\":{\"description\":\"The rotation this key was introduced or retired by.\",\"type\":\"string\"},\"state\":{\"$ref\":\"#/$defs/RoleKeyState\"},\"updateKeyClass\":{\"$ref\":\"#/$defs/UpdateKeyClass\"},\"verificationMethod\":{\"description\":\"The full verification-method identifier (`did#fragment`) the document publishes the key under and lists in `keyRoles`. Absent for `update` keys, which are never role-bound verification methods (VTI-KEY-093). A VTA minting a method SHOULD derive its fragment from the key (VTI-KEY-150).\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"role\",\"keyType\",\"state\"],\"title\":\"RoleKey\",\"type\":\"object\"},\"RoleKeyCustody\":{\"additionalProperties\":false,\"description\":\"How a key is held. Present only in the custody projection. Carries no key material, and a conforming VTA MUST NOT place any in `ext`.\",\"properties\":{\"boundary\":{\"description\":\"Opaque, VTA-assigned label of the protection boundary holding the key (CONVENTIONS.md §5.2). Two keys with the same label are lost or compromised together. A recovery update key MUST carry a label different from every routine update key's. Custody projection only; never published.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"destroyed\":{\"description\":\"True once the private half has been destroyed — a retired `attestation` or `messaging` key. The record survives so the key's past signatures stay attributable.\",\"type\":\"boolean\"},\"exportable\":{\"description\":\"Whether the custodian would release the private half. Always `false` for `attestation` and `update` keys. Stated explicitly, never absent.\",\"type\":\"boolean\"},\"inBackups\":{\"description\":\"Whether the key, or material it can be re-derived or decrypted from, is in the VTA's backups or any state transfer. Always `false` for `attestation` and `update` keys (VTI-KEY-112).\",\"type\":\"boolean\"},\"keyId\":{\"description\":\"The custodian record identifier (`keys/*`'s `keyId`) behind this key. Absent for a key this VTA does not hold (`protection: externalCustodian`).\",\"minLength\":1,\"type\":\"string\"},\"neverExportable\":{\"description\":\"True when no authority can make the key exportable. `true` implies `exportable: false`.\",\"type\":\"boolean\"},\"origin\":{\"$ref\":\"#/$defs/KeyOrigin\"},\"protection\":{\"$ref\":\"#/$defs/ProtectionClass\"}},\"required\":[\"exportable\",\"neverExportable\",\"inBackups\",\"protection\"],\"title\":\"RoleKeyCustody\",\"type\":\"object\"},\"RoleKeyState\":{\"description\":\"Where a key is in its role's lifecycle (CONVENTIONS.md §8, §10). `pending` — planned by a preview or a change awaiting approval; not published; custody projection only. `staged` — published and bound to its role but not yet used, until the publishing change's cache horizon. `active` — the key the VTA uses for new signatures (for `messaging`, advertises for new sessions; for `update`, the current authority). `retiring` — still published but never used to sign again; a retiring `messaging` key still decrypts until retirement. `retired` — removed by planned rotation; what it signed while published stays valid, judged against the identifier version current at issuance. `revoked` — withdrawn for compromise, recorded with `compromisedSince`; what it signed from then on establishes nothing. `committed` — an `update` key the identifier commits to as a successor but has not revealed (a did:webvh `nextKeyHashes` entry, a KERI next-key digest). `retired` and `revoked` are terminal.\",\"enum\":[\"pending\",\"staged\",\"active\",\"retiring\",\"retired\",\"revoked\",\"committed\"],\"title\":\"RoleKeyState\",\"type\":\"string\"},\"RotationKind\":{\"description\":\"`planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same change. `addition` — a key joined a role without anything leaving it. `recovery` — the identifier's update authority moved to the committed recovery key, because the VTA's own update keys were lost or may be in someone else's hands.\",\"enum\":[\"planned\",\"compromise\",\"addition\",\"recovery\"],\"title\":\"RotationKind\",\"type\":\"string\"},\"RotationRecord\":{\"additionalProperties\":false,\"description\":\"One change to a role's key set, from preview to completion. The identifier's history is the authority for what was published; this record adds which change was which and, in the custody projection, who asked, who approved, and why.\",\"properties\":{\"activatesAt\":{\"description\":\"When the successor becomes `active` and the predecessor `retiring`; never before `cacheHorizonAt`.\",\"format\":\"date-time\",\"type\":\"string\"},\"approvals\":{\"$ref\":\"#/$defs/KeyRoleApprovalState\"},\"autoRetire\":{\"description\":\"Custody projection only. Whether the VTA retires the predecessor itself at `overlapUntil`.\",\"type\":\"boolean\"},\"cacheHorizonAt\":{\"description\":\"Planned rotations: the publishing change's cache horizon (CONVENTIONS.md §10.1). The switch and any retirement happen no earlier.\",\"format\":\"date-time\",\"type\":\"string\"},\"endedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"endedInVersionId\":{\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"initiatedBy\":{\"description\":\"Custody projection only. VID of the administrator whose signed request started the change.\",\"type\":\"string\"},\"kind\":{\"$ref\":\"#/$defs/RotationKind\"},\"overlapUntil\":{\"description\":\"Custody projection only. End of the overlap.\",\"format\":\"date-time\",\"type\":\"string\"},\"predecessors\":{\"description\":\"Verification-method identifiers (for `update`, public keys or commitments) leaving the role.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"reason\":{\"description\":\"Custody projection only. The operator's stated reason. Never published.\",\"maxLength\":1024,\"type\":\"string\"},\"role\":{\"$ref\":\"#/$defs/KeyRole\"},\"rotationId\":{\"minLength\":1,\"type\":\"string\"},\"startedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"startedInVersionId\":{\"type\":\"string\"},\"state\":{\"$ref\":\"#/$defs/RotationState\"},\"successors\":{\"description\":\"Verification-method identifiers (for `update`, public keys or commitments) entering the role.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"rotationId\",\"role\",\"kind\",\"state\"],\"title\":\"RotationRecord\",\"type\":\"object\"},\"RotationState\":{\"description\":\"`pendingApproval` — awaiting the approvals the VTA's policy requires; nothing is published. `awaitingRecoveryProof` — approved, and waiting for the recovery custodian's proof over the change; nothing is published. `staged` — successor published, not yet used. `overlapping` — successor active, predecessor `retiring`. `completed` — every predecessor retired, or the change is published and any overlap it began has ended. `aborted` — the successor was retired instead of the predecessor, or a revocation superseded the change. `expired` — the approvals or the recovery proof did not arrive before the preview expired; nothing was published.\",\"enum\":[\"pendingApproval\",\"awaitingRecoveryProof\",\"staged\",\"overlapping\",\"completed\",\"aborted\",\"expired\"],\"title\":\"RotationState\",\"type\":\"string\"},\"UpdateKeyClass\":{\"description\":\"For an `update` key only (CONVENTIONS.md §5.3). `routine` — generated and held by the VTA, which authorizes the identity's ordinary changes with it. `recovery` — held by a recovery custodian in a protection boundary other than the VTA's; the VTA holds only its commitment, carries that commitment forward in every change it makes, and can use the key only by asking the custodian for a proof (`RecoverySigningRequest`).\",\"enum\":[\"routine\",\"recovery\"],\"title\":\"UpdateKeyClass\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/vta/dids/keys/rotate/1.0\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Plan and start the planned rotation of one role of a key-role identity: successors staged, switched at the cache horizon, predecessors retired at the end of the overlap. For `update`, the authority moves to its committed routine successor, or the recovery commitment is replaced.\",\"properties\":{\"activatesAt\":{\"description\":\"When successors switch in; no earlier than the cache horizon, which is the default. Not for `update`.\",\"format\":\"date-time\",\"type\":\"string\"},\"autoRetire\":{\"description\":\"Whether the VTA retires predecessors itself at `overlapUntil`. Absent reads as true. Not for `update`.\",\"type\":\"boolean\"},\"did\":{\"description\":\"The key-role identity, by DID (for a `did:scid` identity, the DID without `src`).\",\"minLength\":1,\"type\":\"string\"},\"dryRun\":{\"description\":\"Compute and return the preview without writing anything but the plan (CONVENTIONS.md §6.1). Absent reads as false.\",\"type\":\"boolean\"},\"expectedVersionId\":{\"description\":\"Optimistic-concurrency precondition: the version identifier (method profile §3) the caller based this change on, for example `keys/list`'s `versionId`. The VTA MUST refuse with `vta/dids:versionConflict` if the identity has moved past it. Not optional for anything a person looked at.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keyType\":{\"$ref\":\"#/$defs/KeyType\",\"description\":\"Successors' algorithm. Absent keeps each predecessor's (CONVENTIONS.md §14). Not for `update`.\"},\"label\":{\"maxLength\":256,\"type\":\"string\"},\"overlapUntil\":{\"description\":\"End of the overlap; after `activatesAt`. Not for `update`.\",\"format\":\"date-time\",\"type\":\"string\"},\"previewId\":{\"description\":\"Apply exactly the plan a previous dry run of this same request returned, or nothing (CONVENTIONS.md §6.1); what every approval is bound to.\",\"minLength\":16,\"type\":\"string\"},\"reason\":{\"description\":\"Why the change is being made, for the audit trail and for the other approvers. Never published.\",\"maxLength\":1024,\"type\":\"string\"},\"recoveryCommitment\":{\"$ref\":\"#/$defs/RecoveryCommitment\",\"description\":\"`update` only: replace the recovery commitment with this key (CONVENTIONS.md §5.3, §6.5). Absent moves the routine authority and carries the recovery commitment forward.\"},\"replace\":{\"description\":\"Verification methods of the role to rotate. Absent rotates every active key of the role. Not for `update`.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"role\":{\"$ref\":\"#/$defs/KeyRole\",\"description\":\"The one role to rotate. `authenticator` is refused (`vta/dids:notApplicableToRole`).\"}},\"required\":[\"did\",\"role\"],\"title\":\"VTA DIDs — Keys Rotate — payload\",\"type\":\"object\"}\n",
+        "{\"$defs\":{\"ApprovalEvidenceKind\":{\"description\":\"The evidence an approval was recorded on, as `auth/step-up/approve-response` names it. Only the approver's own evidence is ever recorded: a proof by a key the VTA records as acting for an approver — a console signing key or any other delegation — is never an approval (CONVENTIONS.md §6.3).\",\"enum\":[\"didSigned\",\"webauthn\",\"approverSigned\"],\"title\":\"ApprovalEvidenceKind\",\"type\":\"string\"},\"DidMethodName\":{\"description\":\"The DID method an identity uses, as the method profile that governs it is named: `webvh` for a did:webvh identity, `scid:vh` for the did:scid:vh:1 form of one, `webs` for did:webs. Deliberately a pattern and not an enumeration: a method is added by publishing its profile under method-profiles/, never by changing this schema. A VTA MUST refuse a method it holds no profile for, or whose profile declares it ineligible, with `vta/dids:methodNotEligible`.\",\"pattern\":\"^[a-z0-9]+(:[a-z0-9]+)*$\",\"title\":\"DidMethodName\",\"type\":\"string\"},\"DidVerificationRelationship\":{\"description\":\"A DID Core verification relationship.\",\"enum\":[\"authentication\",\"assertionMethod\",\"keyAgreement\",\"capabilityInvocation\",\"capabilityDelegation\"],\"title\":\"DidVerificationRelationship\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"IdentityChange\":{\"additionalProperties\":false,\"properties\":{\"commitment\":{\"type\":\"string\"},\"keyType\":{\"$ref\":\"#/$defs/KeyType\"},\"op\":{\"description\":\"`addKey` — a verification method joins its role's relationship and `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves its relationship and `keyRoles`, and stays in `verificationMethod` with `revoked` set to the compromise time (CONVENTIONS.md §9.1). `rotateUpdateKey` — the identifier's update authority moves to a committed routine successor. `commitUpdateKey` — a new routine successor is committed. `replaceRecoveryCommitment` — the recovery commitment changes. `useRecoveryKey` — the change is authorized by the recovery key, which the identifier then reveals.\",\"enum\":[\"addKey\",\"retireKey\",\"revokeKey\",\"rotateUpdateKey\",\"commitUpdateKey\",\"replaceRecoveryCommitment\",\"useRecoveryKey\"],\"type\":\"string\"},\"publicKeyMultibase\":{\"type\":\"string\"},\"relationships\":{\"items\":{\"$ref\":\"#/$defs/DidVerificationRelationship\"},\"type\":\"array\",\"uniqueItems\":true},\"role\":{\"$ref\":\"#/$defs/IdentityKeyRole\"},\"verificationMethod\":{\"type\":\"string\"}},\"required\":[\"op\",\"role\"],\"title\":\"IdentityChange\",\"type\":\"object\"},\"IdentityChangePreview\":{\"additionalProperties\":false,\"description\":\"What a change would publish, computed by the VTA by running the handler it would run to apply it (CONVENTIONS.md §6.1). This is what a consent surface renders and what an approval is bound to.\",\"properties\":{\"baseVersionId\":{\"description\":\"The version identifier the plan was computed against. Absent only for a creation. The plan is void once the identifier moves past it.\",\"type\":\"string\"},\"changes\":{\"description\":\"Every change the plan would make, including the ones the caller did not ask for — in particular any movement of the update authority the method requires.\",\"items\":{\"$ref\":\"#/$defs/IdentityChange\"},\"type\":\"array\"},\"document\":{\"description\":\"The complete identifier document the change would publish, `keyRoles` included. Public data by construction.\",\"type\":\"object\"},\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"method\":{\"$ref\":\"#/$defs/DidMethodName\"},\"previewId\":{\"description\":\"Opaque, unguessable identifier of this exact plan. Carried back by the apply request; every approval and any recovery proof is bound to it.\",\"minLength\":16,\"type\":\"string\"},\"recoverySigning\":{\"$ref\":\"#/$defs/RecoverySigningRequest\"},\"updateKeyRotates\":{\"description\":\"True when applying the plan also moves the identifier's update authority to a committed successor — every change under did:webvh pre-rotation, never a KERI interaction event. Stated as its own member because it is the consequence a reviewer most often misses.\",\"type\":\"boolean\"},\"warnings\":{\"items\":{\"$ref\":\"#/$defs/PreviewWarning\"},\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"previewId\",\"method\",\"expiresAt\",\"changes\",\"document\",\"updateKeyRotates\"],\"title\":\"IdentityChangePreview\",\"type\":\"object\"},\"IdentityKeyCustody\":{\"additionalProperties\":false,\"description\":\"How a key is held. Present only in the custody projection. Carries no key material, and a conforming VTA MUST NOT place any in `ext`.\",\"properties\":{\"boundary\":{\"description\":\"Opaque, VTA-assigned label of the protection boundary holding the key (CONVENTIONS.md §5.2). Two keys with the same label are lost or compromised together. A recovery update key MUST carry a label different from every routine update key's. Custody projection only; never published.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"destroyed\":{\"description\":\"True once the private half has been destroyed — a retired `attestation` or `messaging` key. The record survives so the key's past signatures stay attributable.\",\"type\":\"boolean\"},\"exportable\":{\"description\":\"Whether the custodian would release the private half. Always `false` for `attestation` and `update` keys. Stated explicitly, never absent.\",\"type\":\"boolean\"},\"inBackups\":{\"description\":\"Whether the key, or material it can be re-derived or decrypted from, is in the VTA's backups or any state transfer. Always `false` for `attestation` and `update` keys (VTI-KEY-112).\",\"type\":\"boolean\"},\"keyId\":{\"description\":\"The custodian record identifier (`keys/*`'s `keyId`) behind this key. Absent for a key this VTA does not hold (`protection: externalCustodian`).\",\"minLength\":1,\"type\":\"string\"},\"neverExportable\":{\"description\":\"True when no authority can make the key exportable. `true` implies `exportable: false`.\",\"type\":\"boolean\"},\"origin\":{\"$ref\":\"#/$defs/KeyOrigin\"},\"protection\":{\"$ref\":\"#/$defs/ProtectionClass\"}},\"required\":[\"exportable\",\"neverExportable\",\"inBackups\",\"protection\"],\"title\":\"IdentityKeyCustody\",\"type\":\"object\"},\"IdentityKeyRole\":{\"description\":\"The named key role a key occupies in an identity (CONVENTIONS.md §2; VTI-KEY-070 onward). `attestation` — the only keys in `assertionMethod`; sign the identity's attestation artefacts (credentials, endorsements, status lists) through the VTA's signing service and nowhere else. Generated inside the VTA, never derived, never exportable, never in a backup. `operational` — the only keys the identity's own process uses in `authentication`; sign the node's own traffic (Trust Task requests and responses, DIDComm and TSP signatures, invitations, notices, audit checkpoints). Derived. `messaging` — the only keys in `keyAgreement`; sign nothing. X25519, derived or generated in its own right and never converted from a signing key. `update` — the identifier's change authority as its DID method states it (a did:webvh log's `updateKeys` and `nextKeyHashes`, a KERI key event log's current and next keys); never a role-bound verification method, never in `keyRoles`. Generated inside the VTA, never derived, never exportable, never in a backup, and always accompanied by a committed recovery key held outside the VTA's protection boundary. `authenticator` — a key held on a person's own authenticator (a WebAuthn passkey), listed in `authentication` of that person's identity only; used only to verify the person's WebAuthn assertions (sign-in and step-up evidence) and never to accept a Data Integrity proof. The VTA never holds its private half, so it is enrolled by the passkey ceremony and never generated, added or rotated by these tasks. Never permitted on the durable identity of a VTA, a VTC or a VTN. No role permits `capabilityInvocation` or `capabilityDelegation` (VTI-KEY-075). The set is an extensible registry: a consumer that meets a role it does not implement MUST rely on the key for nothing, and MUST NOT map it onto a role it does know (VTI-KEY-074).\",\"enum\":[\"attestation\",\"operational\",\"messaging\",\"update\",\"authenticator\"],\"title\":\"IdentityKeyRole\",\"type\":\"string\"},\"IdentityRoleKey\":{\"additionalProperties\":false,\"description\":\"One key in one role. A key is in exactly one role for its whole life; a change of role is a retirement from one and an addition to another, with fresh material under a fresh identifier.\",\"properties\":{\"activatesAt\":{\"description\":\"For a `staged` key: when the VTA will begin using it — no earlier than the publishing change's cache horizon.\",\"format\":\"date-time\",\"type\":\"string\"},\"commitment\":{\"description\":\"For a `committed` update key: the commitment the identifier publishes (a did:webvh `nextKeyHashes` entry, a KERI next-key digest), in the method's own encoding.\",\"minLength\":1,\"type\":\"string\"},\"compromisedSince\":{\"description\":\"For a `revoked` key: the compromise time (VTI-KEY-121), published as the verification method's `revoked` value. Where it cannot be established, the time the key was first published.\",\"format\":\"date-time\",\"type\":\"string\"},\"custody\":{\"$ref\":\"#/$defs/IdentityKeyCustody\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keyType\":{\"$ref\":\"#/$defs/KeyType\"},\"label\":{\"description\":\"Operator-facing label. Custody projection only.\",\"maxLength\":256,\"type\":\"string\"},\"publicKeyMultibase\":{\"description\":\"The public half, multibase-encoded, exactly as published. Absent for a `committed` update key, whose public half the identifier has not yet revealed.\",\"minLength\":1,\"type\":\"string\"},\"publishedInVersionId\":{\"description\":\"The method's version identifier of the change that first published the key or its commitment (method-profiles/: a did:webvh `versionId`, a KERI event's sequence number and digest). Absent while `pending`.\",\"type\":\"string\"},\"relationships\":{\"description\":\"The relationships the key is (or, while `pending`, will be) listed in: always exactly its role's one relationship. Empty for `update`, `retired` and `revoked` keys.\",\"items\":{\"$ref\":\"#/$defs/DidVerificationRelationship\"},\"type\":\"array\",\"uniqueItems\":true},\"removedInVersionId\":{\"description\":\"Version identifier of the change that retired or revoked the key.\",\"type\":\"string\"},\"retireAfter\":{\"description\":\"For a `retiring` key: the end of its overlap. Custody projection only.\",\"format\":\"date-time\",\"type\":\"string\"},\"role\":{\"$ref\":\"#/$defs/IdentityKeyRole\"},\"rotationId\":{\"description\":\"The rotation this key was introduced or retired by.\",\"type\":\"string\"},\"state\":{\"$ref\":\"#/$defs/KeyLifecycleState\"},\"updateKeyClass\":{\"$ref\":\"#/$defs/UpdateKeyClass\"},\"verificationMethod\":{\"description\":\"The full verification-method identifier (`did#fragment`) the document publishes the key under and lists in `keyRoles`. Absent for `update` keys, which are never role-bound verification methods (VTI-KEY-093). A VTA minting a method SHOULD derive its fragment from the key (VTI-KEY-150).\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"role\",\"keyType\",\"state\"],\"title\":\"IdentityRoleKey\",\"type\":\"object\"},\"KeyChangeApprovalState\":{\"additionalProperties\":false,\"description\":\"Approval progress of a change the VTA's policy gates on approvals (CONVENTIONS.md §6).\",\"properties\":{\"approvals\":{\"description\":\"The approvals recorded. Custody projection only; omitted from a response to anyone who is not themselves an eligible approver of this change.\",\"items\":{\"$ref\":\"#/$defs/RecordedApproval\"},\"type\":\"array\"},\"expiresAt\":{\"description\":\"When the preview, and every approval bound to it, stops being usable.\",\"format\":\"date-time\",\"type\":\"string\"},\"received\":{\"description\":\"Distinct approvals recorded so far, the initiator's own included.\",\"minimum\":0,\"type\":\"integer\"},\"required\":{\"description\":\"Distinct approvals the VTA's policy requires.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"required\",\"received\",\"expiresAt\"],\"title\":\"KeyChangeApprovalState\",\"type\":\"object\"},\"KeyChangeKind\":{\"description\":\"`planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same change. `addition` — a key joined a role without anything leaving it. `recovery` — the identifier's update authority moved to the committed recovery key, because the VTA's own update keys were lost or may be in someone else's hands.\",\"enum\":[\"planned\",\"compromise\",\"addition\",\"recovery\"],\"title\":\"KeyChangeKind\",\"type\":\"string\"},\"KeyChangeOutcome\":{\"description\":\"`preview` — nothing was written; the response carries the plan. `applied` — the change was made (and published, unless `publication.selfPublish`). `pendingApproval` — the plan is recorded and awaits further approvals. `awaitingRecoveryProof` — the plan is approved and waits for the recovery custodian's proof (`preview.recoverySigning`); nothing is published until it arrives.\",\"enum\":[\"preview\",\"applied\",\"pendingApproval\",\"awaitingRecoveryProof\"],\"title\":\"KeyChangeOutcome\",\"type\":\"string\"},\"KeyChangeRecord\":{\"additionalProperties\":false,\"description\":\"One change to a role's key set, from preview to completion. The identifier's history is the authority for what was published; this record adds which change was which and, in the custody projection, who asked, who approved, and why.\",\"properties\":{\"activatesAt\":{\"description\":\"When the successor becomes `active` and the predecessor `retiring`; never before `cacheHorizonAt`.\",\"format\":\"date-time\",\"type\":\"string\"},\"approvals\":{\"$ref\":\"#/$defs/KeyChangeApprovalState\"},\"autoRetire\":{\"description\":\"Custody projection only. Whether the VTA retires the predecessor itself at `overlapUntil`.\",\"type\":\"boolean\"},\"cacheHorizonAt\":{\"description\":\"Planned rotations: the publishing change's cache horizon (CONVENTIONS.md §10.1). The switch and any retirement happen no earlier.\",\"format\":\"date-time\",\"type\":\"string\"},\"endedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"endedInVersionId\":{\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"initiatedBy\":{\"description\":\"Custody projection only. VID of the administrator whose signed request started the change.\",\"type\":\"string\"},\"kind\":{\"$ref\":\"#/$defs/KeyChangeKind\"},\"overlapUntil\":{\"description\":\"Custody projection only. End of the overlap.\",\"format\":\"date-time\",\"type\":\"string\"},\"predecessors\":{\"description\":\"Verification-method identifiers (for `update`, public keys or commitments) leaving the role.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"reason\":{\"description\":\"Custody projection only. The operator's stated reason. Never published.\",\"maxLength\":1024,\"type\":\"string\"},\"role\":{\"$ref\":\"#/$defs/IdentityKeyRole\"},\"rotationId\":{\"minLength\":1,\"type\":\"string\"},\"startedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"startedInVersionId\":{\"type\":\"string\"},\"state\":{\"$ref\":\"#/$defs/KeyChangeState\"},\"successors\":{\"description\":\"Verification-method identifiers (for `update`, public keys or commitments) entering the role.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"rotationId\",\"role\",\"kind\",\"state\"],\"title\":\"KeyChangeRecord\",\"type\":\"object\"},\"KeyChangeState\":{\"description\":\"`pendingApproval` — awaiting the approvals the VTA's policy requires; nothing is published. `awaitingRecoveryProof` — approved, and waiting for the recovery custodian's proof over the change; nothing is published. `staged` — successor published, not yet used. `overlapping` — successor active, predecessor `retiring`. `completed` — every predecessor retired, or the change is published and any overlap it began has ended. `aborted` — the successor was retired instead of the predecessor, or a revocation superseded the change. `expired` — the approvals or the recovery proof did not arrive before the preview expired; nothing was published.\",\"enum\":[\"pendingApproval\",\"awaitingRecoveryProof\",\"staged\",\"overlapping\",\"completed\",\"aborted\",\"expired\"],\"title\":\"KeyChangeState\",\"type\":\"string\"},\"KeyLifecycleState\":{\"description\":\"Where a key is in its role's lifecycle (CONVENTIONS.md §8, §10). `pending` — planned by a preview or a change awaiting approval; not published; custody projection only. `staged` — published and bound to its role but not yet used, until the publishing change's cache horizon. `active` — the key the VTA uses for new signatures (for `messaging`, advertises for new sessions; for `update`, the current authority). `retiring` — still published but never used to sign again; a retiring `messaging` key still decrypts until retirement. `retired` — removed by planned rotation; what it signed while published stays valid, judged against the identifier version current at issuance. `revoked` — withdrawn for compromise, recorded with `compromisedSince`; what it signed from then on establishes nothing. `committed` — an `update` key the identifier commits to as a successor but has not revealed (a did:webvh `nextKeyHashes` entry, a KERI next-key digest). `retired` and `revoked` are terminal.\",\"enum\":[\"pending\",\"staged\",\"active\",\"retiring\",\"retired\",\"revoked\",\"committed\"],\"title\":\"KeyLifecycleState\",\"type\":\"string\"},\"KeyOrigin\":{\"default\":\"derived\",\"description\":\"Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.\",\"enum\":[\"derived\",\"imported\",\"internal\"],\"title\":\"KeyOrigin\",\"type\":\"string\"},\"KeyType\":{\"description\":\"Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support.\",\"enum\":[\"ed25519\",\"x25519\",\"p256\",\"mldsa44\",\"mldsa65\"],\"title\":\"KeyType\",\"type\":\"string\"},\"PreviewWarning\":{\"description\":\"Conditions a human should be shown before approving. `singleKeyRole` — the role will hold one active key. `algorithmNotInAcceptedSet` — a verifier population the VTA knows of does not accept the new key's algorithm. `roleWillHaveNoClassicalKey` — every remaining key is post-quantum. `attestationReissuanceRequired` — revoking this attestation key obliges re-issuance and re-signed status lists (VTI-KEY-133). `selfPublish` — the VTA will not publish the change; the operator must. `noWitnesses` — the identifier has no witnesses, so a party holding the VTA's routine update key can drop the recovery commitment unobserved (CONVENTIONS.md §5.3). `protectionBelowPolicy` — a key will be held at a `ProtectionClass` below what the VTA's policy recommends for its role (a plain VTA holding an attestation key). `recoveryKeyRevealed` — this change uses the recovery key, which must be replaced by a fresh recovery commitment in the same change.\",\"enum\":[\"singleKeyRole\",\"algorithmNotInAcceptedSet\",\"roleWillHaveNoClassicalKey\",\"attestationReissuanceRequired\",\"selfPublish\",\"noWitnesses\",\"protectionBelowPolicy\",\"recoveryKeyRevealed\"],\"title\":\"PreviewWarning\",\"type\":\"string\"},\"ProtectionClass\":{\"description\":\"How a private half is protected (CONVENTIONS.md §5.2). `software` — stored by the VTA without encryption independent of the host (a plain VTA). `encryptedAtRest` — wrapped under a key the VTA holds outside its store (a hardened VTA). `enclave` — held only inside an attested trusted execution environment, wrapped under a key released only to its measurement (a TEE VTA). `hardwareModule` — held by a hardware security module or cloud key service that performs the operation without releasing the key. `externalCustodian` — not held by this VTA at all: a recovery update key, or an `authenticator` key on a person's device.\",\"enum\":[\"software\",\"encryptedAtRest\",\"enclave\",\"hardwareModule\",\"externalCustodian\"],\"title\":\"ProtectionClass\",\"type\":\"string\"},\"Publication\":{\"additionalProperties\":false,\"description\":\"How the change reaches resolvers.\",\"properties\":{\"artifacts\":{\"description\":\"Present when `selfPublish` is true.\",\"items\":{\"$ref\":\"#/$defs/PublishedArtifact\"},\"type\":\"array\"},\"selfPublish\":{\"description\":\"True when no hosting service holds the identifier for the VTA: the caller must publish `artifacts`, and until it does resolvers see the previous version.\",\"type\":\"boolean\"}},\"required\":[\"selfPublish\"],\"title\":\"Publication\",\"type\":\"object\"},\"PublishedArtifact\":{\"additionalProperties\":false,\"description\":\"A file the identifier's method publishes, as the method profile names it (`did.jsonl` for did:webvh, `did.json` and `keri.cesr` for did:webs).\",\"properties\":{\"content\":{\"description\":\"The artefact's content, or for an append-only artefact the appended part, as text.\",\"type\":\"string\"},\"mediaType\":{\"minLength\":1,\"type\":\"string\"},\"name\":{\"maxLength\":128,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"name\",\"mediaType\",\"content\"],\"title\":\"PublishedArtifact\",\"type\":\"object\"},\"RecordedApproval\":{\"additionalProperties\":false,\"properties\":{\"approver\":{\"description\":\"VID of the approver.\",\"minLength\":1,\"type\":\"string\"},\"evidence\":{\"$ref\":\"#/$defs/ApprovalEvidenceKind\"},\"recordedAt\":{\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"approver\",\"evidence\"],\"title\":\"RecordedApproval\",\"type\":\"object\"},\"RecoveryCommitment\":{\"additionalProperties\":false,\"description\":\"A recovery key offered for commitment (CONVENTIONS.md §5.3). The VTA computes the method's commitment from it, verifies `proofOfPossession`, and then keeps only the commitment. The key MUST be held by a custodian in a protection boundary other than the VTA's; a VTA MUST refuse one it generated or can derive (`vta/dids:recoveryCommitmentRequired`).\",\"properties\":{\"keyType\":{\"$ref\":\"#/$defs/KeyType\"},\"label\":{\"description\":\"Operator-facing name of the custodian. Custody projection only; never published.\",\"maxLength\":256,\"type\":\"string\"},\"proofOfPossession\":{\"description\":\"Multibase signature by the recovery key over the UTF-8 bytes of `vta-dids-recovery-commitment/v1`, a zero byte, and the request's `previewId`. Absent on a dry run, which is how the `previewId` is obtained; REQUIRED on the apply request, and the only member besides `previewId`, `dryRun` and `recoveryProof` that may differ between the two.\",\"minLength\":1,\"type\":\"string\"},\"publicKeyMultibase\":{\"description\":\"The recovery key's public half. Not published by the VTA where the method commits by hash.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"keyType\",\"publicKeyMultibase\"],\"title\":\"RecoveryCommitment\",\"type\":\"object\"},\"RecoverySigningRequest\":{\"additionalProperties\":false,\"description\":\"What a recovery custodian must sign for a change that only the recovery key may authorize (CONVENTIONS.md §5.4, §9.4). The custodian MUST check `unsignedChange` itself — render it to its human, confirm that it reveals the recovery key it holds and commits to a fresh recovery key it also holds — and MUST NOT sign on the strength of this request's description alone.\",\"properties\":{\"commitment\":{\"description\":\"The recovery commitment the identifier publishes; the custodian's key MUST be the one it commits to.\",\"minLength\":1,\"type\":\"string\"},\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"keyType\":{\"$ref\":\"#/$defs/KeyType\"},\"proofOptions\":{\"description\":\"The proof the method requires over `unsignedChange`, without its signature value, as the method profile defines it (for did:webvh, a Data Integrity proof configuration with `proofPurpose: assertionMethod` and the recovery key's `did:key` as `verificationMethod`).\",\"type\":\"object\"},\"unsignedChange\":{\"description\":\"The change exactly as it will be published, without the recovery proof, as JSON text in the method's own form (a did:webvh log entry, a KERI rotation event).\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"commitment\",\"keyType\",\"unsignedChange\",\"proofOptions\"],\"title\":\"RecoverySigningRequest\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"approvals\":{\"$ref\":\"#/$defs/KeyChangeApprovalState\",\"description\":\"Present when `outcome` is `pendingApproval`.\"},\"did\":{\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keys\":{\"description\":\"Every key whose state this change sets or would set, after the change.\",\"items\":{\"$ref\":\"#/$defs/IdentityRoleKey\"},\"type\":\"array\"},\"newVersionId\":{\"description\":\"Present when `outcome` is `applied`: the version identifier of the change. Pass it as the next change's `expectedVersionId`.\",\"type\":\"string\"},\"outcome\":{\"$ref\":\"#/$defs/KeyChangeOutcome\"},\"preview\":{\"$ref\":\"#/$defs/IdentityChangePreview\",\"description\":\"Present when `outcome` is `preview`, `pendingApproval` or `awaitingRecoveryProof`: the plan, and what an approval is bound to.\"},\"publication\":{\"$ref\":\"#/$defs/Publication\",\"description\":\"Present when `outcome` is `applied`.\"},\"rotation\":{\"$ref\":\"#/$defs/KeyChangeRecord\"}},\"required\":[\"did\",\"outcome\"],\"title\":\"VTA DIDs — Keys Rotate — response payload\",\"type\":\"object\"},\"UpdateKeyClass\":{\"description\":\"For an `update` key only (CONVENTIONS.md §5.3). `routine` — generated and held by the VTA, which authorizes the identity's ordinary changes with it. `recovery` — held by a recovery custodian in a protection boundary other than the VTA's; the VTA holds only its commitment, carries that commitment forward in every change it makes, and can use the key only by asking the custodian for a proof (`RecoverySigningRequest`).\",\"enum\":[\"routine\",\"recovery\"],\"title\":\"UpdateKeyClass\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/vta/dids/keys/rotate/1.0\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Plan and start the planned rotation of one role of a key-role identity: successors staged, switched at the cache horizon, predecessors retired at the end of the overlap. For `update`, the authority moves to its committed routine successor, or the recovery commitment is replaced.\",\"properties\":{\"activatesAt\":{\"description\":\"When successors switch in; no earlier than the cache horizon, which is the default. Not for `update`.\",\"format\":\"date-time\",\"type\":\"string\"},\"autoRetire\":{\"description\":\"Whether the VTA retires predecessors itself at `overlapUntil`. Absent reads as true. Not for `update`.\",\"type\":\"boolean\"},\"did\":{\"description\":\"The key-role identity, by DID (for a `did:scid` identity, the DID without `src`).\",\"minLength\":1,\"type\":\"string\"},\"dryRun\":{\"description\":\"Compute and return the preview without writing anything but the plan (CONVENTIONS.md §6.1). Absent reads as false.\",\"type\":\"boolean\"},\"expectedVersionId\":{\"description\":\"Optimistic-concurrency precondition: the version identifier (method profile §3) the caller based this change on, for example `keys/list`'s `versionId`. The VTA MUST refuse with `vta/dids:versionConflict` if the identity has moved past it. Not optional for anything a person looked at.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keyType\":{\"$ref\":\"#/$defs/KeyType\",\"description\":\"Successors' algorithm. Absent keeps each predecessor's (CONVENTIONS.md §14). Not for `update`.\"},\"label\":{\"maxLength\":256,\"type\":\"string\"},\"overlapUntil\":{\"description\":\"End of the overlap; after `activatesAt`. Not for `update`.\",\"format\":\"date-time\",\"type\":\"string\"},\"previewId\":{\"description\":\"Apply exactly the plan a previous dry run of this same request returned, or nothing (CONVENTIONS.md §6.1); what every approval is bound to.\",\"minLength\":16,\"type\":\"string\"},\"reason\":{\"description\":\"Why the change is being made, for the audit trail and for the other approvers. Never published.\",\"maxLength\":1024,\"type\":\"string\"},\"recoveryCommitment\":{\"$ref\":\"#/$defs/RecoveryCommitment\",\"description\":\"`update` only: replace the recovery commitment with this key (CONVENTIONS.md §5.3, §6.5). Absent moves the routine authority and carries the recovery commitment forward.\"},\"replace\":{\"description\":\"Verification methods of the role to rotate. Absent rotates every active key of the role. Not for `update`.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"role\":{\"$ref\":\"#/$defs/IdentityKeyRole\",\"description\":\"The one role to rotate. `authenticator` is refused (`vta/dids:notApplicableToRole`).\"}},\"required\":[\"did\",\"role\"],\"title\":\"VTA DIDs — Keys Rotate — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -5095,7 +5101,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"ApprovalEvidenceKind\":{\"description\":\"The evidence an approval was recorded on, as `auth/step-up/approve-response` names it. Only the approver's own evidence is ever recorded: a proof by a key the VTA records as acting for an approver — a console signing key or any other delegation — is never an approval (CONVENTIONS.md §6.3).\",\"enum\":[\"didSigned\",\"webauthn\",\"approverSigned\"],\"title\":\"ApprovalEvidenceKind\",\"type\":\"string\"},\"DidDocumentChange\":{\"additionalProperties\":false,\"properties\":{\"commitment\":{\"type\":\"string\"},\"keyType\":{\"$ref\":\"#/$defs/KeyType\"},\"op\":{\"description\":\"`addKey` — a verification method joins its role's relationship and `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves its relationship and `keyRoles`, and stays in `verificationMethod` with `revoked` set to the compromise time (CONVENTIONS.md §9.1). `rotateUpdateKey` — the identifier's update authority moves to a committed routine successor. `commitUpdateKey` — a new routine successor is committed. `replaceRecoveryCommitment` — the recovery commitment changes. `useRecoveryKey` — the change is authorized by the recovery key, which the identifier then reveals.\",\"enum\":[\"addKey\",\"retireKey\",\"revokeKey\",\"rotateUpdateKey\",\"commitUpdateKey\",\"replaceRecoveryCommitment\",\"useRecoveryKey\"],\"type\":\"string\"},\"publicKeyMultibase\":{\"type\":\"string\"},\"relationships\":{\"items\":{\"$ref\":\"#/$defs/DidVerificationRelationship\"},\"type\":\"array\",\"uniqueItems\":true},\"role\":{\"$ref\":\"#/$defs/KeyRole\"},\"verificationMethod\":{\"type\":\"string\"}},\"required\":[\"op\",\"role\"],\"title\":\"DidDocumentChange\",\"type\":\"object\"},\"DidDocumentPreview\":{\"additionalProperties\":false,\"description\":\"What a change would publish, computed by the VTA by running the handler it would run to apply it (CONVENTIONS.md §6.1). This is what a consent surface renders and what an approval is bound to.\",\"properties\":{\"baseVersionId\":{\"description\":\"The version identifier the plan was computed against. Absent only for a creation. The plan is void once the identifier moves past it.\",\"type\":\"string\"},\"changes\":{\"description\":\"Every change the plan would make, including the ones the caller did not ask for — in particular any movement of the update authority the method requires.\",\"items\":{\"$ref\":\"#/$defs/DidDocumentChange\"},\"type\":\"array\"},\"document\":{\"description\":\"The complete identifier document the change would publish, `keyRoles` included. Public data by construction.\",\"type\":\"object\"},\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"method\":{\"$ref\":\"#/$defs/DidMethodName\"},\"previewId\":{\"description\":\"Opaque, unguessable identifier of this exact plan. Carried back by the apply request; every approval and any recovery proof is bound to it.\",\"minLength\":16,\"type\":\"string\"},\"recoverySigning\":{\"$ref\":\"#/$defs/RecoverySigningRequest\"},\"updateKeyRotates\":{\"description\":\"True when applying the plan also moves the identifier's update authority to a committed successor — every change under did:webvh pre-rotation, never a KERI interaction event. Stated as its own member because it is the consequence a reviewer most often misses.\",\"type\":\"boolean\"},\"warnings\":{\"items\":{\"$ref\":\"#/$defs/PreviewWarning\"},\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"previewId\",\"method\",\"expiresAt\",\"changes\",\"document\",\"updateKeyRotates\"],\"title\":\"DidDocumentPreview\",\"type\":\"object\"},\"DidMethodName\":{\"description\":\"The DID method an identity uses, as the method profile that governs it is named: `webvh` for a did:webvh identity, `scid:vh` for the did:scid:vh:1 form of one, `webs` for did:webs. Deliberately a pattern and not an enumeration: a method is added by publishing its profile under method-profiles/, never by changing this schema. A VTA MUST refuse a method it holds no profile for, or whose profile declares it ineligible, with `vta/dids:methodNotEligible`.\",\"pattern\":\"^[a-z0-9]+(:[a-z0-9]+)*$\",\"title\":\"DidMethodName\",\"type\":\"string\"},\"DidVerificationRelationship\":{\"description\":\"A DID Core verification relationship.\",\"enum\":[\"authentication\",\"assertionMethod\",\"keyAgreement\",\"capabilityInvocation\",\"capabilityDelegation\"],\"title\":\"DidVerificationRelationship\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"KeyOrigin\":{\"default\":\"derived\",\"description\":\"Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.\",\"enum\":[\"derived\",\"imported\",\"internal\"],\"title\":\"KeyOrigin\",\"type\":\"string\"},\"KeyRole\":{\"description\":\"The named key role a key occupies in an identity (CONVENTIONS.md §2; VTI-KEY-070 onward). `attestation` — the only keys in `assertionMethod`; sign the identity's attestation artefacts (credentials, endorsements, status lists) through the VTA's signing service and nowhere else. Generated inside the VTA, never derived, never exportable, never in a backup. `operational` — the only keys the identity's own process uses in `authentication`; sign the node's own traffic (Trust Task requests and responses, DIDComm and TSP signatures, invitations, notices, audit checkpoints). Derived. `messaging` — the only keys in `keyAgreement`; sign nothing. X25519, derived or generated in its own right and never converted from a signing key. `update` — the identifier's change authority as its DID method states it (a did:webvh log's `updateKeys` and `nextKeyHashes`, a KERI key event log's current and next keys); never a role-bound verification method, never in `keyRoles`. Generated inside the VTA, never derived, never exportable, never in a backup, and always accompanied by a committed recovery key held outside the VTA's protection boundary. `authenticator` — a key held on a person's own authenticator (a WebAuthn passkey), listed in `authentication` of that person's identity only; used only to verify the person's WebAuthn assertions (sign-in and step-up evidence) and never to accept a Data Integrity proof. The VTA never holds its private half, so it is enrolled by the passkey ceremony and never generated, added or rotated by these tasks. Never permitted on the durable identity of a VTA, a VTC or a VTN. No role permits `capabilityInvocation` or `capabilityDelegation` (VTI-KEY-075). The set is an extensible registry: a consumer that meets a role it does not implement MUST rely on the key for nothing, and MUST NOT map it onto a role it does know (VTI-KEY-074).\",\"enum\":[\"attestation\",\"operational\",\"messaging\",\"update\",\"authenticator\"],\"title\":\"KeyRole\",\"type\":\"string\"},\"KeyRoleApprovalState\":{\"additionalProperties\":false,\"description\":\"Approval progress of a change the VTA's policy gates on approvals (CONVENTIONS.md §6).\",\"properties\":{\"approvals\":{\"description\":\"The approvals recorded. Custody projection only; omitted from a response to anyone who is not themselves an eligible approver of this change.\",\"items\":{\"$ref\":\"#/$defs/RecordedApproval\"},\"type\":\"array\"},\"expiresAt\":{\"description\":\"When the preview, and every approval bound to it, stops being usable.\",\"format\":\"date-time\",\"type\":\"string\"},\"received\":{\"description\":\"Distinct approvals recorded so far, the initiator's own included.\",\"minimum\":0,\"type\":\"integer\"},\"required\":{\"description\":\"Distinct approvals the VTA's policy requires.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"required\",\"received\",\"expiresAt\"],\"title\":\"KeyRoleApprovalState\",\"type\":\"object\"},\"KeyRoleChangeOutcome\":{\"description\":\"`preview` — nothing was written; the response carries the plan. `applied` — the change was made (and published, unless `publication.selfPublish`). `pendingApproval` — the plan is recorded and awaits further approvals. `awaitingRecoveryProof` — the plan is approved and waits for the recovery custodian's proof (`preview.recoverySigning`); nothing is published until it arrives.\",\"enum\":[\"preview\",\"applied\",\"pendingApproval\",\"awaitingRecoveryProof\"],\"title\":\"KeyRoleChangeOutcome\",\"type\":\"string\"},\"KeyType\":{\"description\":\"Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support.\",\"enum\":[\"ed25519\",\"x25519\",\"p256\",\"mldsa44\",\"mldsa65\"],\"title\":\"KeyType\",\"type\":\"string\"},\"PreviewWarning\":{\"description\":\"Conditions a human should be shown before approving. `singleKeyRole` — the role will hold one active key. `algorithmNotInAcceptedSet` — a verifier population the VTA knows of does not accept the new key's algorithm. `roleWillHaveNoClassicalKey` — every remaining key is post-quantum. `attestationReissuanceRequired` — revoking this attestation key obliges re-issuance and re-signed status lists (VTI-KEY-133). `selfPublish` — the VTA will not publish the change; the operator must. `noWitnesses` — the identifier has no witnesses, so a party holding the VTA's routine update key can drop the recovery commitment unobserved (CONVENTIONS.md §5.3). `protectionBelowPolicy` — a key will be held at a `ProtectionClass` below what the VTA's policy recommends for its role (a plain VTA holding an attestation key). `recoveryKeyRevealed` — this change uses the recovery key, which must be replaced by a fresh recovery commitment in the same change.\",\"enum\":[\"singleKeyRole\",\"algorithmNotInAcceptedSet\",\"roleWillHaveNoClassicalKey\",\"attestationReissuanceRequired\",\"selfPublish\",\"noWitnesses\",\"protectionBelowPolicy\",\"recoveryKeyRevealed\"],\"title\":\"PreviewWarning\",\"type\":\"string\"},\"ProtectionClass\":{\"description\":\"How a private half is protected (CONVENTIONS.md §5.2). `software` — stored by the VTA without encryption independent of the host (a plain VTA). `encryptedAtRest` — wrapped under a key the VTA holds outside its store (a hardened VTA). `enclave` — held only inside an attested trusted execution environment, wrapped under a key released only to its measurement (a TEE VTA). `hardwareModule` — held by a hardware security module or cloud key service that performs the operation without releasing the key. `externalCustodian` — not held by this VTA at all: a recovery update key, or an `authenticator` key on a person's device.\",\"enum\":[\"software\",\"encryptedAtRest\",\"enclave\",\"hardwareModule\",\"externalCustodian\"],\"title\":\"ProtectionClass\",\"type\":\"string\"},\"Publication\":{\"additionalProperties\":false,\"description\":\"How the change reaches resolvers.\",\"properties\":{\"artifacts\":{\"description\":\"Present when `selfPublish` is true.\",\"items\":{\"$ref\":\"#/$defs/PublishedArtifact\"},\"type\":\"array\"},\"selfPublish\":{\"description\":\"True when no hosting service holds the identifier for the VTA: the caller must publish `artifacts`, and until it does resolvers see the previous version.\",\"type\":\"boolean\"}},\"required\":[\"selfPublish\"],\"title\":\"Publication\",\"type\":\"object\"},\"PublishedArtifact\":{\"additionalProperties\":false,\"description\":\"A file the identifier's method publishes, as the method profile names it (`did.jsonl` for did:webvh, `did.json` and `keri.cesr` for did:webs).\",\"properties\":{\"content\":{\"description\":\"The artefact's content, or for an append-only artefact the appended part, as text.\",\"type\":\"string\"},\"mediaType\":{\"minLength\":1,\"type\":\"string\"},\"name\":{\"maxLength\":128,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"name\",\"mediaType\",\"content\"],\"title\":\"PublishedArtifact\",\"type\":\"object\"},\"RecordedApproval\":{\"additionalProperties\":false,\"properties\":{\"approver\":{\"description\":\"VID of the approver.\",\"minLength\":1,\"type\":\"string\"},\"evidence\":{\"$ref\":\"#/$defs/ApprovalEvidenceKind\"},\"recordedAt\":{\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"approver\",\"evidence\"],\"title\":\"RecordedApproval\",\"type\":\"object\"},\"RecoveryCommitment\":{\"additionalProperties\":false,\"description\":\"A recovery key offered for commitment (CONVENTIONS.md §5.3). The VTA computes the method's commitment from it, verifies `proofOfPossession`, and then keeps only the commitment. The key MUST be held by a custodian in a protection boundary other than the VTA's; a VTA MUST refuse one it generated or can derive (`vta/dids:recoveryCommitmentRequired`).\",\"properties\":{\"keyType\":{\"$ref\":\"#/$defs/KeyType\"},\"label\":{\"description\":\"Operator-facing name of the custodian. Custody projection only; never published.\",\"maxLength\":256,\"type\":\"string\"},\"proofOfPossession\":{\"description\":\"Multibase signature by the recovery key over the UTF-8 bytes of `vta-dids-recovery-commitment/v1`, a zero byte, and the request's `previewId`. Absent on a dry run, which is how the `previewId` is obtained; REQUIRED on the apply request, and the only member besides `previewId`, `dryRun` and `recoveryProof` that may differ between the two.\",\"minLength\":1,\"type\":\"string\"},\"publicKeyMultibase\":{\"description\":\"The recovery key's public half. Not published by the VTA where the method commits by hash.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"keyType\",\"publicKeyMultibase\"],\"title\":\"RecoveryCommitment\",\"type\":\"object\"},\"RecoverySigningRequest\":{\"additionalProperties\":false,\"description\":\"What a recovery custodian must sign for a change that only the recovery key may authorize (CONVENTIONS.md §5.4, §9.4). The custodian MUST check `unsignedChange` itself — render it to its human, confirm that it reveals the recovery key it holds and commits to a fresh recovery key it also holds — and MUST NOT sign on the strength of this request's description alone.\",\"properties\":{\"commitment\":{\"description\":\"The recovery commitment the identifier publishes; the custodian's key MUST be the one it commits to.\",\"minLength\":1,\"type\":\"string\"},\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"keyType\":{\"$ref\":\"#/$defs/KeyType\"},\"proofOptions\":{\"description\":\"The proof the method requires over `unsignedChange`, without its signature value, as the method profile defines it (for did:webvh, a Data Integrity proof configuration with `proofPurpose: assertionMethod` and the recovery key's `did:key` as `verificationMethod`).\",\"type\":\"object\"},\"unsignedChange\":{\"description\":\"The change exactly as it will be published, without the recovery proof, as JSON text in the method's own form (a did:webvh log entry, a KERI rotation event).\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"commitment\",\"keyType\",\"unsignedChange\",\"proofOptions\"],\"title\":\"RecoverySigningRequest\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"approvals\":{\"$ref\":\"#/$defs/KeyRoleApprovalState\",\"description\":\"Present when `outcome` is `pendingApproval`.\"},\"did\":{\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keys\":{\"description\":\"Every key whose state this change sets or would set, after the change.\",\"items\":{\"$ref\":\"#/$defs/RoleKey\"},\"type\":\"array\"},\"newVersionId\":{\"description\":\"Present when `outcome` is `applied`: the version identifier of the change. Pass it as the next change's `expectedVersionId`.\",\"type\":\"string\"},\"outcome\":{\"$ref\":\"#/$defs/KeyRoleChangeOutcome\"},\"preview\":{\"$ref\":\"#/$defs/DidDocumentPreview\",\"description\":\"Present when `outcome` is `preview`, `pendingApproval` or `awaitingRecoveryProof`: the plan, and what an approval is bound to.\"},\"publication\":{\"$ref\":\"#/$defs/Publication\",\"description\":\"Present when `outcome` is `applied`.\"},\"rotation\":{\"$ref\":\"#/$defs/RotationRecord\"}},\"required\":[\"did\",\"outcome\"],\"title\":\"VTA DIDs — Keys Rotate — response payload\",\"type\":\"object\"},\"RoleKey\":{\"additionalProperties\":false,\"description\":\"One key in one role. A key is in exactly one role for its whole life; a change of role is a retirement from one and an addition to another, with fresh material under a fresh identifier.\",\"properties\":{\"activatesAt\":{\"description\":\"For a `staged` key: when the VTA will begin using it — no earlier than the publishing change's cache horizon.\",\"format\":\"date-time\",\"type\":\"string\"},\"commitment\":{\"description\":\"For a `committed` update key: the commitment the identifier publishes (a did:webvh `nextKeyHashes` entry, a KERI next-key digest), in the method's own encoding.\",\"minLength\":1,\"type\":\"string\"},\"compromisedSince\":{\"description\":\"For a `revoked` key: the compromise time (VTI-KEY-121), published as the verification method's `revoked` value. Where it cannot be established, the time the key was first published.\",\"format\":\"date-time\",\"type\":\"string\"},\"custody\":{\"$ref\":\"#/$defs/RoleKeyCustody\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keyType\":{\"$ref\":\"#/$defs/KeyType\"},\"label\":{\"description\":\"Operator-facing label. Custody projection only.\",\"maxLength\":256,\"type\":\"string\"},\"publicKeyMultibase\":{\"description\":\"The public half, multibase-encoded, exactly as published. Absent for a `committed` update key, whose public half the identifier has not yet revealed.\",\"minLength\":1,\"type\":\"string\"},\"publishedInVersionId\":{\"description\":\"The method's version identifier of the change that first published the key or its commitment (method-profiles/: a did:webvh `versionId`, a KERI event's sequence number and digest). Absent while `pending`.\",\"type\":\"string\"},\"relationships\":{\"description\":\"The relationships the key is (or, while `pending`, will be) listed in: always exactly its role's one relationship. Empty for `update`, `retired` and `revoked` keys.\",\"items\":{\"$ref\":\"#/$defs/DidVerificationRelationship\"},\"type\":\"array\",\"uniqueItems\":true},\"removedInVersionId\":{\"description\":\"Version identifier of the change that retired or revoked the key.\",\"type\":\"string\"},\"retireAfter\":{\"description\":\"For a `retiring` key: the end of its overlap. Custody projection only.\",\"format\":\"date-time\",\"type\":\"string\"},\"role\":{\"$ref\":\"#/$defs/KeyRole\"},\"rotationId\":{\"description\":\"The rotation this key was introduced or retired by.\",\"type\":\"string\"},\"state\":{\"$ref\":\"#/$defs/RoleKeyState\"},\"updateKeyClass\":{\"$ref\":\"#/$defs/UpdateKeyClass\"},\"verificationMethod\":{\"description\":\"The full verification-method identifier (`did#fragment`) the document publishes the key under and lists in `keyRoles`. Absent for `update` keys, which are never role-bound verification methods (VTI-KEY-093). A VTA minting a method SHOULD derive its fragment from the key (VTI-KEY-150).\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"role\",\"keyType\",\"state\"],\"title\":\"RoleKey\",\"type\":\"object\"},\"RoleKeyCustody\":{\"additionalProperties\":false,\"description\":\"How a key is held. Present only in the custody projection. Carries no key material, and a conforming VTA MUST NOT place any in `ext`.\",\"properties\":{\"boundary\":{\"description\":\"Opaque, VTA-assigned label of the protection boundary holding the key (CONVENTIONS.md §5.2). Two keys with the same label are lost or compromised together. A recovery update key MUST carry a label different from every routine update key's. Custody projection only; never published.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"destroyed\":{\"description\":\"True once the private half has been destroyed — a retired `attestation` or `messaging` key. The record survives so the key's past signatures stay attributable.\",\"type\":\"boolean\"},\"exportable\":{\"description\":\"Whether the custodian would release the private half. Always `false` for `attestation` and `update` keys. Stated explicitly, never absent.\",\"type\":\"boolean\"},\"inBackups\":{\"description\":\"Whether the key, or material it can be re-derived or decrypted from, is in the VTA's backups or any state transfer. Always `false` for `attestation` and `update` keys (VTI-KEY-112).\",\"type\":\"boolean\"},\"keyId\":{\"description\":\"The custodian record identifier (`keys/*`'s `keyId`) behind this key. Absent for a key this VTA does not hold (`protection: externalCustodian`).\",\"minLength\":1,\"type\":\"string\"},\"neverExportable\":{\"description\":\"True when no authority can make the key exportable. `true` implies `exportable: false`.\",\"type\":\"boolean\"},\"origin\":{\"$ref\":\"#/$defs/KeyOrigin\"},\"protection\":{\"$ref\":\"#/$defs/ProtectionClass\"}},\"required\":[\"exportable\",\"neverExportable\",\"inBackups\",\"protection\"],\"title\":\"RoleKeyCustody\",\"type\":\"object\"},\"RoleKeyState\":{\"description\":\"Where a key is in its role's lifecycle (CONVENTIONS.md §8, §10). `pending` — planned by a preview or a change awaiting approval; not published; custody projection only. `staged` — published and bound to its role but not yet used, until the publishing change's cache horizon. `active` — the key the VTA uses for new signatures (for `messaging`, advertises for new sessions; for `update`, the current authority). `retiring` — still published but never used to sign again; a retiring `messaging` key still decrypts until retirement. `retired` — removed by planned rotation; what it signed while published stays valid, judged against the identifier version current at issuance. `revoked` — withdrawn for compromise, recorded with `compromisedSince`; what it signed from then on establishes nothing. `committed` — an `update` key the identifier commits to as a successor but has not revealed (a did:webvh `nextKeyHashes` entry, a KERI next-key digest). `retired` and `revoked` are terminal.\",\"enum\":[\"pending\",\"staged\",\"active\",\"retiring\",\"retired\",\"revoked\",\"committed\"],\"title\":\"RoleKeyState\",\"type\":\"string\"},\"RotationKind\":{\"description\":\"`planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same change. `addition` — a key joined a role without anything leaving it. `recovery` — the identifier's update authority moved to the committed recovery key, because the VTA's own update keys were lost or may be in someone else's hands.\",\"enum\":[\"planned\",\"compromise\",\"addition\",\"recovery\"],\"title\":\"RotationKind\",\"type\":\"string\"},\"RotationRecord\":{\"additionalProperties\":false,\"description\":\"One change to a role's key set, from preview to completion. The identifier's history is the authority for what was published; this record adds which change was which and, in the custody projection, who asked, who approved, and why.\",\"properties\":{\"activatesAt\":{\"description\":\"When the successor becomes `active` and the predecessor `retiring`; never before `cacheHorizonAt`.\",\"format\":\"date-time\",\"type\":\"string\"},\"approvals\":{\"$ref\":\"#/$defs/KeyRoleApprovalState\"},\"autoRetire\":{\"description\":\"Custody projection only. Whether the VTA retires the predecessor itself at `overlapUntil`.\",\"type\":\"boolean\"},\"cacheHorizonAt\":{\"description\":\"Planned rotations: the publishing change's cache horizon (CONVENTIONS.md §10.1). The switch and any retirement happen no earlier.\",\"format\":\"date-time\",\"type\":\"string\"},\"endedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"endedInVersionId\":{\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"initiatedBy\":{\"description\":\"Custody projection only. VID of the administrator whose signed request started the change.\",\"type\":\"string\"},\"kind\":{\"$ref\":\"#/$defs/RotationKind\"},\"overlapUntil\":{\"description\":\"Custody projection only. End of the overlap.\",\"format\":\"date-time\",\"type\":\"string\"},\"predecessors\":{\"description\":\"Verification-method identifiers (for `update`, public keys or commitments) leaving the role.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"reason\":{\"description\":\"Custody projection only. The operator's stated reason. Never published.\",\"maxLength\":1024,\"type\":\"string\"},\"role\":{\"$ref\":\"#/$defs/KeyRole\"},\"rotationId\":{\"minLength\":1,\"type\":\"string\"},\"startedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"startedInVersionId\":{\"type\":\"string\"},\"state\":{\"$ref\":\"#/$defs/RotationState\"},\"successors\":{\"description\":\"Verification-method identifiers (for `update`, public keys or commitments) entering the role.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"rotationId\",\"role\",\"kind\",\"state\"],\"title\":\"RotationRecord\",\"type\":\"object\"},\"RotationState\":{\"description\":\"`pendingApproval` — awaiting the approvals the VTA's policy requires; nothing is published. `awaitingRecoveryProof` — approved, and waiting for the recovery custodian's proof over the change; nothing is published. `staged` — successor published, not yet used. `overlapping` — successor active, predecessor `retiring`. `completed` — every predecessor retired, or the change is published and any overlap it began has ended. `aborted` — the successor was retired instead of the predecessor, or a revocation superseded the change. `expired` — the approvals or the recovery proof did not arrive before the preview expired; nothing was published.\",\"enum\":[\"pendingApproval\",\"awaitingRecoveryProof\",\"staged\",\"overlapping\",\"completed\",\"aborted\",\"expired\"],\"title\":\"RotationState\",\"type\":\"string\"},\"UpdateKeyClass\":{\"description\":\"For an `update` key only (CONVENTIONS.md §5.3). `routine` — generated and held by the VTA, which authorizes the identity's ordinary changes with it. `recovery` — held by a recovery custodian in a protection boundary other than the VTA's; the VTA holds only its commitment, carries that commitment forward in every change it makes, and can use the key only by asking the custodian for a proof (`RecoverySigningRequest`).\",\"enum\":[\"routine\",\"recovery\"],\"title\":\"UpdateKeyClass\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
+        "{\"$defs\":{\"ApprovalEvidenceKind\":{\"description\":\"The evidence an approval was recorded on, as `auth/step-up/approve-response` names it. Only the approver's own evidence is ever recorded: a proof by a key the VTA records as acting for an approver — a console signing key or any other delegation — is never an approval (CONVENTIONS.md §6.3).\",\"enum\":[\"didSigned\",\"webauthn\",\"approverSigned\"],\"title\":\"ApprovalEvidenceKind\",\"type\":\"string\"},\"DidMethodName\":{\"description\":\"The DID method an identity uses, as the method profile that governs it is named: `webvh` for a did:webvh identity, `scid:vh` for the did:scid:vh:1 form of one, `webs` for did:webs. Deliberately a pattern and not an enumeration: a method is added by publishing its profile under method-profiles/, never by changing this schema. A VTA MUST refuse a method it holds no profile for, or whose profile declares it ineligible, with `vta/dids:methodNotEligible`.\",\"pattern\":\"^[a-z0-9]+(:[a-z0-9]+)*$\",\"title\":\"DidMethodName\",\"type\":\"string\"},\"DidVerificationRelationship\":{\"description\":\"A DID Core verification relationship.\",\"enum\":[\"authentication\",\"assertionMethod\",\"keyAgreement\",\"capabilityInvocation\",\"capabilityDelegation\"],\"title\":\"DidVerificationRelationship\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"IdentityChange\":{\"additionalProperties\":false,\"properties\":{\"commitment\":{\"type\":\"string\"},\"keyType\":{\"$ref\":\"#/$defs/KeyType\"},\"op\":{\"description\":\"`addKey` — a verification method joins its role's relationship and `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves its relationship and `keyRoles`, and stays in `verificationMethod` with `revoked` set to the compromise time (CONVENTIONS.md §9.1). `rotateUpdateKey` — the identifier's update authority moves to a committed routine successor. `commitUpdateKey` — a new routine successor is committed. `replaceRecoveryCommitment` — the recovery commitment changes. `useRecoveryKey` — the change is authorized by the recovery key, which the identifier then reveals.\",\"enum\":[\"addKey\",\"retireKey\",\"revokeKey\",\"rotateUpdateKey\",\"commitUpdateKey\",\"replaceRecoveryCommitment\",\"useRecoveryKey\"],\"type\":\"string\"},\"publicKeyMultibase\":{\"type\":\"string\"},\"relationships\":{\"items\":{\"$ref\":\"#/$defs/DidVerificationRelationship\"},\"type\":\"array\",\"uniqueItems\":true},\"role\":{\"$ref\":\"#/$defs/IdentityKeyRole\"},\"verificationMethod\":{\"type\":\"string\"}},\"required\":[\"op\",\"role\"],\"title\":\"IdentityChange\",\"type\":\"object\"},\"IdentityChangePreview\":{\"additionalProperties\":false,\"description\":\"What a change would publish, computed by the VTA by running the handler it would run to apply it (CONVENTIONS.md §6.1). This is what a consent surface renders and what an approval is bound to.\",\"properties\":{\"baseVersionId\":{\"description\":\"The version identifier the plan was computed against. Absent only for a creation. The plan is void once the identifier moves past it.\",\"type\":\"string\"},\"changes\":{\"description\":\"Every change the plan would make, including the ones the caller did not ask for — in particular any movement of the update authority the method requires.\",\"items\":{\"$ref\":\"#/$defs/IdentityChange\"},\"type\":\"array\"},\"document\":{\"description\":\"The complete identifier document the change would publish, `keyRoles` included. Public data by construction.\",\"type\":\"object\"},\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"method\":{\"$ref\":\"#/$defs/DidMethodName\"},\"previewId\":{\"description\":\"Opaque, unguessable identifier of this exact plan. Carried back by the apply request; every approval and any recovery proof is bound to it.\",\"minLength\":16,\"type\":\"string\"},\"recoverySigning\":{\"$ref\":\"#/$defs/RecoverySigningRequest\"},\"updateKeyRotates\":{\"description\":\"True when applying the plan also moves the identifier's update authority to a committed successor — every change under did:webvh pre-rotation, never a KERI interaction event. Stated as its own member because it is the consequence a reviewer most often misses.\",\"type\":\"boolean\"},\"warnings\":{\"items\":{\"$ref\":\"#/$defs/PreviewWarning\"},\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"previewId\",\"method\",\"expiresAt\",\"changes\",\"document\",\"updateKeyRotates\"],\"title\":\"IdentityChangePreview\",\"type\":\"object\"},\"IdentityKeyCustody\":{\"additionalProperties\":false,\"description\":\"How a key is held. Present only in the custody projection. Carries no key material, and a conforming VTA MUST NOT place any in `ext`.\",\"properties\":{\"boundary\":{\"description\":\"Opaque, VTA-assigned label of the protection boundary holding the key (CONVENTIONS.md §5.2). Two keys with the same label are lost or compromised together. A recovery update key MUST carry a label different from every routine update key's. Custody projection only; never published.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"destroyed\":{\"description\":\"True once the private half has been destroyed — a retired `attestation` or `messaging` key. The record survives so the key's past signatures stay attributable.\",\"type\":\"boolean\"},\"exportable\":{\"description\":\"Whether the custodian would release the private half. Always `false` for `attestation` and `update` keys. Stated explicitly, never absent.\",\"type\":\"boolean\"},\"inBackups\":{\"description\":\"Whether the key, or material it can be re-derived or decrypted from, is in the VTA's backups or any state transfer. Always `false` for `attestation` and `update` keys (VTI-KEY-112).\",\"type\":\"boolean\"},\"keyId\":{\"description\":\"The custodian record identifier (`keys/*`'s `keyId`) behind this key. Absent for a key this VTA does not hold (`protection: externalCustodian`).\",\"minLength\":1,\"type\":\"string\"},\"neverExportable\":{\"description\":\"True when no authority can make the key exportable. `true` implies `exportable: false`.\",\"type\":\"boolean\"},\"origin\":{\"$ref\":\"#/$defs/KeyOrigin\"},\"protection\":{\"$ref\":\"#/$defs/ProtectionClass\"}},\"required\":[\"exportable\",\"neverExportable\",\"inBackups\",\"protection\"],\"title\":\"IdentityKeyCustody\",\"type\":\"object\"},\"IdentityKeyRole\":{\"description\":\"The named key role a key occupies in an identity (CONVENTIONS.md §2; VTI-KEY-070 onward). `attestation` — the only keys in `assertionMethod`; sign the identity's attestation artefacts (credentials, endorsements, status lists) through the VTA's signing service and nowhere else. Generated inside the VTA, never derived, never exportable, never in a backup. `operational` — the only keys the identity's own process uses in `authentication`; sign the node's own traffic (Trust Task requests and responses, DIDComm and TSP signatures, invitations, notices, audit checkpoints). Derived. `messaging` — the only keys in `keyAgreement`; sign nothing. X25519, derived or generated in its own right and never converted from a signing key. `update` — the identifier's change authority as its DID method states it (a did:webvh log's `updateKeys` and `nextKeyHashes`, a KERI key event log's current and next keys); never a role-bound verification method, never in `keyRoles`. Generated inside the VTA, never derived, never exportable, never in a backup, and always accompanied by a committed recovery key held outside the VTA's protection boundary. `authenticator` — a key held on a person's own authenticator (a WebAuthn passkey), listed in `authentication` of that person's identity only; used only to verify the person's WebAuthn assertions (sign-in and step-up evidence) and never to accept a Data Integrity proof. The VTA never holds its private half, so it is enrolled by the passkey ceremony and never generated, added or rotated by these tasks. Never permitted on the durable identity of a VTA, a VTC or a VTN. No role permits `capabilityInvocation` or `capabilityDelegation` (VTI-KEY-075). The set is an extensible registry: a consumer that meets a role it does not implement MUST rely on the key for nothing, and MUST NOT map it onto a role it does know (VTI-KEY-074).\",\"enum\":[\"attestation\",\"operational\",\"messaging\",\"update\",\"authenticator\"],\"title\":\"IdentityKeyRole\",\"type\":\"string\"},\"IdentityRoleKey\":{\"additionalProperties\":false,\"description\":\"One key in one role. A key is in exactly one role for its whole life; a change of role is a retirement from one and an addition to another, with fresh material under a fresh identifier.\",\"properties\":{\"activatesAt\":{\"description\":\"For a `staged` key: when the VTA will begin using it — no earlier than the publishing change's cache horizon.\",\"format\":\"date-time\",\"type\":\"string\"},\"commitment\":{\"description\":\"For a `committed` update key: the commitment the identifier publishes (a did:webvh `nextKeyHashes` entry, a KERI next-key digest), in the method's own encoding.\",\"minLength\":1,\"type\":\"string\"},\"compromisedSince\":{\"description\":\"For a `revoked` key: the compromise time (VTI-KEY-121), published as the verification method's `revoked` value. Where it cannot be established, the time the key was first published.\",\"format\":\"date-time\",\"type\":\"string\"},\"custody\":{\"$ref\":\"#/$defs/IdentityKeyCustody\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keyType\":{\"$ref\":\"#/$defs/KeyType\"},\"label\":{\"description\":\"Operator-facing label. Custody projection only.\",\"maxLength\":256,\"type\":\"string\"},\"publicKeyMultibase\":{\"description\":\"The public half, multibase-encoded, exactly as published. Absent for a `committed` update key, whose public half the identifier has not yet revealed.\",\"minLength\":1,\"type\":\"string\"},\"publishedInVersionId\":{\"description\":\"The method's version identifier of the change that first published the key or its commitment (method-profiles/: a did:webvh `versionId`, a KERI event's sequence number and digest). Absent while `pending`.\",\"type\":\"string\"},\"relationships\":{\"description\":\"The relationships the key is (or, while `pending`, will be) listed in: always exactly its role's one relationship. Empty for `update`, `retired` and `revoked` keys.\",\"items\":{\"$ref\":\"#/$defs/DidVerificationRelationship\"},\"type\":\"array\",\"uniqueItems\":true},\"removedInVersionId\":{\"description\":\"Version identifier of the change that retired or revoked the key.\",\"type\":\"string\"},\"retireAfter\":{\"description\":\"For a `retiring` key: the end of its overlap. Custody projection only.\",\"format\":\"date-time\",\"type\":\"string\"},\"role\":{\"$ref\":\"#/$defs/IdentityKeyRole\"},\"rotationId\":{\"description\":\"The rotation this key was introduced or retired by.\",\"type\":\"string\"},\"state\":{\"$ref\":\"#/$defs/KeyLifecycleState\"},\"updateKeyClass\":{\"$ref\":\"#/$defs/UpdateKeyClass\"},\"verificationMethod\":{\"description\":\"The full verification-method identifier (`did#fragment`) the document publishes the key under and lists in `keyRoles`. Absent for `update` keys, which are never role-bound verification methods (VTI-KEY-093). A VTA minting a method SHOULD derive its fragment from the key (VTI-KEY-150).\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"role\",\"keyType\",\"state\"],\"title\":\"IdentityRoleKey\",\"type\":\"object\"},\"KeyChangeApprovalState\":{\"additionalProperties\":false,\"description\":\"Approval progress of a change the VTA's policy gates on approvals (CONVENTIONS.md §6).\",\"properties\":{\"approvals\":{\"description\":\"The approvals recorded. Custody projection only; omitted from a response to anyone who is not themselves an eligible approver of this change.\",\"items\":{\"$ref\":\"#/$defs/RecordedApproval\"},\"type\":\"array\"},\"expiresAt\":{\"description\":\"When the preview, and every approval bound to it, stops being usable.\",\"format\":\"date-time\",\"type\":\"string\"},\"received\":{\"description\":\"Distinct approvals recorded so far, the initiator's own included.\",\"minimum\":0,\"type\":\"integer\"},\"required\":{\"description\":\"Distinct approvals the VTA's policy requires.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"required\",\"received\",\"expiresAt\"],\"title\":\"KeyChangeApprovalState\",\"type\":\"object\"},\"KeyChangeKind\":{\"description\":\"`planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same change. `addition` — a key joined a role without anything leaving it. `recovery` — the identifier's update authority moved to the committed recovery key, because the VTA's own update keys were lost or may be in someone else's hands.\",\"enum\":[\"planned\",\"compromise\",\"addition\",\"recovery\"],\"title\":\"KeyChangeKind\",\"type\":\"string\"},\"KeyChangeOutcome\":{\"description\":\"`preview` — nothing was written; the response carries the plan. `applied` — the change was made (and published, unless `publication.selfPublish`). `pendingApproval` — the plan is recorded and awaits further approvals. `awaitingRecoveryProof` — the plan is approved and waits for the recovery custodian's proof (`preview.recoverySigning`); nothing is published until it arrives.\",\"enum\":[\"preview\",\"applied\",\"pendingApproval\",\"awaitingRecoveryProof\"],\"title\":\"KeyChangeOutcome\",\"type\":\"string\"},\"KeyChangeRecord\":{\"additionalProperties\":false,\"description\":\"One change to a role's key set, from preview to completion. The identifier's history is the authority for what was published; this record adds which change was which and, in the custody projection, who asked, who approved, and why.\",\"properties\":{\"activatesAt\":{\"description\":\"When the successor becomes `active` and the predecessor `retiring`; never before `cacheHorizonAt`.\",\"format\":\"date-time\",\"type\":\"string\"},\"approvals\":{\"$ref\":\"#/$defs/KeyChangeApprovalState\"},\"autoRetire\":{\"description\":\"Custody projection only. Whether the VTA retires the predecessor itself at `overlapUntil`.\",\"type\":\"boolean\"},\"cacheHorizonAt\":{\"description\":\"Planned rotations: the publishing change's cache horizon (CONVENTIONS.md §10.1). The switch and any retirement happen no earlier.\",\"format\":\"date-time\",\"type\":\"string\"},\"endedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"endedInVersionId\":{\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"initiatedBy\":{\"description\":\"Custody projection only. VID of the administrator whose signed request started the change.\",\"type\":\"string\"},\"kind\":{\"$ref\":\"#/$defs/KeyChangeKind\"},\"overlapUntil\":{\"description\":\"Custody projection only. End of the overlap.\",\"format\":\"date-time\",\"type\":\"string\"},\"predecessors\":{\"description\":\"Verification-method identifiers (for `update`, public keys or commitments) leaving the role.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"reason\":{\"description\":\"Custody projection only. The operator's stated reason. Never published.\",\"maxLength\":1024,\"type\":\"string\"},\"role\":{\"$ref\":\"#/$defs/IdentityKeyRole\"},\"rotationId\":{\"minLength\":1,\"type\":\"string\"},\"startedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"startedInVersionId\":{\"type\":\"string\"},\"state\":{\"$ref\":\"#/$defs/KeyChangeState\"},\"successors\":{\"description\":\"Verification-method identifiers (for `update`, public keys or commitments) entering the role.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"rotationId\",\"role\",\"kind\",\"state\"],\"title\":\"KeyChangeRecord\",\"type\":\"object\"},\"KeyChangeState\":{\"description\":\"`pendingApproval` — awaiting the approvals the VTA's policy requires; nothing is published. `awaitingRecoveryProof` — approved, and waiting for the recovery custodian's proof over the change; nothing is published. `staged` — successor published, not yet used. `overlapping` — successor active, predecessor `retiring`. `completed` — every predecessor retired, or the change is published and any overlap it began has ended. `aborted` — the successor was retired instead of the predecessor, or a revocation superseded the change. `expired` — the approvals or the recovery proof did not arrive before the preview expired; nothing was published.\",\"enum\":[\"pendingApproval\",\"awaitingRecoveryProof\",\"staged\",\"overlapping\",\"completed\",\"aborted\",\"expired\"],\"title\":\"KeyChangeState\",\"type\":\"string\"},\"KeyLifecycleState\":{\"description\":\"Where a key is in its role's lifecycle (CONVENTIONS.md §8, §10). `pending` — planned by a preview or a change awaiting approval; not published; custody projection only. `staged` — published and bound to its role but not yet used, until the publishing change's cache horizon. `active` — the key the VTA uses for new signatures (for `messaging`, advertises for new sessions; for `update`, the current authority). `retiring` — still published but never used to sign again; a retiring `messaging` key still decrypts until retirement. `retired` — removed by planned rotation; what it signed while published stays valid, judged against the identifier version current at issuance. `revoked` — withdrawn for compromise, recorded with `compromisedSince`; what it signed from then on establishes nothing. `committed` — an `update` key the identifier commits to as a successor but has not revealed (a did:webvh `nextKeyHashes` entry, a KERI next-key digest). `retired` and `revoked` are terminal.\",\"enum\":[\"pending\",\"staged\",\"active\",\"retiring\",\"retired\",\"revoked\",\"committed\"],\"title\":\"KeyLifecycleState\",\"type\":\"string\"},\"KeyOrigin\":{\"default\":\"derived\",\"description\":\"Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.\",\"enum\":[\"derived\",\"imported\",\"internal\"],\"title\":\"KeyOrigin\",\"type\":\"string\"},\"KeyType\":{\"description\":\"Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support.\",\"enum\":[\"ed25519\",\"x25519\",\"p256\",\"mldsa44\",\"mldsa65\"],\"title\":\"KeyType\",\"type\":\"string\"},\"PreviewWarning\":{\"description\":\"Conditions a human should be shown before approving. `singleKeyRole` — the role will hold one active key. `algorithmNotInAcceptedSet` — a verifier population the VTA knows of does not accept the new key's algorithm. `roleWillHaveNoClassicalKey` — every remaining key is post-quantum. `attestationReissuanceRequired` — revoking this attestation key obliges re-issuance and re-signed status lists (VTI-KEY-133). `selfPublish` — the VTA will not publish the change; the operator must. `noWitnesses` — the identifier has no witnesses, so a party holding the VTA's routine update key can drop the recovery commitment unobserved (CONVENTIONS.md §5.3). `protectionBelowPolicy` — a key will be held at a `ProtectionClass` below what the VTA's policy recommends for its role (a plain VTA holding an attestation key). `recoveryKeyRevealed` — this change uses the recovery key, which must be replaced by a fresh recovery commitment in the same change.\",\"enum\":[\"singleKeyRole\",\"algorithmNotInAcceptedSet\",\"roleWillHaveNoClassicalKey\",\"attestationReissuanceRequired\",\"selfPublish\",\"noWitnesses\",\"protectionBelowPolicy\",\"recoveryKeyRevealed\"],\"title\":\"PreviewWarning\",\"type\":\"string\"},\"ProtectionClass\":{\"description\":\"How a private half is protected (CONVENTIONS.md §5.2). `software` — stored by the VTA without encryption independent of the host (a plain VTA). `encryptedAtRest` — wrapped under a key the VTA holds outside its store (a hardened VTA). `enclave` — held only inside an attested trusted execution environment, wrapped under a key released only to its measurement (a TEE VTA). `hardwareModule` — held by a hardware security module or cloud key service that performs the operation without releasing the key. `externalCustodian` — not held by this VTA at all: a recovery update key, or an `authenticator` key on a person's device.\",\"enum\":[\"software\",\"encryptedAtRest\",\"enclave\",\"hardwareModule\",\"externalCustodian\"],\"title\":\"ProtectionClass\",\"type\":\"string\"},\"Publication\":{\"additionalProperties\":false,\"description\":\"How the change reaches resolvers.\",\"properties\":{\"artifacts\":{\"description\":\"Present when `selfPublish` is true.\",\"items\":{\"$ref\":\"#/$defs/PublishedArtifact\"},\"type\":\"array\"},\"selfPublish\":{\"description\":\"True when no hosting service holds the identifier for the VTA: the caller must publish `artifacts`, and until it does resolvers see the previous version.\",\"type\":\"boolean\"}},\"required\":[\"selfPublish\"],\"title\":\"Publication\",\"type\":\"object\"},\"PublishedArtifact\":{\"additionalProperties\":false,\"description\":\"A file the identifier's method publishes, as the method profile names it (`did.jsonl` for did:webvh, `did.json` and `keri.cesr` for did:webs).\",\"properties\":{\"content\":{\"description\":\"The artefact's content, or for an append-only artefact the appended part, as text.\",\"type\":\"string\"},\"mediaType\":{\"minLength\":1,\"type\":\"string\"},\"name\":{\"maxLength\":128,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"name\",\"mediaType\",\"content\"],\"title\":\"PublishedArtifact\",\"type\":\"object\"},\"RecordedApproval\":{\"additionalProperties\":false,\"properties\":{\"approver\":{\"description\":\"VID of the approver.\",\"minLength\":1,\"type\":\"string\"},\"evidence\":{\"$ref\":\"#/$defs/ApprovalEvidenceKind\"},\"recordedAt\":{\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"approver\",\"evidence\"],\"title\":\"RecordedApproval\",\"type\":\"object\"},\"RecoveryCommitment\":{\"additionalProperties\":false,\"description\":\"A recovery key offered for commitment (CONVENTIONS.md §5.3). The VTA computes the method's commitment from it, verifies `proofOfPossession`, and then keeps only the commitment. The key MUST be held by a custodian in a protection boundary other than the VTA's; a VTA MUST refuse one it generated or can derive (`vta/dids:recoveryCommitmentRequired`).\",\"properties\":{\"keyType\":{\"$ref\":\"#/$defs/KeyType\"},\"label\":{\"description\":\"Operator-facing name of the custodian. Custody projection only; never published.\",\"maxLength\":256,\"type\":\"string\"},\"proofOfPossession\":{\"description\":\"Multibase signature by the recovery key over the UTF-8 bytes of `vta-dids-recovery-commitment/v1`, a zero byte, and the request's `previewId`. Absent on a dry run, which is how the `previewId` is obtained; REQUIRED on the apply request, and the only member besides `previewId`, `dryRun` and `recoveryProof` that may differ between the two.\",\"minLength\":1,\"type\":\"string\"},\"publicKeyMultibase\":{\"description\":\"The recovery key's public half. Not published by the VTA where the method commits by hash.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"keyType\",\"publicKeyMultibase\"],\"title\":\"RecoveryCommitment\",\"type\":\"object\"},\"RecoverySigningRequest\":{\"additionalProperties\":false,\"description\":\"What a recovery custodian must sign for a change that only the recovery key may authorize (CONVENTIONS.md §5.4, §9.4). The custodian MUST check `unsignedChange` itself — render it to its human, confirm that it reveals the recovery key it holds and commits to a fresh recovery key it also holds — and MUST NOT sign on the strength of this request's description alone.\",\"properties\":{\"commitment\":{\"description\":\"The recovery commitment the identifier publishes; the custodian's key MUST be the one it commits to.\",\"minLength\":1,\"type\":\"string\"},\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"keyType\":{\"$ref\":\"#/$defs/KeyType\"},\"proofOptions\":{\"description\":\"The proof the method requires over `unsignedChange`, without its signature value, as the method profile defines it (for did:webvh, a Data Integrity proof configuration with `proofPurpose: assertionMethod` and the recovery key's `did:key` as `verificationMethod`).\",\"type\":\"object\"},\"unsignedChange\":{\"description\":\"The change exactly as it will be published, without the recovery proof, as JSON text in the method's own form (a did:webvh log entry, a KERI rotation event).\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"commitment\",\"keyType\",\"unsignedChange\",\"proofOptions\"],\"title\":\"RecoverySigningRequest\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"approvals\":{\"$ref\":\"#/$defs/KeyChangeApprovalState\",\"description\":\"Present when `outcome` is `pendingApproval`.\"},\"did\":{\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keys\":{\"description\":\"Every key whose state this change sets or would set, after the change.\",\"items\":{\"$ref\":\"#/$defs/IdentityRoleKey\"},\"type\":\"array\"},\"newVersionId\":{\"description\":\"Present when `outcome` is `applied`: the version identifier of the change. Pass it as the next change's `expectedVersionId`.\",\"type\":\"string\"},\"outcome\":{\"$ref\":\"#/$defs/KeyChangeOutcome\"},\"preview\":{\"$ref\":\"#/$defs/IdentityChangePreview\",\"description\":\"Present when `outcome` is `preview`, `pendingApproval` or `awaitingRecoveryProof`: the plan, and what an approval is bound to.\"},\"publication\":{\"$ref\":\"#/$defs/Publication\",\"description\":\"Present when `outcome` is `applied`.\"},\"rotation\":{\"$ref\":\"#/$defs/KeyChangeRecord\"}},\"required\":[\"did\",\"outcome\"],\"title\":\"VTA DIDs — Keys Rotate — response payload\",\"type\":\"object\"},\"UpdateKeyClass\":{\"description\":\"For an `update` key only (CONVENTIONS.md §5.3). `routine` — generated and held by the VTA, which authorizes the identity's ordinary changes with it. `recovery` — held by a recovery custodian in a protection boundary other than the VTA's; the VTA holds only its commitment, carries that commitment forward in every change it makes, and can use the key only by asking the custodian for a proof (`RecoverySigningRequest`).\",\"enum\":[\"routine\",\"recovery\"],\"title\":\"UpdateKeyClass\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

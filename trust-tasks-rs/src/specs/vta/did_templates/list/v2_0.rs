@@ -4,7 +4,7 @@
 #![allow(deprecated)]
 /// Why this specification version is deprecated (SPEC "Superseded and
 /// Withdrawn Versions"), or `None` while it is current.
-pub const DEPRECATION: Option<&str> = Some("superseded by vta/did-templates/list/3.1");
+pub const DEPRECATION: Option<&str> = Some("superseded by vta/did-templates/list/3.2");
 #[allow(unused_imports)]
 use serde::{Deserialize, Serialize};
 /// Error types.
@@ -353,7 +353,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by vta/did-templates/list/3.1")]
+#[deprecated(note = "superseded by vta/did-templates/list/3.2")]
 pub struct Payload {
     ///Scope selector. Absent: the global scope. Present: the context whose templates are listed; the caller MUST have access to that context.
     #[serde(
@@ -443,7 +443,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by vta/did-templates/list/3.1")]
+#[deprecated(note = "superseded by vta/did-templates/list/3.2")]
 pub struct Response {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]

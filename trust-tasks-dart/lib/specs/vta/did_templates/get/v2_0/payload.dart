@@ -100,7 +100,7 @@ class DidTemplateRecord {
 /// The persisted DidTemplateRecord. The DidTemplate fields are flattened at the top
 /// level alongside the resolved scope and provenance metadata. Same shape returned by
 /// create/update.
-@Deprecated('superseded by vta/did-templates/get/3.1')
+@Deprecated('superseded by vta/did-templates/get/3.2')
 typedef Response = DidTemplateRecord;
 
 /// Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a
@@ -111,7 +111,7 @@ typedef Ext = Map<String, dynamic>;
 /// scope (any authenticated caller); set it to read a template scoped to that context
 /// (requires access to the context). The success response is the persisted
 /// DidTemplateRecord.
-@Deprecated('superseded by vta/did-templates/get/3.1')
+@Deprecated('superseded by vta/did-templates/get/3.2')
 class Payload {
   const Payload({
     this.contextId,
@@ -151,7 +151,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by vta/did-templates/get/3.1';
+const String? deprecation = 'superseded by vta/did-templates/get/3.2';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/vta/did-templates/get/2.0';

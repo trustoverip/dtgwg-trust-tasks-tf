@@ -66,14 +66,14 @@
           "minLength": 1
         },
         "outcome": {
-          "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/KeyRoleChangeOutcome"
+          "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/KeyChangeOutcome"
         },
         "preview": {
-          "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/DidDocumentPreview",
+          "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/IdentityChangePreview",
           "description": "Present when `outcome` is `preview`, `pendingApproval` or `awaitingRecoveryProof`: the plan, and what an approval is bound to."
         },
         "approvals": {
-          "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/KeyRoleApprovalState",
+          "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/KeyChangeApprovalState",
           "description": "Present when `outcome` is `pendingApproval`."
         },
         "newVersionId": {

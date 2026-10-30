@@ -8,7 +8,7 @@ package vtadidssharedkeyrolesv0_1
 
 import "encoding/json"
 
-// KeyRole The named key role a key occupies in an identity (CONVENTIONS.md §2;
+// IdentityKeyRole The named key role a key occupies in an identity (CONVENTIONS.md §2;
 // VTI-KEY-070 onward). `attestation` — the only keys in `assertionMethod`; sign the
 // identity's attestation artefacts (credentials, endorsements, status lists) through the
 // VTA's signing service and nowhere else. Generated inside the VTA, never derived, never
@@ -31,15 +31,15 @@ import "encoding/json"
 // (VTI-KEY-075). The set is an extensible registry: a consumer that meets a role it does
 // not implement MUST rely on the key for nothing, and MUST NOT map it onto a role it does
 // know (VTI-KEY-074).
-type KeyRole string
+type IdentityKeyRole string
 
-// Values KeyRole may take, per this specification's schema.
+// Values IdentityKeyRole may take, per this specification's schema.
 const (
-	KeyRoleAttestation   KeyRole = "attestation"
-	KeyRoleOperational   KeyRole = "operational"
-	KeyRoleMessaging     KeyRole = "messaging"
-	KeyRoleUpdate        KeyRole = "update"
-	KeyRoleAuthenticator KeyRole = "authenticator"
+	IdentityKeyRoleAttestation   IdentityKeyRole = "attestation"
+	IdentityKeyRoleOperational   IdentityKeyRole = "operational"
+	IdentityKeyRoleMessaging     IdentityKeyRole = "messaging"
+	IdentityKeyRoleUpdate        IdentityKeyRole = "update"
+	IdentityKeyRoleAuthenticator IdentityKeyRole = "authenticator"
 )
 
 // DIDVerificationRelationship A DID Core verification relationship.
@@ -76,11 +76,11 @@ const (
 	UpdateKeyClassRecovery UpdateKeyClass = "recovery"
 )
 
-// RoleKeyState Where a key is in its role's lifecycle (CONVENTIONS.md §8, §10). `pending`
-// — planned by a preview or a change awaiting approval; not published; custody projection
-// only. `staged` — published and bound to its role but not yet used, until the publishing
-// change's cache horizon. `active` — the key the VTA uses for new signatures (for
-// `messaging`, advertises for new sessions; for `update`, the current authority).
+// KeyLifecycleState Where a key is in its role's lifecycle (CONVENTIONS.md §8, §10).
+// `pending` — planned by a preview or a change awaiting approval; not published; custody
+// projection only. `staged` — published and bound to its role but not yet used, until the
+// publishing change's cache horizon. `active` — the key the VTA uses for new signatures
+// (for `messaging`, advertises for new sessions; for `update`, the current authority).
 // `retiring` — still published but never used to sign again; a retiring `messaging` key
 // still decrypts until retirement. `retired` — removed by planned rotation; what it
 // signed while published stays valid, judged against the identifier version current at
@@ -88,30 +88,30 @@ const (
 // it signed from then on establishes nothing. `committed` — an `update` key the
 // identifier commits to as a successor but has not revealed (a did:webvh `nextKeyHashes`
 // entry, a KERI next-key digest). `retired` and `revoked` are terminal.
-type RoleKeyState string
+type KeyLifecycleState string
 
-// Values RoleKeyState may take, per this specification's schema.
+// Values KeyLifecycleState may take, per this specification's schema.
 const (
-	RoleKeyStatePending   RoleKeyState = "pending"
-	RoleKeyStateStaged    RoleKeyState = "staged"
-	RoleKeyStateActive    RoleKeyState = "active"
-	RoleKeyStateRetiring  RoleKeyState = "retiring"
-	RoleKeyStateRetired   RoleKeyState = "retired"
-	RoleKeyStateRevoked   RoleKeyState = "revoked"
-	RoleKeyStateCommitted RoleKeyState = "committed"
+	KeyLifecycleStatePending   KeyLifecycleState = "pending"
+	KeyLifecycleStateStaged    KeyLifecycleState = "staged"
+	KeyLifecycleStateActive    KeyLifecycleState = "active"
+	KeyLifecycleStateRetiring  KeyLifecycleState = "retiring"
+	KeyLifecycleStateRetired   KeyLifecycleState = "retired"
+	KeyLifecycleStateRevoked   KeyLifecycleState = "revoked"
+	KeyLifecycleStateCommitted KeyLifecycleState = "committed"
 )
 
-// KeyRoleProjection Which view of the identity's key roles the caller was given
+// KeyListProjection Which view of the identity's key roles the caller was given
 // (CONVENTIONS.md §11). `public` — only what the published identifier document and
 // history already reveal. `custody` — additionally the VTA's custody state: pending keys,
 // the custodian record and protection boundary behind each key, overlap deadlines, who
 // initiated and approved each change, and why.
-type KeyRoleProjection string
+type KeyListProjection string
 
-// Values KeyRoleProjection may take, per this specification's schema.
+// Values KeyListProjection may take, per this specification's schema.
 const (
-	KeyRoleProjectionPublic  KeyRoleProjection = "public"
-	KeyRoleProjectionCustody KeyRoleProjection = "custody"
+	KeyListProjectionPublic  KeyListProjection = "public"
+	KeyListProjectionCustody KeyListProjection = "custody"
 )
 
 // ProtectionClass How a private half is protected (CONVENTIONS.md §5.2). `software` —
@@ -133,9 +133,9 @@ const (
 	ProtectionClassExternalCustodian ProtectionClass = "externalCustodian"
 )
 
-// RoleKeyCustody How a key is held. Present only in the custody projection. Carries no
-// key material, and a conforming VTA MUST NOT place any in `ext`.
-type RoleKeyCustody struct {
+// IdentityKeyCustody How a key is held. Present only in the custody projection. Carries
+// no key material, and a conforming VTA MUST NOT place any in `ext`.
+type IdentityKeyCustody struct {
 	// The custodian record identifier (`keys/*`'s `keyId`) behind this key. Absent for a key
 	// this VTA does not hold (`protection: externalCustodian`).
 	KeyID  *string    `json:"keyId,omitempty"`
@@ -165,16 +165,16 @@ type RoleKeyCustody struct {
 	Destroyed *bool `json:"destroyed,omitempty"`
 }
 
-// RoleKey One key in one role. A key is in exactly one role for its whole life; a change
-// of role is a retirement from one and an addition to another, with fresh material under
-// a fresh identifier.
-type RoleKey struct {
+// IdentityRoleKey One key in one role. A key is in exactly one role for its whole life; a
+// change of role is a retirement from one and an addition to another, with fresh material
+// under a fresh identifier.
+type IdentityRoleKey struct {
 	// The full verification-method identifier (`did#fragment`) the document publishes the key
 	// under and lists in `keyRoles`. Absent for `update` keys, which are never role-bound
 	// verification methods (VTI-KEY-093). A VTA minting a method SHOULD derive its fragment
 	// from the key (VTI-KEY-150).
 	VerificationMethod *string         `json:"verificationMethod,omitempty"`
-	Role               KeyRole         `json:"role"`
+	Role               IdentityKeyRole `json:"role"`
 	UpdateKeyClass     *UpdateKeyClass `json:"updateKeyClass,omitempty"`
 
 	// The relationships the key is (or, while `pending`, will be) listed in: always exactly
@@ -188,8 +188,8 @@ type RoleKey struct {
 
 	// For a `committed` update key: the commitment the identifier publishes (a did:webvh
 	// `nextKeyHashes` entry, a KERI next-key digest), in the method's own encoding.
-	Commitment *string      `json:"commitment,omitempty"`
-	State      RoleKeyState `json:"state"`
+	Commitment *string           `json:"commitment,omitempty"`
+	State      KeyLifecycleState `json:"state"`
 
 	// The method's version identifier of the change that first published the key or its
 	// commitment (method-profiles/: a did:webvh `versionId`, a KERI event's sequence number
@@ -215,14 +215,14 @@ type RoleKey struct {
 	RotationID *string `json:"rotationId,omitempty"`
 
 	// Operator-facing label. Custody projection only.
-	Label   *string         `json:"label,omitempty"`
-	Custody *RoleKeyCustody `json:"custody,omitempty"`
-	Ext     *Ext            `json:"ext,omitempty"`
+	Label   *string             `json:"label,omitempty"`
+	Custody *IdentityKeyCustody `json:"custody,omitempty"`
+	Ext     *Ext                `json:"ext,omitempty"`
 }
 
-// RoleSummary RoleSummary
-type RoleSummary struct {
-	Role KeyRole `json:"role"`
+// KeyRoleSummary KeyRoleSummary
+type KeyRoleSummary struct {
+	Role IdentityKeyRole `json:"role"`
 
 	// The relationship this role owns. Empty for `update`.
 	Relationships []DIDVerificationRelationship `json:"relationships"`
@@ -230,7 +230,7 @@ type RoleSummary struct {
 	// The role's keys, in the order the document publishes them. Terminal-state keys are
 	// included only when the request asked for them, except a `revoked` key the document
 	// still lists, which is always included.
-	Keys []RoleKey `json:"keys"`
+	Keys []IdentityRoleKey `json:"keys"`
 
 	// `update` only: whether the identifier's latest version commits to a recovery key in a
 	// boundary other than the VTA's (CONVENTIONS.md §5.3). `false` is a defect the VTA
@@ -242,23 +242,23 @@ type RoleSummary struct {
 	Threshold *string `json:"threshold,omitempty"`
 }
 
-// RotationKind `planned` — a successor was staged, activated, and the predecessor retired
-// on the operator's schedule. `compromise` — a key was revoked and, where the role would
-// otherwise be empty, replaced in the same change. `addition` — a key joined a role
-// without anything leaving it. `recovery` — the identifier's update authority moved to
-// the committed recovery key, because the VTA's own update keys were lost or may be in
+// KeyChangeKind `planned` — a successor was staged, activated, and the predecessor
+// retired on the operator's schedule. `compromise` — a key was revoked and, where the
+// role would otherwise be empty, replaced in the same change. `addition` — a key joined a
+// role without anything leaving it. `recovery` — the identifier's update authority moved
+// to the committed recovery key, because the VTA's own update keys were lost or may be in
 // someone else's hands.
-type RotationKind string
+type KeyChangeKind string
 
-// Values RotationKind may take, per this specification's schema.
+// Values KeyChangeKind may take, per this specification's schema.
 const (
-	RotationKindPlanned    RotationKind = "planned"
-	RotationKindCompromise RotationKind = "compromise"
-	RotationKindAddition   RotationKind = "addition"
-	RotationKindRecovery   RotationKind = "recovery"
+	KeyChangeKindPlanned    KeyChangeKind = "planned"
+	KeyChangeKindCompromise KeyChangeKind = "compromise"
+	KeyChangeKindAddition   KeyChangeKind = "addition"
+	KeyChangeKindRecovery   KeyChangeKind = "recovery"
 )
 
-// RotationState `pendingApproval` — awaiting the approvals the VTA's policy requires;
+// KeyChangeState `pendingApproval` — awaiting the approvals the VTA's policy requires;
 // nothing is published. `awaitingRecoveryProof` — approved, and waiting for the recovery
 // custodian's proof over the change; nothing is published. `staged` — successor
 // published, not yet used. `overlapping` — successor active, predecessor `retiring`.
@@ -266,27 +266,27 @@ const (
 // began has ended. `aborted` — the successor was retired instead of the predecessor, or a
 // revocation superseded the change. `expired` — the approvals or the recovery proof did
 // not arrive before the preview expired; nothing was published.
-type RotationState string
+type KeyChangeState string
 
-// Values RotationState may take, per this specification's schema.
+// Values KeyChangeState may take, per this specification's schema.
 const (
-	RotationStatePendingApproval       RotationState = "pendingApproval"
-	RotationStateAwaitingRecoveryProof RotationState = "awaitingRecoveryProof"
-	RotationStateStaged                RotationState = "staged"
-	RotationStateOverlapping           RotationState = "overlapping"
-	RotationStateCompleted             RotationState = "completed"
-	RotationStateAborted               RotationState = "aborted"
-	RotationStateExpired               RotationState = "expired"
+	KeyChangeStatePendingApproval       KeyChangeState = "pendingApproval"
+	KeyChangeStateAwaitingRecoveryProof KeyChangeState = "awaitingRecoveryProof"
+	KeyChangeStateStaged                KeyChangeState = "staged"
+	KeyChangeStateOverlapping           KeyChangeState = "overlapping"
+	KeyChangeStateCompleted             KeyChangeState = "completed"
+	KeyChangeStateAborted               KeyChangeState = "aborted"
+	KeyChangeStateExpired               KeyChangeState = "expired"
 )
 
-// RotationRecord One change to a role's key set, from preview to completion. The
+// KeyChangeRecord One change to a role's key set, from preview to completion. The
 // identifier's history is the authority for what was published; this record adds which
 // change was which and, in the custody projection, who asked, who approved, and why.
-type RotationRecord struct {
-	RotationID string        `json:"rotationId"`
-	Role       KeyRole       `json:"role"`
-	Kind       RotationKind  `json:"kind"`
-	State      RotationState `json:"state"`
+type KeyChangeRecord struct {
+	RotationID string          `json:"rotationId"`
+	Role       IdentityKeyRole `json:"role"`
+	Kind       KeyChangeKind   `json:"kind"`
+	State      KeyChangeState  `json:"state"`
 
 	// Verification-method identifiers (for `update`, public keys or commitments) leaving the
 	// role.
@@ -317,8 +317,8 @@ type RotationRecord struct {
 
 	// Custody projection only. VID of the administrator whose signed request started the
 	// change.
-	InitiatedBy *string               `json:"initiatedBy,omitempty"`
-	Approvals   *KeyRoleApprovalState `json:"approvals,omitempty"`
+	InitiatedBy *string                 `json:"initiatedBy,omitempty"`
+	Approvals   *KeyChangeApprovalState `json:"approvals,omitempty"`
 
 	// Custody projection only. The operator's stated reason. Never published.
 	Reason *string `json:"reason,omitempty"`
@@ -346,9 +346,9 @@ type RecordedApproval struct {
 	RecordedAt *string              `json:"recordedAt,omitempty"`
 }
 
-// KeyRoleApprovalState Approval progress of a change the VTA's policy gates on approvals
-// (CONVENTIONS.md §6).
-type KeyRoleApprovalState struct {
+// KeyChangeApprovalState Approval progress of a change the VTA's policy gates on
+// approvals (CONVENTIONS.md §6).
+type KeyChangeApprovalState struct {
 	// Distinct approvals the VTA's policy requires.
 	Required int64 `json:"required"`
 
@@ -363,7 +363,7 @@ type KeyRoleApprovalState struct {
 	ExpiresAt string `json:"expiresAt"`
 }
 
-// DIDDocumentChangeOp `addKey` — a verification method joins its role's relationship and
+// IdentityChangeOp `addKey` — a verification method joins its role's relationship and
 // `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and
 // the document. `revokeKey` — a verification method leaves its relationship and
 // `keyRoles`, and stays in `verificationMethod` with `revoked` set to the compromise time
@@ -371,21 +371,21 @@ type KeyRoleApprovalState struct {
 // committed routine successor. `commitUpdateKey` — a new routine successor is committed.
 // `replaceRecoveryCommitment` — the recovery commitment changes. `useRecoveryKey` — the
 // change is authorized by the recovery key, which the identifier then reveals.
-type DIDDocumentChangeOp string
+type IdentityChangeOp string
 
-// Values DIDDocumentChangeOp may take, per this specification's schema.
+// Values IdentityChangeOp may take, per this specification's schema.
 const (
-	DIDDocumentChangeOpAddKey                    DIDDocumentChangeOp = "addKey"
-	DIDDocumentChangeOpRetireKey                 DIDDocumentChangeOp = "retireKey"
-	DIDDocumentChangeOpRevokeKey                 DIDDocumentChangeOp = "revokeKey"
-	DIDDocumentChangeOpRotateUpdateKey           DIDDocumentChangeOp = "rotateUpdateKey"
-	DIDDocumentChangeOpCommitUpdateKey           DIDDocumentChangeOp = "commitUpdateKey"
-	DIDDocumentChangeOpReplaceRecoveryCommitment DIDDocumentChangeOp = "replaceRecoveryCommitment"
-	DIDDocumentChangeOpUseRecoveryKey            DIDDocumentChangeOp = "useRecoveryKey"
+	IdentityChangeOpAddKey                    IdentityChangeOp = "addKey"
+	IdentityChangeOpRetireKey                 IdentityChangeOp = "retireKey"
+	IdentityChangeOpRevokeKey                 IdentityChangeOp = "revokeKey"
+	IdentityChangeOpRotateUpdateKey           IdentityChangeOp = "rotateUpdateKey"
+	IdentityChangeOpCommitUpdateKey           IdentityChangeOp = "commitUpdateKey"
+	IdentityChangeOpReplaceRecoveryCommitment IdentityChangeOp = "replaceRecoveryCommitment"
+	IdentityChangeOpUseRecoveryKey            IdentityChangeOp = "useRecoveryKey"
 )
 
-// DIDDocumentChange DidDocumentChange
-type DIDDocumentChange struct {
+// IdentityChange IdentityChange
+type IdentityChange struct {
 	// `addKey` — a verification method joins its role's relationship and `keyRoles`.
 	// `retireKey` — a verification method leaves its relationship, `keyRoles` and the
 	// document. `revokeKey` — a verification method leaves its relationship and `keyRoles`,
@@ -394,8 +394,8 @@ type DIDDocumentChange struct {
 	// committed routine successor. `commitUpdateKey` — a new routine successor is committed.
 	// `replaceRecoveryCommitment` — the recovery commitment changes. `useRecoveryKey` — the
 	// change is authorized by the recovery key, which the identifier then reveals.
-	Op                 DIDDocumentChangeOp            `json:"op"`
-	Role               KeyRole                        `json:"role"`
+	Op                 IdentityChangeOp               `json:"op"`
+	Role               IdentityKeyRole                `json:"role"`
 	VerificationMethod *string                        `json:"verificationMethod,omitempty"`
 	KeyType            *KeyType                       `json:"keyType,omitempty"`
 	PublicKeyMultibase *string                        `json:"publicKeyMultibase,omitempty"`
@@ -495,10 +495,10 @@ type RecoveryCommitment struct {
 	Label *string `json:"label,omitempty"`
 }
 
-// DIDDocumentPreview What a change would publish, computed by the VTA by running the
+// IdentityChangePreview What a change would publish, computed by the VTA by running the
 // handler it would run to apply it (CONVENTIONS.md §6.1). This is what a consent surface
 // renders and what an approval is bound to.
-type DIDDocumentPreview struct {
+type IdentityChangePreview struct {
 	// Opaque, unguessable identifier of this exact plan. Carried back by the apply request;
 	// every approval and any recovery proof is bound to it.
 	PreviewID string        `json:"previewId"`
@@ -511,7 +511,7 @@ type DIDDocumentPreview struct {
 
 	// Every change the plan would make, including the ones the caller did not ask for — in
 	// particular any movement of the update authority the method requires.
-	Changes []DIDDocumentChange `json:"changes"`
+	Changes []IdentityChange `json:"changes"`
 
 	// The complete identifier document the change would publish, `keyRoles` included. Public
 	// data by construction.
@@ -525,26 +525,26 @@ type DIDDocumentPreview struct {
 	RecoverySigning  *RecoverySigningRequest `json:"recoverySigning,omitempty"`
 }
 
-// KeyRoleChangeOutcome `preview` — nothing was written; the response carries the plan.
+// KeyChangeOutcome `preview` — nothing was written; the response carries the plan.
 // `applied` — the change was made (and published, unless `publication.selfPublish`).
 // `pendingApproval` — the plan is recorded and awaits further approvals.
 // `awaitingRecoveryProof` — the plan is approved and waits for the recovery custodian's
 // proof (`preview.recoverySigning`); nothing is published until it arrives.
-type KeyRoleChangeOutcome string
+type KeyChangeOutcome string
 
-// Values KeyRoleChangeOutcome may take, per this specification's schema.
+// Values KeyChangeOutcome may take, per this specification's schema.
 const (
-	KeyRoleChangeOutcomePreview               KeyRoleChangeOutcome = "preview"
-	KeyRoleChangeOutcomeApplied               KeyRoleChangeOutcome = "applied"
-	KeyRoleChangeOutcomePendingApproval       KeyRoleChangeOutcome = "pendingApproval"
-	KeyRoleChangeOutcomeAwaitingRecoveryProof KeyRoleChangeOutcome = "awaitingRecoveryProof"
+	KeyChangeOutcomePreview               KeyChangeOutcome = "preview"
+	KeyChangeOutcomeApplied               KeyChangeOutcome = "applied"
+	KeyChangeOutcomePendingApproval       KeyChangeOutcome = "pendingApproval"
+	KeyChangeOutcomeAwaitingRecoveryProof KeyChangeOutcome = "awaitingRecoveryProof"
 )
 
 // RoleLayout The keys an identity is created with in one role (CONVENTIONS.md §4). A
 // key-role DID template carries one per role; a creation request may narrow it but never
 // widen it.
 type RoleLayout struct {
-	Role KeyRole `json:"role"`
+	Role IdentityKeyRole `json:"role"`
 
 	// The algorithms to mint, one key each, in publication order — `["ed25519", "mldsa44"]`
 	// mints a classical and a post-quantum attestation key that sign as a proof set. Every

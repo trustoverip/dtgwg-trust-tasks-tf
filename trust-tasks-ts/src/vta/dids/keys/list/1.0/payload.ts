@@ -3,7 +3,7 @@
  * Source: specs/vta/dids/keys/list/1.0/payload.schema.json
  */
 
-import type { ApprovalEvidenceKind, DidMethodName, DidVerificationRelationship, Ext, KeyOrigin, KeyRole_VtaDidsV0_1 as KeyRole, KeyRoleApprovalState_VtaDidsV0_1 as KeyRoleApprovalState, KeyRoleProjection_VtaDidsV0_1 as KeyRoleProjection, KeyType, ProtectionClass, RecordedApproval, RoleKey_VtaDidsV0_1 as RoleKey, RoleKeyCustody_VtaDidsV0_1 as RoleKeyCustody, RoleKeyState_VtaDidsV0_1 as RoleKeyState, RoleSummary_VtaDidsV0_1 as RoleSummary, RotationKind_VtaDidsV0_1 as RotationKind, RotationRecord_VtaDidsV0_1 as RotationRecord, RotationState_VtaDidsV0_1 as RotationState, UpdateKeyClass } from "../../../../../_shared/components.js";
+import type { ApprovalEvidenceKind, DidMethodName, DidVerificationRelationship, Ext, IdentityKeyCustody, IdentityKeyRole, IdentityRoleKey, KeyChangeApprovalState, KeyChangeKind, KeyChangeRecord, KeyChangeState, KeyLifecycleState, KeyListProjection, KeyOrigin, KeyRoleSummary, KeyType, ProtectionClass, RecordedApproval, UpdateKeyClass } from "../../../../../_shared/components.js";
 
 
 /**
@@ -19,7 +19,7 @@ export interface VTADIDsKeysListPayload {
    *
    * @minItems 1
    */
-  roles?: [KeyRole, ...KeyRole[]];
+  roles?: [IdentityKeyRole, ...IdentityKeyRole[]];
   /**
    * Include `retired` and `revoked` keys. Absent reads as false. A `revoked` key the document still lists is always included.
    */
@@ -37,20 +37,20 @@ export interface VTADIDsKeysListResponsePayload {
    * The version the answer describes. Pass it as `expectedVersionId` to a change made on its strength.
    */
   versionId: string;
-  projection: KeyRoleProjection;
+  projection: KeyListProjection;
   /**
    * One entry per role asked for, including roles with no keys.
    */
-  roles: RoleSummary[];
+  roles: KeyRoleSummary[];
   /**
    * Present exactly when `includeHistory` was true. Newest first.
    */
-  rotations?: RotationRecord[];
+  rotations?: KeyChangeRecord[];
   ext?: Ext;
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { ApprovalEvidenceKind, DidMethodName, DidVerificationRelationship, Ext, KeyOrigin, KeyRole, KeyRoleApprovalState, KeyRoleProjection, KeyType, ProtectionClass, RecordedApproval, RoleKey, RoleKeyCustody, RoleKeyState, RoleSummary, RotationKind, RotationRecord, RotationState, UpdateKeyClass };
+export type { ApprovalEvidenceKind, DidMethodName, DidVerificationRelationship, Ext, IdentityKeyCustody, IdentityKeyRole, IdentityRoleKey, KeyChangeApprovalState, KeyChangeKind, KeyChangeRecord, KeyChangeState, KeyLifecycleState, KeyListProjection, KeyOrigin, KeyRoleSummary, KeyType, ProtectionClass, RecordedApproval, UpdateKeyClass };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/dids/keys/list/1.0" as const;
@@ -110,7 +110,7 @@ export const PAYLOAD_SCHEMA = {
       "minItems": 1,
       "uniqueItems": true,
       "items": {
-        "$ref": "#/$defs/KeyRole"
+        "$ref": "#/$defs/IdentityKeyRole"
       },
       "description": "Return only these roles. Absent returns every role. Present-but-empty is refused by the schema rather than read as 'every role'."
     },
@@ -151,19 +151,19 @@ export const PAYLOAD_SCHEMA = {
           "description": "The version the answer describes. Pass it as `expectedVersionId` to a change made on its strength."
         },
         "projection": {
-          "$ref": "#/$defs/KeyRoleProjection"
+          "$ref": "#/$defs/KeyListProjection"
         },
         "roles": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/RoleSummary"
+            "$ref": "#/$defs/KeyRoleSummary"
           },
           "description": "One entry per role asked for, including roles with no keys."
         },
         "rotations": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/RotationRecord"
+            "$ref": "#/$defs/KeyChangeRecord"
           },
           "description": "Present exactly when `includeHistory` was true. Newest first."
         },
@@ -182,8 +182,8 @@ export const PAYLOAD_SCHEMA = {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
-    "RotationRecord": {
-      "title": "RotationRecord",
+    "KeyChangeRecord": {
+      "title": "KeyChangeRecord",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -199,13 +199,13 @@ export const PAYLOAD_SCHEMA = {
           "minLength": 1
         },
         "role": {
-          "$ref": "#/$defs/KeyRole"
+          "$ref": "#/$defs/IdentityKeyRole"
         },
         "kind": {
-          "$ref": "#/$defs/RotationKind"
+          "$ref": "#/$defs/KeyChangeKind"
         },
         "state": {
-          "$ref": "#/$defs/RotationState"
+          "$ref": "#/$defs/KeyChangeState"
         },
         "predecessors": {
           "type": "array",
@@ -259,7 +259,7 @@ export const PAYLOAD_SCHEMA = {
           "description": "Custody projection only. VID of the administrator whose signed request started the change."
         },
         "approvals": {
-          "$ref": "#/$defs/KeyRoleApprovalState"
+          "$ref": "#/$defs/KeyChangeApprovalState"
         },
         "reason": {
           "type": "string",
@@ -271,8 +271,8 @@ export const PAYLOAD_SCHEMA = {
         }
       }
     },
-    "KeyRoleApprovalState": {
-      "title": "KeyRoleApprovalState",
+    "KeyChangeApprovalState": {
+      "title": "KeyChangeApprovalState",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -339,8 +339,8 @@ export const PAYLOAD_SCHEMA = {
       ],
       "description": "The evidence an approval was recorded on, as `auth/step-up/approve-response` names it. Only the approver's own evidence is ever recorded: a proof by a key the VTA records as acting for an approver — a console signing key or any other delegation — is never an approval (CONVENTIONS.md §6.3)."
     },
-    "RotationState": {
-      "title": "RotationState",
+    "KeyChangeState": {
+      "title": "KeyChangeState",
       "type": "string",
       "enum": [
         "pendingApproval",
@@ -353,8 +353,8 @@ export const PAYLOAD_SCHEMA = {
       ],
       "description": "`pendingApproval` — awaiting the approvals the VTA's policy requires; nothing is published. `awaitingRecoveryProof` — approved, and waiting for the recovery custodian's proof over the change; nothing is published. `staged` — successor published, not yet used. `overlapping` — successor active, predecessor `retiring`. `completed` — every predecessor retired, or the change is published and any overlap it began has ended. `aborted` — the successor was retired instead of the predecessor, or a revocation superseded the change. `expired` — the approvals or the recovery proof did not arrive before the preview expired; nothing was published."
     },
-    "RotationKind": {
-      "title": "RotationKind",
+    "KeyChangeKind": {
+      "title": "KeyChangeKind",
       "type": "string",
       "enum": [
         "planned",
@@ -364,8 +364,8 @@ export const PAYLOAD_SCHEMA = {
       ],
       "description": "`planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same change. `addition` — a key joined a role without anything leaving it. `recovery` — the identifier's update authority moved to the committed recovery key, because the VTA's own update keys were lost or may be in someone else's hands."
     },
-    "KeyRole": {
-      "title": "KeyRole",
+    "IdentityKeyRole": {
+      "title": "IdentityKeyRole",
       "type": "string",
       "enum": [
         "attestation",
@@ -376,8 +376,8 @@ export const PAYLOAD_SCHEMA = {
       ],
       "description": "The named key role a key occupies in an identity (CONVENTIONS.md §2; VTI-KEY-070 onward). `attestation` — the only keys in `assertionMethod`; sign the identity's attestation artefacts (credentials, endorsements, status lists) through the VTA's signing service and nowhere else. Generated inside the VTA, never derived, never exportable, never in a backup. `operational` — the only keys the identity's own process uses in `authentication`; sign the node's own traffic (Trust Task requests and responses, DIDComm and TSP signatures, invitations, notices, audit checkpoints). Derived. `messaging` — the only keys in `keyAgreement`; sign nothing. X25519, derived or generated in its own right and never converted from a signing key. `update` — the identifier's change authority as its DID method states it (a did:webvh log's `updateKeys` and `nextKeyHashes`, a KERI key event log's current and next keys); never a role-bound verification method, never in `keyRoles`. Generated inside the VTA, never derived, never exportable, never in a backup, and always accompanied by a committed recovery key held outside the VTA's protection boundary. `authenticator` — a key held on a person's own authenticator (a WebAuthn passkey), listed in `authentication` of that person's identity only; used only to verify the person's WebAuthn assertions (sign-in and step-up evidence) and never to accept a Data Integrity proof. The VTA never holds its private half, so it is enrolled by the passkey ceremony and never generated, added or rotated by these tasks. Never permitted on the durable identity of a VTA, a VTC or a VTN. No role permits `capabilityInvocation` or `capabilityDelegation` (VTI-KEY-075). The set is an extensible registry: a consumer that meets a role it does not implement MUST rely on the key for nothing, and MUST NOT map it onto a role it does know (VTI-KEY-074)."
     },
-    "RoleSummary": {
-      "title": "RoleSummary",
+    "KeyRoleSummary": {
+      "title": "KeyRoleSummary",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -387,7 +387,7 @@ export const PAYLOAD_SCHEMA = {
       ],
       "properties": {
         "role": {
-          "$ref": "#/$defs/KeyRole"
+          "$ref": "#/$defs/IdentityKeyRole"
         },
         "relationships": {
           "type": "array",
@@ -400,7 +400,7 @@ export const PAYLOAD_SCHEMA = {
         "keys": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/RoleKey"
+            "$ref": "#/$defs/IdentityRoleKey"
           },
           "description": "The role's keys, in the order the document publishes them. Terminal-state keys are included only when the request asked for them, except a `revoked` key the document still lists, which is always included."
         },
@@ -414,8 +414,8 @@ export const PAYLOAD_SCHEMA = {
         }
       }
     },
-    "RoleKey": {
-      "title": "RoleKey",
+    "IdentityRoleKey": {
+      "title": "IdentityRoleKey",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -431,7 +431,7 @@ export const PAYLOAD_SCHEMA = {
           "description": "The full verification-method identifier (`did#fragment`) the document publishes the key under and lists in `keyRoles`. Absent for `update` keys, which are never role-bound verification methods (VTI-KEY-093). A VTA minting a method SHOULD derive its fragment from the key (VTI-KEY-150)."
         },
         "role": {
-          "$ref": "#/$defs/KeyRole"
+          "$ref": "#/$defs/IdentityKeyRole"
         },
         "updateKeyClass": {
           "$ref": "#/$defs/UpdateKeyClass"
@@ -458,7 +458,7 @@ export const PAYLOAD_SCHEMA = {
           "description": "For a `committed` update key: the commitment the identifier publishes (a did:webvh `nextKeyHashes` entry, a KERI next-key digest), in the method's own encoding."
         },
         "state": {
-          "$ref": "#/$defs/RoleKeyState"
+          "$ref": "#/$defs/KeyLifecycleState"
         },
         "publishedInVersionId": {
           "type": "string",
@@ -493,15 +493,15 @@ export const PAYLOAD_SCHEMA = {
           "description": "Operator-facing label. Custody projection only."
         },
         "custody": {
-          "$ref": "#/$defs/RoleKeyCustody"
+          "$ref": "#/$defs/IdentityKeyCustody"
         },
         "ext": {
           "$ref": "#/$defs/Ext"
         }
       }
     },
-    "RoleKeyCustody": {
-      "title": "RoleKeyCustody",
+    "IdentityKeyCustody": {
+      "title": "IdentityKeyCustody",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -570,8 +570,8 @@ export const PAYLOAD_SCHEMA = {
       "description": "Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.",
       "default": "derived"
     },
-    "RoleKeyState": {
-      "title": "RoleKeyState",
+    "KeyLifecycleState": {
+      "title": "KeyLifecycleState",
       "type": "string",
       "enum": [
         "pending",
@@ -617,8 +617,8 @@ export const PAYLOAD_SCHEMA = {
       ],
       "description": "Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support."
     },
-    "KeyRoleProjection": {
-      "title": "KeyRoleProjection",
+    "KeyListProjection": {
+      "title": "KeyListProjection",
       "type": "string",
       "enum": [
         "public",
@@ -664,19 +664,19 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "description": "The version the answer describes. Pass it as `expectedVersionId` to a change made on its strength."
         },
         "projection": {
-          "$ref": "#/$defs/KeyRoleProjection"
+          "$ref": "#/$defs/KeyListProjection"
         },
         "roles": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/RoleSummary"
+            "$ref": "#/$defs/KeyRoleSummary"
           },
           "description": "One entry per role asked for, including roles with no keys."
         },
         "rotations": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/RotationRecord"
+            "$ref": "#/$defs/KeyChangeRecord"
           },
           "description": "Present exactly when `includeHistory` was true. Newest first."
         },
@@ -695,8 +695,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
-    "RotationRecord": {
-      "title": "RotationRecord",
+    "KeyChangeRecord": {
+      "title": "KeyChangeRecord",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -712,13 +712,13 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "minLength": 1
         },
         "role": {
-          "$ref": "#/$defs/KeyRole"
+          "$ref": "#/$defs/IdentityKeyRole"
         },
         "kind": {
-          "$ref": "#/$defs/RotationKind"
+          "$ref": "#/$defs/KeyChangeKind"
         },
         "state": {
-          "$ref": "#/$defs/RotationState"
+          "$ref": "#/$defs/KeyChangeState"
         },
         "predecessors": {
           "type": "array",
@@ -772,7 +772,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "description": "Custody projection only. VID of the administrator whose signed request started the change."
         },
         "approvals": {
-          "$ref": "#/$defs/KeyRoleApprovalState"
+          "$ref": "#/$defs/KeyChangeApprovalState"
         },
         "reason": {
           "type": "string",
@@ -784,8 +784,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         }
       }
     },
-    "KeyRoleApprovalState": {
-      "title": "KeyRoleApprovalState",
+    "KeyChangeApprovalState": {
+      "title": "KeyChangeApprovalState",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -852,8 +852,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       ],
       "description": "The evidence an approval was recorded on, as `auth/step-up/approve-response` names it. Only the approver's own evidence is ever recorded: a proof by a key the VTA records as acting for an approver — a console signing key or any other delegation — is never an approval (CONVENTIONS.md §6.3)."
     },
-    "RotationState": {
-      "title": "RotationState",
+    "KeyChangeState": {
+      "title": "KeyChangeState",
       "type": "string",
       "enum": [
         "pendingApproval",
@@ -866,8 +866,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       ],
       "description": "`pendingApproval` — awaiting the approvals the VTA's policy requires; nothing is published. `awaitingRecoveryProof` — approved, and waiting for the recovery custodian's proof over the change; nothing is published. `staged` — successor published, not yet used. `overlapping` — successor active, predecessor `retiring`. `completed` — every predecessor retired, or the change is published and any overlap it began has ended. `aborted` — the successor was retired instead of the predecessor, or a revocation superseded the change. `expired` — the approvals or the recovery proof did not arrive before the preview expired; nothing was published."
     },
-    "RotationKind": {
-      "title": "RotationKind",
+    "KeyChangeKind": {
+      "title": "KeyChangeKind",
       "type": "string",
       "enum": [
         "planned",
@@ -877,8 +877,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       ],
       "description": "`planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same change. `addition` — a key joined a role without anything leaving it. `recovery` — the identifier's update authority moved to the committed recovery key, because the VTA's own update keys were lost or may be in someone else's hands."
     },
-    "KeyRole": {
-      "title": "KeyRole",
+    "IdentityKeyRole": {
+      "title": "IdentityKeyRole",
       "type": "string",
       "enum": [
         "attestation",
@@ -889,8 +889,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       ],
       "description": "The named key role a key occupies in an identity (CONVENTIONS.md §2; VTI-KEY-070 onward). `attestation` — the only keys in `assertionMethod`; sign the identity's attestation artefacts (credentials, endorsements, status lists) through the VTA's signing service and nowhere else. Generated inside the VTA, never derived, never exportable, never in a backup. `operational` — the only keys the identity's own process uses in `authentication`; sign the node's own traffic (Trust Task requests and responses, DIDComm and TSP signatures, invitations, notices, audit checkpoints). Derived. `messaging` — the only keys in `keyAgreement`; sign nothing. X25519, derived or generated in its own right and never converted from a signing key. `update` — the identifier's change authority as its DID method states it (a did:webvh log's `updateKeys` and `nextKeyHashes`, a KERI key event log's current and next keys); never a role-bound verification method, never in `keyRoles`. Generated inside the VTA, never derived, never exportable, never in a backup, and always accompanied by a committed recovery key held outside the VTA's protection boundary. `authenticator` — a key held on a person's own authenticator (a WebAuthn passkey), listed in `authentication` of that person's identity only; used only to verify the person's WebAuthn assertions (sign-in and step-up evidence) and never to accept a Data Integrity proof. The VTA never holds its private half, so it is enrolled by the passkey ceremony and never generated, added or rotated by these tasks. Never permitted on the durable identity of a VTA, a VTC or a VTN. No role permits `capabilityInvocation` or `capabilityDelegation` (VTI-KEY-075). The set is an extensible registry: a consumer that meets a role it does not implement MUST rely on the key for nothing, and MUST NOT map it onto a role it does know (VTI-KEY-074)."
     },
-    "RoleSummary": {
-      "title": "RoleSummary",
+    "KeyRoleSummary": {
+      "title": "KeyRoleSummary",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -900,7 +900,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       ],
       "properties": {
         "role": {
-          "$ref": "#/$defs/KeyRole"
+          "$ref": "#/$defs/IdentityKeyRole"
         },
         "relationships": {
           "type": "array",
@@ -913,7 +913,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "keys": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/RoleKey"
+            "$ref": "#/$defs/IdentityRoleKey"
           },
           "description": "The role's keys, in the order the document publishes them. Terminal-state keys are included only when the request asked for them, except a `revoked` key the document still lists, which is always included."
         },
@@ -927,8 +927,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         }
       }
     },
-    "RoleKey": {
-      "title": "RoleKey",
+    "IdentityRoleKey": {
+      "title": "IdentityRoleKey",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -944,7 +944,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "description": "The full verification-method identifier (`did#fragment`) the document publishes the key under and lists in `keyRoles`. Absent for `update` keys, which are never role-bound verification methods (VTI-KEY-093). A VTA minting a method SHOULD derive its fragment from the key (VTI-KEY-150)."
         },
         "role": {
-          "$ref": "#/$defs/KeyRole"
+          "$ref": "#/$defs/IdentityKeyRole"
         },
         "updateKeyClass": {
           "$ref": "#/$defs/UpdateKeyClass"
@@ -971,7 +971,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "description": "For a `committed` update key: the commitment the identifier publishes (a did:webvh `nextKeyHashes` entry, a KERI next-key digest), in the method's own encoding."
         },
         "state": {
-          "$ref": "#/$defs/RoleKeyState"
+          "$ref": "#/$defs/KeyLifecycleState"
         },
         "publishedInVersionId": {
           "type": "string",
@@ -1006,15 +1006,15 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "description": "Operator-facing label. Custody projection only."
         },
         "custody": {
-          "$ref": "#/$defs/RoleKeyCustody"
+          "$ref": "#/$defs/IdentityKeyCustody"
         },
         "ext": {
           "$ref": "#/$defs/Ext"
         }
       }
     },
-    "RoleKeyCustody": {
-      "title": "RoleKeyCustody",
+    "IdentityKeyCustody": {
+      "title": "IdentityKeyCustody",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -1083,8 +1083,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.",
       "default": "derived"
     },
-    "RoleKeyState": {
-      "title": "RoleKeyState",
+    "KeyLifecycleState": {
+      "title": "KeyLifecycleState",
       "type": "string",
       "enum": [
         "pending",
@@ -1130,8 +1130,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       ],
       "description": "Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support."
     },
-    "KeyRoleProjection": {
-      "title": "KeyRoleProjection",
+    "KeyListProjection": {
+      "title": "KeyListProjection",
       "type": "string",
       "enum": [
         "public",

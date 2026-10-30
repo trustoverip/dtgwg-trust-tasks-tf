@@ -85,7 +85,7 @@ A conforming **consumer** (the VTA) **MUST**:
 2. Choose the projection from the caller's ACL entry
    ([§7](../../../_shared/0.1/CONVENTIONS.md#7-authorization)), and withhold from the public
    projection everything §11 lists.
-3. Return one `RoleSummary` per role asked for, including an empty one, and for `update`
+3. Return one `KeyRoleSummary` per role asked for, including an empty one, and for `update`
    report `recoveryCommitted` truthfully.
 4. Always include a `revoked` key the document still lists.
 

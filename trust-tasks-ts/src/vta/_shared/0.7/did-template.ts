@@ -14,4 +14,4 @@ export interface DidTemplateDidTemplateRecordSharedDefinitionsForTheVtaDidTempla
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../../_shared/components.js".
  */
-export type { DidTemplate_VtaV0_7 as DidTemplate, DidTemplateRecord_VtaV0_7 as DidTemplateRecord, Scope_VtaV0_1 as Scope } from "../../../_shared/components.js";
+export type { DidTemplate_VtaV0_2 as DidTemplate, DidTemplateRecord_VtaV0_7 as DidTemplateRecord, Scope_VtaV0_1 as Scope } from "../../../_shared/components.js";

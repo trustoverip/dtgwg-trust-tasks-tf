@@ -18,11 +18,10 @@
       "properties": {
         "schemaVersion": {
           "type": "integer",
-          "description": "Template schema version. 1 is the historical shape, whose keys are implicitly an Ed25519 signing key and an X25519 key-agreement key. 2 adds the `keys` block, which makes those explicit and allows others. 3 is a key-role template (`keyRoles`), whose document carries no key members.",
+          "description": "Template schema version. 1 is the historical shape, whose keys are implicitly an Ed25519 signing key and an X25519 key-agreement key. 2 adds the `keys` block, which makes those explicit and allows others.",
           "enum": [
             1,
-            2,
-            3
+            2
           ]
         },
         "name": {
@@ -110,14 +109,6 @@
           },
           "description": "The keys this template needs, by slot name. REQUIRES `schemaVersion` 2.\n\nA slot's name becomes a document placeholder by an explicit rule \u2014 uppercase, `-` to `_`, suffix `_KEY_MB` \u2014 so slot `signing` is rendered into `{SIGNING_KEY_MB}` and slot `ka` into `{KA_KEY_MB}`. Those are the two names a `schemaVersion` 1 template already uses, which is deliberate: a v1 template is exactly a v2 template whose `keys` block is `{signing: [ed25519], ka: [x25519]}`, so an implementation can read both through one path and raising the version cannot change how a v1 template renders.\n\nAn implementation MUST refuse a template that declares a slot whose placeholder never appears in `document` \u2014 the key would be minted and never published, so verifiers would continue to see only the keys that are, while the operator believes the template migrated. It MUST likewise refuse a slot placeholder in `document` that no slot declares, which would render as an unsubstituted literal."
         },
-        "keyRoles": {
-          "type": "array",
-          "minItems": 1,
-          "items": {
-            "$ref": "../../dids/_shared/0.1/key-roles.schema.json#/$defs/RoleLayout"
-          },
-          "description": "The key roles of a key-role identity, one `RoleLayout` per role (vta/dids/_shared/0.1/CONVENTIONS.md \u00a74). REQUIRED for, and only for, `schemaVersion` 3, which then MUST NOT carry `keys`. A v3 template describes only an identity's non-key members: its `document` MUST NOT contain `verificationMethod`, `authentication`, `assertionMethod`, `keyAgreement`, `capabilityInvocation`, `capabilityDelegation` or `keyRoles`, and the VTA renders all of them from this layout and the key-role registry \u2014 so a template can never place a key in a relationship its role does not own. Each listed algorithm is minted, one key each; unlike v2's `keys`, the list is not a preference order, and a VTA that cannot mint one refuses rather than substitutes. Used by vta/dids/create; a v1 or v2 template cannot create a key-role identity."
-        },
         "document": {
           "type": "object",
           "description": "The DID document body with `{TOKEN}` placeholders. `document.id` MUST contain the `{DID}` placeholder. Every `{TOKEN}` MUST be declared in requiredVars/optionalVars or be a reserved ambient name."
@@ -195,8 +186,7 @@
           "type": "integer",
           "enum": [
             1,
-            2,
-            3
+            2
           ],
           "description": "Template schema version. 1 is the historical shape, whose keys are implicitly an Ed25519 signing key and an X25519 key-agreement key. 2 adds the `keys` block, which makes those explicit and allows others."
         },
@@ -277,14 +267,6 @@
             "pattern": "^[a-z0-9-]+$"
           },
           "description": "The keys this template needs, by slot name. REQUIRES `schemaVersion` 2.\n\nA slot's name becomes a document placeholder by an explicit rule \u2014 uppercase, `-` to `_`, suffix `_KEY_MB` \u2014 so slot `signing` is rendered into `{SIGNING_KEY_MB}` and slot `ka` into `{KA_KEY_MB}`. Those are the two names a `schemaVersion` 1 template already uses, which is deliberate: a v1 template is exactly a v2 template whose `keys` block is `{signing: [ed25519], ka: [x25519]}`, so an implementation can read both through one path and raising the version cannot change how a v1 template renders.\n\nAn implementation MUST refuse a template that declares a slot whose placeholder never appears in `document` \u2014 the key would be minted and never published, so verifiers would continue to see only the keys that are, while the operator believes the template migrated. It MUST likewise refuse a slot placeholder in `document` that no slot declares, which would render as an unsubstituted literal."
-        },
-        "keyRoles": {
-          "type": "array",
-          "minItems": 1,
-          "items": {
-            "$ref": "../../dids/_shared/0.1/key-roles.schema.json#/$defs/RoleLayout"
-          },
-          "description": "The key roles of a key-role identity, one `RoleLayout` per role (vta/dids/_shared/0.1/CONVENTIONS.md \u00a74). REQUIRED for, and only for, `schemaVersion` 3, which then MUST NOT carry `keys`. A v3 template describes only an identity's non-key members: its `document` MUST NOT contain `verificationMethod`, `authentication`, `assertionMethod`, `keyAgreement`, `capabilityInvocation`, `capabilityDelegation` or `keyRoles`, and the VTA renders all of them from this layout and the key-role registry \u2014 so a template can never place a key in a relationship its role does not own. Each listed algorithm is minted, one key each; unlike v2's `keys`, the list is not a preference order, and a VTA that cannot mint one refuses rather than substitutes. Used by vta/dids/create; a v1 or v2 template cannot create a key-role identity."
         },
         "document": {
           "type": "object"

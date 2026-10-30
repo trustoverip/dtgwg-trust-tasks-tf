@@ -33,15 +33,15 @@ library;
 /// An extension type rather than an enum: a value from a newer MINOR of this
 /// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
 /// Compare against the constants below, and treat anything else as unrecognised.
-extension type const KeyRole(String value) {
-  static const KeyRole attestation = KeyRole('attestation');
-  static const KeyRole operational = KeyRole('operational');
-  static const KeyRole messaging = KeyRole('messaging');
-  static const KeyRole update = KeyRole('update');
-  static const KeyRole authenticator = KeyRole('authenticator');
+extension type const IdentityKeyRole(String value) {
+  static const IdentityKeyRole attestation = IdentityKeyRole('attestation');
+  static const IdentityKeyRole operational = IdentityKeyRole('operational');
+  static const IdentityKeyRole messaging = IdentityKeyRole('messaging');
+  static const IdentityKeyRole update = IdentityKeyRole('update');
+  static const IdentityKeyRole authenticator = IdentityKeyRole('authenticator');
 
   /// Every value this specification's schema permits.
-  static const List<KeyRole> values = <KeyRole>[
+  static const List<IdentityKeyRole> values = <IdentityKeyRole>[
     attestation,
     operational,
     messaging,
@@ -124,17 +124,17 @@ extension type const UpdateKeyClass(String value) {
 /// An extension type rather than an enum: a value from a newer MINOR of this
 /// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
 /// Compare against the constants below, and treat anything else as unrecognised.
-extension type const RoleKeyState(String value) {
-  static const RoleKeyState pending = RoleKeyState('pending');
-  static const RoleKeyState staged = RoleKeyState('staged');
-  static const RoleKeyState active = RoleKeyState('active');
-  static const RoleKeyState retiring = RoleKeyState('retiring');
-  static const RoleKeyState retired = RoleKeyState('retired');
-  static const RoleKeyState revoked = RoleKeyState('revoked');
-  static const RoleKeyState committed = RoleKeyState('committed');
+extension type const KeyLifecycleState(String value) {
+  static const KeyLifecycleState pending = KeyLifecycleState('pending');
+  static const KeyLifecycleState staged = KeyLifecycleState('staged');
+  static const KeyLifecycleState active = KeyLifecycleState('active');
+  static const KeyLifecycleState retiring = KeyLifecycleState('retiring');
+  static const KeyLifecycleState retired = KeyLifecycleState('retired');
+  static const KeyLifecycleState revoked = KeyLifecycleState('revoked');
+  static const KeyLifecycleState committed = KeyLifecycleState('committed');
 
   /// Every value this specification's schema permits.
-  static const List<RoleKeyState> values = <RoleKeyState>[
+  static const List<KeyLifecycleState> values = <KeyLifecycleState>[
     pending,
     staged,
     active,
@@ -154,12 +154,12 @@ extension type const RoleKeyState(String value) {
 /// An extension type rather than an enum: a value from a newer MINOR of this
 /// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
 /// Compare against the constants below, and treat anything else as unrecognised.
-extension type const KeyRoleProjection(String value) {
-  static const KeyRoleProjection public = KeyRoleProjection('public');
-  static const KeyRoleProjection custody = KeyRoleProjection('custody');
+extension type const KeyListProjection(String value) {
+  static const KeyListProjection public = KeyListProjection('public');
+  static const KeyListProjection custody = KeyListProjection('custody');
 
   /// Every value this specification's schema permits.
-  static const List<KeyRoleProjection> values = <KeyRoleProjection>[
+  static const List<KeyListProjection> values = <KeyListProjection>[
     public,
     custody
   ];
@@ -226,8 +226,8 @@ extension type const KeyOrigin(String value) {
 
 /// How a key is held. Present only in the custody projection. Carries no key material,
 /// and a conforming VTA MUST NOT place any in `ext`.
-class RoleKeyCustody {
-  const RoleKeyCustody({
+class IdentityKeyCustody {
+  const IdentityKeyCustody({
     this.keyId,
     this.origin,
     required this.exportable,
@@ -239,7 +239,8 @@ class RoleKeyCustody {
   });
 
   /// Read this payload from a decoded JSON object.
-  factory RoleKeyCustody.fromJson(Map<String, dynamic> json) => RoleKeyCustody(
+  factory IdentityKeyCustody.fromJson(Map<String, dynamic> json) =>
+      IdentityKeyCustody(
         keyId: json['keyId'] as String?,
         origin:
             json['origin'] == null ? null : KeyOrigin(json['origin'] as String),
@@ -335,8 +336,8 @@ typedef Ext = Map<String, dynamic>;
 /// One key in one role. A key is in exactly one role for its whole life; a change of
 /// role is a retirement from one and an addition to another, with fresh material under
 /// a fresh identifier.
-class RoleKey {
-  const RoleKey({
+class IdentityRoleKey {
+  const IdentityRoleKey({
     this.verificationMethod,
     required this.role,
     this.updateKeyClass,
@@ -357,9 +358,10 @@ class RoleKey {
   });
 
   /// Read this payload from a decoded JSON object.
-  factory RoleKey.fromJson(Map<String, dynamic> json) => RoleKey(
+  factory IdentityRoleKey.fromJson(Map<String, dynamic> json) =>
+      IdentityRoleKey(
         verificationMethod: json['verificationMethod'] as String?,
-        role: KeyRole(json['role'] as String),
+        role: IdentityKeyRole(json['role'] as String),
         updateKeyClass: json['updateKeyClass'] == null
             ? null
             : UpdateKeyClass(json['updateKeyClass'] as String),
@@ -371,7 +373,7 @@ class RoleKey {
         keyType: KeyType(json['keyType'] as String),
         publicKeyMultibase: json['publicKeyMultibase'] as String?,
         commitment: json['commitment'] as String?,
-        state: RoleKeyState(json['state'] as String),
+        state: KeyLifecycleState(json['state'] as String),
         publishedInVersionId: json['publishedInVersionId'] as String?,
         removedInVersionId: json['removedInVersionId'] as String?,
         activatesAt: json['activatesAt'] as String?,
@@ -381,7 +383,8 @@ class RoleKey {
         label: json['label'] as String?,
         custody: json['custody'] == null
             ? null
-            : RoleKeyCustody.fromJson(json['custody'] as Map<String, dynamic>),
+            : IdentityKeyCustody.fromJson(
+                json['custody'] as Map<String, dynamic>),
         ext: json['ext'] as Map<String, dynamic>?,
       );
 
@@ -390,7 +393,7 @@ class RoleKey {
   /// role-bound verification methods (VTI-KEY-093). A VTA minting a method SHOULD derive
   /// its fragment from the key (VTI-KEY-150).
   final String? verificationMethod;
-  final KeyRole role;
+  final IdentityKeyRole role;
   final UpdateKeyClass? updateKeyClass;
 
   /// The relationships the key is (or, while `pending`, will be) listed in: always
@@ -406,7 +409,7 @@ class RoleKey {
   /// For a `committed` update key: the commitment the identifier publishes (a did:webvh
   /// `nextKeyHashes` entry, a KERI next-key digest), in the method's own encoding.
   final String? commitment;
-  final RoleKeyState state;
+  final KeyLifecycleState state;
 
   /// The method's version identifier of the change that first published the key or its
   /// commitment (method-profiles/: a did:webvh `versionId`, a KERI event's sequence
@@ -433,7 +436,7 @@ class RoleKey {
 
   /// Operator-facing label. Custody projection only.
   final String? label;
-  final RoleKeyCustody? custody;
+  final IdentityKeyCustody? custody;
   final Ext? ext;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
@@ -463,9 +466,9 @@ class RoleKey {
       };
 }
 
-/// RoleSummary
-class RoleSummary {
-  const RoleSummary({
+/// KeyRoleSummary
+class KeyRoleSummary {
+  const KeyRoleSummary({
     required this.role,
     required this.relationships,
     required this.keys,
@@ -474,19 +477,19 @@ class RoleSummary {
   });
 
   /// Read this payload from a decoded JSON object.
-  factory RoleSummary.fromJson(Map<String, dynamic> json) => RoleSummary(
-        role: KeyRole(json['role'] as String),
+  factory KeyRoleSummary.fromJson(Map<String, dynamic> json) => KeyRoleSummary(
+        role: IdentityKeyRole(json['role'] as String),
         relationships: (json['relationships'] as List<dynamic>)
             .map((e) => DidVerificationRelationship(e as String))
             .toList(),
         keys: (json['keys'] as List<dynamic>)
-            .map((e) => RoleKey.fromJson(e as Map<String, dynamic>))
+            .map((e) => IdentityRoleKey.fromJson(e as Map<String, dynamic>))
             .toList(),
         recoveryCommitted: json['recoveryCommitted'] as bool?,
         threshold: json['threshold'] as String?,
       );
 
-  final KeyRole role;
+  final IdentityKeyRole role;
 
   /// The relationship this role owns. Empty for `update`.
   final List<DidVerificationRelationship> relationships;
@@ -494,7 +497,7 @@ class RoleSummary {
   /// The role's keys, in the order the document publishes them. Terminal-state keys are
   /// included only when the request asked for them, except a `revoked` key the document
   /// still lists, which is always included.
-  final List<RoleKey> keys;
+  final List<IdentityRoleKey> keys;
 
   /// `update` only: whether the identifier's latest version commits to a recovery key in
   /// a boundary other than the VTA's (CONVENTIONS.md §5.3). `false` is a defect the VTA
@@ -525,14 +528,14 @@ class RoleSummary {
 /// An extension type rather than an enum: a value from a newer MINOR of this
 /// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
 /// Compare against the constants below, and treat anything else as unrecognised.
-extension type const RotationKind(String value) {
-  static const RotationKind planned = RotationKind('planned');
-  static const RotationKind compromise = RotationKind('compromise');
-  static const RotationKind addition = RotationKind('addition');
-  static const RotationKind recovery = RotationKind('recovery');
+extension type const KeyChangeKind(String value) {
+  static const KeyChangeKind planned = KeyChangeKind('planned');
+  static const KeyChangeKind compromise = KeyChangeKind('compromise');
+  static const KeyChangeKind addition = KeyChangeKind('addition');
+  static const KeyChangeKind recovery = KeyChangeKind('recovery');
 
   /// Every value this specification's schema permits.
-  static const List<RotationKind> values = <RotationKind>[
+  static const List<KeyChangeKind> values = <KeyChangeKind>[
     planned,
     compromise,
     addition,
@@ -553,18 +556,19 @@ extension type const RotationKind(String value) {
 /// An extension type rather than an enum: a value from a newer MINOR of this
 /// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
 /// Compare against the constants below, and treat anything else as unrecognised.
-extension type const RotationState(String value) {
-  static const RotationState pendingApproval = RotationState('pendingApproval');
-  static const RotationState awaitingRecoveryProof =
-      RotationState('awaitingRecoveryProof');
-  static const RotationState staged = RotationState('staged');
-  static const RotationState overlapping = RotationState('overlapping');
-  static const RotationState completed = RotationState('completed');
-  static const RotationState aborted = RotationState('aborted');
-  static const RotationState expired = RotationState('expired');
+extension type const KeyChangeState(String value) {
+  static const KeyChangeState pendingApproval =
+      KeyChangeState('pendingApproval');
+  static const KeyChangeState awaitingRecoveryProof =
+      KeyChangeState('awaitingRecoveryProof');
+  static const KeyChangeState staged = KeyChangeState('staged');
+  static const KeyChangeState overlapping = KeyChangeState('overlapping');
+  static const KeyChangeState completed = KeyChangeState('completed');
+  static const KeyChangeState aborted = KeyChangeState('aborted');
+  static const KeyChangeState expired = KeyChangeState('expired');
 
   /// Every value this specification's schema permits.
-  static const List<RotationState> values = <RotationState>[
+  static const List<KeyChangeState> values = <KeyChangeState>[
     pendingApproval,
     awaitingRecoveryProof,
     staged,
@@ -629,8 +633,8 @@ class RecordedApproval {
 
 /// Approval progress of a change the VTA's policy gates on approvals (CONVENTIONS.md
 /// §6).
-class KeyRoleApprovalState {
-  const KeyRoleApprovalState({
+class KeyChangeApprovalState {
+  const KeyChangeApprovalState({
     required this.required,
     required this.received,
     this.approvals,
@@ -638,8 +642,8 @@ class KeyRoleApprovalState {
   });
 
   /// Read this payload from a decoded JSON object.
-  factory KeyRoleApprovalState.fromJson(Map<String, dynamic> json) =>
-      KeyRoleApprovalState(
+  factory KeyChangeApprovalState.fromJson(Map<String, dynamic> json) =>
+      KeyChangeApprovalState(
         required: json['required'] as int,
         received: json['received'] as int,
         approvals: json['approvals'] == null
@@ -677,8 +681,8 @@ class KeyRoleApprovalState {
 /// One change to a role's key set, from preview to completion. The identifier's
 /// history is the authority for what was published; this record adds which change was
 /// which and, in the custody projection, who asked, who approved, and why.
-class RotationRecord {
-  const RotationRecord({
+class KeyChangeRecord {
+  const KeyChangeRecord({
     required this.rotationId,
     required this.role,
     required this.kind,
@@ -700,11 +704,12 @@ class RotationRecord {
   });
 
   /// Read this payload from a decoded JSON object.
-  factory RotationRecord.fromJson(Map<String, dynamic> json) => RotationRecord(
+  factory KeyChangeRecord.fromJson(Map<String, dynamic> json) =>
+      KeyChangeRecord(
         rotationId: json['rotationId'] as String,
-        role: KeyRole(json['role'] as String),
-        kind: RotationKind(json['kind'] as String),
-        state: RotationState(json['state'] as String),
+        role: IdentityKeyRole(json['role'] as String),
+        kind: KeyChangeKind(json['kind'] as String),
+        state: KeyChangeState(json['state'] as String),
         predecessors: json['predecessors'] == null
             ? null
             : (json['predecessors'] as List<dynamic>)
@@ -726,16 +731,16 @@ class RotationRecord {
         initiatedBy: json['initiatedBy'] as String?,
         approvals: json['approvals'] == null
             ? null
-            : KeyRoleApprovalState.fromJson(
+            : KeyChangeApprovalState.fromJson(
                 json['approvals'] as Map<String, dynamic>),
         reason: json['reason'] as String?,
         ext: json['ext'] as Map<String, dynamic>?,
       );
 
   final String rotationId;
-  final KeyRole role;
-  final RotationKind kind;
-  final RotationState state;
+  final IdentityKeyRole role;
+  final KeyChangeKind kind;
+  final KeyChangeState state;
 
   /// Verification-method identifiers (for `update`, public keys or commitments) leaving
   /// the role.
@@ -767,7 +772,7 @@ class RotationRecord {
   /// Custody projection only. VID of the administrator whose signed request started the
   /// change.
   final String? initiatedBy;
-  final KeyRoleApprovalState? approvals;
+  final KeyChangeApprovalState? approvals;
 
   /// Custody projection only. The operator's stated reason. Never published.
   final String? reason;
@@ -810,21 +815,21 @@ class RotationRecord {
 /// An extension type rather than an enum: a value from a newer MINOR of this
 /// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
 /// Compare against the constants below, and treat anything else as unrecognised.
-extension type const DidDocumentChangeOp(String value) {
-  static const DidDocumentChangeOp addKey = DidDocumentChangeOp('addKey');
-  static const DidDocumentChangeOp retireKey = DidDocumentChangeOp('retireKey');
-  static const DidDocumentChangeOp revokeKey = DidDocumentChangeOp('revokeKey');
-  static const DidDocumentChangeOp rotateUpdateKey =
-      DidDocumentChangeOp('rotateUpdateKey');
-  static const DidDocumentChangeOp commitUpdateKey =
-      DidDocumentChangeOp('commitUpdateKey');
-  static const DidDocumentChangeOp replaceRecoveryCommitment =
-      DidDocumentChangeOp('replaceRecoveryCommitment');
-  static const DidDocumentChangeOp useRecoveryKey =
-      DidDocumentChangeOp('useRecoveryKey');
+extension type const IdentityChangeOp(String value) {
+  static const IdentityChangeOp addKey = IdentityChangeOp('addKey');
+  static const IdentityChangeOp retireKey = IdentityChangeOp('retireKey');
+  static const IdentityChangeOp revokeKey = IdentityChangeOp('revokeKey');
+  static const IdentityChangeOp rotateUpdateKey =
+      IdentityChangeOp('rotateUpdateKey');
+  static const IdentityChangeOp commitUpdateKey =
+      IdentityChangeOp('commitUpdateKey');
+  static const IdentityChangeOp replaceRecoveryCommitment =
+      IdentityChangeOp('replaceRecoveryCommitment');
+  static const IdentityChangeOp useRecoveryKey =
+      IdentityChangeOp('useRecoveryKey');
 
   /// Every value this specification's schema permits.
-  static const List<DidDocumentChangeOp> values = <DidDocumentChangeOp>[
+  static const List<IdentityChangeOp> values = <IdentityChangeOp>[
     addKey,
     retireKey,
     revokeKey,
@@ -835,9 +840,9 @@ extension type const DidDocumentChangeOp(String value) {
   ];
 }
 
-/// DidDocumentChange
-class DidDocumentChange {
-  const DidDocumentChange({
+/// IdentityChange
+class IdentityChange {
+  const IdentityChange({
     required this.op,
     required this.role,
     this.verificationMethod,
@@ -848,10 +853,9 @@ class DidDocumentChange {
   });
 
   /// Read this payload from a decoded JSON object.
-  factory DidDocumentChange.fromJson(Map<String, dynamic> json) =>
-      DidDocumentChange(
-        op: DidDocumentChangeOp(json['op'] as String),
-        role: KeyRole(json['role'] as String),
+  factory IdentityChange.fromJson(Map<String, dynamic> json) => IdentityChange(
+        op: IdentityChangeOp(json['op'] as String),
+        role: IdentityKeyRole(json['role'] as String),
         verificationMethod: json['verificationMethod'] as String?,
         keyType:
             json['keyType'] == null ? null : KeyType(json['keyType'] as String),
@@ -873,8 +877,8 @@ class DidDocumentChange {
   /// is committed. `replaceRecoveryCommitment` — the recovery commitment changes.
   /// `useRecoveryKey` — the change is authorized by the recovery key, which the
   /// identifier then reveals.
-  final DidDocumentChangeOp op;
-  final KeyRole role;
+  final IdentityChangeOp op;
+  final IdentityKeyRole role;
   final String? verificationMethod;
   final KeyType? keyType;
   final String? publicKeyMultibase;
@@ -1104,8 +1108,8 @@ class RecoveryCommitment {
 /// What a change would publish, computed by the VTA by running the handler it would
 /// run to apply it (CONVENTIONS.md §6.1). This is what a consent surface renders and
 /// what an approval is bound to.
-class DidDocumentPreview {
-  const DidDocumentPreview({
+class IdentityChangePreview {
+  const IdentityChangePreview({
     required this.previewId,
     required this.method,
     this.baseVersionId,
@@ -1118,14 +1122,14 @@ class DidDocumentPreview {
   });
 
   /// Read this payload from a decoded JSON object.
-  factory DidDocumentPreview.fromJson(Map<String, dynamic> json) =>
-      DidDocumentPreview(
+  factory IdentityChangePreview.fromJson(Map<String, dynamic> json) =>
+      IdentityChangePreview(
         previewId: json['previewId'] as String,
         method: json['method'] as String,
         baseVersionId: json['baseVersionId'] as String?,
         expiresAt: json['expiresAt'] as String,
         changes: (json['changes'] as List<dynamic>)
-            .map((e) => DidDocumentChange.fromJson(e as Map<String, dynamic>))
+            .map((e) => IdentityChange.fromJson(e as Map<String, dynamic>))
             .toList(),
         document: json['document'] as Map<String, dynamic>,
         warnings: json['warnings'] == null
@@ -1152,7 +1156,7 @@ class DidDocumentPreview {
 
   /// Every change the plan would make, including the ones the caller did not ask for —
   /// in particular any movement of the update authority the method requires.
-  final List<DidDocumentChange> changes;
+  final List<IdentityChange> changes;
 
   /// The complete identifier document the change would publish, `keyRoles` included.
   /// Public data by construction.
@@ -1192,16 +1196,16 @@ class DidDocumentPreview {
 /// An extension type rather than an enum: a value from a newer MINOR of this
 /// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
 /// Compare against the constants below, and treat anything else as unrecognised.
-extension type const KeyRoleChangeOutcome(String value) {
-  static const KeyRoleChangeOutcome preview = KeyRoleChangeOutcome('preview');
-  static const KeyRoleChangeOutcome applied = KeyRoleChangeOutcome('applied');
-  static const KeyRoleChangeOutcome pendingApproval =
-      KeyRoleChangeOutcome('pendingApproval');
-  static const KeyRoleChangeOutcome awaitingRecoveryProof =
-      KeyRoleChangeOutcome('awaitingRecoveryProof');
+extension type const KeyChangeOutcome(String value) {
+  static const KeyChangeOutcome preview = KeyChangeOutcome('preview');
+  static const KeyChangeOutcome applied = KeyChangeOutcome('applied');
+  static const KeyChangeOutcome pendingApproval =
+      KeyChangeOutcome('pendingApproval');
+  static const KeyChangeOutcome awaitingRecoveryProof =
+      KeyChangeOutcome('awaitingRecoveryProof');
 
   /// Every value this specification's schema permits.
-  static const List<KeyRoleChangeOutcome> values = <KeyRoleChangeOutcome>[
+  static const List<KeyChangeOutcome> values = <KeyChangeOutcome>[
     preview,
     applied,
     pendingApproval,
@@ -1220,13 +1224,13 @@ class RoleLayout {
 
   /// Read this payload from a decoded JSON object.
   factory RoleLayout.fromJson(Map<String, dynamic> json) => RoleLayout(
-        role: KeyRole(json['role'] as String),
+        role: IdentityKeyRole(json['role'] as String),
         algorithms: (json['algorithms'] as List<dynamic>)
             .map((e) => KeyType(e as String))
             .toList(),
       );
 
-  final KeyRole role;
+  final IdentityKeyRole role;
 
   /// The algorithms to mint, one key each, in publication order — `\["ed25519",
   /// "mldsa44"\]` mints a classical and a post-quantum attestation key that sign as a

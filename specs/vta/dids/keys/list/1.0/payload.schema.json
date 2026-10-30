@@ -19,7 +19,7 @@
       "minItems": 1,
       "uniqueItems": true,
       "items": {
-        "$ref": "../../../_shared/0.1/key-roles.schema.json#/$defs/KeyRole"
+        "$ref": "../../../_shared/0.1/key-roles.schema.json#/$defs/IdentityKeyRole"
       },
       "description": "Return only these roles. Absent returns every role. Present-but-empty is refused by the schema rather than read as 'every role'."
     },
@@ -60,19 +60,19 @@
           "description": "The version the answer describes. Pass it as `expectedVersionId` to a change made on its strength."
         },
         "projection": {
-          "$ref": "../../../_shared/0.1/key-roles.schema.json#/$defs/KeyRoleProjection"
+          "$ref": "../../../_shared/0.1/key-roles.schema.json#/$defs/KeyListProjection"
         },
         "roles": {
           "type": "array",
           "items": {
-            "$ref": "../../../_shared/0.1/key-roles.schema.json#/$defs/RoleSummary"
+            "$ref": "../../../_shared/0.1/key-roles.schema.json#/$defs/KeyRoleSummary"
           },
           "description": "One entry per role asked for, including roles with no keys."
         },
         "rotations": {
           "type": "array",
           "items": {
-            "$ref": "../../../_shared/0.1/key-roles.schema.json#/$defs/RotationRecord"
+            "$ref": "../../../_shared/0.1/key-roles.schema.json#/$defs/KeyChangeRecord"
           },
           "description": "Present exactly when `includeHistory` was true. Newest first."
         },

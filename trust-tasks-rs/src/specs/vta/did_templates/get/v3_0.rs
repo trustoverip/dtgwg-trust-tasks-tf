@@ -4,7 +4,7 @@
 #![allow(deprecated)]
 /// Why this specification version is deprecated (SPEC "Superseded and
 /// Withdrawn Versions"), or `None` while it is current.
-pub const DEPRECATION: Option<&str> = Some("superseded by vta/did-templates/get/3.1");
+pub const DEPRECATION: Option<&str> = Some("superseded by vta/did-templates/get/3.2");
 #[allow(unused_imports)]
 use serde::{Deserialize, Serialize};
 /// Error types.
@@ -611,7 +611,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by vta/did-templates/get/3.1")]
+#[deprecated(note = "superseded by vta/did-templates/get/3.2")]
 pub struct Payload {
     ///Scope selector. Absent: the global scope. Present: the context the template is scoped to; the caller MUST have access to that context.
     #[serde(
@@ -753,7 +753,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadName {
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
-#[deprecated(note = "superseded by vta/did-templates/get/3.1")]
+#[deprecated(note = "superseded by vta/did-templates/get/3.2")]
 pub struct Response(pub DidTemplateRecord);
 impl ::std::ops::Deref for Response {
     type Target = DidTemplateRecord;

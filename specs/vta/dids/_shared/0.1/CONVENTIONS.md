@@ -230,9 +230,11 @@ member it does not define with `vta/dids:methodParameterUnsupported`.
 
 A key-role identity is created by [`vta/dids/create`](../../create/1.0/spec.md) from a
 **key-role DID template**: a `schemaVersion` 3 template
-([`vta/_shared/0.7/did-template.schema.json`](../../../_shared/0.7/did-template.schema.json))
+([`vta/_shared/0.9/did-template.schema.json`](../../../_shared/0.9/did-template.schema.json))
 whose `keyRoles` block is a list of `RoleLayout`s and whose `document` carries **no** key
-members. A key-role template describes the identity's services, aliases and other
+members. Such a template is uploaded and managed with
+[`vta/did-templates/create/3.2`](../../../did-templates/create/3.2/spec.md) and its siblings, the
+first versions that carry `schemaVersion` 3. A key-role template describes the identity's services, aliases and other
 non-key members; the VTA renders every key member — `verificationMethod`, the
 relationships and `keyRoles` — from the layout and §2, and from nothing else. A template
 cannot place a key in a relationship, because it cannot name a relationship at all. That is
@@ -393,7 +395,7 @@ approval can be spent on a change nobody saw (T6).
 
 Every mutating task accepts `dryRun: true`. The VTA **MUST** compute the preview by running
 the handler it would run to apply the change, against the identity's current version, and
-**MUST** return a `DidDocumentPreview`: the complete resulting document (with `keyRoles`),
+**MUST** return a `IdentityChangePreview`: the complete resulting document (with `keyRoles`),
 every change the plan makes — including any movement of the update authority the method
 requires — and the warnings a human should see. A dry run writes nothing except the plan,
 held under its `previewId` until `expiresAt`. Any key the plan adds is **generated or
@@ -465,7 +467,7 @@ evidence under §6.3 — and **MUST** count the initiator once at most. Every ap
 to the `previewId`.
 
 Once the initiator's approval is recorded and more are needed, the VTA answers
-`outcome: "pendingApproval"` with the `KeyRoleApprovalState`, sends approve-requests bound
+`outcome: "pendingApproval"` with the `KeyChangeApprovalState`, sends approve-requests bound
 to the same `previewId` to the other eligible approvers, and applies the plan **itself**
 when the count is reached — under the initiator's authorization, recording every approver
 in the audit row. It **MUST NOT** apply a plan whose `expiresAt` has passed, and records it

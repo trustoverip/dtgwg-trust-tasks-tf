@@ -4,8 +4,8 @@
   "title": "DID key roles — shared definitions for the method-neutral vta/dids tasks",
   "description": "A VTA holds the keys of the durable identities it serves — its own, and those of the VTCs, VTNs and integrations provisioned on it — and binds every one of them to exactly one named key role, whatever DID method the identity uses. These definitions describe a role, a key in a role, a rotation, the preview of the identifier document a change would publish, the approval state of a change, how the result is published, and the request a recovery custodian signs. The normative rules that give them meaning are in CONVENTIONS.md beside this file; what differs between DID methods is in the method profiles under method-profiles/. Not itself a Trust Task specification.",
   "$defs": {
-    "KeyRole": {
-      "title": "KeyRole",
+    "IdentityKeyRole": {
+      "title": "IdentityKeyRole",
       "type": "string",
       "enum": [
         "attestation",
@@ -43,8 +43,8 @@
       ],
       "description": "For an `update` key only (CONVENTIONS.md §5.3). `routine` — generated and held by the VTA, which authorizes the identity's ordinary changes with it. `recovery` — held by a recovery custodian in a protection boundary other than the VTA's; the VTA holds only its commitment, carries that commitment forward in every change it makes, and can use the key only by asking the custodian for a proof (`RecoverySigningRequest`)."
     },
-    "RoleKeyState": {
-      "title": "RoleKeyState",
+    "KeyLifecycleState": {
+      "title": "KeyLifecycleState",
       "type": "string",
       "enum": [
         "pending",
@@ -57,8 +57,8 @@
       ],
       "description": "Where a key is in its role's lifecycle (CONVENTIONS.md §8, §10). `pending` — planned by a preview or a change awaiting approval; not published; custody projection only. `staged` — published and bound to its role but not yet used, until the publishing change's cache horizon. `active` — the key the VTA uses for new signatures (for `messaging`, advertises for new sessions; for `update`, the current authority). `retiring` — still published but never used to sign again; a retiring `messaging` key still decrypts until retirement. `retired` — removed by planned rotation; what it signed while published stays valid, judged against the identifier version current at issuance. `revoked` — withdrawn for compromise, recorded with `compromisedSince`; what it signed from then on establishes nothing. `committed` — an `update` key the identifier commits to as a successor but has not revealed (a did:webvh `nextKeyHashes` entry, a KERI next-key digest). `retired` and `revoked` are terminal."
     },
-    "KeyRoleProjection": {
-      "title": "KeyRoleProjection",
+    "KeyListProjection": {
+      "title": "KeyListProjection",
       "type": "string",
       "enum": [
         "public",
@@ -78,8 +78,8 @@
       ],
       "description": "How a private half is protected (CONVENTIONS.md §5.2). `software` — stored by the VTA without encryption independent of the host (a plain VTA). `encryptedAtRest` — wrapped under a key the VTA holds outside its store (a hardened VTA). `enclave` — held only inside an attested trusted execution environment, wrapped under a key released only to its measurement (a TEE VTA). `hardwareModule` — held by a hardware security module or cloud key service that performs the operation without releasing the key. `externalCustodian` — not held by this VTA at all: a recovery update key, or an `authenticator` key on a person's device."
     },
-    "RoleKeyCustody": {
-      "title": "RoleKeyCustody",
+    "IdentityKeyCustody": {
+      "title": "IdentityKeyCustody",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -125,8 +125,8 @@
         }
       }
     },
-    "RoleKey": {
-      "title": "RoleKey",
+    "IdentityRoleKey": {
+      "title": "IdentityRoleKey",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -142,7 +142,7 @@
           "description": "The full verification-method identifier (`did#fragment`) the document publishes the key under and lists in `keyRoles`. Absent for `update` keys, which are never role-bound verification methods (VTI-KEY-093). A VTA minting a method SHOULD derive its fragment from the key (VTI-KEY-150)."
         },
         "role": {
-          "$ref": "#/$defs/KeyRole"
+          "$ref": "#/$defs/IdentityKeyRole"
         },
         "updateKeyClass": {
           "$ref": "#/$defs/UpdateKeyClass"
@@ -169,7 +169,7 @@
           "description": "For a `committed` update key: the commitment the identifier publishes (a did:webvh `nextKeyHashes` entry, a KERI next-key digest), in the method's own encoding."
         },
         "state": {
-          "$ref": "#/$defs/RoleKeyState"
+          "$ref": "#/$defs/KeyLifecycleState"
         },
         "publishedInVersionId": {
           "type": "string",
@@ -204,15 +204,15 @@
           "description": "Operator-facing label. Custody projection only."
         },
         "custody": {
-          "$ref": "#/$defs/RoleKeyCustody"
+          "$ref": "#/$defs/IdentityKeyCustody"
         },
         "ext": {
           "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
         }
       }
     },
-    "RoleSummary": {
-      "title": "RoleSummary",
+    "KeyRoleSummary": {
+      "title": "KeyRoleSummary",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -222,7 +222,7 @@
       ],
       "properties": {
         "role": {
-          "$ref": "#/$defs/KeyRole"
+          "$ref": "#/$defs/IdentityKeyRole"
         },
         "relationships": {
           "type": "array",
@@ -235,7 +235,7 @@
         "keys": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/RoleKey"
+            "$ref": "#/$defs/IdentityRoleKey"
           },
           "description": "The role's keys, in the order the document publishes them. Terminal-state keys are included only when the request asked for them, except a `revoked` key the document still lists, which is always included."
         },
@@ -249,8 +249,8 @@
         }
       }
     },
-    "RotationKind": {
-      "title": "RotationKind",
+    "KeyChangeKind": {
+      "title": "KeyChangeKind",
       "type": "string",
       "enum": [
         "planned",
@@ -260,8 +260,8 @@
       ],
       "description": "`planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same change. `addition` — a key joined a role without anything leaving it. `recovery` — the identifier's update authority moved to the committed recovery key, because the VTA's own update keys were lost or may be in someone else's hands."
     },
-    "RotationState": {
-      "title": "RotationState",
+    "KeyChangeState": {
+      "title": "KeyChangeState",
       "type": "string",
       "enum": [
         "pendingApproval",
@@ -274,8 +274,8 @@
       ],
       "description": "`pendingApproval` — awaiting the approvals the VTA's policy requires; nothing is published. `awaitingRecoveryProof` — approved, and waiting for the recovery custodian's proof over the change; nothing is published. `staged` — successor published, not yet used. `overlapping` — successor active, predecessor `retiring`. `completed` — every predecessor retired, or the change is published and any overlap it began has ended. `aborted` — the successor was retired instead of the predecessor, or a revocation superseded the change. `expired` — the approvals or the recovery proof did not arrive before the preview expired; nothing was published."
     },
-    "RotationRecord": {
-      "title": "RotationRecord",
+    "KeyChangeRecord": {
+      "title": "KeyChangeRecord",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -291,13 +291,13 @@
           "minLength": 1
         },
         "role": {
-          "$ref": "#/$defs/KeyRole"
+          "$ref": "#/$defs/IdentityKeyRole"
         },
         "kind": {
-          "$ref": "#/$defs/RotationKind"
+          "$ref": "#/$defs/KeyChangeKind"
         },
         "state": {
-          "$ref": "#/$defs/RotationState"
+          "$ref": "#/$defs/KeyChangeState"
         },
         "predecessors": {
           "type": "array",
@@ -351,7 +351,7 @@
           "description": "Custody projection only. VID of the administrator whose signed request started the change."
         },
         "approvals": {
-          "$ref": "#/$defs/KeyRoleApprovalState"
+          "$ref": "#/$defs/KeyChangeApprovalState"
         },
         "reason": {
           "type": "string",
@@ -396,8 +396,8 @@
         }
       }
     },
-    "KeyRoleApprovalState": {
-      "title": "KeyRoleApprovalState",
+    "KeyChangeApprovalState": {
+      "title": "KeyChangeApprovalState",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -431,8 +431,8 @@
         }
       }
     },
-    "DidDocumentChange": {
-      "title": "DidDocumentChange",
+    "IdentityChange": {
+      "title": "IdentityChange",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -454,7 +454,7 @@
           "description": "`addKey` — a verification method joins its role's relationship and `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves its relationship and `keyRoles`, and stays in `verificationMethod` with `revoked` set to the compromise time (CONVENTIONS.md §9.1). `rotateUpdateKey` — the identifier's update authority moves to a committed routine successor. `commitUpdateKey` — a new routine successor is committed. `replaceRecoveryCommitment` — the recovery commitment changes. `useRecoveryKey` — the change is authorized by the recovery key, which the identifier then reveals."
         },
         "role": {
-          "$ref": "#/$defs/KeyRole"
+          "$ref": "#/$defs/IdentityKeyRole"
         },
         "verificationMethod": {
           "type": "string"
@@ -605,8 +605,8 @@
         }
       }
     },
-    "DidDocumentPreview": {
-      "title": "DidDocumentPreview",
+    "IdentityChangePreview": {
+      "title": "IdentityChangePreview",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -638,7 +638,7 @@
         "changes": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/DidDocumentChange"
+            "$ref": "#/$defs/IdentityChange"
           },
           "description": "Every change the plan would make, including the ones the caller did not ask for — in particular any movement of the update authority the method requires."
         },
@@ -662,8 +662,8 @@
         }
       }
     },
-    "KeyRoleChangeOutcome": {
-      "title": "KeyRoleChangeOutcome",
+    "KeyChangeOutcome": {
+      "title": "KeyChangeOutcome",
       "type": "string",
       "enum": [
         "preview",
@@ -684,7 +684,7 @@
       "description": "The keys an identity is created with in one role (CONVENTIONS.md §4). A key-role DID template carries one per role; a creation request may narrow it but never widen it.",
       "properties": {
         "role": {
-          "$ref": "#/$defs/KeyRole"
+          "$ref": "#/$defs/IdentityKeyRole"
         },
         "algorithms": {
           "type": "array",

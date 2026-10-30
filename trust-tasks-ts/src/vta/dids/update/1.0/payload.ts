@@ -3,7 +3,7 @@
  * Source: specs/vta/dids/update/1.0/payload.schema.json
  */
 
-import type { ApprovalEvidenceKind, DidDocumentChange_VtaDidsV0_1 as DidDocumentChange, DidDocumentPreview_VtaDidsV0_1 as DidDocumentPreview, DidMethodName, DidVerificationRelationship, Ext, KeyRole_VtaDidsV0_1 as KeyRole, KeyRoleApprovalState_VtaDidsV0_1 as KeyRoleApprovalState, KeyRoleChangeOutcome_VtaDidsV0_1 as KeyRoleChangeOutcome, KeyType, PreviewWarning, Publication, PublishedArtifact, RecordedApproval, RecoverySigningRequest } from "../../../../_shared/components.js";
+import type { ApprovalEvidenceKind, DidMethodName, DidVerificationRelationship, Ext, IdentityChange, IdentityChangePreview, IdentityKeyRole, KeyChangeApprovalState, KeyChangeOutcome, KeyType, PreviewWarning, Publication, PublishedArtifact, RecordedApproval, RecoverySigningRequest } from "../../../../_shared/components.js";
 
 
 /**
@@ -46,15 +46,15 @@ export interface VTADIDsUpdatePayload {
 }
 export interface VTADIDsUpdateResponsePayload {
   did: string;
-  outcome: KeyRoleChangeOutcome;
+  outcome: KeyChangeOutcome;
   /**
    * Present when `outcome` is `preview`, `pendingApproval` or `awaitingRecoveryProof`: the plan, and what an approval is bound to.
    */
-  preview?: DidDocumentPreview;
+  preview?: IdentityChangePreview;
   /**
    * Present when `outcome` is `pendingApproval`.
    */
-  approvals?: KeyRoleApprovalState;
+  approvals?: KeyChangeApprovalState;
   /**
    * Present when `outcome` is `applied`: the version identifier of the change. Pass it as the next change's `expectedVersionId`.
    */
@@ -67,7 +67,7 @@ export interface VTADIDsUpdateResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { ApprovalEvidenceKind, DidDocumentChange, DidDocumentPreview, DidMethodName, DidVerificationRelationship, Ext, KeyRole, KeyRoleApprovalState, KeyRoleChangeOutcome, KeyType, PreviewWarning, Publication, PublishedArtifact, RecordedApproval, RecoverySigningRequest };
+export type { ApprovalEvidenceKind, DidMethodName, DidVerificationRelationship, Ext, IdentityChange, IdentityChangePreview, IdentityKeyRole, KeyChangeApprovalState, KeyChangeOutcome, KeyType, PreviewWarning, Publication, PublishedArtifact, RecordedApproval, RecoverySigningRequest };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/dids/update/1.0" as const;
@@ -174,14 +174,14 @@ export const PAYLOAD_SCHEMA = {
           "minLength": 1
         },
         "outcome": {
-          "$ref": "#/$defs/KeyRoleChangeOutcome"
+          "$ref": "#/$defs/KeyChangeOutcome"
         },
         "preview": {
-          "$ref": "#/$defs/DidDocumentPreview",
+          "$ref": "#/$defs/IdentityChangePreview",
           "description": "Present when `outcome` is `preview`, `pendingApproval` or `awaitingRecoveryProof`: the plan, and what an approval is bound to."
         },
         "approvals": {
-          "$ref": "#/$defs/KeyRoleApprovalState",
+          "$ref": "#/$defs/KeyChangeApprovalState",
           "description": "Present when `outcome` is `pendingApproval`."
         },
         "newVersionId": {
@@ -255,8 +255,8 @@ export const PAYLOAD_SCHEMA = {
         }
       }
     },
-    "KeyRoleApprovalState": {
-      "title": "KeyRoleApprovalState",
+    "KeyChangeApprovalState": {
+      "title": "KeyChangeApprovalState",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -323,8 +323,8 @@ export const PAYLOAD_SCHEMA = {
       ],
       "description": "The evidence an approval was recorded on, as `auth/step-up/approve-response` names it. Only the approver's own evidence is ever recorded: a proof by a key the VTA records as acting for an approver — a console signing key or any other delegation — is never an approval (CONVENTIONS.md §6.3)."
     },
-    "DidDocumentPreview": {
-      "title": "DidDocumentPreview",
+    "IdentityChangePreview": {
+      "title": "IdentityChangePreview",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -356,7 +356,7 @@ export const PAYLOAD_SCHEMA = {
         "changes": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/DidDocumentChange"
+            "$ref": "#/$defs/IdentityChange"
           },
           "description": "Every change the plan would make, including the ones the caller did not ask for — in particular any movement of the update authority the method requires."
         },
@@ -442,8 +442,8 @@ export const PAYLOAD_SCHEMA = {
       ],
       "description": "Conditions a human should be shown before approving. `singleKeyRole` — the role will hold one active key. `algorithmNotInAcceptedSet` — a verifier population the VTA knows of does not accept the new key's algorithm. `roleWillHaveNoClassicalKey` — every remaining key is post-quantum. `attestationReissuanceRequired` — revoking this attestation key obliges re-issuance and re-signed status lists (VTI-KEY-133). `selfPublish` — the VTA will not publish the change; the operator must. `noWitnesses` — the identifier has no witnesses, so a party holding the VTA's routine update key can drop the recovery commitment unobserved (CONVENTIONS.md §5.3). `protectionBelowPolicy` — a key will be held at a `ProtectionClass` below what the VTA's policy recommends for its role (a plain VTA holding an attestation key). `recoveryKeyRevealed` — this change uses the recovery key, which must be replaced by a fresh recovery commitment in the same change."
     },
-    "DidDocumentChange": {
-      "title": "DidDocumentChange",
+    "IdentityChange": {
+      "title": "IdentityChange",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -465,7 +465,7 @@ export const PAYLOAD_SCHEMA = {
           "description": "`addKey` — a verification method joins its role's relationship and `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves its relationship and `keyRoles`, and stays in `verificationMethod` with `revoked` set to the compromise time (CONVENTIONS.md §9.1). `rotateUpdateKey` — the identifier's update authority moves to a committed routine successor. `commitUpdateKey` — a new routine successor is committed. `replaceRecoveryCommitment` — the recovery commitment changes. `useRecoveryKey` — the change is authorized by the recovery key, which the identifier then reveals."
         },
         "role": {
-          "$ref": "#/$defs/KeyRole"
+          "$ref": "#/$defs/IdentityKeyRole"
         },
         "verificationMethod": {
           "type": "string"
@@ -500,8 +500,8 @@ export const PAYLOAD_SCHEMA = {
       ],
       "description": "A DID Core verification relationship."
     },
-    "KeyRole": {
-      "title": "KeyRole",
+    "IdentityKeyRole": {
+      "title": "IdentityKeyRole",
       "type": "string",
       "enum": [
         "attestation",
@@ -518,8 +518,8 @@ export const PAYLOAD_SCHEMA = {
       "pattern": "^[a-z0-9]+(:[a-z0-9]+)*$",
       "description": "The DID method an identity uses, as the method profile that governs it is named: `webvh` for a did:webvh identity, `scid:vh` for the did:scid:vh:1 form of one, `webs` for did:webs. Deliberately a pattern and not an enumeration: a method is added by publishing its profile under method-profiles/, never by changing this schema. A VTA MUST refuse a method it holds no profile for, or whose profile declares it ineligible, with `vta/dids:methodNotEligible`."
     },
-    "KeyRoleChangeOutcome": {
-      "title": "KeyRoleChangeOutcome",
+    "KeyChangeOutcome": {
+      "title": "KeyChangeOutcome",
       "type": "string",
       "enum": [
         "preview",
@@ -552,14 +552,14 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "minLength": 1
         },
         "outcome": {
-          "$ref": "#/$defs/KeyRoleChangeOutcome"
+          "$ref": "#/$defs/KeyChangeOutcome"
         },
         "preview": {
-          "$ref": "#/$defs/DidDocumentPreview",
+          "$ref": "#/$defs/IdentityChangePreview",
           "description": "Present when `outcome` is `preview`, `pendingApproval` or `awaitingRecoveryProof`: the plan, and what an approval is bound to."
         },
         "approvals": {
-          "$ref": "#/$defs/KeyRoleApprovalState",
+          "$ref": "#/$defs/KeyChangeApprovalState",
           "description": "Present when `outcome` is `pendingApproval`."
         },
         "newVersionId": {
@@ -633,8 +633,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         }
       }
     },
-    "KeyRoleApprovalState": {
-      "title": "KeyRoleApprovalState",
+    "KeyChangeApprovalState": {
+      "title": "KeyChangeApprovalState",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -701,8 +701,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       ],
       "description": "The evidence an approval was recorded on, as `auth/step-up/approve-response` names it. Only the approver's own evidence is ever recorded: a proof by a key the VTA records as acting for an approver — a console signing key or any other delegation — is never an approval (CONVENTIONS.md §6.3)."
     },
-    "DidDocumentPreview": {
-      "title": "DidDocumentPreview",
+    "IdentityChangePreview": {
+      "title": "IdentityChangePreview",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -734,7 +734,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "changes": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/DidDocumentChange"
+            "$ref": "#/$defs/IdentityChange"
           },
           "description": "Every change the plan would make, including the ones the caller did not ask for — in particular any movement of the update authority the method requires."
         },
@@ -820,8 +820,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       ],
       "description": "Conditions a human should be shown before approving. `singleKeyRole` — the role will hold one active key. `algorithmNotInAcceptedSet` — a verifier population the VTA knows of does not accept the new key's algorithm. `roleWillHaveNoClassicalKey` — every remaining key is post-quantum. `attestationReissuanceRequired` — revoking this attestation key obliges re-issuance and re-signed status lists (VTI-KEY-133). `selfPublish` — the VTA will not publish the change; the operator must. `noWitnesses` — the identifier has no witnesses, so a party holding the VTA's routine update key can drop the recovery commitment unobserved (CONVENTIONS.md §5.3). `protectionBelowPolicy` — a key will be held at a `ProtectionClass` below what the VTA's policy recommends for its role (a plain VTA holding an attestation key). `recoveryKeyRevealed` — this change uses the recovery key, which must be replaced by a fresh recovery commitment in the same change."
     },
-    "DidDocumentChange": {
-      "title": "DidDocumentChange",
+    "IdentityChange": {
+      "title": "IdentityChange",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -843,7 +843,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "description": "`addKey` — a verification method joins its role's relationship and `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves its relationship and `keyRoles`, and stays in `verificationMethod` with `revoked` set to the compromise time (CONVENTIONS.md §9.1). `rotateUpdateKey` — the identifier's update authority moves to a committed routine successor. `commitUpdateKey` — a new routine successor is committed. `replaceRecoveryCommitment` — the recovery commitment changes. `useRecoveryKey` — the change is authorized by the recovery key, which the identifier then reveals."
         },
         "role": {
-          "$ref": "#/$defs/KeyRole"
+          "$ref": "#/$defs/IdentityKeyRole"
         },
         "verificationMethod": {
           "type": "string"
@@ -878,8 +878,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       ],
       "description": "A DID Core verification relationship."
     },
-    "KeyRole": {
-      "title": "KeyRole",
+    "IdentityKeyRole": {
+      "title": "IdentityKeyRole",
       "type": "string",
       "enum": [
         "attestation",
@@ -896,8 +896,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "pattern": "^[a-z0-9]+(:[a-z0-9]+)*$",
       "description": "The DID method an identity uses, as the method profile that governs it is named: `webvh` for a did:webvh identity, `scid:vh` for the did:scid:vh:1 form of one, `webs` for did:webs. Deliberately a pattern and not an enumeration: a method is added by publishing its profile under method-profiles/, never by changing this schema. A VTA MUST refuse a method it holds no profile for, or whose profile declares it ineligible, with `vta/dids:methodNotEligible`."
     },
-    "KeyRoleChangeOutcome": {
-      "title": "KeyRoleChangeOutcome",
+    "KeyChangeOutcome": {
+      "title": "KeyChangeOutcome",
       "type": "string",
       "enum": [
         "preview",
