@@ -1,6 +1,6 @@
 [
   {
-    "note": "A challenge below 128 bits (16 base64url characters) is guessable; the pattern requires at least 22 characters.",
+    "note": "A challenge below 128 bits (16 bytes) is guessable; the pattern requires at least 22 base64url characters, which encode 132 bits.",
     "payload": {
       "challenge": "c2hvcnQ",
       "question": "Did you just ask me for a code?",

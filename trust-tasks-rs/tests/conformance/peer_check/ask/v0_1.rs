@@ -44,7 +44,7 @@ fn rejects_invalid_examples() {
     use trust_tasks_rs::validate::ValidatedPayload;
     let fixtures: &[(&str, &str)] = &[
         (
-            "A challenge below 128 bits (16 base64url characters) is guessable; the pattern requires at least 22 characters.",
+            "A challenge below 128 bits (16 bytes) is guessable; the pattern requires at least 22 base64url characters, which encode 132 bits.",
             "{\n  \"challenge\": \"c2hvcnQ\",\n  \"expiresAt\": \"2026-10-28T14:03:00Z\",\n  \"question\": \"Did you just ask me for a code?\"\n}",
         ),
         (
