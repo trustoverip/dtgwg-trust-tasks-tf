@@ -1261,6 +1261,9 @@ export import MessagingQueueStatus_v0_1 = _MessagingQueueStatus_v0_1;
 import * as _MessagingStatsShow_v0_1 from "./messaging/stats/show/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import MessagingStatsShow_v0_1 = _MessagingStatsShow_v0_1;
+import * as _PeerCheckAsk_v0_1 from "./peer-check/ask/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import PeerCheckAsk_v0_1 = _PeerCheckAsk_v0_1;
 import * as _ContactAnnotationsShared_v0_1 from "./persona/_shared/0.1/contact-annotations.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import ContactAnnotationsShared_v0_1 = _ContactAnnotationsShared_v0_1;

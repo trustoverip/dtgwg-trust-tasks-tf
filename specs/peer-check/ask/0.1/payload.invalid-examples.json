@@ -1,0 +1,71 @@
+[
+  {
+    "note": "A challenge below 128 bits (16 bytes) is guessable; the pattern requires at least 22 base64url characters, which encode 132 bits.",
+    "payload": {
+      "challenge": "c2hvcnQ",
+      "question": "Did you just ask me for a code?",
+      "expiresAt": "2026-10-28T14:03:00Z"
+    }
+  },
+  {
+    "note": "expiresAt is required in the payload; without an answer deadline the pending question never lapses.",
+    "payload": {
+      "challenge": "q7Xk2mRt9LwB4vNf8ZpYhA",
+      "question": "Did you just ask me for a code?"
+    }
+  },
+  {
+    "note": "question is required; a request with only a challenge asks nothing.",
+    "payload": {
+      "challenge": "q7Xk2mRt9LwB4vNf8ZpYhA",
+      "expiresAt": "2026-10-28T14:03:00Z"
+    }
+  },
+  {
+    "note": "question is capped at 200 characters so a prompt stays readable; a long one is refused rather than truncated.",
+    "payload": {
+      "challenge": "q7Xk2mRt9LwB4vNf8ZpYhA",
+      "question": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "expiresAt": "2026-10-28T14:03:00Z"
+    }
+  },
+  {
+    "note": "Unknown top-level payload member — additionalProperties: false catches `urgency`.",
+    "payload": {
+      "challenge": "q7Xk2mRt9LwB4vNf8ZpYhA",
+      "question": "Did you just ask me for a code?",
+      "expiresAt": "2026-10-28T14:03:00Z",
+      "urgency": "high"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "decision must be confirmed or notConfirmed; `maybe` is not an answer.",
+    "payload": {
+      "challenge": "q7Xk2mRt9LwB4vNf8ZpYhA",
+      "requestDigest": "zQmUx7yNt9vtv1PSxdf3BzoUYnejvfm2PfW5aqV6qaxbLUG",
+      "decision": "maybe",
+      "respondedAt": "2026-10-28T14:00:20Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "requestDigest is required; without it an answer is not bound to the exact request and could be replayed against another ask.",
+    "payload": {
+      "challenge": "q7Xk2mRt9LwB4vNf8ZpYhA",
+      "decision": "confirmed",
+      "respondedAt": "2026-10-28T14:00:20Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "notConfirmedReason is only meaningful beside notConfirmed; dependentSchemas rejects it beside confirmed.",
+    "payload": {
+      "challenge": "q7Xk2mRt9LwB4vNf8ZpYhA",
+      "requestDigest": "zQmUx7yNt9vtv1PSxdf3BzoUYnejvfm2PfW5aqV6qaxbLUG",
+      "decision": "confirmed",
+      "respondedAt": "2026-10-28T14:00:20Z",
+      "notConfirmedReason": "declined"
+    }
+  }
+]
