@@ -41,7 +41,13 @@ window.TT_BINDINGS = [
     status: "draft",
     accent: "teal",
     prosePath: "/bindings/https/0.3/spec.md",
-    implementations: [],
+    implementations: [,
+      {
+        name: "api.writersproof.com (process-attestation Holder)",
+        href: "https://api.writersproof.com/v1/trust-tasks",
+        language: "TypeScript",
+      },
+    ],
   },
   {
     id: "https/0.2",
