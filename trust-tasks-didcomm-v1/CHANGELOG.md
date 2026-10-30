@@ -3,6 +3,50 @@
 All notable changes to `trust-tasks-didcomm-v1` are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.36.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-didcomm-v1-v0.36.1...trust-tasks-didcomm-v1-v0.36.2) — 2026-10-29
+
+
+### Added
+
+- **rs**: A guarded consumer for Trust Tasks of any type ([#969](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/969)) ([#980](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/980))
+
+A consumer that opens a document of any type, routes on `type` and answers
+  an unknown one `unsupportedType` could not be written: the bindings'
+  pack/unpack required `P: Payload`, which `serde_json::Value` and
+  `ErrorPayload` are not, and `TspConsumer` (like the DIDComm consumers) had
+  no path that kept the duplicate-execution record for such a consumer.
+
+  - The bindings' `pack_trust_task` / `unpack_trust_task` (TSP, DIDComm v2.1,
+    DIDComm v1 `build_message`) take any `Serialize` / `DeserializeOwned`
+    payload. None of them read a `Payload` constant; the bound only refused
+    `TrustTask<Value>` and `ErrorResponse`. Loosening a bound is not a break.
+  - `ErrorPayload` implements `Payload`. `TYPE_URI` is the version the library
+    emits, now the one constant `TRUST_TASK_ERROR_TYPE_URI` (0.6) that
+    `trust_task_error_type_uri()` parses; check-bindings reads it there. The
+    policy constants are the 0.6 front matter's (recipient REQUIRED, proof
+    RECOMMENDED).
+  - `consume_dispatched` runs `consume_inbound`'s pipeline for a
+    `TrustTask<Value>` routed by an `AsyncDispatcher`. The spec policy and
+    payload schema come from the registration the document routes to (now
+    recorded by `on_async`). `unsupportedType`, `unsupportedVersion` and a
+    payload the handler's `P` cannot hold are refused before the item-11 record
+    is written, so they never burn an `id`. The rest is the same code:
+    `consume_inbound` and `consume_dispatched` both call one private
+    `consume_core`, so freshness, the §4.8.1 cross-check, proof verification
+    over the document as received, the per-spec checks and the record cannot
+    diverge. Forward routes along a declared extension are pruned exactly as
+    `AsyncDispatcher::dispatch` prunes them, which now shares the routing step.
+  - `TspConsumer`, `DidcommConsumer` and `DidcommV1Consumer` gain
+    `receive_dispatched` / `consume_dispatched` (and `receive_from_dispatched`
+    for DIDComm v2.1), keeping each consumer's record and freshness policy.
+
+  The HTTPS server already routes on `type` with its own record, so it needs
+  nothing. TypeScript, Go and Dart have no dispatcher: their consume functions
+  take the spec as a value and their unpack is untyped, so the caller routes
+  then consumes; CLAUDE.md records the difference.
+
+
+
 ## [0.36.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-didcomm-v1-v0.36.0...trust-tasks-didcomm-v1-v0.36.1) — 2026-10-28
 
 
