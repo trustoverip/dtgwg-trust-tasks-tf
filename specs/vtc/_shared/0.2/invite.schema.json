@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/_shared/0.2/invite",
+  "title": "VTC — shared admin-invite definitions",
+  "description": "Shared types for the vtc/admin/invites/* family. An admin invite is a one-shot install URL and claim code that admits one additional administrator: a **wallet** invitation names the DID that claims it, and a **passkey** invitation names none, the administrator's DID being derived from the passkey registered when it is claimed. `create` mints one and `list` enumerates them, so the summary lives here.",
+  "$defs": {
+    "InviteKind": {
+      "$anchor": "inviteKind",
+      "title": "InviteKind",
+      "type": "string",
+      "enum": [
+        "wallet",
+        "passkey"
+      ],
+      "description": "`wallet`: the invitation names a DID, and is claimed by signing as it (vtc/install/claim/start and finish 0.3). `passkey`: it names none, and the administrator's DID is the `did:key` of the passkey registered at its claim (vtc/install/claim/passkey/start and finish 0.1)."
+    },
+    "InviteSummary": {
+      "$anchor": "inviteSummary",
+      "title": "InviteSummary",
+      "description": "One outstanding or historical admin invite. Consumed rows are retained as audit history.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "jti",
+        "kind",
+        "status"
+      ],
+      "properties": {
+        "jti": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unique invite identifier; the revoke target."
+        },
+        "kind": {
+          "$ref": "#/$defs/InviteKind"
+        },
+        "status": {
+          "$ref": "#/$defs/InviteStatus"
+        },
+        "targetDid": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The administrator's DID: for a wallet invitation the DID it names; for a passkey invitation the DID derived from the passkey that claimed it, so absent until it is consumed."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When an `issued` invite lapses."
+        },
+        "consumedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the invite was redeemed, if it was."
+        }
+      }
+    },
+    "InviteStatus": {
+      "$anchor": "inviteStatus",
+      "title": "InviteStatus",
+      "type": "string",
+      "enum": [
+        "issued",
+        "consumed",
+        "expired"
+      ],
+      "description": "`issued` is outstanding and revocable; `consumed` and `expired` are terminal."
+    }
+  }
+}

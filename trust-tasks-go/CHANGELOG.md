@@ -11,6 +11,290 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.10.3 — 2026-10-30
+
+
+### Added
+
+- **rooms/records/put**: 0.4 lets an open room's record carry a file (#987)
+
+An open room could hold notes and nothing else. A file's description
+  (FileManifest) could only travel inside a sealed record body, and its key could
+  only be derived from the room's per-epoch storage key, and an open room has
+  neither: no sealed body, and no group to derive a key from. rooms/blobs/* never
+  cared about the tier; the gap was entirely on the record side.
+
+  - rooms/records/put/0.4 (extends 0.3): cleartext gains an optional `file`, a
+    FileManifest, and `blobs` may name that file's blob. On an open room the
+    host, which can read the record, refuses with malformedRequest a record whose
+    `blobs` is not exactly `cleartext.file.blobRef`, names a blob without a
+    `file`, or whose `file` carries no `fileKey`.
+  - rooms/_shared/0.1 FileManifest gains an optional `fileKey` (additive): on an
+    open room the uploader mints the file key at random for that one file and
+    carries it there; it MUST be absent from a sealed body, where the key is
+    derived. Padding, STREAM, associated data and reading are unchanged, so
+    there is one blob format and one reader for every tier. The key in the clear
+    withholds nothing from the host, which the open tier never did, but keeps
+    the stored blob opaque to a party holding only the storage.
+  - The descriptions of `name` and `digest` now say what holds on each tier.
+
+  All four bindings regenerated.
+
+- **vtc/admin/invites**: Create and list 0.2 — passkey invitations, with did optional (#989)
+
+* feat(vtc/admin/invites): create and list 0.2 — passkey invitations, with did optional
+
+  vtc/admin/invites/create 0.1 required `did`, so an administrator could invite
+  only someone who already held a DID in a wallet; a passkey invitation — whose
+  administrator DID is derived from the passkey registered at
+  vtc/install/claim/passkey/finish 0.1 — could be issued only by the operator on
+  the host.
+
+  create 0.2:
+  - `did` is optional. Present: a wallet invitation (claimed with
+    vtc/install/claim/{start,finish} 0.3). Absent: a passkey invitation.
+  - `did`, when present, must begin `did:`.
+  - Both kinds confer the same authority: an administrator entry with the
+    community's full administrative authority, delegated by the inviter,
+    labelled with `label`. A wallet invitation writes it now for a DID with no
+    entry; a passkey invitation records it with the invitation and
+    passkey/finish item 9 writes it for the derived DID.
+  - A passkey invitation costs what an entry-writing wallet invitation costs
+    (the inviter's step-up, another administrator's consent): at its claim no
+    administrator is present to authorise it, so issuing it is the grant.
+  - The response gains a required `kind` (`wallet` | `passkey`);
+    `aclEntryCreated` is always false for a passkey invitation.
+
+  list 0.2 (with vtc/_shared/0.2/invite): each InviteSummary gains a required
+  `kind`; a passkey invitation's `targetDid` is absent until it is consumed, then
+  the derived DID.
+
+  revoke is unchanged (it takes only `jti`); its prose now links the 0.2
+  versions.
+
+- **vta/dids**: Method-neutral key-role family, creation and recovery, with per-method profiles (#986)
+
+* feat(vta/dids): method-neutral key-role family, creation and recovery, with per-method profiles
+
+
+
+### Specifications
+
+- **vtc/install/claim/finish**: An invitation binds the approver at finish, not at bootstrap (#988)
+
+vtc/install/claim/finish/0.3 item 6 made the founder's approver binding wait
+  for vtc/admin/bootstrap. On an invitation of an additional administrator —
+  a token naming a DID whose administrator entry the invitation already wrote —
+  bootstrap answers alreadyBootstrapped, so the binding never took effect and
+  the invited administrator could answer no step-up.
+
+  New item 7: when the community already has an administrator, the binding
+  takes effect at finish, with the claim, as vtc/install/claim/passkey/finish
+  0.1 item 9 already writes an invited administrator's entry at finish. The
+  fresh-community rule (bind at bootstrap, discard if the token lapses) is
+  unchanged. Prose only; no schema change.
+
+## 0.10.2 — 2026-10-29
+
+
+### Added
+
+- **auth/step-up/approve-response**: 0.7 — the approver's own passkey assertion is evidence on its own (#983)
+
+0.5 and 0.6 required the approver's framework proof on every answer, and 0.6
+  counted a console key's proof as the administrator's it acts for, while
+  auth/signing-key/enroll/0.2 item 7 forbids a delegated key's proof on any
+  approve-response. A console administrator therefore had no conforming answer:
+  the console holds only a delegated key.
+
+  0.7 resolves the contradiction in enroll's favour:
+  - a delegated key's proof never counts as the approver's, for any gate
+    (subjectMismatch);
+  - approval evidence is the approver's own: a proof by its own DID
+    (didSigned, approverSigned, every denial), or a user-verified WebAuthn
+    assertion by a passkey the relying party registered to the approver, over
+    the step-up challenge it bound to this approval — with no proof required;
+  - an answer with no proof decides only what the assertion and the relying
+    party's own state determine (decision approved, subject, session, bound
+    operation, acr from the assertion; grantedAcr and ext ignored), and the
+    pending step-up is taken atomically, since an unproved document's id is the
+    sender's to choose;
+  - proofRequirement is RECOMMENDED, conditional per gate;
+  - assertionInvalid reasons are lowerCamelCase, adding userNotVerified and
+    credentialNotAccepted.
+
+  auth/signing-key/enroll/0.2's reference design (step 2) now answers with 0.7,
+  unsigned, naming identityDid as issuer. Prose references to 0.6 elsewhere move
+  to 0.7 (npm run fix-stale-references); approve-request/0.5 no longer says the
+  answer is always signed.
+
+- **vtc/members/role/set**: A community role moves with its own task (#982)
+
+vtc/members/role/set/0.1 moves a subject's community role — member,
+  moderator, issuer, admin, or a custom role — with a compare-and-swap on
+  fromRole. Until now the community role moved with acl/change-role/0.1, which
+  0.2 superseded with a purely administrative-role move; the community role,
+  its role credential and the community's role-change policy are the VTC's
+  notions, not the access-control list's, so they get a VTC task and
+  acl/change-role stays the generic operation.
+
+  What the move carries:
+  - the administrative authority the community role implies, when the entry's
+    authority is exactly the one its current role implies; authority stated on
+    its own (acl/grant or acl/update 0.2) is kept and only the role moves;
+  - a role credential (role VAC) re-issued at the new role for a subject with a
+    member record, returned as roleVac and delivered best-effort.
+
+- **vtc/install/claim/passkey**: Passkey install ceremony under its own slug (#976)
+
+* feat(vtc/install/claim/passkey): passkey install ceremony under its own slug
+
+  vtc/install/claim/{start,finish} 0.3 is a different ceremony from 0.2: the
+  founder claims under a DID they already control, with a step-up approver.
+  Because 0.3 is a later version of the same slug, it superseded 0.2, and the
+  passkey install was scheduled for withdrawal with it, although 0.3 itself
+  says "a passkey install keeps using 0.2".
+
+  The two cannot share a 0.4: finish 0.3 declares `proof` REQUIRED (the
+  founder's signature as their DID is the proof of control, enforced from the
+  front matter by every consumer), and the passkey ceremony cannot carry one
+  (the installer holds no key until the passkey exists). One version serving
+  both would leave the wallet ceremony's proof requirement to prose.
+
+  So the passkey ceremony moves, wire-unchanged, to
+  vtc/install/claim/passkey/{start,finish}/0.1, and each ceremony versions on
+  its own:
+
+  - Payloads are 0.2's; framework Ext re-pinned to 0.4; Security & Privacy,
+    Authorization, Request/Response examples written to current conventions.
+  - passkey/finish declares the response `proof` REQUIRED and
+    `discloses: secret`: it carries the bearer setup-session token (as
+    finish 0.3's does). 0.2 declared neither.
+  - vtc/install/claim/{start,finish} 0.2 are retired with `supersededBy`
+    naming the passkey slug, so their deprecation note points at the right
+    successor rather than at the wallet ceremony.
+  - start 0.3's `tokenNamesNoDid` and the 0.3 change notes point at the new
+    slug instead of 0.2.
+
+  Also fixes persona/contact/put 1.2's Status paragraph, which still carried
+  1.1's "Version 1.0 remains in force; 1.1 is a backwards-compatible MINOR
+  increment".
+
+- **rooms/owner/group/remove**: 0.4 — remove a private room's member from the group (#975)
+
+0.2 and 0.3 refused a `private` room with `privateRoom` and sent the owner
+  to 0.1, which the spec called the way to remove a member of a private room.
+  0.1 is superseded all the same, so once it is withdrawn no task could take
+  a private-room member out of the MLS group.
+
+  0.4 takes that tier in. On an `attributed` room it is 0.3: withdraw the
+  member's credentials at the host first, then advance. On a `private` room
+  it removes the leaf and advances the room, builds no revocation list (the
+  host cannot be told whom to refuse), and answers `withdrawn: false`.
+
+  - `privateRoom` is no longer declared.
+  - `signingKeyId` is optional; still required (as `noSigningKey`) on any
+    room that is not private.
+  - The response gains a required `withdrawn` boolean; `revocation` is
+    present only when it is true.
+  - Item 8 (settling a pending removal) is 0.3's, with a pending removal that
+    carries no list settled by its step 3 alone.
+  - A producer MUST NOT report `withdrawn: false` as a withdrawal.
+
+  Prose links to remove/0.3 in neighbouring rooms specs move to 0.4
+  (fix-stale-references). vtc/rooms/community/members/remove 0.2 and
+  rooms/owner/revoke 0.1 are clarified in place to allow 0.4 for a private
+  room alongside 0.1.
+
+
+
+### Fixed
+
+- Stamp issuedAt in whole seconds in every library (#970) (#979)
+
+Rust wrote `issuedAt` with `Utc::now()`, which chrono serializes at the
+  clock's precision: nine fractional digits on Linux, on every error response
+  `dispatch_or_reject` / `reject_with` built and every response `respond_with`
+  built. TypeScript wrote milliseconds with `toISOString()`. SPEC §13.1 item 3
+  calls a full-precision timestamp a fingerprint and lets a producer round
+  `issuedAt` down; readers with a narrower RFC 3339 profile refused these
+  documents.
+
+  Every instant the framework stamps is now UTC in whole seconds, rounded
+  down, the form Go (`SystemClock`) and Dart (`systemClock`) already wrote:
+
+  - trust-tasks-rs: new `issued_at_now()`, used by `reject_with_recipient`,
+    `respond_with` and the dispatchers' error responses.
+  - trust-tasks-https: the client's default `issuedAt` and the server's two
+    fallback error documents.
+  - trust-tasks-capability-client: built documents and `new_attempt`.
+  - @openvtc/trust-tasks: new `issuedAtNow()`, the default clock of
+    `rejectWithRecipient` / `rejectWith` / `respondWith`.
+  - @openvtc/trust-tasks-capability-client: built documents and `newAttempt`.
+
+  A whole second is inside every acceptance window a consumer applies, so no
+  specification has to opt in; the minute or hour §13.1 permits is left to a
+  specification that states its skew. Rounding down never future-dates a
+  document (§7.2 item 13). Readers are unchanged and keep accepting any RFC
+  3339 precision and offset; received documents are never re-stamped, so
+  proofs and item-11 digests are unaffected.
+
+  The same vectors are pinned in all four libraries (tests/issued_at_precision.rs,
+  test/issued-at.test.ts, trusttasks/issued_at_test.go,
+  test/issued_at_test.dart): what is written, and that 0, 1, 3, 6 and 9
+  fractional digits and an offset are all read.
+
+
+
+### Specifications
+
+- **vta/contexts/delete**: 1.1 bounds its acceptance of 1.0 by 1.0's withdrawal (#981)
+
+"A 1.1 consumer MUST still accept 1.0" read as a perpetual obligation. It
+  only restated SPEC §5.2, which requires an implementation at M.N to accept
+  every earlier MINOR, and §5.3.3 ends that obligation when the earlier version
+  is withdrawn. 1.1 now says so: until 1.0 is withdrawn a 1.1 consumer accepts it
+  and answers it as 1.0 specifies; afterwards it MAY refuse it with
+  unsupportedVersion, and a producer MUST NOT send it.
+
+  An in-place prose edit: 1.1 is a draft, and the change touches neither its
+  schema nor its front matter (SPEC §5.2, editorial changes to a draft).
+
+- **vtc/install/claim/passkey**: Prove possession of the passkey before any authority (#978)
+
+A WebAuthn registration under the `none` attestation format, which most
+  platform passkeys use, signs nothing: it names the key the administrator's
+  DID is derived from but does not prove the installer holds it. The passkey
+  install now proves possession before a setup-session token is minted or any
+  administrator entry is written, whatever the attestation format.
+
+  - start's response adds `assertionOptions` (required): request options with
+    a second fresh challenge (>=128 bits, distinct from the creation
+    challenge, single-use, bound to the registration), no allowCredentials.
+  - finish's request adds `webauthnAssertion` (required): one
+    navigator.credentials.get() assertion by the just-registered credential
+    over that challenge. finish verifies it as WebAuthn §7.2 does, against
+    the registered key (EdDSA/Ed25519 or ES256/P-256), before consuming the
+    token, minting the setup-session token or writing an entry. Refusal:
+    new declared code `possessionUnproven`, nothing consumed.
+  - For an invitation of an additional administrator (the community already
+    has one, so vtc/admin/bootstrap answers alreadyBootstrapped), finish
+    writes the entry for the derived DID, after the assertion. On a fresh
+    community bootstrap writes it from the setup-session token, as before.
+  - Security & Privacy: possession is proven before any authority is granted.
+
+  Tightened in place: both versions are `draft` and unreleased (merged in
+  #976, held in Release PR #977), so SPEC §5.2's draft allowance applies and
+  check-published-schemas has no released copy to compare against.
+  vtc/admin/bootstrap/0.1 is unchanged and keeps working for its other caller,
+  vtc/install/claim/finish 0.3: the assertion rides in finish, not bootstrap,
+  because bootstrap never runs for an invited administrator.
+
+  VTI note: `vtc admin invite` will have two kinds — `--did X` uses the 0.3
+  wallet ceremony (token names X); no `--did` is a passkey invite, whose ACL
+  entry is written from the derived DID at finish (or at bootstrap on a fresh
+  community).
+
 ## 0.10.1 — 2026-10-28
 
 

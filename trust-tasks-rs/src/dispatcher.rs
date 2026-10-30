@@ -28,7 +28,6 @@
 
 use std::collections::{HashMap, HashSet};
 
-use chrono::Utc;
 use serde_json::Value;
 
 use crate::document::{trust_task_error_type_uri, ErrorResponse, TrustTask};
@@ -252,6 +251,21 @@ pub(crate) struct RequestOrigin {
     pub(crate) recipient: Option<String>,
 }
 
+impl RequestOrigin {
+    /// Capture the parts of `doc` a later rejection needs.
+    pub(crate) fn of<P>(doc: &TrustTask<P>) -> Self {
+        Self {
+            id: doc.id.clone(),
+            thread_id: doc.thread_id.clone(),
+            parent_thread_id: doc.parent_thread_id.clone(),
+            ceremony: doc.ceremony.clone(),
+            type_uri: doc.type_uri.to_string(),
+            issuer: doc.issuer.clone(),
+            recipient: doc.recipient.clone(),
+        }
+    }
+}
+
 pub(crate) fn build_error_response(
     error_id: String,
     origin: RequestOrigin,
@@ -287,7 +301,7 @@ pub(crate) fn build_error_response(
         type_uri: trust_task_error_type_uri(),
         issuer: request_recipient,
         recipient: request_issuer,
-        issued_at: Some(Utc::now()),
+        issued_at: Some(crate::document::issued_at_now()),
         expires_at: None,
         payload,
         context: None,
@@ -313,6 +327,71 @@ pub(crate) fn forward_target<H>(
         .find(|k| handlers.contains_key(k))
 }
 
+/// What a registration knows about its `P` that a pipeline must apply
+/// **before** the handler runs — and before SPEC §7.2 item 11's record is
+/// written, which a document refused on any of these grounds must never reach.
+///
+/// Read off `P` once, at registration, so a consumer holding a
+/// `TrustTask<Value>` applies exactly the checks the typed path would
+/// ([`crate::consume_dispatched`]).
+#[derive(Clone, Copy)]
+pub(crate) struct RouteFacts {
+    /// `P::PAYLOAD_SCHEMA` — item 2, and the pruning schema for a forward
+    /// route (SPEC §5.2).
+    pub(crate) schema: Option<&'static str>,
+    /// `SpecPolicy::of::<P>()` — items 5b, 7A and 8, and §7.3 item 17.
+    pub(crate) policy: crate::SpecPolicy,
+    /// Whether a payload deserializes into `P`, with the rejection
+    /// [`downcast_payload`] would give.
+    pub(crate) check: fn(&Value) -> Result<(), RejectReason>,
+}
+
+impl RouteFacts {
+    pub(crate) fn of<P: Payload>() -> Self {
+        Self {
+            schema: P::PAYLOAD_SCHEMA,
+            policy: crate::SpecPolicy::of::<P>(),
+            check: check_payload::<P>,
+        }
+    }
+}
+
+/// [`downcast_payload`]'s deserialization, without taking the document.
+fn check_payload<P: Payload>(payload: &Value) -> Result<(), RejectReason> {
+    P::deserialize(payload)
+        .map(drop)
+        .map_err(|e| malformed_payload::<P>(&e))
+}
+
+fn malformed_payload<P: Payload>(e: &serde_json::Error) -> RejectReason {
+    RejectReason::MalformedRequest {
+        reason: format!("payload does not match {}: {e}", P::TYPE_URI),
+    }
+}
+
+/// SPEC §5.2 / §8.3 routing over a handler table: the registered key `type_uri`
+/// goes to, and whether that is a forward route along a declared extension
+/// chain (whose payload must be pruned first). A recognized slug at an
+/// unregistered `MAJOR.MINOR` that no chain rescues is `unsupportedVersion`; an
+/// unrecognized slug is `unsupportedType`.
+pub(crate) fn resolve_route<H>(
+    type_uri: &crate::type_uri::TypeUri,
+    handlers: &HashMap<String, H>,
+    slugs: &HashSet<String>,
+) -> Result<(String, bool), RejectReason> {
+    let key = canonical_key(type_uri);
+    if handlers.contains_key(&key) {
+        return Ok((key, false));
+    }
+    if !slugs.contains(&type_uri.specification_key()) {
+        return Err(RejectReason::UnsupportedType { type_uri: key });
+    }
+    match forward_target(type_uri, handlers) {
+        Some(target) => Ok((target, true)),
+        None => Err(RejectReason::UnsupportedVersion { type_uri: key }),
+    }
+}
+
 pub(crate) fn downcast_payload<P>(doc: TrustTask<Value>) -> Result<TrustTask<P>, RejectReason>
 where
     P: Payload,
@@ -333,10 +412,7 @@ where
         extra,
     } = doc;
 
-    let payload: P =
-        serde_json::from_value(payload).map_err(|e| RejectReason::MalformedRequest {
-            reason: format!("payload does not match {}: {e}", P::TYPE_URI),
-        })?;
+    let payload: P = serde_json::from_value(payload).map_err(|e| malformed_payload::<P>(&e))?;
 
     Ok(TrustTask {
         id,

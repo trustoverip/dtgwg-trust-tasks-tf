@@ -116,7 +116,7 @@ A `subject` withdrawal is keyed on time, so it never has to be undone. Re-admitt
 
 ### Removal from the group, and the order
 
-On a sealed room, removing a member is two acts — taking their leaf out of the group, and withdrawing their credentials — and [`rooms/owner/group/remove`](../../group/remove/0.3/spec.md) at `0.2` does both, withdrawing **first**. This task is the withdrawal alone: for an `open` room, which has no group; for an agent credential, which has no leaf; and for re-delivering the list.
+On an `attributed` room, removing a member is two acts — taking their leaf out of the group, and withdrawing their credentials — and [`rooms/owner/group/remove`](../../group/remove/0.4/spec.md) since `0.2` does both, withdrawing **first**; on a `private` room, since `0.4`, it takes the leaf out alone. This task is the withdrawal alone: for an `open` room, which has no group; for an agent credential, which has no leaf; and for re-delivering the list.
 
 ## Request
 

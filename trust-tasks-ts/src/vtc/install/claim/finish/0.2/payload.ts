@@ -6,7 +6,7 @@
 import type { Ext } from "../../../../../_shared/components.js";
 
 
-/** @deprecated superseded by vtc/install/claim/finish/0.3 */
+/** @deprecated retired; use vtc/install/claim/passkey/finish/0.1 */
 export interface VTCInstallClaimFinishPayload {
   installToken: string;
   /**
@@ -19,7 +19,7 @@ export interface VTCInstallClaimFinishPayload {
   webauthnResponse: {};
   ext?: Ext;
 }
-/** @deprecated superseded by vtc/install/claim/finish/0.3 */
+/** @deprecated retired; use vtc/install/claim/passkey/finish/0.1 */
 export interface VTCInstallClaimFinishResponsePayload {
   /**
    * Candidate admin DID derived from the passkey's Ed25519 public key.
@@ -52,12 +52,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by vtc/install/claim/finish/0.3";
+export const DEPRECATION: string | null = "retired; use vtc/install/claim/passkey/finish/0.1";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by vtc/install/claim/finish/0.3
+ * @deprecated retired; use vtc/install/claim/passkey/finish/0.1
  */
 export type Payload = VTCInstallClaimFinishPayload;
 
@@ -67,7 +67,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/install/claim/
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by vtc/install/claim/finish/0.3
+ * @deprecated retired; use vtc/install/claim/passkey/finish/0.1
  */
 export type Response = VTCInstallClaimFinishResponsePayload;
 

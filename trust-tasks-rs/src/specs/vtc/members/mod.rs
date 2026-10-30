@@ -14,6 +14,7 @@ pub mod removal_notice;
 pub mod removed;
 pub mod renew;
 pub mod request_vmc;
+pub mod role;
 pub mod rotate;
 pub mod rotate_challenge;
 pub mod self_remove;

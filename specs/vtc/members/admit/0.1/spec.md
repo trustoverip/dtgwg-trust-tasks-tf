@@ -63,6 +63,7 @@ related:
   - vtc/admin/actions/show
   - acl/grant
   - acl/change-role
+  - vtc/members/role/set
   - trust-task-next-step
 ---
 
@@ -91,7 +92,7 @@ A conforming **producer** (`issuer`) supplies `subject` and `role`, and optional
 A conforming **community** (`recipient`) checks, in this order, before its policy runs:
 
 1. **The requester holds `vtc.members.manage`** — read from the signer's live access-control entry, or for a delegated signing key ([`auth/signing-key/enroll`](../../../../auth/signing-key/enroll/0.2/spec.md)) the entry of the identity it acts for, at execution time; an entry that has expired or is suspended holds nothing. Else `permissionDenied`.
-2. **The role may be seated by a direct admission.** It **MUST** refuse with `roleNotPermitted` a role it does not recognise, `application` (which marks a non-member, never a membership), and `admin`. An administrator is admitted as a member and then promoted with [`acl/change-role`](../../../../acl/change-role/0.2/spec.md) or granted with `acl/grant`, which carry their own rules for conferring that authority.
+2. **The role may be seated by a direct admission.** It **MUST** refuse with `roleNotPermitted` a role it does not recognise, `application` (which marks a non-member, never a membership), and `admin`. An administrator is admitted as a member and then promoted with [`vtc/members/role/set`](../../role/set/0.1/spec.md), which carries its own rules for conferring that authority.
 3. **A role other than `member` is an assignment of a role**, held to the rule an invitation's role is held to. The community **MUST** refuse with `roleNotPermitted` when the requester does not hold `vtc.roles.assign`; when the entry the role would seat holds any capability, at any qualifier, that the requester's own entry does not hold; and when that entry would hold a capability that permits its holder to create or widen authority. A direct admission never confers such a capability; granting one is `acl/grant`'s, under the community's rules for authority-conferring grants.
 4. **The subject is not already a member or an entry holder.** The community **MUST** refuse with `hasEntry` a subject holding an access-control entry of any role but `application`, and with `alreadyMember` a subject whose member record exists and has not been removed. A removed member record is not a refusal: the subject is admitted as a returning member.
 5. `label`, when given, is 1 to 256 characters and not blank; `reason` is at most 1024 characters. The schema states both; a document that fails them is `malformedRequest`.

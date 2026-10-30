@@ -6,7 +6,7 @@
 import type { Ext } from "../../../../../_shared/components.js";
 
 
-/** @deprecated superseded by rooms/owner/group/remove/0.3 */
+/** @deprecated superseded by rooms/owner/group/remove/0.4 */
 export interface RoomsOwnerGroupRemovePayload {
   /**
    * The room whose group loses a member. The recipient MUST hold its group.
@@ -32,7 +32,7 @@ export interface RoomsOwnerGroupRemovePayload {
 /**
  * Success response to rooms/owner/group/remove. Type https://trusttasks.org/spec/rooms/owner/group/remove/0.1#response. The room's new epoch, which the removed member holds no key for.
  *
- * @deprecated superseded by rooms/owner/group/remove/0.3
+ * @deprecated superseded by rooms/owner/group/remove/0.4
  */
 export interface RoomsOwnerGroupRemoveResponsePayload {
   /**
@@ -70,12 +70,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by rooms/owner/group/remove/0.3";
+export const DEPRECATION: string | null = "superseded by rooms/owner/group/remove/0.4";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by rooms/owner/group/remove/0.3
+ * @deprecated superseded by rooms/owner/group/remove/0.4
  */
 export type Payload = RoomsOwnerGroupRemovePayload;
 
@@ -85,7 +85,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/rooms/owner/group/
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by rooms/owner/group/remove/0.3
+ * @deprecated superseded by rooms/owner/group/remove/0.4
  */
 export type Response = RoomsOwnerGroupRemoveResponsePayload;
 

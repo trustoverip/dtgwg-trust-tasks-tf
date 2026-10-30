@@ -3,7 +3,8 @@ slug: vta/webvh/dids/update
 version: "2.0"
 title: WebVH DID Update
 summary: A caller asks a Verifiable Trust Agent to publish a new entry in a did:webvh log whose update key the agent holds — services, witnesses, watchers, TTL — with a preview of exactly what the entry will do. Keys are not changed here; they change only through the key-role tasks.
-status: draft
+status: retired
+supersededBy: vta/dids/update/1.0
 targetFrameworkVersion: "0.5.0"
 category: did-management
 keywords:
@@ -82,6 +83,10 @@ related:
   - task-consent/request
   - policy/evaluate
 ---
+
+## Retired
+
+This version is **retired** in favour of [`vta/dids/update/1.0`](../../../../dids/update/1.0/spec.md), the method-neutral key-role family (conventions: `vta/dids/_shared/0.1/CONVENTIONS.md`). Key roles are not specific to did:webvh: the same roles, custody, approval and compromise rules apply to every DID method that supports key rotation, and what differs by method is stated in that family's method profiles. The successor also adds what this version lacked — a creation path (`vta/dids/create`), a recovery key held outside the VTA, and recovery after the loss of the VTA. Nothing deployed sent this version. A pre-role did:webvh identity is still managed with `vta/webvh/dids/update/1.0` and `vta/webvh/dids/rotate-keys/1.0`, which stay live.
 
 ## Abstract
 

@@ -9,7 +9,14 @@ import "strings"
 
 // extendsIndex maps a bare Type URI to the MAJOR.MINOR that version declares it
 // extends (SPEC §5.2 "Declared extension"). Versions declaring none are absent.
-var extendsIndex = map[string]string{}
+var extendsIndex = map[string]string{
+	"https://trusttasks.org/spec/rooms/keys/act/0.9":           "0.8",
+	"https://trusttasks.org/spec/rooms/records/put/0.4":        "0.3",
+	"https://trusttasks.org/spec/vta/did-templates/create/3.2": "3.1",
+	"https://trusttasks.org/spec/vta/did-templates/get/3.2":    "3.1",
+	"https://trusttasks.org/spec/vta/did-templates/list/3.2":   "3.1",
+	"https://trusttasks.org/spec/vta/did-templates/update/3.2": "3.1",
+}
 
 // ExtendsOf returns the MAJOR.MINOR the specification version named by typeURI
 // declares it extends, or "" when it declares none or is not in the registry.

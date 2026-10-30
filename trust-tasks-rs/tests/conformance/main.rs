@@ -198,6 +198,7 @@ mod auth {
             mod v0_4;
             mod v0_5;
             mod v0_6;
+            mod v0_7;
         }
         mod approver {
             mod attest {
@@ -1220,6 +1221,7 @@ mod rooms {
             mod v0_6;
             mod v0_7;
             mod v0_8;
+            mod v0_9;
         }
         mod backfill {
             mod v0_1;
@@ -1281,6 +1283,7 @@ mod rooms {
                 mod v0_1;
                 mod v0_2;
                 mod v0_3;
+                mod v0_4;
             }
             mod renew {
                 mod v0_1;
@@ -1322,6 +1325,7 @@ mod rooms {
         mod put {
             mod v0_2;
             mod v0_3;
+            mod v0_4;
         }
         mod retention {
             mod set {
@@ -1678,6 +1682,7 @@ mod vta {
             mod v1_0;
             mod v2_0;
             mod v3_1;
+            mod v3_2;
         }
         mod delete {
             mod v1_0;
@@ -1687,11 +1692,13 @@ mod vta {
             mod v1_0;
             mod v2_0;
             mod v3_1;
+            mod v3_2;
         }
         mod list {
             mod v1_0;
             mod v2_0;
             mod v3_1;
+            mod v3_2;
         }
         mod render {
             mod v1_0;
@@ -1701,6 +1708,35 @@ mod vta {
             mod v1_0;
             mod v2_0;
             mod v3_1;
+            mod v3_2;
+        }
+    }
+    mod dids {
+        mod create {
+            mod v1_0;
+        }
+        mod keys {
+            mod add {
+                mod v1_0;
+            }
+            mod list {
+                mod v1_0;
+            }
+            mod retire {
+                mod v1_0;
+            }
+            mod revoke {
+                mod v1_0;
+            }
+            mod rotate {
+                mod v1_0;
+            }
+        }
+        mod recover {
+            mod v1_0;
+        }
+        mod update {
+            mod v1_0;
         }
     }
     mod health {
@@ -2046,9 +2082,11 @@ mod vtc {
         mod invites {
             mod create {
                 mod v0_1;
+                mod v0_2;
             }
             mod list {
                 mod v0_1;
+                mod v0_2;
             }
             mod revoke {
                 mod v0_1;
@@ -2352,6 +2390,14 @@ mod vtc {
                 mod v0_2;
                 mod v0_3;
             }
+            mod passkey {
+                mod finish {
+                    mod v0_1;
+                }
+                mod start {
+                    mod v0_1;
+                }
+            }
             mod start {
                 mod v0_1;
                 mod v0_2;
@@ -2485,6 +2531,11 @@ mod vtc {
         }
         mod request_vmc {
             mod v0_1;
+        }
+        mod role {
+            mod set {
+                mod v0_1;
+            }
         }
         mod rotate {
             mod v0_1;

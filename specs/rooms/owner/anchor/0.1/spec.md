@@ -107,9 +107,9 @@ A recipient **SHOULD** reconcile before publishing and **MUST** report the outco
 
 ## What publishing costs
 
-`vta/webvh/dids/update/2.1` already exists, so nothing new is needed to write an anchor. What its own description says, and what a room operator has to plan around:
+[`vta/dids/update/1.0`](../../../../vta/dids/update/1.0/spec.md) already exists (and, for a room DID created before key roles, `vta/webvh/dids/update/1.0`), so nothing new is needed to write an anchor. What the did:webvh method profile says, and what a room operator has to plan around:
 
-> Supplying this **ROTATES the DID's update key** and refreshes its pre-rotation commitments, as a parallel consequence of the change.
+> Every entry moves the update authority (`updateKeyRotates: true`, always): an entry the VTA appends reveals its routine successor, is signed by it, and commits a fresh one.
 
 So each anchor is a witnessed update **and** a rotation of the room DID's update key, with witness co-signing and a fresh pre-rotation commitment each time. **Cadence is therefore an operational decision rather than only a freshness one**, and a room anchoring on every write would rotate its own DID's update key on every write.
 

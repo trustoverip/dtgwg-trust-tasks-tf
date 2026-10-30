@@ -12,6 +12,8 @@ import (
 )
 
 // Response VTC Admin Invites List — response payload
+//
+// Deprecated: superseded by vtc/admin/invites/list/0.2
 type Response struct {
 	// Every invite the community holds, outstanding and terminal.
 	Invites []InviteSummary `json:"invites"`
@@ -51,6 +53,8 @@ const (
 )
 
 // Payload VTC Admin Invites List — payload
+//
+// Deprecated: superseded by vtc/admin/invites/list/0.2
 type Payload struct {
 	Ext *Ext `json:"ext,omitempty"`
 }
@@ -70,7 +74,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by vtc/admin/invites/list/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/admin/invites/list/0.1#response"

@@ -3,7 +3,8 @@ slug: vtc/install/claim/finish
 version: "0.2"
 title: VTC Install Claim — Finish
 summary: Complete first-admin enrolment — submit the passkey attestation to derive the admin DID and a setup-session token.
-status: draft
+status: retired
+supersededBy: vtc/install/claim/passkey/finish/0.1
 targetFrameworkVersion: "0.5.0"
 category: governance
 keywords: [vtc, install, bootstrap, passkey]

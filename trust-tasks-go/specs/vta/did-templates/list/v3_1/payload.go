@@ -12,6 +12,8 @@ import (
 )
 
 // Response Every stored template in the selected scope, in an array.
+//
+// Deprecated: superseded by vta/did-templates/list/3.2
 type Response struct {
 	// Every stored template in the selected scope, sorted by name; empty when none exist.
 	Templates []DIDTemplateRecord `json:"templates"`
@@ -118,6 +120,8 @@ type Scope = map[string]json.RawMessage
 // global templates (any authenticated caller); set it to list the templates scoped to
 // that context (requires access to the context). The success response is the array of
 // persisted DidTemplateRecords for the selected scope.
+//
+// Deprecated: superseded by vta/did-templates/list/3.2
 type Payload struct {
 	// Scope selector. Absent: the global scope. Present: the context whose templates are
 	// listed; the caller MUST have access to that context.
@@ -142,7 +146,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by vta/did-templates/list/3.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/did-templates/list/3.1#response"

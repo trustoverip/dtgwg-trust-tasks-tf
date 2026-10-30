@@ -31,6 +31,302 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.36.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.36.2...trust-tasks-rs-v0.36.3) — 2026-10-30
+
+
+### Added
+
+- **rooms/records/put**: 0.4 lets an open room's record carry a file ([#987](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/987))
+
+An open room could hold notes and nothing else. A file's description
+  (FileManifest) could only travel inside a sealed record body, and its key could
+  only be derived from the room's per-epoch storage key, and an open room has
+  neither: no sealed body, and no group to derive a key from. rooms/blobs/* never
+  cared about the tier; the gap was entirely on the record side.
+
+  - rooms/records/put/0.4 (extends 0.3): cleartext gains an optional `file`, a
+    FileManifest, and `blobs` may name that file's blob. On an open room the
+    host, which can read the record, refuses with malformedRequest a record whose
+    `blobs` is not exactly `cleartext.file.blobRef`, names a blob without a
+    `file`, or whose `file` carries no `fileKey`.
+  - rooms/_shared/0.1 FileManifest gains an optional `fileKey` (additive): on an
+    open room the uploader mints the file key at random for that one file and
+    carries it there; it MUST be absent from a sealed body, where the key is
+    derived. Padding, STREAM, associated data and reading are unchanged, so
+    there is one blob format and one reader for every tier. The key in the clear
+    withholds nothing from the host, which the open tier never did, but keeps
+    the stored blob opaque to a party holding only the storage.
+  - The descriptions of `name` and `digest` now say what holds on each tier.
+
+  All four bindings regenerated.
+
+- **vtc/admin/invites**: Create and list 0.2 — passkey invitations, with did optional ([#989](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/989))
+
+* feat(vtc/admin/invites): create and list 0.2 — passkey invitations, with did optional
+
+  vtc/admin/invites/create 0.1 required `did`, so an administrator could invite
+  only someone who already held a DID in a wallet; a passkey invitation — whose
+  administrator DID is derived from the passkey registered at
+  vtc/install/claim/passkey/finish 0.1 — could be issued only by the operator on
+  the host.
+
+  create 0.2:
+  - `did` is optional. Present: a wallet invitation (claimed with
+    vtc/install/claim/{start,finish} 0.3). Absent: a passkey invitation.
+  - `did`, when present, must begin `did:`.
+  - Both kinds confer the same authority: an administrator entry with the
+    community's full administrative authority, delegated by the inviter,
+    labelled with `label`. A wallet invitation writes it now for a DID with no
+    entry; a passkey invitation records it with the invitation and
+    passkey/finish item 9 writes it for the derived DID.
+  - A passkey invitation costs what an entry-writing wallet invitation costs
+    (the inviter's step-up, another administrator's consent): at its claim no
+    administrator is present to authorise it, so issuing it is the grant.
+  - The response gains a required `kind` (`wallet` | `passkey`);
+    `aclEntryCreated` is always false for a passkey invitation.
+
+  list 0.2 (with vtc/_shared/0.2/invite): each InviteSummary gains a required
+  `kind`; a passkey invitation's `targetDid` is absent until it is consumed, then
+  the derived DID.
+
+  revoke is unchanged (it takes only `jti`); its prose now links the 0.2
+  versions.
+
+- **vta/dids**: Method-neutral key-role family, creation and recovery, with per-method profiles ([#986](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/986))
+
+* feat(vta/dids): method-neutral key-role family, creation and recovery, with per-method profiles
+
+
+
+## [0.36.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.36.1...trust-tasks-rs-v0.36.2) — 2026-10-29
+
+
+### Added
+
+- **auth/step-up/approve-response**: 0.7 — the approver's own passkey assertion is evidence on its own ([#983](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/983))
+
+0.5 and 0.6 required the approver's framework proof on every answer, and 0.6
+  counted a console key's proof as the administrator's it acts for, while
+  auth/signing-key/enroll/0.2 item 7 forbids a delegated key's proof on any
+  approve-response. A console administrator therefore had no conforming answer:
+  the console holds only a delegated key.
+
+  0.7 resolves the contradiction in enroll's favour:
+  - a delegated key's proof never counts as the approver's, for any gate
+    (subjectMismatch);
+  - approval evidence is the approver's own: a proof by its own DID
+    (didSigned, approverSigned, every denial), or a user-verified WebAuthn
+    assertion by a passkey the relying party registered to the approver, over
+    the step-up challenge it bound to this approval — with no proof required;
+  - an answer with no proof decides only what the assertion and the relying
+    party's own state determine (decision approved, subject, session, bound
+    operation, acr from the assertion; grantedAcr and ext ignored), and the
+    pending step-up is taken atomically, since an unproved document's id is the
+    sender's to choose;
+  - proofRequirement is RECOMMENDED, conditional per gate;
+  - assertionInvalid reasons are lowerCamelCase, adding userNotVerified and
+    credentialNotAccepted.
+
+  auth/signing-key/enroll/0.2's reference design (step 2) now answers with 0.7,
+  unsigned, naming identityDid as issuer. Prose references to 0.6 elsewhere move
+  to 0.7 (npm run fix-stale-references); approve-request/0.5 no longer says the
+  answer is always signed.
+
+- **vtc/members/role/set**: A community role moves with its own task ([#982](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/982))
+
+vtc/members/role/set/0.1 moves a subject's community role — member,
+  moderator, issuer, admin, or a custom role — with a compare-and-swap on
+  fromRole. Until now the community role moved with acl/change-role/0.1, which
+  0.2 superseded with a purely administrative-role move; the community role,
+  its role credential and the community's role-change policy are the VTC's
+  notions, not the access-control list's, so they get a VTC task and
+  acl/change-role stays the generic operation.
+
+  What the move carries:
+  - the administrative authority the community role implies, when the entry's
+    authority is exactly the one its current role implies; authority stated on
+    its own (acl/grant or acl/update 0.2) is kept and only the role moves;
+  - a role credential (role VAC) re-issued at the new role for a subject with a
+    member record, returned as roleVac and delivered best-effort.
+
+- **rs**: A guarded consumer for Trust Tasks of any type ([#969](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/969)) ([#980](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/980))
+
+A consumer that opens a document of any type, routes on `type` and answers
+  an unknown one `unsupportedType` could not be written: the bindings'
+  pack/unpack required `P: Payload`, which `serde_json::Value` and
+  `ErrorPayload` are not, and `TspConsumer` (like the DIDComm consumers) had
+  no path that kept the duplicate-execution record for such a consumer.
+
+  - The bindings' `pack_trust_task` / `unpack_trust_task` (TSP, DIDComm v2.1,
+    DIDComm v1 `build_message`) take any `Serialize` / `DeserializeOwned`
+    payload. None of them read a `Payload` constant; the bound only refused
+    `TrustTask<Value>` and `ErrorResponse`. Loosening a bound is not a break.
+  - `ErrorPayload` implements `Payload`. `TYPE_URI` is the version the library
+    emits, now the one constant `TRUST_TASK_ERROR_TYPE_URI` (0.6) that
+    `trust_task_error_type_uri()` parses; check-bindings reads it there. The
+    policy constants are the 0.6 front matter's (recipient REQUIRED, proof
+    RECOMMENDED).
+  - `consume_dispatched` runs `consume_inbound`'s pipeline for a
+    `TrustTask<Value>` routed by an `AsyncDispatcher`. The spec policy and
+    payload schema come from the registration the document routes to (now
+    recorded by `on_async`). `unsupportedType`, `unsupportedVersion` and a
+    payload the handler's `P` cannot hold are refused before the item-11 record
+    is written, so they never burn an `id`. The rest is the same code:
+    `consume_inbound` and `consume_dispatched` both call one private
+    `consume_core`, so freshness, the §4.8.1 cross-check, proof verification
+    over the document as received, the per-spec checks and the record cannot
+    diverge. Forward routes along a declared extension are pruned exactly as
+    `AsyncDispatcher::dispatch` prunes them, which now shares the routing step.
+  - `TspConsumer`, `DidcommConsumer` and `DidcommV1Consumer` gain
+    `receive_dispatched` / `consume_dispatched` (and `receive_from_dispatched`
+    for DIDComm v2.1), keeping each consumer's record and freshness policy.
+
+  The HTTPS server already routes on `type` with its own record, so it needs
+  nothing. TypeScript, Go and Dart have no dispatcher: their consume functions
+  take the spec as a value and their unpack is untyped, so the caller routes
+  then consumes; CLAUDE.md records the difference.
+
+- **vtc/install/claim/passkey**: Passkey install ceremony under its own slug ([#976](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/976))
+
+* feat(vtc/install/claim/passkey): passkey install ceremony under its own slug
+
+  vtc/install/claim/{start,finish} 0.3 is a different ceremony from 0.2: the
+  founder claims under a DID they already control, with a step-up approver.
+  Because 0.3 is a later version of the same slug, it superseded 0.2, and the
+  passkey install was scheduled for withdrawal with it, although 0.3 itself
+  says "a passkey install keeps using 0.2".
+
+  The two cannot share a 0.4: finish 0.3 declares `proof` REQUIRED (the
+  founder's signature as their DID is the proof of control, enforced from the
+  front matter by every consumer), and the passkey ceremony cannot carry one
+  (the installer holds no key until the passkey exists). One version serving
+  both would leave the wallet ceremony's proof requirement to prose.
+
+  So the passkey ceremony moves, wire-unchanged, to
+  vtc/install/claim/passkey/{start,finish}/0.1, and each ceremony versions on
+  its own:
+
+  - Payloads are 0.2's; framework Ext re-pinned to 0.4; Security & Privacy,
+    Authorization, Request/Response examples written to current conventions.
+  - passkey/finish declares the response `proof` REQUIRED and
+    `discloses: secret`: it carries the bearer setup-session token (as
+    finish 0.3's does). 0.2 declared neither.
+  - vtc/install/claim/{start,finish} 0.2 are retired with `supersededBy`
+    naming the passkey slug, so their deprecation note points at the right
+    successor rather than at the wallet ceremony.
+  - start 0.3's `tokenNamesNoDid` and the 0.3 change notes point at the new
+    slug instead of 0.2.
+
+  Also fixes persona/contact/put 1.2's Status paragraph, which still carried
+  1.1's "Version 1.0 remains in force; 1.1 is a backwards-compatible MINOR
+  increment".
+
+- **rooms/owner/group/remove**: 0.4 — remove a private room's member from the group ([#975](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/975))
+
+0.2 and 0.3 refused a `private` room with `privateRoom` and sent the owner
+  to 0.1, which the spec called the way to remove a member of a private room.
+  0.1 is superseded all the same, so once it is withdrawn no task could take
+  a private-room member out of the MLS group.
+
+  0.4 takes that tier in. On an `attributed` room it is 0.3: withdraw the
+  member's credentials at the host first, then advance. On a `private` room
+  it removes the leaf and advances the room, builds no revocation list (the
+  host cannot be told whom to refuse), and answers `withdrawn: false`.
+
+  - `privateRoom` is no longer declared.
+  - `signingKeyId` is optional; still required (as `noSigningKey`) on any
+    room that is not private.
+  - The response gains a required `withdrawn` boolean; `revocation` is
+    present only when it is true.
+  - Item 8 (settling a pending removal) is 0.3's, with a pending removal that
+    carries no list settled by its step 3 alone.
+  - A producer MUST NOT report `withdrawn: false` as a withdrawal.
+
+  Prose links to remove/0.3 in neighbouring rooms specs move to 0.4
+  (fix-stale-references). vtc/rooms/community/members/remove 0.2 and
+  rooms/owner/revoke 0.1 are clarified in place to allow 0.4 for a private
+  room alongside 0.1.
+
+- **build**: An opt-in Type URI index for generated tasks ([#974](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/974))
+
+
+### Fixed
+
+- Stamp issuedAt in whole seconds in every library ([#970](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/970)) ([#979](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/979))
+
+Rust wrote `issuedAt` with `Utc::now()`, which chrono serializes at the
+  clock's precision: nine fractional digits on Linux, on every error response
+  `dispatch_or_reject` / `reject_with` built and every response `respond_with`
+  built. TypeScript wrote milliseconds with `toISOString()`. SPEC §13.1 item 3
+  calls a full-precision timestamp a fingerprint and lets a producer round
+  `issuedAt` down; readers with a narrower RFC 3339 profile refused these
+  documents.
+
+  Every instant the framework stamps is now UTC in whole seconds, rounded
+  down, the form Go (`SystemClock`) and Dart (`systemClock`) already wrote:
+
+  - trust-tasks-rs: new `issued_at_now()`, used by `reject_with_recipient`,
+    `respond_with` and the dispatchers' error responses.
+  - trust-tasks-https: the client's default `issuedAt` and the server's two
+    fallback error documents.
+  - trust-tasks-capability-client: built documents and `new_attempt`.
+  - @openvtc/trust-tasks: new `issuedAtNow()`, the default clock of
+    `rejectWithRecipient` / `rejectWith` / `respondWith`.
+  - @openvtc/trust-tasks-capability-client: built documents and `newAttempt`.
+
+  A whole second is inside every acceptance window a consumer applies, so no
+  specification has to opt in; the minute or hour §13.1 permits is left to a
+  specification that states its skew. Rounding down never future-dates a
+  document (§7.2 item 13). Readers are unchanged and keep accepting any RFC
+  3339 precision and offset; received documents are never re-stamped, so
+  proofs and item-11 digests are unaffected.
+
+  The same vectors are pinned in all four libraries (tests/issued_at_precision.rs,
+  test/issued-at.test.ts, trusttasks/issued_at_test.go,
+  test/issued_at_test.dart): what is written, and that 0, 1, 3, 6 and 9
+  fractional digits and an offset are all read.
+
+
+
+### Specifications
+
+- **vtc/install/claim/passkey**: Prove possession of the passkey before any authority ([#978](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/978))
+
+A WebAuthn registration under the `none` attestation format, which most
+  platform passkeys use, signs nothing: it names the key the administrator's
+  DID is derived from but does not prove the installer holds it. The passkey
+  install now proves possession before a setup-session token is minted or any
+  administrator entry is written, whatever the attestation format.
+
+  - start's response adds `assertionOptions` (required): request options with
+    a second fresh challenge (>=128 bits, distinct from the creation
+    challenge, single-use, bound to the registration), no allowCredentials.
+  - finish's request adds `webauthnAssertion` (required): one
+    navigator.credentials.get() assertion by the just-registered credential
+    over that challenge. finish verifies it as WebAuthn §7.2 does, against
+    the registered key (EdDSA/Ed25519 or ES256/P-256), before consuming the
+    token, minting the setup-session token or writing an entry. Refusal:
+    new declared code `possessionUnproven`, nothing consumed.
+  - For an invitation of an additional administrator (the community already
+    has one, so vtc/admin/bootstrap answers alreadyBootstrapped), finish
+    writes the entry for the derived DID, after the assertion. On a fresh
+    community bootstrap writes it from the setup-session token, as before.
+  - Security & Privacy: possession is proven before any authority is granted.
+
+  Tightened in place: both versions are `draft` and unreleased (merged in
+  #976, held in Release PR #977), so SPEC §5.2's draft allowance applies and
+  check-published-schemas has no released copy to compare against.
+  vtc/admin/bootstrap/0.1 is unchanged and keeps working for its other caller,
+  vtc/install/claim/finish 0.3: the assertion rides in finish, not bootstrap,
+  because bootstrap never runs for an invited administrator.
+
+  VTI note: `vtc admin invite` will have two kinds — `--did X` uses the 0.3
+  wallet ceremony (token names X); no `--did` is a passkey invite, whose ACL
+  entry is written from the derived DID at finish (or at bootstrap on a fresh
+  community).
+
+
+
 ## [0.36.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.36.0...trust-tasks-rs-v0.36.1) — 2026-10-28
 
 

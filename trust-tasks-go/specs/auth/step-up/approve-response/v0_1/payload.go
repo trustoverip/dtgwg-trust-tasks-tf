@@ -30,7 +30,7 @@ const (
 // Carried in a Trust Task document whose type is
 // https://trusttasks.org/spec/auth/step-up/approve-response/0.1#response.
 //
-// Deprecated: superseded by auth/step-up/approve-response/0.6
+// Deprecated: superseded by auth/step-up/approve-response/0.7
 type Response struct {
 	Status ResponseStatus `json:"status"`
 
@@ -113,7 +113,7 @@ const (
 // challenge are echoed inside a proof-bearing document so the relying party can elevate
 // the session.
 //
-// Deprecated: superseded by auth/step-up/approve-response/0.6
+// Deprecated: superseded by auth/step-up/approve-response/0.7
 type Payload struct {
 	// Echoed from the matching approve-request. The relying party verifies it equals the
 	// session's subject.
@@ -163,7 +163,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = "superseded by auth/step-up/approve-response/0.6"
+const Deprecation = "superseded by auth/step-up/approve-response/0.7"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/auth/step-up/approve-response/0.1#response"

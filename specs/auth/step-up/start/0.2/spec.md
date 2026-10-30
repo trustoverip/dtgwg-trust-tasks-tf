@@ -59,7 +59,7 @@ related:
 
 ## Abstract
 
-An out-of-band step-up is two documents: the relying party's signed [`approve-request`](../../approve-request/0.5/spec.md), which carries a challenge bound to the session, and the approver's signed [`approve-response`](../../approve-response/0.6/spec.md) over it. What was missing is how the holder of a session *asks* for the first one. `approve-request` 0.5 can travel inline in the refusal of an operation, but only for a step-up bound to that operation; raising a *session* needed a bespoke call to the relying party — a REST `start` path returning the document, and a REST `finish` path taking the approval.
+An out-of-band step-up is two documents: the relying party's signed [`approve-request`](../../approve-request/0.5/spec.md), which carries a challenge bound to the session, and the approver's signed [`approve-response`](../../approve-response/0.7/spec.md) over it. What was missing is how the holder of a session *asks* for the first one. `approve-request` 0.5 can travel inline in the refusal of an operation, but only for a step-up bound to that operation; raising a *session* needed a bespoke call to the relying party — a REST `start` path returning the document, and a REST `finish` path taking the approval.
 
 **Step-up Start** is that call as a Trust Task. The holder sends it on any transport; the relying party answers with the signed approve-request. The holder's approver answers that with an `approve-response` sent to the relying party as an ordinary Trust Task, which is the whole ceremony on the relying party's standard dispatch — HTTPS `POST /trust-tasks`, DIDComm or TSP — and no bespoke path at all.
 

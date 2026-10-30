@@ -54,6 +54,13 @@
 //! record. The record is keyed on the document `id` and never on the envelope,
 //! which is resealed with fresh material on every send.
 //!
+//! A consumer that takes documents of **any** type and routes them on `type`
+//! uses [`TspConsumer::receive_dispatched`] with a
+//! [`trust_tasks_rs::AsyncDispatcher`]: an unknown type is answered
+//! `unsupportedType`, and the record and freshness bound apply as they do to
+//! [`TspConsumer::receive`]. [`pack_trust_task`] seals any document, the
+//! dispatcher's error responses included.
+//!
 //! ## Sketch
 //!
 //! ```rust,ignore

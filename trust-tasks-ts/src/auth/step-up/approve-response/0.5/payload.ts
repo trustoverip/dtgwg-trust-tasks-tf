@@ -14,7 +14,7 @@ export type StepUpEvidence = DidSigned | WebAuthn;
 /**
  * The approver's signed ratification of a step-up: subject + challenge (+ sessionId, when the request carried one) are echoed inside a gated document so the relying party can elevate the session, or apply the approval to the one operation it was bound to.
  *
- * @deprecated superseded by auth/step-up/approve-response/0.6
+ * @deprecated superseded by auth/step-up/approve-response/0.7
  */
 export interface AuthStepUpApproveResponse {
   /**
@@ -60,7 +60,7 @@ export interface WebAuthn {
 /**
  * Acknowledgement the relying party returns after processing the approval. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/approve-response/0.5#response.
  *
- * @deprecated superseded by auth/step-up/approve-response/0.6
+ * @deprecated superseded by auth/step-up/approve-response/0.7
  */
 export interface AuthStepUpApproveResponseRelyingPartyAck {
   /**
@@ -102,12 +102,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by auth/step-up/approve-response/0.6";
+export const DEPRECATION: string | null = "superseded by auth/step-up/approve-response/0.7";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by auth/step-up/approve-response/0.6
+ * @deprecated superseded by auth/step-up/approve-response/0.7
  */
 export type Payload = AuthStepUpApproveResponse;
 
@@ -117,7 +117,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/auth/step-up/appro
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by auth/step-up/approve-response/0.6
+ * @deprecated superseded by auth/step-up/approve-response/0.7
  */
 export type Response = AuthStepUpApproveResponseRelyingPartyAck;
 

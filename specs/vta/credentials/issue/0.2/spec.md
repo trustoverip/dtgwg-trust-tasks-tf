@@ -82,7 +82,7 @@ knownImplementations:
 
 The **VTA Credentials — Issue** Trust Task instructs a VTA to mint a **scoped, time-boxed Verifiable Credential** and bind it to a named *holder*. Unlike the fixed authorization credential minted once at integration bootstrap, this task issues an **arbitrary-claims** credential on demand — the mechanism behind an explicit, revocable **cross-context share**: one context (the *issuing authority*) grants a holder in another context exactly the claims named in `payload.claims`, no more, for exactly `payload.validitySeconds`, no longer.
 
-Issuance is **high-trust**: a VTA **MUST** gate this task behind operator **step-up** (an elevated authentication assurance level, see [`auth/step-up/approve-response`](../../../../auth/step-up/approve-response/0.6/spec.md)). The operator-signed step-up response is the unforgeable human authorization; this task is the instruction that step-up authorizes.
+Issuance is **high-trust**: a VTA **MUST** gate this task behind operator **step-up** (an elevated authentication assurance level, see [`auth/step-up/approve-response`](../../../../auth/step-up/approve-response/0.7/spec.md)). The operator-signed step-up response is the unforgeable human authorization; this task is the instruction that step-up authorizes.
 
 The credential's claim vocabulary is opaque to the framework — the issuing authority and the eventual verifier agree on its meaning. The issued credential is itself a standard Verifiable Credential and is verified, presented, and (optionally) revoked by the usual means.
 

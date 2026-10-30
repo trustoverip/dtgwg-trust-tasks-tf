@@ -56,7 +56,7 @@ type UnsignedRoomRequest struct {
 // https://trusttasks.org/spec/rooms/keys/act/0.6#response. The request, completed as the
 // member, for the caller to send to its recipient unaltered.
 //
-// Deprecated: superseded by rooms/keys/act/0.8
+// Deprecated: superseded by rooms/keys/act/0.9
 type Response struct {
 	// The member the recipient signed as: the completed document's `issuer`.
 	Principal string `json:"principal"`
@@ -82,7 +82,7 @@ type Ext = map[string]json.RawMessage
 // the one action the request's type needs, the member as issuer, and the member's
 // signature. The outer document members are owned by the framework — SPEC §6.3.
 //
-// Deprecated: superseded by rooms/keys/act/0.8
+// Deprecated: superseded by rooms/keys/act/0.9
 type Payload struct {
 	// The room request to complete, as the client will send it, minus its presentation and
 	// its proof.
@@ -107,7 +107,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = "superseded by rooms/keys/act/0.8"
+const Deprecation = "superseded by rooms/keys/act/0.9"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/rooms/keys/act/0.6#response"
