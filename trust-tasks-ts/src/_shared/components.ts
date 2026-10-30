@@ -359,6 +359,10 @@ export type AnchorCadence = "never" | "renewal" | "manual";
  */
 export type Approval = "policyAllowed" | "approved" | "waived";
 /**
+ * The evidence an approval was recorded on, as `auth/step-up/approve-response` names it. Only the approver's own evidence is ever recorded: a proof by a key the VTA records as acting for an approver — a console signing key or any other delegation — is never an approval (CONVENTIONS.md §6.3).
+ */
+export type ApprovalEvidenceKind = "didSigned" | "webauthn" | "approverSigned";
+/**
  * An explicit statement of the capabilities a subject may approve. Exactly one of `ceiling` (the role's full approve ceiling), `none`, or `listed` with a NON-EMPTY list of CapabilityRef.
  */
 export type ApproveCapabilityScope = CapabilityScopeCeiling | CapabilityScopeNone | ApproveCapabilityScopeListed;
@@ -675,6 +679,10 @@ export type DeviceAttestation_DeviceV0_2 =
  */
 export type DeviceLabel = string;
 /**
+ * The DID method an identity uses, as the method profile that governs it is named: `webvh` for a did:webvh identity, `scid:vh` for the did:scid:vh:1 form of one, `webs` for did:webs. Deliberately a pattern and not an enumeration: a method is added by publishing its profile under method-profiles/, never by changing this schema. A VTA MUST refuse a method it holds no profile for, or whose profile declares it ineligible, with `vta/dids:methodNotEligible`.
+ */
+export type DidMethodName = string;
+/**
  * A DID Core verification relationship.
  */
 export type DidVerificationRelationship =
@@ -988,9 +996,21 @@ export type KeyRole = "attestation" | "operational" | "messaging" | "update";
  */
 export type KeyRoleChangeOutcome = "preview" | "applied" | "pendingApproval";
 /**
+ * `preview` — nothing was written; the response carries the plan. `applied` — the change was made (and published, unless `publication.selfPublish`). `pendingApproval` — the plan is recorded and awaits further approvals. `awaitingRecoveryProof` — the plan is approved and waits for the recovery custodian's proof (`preview.recoverySigning`); nothing is published until it arrives.
+ */
+export type KeyRoleChangeOutcome_VtaDidsV0_1 = "preview" | "applied" | "pendingApproval" | "awaitingRecoveryProof";
+/**
  * Which view of the DID's key roles the caller was given (CONVENTIONS.md §5). `public` — only what the published document and log already reveal to anyone who resolves the DID. `custody` — additionally the VTA's own custody state: pending keys, the custodian record behind each key, overlap deadlines, who initiated and approved each change, and why. The response always states which it is, so a caller never mistakes an absent member for a statement that the thing does not exist.
  */
 export type KeyRoleProjection = "public" | "custody";
+/**
+ * Which view of the identity's key roles the caller was given (CONVENTIONS.md §11). `public` — only what the published identifier document and history already reveal. `custody` — additionally the VTA's custody state: pending keys, the custodian record and protection boundary behind each key, overlap deadlines, who initiated and approved each change, and why.
+ */
+export type KeyRoleProjection_VtaDidsV0_1 = "public" | "custody";
+/**
+ * The named key role a key occupies in an identity (CONVENTIONS.md §2; VTI-KEY-070 onward). `attestation` — the only keys in `assertionMethod`; sign the identity's attestation artefacts (credentials, endorsements, status lists) through the VTA's signing service and nowhere else. Generated inside the VTA, never derived, never exportable, never in a backup. `operational` — the only keys the identity's own process uses in `authentication`; sign the node's own traffic (Trust Task requests and responses, DIDComm and TSP signatures, invitations, notices, audit checkpoints). Derived. `messaging` — the only keys in `keyAgreement`; sign nothing. X25519, derived or generated in its own right and never converted from a signing key. `update` — the identifier's change authority as its DID method states it (a did:webvh log's `updateKeys` and `nextKeyHashes`, a KERI key event log's current and next keys); never a role-bound verification method, never in `keyRoles`. Generated inside the VTA, never derived, never exportable, never in a backup, and always accompanied by a committed recovery key held outside the VTA's protection boundary. `authenticator` — a key held on a person's own authenticator (a WebAuthn passkey), listed in `authentication` of that person's identity only; used only to verify the person's WebAuthn assertions (sign-in and step-up evidence) and never to accept a Data Integrity proof. The VTA never holds its private half, so it is enrolled by the passkey ceremony and never generated, added or rotated by these tasks. Never permitted on the durable identity of a VTA, a VTC or a VTN. No role permits `capabilityInvocation` or `capabilityDelegation` (VTI-KEY-075). The set is an extensible registry: a consumer that meets a role it does not implement MUST rely on the key for nothing, and MUST NOT map it onto a role it does know (VTI-KEY-074).
+ */
+export type KeyRole_VtaDidsV0_1 = "attestation" | "operational" | "messaging" | "update" | "authenticator";
 /**
  * An explicit key scope. Exactly one of three shapes, discriminated by `scope`: `all`, `none`, or `listed` with a NON-EMPTY list of key identifiers. The empty list is invalid, not a fourth shape.
  */
@@ -1308,6 +1328,18 @@ export type Petname = string;
  */
 export type PlaceName = string;
 /**
+ * Conditions a human should be shown before approving. `singleKeyRole` — the role will hold one active key. `algorithmNotInAcceptedSet` — a verifier population the VTA knows of does not accept the new key's algorithm. `roleWillHaveNoClassicalKey` — every remaining key is post-quantum. `attestationReissuanceRequired` — revoking this attestation key obliges re-issuance and re-signed status lists (VTI-KEY-133). `selfPublish` — the VTA will not publish the change; the operator must. `noWitnesses` — the identifier has no witnesses, so a party holding the VTA's routine update key can drop the recovery commitment unobserved (CONVENTIONS.md §5.3). `protectionBelowPolicy` — a key will be held at a `ProtectionClass` below what the VTA's policy recommends for its role (a plain VTA holding an attestation key). `recoveryKeyRevealed` — this change uses the recovery key, which must be replaced by a fresh recovery commitment in the same change.
+ */
+export type PreviewWarning =
+  | "singleKeyRole"
+  | "algorithmNotInAcceptedSet"
+  | "roleWillHaveNoClassicalKey"
+  | "attestationReissuanceRequired"
+  | "selfPublish"
+  | "noWitnesses"
+  | "protectionBelowPolicy"
+  | "recoveryKeyRevealed";
+/**
  * One line of a profile, in exactly one of four forms. Together they are the whole of a profile's flexibility, and each exists for a case the others handle badly.
  *
  * `{ref}` — use the pool attribute, live. Editing the pool updates every profile that references it, which is the point.
@@ -1359,6 +1391,10 @@ export type ProfileEntry =
  * The distinction between the first two and the last two is of kind, not degree: only `predicate` and `derived` avoid handing two verifiers a join key. A maintainer MUST default to the highest rung the credential's format supports, and MUST NOT silently fall to a lower one — a request that cannot be satisfied at the rung a producer asked for is refused, because a silent privacy downgrade discloses material the holder believed was hidden.
  */
 export type ProofRung = "predicate" | "derived" | "selectiveDisclosure" | "whole";
+/**
+ * How a private half is protected (CONVENTIONS.md §5.2). `software` — stored by the VTA without encryption independent of the host (a plain VTA). `encryptedAtRest` — wrapped under a key the VTA holds outside its store (a hardened VTA). `enclave` — held only inside an attested trusted execution environment, wrapped under a key released only to its measurement (a TEE VTA). `hardwareModule` — held by a hardware security module or cloud key service that performs the operation without releasing the key. `externalCustodian` — not held by this VTA at all: a recovery update key, or an `authenticator` key on a person's device.
+ */
+export type ProtectionClass = "software" | "encryptedAtRest" | "enclave" | "hardwareModule" | "externalCustodian";
 /**
  * Where a value comes from, and the member that makes this family worth building on a trust stack rather than in an address book. It survives to the verifier, so a recipient can tell — per field — what the holder typed from what an issuer attested.
  *
@@ -1610,6 +1646,17 @@ export type RightOrigin = "recorded" | "roleDerived";
  */
 export type RoleKeyState = "pending" | "staged" | "active" | "retiring" | "retired" | "revoked";
 /**
+ * Where a key is in its role's lifecycle (CONVENTIONS.md §8, §10). `pending` — planned by a preview or a change awaiting approval; not published; custody projection only. `staged` — published and bound to its role but not yet used, until the publishing change's cache horizon. `active` — the key the VTA uses for new signatures (for `messaging`, advertises for new sessions; for `update`, the current authority). `retiring` — still published but never used to sign again; a retiring `messaging` key still decrypts until retirement. `retired` — removed by planned rotation; what it signed while published stays valid, judged against the identifier version current at issuance. `revoked` — withdrawn for compromise, recorded with `compromisedSince`; what it signed from then on establishes nothing. `committed` — an `update` key the identifier commits to as a successor but has not revealed (a did:webvh `nextKeyHashes` entry, a KERI next-key digest). `retired` and `revoked` are terminal.
+ */
+export type RoleKeyState_VtaDidsV0_1 =
+  | "pending"
+  | "staged"
+  | "active"
+  | "retiring"
+  | "retired"
+  | "revoked"
+  | "committed";
+/**
  * A role identifier: lowercase, hyphen-separated, at most 64 characters. Compared by exact string equality. It is the value an AclEntry 0.2 carries in `role`.
  */
 export type RoleName = string;
@@ -1645,9 +1692,24 @@ export type RoomTags =
  */
 export type RotationKind = "planned" | "compromise" | "addition";
 /**
+ * `planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same change. `addition` — a key joined a role without anything leaving it. `recovery` — the identifier's update authority moved to the committed recovery key, because the VTA's own update keys were lost or may be in someone else's hands.
+ */
+export type RotationKind_VtaDidsV0_1 = "planned" | "compromise" | "addition" | "recovery";
+/**
  * `pendingApproval` — awaiting the approvals the VTA's policy requires; nothing is published. `staged` — successor published, not yet used; predecessor still active. `overlapping` — successor active, predecessor `retiring`. `completed` — every predecessor retired (or, for `compromise` and `addition`, the entry is published and any overlap it began has ended). `aborted` — the successor was retired instead of the predecessor, which stayed or returned to `active`. `expired` — approvals were not gathered before the preview expired; nothing was published.
  */
 export type RotationState = "pendingApproval" | "staged" | "overlapping" | "completed" | "aborted" | "expired";
+/**
+ * `pendingApproval` — awaiting the approvals the VTA's policy requires; nothing is published. `awaitingRecoveryProof` — approved, and waiting for the recovery custodian's proof over the change; nothing is published. `staged` — successor published, not yet used. `overlapping` — successor active, predecessor `retiring`. `completed` — every predecessor retired, or the change is published and any overlap it began has ended. `aborted` — the successor was retired instead of the predecessor, or a revocation superseded the change. `expired` — the approvals or the recovery proof did not arrive before the preview expired; nothing was published.
+ */
+export type RotationState_VtaDidsV0_1 =
+  | "pendingApproval"
+  | "awaitingRecoveryProof"
+  | "staged"
+  | "overlapping"
+  | "completed"
+  | "aborted"
+  | "expired";
 /**
  * How a consent prompt reaches the approver: `wake` pushes to the approver's device for a DID-signed decision; `bridge-relay` renders it through an enrolled bridge (e.g. a numbered card in the operator's messaging app) for a bridge-attested decision.
  */
@@ -2031,6 +2093,10 @@ export type TrusteePhase = "enrolling" | "dealing" | "confirming" | "keyed" | "d
  * A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.
  */
 export type Ulid = string;
+/**
+ * For an `update` key only (CONVENTIONS.md §5.3). `routine` — generated and held by the VTA, which authorizes the identity's ordinary changes with it. `recovery` — held by a recovery custodian in a protection boundary other than the VTA's; the VTA holds only its commitment, carries that commitment forward in every change it makes, and can use the key only by asking the custodian for a proof (`RecoverySigningRequest`).
+ */
+export type UpdateKeyClass = "routine" | "recovery";
 /**
  * Handle for one upload across begin, chunk, commit and abort, and — for a bundle — deploy. Recipient-generated and unguessable, which is what lets a reference to somebody else's upload be answered as not-found without confirming it exists. Opaque: a producer quotes what it was given.
  */
@@ -7042,6 +7108,25 @@ export interface DidDocumentChange {
   relationships?: DidVerificationRelationship[];
   preRotationCount?: number;
 }
+export interface DidDocumentChange_VtaDidsV0_1 {
+  /**
+   * `addKey` — a verification method joins its role's relationship and `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves its relationship and `keyRoles`, and stays in `verificationMethod` with `revoked` set to the compromise time (CONVENTIONS.md §9.1). `rotateUpdateKey` — the identifier's update authority moves to a committed routine successor. `commitUpdateKey` — a new routine successor is committed. `replaceRecoveryCommitment` — the recovery commitment changes. `useRecoveryKey` — the change is authorized by the recovery key, which the identifier then reveals.
+   */
+  op:
+    | "addKey"
+    | "retireKey"
+    | "revokeKey"
+    | "rotateUpdateKey"
+    | "commitUpdateKey"
+    | "replaceRecoveryCommitment"
+    | "useRecoveryKey";
+  role: KeyRole_VtaDidsV0_1;
+  verificationMethod?: string;
+  keyType?: KeyType;
+  publicKeyMultibase?: string;
+  commitment?: string;
+  relationships?: DidVerificationRelationship[];
+}
 /**
  * What a change would publish, computed by the VTA by running the handler it would run to apply it, and nothing else (CONVENTIONS.md §3.1). This is what a consent surface renders and what an approval is bound to.
  */
@@ -7078,6 +7163,35 @@ export interface DidDocumentPreview {
    * True when appending this entry also moves the DID's update key to a committed successor. Stated as its own member, not left to be found in `changes`, because it is the consequence a reviewer most often misses.
    */
   updateKeyRotates: boolean;
+}
+/**
+ * What a change would publish, computed by the VTA by running the handler it would run to apply it (CONVENTIONS.md §6.1). This is what a consent surface renders and what an approval is bound to.
+ */
+export interface DidDocumentPreview_VtaDidsV0_1 {
+  /**
+   * Opaque, unguessable identifier of this exact plan. Carried back by the apply request; every approval and any recovery proof is bound to it.
+   */
+  previewId: string;
+  method: DidMethodName;
+  /**
+   * The version identifier the plan was computed against. Absent only for a creation. The plan is void once the identifier moves past it.
+   */
+  baseVersionId?: string;
+  expiresAt: string;
+  /**
+   * Every change the plan would make, including the ones the caller did not ask for — in particular any movement of the update authority the method requires.
+   */
+  changes: DidDocumentChange_VtaDidsV0_1[];
+  /**
+   * The complete identifier document the change would publish, `keyRoles` included. Public data by construction.
+   */
+  document: {};
+  warnings?: PreviewWarning[];
+  /**
+   * True when applying the plan also moves the identifier's update authority to a committed successor — every change under did:webvh pre-rotation, never a KERI interaction event. Stated as its own member because it is the consequence a reviewer most often misses.
+   */
+  updateKeyRotates: boolean;
+  recoverySigning?: RecoverySigningRequest;
 }
 export interface DidRecord {
   /**
@@ -7233,7 +7347,7 @@ export interface DidTemplateRecord_VtaV0_7 {
   /**
    * Template schema version. 1 is the historical shape, whose keys are implicitly an Ed25519 signing key and an X25519 key-agreement key. 2 adds the `keys` block, which makes those explicit and allows others.
    */
-  schemaVersion: 1 | 2;
+  schemaVersion: 1 | 2 | 3;
   name: string;
   kind: string;
   description?: string | null;
@@ -7271,6 +7385,12 @@ export interface DidTemplateRecord_VtaV0_7 {
         }
       | undefined;
   };
+  /**
+   * The key roles of a key-role identity, one `RoleLayout` per role (vta/dids/_shared/0.1/CONVENTIONS.md §4). REQUIRED for, and only for, `schemaVersion` 3, which then MUST NOT carry `keys`. A v3 template describes only an identity's non-key members: its `document` MUST NOT contain `verificationMethod`, `authentication`, `assertionMethod`, `keyAgreement`, `capabilityInvocation`, `capabilityDelegation` or `keyRoles`, and the VTA renders all of them from this layout and the key-role registry — so a template can never place a key in a relationship its role does not own. Each listed algorithm is minted, one key each; unlike v2's `keys`, the list is not a preference order, and a VTA that cannot mint one refuses rather than substitutes. Used by vta/dids/create; a v1 or v2 template cannot create a key-role identity.
+   *
+   * @minItems 1
+   */
+  keyRoles?: [RoleLayout, ...RoleLayout[]];
   document: {};
   /**
    * Resolved scope of the stored template.
@@ -7400,6 +7520,83 @@ export interface DidTemplate_VtaV0_2 {
         }
       | undefined;
   };
+  /**
+   * The DID document body with `{TOKEN}` placeholders. `document.id` MUST contain the `{DID}` placeholder. Every `{TOKEN}` MUST be declared in requiredVars/optionalVars or be a reserved ambient name.
+   */
+  document: {};
+}
+/**
+ * Authored template shape: a DID document with `{TOKEN}` placeholders plus the variable contract the VTA's renderer enforces.
+ */
+export interface DidTemplate_VtaV0_7 {
+  /**
+   * Template schema version. 1 is the historical shape, whose keys are implicitly an Ed25519 signing key and an X25519 key-agreement key. 2 adds the `keys` block, which makes those explicit and allows others. 3 is a key-role template (`keyRoles`), whose document carries no key members.
+   */
+  schemaVersion: 1 | 2 | 3;
+  /**
+   * Template id within its scope. Lowercase alphanumeric and hyphen only.
+   */
+  name: string;
+  /**
+   * Classification hint, e.g. `mediator`, `did-host-http`, `app`. Drives downstream provisioning behaviour.
+   */
+  kind: string;
+  /**
+   * Human-readable description of what the template provisions.
+   */
+  description?: string | null;
+  /**
+   * DID methods this template targets, e.g. ["webvh", "web"] for a hosted DID or ["key"] for a did:key.
+   */
+  methods?: string[];
+  /**
+   * Variables the caller MUST supply at render time. MUST NOT include reserved ambient names (DID, SIGNING_KEY_MB, KA_KEY_MB, VTA_DID, VTA_URL, CONTEXT_ID, CONTEXT_DID, NOW).
+   */
+  requiredVars?: string[];
+  /**
+   * Variables with default values, keyed by variable name.
+   */
+  optionalVars?: {
+    [k: string]: unknown | undefined;
+  };
+  /**
+   * Hints for CLI / setup wizards (e.g. preRotationCount, portable, addMediatorService).
+   */
+  defaults?: {
+    [k: string]: unknown | undefined;
+  };
+  /**
+   * The keys this template needs, by slot name. REQUIRES `schemaVersion` 2.
+   *
+   * A slot's name becomes a document placeholder by an explicit rule — uppercase, `-` to `_`, suffix `_KEY_MB` — so slot `signing` is rendered into `{SIGNING_KEY_MB}` and slot `ka` into `{KA_KEY_MB}`. Those are the two names a `schemaVersion` 1 template already uses, which is deliberate: a v1 template is exactly a v2 template whose `keys` block is `{signing: [ed25519], ka: [x25519]}`, so an implementation can read both through one path and raising the version cannot change how a v1 template renders.
+   *
+   * An implementation MUST refuse a template that declares a slot whose placeholder never appears in `document` — the key would be minted and never published, so verifiers would continue to see only the keys that are, while the operator believes the template migrated. It MUST likewise refuse a slot placeholder in `document` that no slot declares, which would render as an unsubstituted literal.
+   */
+  keys?: {
+    [k: string]:
+      | {
+          /**
+           * What the key is for. Deliberately coarser than DID Core's five verification relationships: the template says what the key is, and the `document` body says where it appears. Encoding the relationship here as well would let the two disagree.
+           */
+          purpose: "signing" | "keyAgreement";
+          /**
+           * Acceptable algorithms, MOST PREFERRED FIRST. A list rather than a single value because a fleet does not migrate atomically: `["mldsa44", "ed25519"]` means mint ML-DSA-44 where the implementation can and Ed25519 otherwise, so one template serves a VTA with post-quantum support and one without. An implementation MUST NOT substitute an algorithm absent from this list; running out of candidates is an error, never a silent downgrade — a deployment intended to be post-quantum would otherwise ship classical keys with nothing reporting it. `minItems: 1` for the same reason: an empty list would express no preference and inherit whatever the implementation defaulted to.
+           *
+           * @minItems 1
+           */
+          algorithms: [
+            "ed25519" | "x25519" | "p256" | "mldsa44" | "mldsa65",
+            ...("ed25519" | "x25519" | "p256" | "mldsa44" | "mldsa65")[]
+          ];
+        }
+      | undefined;
+  };
+  /**
+   * The key roles of a key-role identity, one `RoleLayout` per role (vta/dids/_shared/0.1/CONVENTIONS.md §4). REQUIRED for, and only for, `schemaVersion` 3, which then MUST NOT carry `keys`. A v3 template describes only an identity's non-key members: its `document` MUST NOT contain `verificationMethod`, `authentication`, `assertionMethod`, `keyAgreement`, `capabilityInvocation`, `capabilityDelegation` or `keyRoles`, and the VTA renders all of them from this layout and the key-role registry — so a template can never place a key in a relationship its role does not own. Each listed algorithm is minted, one key each; unlike v2's `keys`, the list is not a preference order, and a VTA that cannot mint one refuses rather than substitutes. Used by vta/dids/create; a v1 or v2 template cannot create a key-role identity.
+   *
+   * @minItems 1
+   */
+  keyRoles?: [RoleLayout, ...RoleLayout[]];
   /**
    * The DID document body with `{TOKEN}` placeholders. `document.id` MUST contain the `{DID}` placeholder. Every `{TOKEN}` MUST be declared in requiredVars/optionalVars or be a reserved ambient name.
    */
@@ -9117,6 +9314,27 @@ export interface KeyRoleApprovalState {
   expiresAt: string;
 }
 /**
+ * Approval progress of a change the VTA's policy gates on approvals (CONVENTIONS.md §6).
+ */
+export interface KeyRoleApprovalState_VtaDidsV0_1 {
+  /**
+   * Distinct approvals the VTA's policy requires.
+   */
+  required: number;
+  /**
+   * Distinct approvals recorded so far, the initiator's own included.
+   */
+  received: number;
+  /**
+   * The approvals recorded. Custody projection only; omitted from a response to anyone who is not themselves an eligible approver of this change.
+   */
+  approvals?: RecordedApproval[];
+  /**
+   * When the preview, and every approval bound to it, stops being usable.
+   */
+  expiresAt: string;
+}
+/**
  * Every key the entry's act scope reaches.
  */
 export interface KeyScopeAll {
@@ -10308,6 +10526,30 @@ export interface PublicKeyCredentialRequestOptions {
   userVerification?: "discouraged" | "preferred" | "required";
 }
 /**
+ * How the change reaches resolvers.
+ */
+export interface Publication {
+  /**
+   * True when no hosting service holds the identifier for the VTA: the caller must publish `artifacts`, and until it does resolvers see the previous version.
+   */
+  selfPublish: boolean;
+  /**
+   * Present when `selfPublish` is true.
+   */
+  artifacts?: PublishedArtifact[];
+}
+/**
+ * A file the identifier's method publishes, as the method profile names it (`did.jsonl` for did:webvh, `did.json` and `keri.cesr` for did:webs).
+ */
+export interface PublishedArtifact {
+  name: string;
+  mediaType: string;
+  /**
+   * The artefact's content, or for an append-only artefact the appended part, as text.
+   */
+  content: string;
+}
+/**
  * A member's external card: a JSContact `Card` (RFC 9553) holding exactly their values whose visibility is `public`, mapped as `JSContactCard` maps them, with the member's W3C Data Integrity `proof`. The community serves it as received and never signs, composes or edits it (VTI-REG-004 item 4).
  *
  * Carried as an open object, and deliberately so: the proof covers every member of the card, and a typed binding that kept only the members named here would drop the rest and break the signature. So this schema constrains none of its members, and a consumer MUST check them itself: `@type`, `version`, `uid`, `issuer` and `proof` are present; `@type` is `Card`; `version` is `1.0`; `uid` is `urn:vtc-directory:<EntryId>`; `issuer` is the member's membership DID; `proof` is a `DataIntegrityProof` with `cryptosuite` `eddsa-jcs-2022` or `ecdsa-jcs-2019`, `proofPurpose` `assertionMethod`, and a `verificationMethod` of the member's membership DID authorized for `assertionMethod`; and the proof verifies over the card without it, before any member is relied on.
@@ -10772,6 +11014,51 @@ export interface RecordRetention {
    */
   ext?: Ext;
 }
+export interface RecordedApproval {
+  /**
+   * VID of the approver.
+   */
+  approver: string;
+  evidence: ApprovalEvidenceKind;
+  recordedAt?: string;
+}
+/**
+ * A recovery key offered for commitment (CONVENTIONS.md §5.3). The VTA computes the method's commitment from it, verifies `proofOfPossession`, and then keeps only the commitment. The key MUST be held by a custodian in a protection boundary other than the VTA's; a VTA MUST refuse one it generated or can derive (`vta/dids:recoveryCommitmentRequired`).
+ */
+export interface RecoveryCommitment {
+  keyType: KeyType;
+  /**
+   * The recovery key's public half. Not published by the VTA where the method commits by hash.
+   */
+  publicKeyMultibase: string;
+  /**
+   * Multibase signature by the recovery key over the UTF-8 bytes of `vta-dids-recovery-commitment/v1`, a zero byte, and the request's `previewId`. Absent on a dry run, which is how the `previewId` is obtained; REQUIRED on the apply request, and the only member besides `previewId`, `dryRun` and `recoveryProof` that may differ between the two.
+   */
+  proofOfPossession?: string;
+  /**
+   * Operator-facing name of the custodian. Custody projection only; never published.
+   */
+  label?: string;
+}
+/**
+ * What a recovery custodian must sign for a change that only the recovery key may authorize (CONVENTIONS.md §5.4, §9.4). The custodian MUST check `unsignedChange` itself — render it to its human, confirm that it reveals the recovery key it holds and commits to a fresh recovery key it also holds — and MUST NOT sign on the strength of this request's description alone.
+ */
+export interface RecoverySigningRequest {
+  /**
+   * The recovery commitment the identifier publishes; the custodian's key MUST be the one it commits to.
+   */
+  commitment: string;
+  keyType: KeyType;
+  /**
+   * The change exactly as it will be published, without the recovery proof, as JSON text in the method's own form (a did:webvh log entry, a KERI rotation event).
+   */
+  unsignedChange: string;
+  /**
+   * The proof the method requires over `unsignedChange`, without its signature value, as the method profile defines it (for did:webvh, a Data Integrity proof configuration with `proofPurpose: assertionMethod` and the recovery key's `did:key` as `verificationMethod`).
+   */
+  proofOptions: {};
+  expiresAt?: string;
+}
 /**
  * A passkey already bound to a subject, as listed by `auth/passkey/list` and targeted by `auth/passkey/revoke/*`. This is the auth service's own management view of a credential — not a WebAuthn dictionary — so its members are camelCase per SPEC.md §4.10. The exception is `transports`, whose values are the externally-owned WebAuthn transport tokens and are carried verbatim.
  */
@@ -10817,6 +11104,19 @@ export interface RegisteredInstance {
   servedDomains?: string[];
   lastSeenAt?: string;
   ext?: Ext;
+}
+/**
+ * What the node must now do that the change cannot (VTI-KEY-133, CONVENTIONS.md §9.6). Custody data, present when an `attestation` key is revoked or lost.
+ */
+export interface ReissuanceFollowUp {
+  /**
+   * Status lists signed by the revoked or lost key, which the node MUST re-sign at once under a sound attestation key.
+   */
+  statusListsToResign?: number;
+  /**
+   * Attestation artefacts still in force that the VTA's signing record shows the key signed, which the node MUST re-issue with identical claims and expiry.
+   */
+  artefactsToReissue?: number;
 }
 /**
  * A key a patch declined to apply, with the reason.
@@ -11361,6 +11661,104 @@ export interface RoleKeyCustody {
    */
   destroyed?: boolean;
 }
+/**
+ * How a key is held. Present only in the custody projection. Carries no key material, and a conforming VTA MUST NOT place any in `ext`.
+ */
+export interface RoleKeyCustody_VtaDidsV0_1 {
+  /**
+   * The custodian record identifier (`keys/*`'s `keyId`) behind this key. Absent for a key this VTA does not hold (`protection: externalCustodian`).
+   */
+  keyId?: string;
+  origin?: KeyOrigin;
+  /**
+   * Whether the custodian would release the private half. Always `false` for `attestation` and `update` keys. Stated explicitly, never absent.
+   */
+  exportable: boolean;
+  /**
+   * True when no authority can make the key exportable. `true` implies `exportable: false`.
+   */
+  neverExportable: boolean;
+  /**
+   * Whether the key, or material it can be re-derived or decrypted from, is in the VTA's backups or any state transfer. Always `false` for `attestation` and `update` keys (VTI-KEY-112).
+   */
+  inBackups: boolean;
+  protection: ProtectionClass;
+  /**
+   * Opaque, VTA-assigned label of the protection boundary holding the key (CONVENTIONS.md §5.2). Two keys with the same label are lost or compromised together. A recovery update key MUST carry a label different from every routine update key's. Custody projection only; never published.
+   */
+  boundary?: string;
+  /**
+   * True once the private half has been destroyed — a retired `attestation` or `messaging` key. The record survives so the key's past signatures stay attributable.
+   */
+  destroyed?: boolean;
+}
+/**
+ * One key in one role. A key is in exactly one role for its whole life; a change of role is a retirement from one and an addition to another, with fresh material under a fresh identifier.
+ */
+export interface RoleKey_VtaDidsV0_1 {
+  /**
+   * The full verification-method identifier (`did#fragment`) the document publishes the key under and lists in `keyRoles`. Absent for `update` keys, which are never role-bound verification methods (VTI-KEY-093). A VTA minting a method SHOULD derive its fragment from the key (VTI-KEY-150).
+   */
+  verificationMethod?: string;
+  role: KeyRole_VtaDidsV0_1;
+  updateKeyClass?: UpdateKeyClass;
+  /**
+   * The relationships the key is (or, while `pending`, will be) listed in: always exactly its role's one relationship. Empty for `update`, `retired` and `revoked` keys.
+   */
+  relationships?: DidVerificationRelationship[];
+  keyType: KeyType;
+  /**
+   * The public half, multibase-encoded, exactly as published. Absent for a `committed` update key, whose public half the identifier has not yet revealed.
+   */
+  publicKeyMultibase?: string;
+  /**
+   * For a `committed` update key: the commitment the identifier publishes (a did:webvh `nextKeyHashes` entry, a KERI next-key digest), in the method's own encoding.
+   */
+  commitment?: string;
+  state: RoleKeyState_VtaDidsV0_1;
+  /**
+   * The method's version identifier of the change that first published the key or its commitment (method-profiles/: a did:webvh `versionId`, a KERI event's sequence number and digest). Absent while `pending`.
+   */
+  publishedInVersionId?: string;
+  /**
+   * Version identifier of the change that retired or revoked the key.
+   */
+  removedInVersionId?: string;
+  /**
+   * For a `staged` key: when the VTA will begin using it — no earlier than the publishing change's cache horizon.
+   */
+  activatesAt?: string;
+  /**
+   * For a `retiring` key: the end of its overlap. Custody projection only.
+   */
+  retireAfter?: string;
+  /**
+   * For a `revoked` key: the compromise time (VTI-KEY-121), published as the verification method's `revoked` value. Where it cannot be established, the time the key was first published.
+   */
+  compromisedSince?: string;
+  /**
+   * The rotation this key was introduced or retired by.
+   */
+  rotationId?: string;
+  /**
+   * Operator-facing label. Custody projection only.
+   */
+  label?: string;
+  custody?: RoleKeyCustody_VtaDidsV0_1;
+  ext?: Ext;
+}
+/**
+ * The keys an identity is created with in one role (CONVENTIONS.md §4). A key-role DID template carries one per role; a creation request may narrow it but never widen it.
+ */
+export interface RoleLayout {
+  role: KeyRole_VtaDidsV0_1;
+  /**
+   * The algorithms to mint, one key each, in publication order — `["ed25519", "mldsa44"]` mints a classical and a post-quantum attestation key that sign as a proof set. Every entry MUST suit the role (CONVENTIONS.md §2.2). A VTA that cannot mint one of them MUST refuse the creation with `vta/dids:unsupportedKeyType`; it never substitutes an algorithm or omits a key.
+   *
+   * @minItems 1
+   */
+  algorithms: [KeyType, ...KeyType[]];
+}
 export interface RoleSummary {
   role: KeyRole;
   /**
@@ -11375,6 +11773,25 @@ export interface RoleSummary {
    * `update` only: successors the latest entry commits to. `0` means a compromise of the current update key cannot be recovered from by rotation, and the DID would have to be deactivated (VTI-KEY-124).
    */
   preRotationCommitments?: number;
+}
+export interface RoleSummary_VtaDidsV0_1 {
+  role: KeyRole_VtaDidsV0_1;
+  /**
+   * The relationship this role owns. Empty for `update`.
+   */
+  relationships: DidVerificationRelationship[];
+  /**
+   * The role's keys, in the order the document publishes them. Terminal-state keys are included only when the request asked for them, except a `revoked` key the document still lists, which is always included.
+   */
+  keys: RoleKey_VtaDidsV0_1[];
+  /**
+   * `update` only: whether the identifier's latest version commits to a recovery key in a boundary other than the VTA's (CONVENTIONS.md §5.3). `false` is a defect the VTA reports rather than hides.
+   */
+  recoveryCommitted?: boolean;
+  /**
+   * `update` only, where the method has one: the signing threshold over the current update keys, in the method's own notation (a KERI `kt`).
+   */
+  threshold?: string;
 }
 /**
  * Who may be issued a ticket (VTI-VOT-021): the community's active members, its active members and the parties `listed` names, or only the parties `listed` names.
@@ -11638,6 +12055,53 @@ export interface RotationRecord {
    * Planned rotations: the publishing entry's cache horizon — publication plus the longer of the document's TTL and the verifier cache cap (CONVENTIONS.md §11.1). The switch, and any retirement of the predecessor, happen no earlier. Public: it follows from the log and the published cap.
    */
   cacheHorizonAt?: string;
+}
+/**
+ * One change to a role's key set, from preview to completion. The identifier's history is the authority for what was published; this record adds which change was which and, in the custody projection, who asked, who approved, and why.
+ */
+export interface RotationRecord_VtaDidsV0_1 {
+  rotationId: string;
+  role: KeyRole_VtaDidsV0_1;
+  kind: RotationKind_VtaDidsV0_1;
+  state: RotationState_VtaDidsV0_1;
+  /**
+   * Verification-method identifiers (for `update`, public keys or commitments) leaving the role.
+   */
+  predecessors?: string[];
+  /**
+   * Verification-method identifiers (for `update`, public keys or commitments) entering the role.
+   */
+  successors?: string[];
+  startedInVersionId?: string;
+  endedInVersionId?: string;
+  startedAt?: string;
+  /**
+   * Planned rotations: the publishing change's cache horizon (CONVENTIONS.md §10.1). The switch and any retirement happen no earlier.
+   */
+  cacheHorizonAt?: string;
+  /**
+   * When the successor becomes `active` and the predecessor `retiring`; never before `cacheHorizonAt`.
+   */
+  activatesAt?: string;
+  /**
+   * Custody projection only. End of the overlap.
+   */
+  overlapUntil?: string;
+  /**
+   * Custody projection only. Whether the VTA retires the predecessor itself at `overlapUntil`.
+   */
+  autoRetire?: boolean;
+  endedAt?: string;
+  /**
+   * Custody projection only. VID of the administrator whose signed request started the change.
+   */
+  initiatedBy?: string;
+  approvals?: KeyRoleApprovalState_VtaDidsV0_1;
+  /**
+   * Custody projection only. The operator's stated reason. Never published.
+   */
+  reason?: string;
+  ext?: Ext;
 }
 /**
  * One test over a verified fact about a member. `fact: role` tests the member's community role; `fact: field` tests an `admin`- or `credential`-sourced directory field named by `field`; `fact: personhood` tests whether a personhood assertion is on file; `fact: joinedAt` tests when they joined. A rule never reads a self-asserted (`member`-sourced) field: a member must not be able to join a group by editing their card.

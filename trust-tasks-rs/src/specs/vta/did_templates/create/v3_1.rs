@@ -46,6 +46,13 @@ pub struct DidTemplate {
     pub description: ::std::option::Option<DidTemplateDescription>,
     ///The DID document body with `{TOKEN}` placeholders. `document.id` MUST contain the `{DID}` placeholder. Every `{TOKEN}` MUST be declared in requiredVars/optionalVars or be a reserved ambient name.
     pub document: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    ///The key roles of a key-role identity, one `RoleLayout` per role (vta/dids/_shared/0.1/CONVENTIONS.md §4). REQUIRED for, and only for, `schemaVersion` 3, which then MUST NOT carry `keys`. A v3 template describes only an identity's non-key members: its `document` MUST NOT contain `verificationMethod`, `authentication`, `assertionMethod`, `keyAgreement`, `capabilityInvocation`, `capabilityDelegation` or `keyRoles`, and the VTA renders all of them from this layout and the key-role registry — so a template can never place a key in a relationship its role does not own. Each listed algorithm is minted, one key each; unlike v2's `keys`, the list is not a preference order, and a VTA that cannot mint one refuses rather than substitutes. Used by vta/dids/create; a v1 or v2 template cannot create a key-role identity.
+    #[serde(
+        rename = "keyRoles",
+        default,
+        skip_serializing_if = "::std::vec::Vec::is_empty"
+    )]
+    pub key_roles: ::std::vec::Vec<RoleLayout>,
     /**
     The keys this template needs, by slot name. REQUIRES `schemaVersion` 2.
 
@@ -78,7 +85,7 @@ pub struct DidTemplate {
         skip_serializing_if = "::std::vec::Vec::is_empty"
     )]
     pub required_vars: ::std::vec::Vec<::std::string::String>,
-    ///Template schema version. 1 is the historical shape, whose keys are implicitly an Ed25519 signing key and an X25519 key-agreement key. 2 adds the `keys` block, which makes those explicit and allows others.
+    ///Template schema version. 1 is the historical shape, whose keys are implicitly an Ed25519 signing key and an X25519 key-agreement key. 2 adds the `keys` block, which makes those explicit and allows others. 3 is a key-role template (`keyRoles`), whose document carries no key members.
     #[serde(rename = "schemaVersion")]
     pub schema_version: DidTemplateSchemaVersion,
 }
@@ -500,6 +507,13 @@ pub struct DidTemplateRecord {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub description: ::std::option::Option<DidTemplateRecordDescription>,
     pub document: ::serde_json::Map<::std::string::String, ::serde_json::Value>,
+    ///The key roles of a key-role identity, one `RoleLayout` per role (vta/dids/_shared/0.1/CONVENTIONS.md §4). REQUIRED for, and only for, `schemaVersion` 3, which then MUST NOT carry `keys`. A v3 template describes only an identity's non-key members: its `document` MUST NOT contain `verificationMethod`, `authentication`, `assertionMethod`, `keyAgreement`, `capabilityInvocation`, `capabilityDelegation` or `keyRoles`, and the VTA renders all of them from this layout and the key-role registry — so a template can never place a key in a relationship its role does not own. Each listed algorithm is minted, one key each; unlike v2's `keys`, the list is not a preference order, and a VTA that cannot mint one refuses rather than substitutes. Used by vta/dids/create; a v1 or v2 template cannot create a key-role identity.
+    #[serde(
+        rename = "keyRoles",
+        default,
+        skip_serializing_if = "::std::vec::Vec::is_empty"
+    )]
+    pub key_roles: ::std::vec::Vec<RoleLayout>,
     /**
     The keys this template needs, by slot name. REQUIRES `schemaVersion` 2.
 
@@ -956,7 +970,7 @@ impl ::std::convert::From<DidTemplateRecordSchemaVersion> for i64 {
 impl ::std::convert::TryFrom<i64> for DidTemplateRecordSchemaVersion {
     type Error = self::error::ConversionError;
     fn try_from(value: i64) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if ![1_i64, 2_i64].contains(&value) {
+        if ![1_i64, 2_i64, 3_i64].contains(&value) {
             Err("invalid value".into())
         } else {
             Ok(Self(value))
@@ -972,7 +986,7 @@ impl<'de> ::serde::Deserialize<'de> for DidTemplateRecordSchemaVersion {
             .map_err(|e| <D::Error as ::serde::de::Error>::custom(e.to_string()))
     }
 }
-///Template schema version. 1 is the historical shape, whose keys are implicitly an Ed25519 signing key and an X25519 key-agreement key. 2 adds the `keys` block, which makes those explicit and allows others.
+///Template schema version. 1 is the historical shape, whose keys are implicitly an Ed25519 signing key and an X25519 key-agreement key. 2 adds the `keys` block, which makes those explicit and allows others. 3 is a key-role template (`keyRoles`), whose document carries no key members.
 ///
 #[derive(::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
@@ -991,7 +1005,7 @@ impl ::std::convert::From<DidTemplateSchemaVersion> for i64 {
 impl ::std::convert::TryFrom<i64> for DidTemplateSchemaVersion {
     type Error = self::error::ConversionError;
     fn try_from(value: i64) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if ![1_i64, 2_i64].contains(&value) {
+        if ![1_i64, 2_i64, 3_i64].contains(&value) {
             Err("invalid value".into())
         } else {
             Ok(Self(value))
@@ -1089,6 +1103,152 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
             .map_err(|e: self::error::ConversionError| {
                 <D::Error as ::serde::de::Error>::custom(e.to_string())
             })
+    }
+}
+///The named key role a key occupies in an identity (CONVENTIONS.md §2; VTI-KEY-070 onward). `attestation` — the only keys in `assertionMethod`; sign the identity's attestation artefacts (credentials, endorsements, status lists) through the VTA's signing service and nowhere else. Generated inside the VTA, never derived, never exportable, never in a backup. `operational` — the only keys the identity's own process uses in `authentication`; sign the node's own traffic (Trust Task requests and responses, DIDComm and TSP signatures, invitations, notices, audit checkpoints). Derived. `messaging` — the only keys in `keyAgreement`; sign nothing. X25519, derived or generated in its own right and never converted from a signing key. `update` — the identifier's change authority as its DID method states it (a did:webvh log's `updateKeys` and `nextKeyHashes`, a KERI key event log's current and next keys); never a role-bound verification method, never in `keyRoles`. Generated inside the VTA, never derived, never exportable, never in a backup, and always accompanied by a committed recovery key held outside the VTA's protection boundary. `authenticator` — a key held on a person's own authenticator (a WebAuthn passkey), listed in `authentication` of that person's identity only; used only to verify the person's WebAuthn assertions (sign-in and step-up evidence) and never to accept a Data Integrity proof. The VTA never holds its private half, so it is enrolled by the passkey ceremony and never generated, added or rotated by these tasks. Never permitted on the durable identity of a VTA, a VTC or a VTN. No role permits `capabilityInvocation` or `capabilityDelegation` (VTI-KEY-075). The set is an extensible registry: a consumer that meets a role it does not implement MUST rely on the key for nothing, and MUST NOT map it onto a role it does know (VTI-KEY-074).
+///
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+#[non_exhaustive]
+pub enum KeyRole {
+    #[serde(rename = "attestation")]
+    Attestation,
+    #[serde(rename = "operational")]
+    Operational,
+    #[serde(rename = "messaging")]
+    Messaging,
+    #[serde(rename = "update")]
+    Update,
+    #[serde(rename = "authenticator")]
+    Authenticator,
+}
+impl ::std::fmt::Display for KeyRole {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Attestation => f.write_str("attestation"),
+            Self::Operational => f.write_str("operational"),
+            Self::Messaging => f.write_str("messaging"),
+            Self::Update => f.write_str("update"),
+            Self::Authenticator => f.write_str("authenticator"),
+        }
+    }
+}
+impl ::std::str::FromStr for KeyRole {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "attestation" => Ok(Self::Attestation),
+            "operational" => Ok(Self::Operational),
+            "messaging" => Ok(Self::Messaging),
+            "update" => Ok(Self::Update),
+            "authenticator" => Ok(Self::Authenticator),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for KeyRole {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for KeyRole {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for KeyRole {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support.
+///
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+#[non_exhaustive]
+pub enum KeyType {
+    #[serde(rename = "ed25519")]
+    Ed25519,
+    #[serde(rename = "x25519")]
+    X25519,
+    #[serde(rename = "p256")]
+    P256,
+    #[serde(rename = "mldsa44")]
+    Mldsa44,
+    #[serde(rename = "mldsa65")]
+    Mldsa65,
+}
+impl ::std::fmt::Display for KeyType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Ed25519 => f.write_str("ed25519"),
+            Self::X25519 => f.write_str("x25519"),
+            Self::P256 => f.write_str("p256"),
+            Self::Mldsa44 => f.write_str("mldsa44"),
+            Self::Mldsa65 => f.write_str("mldsa65"),
+        }
+    }
+}
+impl ::std::str::FromStr for KeyType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "ed25519" => Ok(Self::Ed25519),
+            "x25519" => Ok(Self::X25519),
+            "p256" => Ok(Self::P256),
+            "mldsa44" => Ok(Self::Mldsa44),
+            "mldsa65" => Ok(Self::Mldsa65),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for KeyType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for KeyType {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for KeyType {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
     }
 }
 ///Create a new DID template on a VTA. Omit `contextId` to create in the global scope (super-admin gated); set it to create a template scoped to that context (gated on the context's admin, or a super-admin). The template's own `name` is the resource id within the selected scope; the VTA refuses duplicates (use update to replace). The success response is the persisted DidTemplateRecord.
@@ -1195,6 +1355,21 @@ impl ::std::convert::From<DidTemplateRecord> for Response {
         Self(value)
     }
 }
+///The keys an identity is created with in one role (CONVENTIONS.md §4). A key-role DID template carries one per role; a creation request may narrow it but never widen it.
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct RoleLayout {
+    ///The algorithms to mint, one key each, in publication order — `["ed25519", "mldsa44"]` mints a classical and a post-quantum attestation key that sign as a proof set. Every entry MUST suit the role (CONVENTIONS.md §2.2). A VTA that cannot mint one of them MUST refuse the creation with `vta/dids:unsupportedKeyType`; it never substitutes an algorithm or omits a key.
+    pub algorithms: Vec<KeyType>,
+    pub role: KeyRole,
+}
+impl RoleLayout {
+    pub fn builder() -> builder::RoleLayout {
+        Default::default()
+    }
+}
 ///Where a stored template lives. Tagged by `type`.
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
@@ -1289,6 +1464,7 @@ pub mod builder {
             ::serde_json::Map<::std::string::String, ::serde_json::Value>,
             ::std::string::String,
         >,
+        key_roles: ::std::result::Result<::std::vec::Vec<super::RoleLayout>, ::std::string::String>,
         keys: ::std::result::Result<
             ::std::collections::HashMap<super::DidTemplateKeysKey, super::DidTemplateKeysValue>,
             ::std::string::String,
@@ -1312,6 +1488,7 @@ pub mod builder {
                 defaults: Ok(Default::default()),
                 description: Ok(Default::default()),
                 document: Err("no value supplied for document".to_string()),
+                key_roles: Ok(Default::default()),
                 keys: Ok(Default::default()),
                 kind: Err("no value supplied for kind".to_string()),
                 methods: Ok(Default::default()),
@@ -1355,6 +1532,16 @@ pub mod builder {
             self.document = value
                 .try_into()
                 .map_err(|e| format!("error converting supplied value for document: {e}"));
+            self
+        }
+        pub fn key_roles<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::RoleLayout>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.key_roles = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for key_roles: {e}"));
             self
         }
         pub fn keys<T>(mut self, value: T) -> Self
@@ -1441,6 +1628,7 @@ pub mod builder {
                 defaults: value.defaults?,
                 description: value.description?,
                 document: value.document?,
+                key_roles: value.key_roles?,
                 keys: value.keys?,
                 kind: value.kind?,
                 methods: value.methods?,
@@ -1457,6 +1645,7 @@ pub mod builder {
                 defaults: Ok(value.defaults),
                 description: Ok(value.description),
                 document: Ok(value.document),
+                key_roles: Ok(value.key_roles),
                 keys: Ok(value.keys),
                 kind: Ok(value.kind),
                 methods: Ok(value.methods),
@@ -1541,6 +1730,7 @@ pub mod builder {
             ::serde_json::Map<::std::string::String, ::serde_json::Value>,
             ::std::string::String,
         >,
+        key_roles: ::std::result::Result<::std::vec::Vec<super::RoleLayout>, ::std::string::String>,
         keys: ::std::result::Result<
             ::std::collections::HashMap<
                 super::DidTemplateRecordKeysKey,
@@ -1572,6 +1762,7 @@ pub mod builder {
                 defaults: Ok(Default::default()),
                 description: Ok(Default::default()),
                 document: Err("no value supplied for document".to_string()),
+                key_roles: Ok(Default::default()),
                 keys: Ok(Default::default()),
                 kind: Err("no value supplied for kind".to_string()),
                 methods: Ok(Default::default()),
@@ -1637,6 +1828,16 @@ pub mod builder {
             self.document = value
                 .try_into()
                 .map_err(|e| format!("error converting supplied value for document: {e}"));
+            self
+        }
+        pub fn key_roles<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::RoleLayout>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.key_roles = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for key_roles: {e}"));
             self
         }
         pub fn keys<T>(mut self, value: T) -> Self
@@ -1748,6 +1949,7 @@ pub mod builder {
                 defaults: value.defaults?,
                 description: value.description?,
                 document: value.document?,
+                key_roles: value.key_roles?,
                 keys: value.keys?,
                 kind: value.kind?,
                 methods: value.methods?,
@@ -1768,6 +1970,7 @@ pub mod builder {
                 defaults: Ok(value.defaults),
                 description: Ok(value.description),
                 document: Ok(value.document),
+                key_roles: Ok(value.key_roles),
                 keys: Ok(value.keys),
                 kind: Ok(value.kind),
                 methods: Ok(value.methods),
@@ -1909,6 +2112,60 @@ pub mod builder {
             }
         }
     }
+    #[derive(Clone, Debug)]
+    pub struct RoleLayout {
+        algorithms: ::std::result::Result<Vec<super::KeyType>, ::std::string::String>,
+        role: ::std::result::Result<super::KeyRole, ::std::string::String>,
+    }
+    impl ::std::default::Default for RoleLayout {
+        fn default() -> Self {
+            Self {
+                algorithms: Err("no value supplied for algorithms".to_string()),
+                role: Err("no value supplied for role".to_string()),
+            }
+        }
+    }
+    impl RoleLayout {
+        pub fn algorithms<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<Vec<super::KeyType>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.algorithms = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for algorithms: {e}"));
+            self
+        }
+        pub fn role<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::KeyRole>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.role = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for role: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<RoleLayout> for super::RoleLayout {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: RoleLayout,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                algorithms: value.algorithms?,
+                role: value.role?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::RoleLayout> for RoleLayout {
+        fn from(value: super::RoleLayout) -> Self {
+            Self {
+                algorithms: Ok(value.algorithms),
+                role: Ok(value.role),
+            }
+        }
+    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/did-templates/create/3.1";
@@ -1916,7 +2173,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"DidTemplate\":{\"additionalProperties\":false,\"description\":\"Authored template shape: a DID document with `{TOKEN}` placeholders plus the variable contract the VTA's renderer enforces.\",\"properties\":{\"defaults\":{\"additionalProperties\":true,\"description\":\"Hints for CLI / setup wizards (e.g. preRotationCount, portable, addMediatorService).\",\"type\":\"object\"},\"description\":{\"description\":\"Human-readable description of what the template provisions.\",\"maxLength\":1024,\"type\":[\"string\",\"null\"]},\"document\":{\"description\":\"The DID document body with `{TOKEN}` placeholders. `document.id` MUST contain the `{DID}` placeholder. Every `{TOKEN}` MUST be declared in requiredVars/optionalVars or be a reserved ambient name.\",\"type\":\"object\"},\"keys\":{\"additionalProperties\":{\"additionalProperties\":false,\"properties\":{\"algorithms\":{\"description\":\"Acceptable algorithms, MOST PREFERRED FIRST. A list rather than a single value because a fleet does not migrate atomically: `[\\\"mldsa44\\\", \\\"ed25519\\\"]` means mint ML-DSA-44 where the implementation can and Ed25519 otherwise, so one template serves a VTA with post-quantum support and one without. An implementation MUST NOT substitute an algorithm absent from this list; running out of candidates is an error, never a silent downgrade — a deployment intended to be post-quantum would otherwise ship classical keys with nothing reporting it. `minItems: 1` for the same reason: an empty list would express no preference and inherit whatever the implementation defaulted to.\",\"items\":{\"enum\":[\"ed25519\",\"x25519\",\"p256\",\"mldsa44\",\"mldsa65\"],\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"},\"purpose\":{\"description\":\"What the key is for. Deliberately coarser than DID Core's five verification relationships: the template says what the key is, and the `document` body says where it appears. Encoding the relationship here as well would let the two disagree.\",\"enum\":[\"signing\",\"keyAgreement\"],\"type\":\"string\"}},\"required\":[\"purpose\",\"algorithms\"],\"type\":\"object\"},\"description\":\"The keys this template needs, by slot name. REQUIRES `schemaVersion` 2.\\n\\nA slot's name becomes a document placeholder by an explicit rule — uppercase, `-` to `_`, suffix `_KEY_MB` — so slot `signing` is rendered into `{SIGNING_KEY_MB}` and slot `ka` into `{KA_KEY_MB}`. Those are the two names a `schemaVersion` 1 template already uses, which is deliberate: a v1 template is exactly a v2 template whose `keys` block is `{signing: [ed25519], ka: [x25519]}`, so an implementation can read both through one path and raising the version cannot change how a v1 template renders.\\n\\nAn implementation MUST refuse a template that declares a slot whose placeholder never appears in `document` — the key would be minted and never published, so verifiers would continue to see only the keys that are, while the operator believes the template migrated. It MUST likewise refuse a slot placeholder in `document` that no slot declares, which would render as an unsubstituted literal.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z0-9-]+$\"},\"type\":\"object\"},\"kind\":{\"description\":\"Classification hint, e.g. `mediator`, `did-host-http`, `app`. Drives downstream provisioning behaviour.\",\"minLength\":1,\"type\":\"string\"},\"methods\":{\"description\":\"DID methods this template targets, e.g. [\\\"webvh\\\", \\\"web\\\"] for a hosted DID or [\\\"key\\\"] for a did:key.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"name\":{\"description\":\"Template id within its scope. Lowercase alphanumeric and hyphen only.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9-]+$\",\"type\":\"string\"},\"optionalVars\":{\"additionalProperties\":true,\"description\":\"Variables with default values, keyed by variable name.\",\"type\":\"object\"},\"requiredVars\":{\"description\":\"Variables the caller MUST supply at render time. MUST NOT include reserved ambient names (DID, SIGNING_KEY_MB, KA_KEY_MB, VTA_DID, VTA_URL, CONTEXT_ID, CONTEXT_DID, NOW).\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"schemaVersion\":{\"description\":\"Template schema version. 1 is the historical shape, whose keys are implicitly an Ed25519 signing key and an X25519 key-agreement key. 2 adds the `keys` block, which makes those explicit and allows others.\",\"enum\":[1,2],\"type\":\"integer\"}},\"required\":[\"schemaVersion\",\"name\",\"kind\",\"document\"],\"title\":\"DidTemplate\",\"type\":\"object\"},\"DidTemplateRecord\":{\"additionalProperties\":false,\"description\":\"A persisted template. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by get/create/update and carried per-item by list.\",\"properties\":{\"createdAt\":{\"description\":\"When the template was first stored (RFC 3339).\",\"format\":\"date-time\",\"type\":\"string\"},\"createdBy\":{\"description\":\"DID of the admin who last wrote the template.\",\"type\":\"string\"},\"defaults\":{\"additionalProperties\":true,\"type\":\"object\"},\"description\":{\"maxLength\":1024,\"type\":[\"string\",\"null\"]},\"document\":{\"type\":\"object\"},\"keys\":{\"additionalProperties\":{\"additionalProperties\":false,\"properties\":{\"algorithms\":{\"description\":\"Acceptable algorithms, MOST PREFERRED FIRST. A list rather than a single value because a fleet does not migrate atomically: `[\\\"mldsa44\\\", \\\"ed25519\\\"]` means mint ML-DSA-44 where the implementation can and Ed25519 otherwise, so one template serves a VTA with post-quantum support and one without. An implementation MUST NOT substitute an algorithm absent from this list; running out of candidates is an error, never a silent downgrade — a deployment intended to be post-quantum would otherwise ship classical keys with nothing reporting it. `minItems: 1` for the same reason: an empty list would express no preference and inherit whatever the implementation defaulted to.\",\"items\":{\"enum\":[\"ed25519\",\"x25519\",\"p256\",\"mldsa44\",\"mldsa65\"],\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"},\"purpose\":{\"description\":\"What the key is for. Deliberately coarser than DID Core's five verification relationships: the template says what the key is, and the `document` body says where it appears. Encoding the relationship here as well would let the two disagree.\",\"enum\":[\"signing\",\"keyAgreement\"],\"type\":\"string\"}},\"required\":[\"purpose\",\"algorithms\"],\"type\":\"object\"},\"description\":\"The keys this template needs, by slot name. REQUIRES `schemaVersion` 2.\\n\\nA slot's name becomes a document placeholder by an explicit rule — uppercase, `-` to `_`, suffix `_KEY_MB` — so slot `signing` is rendered into `{SIGNING_KEY_MB}` and slot `ka` into `{KA_KEY_MB}`. Those are the two names a `schemaVersion` 1 template already uses, which is deliberate: a v1 template is exactly a v2 template whose `keys` block is `{signing: [ed25519], ka: [x25519]}`, so an implementation can read both through one path and raising the version cannot change how a v1 template renders.\\n\\nAn implementation MUST refuse a template that declares a slot whose placeholder never appears in `document` — the key would be minted and never published, so verifiers would continue to see only the keys that are, while the operator believes the template migrated. It MUST likewise refuse a slot placeholder in `document` that no slot declares, which would render as an unsubstituted literal.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z0-9-]+$\"},\"type\":\"object\"},\"kind\":{\"minLength\":1,\"type\":\"string\"},\"methods\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"name\":{\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9-]+$\",\"type\":\"string\"},\"optionalVars\":{\"additionalProperties\":true,\"type\":\"object\"},\"requiredVars\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"schemaVersion\":{\"description\":\"Template schema version. 1 is the historical shape, whose keys are implicitly an Ed25519 signing key and an X25519 key-agreement key. 2 adds the `keys` block, which makes those explicit and allows others.\",\"enum\":[1,2],\"type\":\"integer\"},\"scope\":{\"$ref\":\"#/$defs/Scope\",\"description\":\"Resolved scope of the stored template.\"},\"updatedAt\":{\"description\":\"When the template was last written (RFC 3339).\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"schemaVersion\",\"name\",\"kind\",\"document\",\"scope\",\"createdAt\",\"updatedAt\",\"createdBy\"],\"title\":\"DidTemplateRecord\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"$ref\":\"#/$defs/DidTemplateRecord\",\"description\":\"The persisted DidTemplateRecord. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by get/update.\",\"title\":\"VTA DID-Template Create — response payload\"},\"Scope\":{\"description\":\"Where a stored template lives. Tagged by `type`.\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"type\":{\"const\":\"builtin\"}},\"required\":[\"type\"],\"title\":\"Builtin\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"type\":{\"const\":\"global\"}},\"required\":[\"type\"],\"title\":\"Global\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"contextId\":{\"minLength\":1,\"type\":\"string\"},\"type\":{\"const\":\"context\"}},\"required\":[\"type\",\"contextId\"],\"title\":\"Context\",\"type\":\"object\"}],\"title\":\"Scope\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vta/did-templates/create/3.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Create a new DID template on a VTA. Omit `contextId` to create in the global scope (super-admin gated); set it to create a template scoped to that context (gated on the context's admin, or a super-admin). The template's own `name` is the resource id within the selected scope; the VTA refuses duplicates (use update to replace). The success response is the persisted DidTemplateRecord.\",\"properties\":{\"contextId\":{\"description\":\"Scope selector. Absent: the global scope, gated on a super-administrator. Present: the context the template is scoped to, gated on that context's administrator (or a super-administrator).\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"template\":{\"$ref\":\"#/$defs/DidTemplate\",\"description\":\"Full template document to store. Validated against the v1 template schema before persistence; an invalid shape is rejected with the framework's `malformedRequest`.\"}},\"required\":[\"template\"],\"title\":\"VTA DID-Template Create — payload\",\"type\":\"object\"}\n",
+        "{\"$defs\":{\"DidTemplate\":{\"additionalProperties\":false,\"description\":\"Authored template shape: a DID document with `{TOKEN}` placeholders plus the variable contract the VTA's renderer enforces.\",\"properties\":{\"defaults\":{\"additionalProperties\":true,\"description\":\"Hints for CLI / setup wizards (e.g. preRotationCount, portable, addMediatorService).\",\"type\":\"object\"},\"description\":{\"description\":\"Human-readable description of what the template provisions.\",\"maxLength\":1024,\"type\":[\"string\",\"null\"]},\"document\":{\"description\":\"The DID document body with `{TOKEN}` placeholders. `document.id` MUST contain the `{DID}` placeholder. Every `{TOKEN}` MUST be declared in requiredVars/optionalVars or be a reserved ambient name.\",\"type\":\"object\"},\"keyRoles\":{\"description\":\"The key roles of a key-role identity, one `RoleLayout` per role (vta/dids/_shared/0.1/CONVENTIONS.md §4). REQUIRED for, and only for, `schemaVersion` 3, which then MUST NOT carry `keys`. A v3 template describes only an identity's non-key members: its `document` MUST NOT contain `verificationMethod`, `authentication`, `assertionMethod`, `keyAgreement`, `capabilityInvocation`, `capabilityDelegation` or `keyRoles`, and the VTA renders all of them from this layout and the key-role registry — so a template can never place a key in a relationship its role does not own. Each listed algorithm is minted, one key each; unlike v2's `keys`, the list is not a preference order, and a VTA that cannot mint one refuses rather than substitutes. Used by vta/dids/create; a v1 or v2 template cannot create a key-role identity.\",\"items\":{\"$ref\":\"#/$defs/RoleLayout\"},\"minItems\":1,\"type\":\"array\"},\"keys\":{\"additionalProperties\":{\"additionalProperties\":false,\"properties\":{\"algorithms\":{\"description\":\"Acceptable algorithms, MOST PREFERRED FIRST. A list rather than a single value because a fleet does not migrate atomically: `[\\\"mldsa44\\\", \\\"ed25519\\\"]` means mint ML-DSA-44 where the implementation can and Ed25519 otherwise, so one template serves a VTA with post-quantum support and one without. An implementation MUST NOT substitute an algorithm absent from this list; running out of candidates is an error, never a silent downgrade — a deployment intended to be post-quantum would otherwise ship classical keys with nothing reporting it. `minItems: 1` for the same reason: an empty list would express no preference and inherit whatever the implementation defaulted to.\",\"items\":{\"enum\":[\"ed25519\",\"x25519\",\"p256\",\"mldsa44\",\"mldsa65\"],\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"},\"purpose\":{\"description\":\"What the key is for. Deliberately coarser than DID Core's five verification relationships: the template says what the key is, and the `document` body says where it appears. Encoding the relationship here as well would let the two disagree.\",\"enum\":[\"signing\",\"keyAgreement\"],\"type\":\"string\"}},\"required\":[\"purpose\",\"algorithms\"],\"type\":\"object\"},\"description\":\"The keys this template needs, by slot name. REQUIRES `schemaVersion` 2.\\n\\nA slot's name becomes a document placeholder by an explicit rule — uppercase, `-` to `_`, suffix `_KEY_MB` — so slot `signing` is rendered into `{SIGNING_KEY_MB}` and slot `ka` into `{KA_KEY_MB}`. Those are the two names a `schemaVersion` 1 template already uses, which is deliberate: a v1 template is exactly a v2 template whose `keys` block is `{signing: [ed25519], ka: [x25519]}`, so an implementation can read both through one path and raising the version cannot change how a v1 template renders.\\n\\nAn implementation MUST refuse a template that declares a slot whose placeholder never appears in `document` — the key would be minted and never published, so verifiers would continue to see only the keys that are, while the operator believes the template migrated. It MUST likewise refuse a slot placeholder in `document` that no slot declares, which would render as an unsubstituted literal.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z0-9-]+$\"},\"type\":\"object\"},\"kind\":{\"description\":\"Classification hint, e.g. `mediator`, `did-host-http`, `app`. Drives downstream provisioning behaviour.\",\"minLength\":1,\"type\":\"string\"},\"methods\":{\"description\":\"DID methods this template targets, e.g. [\\\"webvh\\\", \\\"web\\\"] for a hosted DID or [\\\"key\\\"] for a did:key.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"name\":{\"description\":\"Template id within its scope. Lowercase alphanumeric and hyphen only.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9-]+$\",\"type\":\"string\"},\"optionalVars\":{\"additionalProperties\":true,\"description\":\"Variables with default values, keyed by variable name.\",\"type\":\"object\"},\"requiredVars\":{\"description\":\"Variables the caller MUST supply at render time. MUST NOT include reserved ambient names (DID, SIGNING_KEY_MB, KA_KEY_MB, VTA_DID, VTA_URL, CONTEXT_ID, CONTEXT_DID, NOW).\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"schemaVersion\":{\"description\":\"Template schema version. 1 is the historical shape, whose keys are implicitly an Ed25519 signing key and an X25519 key-agreement key. 2 adds the `keys` block, which makes those explicit and allows others. 3 is a key-role template (`keyRoles`), whose document carries no key members.\",\"enum\":[1,2,3],\"type\":\"integer\"}},\"required\":[\"schemaVersion\",\"name\",\"kind\",\"document\"],\"title\":\"DidTemplate\",\"type\":\"object\"},\"DidTemplateRecord\":{\"additionalProperties\":false,\"description\":\"A persisted template. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by get/create/update and carried per-item by list.\",\"properties\":{\"createdAt\":{\"description\":\"When the template was first stored (RFC 3339).\",\"format\":\"date-time\",\"type\":\"string\"},\"createdBy\":{\"description\":\"DID of the admin who last wrote the template.\",\"type\":\"string\"},\"defaults\":{\"additionalProperties\":true,\"type\":\"object\"},\"description\":{\"maxLength\":1024,\"type\":[\"string\",\"null\"]},\"document\":{\"type\":\"object\"},\"keyRoles\":{\"description\":\"The key roles of a key-role identity, one `RoleLayout` per role (vta/dids/_shared/0.1/CONVENTIONS.md §4). REQUIRED for, and only for, `schemaVersion` 3, which then MUST NOT carry `keys`. A v3 template describes only an identity's non-key members: its `document` MUST NOT contain `verificationMethod`, `authentication`, `assertionMethod`, `keyAgreement`, `capabilityInvocation`, `capabilityDelegation` or `keyRoles`, and the VTA renders all of them from this layout and the key-role registry — so a template can never place a key in a relationship its role does not own. Each listed algorithm is minted, one key each; unlike v2's `keys`, the list is not a preference order, and a VTA that cannot mint one refuses rather than substitutes. Used by vta/dids/create; a v1 or v2 template cannot create a key-role identity.\",\"items\":{\"$ref\":\"#/$defs/RoleLayout\"},\"minItems\":1,\"type\":\"array\"},\"keys\":{\"additionalProperties\":{\"additionalProperties\":false,\"properties\":{\"algorithms\":{\"description\":\"Acceptable algorithms, MOST PREFERRED FIRST. A list rather than a single value because a fleet does not migrate atomically: `[\\\"mldsa44\\\", \\\"ed25519\\\"]` means mint ML-DSA-44 where the implementation can and Ed25519 otherwise, so one template serves a VTA with post-quantum support and one without. An implementation MUST NOT substitute an algorithm absent from this list; running out of candidates is an error, never a silent downgrade — a deployment intended to be post-quantum would otherwise ship classical keys with nothing reporting it. `minItems: 1` for the same reason: an empty list would express no preference and inherit whatever the implementation defaulted to.\",\"items\":{\"enum\":[\"ed25519\",\"x25519\",\"p256\",\"mldsa44\",\"mldsa65\"],\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"},\"purpose\":{\"description\":\"What the key is for. Deliberately coarser than DID Core's five verification relationships: the template says what the key is, and the `document` body says where it appears. Encoding the relationship here as well would let the two disagree.\",\"enum\":[\"signing\",\"keyAgreement\"],\"type\":\"string\"}},\"required\":[\"purpose\",\"algorithms\"],\"type\":\"object\"},\"description\":\"The keys this template needs, by slot name. REQUIRES `schemaVersion` 2.\\n\\nA slot's name becomes a document placeholder by an explicit rule — uppercase, `-` to `_`, suffix `_KEY_MB` — so slot `signing` is rendered into `{SIGNING_KEY_MB}` and slot `ka` into `{KA_KEY_MB}`. Those are the two names a `schemaVersion` 1 template already uses, which is deliberate: a v1 template is exactly a v2 template whose `keys` block is `{signing: [ed25519], ka: [x25519]}`, so an implementation can read both through one path and raising the version cannot change how a v1 template renders.\\n\\nAn implementation MUST refuse a template that declares a slot whose placeholder never appears in `document` — the key would be minted and never published, so verifiers would continue to see only the keys that are, while the operator believes the template migrated. It MUST likewise refuse a slot placeholder in `document` that no slot declares, which would render as an unsubstituted literal.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z0-9-]+$\"},\"type\":\"object\"},\"kind\":{\"minLength\":1,\"type\":\"string\"},\"methods\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"name\":{\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9-]+$\",\"type\":\"string\"},\"optionalVars\":{\"additionalProperties\":true,\"type\":\"object\"},\"requiredVars\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"schemaVersion\":{\"description\":\"Template schema version. 1 is the historical shape, whose keys are implicitly an Ed25519 signing key and an X25519 key-agreement key. 2 adds the `keys` block, which makes those explicit and allows others.\",\"enum\":[1,2,3],\"type\":\"integer\"},\"scope\":{\"$ref\":\"#/$defs/Scope\",\"description\":\"Resolved scope of the stored template.\"},\"updatedAt\":{\"description\":\"When the template was last written (RFC 3339).\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"schemaVersion\",\"name\",\"kind\",\"document\",\"scope\",\"createdAt\",\"updatedAt\",\"createdBy\"],\"title\":\"DidTemplateRecord\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"KeyRole\":{\"description\":\"The named key role a key occupies in an identity (CONVENTIONS.md §2; VTI-KEY-070 onward). `attestation` — the only keys in `assertionMethod`; sign the identity's attestation artefacts (credentials, endorsements, status lists) through the VTA's signing service and nowhere else. Generated inside the VTA, never derived, never exportable, never in a backup. `operational` — the only keys the identity's own process uses in `authentication`; sign the node's own traffic (Trust Task requests and responses, DIDComm and TSP signatures, invitations, notices, audit checkpoints). Derived. `messaging` — the only keys in `keyAgreement`; sign nothing. X25519, derived or generated in its own right and never converted from a signing key. `update` — the identifier's change authority as its DID method states it (a did:webvh log's `updateKeys` and `nextKeyHashes`, a KERI key event log's current and next keys); never a role-bound verification method, never in `keyRoles`. Generated inside the VTA, never derived, never exportable, never in a backup, and always accompanied by a committed recovery key held outside the VTA's protection boundary. `authenticator` — a key held on a person's own authenticator (a WebAuthn passkey), listed in `authentication` of that person's identity only; used only to verify the person's WebAuthn assertions (sign-in and step-up evidence) and never to accept a Data Integrity proof. The VTA never holds its private half, so it is enrolled by the passkey ceremony and never generated, added or rotated by these tasks. Never permitted on the durable identity of a VTA, a VTC or a VTN. No role permits `capabilityInvocation` or `capabilityDelegation` (VTI-KEY-075). The set is an extensible registry: a consumer that meets a role it does not implement MUST rely on the key for nothing, and MUST NOT map it onto a role it does know (VTI-KEY-074).\",\"enum\":[\"attestation\",\"operational\",\"messaging\",\"update\",\"authenticator\"],\"title\":\"KeyRole\",\"type\":\"string\"},\"KeyType\":{\"description\":\"Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support.\",\"enum\":[\"ed25519\",\"x25519\",\"p256\",\"mldsa44\",\"mldsa65\"],\"title\":\"KeyType\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"$ref\":\"#/$defs/DidTemplateRecord\",\"description\":\"The persisted DidTemplateRecord. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by get/update.\",\"title\":\"VTA DID-Template Create — response payload\"},\"RoleLayout\":{\"additionalProperties\":false,\"description\":\"The keys an identity is created with in one role (CONVENTIONS.md §4). A key-role DID template carries one per role; a creation request may narrow it but never widen it.\",\"properties\":{\"algorithms\":{\"description\":\"The algorithms to mint, one key each, in publication order — `[\\\"ed25519\\\", \\\"mldsa44\\\"]` mints a classical and a post-quantum attestation key that sign as a proof set. Every entry MUST suit the role (CONVENTIONS.md §2.2). A VTA that cannot mint one of them MUST refuse the creation with `vta/dids:unsupportedKeyType`; it never substitutes an algorithm or omits a key.\",\"items\":{\"$ref\":\"#/$defs/KeyType\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"role\":{\"$ref\":\"#/$defs/KeyRole\"}},\"required\":[\"role\",\"algorithms\"],\"title\":\"RoleLayout\",\"type\":\"object\"},\"Scope\":{\"description\":\"Where a stored template lives. Tagged by `type`.\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"type\":{\"const\":\"builtin\"}},\"required\":[\"type\"],\"title\":\"Builtin\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"type\":{\"const\":\"global\"}},\"required\":[\"type\"],\"title\":\"Global\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"contextId\":{\"minLength\":1,\"type\":\"string\"},\"type\":{\"const\":\"context\"}},\"required\":[\"type\",\"contextId\"],\"title\":\"Context\",\"type\":\"object\"}],\"title\":\"Scope\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vta/did-templates/create/3.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Create a new DID template on a VTA. Omit `contextId` to create in the global scope (super-admin gated); set it to create a template scoped to that context (gated on the context's admin, or a super-admin). The template's own `name` is the resource id within the selected scope; the VTA refuses duplicates (use update to replace). The success response is the persisted DidTemplateRecord.\",\"properties\":{\"contextId\":{\"description\":\"Scope selector. Absent: the global scope, gated on a super-administrator. Present: the context the template is scoped to, gated on that context's administrator (or a super-administrator).\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"template\":{\"$ref\":\"#/$defs/DidTemplate\",\"description\":\"Full template document to store. Validated against the v1 template schema before persistence; an invalid shape is rejected with the framework's `malformedRequest`.\"}},\"required\":[\"template\"],\"title\":\"VTA DID-Template Create — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1926,7 +2183,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"DidTemplate\":{\"additionalProperties\":false,\"description\":\"Authored template shape: a DID document with `{TOKEN}` placeholders plus the variable contract the VTA's renderer enforces.\",\"properties\":{\"defaults\":{\"additionalProperties\":true,\"description\":\"Hints for CLI / setup wizards (e.g. preRotationCount, portable, addMediatorService).\",\"type\":\"object\"},\"description\":{\"description\":\"Human-readable description of what the template provisions.\",\"maxLength\":1024,\"type\":[\"string\",\"null\"]},\"document\":{\"description\":\"The DID document body with `{TOKEN}` placeholders. `document.id` MUST contain the `{DID}` placeholder. Every `{TOKEN}` MUST be declared in requiredVars/optionalVars or be a reserved ambient name.\",\"type\":\"object\"},\"keys\":{\"additionalProperties\":{\"additionalProperties\":false,\"properties\":{\"algorithms\":{\"description\":\"Acceptable algorithms, MOST PREFERRED FIRST. A list rather than a single value because a fleet does not migrate atomically: `[\\\"mldsa44\\\", \\\"ed25519\\\"]` means mint ML-DSA-44 where the implementation can and Ed25519 otherwise, so one template serves a VTA with post-quantum support and one without. An implementation MUST NOT substitute an algorithm absent from this list; running out of candidates is an error, never a silent downgrade — a deployment intended to be post-quantum would otherwise ship classical keys with nothing reporting it. `minItems: 1` for the same reason: an empty list would express no preference and inherit whatever the implementation defaulted to.\",\"items\":{\"enum\":[\"ed25519\",\"x25519\",\"p256\",\"mldsa44\",\"mldsa65\"],\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"},\"purpose\":{\"description\":\"What the key is for. Deliberately coarser than DID Core's five verification relationships: the template says what the key is, and the `document` body says where it appears. Encoding the relationship here as well would let the two disagree.\",\"enum\":[\"signing\",\"keyAgreement\"],\"type\":\"string\"}},\"required\":[\"purpose\",\"algorithms\"],\"type\":\"object\"},\"description\":\"The keys this template needs, by slot name. REQUIRES `schemaVersion` 2.\\n\\nA slot's name becomes a document placeholder by an explicit rule — uppercase, `-` to `_`, suffix `_KEY_MB` — so slot `signing` is rendered into `{SIGNING_KEY_MB}` and slot `ka` into `{KA_KEY_MB}`. Those are the two names a `schemaVersion` 1 template already uses, which is deliberate: a v1 template is exactly a v2 template whose `keys` block is `{signing: [ed25519], ka: [x25519]}`, so an implementation can read both through one path and raising the version cannot change how a v1 template renders.\\n\\nAn implementation MUST refuse a template that declares a slot whose placeholder never appears in `document` — the key would be minted and never published, so verifiers would continue to see only the keys that are, while the operator believes the template migrated. It MUST likewise refuse a slot placeholder in `document` that no slot declares, which would render as an unsubstituted literal.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z0-9-]+$\"},\"type\":\"object\"},\"kind\":{\"description\":\"Classification hint, e.g. `mediator`, `did-host-http`, `app`. Drives downstream provisioning behaviour.\",\"minLength\":1,\"type\":\"string\"},\"methods\":{\"description\":\"DID methods this template targets, e.g. [\\\"webvh\\\", \\\"web\\\"] for a hosted DID or [\\\"key\\\"] for a did:key.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"name\":{\"description\":\"Template id within its scope. Lowercase alphanumeric and hyphen only.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9-]+$\",\"type\":\"string\"},\"optionalVars\":{\"additionalProperties\":true,\"description\":\"Variables with default values, keyed by variable name.\",\"type\":\"object\"},\"requiredVars\":{\"description\":\"Variables the caller MUST supply at render time. MUST NOT include reserved ambient names (DID, SIGNING_KEY_MB, KA_KEY_MB, VTA_DID, VTA_URL, CONTEXT_ID, CONTEXT_DID, NOW).\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"schemaVersion\":{\"description\":\"Template schema version. 1 is the historical shape, whose keys are implicitly an Ed25519 signing key and an X25519 key-agreement key. 2 adds the `keys` block, which makes those explicit and allows others.\",\"enum\":[1,2],\"type\":\"integer\"}},\"required\":[\"schemaVersion\",\"name\",\"kind\",\"document\"],\"title\":\"DidTemplate\",\"type\":\"object\"},\"DidTemplateRecord\":{\"additionalProperties\":false,\"description\":\"A persisted template. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by get/create/update and carried per-item by list.\",\"properties\":{\"createdAt\":{\"description\":\"When the template was first stored (RFC 3339).\",\"format\":\"date-time\",\"type\":\"string\"},\"createdBy\":{\"description\":\"DID of the admin who last wrote the template.\",\"type\":\"string\"},\"defaults\":{\"additionalProperties\":true,\"type\":\"object\"},\"description\":{\"maxLength\":1024,\"type\":[\"string\",\"null\"]},\"document\":{\"type\":\"object\"},\"keys\":{\"additionalProperties\":{\"additionalProperties\":false,\"properties\":{\"algorithms\":{\"description\":\"Acceptable algorithms, MOST PREFERRED FIRST. A list rather than a single value because a fleet does not migrate atomically: `[\\\"mldsa44\\\", \\\"ed25519\\\"]` means mint ML-DSA-44 where the implementation can and Ed25519 otherwise, so one template serves a VTA with post-quantum support and one without. An implementation MUST NOT substitute an algorithm absent from this list; running out of candidates is an error, never a silent downgrade — a deployment intended to be post-quantum would otherwise ship classical keys with nothing reporting it. `minItems: 1` for the same reason: an empty list would express no preference and inherit whatever the implementation defaulted to.\",\"items\":{\"enum\":[\"ed25519\",\"x25519\",\"p256\",\"mldsa44\",\"mldsa65\"],\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"},\"purpose\":{\"description\":\"What the key is for. Deliberately coarser than DID Core's five verification relationships: the template says what the key is, and the `document` body says where it appears. Encoding the relationship here as well would let the two disagree.\",\"enum\":[\"signing\",\"keyAgreement\"],\"type\":\"string\"}},\"required\":[\"purpose\",\"algorithms\"],\"type\":\"object\"},\"description\":\"The keys this template needs, by slot name. REQUIRES `schemaVersion` 2.\\n\\nA slot's name becomes a document placeholder by an explicit rule — uppercase, `-` to `_`, suffix `_KEY_MB` — so slot `signing` is rendered into `{SIGNING_KEY_MB}` and slot `ka` into `{KA_KEY_MB}`. Those are the two names a `schemaVersion` 1 template already uses, which is deliberate: a v1 template is exactly a v2 template whose `keys` block is `{signing: [ed25519], ka: [x25519]}`, so an implementation can read both through one path and raising the version cannot change how a v1 template renders.\\n\\nAn implementation MUST refuse a template that declares a slot whose placeholder never appears in `document` — the key would be minted and never published, so verifiers would continue to see only the keys that are, while the operator believes the template migrated. It MUST likewise refuse a slot placeholder in `document` that no slot declares, which would render as an unsubstituted literal.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z0-9-]+$\"},\"type\":\"object\"},\"kind\":{\"minLength\":1,\"type\":\"string\"},\"methods\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"name\":{\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9-]+$\",\"type\":\"string\"},\"optionalVars\":{\"additionalProperties\":true,\"type\":\"object\"},\"requiredVars\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"schemaVersion\":{\"description\":\"Template schema version. 1 is the historical shape, whose keys are implicitly an Ed25519 signing key and an X25519 key-agreement key. 2 adds the `keys` block, which makes those explicit and allows others.\",\"enum\":[1,2],\"type\":\"integer\"},\"scope\":{\"$ref\":\"#/$defs/Scope\",\"description\":\"Resolved scope of the stored template.\"},\"updatedAt\":{\"description\":\"When the template was last written (RFC 3339).\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"schemaVersion\",\"name\",\"kind\",\"document\",\"scope\",\"createdAt\",\"updatedAt\",\"createdBy\"],\"title\":\"DidTemplateRecord\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"$ref\":\"#/$defs/DidTemplateRecord\",\"description\":\"The persisted DidTemplateRecord. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by get/update.\",\"title\":\"VTA DID-Template Create — response payload\"},\"Scope\":{\"description\":\"Where a stored template lives. Tagged by `type`.\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"type\":{\"const\":\"builtin\"}},\"required\":[\"type\"],\"title\":\"Builtin\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"type\":{\"const\":\"global\"}},\"required\":[\"type\"],\"title\":\"Global\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"contextId\":{\"minLength\":1,\"type\":\"string\"},\"type\":{\"const\":\"context\"}},\"required\":[\"type\",\"contextId\"],\"title\":\"Context\",\"type\":\"object\"}],\"title\":\"Scope\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
+        "{\"$defs\":{\"DidTemplate\":{\"additionalProperties\":false,\"description\":\"Authored template shape: a DID document with `{TOKEN}` placeholders plus the variable contract the VTA's renderer enforces.\",\"properties\":{\"defaults\":{\"additionalProperties\":true,\"description\":\"Hints for CLI / setup wizards (e.g. preRotationCount, portable, addMediatorService).\",\"type\":\"object\"},\"description\":{\"description\":\"Human-readable description of what the template provisions.\",\"maxLength\":1024,\"type\":[\"string\",\"null\"]},\"document\":{\"description\":\"The DID document body with `{TOKEN}` placeholders. `document.id` MUST contain the `{DID}` placeholder. Every `{TOKEN}` MUST be declared in requiredVars/optionalVars or be a reserved ambient name.\",\"type\":\"object\"},\"keyRoles\":{\"description\":\"The key roles of a key-role identity, one `RoleLayout` per role (vta/dids/_shared/0.1/CONVENTIONS.md §4). REQUIRED for, and only for, `schemaVersion` 3, which then MUST NOT carry `keys`. A v3 template describes only an identity's non-key members: its `document` MUST NOT contain `verificationMethod`, `authentication`, `assertionMethod`, `keyAgreement`, `capabilityInvocation`, `capabilityDelegation` or `keyRoles`, and the VTA renders all of them from this layout and the key-role registry — so a template can never place a key in a relationship its role does not own. Each listed algorithm is minted, one key each; unlike v2's `keys`, the list is not a preference order, and a VTA that cannot mint one refuses rather than substitutes. Used by vta/dids/create; a v1 or v2 template cannot create a key-role identity.\",\"items\":{\"$ref\":\"#/$defs/RoleLayout\"},\"minItems\":1,\"type\":\"array\"},\"keys\":{\"additionalProperties\":{\"additionalProperties\":false,\"properties\":{\"algorithms\":{\"description\":\"Acceptable algorithms, MOST PREFERRED FIRST. A list rather than a single value because a fleet does not migrate atomically: `[\\\"mldsa44\\\", \\\"ed25519\\\"]` means mint ML-DSA-44 where the implementation can and Ed25519 otherwise, so one template serves a VTA with post-quantum support and one without. An implementation MUST NOT substitute an algorithm absent from this list; running out of candidates is an error, never a silent downgrade — a deployment intended to be post-quantum would otherwise ship classical keys with nothing reporting it. `minItems: 1` for the same reason: an empty list would express no preference and inherit whatever the implementation defaulted to.\",\"items\":{\"enum\":[\"ed25519\",\"x25519\",\"p256\",\"mldsa44\",\"mldsa65\"],\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"},\"purpose\":{\"description\":\"What the key is for. Deliberately coarser than DID Core's five verification relationships: the template says what the key is, and the `document` body says where it appears. Encoding the relationship here as well would let the two disagree.\",\"enum\":[\"signing\",\"keyAgreement\"],\"type\":\"string\"}},\"required\":[\"purpose\",\"algorithms\"],\"type\":\"object\"},\"description\":\"The keys this template needs, by slot name. REQUIRES `schemaVersion` 2.\\n\\nA slot's name becomes a document placeholder by an explicit rule — uppercase, `-` to `_`, suffix `_KEY_MB` — so slot `signing` is rendered into `{SIGNING_KEY_MB}` and slot `ka` into `{KA_KEY_MB}`. Those are the two names a `schemaVersion` 1 template already uses, which is deliberate: a v1 template is exactly a v2 template whose `keys` block is `{signing: [ed25519], ka: [x25519]}`, so an implementation can read both through one path and raising the version cannot change how a v1 template renders.\\n\\nAn implementation MUST refuse a template that declares a slot whose placeholder never appears in `document` — the key would be minted and never published, so verifiers would continue to see only the keys that are, while the operator believes the template migrated. It MUST likewise refuse a slot placeholder in `document` that no slot declares, which would render as an unsubstituted literal.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z0-9-]+$\"},\"type\":\"object\"},\"kind\":{\"description\":\"Classification hint, e.g. `mediator`, `did-host-http`, `app`. Drives downstream provisioning behaviour.\",\"minLength\":1,\"type\":\"string\"},\"methods\":{\"description\":\"DID methods this template targets, e.g. [\\\"webvh\\\", \\\"web\\\"] for a hosted DID or [\\\"key\\\"] for a did:key.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"name\":{\"description\":\"Template id within its scope. Lowercase alphanumeric and hyphen only.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9-]+$\",\"type\":\"string\"},\"optionalVars\":{\"additionalProperties\":true,\"description\":\"Variables with default values, keyed by variable name.\",\"type\":\"object\"},\"requiredVars\":{\"description\":\"Variables the caller MUST supply at render time. MUST NOT include reserved ambient names (DID, SIGNING_KEY_MB, KA_KEY_MB, VTA_DID, VTA_URL, CONTEXT_ID, CONTEXT_DID, NOW).\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"schemaVersion\":{\"description\":\"Template schema version. 1 is the historical shape, whose keys are implicitly an Ed25519 signing key and an X25519 key-agreement key. 2 adds the `keys` block, which makes those explicit and allows others. 3 is a key-role template (`keyRoles`), whose document carries no key members.\",\"enum\":[1,2,3],\"type\":\"integer\"}},\"required\":[\"schemaVersion\",\"name\",\"kind\",\"document\"],\"title\":\"DidTemplate\",\"type\":\"object\"},\"DidTemplateRecord\":{\"additionalProperties\":false,\"description\":\"A persisted template. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by get/create/update and carried per-item by list.\",\"properties\":{\"createdAt\":{\"description\":\"When the template was first stored (RFC 3339).\",\"format\":\"date-time\",\"type\":\"string\"},\"createdBy\":{\"description\":\"DID of the admin who last wrote the template.\",\"type\":\"string\"},\"defaults\":{\"additionalProperties\":true,\"type\":\"object\"},\"description\":{\"maxLength\":1024,\"type\":[\"string\",\"null\"]},\"document\":{\"type\":\"object\"},\"keyRoles\":{\"description\":\"The key roles of a key-role identity, one `RoleLayout` per role (vta/dids/_shared/0.1/CONVENTIONS.md §4). REQUIRED for, and only for, `schemaVersion` 3, which then MUST NOT carry `keys`. A v3 template describes only an identity's non-key members: its `document` MUST NOT contain `verificationMethod`, `authentication`, `assertionMethod`, `keyAgreement`, `capabilityInvocation`, `capabilityDelegation` or `keyRoles`, and the VTA renders all of them from this layout and the key-role registry — so a template can never place a key in a relationship its role does not own. Each listed algorithm is minted, one key each; unlike v2's `keys`, the list is not a preference order, and a VTA that cannot mint one refuses rather than substitutes. Used by vta/dids/create; a v1 or v2 template cannot create a key-role identity.\",\"items\":{\"$ref\":\"#/$defs/RoleLayout\"},\"minItems\":1,\"type\":\"array\"},\"keys\":{\"additionalProperties\":{\"additionalProperties\":false,\"properties\":{\"algorithms\":{\"description\":\"Acceptable algorithms, MOST PREFERRED FIRST. A list rather than a single value because a fleet does not migrate atomically: `[\\\"mldsa44\\\", \\\"ed25519\\\"]` means mint ML-DSA-44 where the implementation can and Ed25519 otherwise, so one template serves a VTA with post-quantum support and one without. An implementation MUST NOT substitute an algorithm absent from this list; running out of candidates is an error, never a silent downgrade — a deployment intended to be post-quantum would otherwise ship classical keys with nothing reporting it. `minItems: 1` for the same reason: an empty list would express no preference and inherit whatever the implementation defaulted to.\",\"items\":{\"enum\":[\"ed25519\",\"x25519\",\"p256\",\"mldsa44\",\"mldsa65\"],\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"},\"purpose\":{\"description\":\"What the key is for. Deliberately coarser than DID Core's five verification relationships: the template says what the key is, and the `document` body says where it appears. Encoding the relationship here as well would let the two disagree.\",\"enum\":[\"signing\",\"keyAgreement\"],\"type\":\"string\"}},\"required\":[\"purpose\",\"algorithms\"],\"type\":\"object\"},\"description\":\"The keys this template needs, by slot name. REQUIRES `schemaVersion` 2.\\n\\nA slot's name becomes a document placeholder by an explicit rule — uppercase, `-` to `_`, suffix `_KEY_MB` — so slot `signing` is rendered into `{SIGNING_KEY_MB}` and slot `ka` into `{KA_KEY_MB}`. Those are the two names a `schemaVersion` 1 template already uses, which is deliberate: a v1 template is exactly a v2 template whose `keys` block is `{signing: [ed25519], ka: [x25519]}`, so an implementation can read both through one path and raising the version cannot change how a v1 template renders.\\n\\nAn implementation MUST refuse a template that declares a slot whose placeholder never appears in `document` — the key would be minted and never published, so verifiers would continue to see only the keys that are, while the operator believes the template migrated. It MUST likewise refuse a slot placeholder in `document` that no slot declares, which would render as an unsubstituted literal.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z0-9-]+$\"},\"type\":\"object\"},\"kind\":{\"minLength\":1,\"type\":\"string\"},\"methods\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"name\":{\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9-]+$\",\"type\":\"string\"},\"optionalVars\":{\"additionalProperties\":true,\"type\":\"object\"},\"requiredVars\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"schemaVersion\":{\"description\":\"Template schema version. 1 is the historical shape, whose keys are implicitly an Ed25519 signing key and an X25519 key-agreement key. 2 adds the `keys` block, which makes those explicit and allows others.\",\"enum\":[1,2,3],\"type\":\"integer\"},\"scope\":{\"$ref\":\"#/$defs/Scope\",\"description\":\"Resolved scope of the stored template.\"},\"updatedAt\":{\"description\":\"When the template was last written (RFC 3339).\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"schemaVersion\",\"name\",\"kind\",\"document\",\"scope\",\"createdAt\",\"updatedAt\",\"createdBy\"],\"title\":\"DidTemplateRecord\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"KeyRole\":{\"description\":\"The named key role a key occupies in an identity (CONVENTIONS.md §2; VTI-KEY-070 onward). `attestation` — the only keys in `assertionMethod`; sign the identity's attestation artefacts (credentials, endorsements, status lists) through the VTA's signing service and nowhere else. Generated inside the VTA, never derived, never exportable, never in a backup. `operational` — the only keys the identity's own process uses in `authentication`; sign the node's own traffic (Trust Task requests and responses, DIDComm and TSP signatures, invitations, notices, audit checkpoints). Derived. `messaging` — the only keys in `keyAgreement`; sign nothing. X25519, derived or generated in its own right and never converted from a signing key. `update` — the identifier's change authority as its DID method states it (a did:webvh log's `updateKeys` and `nextKeyHashes`, a KERI key event log's current and next keys); never a role-bound verification method, never in `keyRoles`. Generated inside the VTA, never derived, never exportable, never in a backup, and always accompanied by a committed recovery key held outside the VTA's protection boundary. `authenticator` — a key held on a person's own authenticator (a WebAuthn passkey), listed in `authentication` of that person's identity only; used only to verify the person's WebAuthn assertions (sign-in and step-up evidence) and never to accept a Data Integrity proof. The VTA never holds its private half, so it is enrolled by the passkey ceremony and never generated, added or rotated by these tasks. Never permitted on the durable identity of a VTA, a VTC or a VTN. No role permits `capabilityInvocation` or `capabilityDelegation` (VTI-KEY-075). The set is an extensible registry: a consumer that meets a role it does not implement MUST rely on the key for nothing, and MUST NOT map it onto a role it does know (VTI-KEY-074).\",\"enum\":[\"attestation\",\"operational\",\"messaging\",\"update\",\"authenticator\"],\"title\":\"KeyRole\",\"type\":\"string\"},\"KeyType\":{\"description\":\"Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support.\",\"enum\":[\"ed25519\",\"x25519\",\"p256\",\"mldsa44\",\"mldsa65\"],\"title\":\"KeyType\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"$ref\":\"#/$defs/DidTemplateRecord\",\"description\":\"The persisted DidTemplateRecord. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by get/update.\",\"title\":\"VTA DID-Template Create — response payload\"},\"RoleLayout\":{\"additionalProperties\":false,\"description\":\"The keys an identity is created with in one role (CONVENTIONS.md §4). A key-role DID template carries one per role; a creation request may narrow it but never widen it.\",\"properties\":{\"algorithms\":{\"description\":\"The algorithms to mint, one key each, in publication order — `[\\\"ed25519\\\", \\\"mldsa44\\\"]` mints a classical and a post-quantum attestation key that sign as a proof set. Every entry MUST suit the role (CONVENTIONS.md §2.2). A VTA that cannot mint one of them MUST refuse the creation with `vta/dids:unsupportedKeyType`; it never substitutes an algorithm or omits a key.\",\"items\":{\"$ref\":\"#/$defs/KeyType\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"role\":{\"$ref\":\"#/$defs/KeyRole\"}},\"required\":[\"role\",\"algorithms\"],\"title\":\"RoleLayout\",\"type\":\"object\"},\"Scope\":{\"description\":\"Where a stored template lives. Tagged by `type`.\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"type\":{\"const\":\"builtin\"}},\"required\":[\"type\"],\"title\":\"Builtin\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"type\":{\"const\":\"global\"}},\"required\":[\"type\"],\"title\":\"Global\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"contextId\":{\"minLength\":1,\"type\":\"string\"},\"type\":{\"const\":\"context\"}},\"required\":[\"type\",\"contextId\"],\"title\":\"Context\",\"type\":\"object\"}],\"title\":\"Scope\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

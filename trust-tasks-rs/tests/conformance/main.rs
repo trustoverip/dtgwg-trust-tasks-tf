@@ -1699,6 +1699,34 @@ mod vta {
             mod v3_1;
         }
     }
+    mod dids {
+        mod create {
+            mod v1_0;
+        }
+        mod keys {
+            mod add {
+                mod v1_0;
+            }
+            mod list {
+                mod v1_0;
+            }
+            mod retire {
+                mod v1_0;
+            }
+            mod revoke {
+                mod v1_0;
+            }
+            mod rotate {
+                mod v1_0;
+            }
+        }
+        mod recover {
+            mod v1_0;
+        }
+        mod update {
+            mod v1_0;
+        }
+    }
     mod health {
         mod details {
             mod v0_1;

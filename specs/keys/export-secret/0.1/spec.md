@@ -92,7 +92,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 
 **Keys published in a DID's key role.** Where the custodian maintains a DID whose key roles are
-governed by the [DID key-role conventions](../../../vta/_shared/0.3/CONVENTIONS.md#4-custody-and-exportability),
+governed by the [DID key-role conventions](../../../vta/dids/_shared/0.1/CONVENTIONS.md#55-exportability-and-backups),
 a key in the `attestation` or `update` role is never exportable by any authority: it is generated
 inside the custodian, not derived, and excluded from every backup (VTI-KEY-110, VTI-KEY-112,
 VTI-KEY-113). The custodian **MUST** answer `keys/export-secret:neverExportable` for such a key, whatever the caller's authority, and **MUST** decide that from the key's role before, and independently of, the caller's entitlement, so the answer reveals nothing about the caller's standing.

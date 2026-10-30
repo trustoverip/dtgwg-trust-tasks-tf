@@ -56,7 +56,8 @@ type DIDTemplateKeysValue struct {
 type DIDTemplate struct {
 	// Template schema version. 1 is the historical shape, whose keys are implicitly an
 	// Ed25519 signing key and an X25519 key-agreement key. 2 adds the `keys` block, which
-	// makes those explicit and allows others.
+	// makes those explicit and allows others. 3 is a key-role template (`keyRoles`), whose
+	// document carries no key members.
 	SchemaVersion int64 `json:"schemaVersion"`
 
 	// Template id within its scope. Lowercase alphanumeric and hyphen only.
@@ -96,6 +97,18 @@ type DIDTemplate struct {
 	// refuse a slot placeholder in `document` that no slot declares, which would render as an
 	// unsubstituted literal.
 	Keys *map[string]DIDTemplateKeysValue `json:"keys,omitempty"`
+
+	// The key roles of a key-role identity, one `RoleLayout` per role
+	// (vta/dids/_shared/0.1/CONVENTIONS.md §4). REQUIRED for, and only for, `schemaVersion`
+	// 3, which then MUST NOT carry `keys`. A v3 template describes only an identity's non-key
+	// members: its `document` MUST NOT contain `verificationMethod`, `authentication`,
+	// `assertionMethod`, `keyAgreement`, `capabilityInvocation`, `capabilityDelegation` or
+	// `keyRoles`, and the VTA renders all of them from this layout and the key-role registry
+	// — so a template can never place a key in a relationship its role does not own. Each
+	// listed algorithm is minted, one key each; unlike v2's `keys`, the list is not a
+	// preference order, and a VTA that cannot mint one refuses rather than substitutes. Used
+	// by vta/dids/create; a v1 or v2 template cannot create a key-role identity.
+	KeyRoles *[]RoleLayout `json:"keyRoles,omitempty"`
 
 	// The DID document body with `{TOKEN}` placeholders. `document.id` MUST contain the
 	// `{DID}` placeholder. Every `{TOKEN}` MUST be declared in requiredVars/optionalVars or
@@ -177,8 +190,20 @@ type DIDTemplateRecord struct {
 	// the keys that are, while the operator believes the template migrated. It MUST likewise
 	// refuse a slot placeholder in `document` that no slot declares, which would render as an
 	// unsubstituted literal.
-	Keys     *map[string]DIDTemplateRecordKeysValue `json:"keys,omitempty"`
-	Document map[string]json.RawMessage             `json:"document"`
+	Keys *map[string]DIDTemplateRecordKeysValue `json:"keys,omitempty"`
+
+	// The key roles of a key-role identity, one `RoleLayout` per role
+	// (vta/dids/_shared/0.1/CONVENTIONS.md §4). REQUIRED for, and only for, `schemaVersion`
+	// 3, which then MUST NOT carry `keys`. A v3 template describes only an identity's non-key
+	// members: its `document` MUST NOT contain `verificationMethod`, `authentication`,
+	// `assertionMethod`, `keyAgreement`, `capabilityInvocation`, `capabilityDelegation` or
+	// `keyRoles`, and the VTA renders all of them from this layout and the key-role registry
+	// — so a template can never place a key in a relationship its role does not own. Each
+	// listed algorithm is minted, one key each; unlike v2's `keys`, the list is not a
+	// preference order, and a VTA that cannot mint one refuses rather than substitutes. Used
+	// by vta/dids/create; a v1 or v2 template cannot create a key-role identity.
+	KeyRoles *[]RoleLayout              `json:"keyRoles,omitempty"`
+	Document map[string]json.RawMessage `json:"document"`
 
 	// Resolved scope of the stored template.
 	Scope Scope `json:"scope"`
@@ -192,3 +217,75 @@ type DIDTemplateRecord struct {
 	// DID of the admin who last wrote the template.
 	CreatedBy string `json:"createdBy"`
 }
+
+// RoleLayout The keys an identity is created with in one role (CONVENTIONS.md §4). A
+// key-role DID template carries one per role; a creation request may narrow it but never
+// widen it.
+type RoleLayout struct {
+	Role KeyRole `json:"role"`
+
+	// The algorithms to mint, one key each, in publication order — `["ed25519", "mldsa44"]`
+	// mints a classical and a post-quantum attestation key that sign as a proof set. Every
+	// entry MUST suit the role (CONVENTIONS.md §2.2). A VTA that cannot mint one of them MUST
+	// refuse the creation with `vta/dids:unsupportedKeyType`; it never substitutes an
+	// algorithm or omits a key.
+	Algorithms []KeyType `json:"algorithms"`
+}
+
+// KeyRole The named key role a key occupies in an identity (CONVENTIONS.md §2;
+// VTI-KEY-070 onward). `attestation` — the only keys in `assertionMethod`; sign the
+// identity's attestation artefacts (credentials, endorsements, status lists) through the
+// VTA's signing service and nowhere else. Generated inside the VTA, never derived, never
+// exportable, never in a backup. `operational` — the only keys the identity's own process
+// uses in `authentication`; sign the node's own traffic (Trust Task requests and
+// responses, DIDComm and TSP signatures, invitations, notices, audit checkpoints).
+// Derived. `messaging` — the only keys in `keyAgreement`; sign nothing. X25519, derived
+// or generated in its own right and never converted from a signing key. `update` — the
+// identifier's change authority as its DID method states it (a did:webvh log's
+// `updateKeys` and `nextKeyHashes`, a KERI key event log's current and next keys); never
+// a role-bound verification method, never in `keyRoles`. Generated inside the VTA, never
+// derived, never exportable, never in a backup, and always accompanied by a committed
+// recovery key held outside the VTA's protection boundary. `authenticator` — a key held
+// on a person's own authenticator (a WebAuthn passkey), listed in `authentication` of
+// that person's identity only; used only to verify the person's WebAuthn assertions
+// (sign-in and step-up evidence) and never to accept a Data Integrity proof. The VTA
+// never holds its private half, so it is enrolled by the passkey ceremony and never
+// generated, added or rotated by these tasks. Never permitted on the durable identity of
+// a VTA, a VTC or a VTN. No role permits `capabilityInvocation` or `capabilityDelegation`
+// (VTI-KEY-075). The set is an extensible registry: a consumer that meets a role it does
+// not implement MUST rely on the key for nothing, and MUST NOT map it onto a role it does
+// know (VTI-KEY-074).
+type KeyRole string
+
+// Values KeyRole may take, per this specification's schema.
+const (
+	KeyRoleAttestation   KeyRole = "attestation"
+	KeyRoleOperational   KeyRole = "operational"
+	KeyRoleMessaging     KeyRole = "messaging"
+	KeyRoleUpdate        KeyRole = "update"
+	KeyRoleAuthenticator KeyRole = "authenticator"
+)
+
+// KeyType Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA),
+// `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44`
+// and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is
+// expected to grow as algorithms are standardised, and growing it is a MINOR change under
+// SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a
+// constraint rather than narrowing one, and the generated libraries mark this enumeration
+// non-exhaustive so that a consumer absorbs a new value rather than failing to compile.
+// Two ML-DSA parameter sets are carried because two specifications require different ones
+// — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44,
+// while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is
+// chosen by whatever consumes the key and the two are not redundant. A consumer that does
+// not implement a value it receives MUST refuse the document rather than substitute one
+// it does support.
+type KeyType string
+
+// Values KeyType may take, per this specification's schema.
+const (
+	KeyTypeEd25519 KeyType = "ed25519"
+	KeyTypeX25519  KeyType = "x25519"
+	KeyTypeP256    KeyType = "p256"
+	KeyTypeMldsa44 KeyType = "mldsa44"
+	KeyTypeMldsa65 KeyType = "mldsa65"
+)

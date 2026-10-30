@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/dids/_shared/0.1/method-profiles/webvh",
+  "title": "Method parameters — did:webvh and did:scid:vh key-role identities",
+  "description": "The schemas `methodParameters` is validated against for `vta/dids/create` and `vta/dids/update` when the identity's method is `webvh` or `scid:vh` (webvh.md §8). A member not defined here is refused with `vta/dids:methodParameterUnsupported`.",
+  "$defs": {
+    "Witnesses": {
+      "title": "WebvhWitnesses",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "threshold",
+        "witnesses"
+      ],
+      "description": "The log's `witness` parameter.",
+      "properties": {
+        "threshold": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "witnesses": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "pattern": "^did:key:",
+            "description": "A witness, by its did:key."
+          }
+        }
+      }
+    },
+    "CreateParameters": {
+      "title": "WebvhCreateParameters",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "serverId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Hosting service to publish through. Absent means the caller publishes the log itself at `url` (`selfPublish`)."
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Where the log will be served, when there is no hosting service."
+        },
+        "domain": {
+          "type": "string",
+          "minLength": 1
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "portable": {
+          "type": "boolean",
+          "description": "Whether the log may move host and keep its identity. Fixed at creation."
+        },
+        "presentAs": {
+          "type": "string",
+          "enum": [
+            "webvh",
+            "scid:vh"
+          ],
+          "description": "The form the VTA presents the new identity in (VTI-KEY-165). Fixed at creation. Absent applies the VTA's configuration."
+        },
+        "scidAlsoKnownAs": {
+          "type": "boolean",
+          "description": "Whether the first entry lists the did:scid DID URL in `alsoKnownAs` (VTI-KEY-166). Fixed at creation; MUST be true where `presentAs` is `scid:vh`."
+        },
+        "witnesses": {
+          "$ref": "#/$defs/Witnesses"
+        },
+        "watchers": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "ttlSeconds": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The `ttl` parameter: the input to the cache horizon (webvh.md §5)."
+        }
+      }
+    },
+    "UpdateParameters": {
+      "title": "WebvhUpdateParameters",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "witnesses": {
+          "$ref": "#/$defs/Witnesses"
+        },
+        "watchers": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          },
+          "description": "An empty array removes every watcher."
+        },
+        "ttlSeconds": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}

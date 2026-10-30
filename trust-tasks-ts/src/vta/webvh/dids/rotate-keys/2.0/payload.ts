@@ -8,6 +8,8 @@ import type { DidDocumentChange, DidDocumentPreview, DidVerificationRelationship
 
 /**
  * Rotate one key role of a did:webvh: stage a successor, activate it no sooner than every cached copy of the document can have seen it, and retire the predecessor at the end of an overlap. For the update role, move the log's update key to its committed successor.
+ *
+ * @deprecated retired; use vta/dids/keys/rotate/1.0
  */
 export interface VTAWebVHDIDsRotateKeysPayload {
   /**
@@ -68,6 +70,8 @@ export interface VTAWebVHDIDsRotateKeysPayload {
 }
 /**
  * Success response. Type https://trusttasks.org/spec/vta/webvh/dids/rotate-keys/2.0#response. A refusal is a `trust-task-error` document, never this.
+ *
+ * @deprecated retired; use vta/dids/keys/rotate/1.0
  */
 export interface VTAWebVHDIDsRotateKeysResponsePayload {
   did: string;
@@ -120,15 +124,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "retired; use vta/dids/keys/rotate/1.0";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated retired; use vta/dids/keys/rotate/1.0
+ */
 export type Payload = VTAWebVHDIDsRotateKeysPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/webvh/dids/rotate-keys/2.0#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated retired; use vta/dids/keys/rotate/1.0
+ */
 export type Response = VTAWebVHDIDsRotateKeysResponsePayload;
 
 /**

@@ -4,7 +4,7 @@
  */
 
 /**
- * A VTA holds the keys of the durable DIDs it serves — its own, and those of the VTCs and VTNs provisioned on it — and assigns every one of them to exactly one named key role. These definitions describe a role, a key in a role, a rotation, the preview of the DID document a change would publish, and the approval state of a change awaiting a quorum. The normative rules that give them meaning (which verification relationships each role owns, who may change which role, how a change is approved, what is audited, and what each caller may see) are in CONVENTIONS.md beside this file. Not itself a Trust Task specification: the `_shared` folder is skipped by the registry build and the codegen.
+ * Retired: superseded by vta/dids/_shared/0.1/key-roles.schema.json, the method-neutral key-role definitions. A VTA holds the keys of the durable DIDs it serves — its own, and those of the VTCs and VTNs provisioned on it — and assigns every one of them to exactly one named key role. These definitions describe a role, a key in a role, a rotation, the preview of the DID document a change would publish, and the approval state of a change awaiting a quorum. The normative rules that give them meaning (which verification relationships each role owns, who may change which role, how a change is approved, what is audited, and what each caller may see) are in CONVENTIONS.md beside this file. Not itself a Trust Task specification: the `_shared` folder is skipped by the registry build and the codegen.
  */
 export interface DIDKeyRolesSharedDefinitionsForTheVtaWebvhDidsKeyRoleTasks {
   [k: string]: unknown | undefined;
