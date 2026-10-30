@@ -94,7 +94,7 @@ class UnsignedRoomRequest {
 /// Success response to rooms/keys/act. Type
 /// https://trusttasks.org/spec/rooms/keys/act/0.5#response. The request, completed as
 /// the member, for the caller to send to its recipient unaltered.
-@Deprecated('superseded by rooms/keys/act/0.8')
+@Deprecated('superseded by rooms/keys/act/0.9')
 class Response {
   const Response({
     required this.principal,
@@ -138,7 +138,7 @@ class Response {
 /// of admission to a room — as the member: the member's own authority narrowed to the
 /// one action the request's type needs, the member as issuer, and the member's
 /// signature. The outer document members are owned by the framework — SPEC §6.3.
-@Deprecated('superseded by rooms/keys/act/0.8')
+@Deprecated('superseded by rooms/keys/act/0.9')
 class Payload {
   const Payload({
     required this.document,
@@ -173,7 +173,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by rooms/keys/act/0.8';
+const String? deprecation = 'superseded by rooms/keys/act/0.9';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/rooms/keys/act/0.5';

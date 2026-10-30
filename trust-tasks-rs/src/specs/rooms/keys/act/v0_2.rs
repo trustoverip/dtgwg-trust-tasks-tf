@@ -4,7 +4,7 @@
 #![allow(deprecated)]
 /// Why this specification version is deprecated (SPEC "Superseded and
 /// Withdrawn Versions"), or `None` while it is current.
-pub const DEPRECATION: Option<&str> = Some("superseded by rooms/keys/act/0.8");
+pub const DEPRECATION: Option<&str> = Some("superseded by rooms/keys/act/0.9");
 #[allow(unused_imports)]
 use serde::{Deserialize, Serialize};
 /// Error types.
@@ -122,7 +122,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by rooms/keys/act/0.8")]
+#[deprecated(note = "superseded by rooms/keys/act/0.9")]
 pub struct Payload {
     ///The room request to complete, as the client will send it, minus its presentation and its proof.
     pub document: UnsignedRoomRequest,
@@ -140,7 +140,7 @@ impl Payload {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by rooms/keys/act/0.8")]
+#[deprecated(note = "superseded by rooms/keys/act/0.9")]
 pub struct Response {
     pub document: ResponseDocument,
     ///When the inserted presentation's leaf lapses. Absent when the type takes no presentation.

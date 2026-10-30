@@ -1693,6 +1693,9 @@ export import RoomsKeysAct_v0_7 = _RoomsKeysAct_v0_7;
 import * as _RoomsKeysAct_v0_8 from "./rooms/keys/act/0.8/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomsKeysAct_v0_8 = _RoomsKeysAct_v0_8;
+import * as _RoomsKeysAct_v0_9 from "./rooms/keys/act/0.9/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import RoomsKeysAct_v0_9 = _RoomsKeysAct_v0_9;
 import * as _RoomsKeysBackfill_v0_1 from "./rooms/keys/backfill/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomsKeysBackfill_v0_1 = _RoomsKeysBackfill_v0_1;
