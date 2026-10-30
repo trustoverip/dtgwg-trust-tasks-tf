@@ -601,11 +601,39 @@
     "knownImplementations": {
       "type": "array",
       "items": {
-        "type": "string",
-        "format": "uri",
-        "pattern": "^https?://"
+        "oneOf": [
+          {
+            "type": "string",
+            "format": "uri",
+            "pattern": "^https?://"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["url"],
+            "properties": {
+              "url": {
+                "type": "string",
+                "format": "uri",
+                "pattern": "^https?://"
+              },
+              "role": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "description": "Which of this specification's parties the implementation plays, by its role name in `parties` (`Holder`, `Verifier`, …), or `both`."
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80,
+                "description": "How to label the link; the URL is shown when absent."
+              }
+            }
+          }
+        ]
       },
-      "description": "URLs (repositories, products, deployment documentation) of implementations known to produce or consume this task. Informative, not exhaustive: it lets registry readers distinguish adopted specifications from proposals, and doubles as evidence toward the draft \u2192 candidate transition (SPEC \u00a75.3). Omit when no implementation is known."
+      "description": "URLs (repositories, products, deployment documentation) of implementations known to produce or consume this task — or objects naming the URL with the party role it implements, so a reader can tell a Holder from a Verifier. Informative, not exhaustive: it lets registry readers distinguish adopted specifications from proposals, and doubles as evidence toward the draft \u2192 candidate transition (SPEC \u00a75.3). Omit when no implementation is known."
     },
     "wireCompatibleWith": {
       "type": "string",

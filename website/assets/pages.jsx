@@ -1588,14 +1588,54 @@ function SpecDetail({ task, setRoute }) {
           <dt>Implementations</dt>
           <dd>
             {task.knownImplementations && task.knownImplementations.length > 0
-              ? task.knownImplementations.map((u, i) => (
-                  <React.Fragment key={u}>
-                    {i > 0 && ", "}
-                    <a href={u} target="_blank" rel="noreferrer">{prettyImplUrl(u)}</a>
-                  </React.Fragment>
-                ))
+              ? task.knownImplementations.map((entry, i) => {
+                  const impl = typeof entry === "string" ? { url: entry } : entry;
+                  return (
+                    <React.Fragment key={impl.url}>
+                      {i > 0 && ", "}
+                      <a href={impl.url} target="_blank" rel="noreferrer">{impl.name || prettyImplUrl(impl.url)}</a>
+                      {impl.role && <span style={{ color: "var(--tt-text-muted)" }}> ({impl.role})</span>}
+                    </React.Fragment>
+                  );
+                })
               : <span style={{ color: "var(--tt-text-muted)" }}>Not declared</span>}
           </dd>
+          {/* SPEC §7.3 item 20. Always rendered: a task that declares none has
+              exchanges nobody outside them can cite, which a relying party
+              needs to know before building on it. */}
+          <dt>Outcome evidence</dt>
+          <dd>
+            {task.outcomeEvidence
+              ? (() => {
+                  const oe = task.outcomeEvidence;
+                  const b = oe.binding || {};
+                  const bound = b.challenge
+                    ? `challenge at ${b.challenge.initiating} (request) ↔ ${b.challenge.response} (response)`
+                    : b.id
+                      ? `request id at ${b.id}${b.taskDigest ? `, task digest at ${b.taskDigest}` : ""}`
+                      : null;
+                  return (
+                    <>
+                      <code style={{ fontFamily: "var(--tt-font-mono)", fontSize: "0.95em" }}>{oe.response}</code>
+                      {bound && <span style={{ color: "var(--tt-text-muted)" }}> — bound by {bound}</span>}
+                    </>
+                  );
+                })()
+              : <span style={{ color: "var(--tt-text-muted)" }}>Not declared — exchanges can't be cited as completion evidence</span>}
+          </dd>
+          {task.maxDocumentBytes && (
+            <>
+              <dt>Document size bound</dt>
+              <dd>
+                {["request", "response"].filter((v) => task.maxDocumentBytes[v]).map((v, i) => (
+                  <React.Fragment key={v}>
+                    {i > 0 && ", "}
+                    {v} {task.maxDocumentBytes[v].toLocaleString()} bytes
+                  </React.Fragment>
+                ))}
+              </dd>
+            </>
+          )}
           {/* The two exceptional-state rows render only when set — a "—" on
               every one of the registry's specs would be noise. */}
           {task.wireCompatibleWith && (
