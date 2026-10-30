@@ -49,7 +49,15 @@
     },
     "recoveryCommitment": {
       "$ref": "../../../_shared/0.1/key-roles.schema.json#/$defs/RecoveryCommitment",
-      "description": "`update` only: replace the recovery commitment with this key (CONVENTIONS.md §5.3, §6.5). Absent moves the routine authority and carries the recovery commitment forward."
+      "description": "`update` only, level 3 only (`vta/dids:assuranceLevelMismatch` below it): replace the recovery commitment with this key (CONVENTIONS.md §5.3, §6.5), authorized by the current recovery key (`useRecoveryKey`) or, where that key is lost, by a quorum. Absent moves the routine authority and carries the recovery commitment forward."
+    },
+    "useRecoveryKey": {
+      "type": "boolean",
+      "description": "`update` with `recoveryCommitment` only, level 3: `true` has the current recovery key authorize the replacement — the change reveals it and commits the new one, and the VTA answers `awaitingRecoveryProof` until the custodian's `recoveryProof` arrives; no quorum is then required (VTI-KEY-181). Absent or `false`, for a recovery key that is lost: the replacement is authorized by the routine key with the quorum of CONVENTIONS.md §6.5."
+    },
+    "recoveryProof": {
+      "type": "object",
+      "description": "With `useRecoveryKey: true` only: the recovery custodian's proof over `preview.recoverySigning.unsignedChange`, in the method profile's form. A threshold custodian's is an ordinary Ed25519 proof (CONVENTIONS.md §5.7)."
     },
     "label": {
       "type": "string",

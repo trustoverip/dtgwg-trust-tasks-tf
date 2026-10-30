@@ -78,6 +78,12 @@ errorCodes:
   - code: "vta/dids/keys/rotate:overlapTooShort"
     meaning: "`activatesAt` is before the publishing change's cache horizon, or `overlapUntil` is not after `activatesAt`."
     retryable: false
+  - code: "vta/dids:assuranceLevelMismatch"
+    meaning: "`recoveryCommitment` for an identity below level 3."
+    retryable: false
+  - code: "vta/dids:recoveryProofInvalid"
+    meaning: "With `useRecoveryKey`, the recovery proof does not verify over the previewed change under the committed recovery key."
+    retryable: false
 related:
   - vta/dids/keys/list
   - vta/dids/keys/retire
@@ -106,10 +112,16 @@ For `update` there is no overlap, and two things can be asked for:
   committed routine successor and a fresh one is committed, as the method profile says. Under
   did:webvh every change does this anyway; under did:webs this is a rotation event, which
   needs the recovery custodian.
-- **Replace the recovery commitment** (`recoveryCommitment` given): the identity commits to a
-  new recovery key, with its proof of possession, in place of the old. This is the one
-  change that, made by an adversary, silently disarms recovery, so the VTI specification
-  requires a quorum for it where two approvers exist (VTI-KEY-181).
+- **Replace the recovery commitment** (`recoveryCommitment` given; level 3 only): the
+  identity commits to a new recovery key, with its proof of possession, in place of the old.
+  This is the one change that, made by an adversary, silently disarms recovery. So the
+  current recovery key authorizes it (`useRecoveryKey: true`): the change reveals that key,
+  the custodian checks and signs it as for a recovery
+  ([conventions §5.6](../../../_shared/0.1/CONVENTIONS.md#56-recovery-custodians)), and a
+  witness can verify it from the entry alone. A threshold custodian's t participants each
+  check and approve it, which is the two-approver rule enforced by the signature. Only where
+  the recovery key is lost is the replacement authorized by the routine key, and then the
+  VTI specification requires a quorum where two approvers exist (VTI-KEY-181).
 
 ## Status of this Document
 
@@ -136,9 +148,14 @@ A conforming **consumer** (the VTA) **MUST**:
    `keys/retire` would, under this request's authorization, destroying an `attestation` or
    `messaging` predecessor, and audit `did.keys.autoRetire`.
 6. For `update`, refuse the schedule members, `replace` and `keyType`; move the authority as
-   the profile says; and with `recoveryCommitment`, verify its proof of possession over the
+   the profile says; and with `recoveryCommitment` — refused below level 3
+   (`vta/dids:assuranceLevelMismatch`) — verify its proof of possession over the
    `previewId`, refuse a key in its own boundary, and replace the commitment — never
-   otherwise.
+   otherwise. With `useRecoveryKey: true`, compute the change as one the recovery key
+   authorizes, answer `awaitingRecoveryProof` with `preview.recoverySigning`, and verify
+   `recoveryProof` over exactly that change before publishing
+   (`vta/dids:recoveryProofInvalid`); without it, require the quorum of
+   [conventions §6.5](../../../_shared/0.1/CONVENTIONS.md#65-what-each-change-requires).
 7. Treat a revocation of any key in this rotation as superseding it (rotation `aborted`).
 8. Refuse `authenticator`.
 

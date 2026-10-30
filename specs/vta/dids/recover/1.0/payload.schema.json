@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/dids/recover/1.0",
   "title": "VTA DIDs — Recover — payload",
-  "description": "Ask a Verifiable Trust Agent to take over a key-role identity whose VTA was lost, with the identity's committed recovery key (CONVENTIONS.md §9.5; VTI-KEY-117). The recovering VTA generates new keys, and the recovery custodian signs the one change that publishes them.",
+  "description": "Ask a Verifiable Trust Agent to take over a key-role identity whose VTA was lost, with the identity's committed recovery key (CONVENTIONS.md §9.5; VTI-KEY-117). The recovering VTA generates new keys, and the recovery custodian signs the one change that publishes them. Level 3 only: a level-1 or level-2 identity is recovered by restoring its VTA's backup, and is refused with `vta/dids:assuranceLevelMismatch`.",
   "type": "object",
   "additionalProperties": false,
   "required": [

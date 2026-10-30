@@ -35,7 +35,7 @@
         "key",
         "boundary"
       ],
-      "description": "`update` only, REQUIRED there (CONVENTIONS.md §9.4). `key` — one routine key is exposed; the VTA moves to its routine successor. `boundary` — the VTA's protection boundary may be compromised; only the recovery key may authorize the change, and every key the boundary held is replaced."
+      "description": "`update` only, REQUIRED there (CONVENTIONS.md §9.4). `key` — one routine key is exposed; the VTA moves to its routine successor. `boundary` — the VTA's protection boundary may be compromised; only the recovery key may authorize the change, and every key the boundary held is replaced. `boundary` is for a level-3 identity only (`vta/dids:assuranceLevelMismatch` below it): a level-2 identity whose VTA may be compromised is deactivated and replaced (CONVENTIONS.md §9.4)."
     },
     "replacement": {
       "type": "object",

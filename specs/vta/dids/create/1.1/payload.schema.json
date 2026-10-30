@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/dids/create/1.1",
+  "title": "VTA DIDs — Create — payload",
+  "description": "Ask a Verifiable Trust Agent to create a key-role identity at key assurance level 2 or 3, under an eligible DID method, from a key-role DID template. The VTA mints every key fresh by its role's custody rules at that level, commits a routine update successor, and at level 3 commits the caller's recovery key (CONVENTIONS.md §3.4, §4, §5). No caller-supplied key, key identifier, keyed document or existing history is accepted.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contextId",
+    "method",
+    "template",
+    "assuranceLevel"
+  ],
+  "properties": {
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Context the identity belongs to. Its derived keys are derived under this context's base."
+    },
+    "method": {
+      "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/DidMethodName"
+    },
+    "template": {
+      "type": "string",
+      "minLength": 1,
+      "description": "A key-role DID template (`schemaVersion` 3; CONVENTIONS.md §4). Its `keyRoles` layout fixes which keys are minted; its `document` supplies only non-key members."
+    },
+    "templateContext": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Context whose templates `template` is resolved against. Absent uses the global scope."
+    },
+    "templateVars": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Values for the template's variables, checked against its `requiredVars` and `optionalVars` by the VTA's renderer."
+    },
+    "methodParameters": {
+      "type": "object",
+      "description": "Validated against the method profile's `CreateParameters` schema (method-profiles/<method>-parameters.schema.json); a member it does not define is refused with `vta/dids:methodParameterUnsupported`."
+    },
+    "assuranceLevel": {
+      "type": "integer",
+      "enum": [
+        2,
+        3
+      ],
+      "description": "The key assurance level of the new identity (VTI-KEY-194; CONVENTIONS.md §3.4). `2` — role-separated: the `attestation` and `update` keys are held only by the VTA, which may derive them and keep them in its own backup; no recovery key. `3` — recoverable: those keys are generated and in no backup, `recoveryCommitment` is required, and under a method with witnesses `methodParameters` must name a witness enforcing CONVENTIONS.md §5.4. A level-1 identity is created by the method-specific creation tasks, not this one."
+    },
+    "recoveryCommitment": {
+      "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/RecoveryCommitment",
+      "description": "REQUIRED when `assuranceLevel` is 3, refused with `vta/dids:assuranceLevelMismatch` when it is 2. The recovery key, from a recovery custodian of a kind CONVENTIONS.md §5.6 admits, with `custodian` declaring which."
+    },
+    "label": {
+      "type": "string",
+      "maxLength": 256,
+      "description": "Operator-facing label. Never published."
+    },
+    "dryRun": {
+      "type": "boolean",
+      "description": "Compute and return the preview without writing anything but the plan (CONVENTIONS.md §6.1). Absent reads as false."
+    },
+    "previewId": {
+      "type": "string",
+      "minLength": 16,
+      "description": "Apply exactly the plan a previous dry run of this same request returned, or nothing (CONVENTIONS.md §6.1); what every approval is bound to."
+    },
+    "reason": {
+      "type": "string",
+      "maxLength": 1024,
+      "description": "Why the change is being made, for the audit trail and for the other approvers. Never published."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA DIDs — Create — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "did",
+        "outcome"
+      ],
+      "properties": {
+        "did": {
+          "type": "string",
+          "minLength": 1
+        },
+        "outcome": {
+          "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/KeyChangeOutcome"
+        },
+        "assuranceLevel": {
+          "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/KeyAssuranceLevel",
+          "description": "The level the identity is created at, as its document declares it."
+        },
+        "preview": {
+          "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/IdentityChangePreview",
+          "description": "Present when `outcome` is `preview`, `pendingApproval` or `awaitingRecoveryProof`: the plan, and what an approval is bound to."
+        },
+        "approvals": {
+          "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/KeyChangeApprovalState",
+          "description": "Present when `outcome` is `pendingApproval`."
+        },
+        "newVersionId": {
+          "type": "string",
+          "description": "Present when `outcome` is `applied`: the version identifier of the change. Pass it as the next change's `expectedVersionId`."
+        },
+        "keys": {
+          "type": "array",
+          "items": {
+            "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/IdentityRoleKey"
+          },
+          "description": "Every key whose state this change sets or would set, after the change."
+        },
+        "rotation": {
+          "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/KeyChangeRecord"
+        },
+        "publication": {
+          "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/Publication",
+          "description": "Present when `outcome` is `applied`."
+        },
+        "contextId": {
+          "type": "string"
+        },
+        "method": {
+          "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/DidMethodName"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

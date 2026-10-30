@@ -63,10 +63,16 @@ errorCodes:
     meaning: "A `methodParameters` member is not in the profile's `UpdateParameters`, or is fixed at creation."
     retryable: false
   - code: "vta/dids/update:keyMembersManaged"
-    meaning: "The document changes `verificationMethod`, a verification relationship or `keyRoles`; keys change only through the key-role tasks."
+    meaning: "The document changes `verificationMethod`, a verification relationship, `keyRoles` or `keyAssurance`; keys change only through the key-role tasks, and the level only through `vta/dids/upgrade`."
     retryable: false
   - code: "vta/dids/update:documentNotWritable"
     meaning: "`document` was given for a method whose document is derived rather than written by the controller."
+    retryable: false
+  - code: "vta/dids:witnessRequired"
+    meaning: "The change would leave a level-3 identity under a method with witnesses without a witness enforcing CONVENTIONS.md §5.4."
+    retryable: false
+  - code: "vta/dids:assuranceLevelMismatch"
+    meaning: "The change would lower the identity's key assurance level; a level is raised with `vta/dids/upgrade` and never lowered."
     retryable: false
 related:
   - vta/dids/create
@@ -78,7 +84,7 @@ related:
 
 **VTA DIDs — Update** publishes a new version of a key-role identity that changes anything
 but its keys: services, `alsoKnownAs`, and the method's own parameters (did:webvh witnesses,
-watchers, TTL). Keys, relationships and `keyRoles` are refused here
+watchers, TTL). Keys, relationships, `keyRoles` and `keyAssurance` are refused here
 (`vta/dids/update:keyMembersManaged`) and change only through
 [`keys/add`](../../keys/add/1.0/spec.md), [`keys/rotate`](../../keys/rotate/1.0/spec.md),
 [`keys/retire`](../../keys/retire/1.0/spec.md) and [`keys/revoke`](../../keys/revoke/1.0/spec.md),
@@ -104,13 +110,18 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-m
 A conforming **consumer** (the VTA) **MUST**:
 
 1. Refuse an identity that is not a key-role identity (`vta/dids:notKeyRoleIdentity`).
-2. Refuse a `document` whose `verificationMethod`, verification relationships or `keyRoles`
+2. Refuse a `document` whose `verificationMethod`, verification relationships, `keyRoles` or `keyAssurance`
    differ from the current version's (`vta/dids/update:keyMembersManaged`), and a `document`
    for a method whose document is derived (`vta/dids/update:documentNotWritable`).
 3. Validate `methodParameters` against the profile's `UpdateParameters`.
 4. Carry the recovery commitment forward unchanged, and move the update authority only as
    the profile requires
    ([§5.3](../../_shared/0.1/CONVENTIONS.md#53-the-change-authority-a-routine-key-and-a-recovery-key)).
+   Refuse `methodParameters` that would leave a level-3 identity under a method with
+   witnesses without a witness enforcing
+   [§5.4](../../_shared/0.1/CONVENTIONS.md#54-witnesses-and-the-recovery-commitment)
+   (`vta/dids:witnessRequired`), and any change that would declare a lower level
+   (`vta/dids:assuranceLevelMismatch`).
 5. Follow the preview, step-up and approval rules of
    [conventions §6](../../_shared/0.1/CONVENTIONS.md#6-approval), and audit `did.update`.
 

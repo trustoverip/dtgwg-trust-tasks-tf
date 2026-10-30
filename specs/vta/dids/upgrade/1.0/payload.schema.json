@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/dids/upgrade/1.0",
+  "title": "VTA DIDs — Upgrade — payload",
+  "description": "Ask a Verifiable Trust Agent to raise the key assurance level of an identity it holds, in place and without changing its identifier: from level 1 to level 2 or 3, or from level 2 to level 3 (VTI-KEY-147; CONVENTIONS.md §3.5). The VTA mints fresh keys for every role whose custody the new level tightens, removes the keys they replace, moves the update authority, declares the new level and, at level 3, commits the caller's recovery key. A level is never lowered.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "did",
+    "toLevel",
+    "previousKeys"
+  ],
+  "properties": {
+    "did": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The identity, by DID (for a `did:scid` identity, the DID without `src`). It may be at level 1 — the one task in the family that accepts such an identity — or at level 2."
+    },
+    "toLevel": {
+      "type": "integer",
+      "enum": [
+        2,
+        3
+      ],
+      "description": "The level to raise to. MUST be higher than the identity's current level (`vta/dids:assuranceLevelMismatch` otherwise)."
+    },
+    "layout": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/RoleLayout"
+      },
+      "description": "From level 1: the roles and algorithms to mint, as a key-role template's layout gives them (CONVENTIONS.md §4). Absent, the VTA mints one `attestation` key and one `operational` key of the level-1 key's algorithm and one `x25519` `messaging` key. From level 2: absent, and refused if given — the replacements keep their predecessors' algorithms (VTI-KEY-184)."
+    },
+    "previousKeys": {
+      "type": "string",
+      "enum": [
+        "retire",
+        "revoke"
+      ],
+      "description": "What becomes of every key the raise replaces. `retire` — removed from the document; what it signed stays valid at the lower level (VTI-KEY-201). `revoke` — it may have been exposed: kept in `verificationMethod` with `revoked` set to `compromisedSince` (CONVENTIONS.md §9.1), and everything it signed must be re-issued. Stated explicitly, because the two have opposite effects on every credential in force."
+    },
+    "compromisedSince": {
+      "type": "string",
+      "format": "date-time",
+      "description": "REQUIRED when `previousKeys` is `revoke`, refused otherwise: the compromise time (VTI-KEY-121). Err early; where it cannot be established, the time the key was first published."
+    },
+    "recoveryCommitment": {
+      "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/RecoveryCommitment",
+      "description": "REQUIRED when `toLevel` is 3, refused otherwise (`vta/dids:assuranceLevelMismatch`): the recovery key, from a custodian of a kind CONVENTIONS.md §5.6 admits."
+    },
+    "methodParameters": {
+      "type": "object",
+      "description": "Validated against the method profile's `UpdateParameters`. At level 3 under a method with witnesses, it names the witness enforcing CONVENTIONS.md §5.4 where the identity has none (`vta/dids:witnessRequired`)."
+    },
+    "expectedVersionId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optimistic-concurrency precondition: the version identifier (method profile §3) the caller based this change on. The VTA MUST refuse with `vta/dids:versionConflict` if the identity has moved past it."
+    },
+    "dryRun": {
+      "type": "boolean",
+      "description": "Compute and return the preview without writing anything but the plan (CONVENTIONS.md §6.1). Absent reads as false."
+    },
+    "previewId": {
+      "type": "string",
+      "minLength": 16,
+      "description": "Apply exactly the plan a previous dry run of this same request returned, or nothing (CONVENTIONS.md §6.1); what every approval is bound to."
+    },
+    "reason": {
+      "type": "string",
+      "maxLength": 1024,
+      "description": "Why the level is being raised, for the audit trail and for the other approvers. Never published."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA DIDs — Upgrade — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "did",
+        "outcome"
+      ],
+      "properties": {
+        "did": {
+          "type": "string",
+          "minLength": 1
+        },
+        "outcome": {
+          "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/KeyChangeOutcome"
+        },
+        "fromLevel": {
+          "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/KeyAssuranceLevel",
+          "description": "The identity's level before the raise."
+        },
+        "assuranceLevel": {
+          "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/KeyAssuranceLevel",
+          "description": "The level the resulting document declares."
+        },
+        "preview": {
+          "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/IdentityChangePreview",
+          "description": "Present when `outcome` is `preview`, `pendingApproval` or `awaitingRecoveryProof`: the plan, and what an approval is bound to."
+        },
+        "approvals": {
+          "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/KeyChangeApprovalState",
+          "description": "Present when `outcome` is `pendingApproval`."
+        },
+        "newVersionId": {
+          "type": "string",
+          "description": "Present when `outcome` is `applied`: the version identifier of the change."
+        },
+        "keys": {
+          "type": "array",
+          "items": {
+            "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/IdentityRoleKey"
+          },
+          "description": "Every key whose state this change sets or would set, after the change."
+        },
+        "publication": {
+          "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/Publication",
+          "description": "Present when `outcome` is `applied`."
+        },
+        "followUp": {
+          "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/ReissuanceFollowUp",
+          "description": "What the node must re-sign and re-issue: every status list at once, and, with `previousKeys: revoke`, every attestation artefact the replaced keys signed that is still in force (VTI-KEY-149)."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
