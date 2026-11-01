@@ -231,7 +231,7 @@ The community maintainer's identifier scope is public: the community is addresse
 
 ### Retention
 
-The room persists as every hosted room does. The community also keeps, as owner, the record of whom it admits ([`vtc/rooms/community/members/add`](../../../../../vtc/rooms/community/members/add/0.1/spec.md)); that record is never read on the host path.
+The room persists as every hosted room does. The community also keeps, as owner, the record of whom it admits ([`vtc/rooms/community/members/add`](../../../../../vtc/rooms/community/members/add/0.2/spec.md)); that record is never read on the host path.
 
 ### Consent/purpose
 

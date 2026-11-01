@@ -1,0 +1,85 @@
+[
+  {
+    "note": "A member DID in the request. The record listed is the signer's; a request naming someone else asks which rooms another member is in.",
+    "payload": {
+      "member": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK"
+    }
+  },
+  {
+    "note": "A state filter. Every surface lists the same record so that each shows the member the same rooms; a surface that wants fewer filters what it was given, rather than asking a question another surface does not ask.",
+    "payload": {
+      "state": "admitted"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "ext": {
+        "bare-key": {
+          "anything": "here"
+        }
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Credentials in an entry. They are collected with vtc/rooms/offers/list while an offer is open; a record listed long after it was accepted is not a second way to obtain them.",
+    "payload": {
+      "items": [
+        {
+          "roomId": "did:webvh:example.com:rooms:board",
+          "host": "did:example:community",
+          "label": "Board pack",
+          "visibility": "private",
+          "actions": ["read"],
+          "validUntil": "2027-10-01T00:00:00Z",
+          "state": "admitted",
+          "offeredAt": "2026-10-14T10:00:00Z",
+          "admittedAt": "2026-10-14T10:05:00Z",
+          "credentials": {
+            "invitation": "eyJhbGciOi…",
+            "membership": "eyJhbGciOi…",
+            "authority": "eyJhbGciOi…"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A withdrawn offer. Withdrawal is not a state a member was ever in; the community does not list it.",
+    "payload": {
+      "items": [
+        {
+          "roomId": "did:webvh:example.com:rooms:board",
+          "host": "did:example:community",
+          "label": "Board pack",
+          "visibility": "private",
+          "actions": ["read"],
+          "validUntil": "2027-10-01T00:00:00Z",
+          "state": "withdrawn",
+          "offeredAt": "2026-10-14T10:00:00Z"
+        }
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Room tags in an entry. Tags are administrators' filing, never shown to members.",
+    "payload": {
+      "items": [
+        {
+          "roomId": "did:webvh:example.com:rooms:board",
+          "host": "did:example:community",
+          "label": "Board pack",
+          "tags": ["board"],
+          "visibility": "private",
+          "actions": ["read"],
+          "validUntil": "2027-10-01T00:00:00Z",
+          "state": "offered",
+          "offeredAt": "2026-10-14T10:00:00Z"
+        }
+      ]
+    }
+  }
+]

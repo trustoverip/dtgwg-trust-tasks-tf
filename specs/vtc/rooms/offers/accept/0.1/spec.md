@@ -86,7 +86,7 @@ related:
 
 ## Abstract
 
-**VTC Rooms — Offers — Accept** completes an admission the community offered ([`vtc/rooms/community/members/add`](../../../../../vtc/rooms/community/members/add/0.1/spec.md)).
+**VTC Rooms — Offers — Accept** completes an admission the community offered ([`vtc/rooms/community/members/add`](../../../../../vtc/rooms/community/members/add/0.2/spec.md)).
 
 On an `open` room there is no group, and accepting records that the member took up the offer. On an `attributed` or `private` room the member sends a KeyPackage their own key holder minted against the offer's invitation ([`rooms/keys/key-package`](../../../../../rooms/keys/key-package/0.2/spec.md)). The community has its VTA add it to the room's group ([`rooms/owner/group/add`](../../../../../rooms/owner/group/add/0.3/spec.md), with the community itself as host), and answers with the **Welcome**. The member's surface hands that to their own key holder ([`rooms/keys/welcome`](../../../../../rooms/keys/welcome/0.1/spec.md)), which checks the invitation again and joins.
 
@@ -106,7 +106,7 @@ A community's VTA therefore serves [`rooms/owner/group/add`](../../../../../room
 
 ### Finishing an acceptance from another surface
 
-*This subsection is informative.* A repeat need not come from the surface that sent the first acceptance. A member who accepted in their community's member portal and closed it before the Welcome reached their key holder finishes in any other surface: it asks the key holder for the room's KeyPackage with [`rooms/keys/key-package`](../../../../../rooms/keys/key-package/0.2/spec.md) at `0.2`, which returns the one it already minted for the room, member and invitation; accepts again with it, and is answered with the same Welcome; and hands that Welcome to the key holder. The community's record shows the member `admitted` from the first acceptance, and [`vtc/rooms/memberships/list`](../../../../../vtc/rooms/memberships/list/0.1/spec.md) says until when the Welcome is kept (`repeatAcceptUntil`). Under `rooms/keys/key-package` at `0.1` the second surface's KeyPackage is a new one, and its acceptance is `alreadyAccepted`.
+*This subsection is informative.* A repeat need not come from the surface that sent the first acceptance. A member who accepted in their community's member portal and closed it before the Welcome reached their key holder finishes in any other surface: it asks the key holder for the room's KeyPackage with [`rooms/keys/key-package`](../../../../../rooms/keys/key-package/0.2/spec.md) at `0.2`, which returns the one it already minted for the room, member and invitation; accepts again with it, and is answered with the same Welcome; and hands that Welcome to the key holder. The community's record shows the member `admitted` from the first acceptance, and [`vtc/rooms/memberships/list`](../../../../../vtc/rooms/memberships/list/0.2/spec.md) says until when the Welcome is kept (`repeatAcceptUntil`). Under `rooms/keys/key-package` at `0.1` the second surface's KeyPackage is a new one, and its acceptance is `alreadyAccepted`.
 
 ## Status of this Document
 

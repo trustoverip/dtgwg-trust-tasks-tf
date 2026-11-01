@@ -6,6 +6,7 @@
 import type { CommunityRoomV2_VtcV0_3 as CommunityRoomV2, Ext, HostedRoom_VtcV0_3 as HostedRoom, RetentionPolicy, RoomDescription, RoomLabel, RoomTag, RoomTags, StorageConfigId, Visibility } from "../../../../../_shared/components.js";
 
 
+/** @deprecated superseded by vtc/rooms/community/list/0.4 */
 export interface VTCRoomsCommunityListPayload {
   /**
    * Opaque continuation token from a previous page's `nextCursor`.
@@ -23,6 +24,8 @@ export interface VTCRoomsCommunityListPayload {
 }
 /**
  * Success response to vtc/rooms/community/list. Type https://trusttasks.org/spec/vtc/rooms/community/list/0.2#response. One page of the rooms the community owns.
+ *
+ * @deprecated superseded by vtc/rooms/community/list/0.4
  */
 export interface VTCRoomsCommunityListResponsePayload {
   /**
@@ -56,15 +59,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by vtc/rooms/community/list/0.4";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vtc/rooms/community/list/0.4
+ */
 export type Payload = VTCRoomsCommunityListPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/rooms/community/list/0.3#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vtc/rooms/community/list/0.4
+ */
 export type Response = VTCRoomsCommunityListResponsePayload;
 
 /**

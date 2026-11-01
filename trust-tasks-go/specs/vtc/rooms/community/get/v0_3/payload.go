@@ -14,6 +14,8 @@ import (
 // Response Success response to vtc/rooms/community/get. Type
 // https://trusttasks.org/spec/vtc/rooms/community/get/0.2#response. One room the
 // community owns, with its counts. Its members are vtc/rooms/community/members/list's.
+//
+// Deprecated: superseded by vtc/rooms/community/get/0.4
 type Response struct {
 	Room CommunityRoomV2 `json:"room"`
 	Ext  *Ext            `json:"ext,omitempty"`
@@ -171,6 +173,8 @@ const (
 )
 
 // Payload VTC Rooms Community Get — payload
+//
+// Deprecated: superseded by vtc/rooms/community/get/0.4
 type Payload struct {
 	// The room's identifier: its DID.
 	RoomID string `json:"roomId"`
@@ -192,7 +196,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by vtc/rooms/community/get/0.4"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/rooms/community/get/0.3#response"

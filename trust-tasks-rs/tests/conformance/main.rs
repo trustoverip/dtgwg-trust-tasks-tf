@@ -1214,6 +1214,7 @@ mod rooms {
     mod keys {
         mod act {
             mod v0_1;
+            mod v0_10;
             mod v0_2;
             mod v0_3;
             mod v0_4;
@@ -2679,6 +2680,9 @@ mod vtc {
     }
     mod rooms {
         mod community {
+            mod archive {
+                mod v0_1;
+            }
             mod create {
                 mod v0_1;
                 mod v0_2;
@@ -2689,23 +2693,38 @@ mod vtc {
                 mod v0_1;
                 mod v0_2;
                 mod v0_3;
+                mod v0_4;
             }
             mod list {
                 mod v0_1;
                 mod v0_2;
                 mod v0_3;
+                mod v0_4;
             }
             mod members {
                 mod add {
                     mod v0_1;
+                    mod v0_2;
                 }
                 mod list {
                     mod v0_1;
+                    mod v0_2;
                 }
                 mod remove {
                     mod v0_1;
                     mod v0_2;
                 }
+            }
+            mod removal {
+                mod cancel {
+                    mod v0_1;
+                }
+            }
+            mod remove {
+                mod v0_1;
+            }
+            mod unarchive {
+                mod v0_1;
             }
             mod update {
                 mod v0_1;
@@ -2730,6 +2749,7 @@ mod vtc {
         mod memberships {
             mod list {
                 mod v0_1;
+                mod v0_2;
             }
         }
         mod offers {
