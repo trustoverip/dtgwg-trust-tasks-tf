@@ -552,6 +552,28 @@ jobs:
             echo "::error::trust-tasks-rs now has code compiled only without \`validate\`, so packaging with \`validate\` no longer covers the default build. Add back \`cargo package -p trust-tasks-rs\` (default features) to this job."
             exit 1
           fi
+      # Two build jobs were enough until the generated tree passed ~70 MB
+      # (#1002: the runner was again stopped mid-verify, exit 143, no compile
+      # error). Swap, as the semver job adds, lets the verify build finish under
+      # pressure rather than be killed.
+      - name: Add swap
+        run: |
+          sudo systemctl stop systemd-oomd || true
+          sudo swapoff -a
+          sudo rm -f /mnt/swapfile /swapfile
+          root_free=$(df --output=avail -BG / | tail -1 | tr -dc 0-9)
+          mnt_free=$(df --output=avail -BG /mnt | tail -1 | tr -dc 0-9)
+          if [ "$mnt_free" -gt "$root_free" ]; then dir=/mnt free=$mnt_free; else dir='' free=$root_free; fi
+          size=$(( free - 8 < 16 ? free - 8 : 16 ))
+          if [ "$size" -lt 4 ]; then
+            echo "::warning::only ${free}G free; not adding swap"
+          else
+            sudo fallocate -l "${size}G" "$dir/swapfile"
+            sudo chmod 600 "$dir/swapfile"
+            sudo mkswap "$dir/swapfile"
+            sudo swapon "$dir/swapfile"
+          fi
+          free -h
       - name: cargo package trust-tasks-rs (--features validate)
         # The verify build compiles the packaged crate (~66 MB of generated code)
         # a second time on a 7 GB runner. At full parallelism it is killed with
