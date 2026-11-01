@@ -2264,6 +2264,11 @@ mod vtc {
         }
     }
     mod elections {
+        mod ballot_boxes {
+            mod list {
+                mod v0_1;
+            }
+        }
         mod cancel {
             mod v0_1;
         }

@@ -11,6 +11,28 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.28.5 — 2026-11-01
+
+
+### Added
+
+- **vtc/elections/ballot-boxes/list**: 0.1 reads the community's trusted ballot boxes (#998)
+
+A manifest must name one of the community's trusted voting services in
+  ballotBox (VTI-VOT-082), or vtc/elections/create refuses it with
+  ballotBoxNotTrusted, but nothing let an administrator read that list: they
+  had to ask whoever operates the community's host. VTI's console manifest
+  builder could offer only a free-text DID field.
+
+  vtc/elections/ballot-boxes/list/0.1 answers a holder of
+  vtc.elections.manage with every trusted ballot box: its DID exactly as
+  ballotBox must name it, and the operator and sameOperator members are shown
+  for an election naming it (VTI-VOT-090), so the administrator choosing one
+  sees what their members will. Read-only; the list stays host configuration,
+  changed by no task.
+
+  Rust, TS, Go and Dart bindings regenerated.
+
 ## 0.28.4 — 2026-10-30
 
 
