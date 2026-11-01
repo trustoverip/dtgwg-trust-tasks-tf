@@ -1,0 +1,29 @@
+[
+  {
+    "note": "A filter. The list is every trusted ballot box; there is nothing to narrow.",
+    "payload": { "did": "did:webvh:QmBallots:votes.example.net" }
+  },
+  {
+    "variant": "response",
+    "note": "No ballotBoxes. A community that trusts none answers an empty list, never nothing.",
+    "payload": {}
+  },
+  {
+    "variant": "response",
+    "note": "An entry without sameOperator. Whether one operator runs both is what members are told; it is never left out.",
+    "payload": {
+      "ballotBoxes": [
+        { "did": "did:webvh:QmBallots:votes.example.net", "operator": "Ballots Example Ltd" }
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An empty operator name.",
+    "payload": {
+      "ballotBoxes": [
+        { "did": "did:webvh:QmBallots:votes.example.net", "operator": "", "sameOperator": false }
+      ]
+    }
+  }
+]
