@@ -31,6 +31,33 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.36.6](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.36.5...trust-tasks-rs-v0.36.6) — 2026-11-01
+
+
+### Added
+
+- **voting**: TextReleaseThreshold may be as low as 1, disclosed below 10 (voting/_shared/0.3) ([#1002](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1002))
+
+* spec(voting): textReleaseThreshold may be as low as 1, disclosed below 10 (voting/_shared/0.3)
+
+  VTI-VOT-065 now lets an election release text answers from a threshold of
+  1: it MUST be at least 1 and SHOULD be at least 10, and below 10 the
+  disclosure a member is shown before requesting a ticket MUST say so and
+  that a written answer may identify its author (VTI-VOT-090). Small
+  communities and surveys need written answers; the risk is disclosed rather
+  than forbidden.
+
+  voting/_shared/0.3 is 0.2 with Manifest.textReleaseThreshold minimum 1.
+  Every task whose schema carries the Manifest gets a new version pinned to
+  it: voting/election/register/0.3, voting/election/show/0.3,
+  vta/pcs/trustee/{deal/0.4, enrol/0.3, justify/0.4, keys/0.4},
+  vta/pcs/vote/0.3, vta/pcs/vote-encrypted/0.4, vta/pcs/voter/register/0.3,
+  vtc/elections/create/0.4 and vtc/elections/show/0.3. The two signed reads
+  that name a show version on the wire move with it: vta/pcs/trustee/read/0.3
+  and vta/pcs/voter/read/0.3. Prose references in current specs follow.
+
+
+
 ## [0.36.5](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.36.4...trust-tasks-rs-v0.36.5) — 2026-11-01
 
 
