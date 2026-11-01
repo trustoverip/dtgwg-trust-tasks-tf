@@ -553,6 +553,12 @@ jobs:
             exit 1
           fi
       - name: cargo package trust-tasks-rs (--features validate)
+        # The verify build compiles the packaged crate (~66 MB of generated code)
+        # a second time on a 7 GB runner. At full parallelism it is killed with
+        # exit 143 on roughly half the runs (#993, #994 on 2026-10-30), with no
+        # compile error in the log. Two jobs keep the peak under the limit.
+        env:
+          CARGO_BUILD_JOBS: 2
         run: cargo package -p trust-tasks-rs --features validate
 
   # The publish-time verify build, moved to the Release PR — release-plz.toml
