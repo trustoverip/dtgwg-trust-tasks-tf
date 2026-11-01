@@ -222,6 +222,28 @@ jobs:
           # informative — the *install* is the check, and it still fails loudly.
           sudo apt-get update || true
           sudo apt-get install -y libdbus-1-dev pkg-config
+      # Serialising stopped being enough once #1002's thirteen versions grew the
+      # generated tree: the Release PR's `cargo doc` was stopped again, exit 143,
+      # while checking trust-tasks-rs. Swap, as test/clippy/package use, lets the
+      # peak spill instead of the runner being killed.
+      - name: Add swap
+        run: |
+          sudo systemctl stop systemd-oomd || true
+          sudo swapoff -a
+          sudo rm -f /mnt/swapfile /swapfile
+          root_free=$(df --output=avail -BG / | tail -1 | tr -dc 0-9)
+          mnt_free=$(df --output=avail -BG /mnt | tail -1 | tr -dc 0-9)
+          if [ "$mnt_free" -gt "$root_free" ]; then dir=/mnt free=$mnt_free; else dir='' free=$root_free; fi
+          size=$(( free - 8 < 16 ? free - 8 : 16 ))
+          if [ "$size" -lt 4 ]; then
+            echo "::warning::only ${free}G free; not adding swap"
+          else
+            sudo fallocate -l "${size}G" "$dir/swapfile"
+            sudo chmod 600 "$dir/swapfile"
+            sudo mkswap "$dir/swapfile"
+            sudo swapon "$dir/swapfile"
+          fi
+          free -h
       - name: cargo doc
         # One job at a time. With the default parallelism, rustc checking
         # trust-tasks-rs (every generated spec module, all features) runs
