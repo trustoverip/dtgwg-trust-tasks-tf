@@ -11,6 +11,13 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.28.6 — 2026-11-01
+
+
+### Build & CI
+
+- **ts**: An object type that only gains optional members is API-compatible (#995)
+
 ## 0.28.5 — 2026-11-01
 
 
