@@ -3143,6 +3143,9 @@ export import VtcDirectoryNotesList_v0_2 = _VtcDirectoryNotesList_v0_2;
 import * as _VtcDirectoryQuery_v0_1 from "./vtc/directory/query/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtcDirectoryQuery_v0_1 = _VtcDirectoryQuery_v0_1;
+import * as _VtcElectionsBallotBoxesList_v0_1 from "./vtc/elections/ballot-boxes/list/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcElectionsBallotBoxesList_v0_1 = _VtcElectionsBallotBoxesList_v0_1;
 import * as _VtcElectionsCancel_v0_1 from "./vtc/elections/cancel/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtcElectionsCancel_v0_1 = _VtcElectionsCancel_v0_1;
