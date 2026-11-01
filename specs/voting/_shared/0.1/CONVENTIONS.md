@@ -72,6 +72,10 @@ to register those levels (`voting/election/register:unsupportedSecrecy`).
   `votingOpensAt` and `votingClosesAt`, and a lifecycle entry's instant `occurredAt`, as
   `voting/_shared/0.2` defines them; `voting/_shared/0.1` and the specifications pinned to it
   carry the same members as `registrationOpens`, `votingOpens`, `votingCloses` and `at`.
+- **Text release threshold.** `voting/_shared/0.3` defines the same members as `0.2`, and lets a
+  manifest's `textReleaseThreshold` be as low as 1 where `0.1` and `0.2` require at least 10
+  (VTI-VOT-065). It **SHOULD** be at least 10; below 10, the disclosure a member is shown before
+  they request a ticket says so, and that a written answer may identify its author (VTI-VOT-090).
 - **Ticket.** A predicate credential system (PCS) class credential, issued blind by the
   community under the class `voter/<electionId>` and its **voting key**. It admits its holder to
   vote in one election and identifies nobody.

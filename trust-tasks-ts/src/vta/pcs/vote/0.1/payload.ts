@@ -9,7 +9,7 @@ import type { Answer, Ballot, BoardVisibility, ChoiceQuestion, DigestMultibase, 
 /**
  * A voter's client hands its VTA a ballot; the VTA checks it against the election's manifest, makes the ticket's attestation over it, and returns the complete voting/ballot/cast document, signed by a did:key used for this cast alone, for the client to send.
  *
- * @deprecated superseded by vta/pcs/vote/0.2
+ * @deprecated superseded by vta/pcs/vote/0.3
  */
 export interface VTAPCSVotePayload {
   /**
@@ -34,7 +34,7 @@ export interface VTAPCSVotePayload {
   ballot: Ballot;
   ext?: Ext;
 }
-/** @deprecated superseded by vta/pcs/vote/0.2 */
+/** @deprecated superseded by vta/pcs/vote/0.3 */
 export interface VTAPCSVoteResponsePayload {
   castDocument: CastDocument;
   /**
@@ -95,12 +95,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by vta/pcs/vote/0.2";
+export const DEPRECATION: string | null = "superseded by vta/pcs/vote/0.3";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by vta/pcs/vote/0.2
+ * @deprecated superseded by vta/pcs/vote/0.3
  */
 export type Payload = VTAPCSVotePayload;
 
@@ -110,7 +110,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/pcs/vote/0.1#r
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by vta/pcs/vote/0.2
+ * @deprecated superseded by vta/pcs/vote/0.3
  */
 export type Response = VTAPCSVoteResponsePayload;
 

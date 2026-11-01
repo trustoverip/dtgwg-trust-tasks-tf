@@ -9,7 +9,7 @@ import type { Answer, Ballot, BoardVisibility, ChoiceQuestion, DigestMultibase, 
 /**
  * The voter's VTA checks a ballot against the manifest, encrypts it to the election key as the election's level requires, and returns the cast signed by a key made for it alone.
  *
- * @deprecated superseded by vta/pcs/vote-encrypted/0.3
+ * @deprecated superseded by vta/pcs/vote-encrypted/0.4
  */
 export interface VTAPCSVoteEncryptedPayload {
   /**
@@ -29,7 +29,7 @@ export interface VTAPCSVoteEncryptedPayload {
   ceremony: TrusteeCeremony;
   ext?: Ext;
 }
-/** @deprecated superseded by vta/pcs/vote-encrypted/0.3 */
+/** @deprecated superseded by vta/pcs/vote-encrypted/0.4 */
 export interface VTAPCSVoteEncryptedResponsePayload {
   castDocument: CastDocument;
   tag: Multibase;
@@ -81,12 +81,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by vta/pcs/vote-encrypted/0.3";
+export const DEPRECATION: string | null = "superseded by vta/pcs/vote-encrypted/0.4";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by vta/pcs/vote-encrypted/0.3
+ * @deprecated superseded by vta/pcs/vote-encrypted/0.4
  */
 export type Payload = VTAPCSVoteEncryptedPayload;
 
@@ -96,7 +96,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/pcs/vote-encry
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by vta/pcs/vote-encrypted/0.3
+ * @deprecated superseded by vta/pcs/vote-encrypted/0.4
  */
 export type Response = VTAPCSVoteEncryptedResponsePayload;
 

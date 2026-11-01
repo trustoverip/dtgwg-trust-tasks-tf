@@ -9,7 +9,7 @@ import type { BoardHead, BoardVisibility, ChoiceQuestion, DigestMultibase, Elect
 /**
  * A community registers an election it signed with the ballot box the election's manifest names. The ballot box answers with its view of the election.
  *
- * @deprecated superseded by voting/election/register/0.2
+ * @deprecated superseded by voting/election/register/0.3
  */
 export interface VotingElectionRegisterPayload {
   /**
@@ -27,7 +27,7 @@ export interface VotingElectionRegisterPayload {
   parameters: VotingParameters;
   ext?: Ext;
 }
-/** @deprecated superseded by voting/election/register/0.2 */
+/** @deprecated superseded by voting/election/register/0.3 */
 export interface VotingElectionRegisterResponsePayload {
   election: ElectionSummary;
   ext?: Ext;
@@ -53,12 +53,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by voting/election/register/0.2";
+export const DEPRECATION: string | null = "superseded by voting/election/register/0.3";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by voting/election/register/0.2
+ * @deprecated superseded by voting/election/register/0.3
  */
 export type Payload = VotingElectionRegisterPayload;
 
@@ -68,7 +68,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/voting/election/re
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by voting/election/register/0.2
+ * @deprecated superseded by voting/election/register/0.3
  */
 export type Response = VotingElectionRegisterResponsePayload;
 

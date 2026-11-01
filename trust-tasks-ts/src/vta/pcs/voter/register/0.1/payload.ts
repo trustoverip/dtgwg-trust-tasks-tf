@@ -14,7 +14,7 @@ export type PcsValue = string;
 /**
  * A voter's client asks its VTA for the blinded request that obtains the voter's ticket for one election; the VTA derives a voter key for that election alone and keeps the blinding state.
  *
- * @deprecated superseded by vta/pcs/voter/register/0.2
+ * @deprecated superseded by vta/pcs/voter/register/0.3
  */
 export interface VTAPCSVoterRegisterPayload {
   /**
@@ -42,7 +42,7 @@ export interface VTAPCSVoterRegisterPayload {
 /**
  * Exactly the vtc/elections/tickets/issue/0.1 request payload, without its ext — and, when the request named `member`, that request as a document signed as the member.
  *
- * @deprecated superseded by vta/pcs/voter/register/0.2
+ * @deprecated superseded by vta/pcs/voter/register/0.3
  */
 export interface VTAPCSVoterRegisterResponsePayload {
   electionId: ElectionId;
@@ -121,12 +121,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by vta/pcs/voter/register/0.2";
+export const DEPRECATION: string | null = "superseded by vta/pcs/voter/register/0.3";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by vta/pcs/voter/register/0.2
+ * @deprecated superseded by vta/pcs/voter/register/0.3
  */
 export type Payload = VTAPCSVoterRegisterPayload;
 
@@ -136,7 +136,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/pcs/voter/regi
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by vta/pcs/voter/register/0.2
+ * @deprecated superseded by vta/pcs/voter/register/0.3
  */
 export type Response = VTAPCSVoterRegisterResponsePayload;
 
