@@ -4,7 +4,7 @@
 #![allow(deprecated)]
 /// Why this specification version is deprecated (SPEC "Superseded and
 /// Withdrawn Versions"), or `None` while it is current.
-pub const DEPRECATION: Option<&str> = Some("superseded by vta/pcs/vote/0.2");
+pub const DEPRECATION: Option<&str> = Some("superseded by vta/pcs/vote/0.3");
 #[allow(unused_imports)]
 use serde::{Deserialize, Serialize};
 /// Error types.
@@ -1144,7 +1144,7 @@ impl<'de> ::serde::Deserialize<'de> for Multibase {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by vta/pcs/vote/0.2")]
+#[deprecated(note = "superseded by vta/pcs/vote/0.3")]
 pub struct Payload {
     ///The voter's ballot. The cast binds its RFC 8785 (JCS) canonicalization.
     pub ballot: Ballot,
@@ -1491,7 +1491,7 @@ impl<'de> ::serde::Deserialize<'de> for QuestionText {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by vta/pcs/vote/0.2")]
+#[deprecated(note = "superseded by vta/pcs/vote/0.3")]
 pub struct Response {
     #[serde(rename = "castDocument")]
     pub cast_document: CastDocument,

@@ -9713,6 +9713,51 @@ export interface Manifest_VotingV0_2 {
   textReleaseThreshold: number;
 }
 /**
+ * What an election asks and how it is decided (VTI-VOT-010). Its digest (`manifestDigest`) is the SHA-256 multihash of its RFC 8785 (JCS) canonicalization, and every cast is bound to it (VTI-VOT-011).
+ */
+export interface Manifest_VotingV0_3 {
+  electionId: ElectionId;
+  /**
+   * The community's DID.
+   */
+  community: string;
+  title?: string;
+  description?: string;
+  /**
+   * @minItems 1
+   * @maxItems 128
+   */
+  questions: [Question, ...Question[]];
+  secrecy: SecrecyLevel;
+  roll: RollRule;
+  registrationOpensAt: string;
+  votingOpensAt: string;
+  votingClosesAt: string;
+  revote: Revote;
+  board: {
+    visibility: BoardVisibility;
+    auditors: string[];
+  };
+  /**
+   * The DID of the voting service that holds the board.
+   */
+  ballotBox: string;
+  trustees?: Trustees;
+  /**
+   * Whether the community treats the result as deciding something; creating a binding election takes another administrator's consent (VTI-VOT-081).
+   */
+  binding: boolean;
+  allowEarlyClose: boolean;
+  /**
+   * Open elections only: whether running totals may be read while voting is open (VTI-VOT-061).
+   */
+  resultsBeforeClose: boolean;
+  /**
+   * Counted ballots required before any text answer is disclosed (VTI-VOT-065). At least 1, and SHOULD be at least 10: a written answer can identify its author by what it says or how it is phrased, and the fewer the ballots released together, the easier that is. Where it is below 10, the disclosure a member is shown before they request a ticket MUST say so, and MUST say that a written answer may identify its author (VTI-VOT-090).
+   */
+  textReleaseThreshold: number;
+}
+/**
  * The mediator's per-account access-control capability set, expressed as named booleans (the transport-agnostic form of the mediator's internal capability flags). On a set request, members omitted are left unchanged; a get/response carries the full realized set.
  */
 export interface MediatorAcl {

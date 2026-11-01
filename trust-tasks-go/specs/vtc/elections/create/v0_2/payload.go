@@ -27,7 +27,7 @@ const (
 // https://trusttasks.org/spec/vtc/elections/create/0.2#response — carried directly, or on
 // the request's threadId when a parked creation executes after its approval.
 //
-// Deprecated: superseded by vtc/elections/create/0.3
+// Deprecated: superseded by vtc/elections/create/0.4
 type Response struct {
 	ElectionID ElectionID `json:"electionId"`
 
@@ -205,7 +205,7 @@ type QuestionOption struct {
 // The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof)
 // are owned by the framework — SPEC §6.3.
 //
-// Deprecated: superseded by vtc/elections/create/0.3
+// Deprecated: superseded by vtc/elections/create/0.4
 type Payload struct {
 	// The election's manifest, exactly as it will be registered with the ballot box.
 	// `community` is this community's DID; `ballotBox` is a voting service on the community's
@@ -230,7 +230,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = "superseded by vtc/elections/create/0.3"
+const Deprecation = "superseded by vtc/elections/create/0.4"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/elections/create/0.2#response"

@@ -1501,10 +1501,12 @@ mod voting {
         mod register {
             mod v0_1;
             mod v0_2;
+            mod v0_3;
         }
         mod show {
             mod v0_1;
             mod v0_2;
+            mod v0_3;
         }
     }
     mod result {
@@ -1820,6 +1822,7 @@ mod vta {
                 mod v0_1;
                 mod v0_2;
                 mod v0_3;
+                mod v0_4;
             }
             mod decrypt {
                 mod v0_1;
@@ -1828,20 +1831,24 @@ mod vta {
             mod enrol {
                 mod v0_1;
                 mod v0_2;
+                mod v0_3;
             }
             mod justify {
                 mod v0_1;
                 mod v0_2;
                 mod v0_3;
+                mod v0_4;
             }
             mod keys {
                 mod v0_1;
                 mod v0_2;
                 mod v0_3;
+                mod v0_4;
             }
             mod read {
                 mod v0_1;
                 mod v0_2;
+                mod v0_3;
             }
         }
         mod verify_attestation {
@@ -1855,11 +1862,13 @@ mod vta {
         mod vote {
             mod v0_1;
             mod v0_2;
+            mod v0_3;
         }
         mod vote_encrypted {
             mod v0_1;
             mod v0_2;
             mod v0_3;
+            mod v0_4;
         }
         mod voter {
             mod accept {
@@ -1868,6 +1877,7 @@ mod vta {
             mod read {
                 mod v0_1;
                 mod v0_2;
+                mod v0_3;
             }
             mod receipt {
                 mod v0_1;
@@ -1875,6 +1885,7 @@ mod vta {
             mod register {
                 mod v0_1;
                 mod v0_2;
+                mod v0_3;
             }
         }
     }
@@ -2282,6 +2293,7 @@ mod vtc {
             mod v0_1;
             mod v0_2;
             mod v0_3;
+            mod v0_4;
         }
         mod list {
             mod v0_1;
@@ -2291,6 +2303,7 @@ mod vtc {
         mod show {
             mod v0_1;
             mod v0_2;
+            mod v0_3;
         }
         mod tickets {
             mod issue {

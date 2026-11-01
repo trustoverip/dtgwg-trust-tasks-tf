@@ -12,6 +12,8 @@ import (
 )
 
 // Response Voting — Election Register — response payload
+//
+// Deprecated: superseded by voting/election/register/0.3
 type Response struct {
 	Election ElectionSummary `json:"election"`
 	Ext      *Ext            `json:"ext,omitempty"`
@@ -215,6 +217,8 @@ type QuestionOption struct {
 
 // Payload A community registers an election it signed with the ballot box the election's
 // manifest names. The ballot box answers with its view of the election.
+//
+// Deprecated: superseded by voting/election/register/0.3
 type Payload struct {
 	// The community's DID. Equal to the proven signer and to `manifest.community`.
 	Community string   `json:"community"`
@@ -245,7 +249,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by voting/election/register/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/voting/election/register/0.2#response"
