@@ -37,7 +37,8 @@
 //                interface (a consumer's object literal no longer satisfies
 //                it).
 //    COMPATIBLE - anything new (a new module/spec version, a new export, a
-//                new optional member);
+//                new optional member, also inside a type alias's object
+//                literal, where only the alias text changes);
 //              - a string-literal union that only GAINED members
 //                (`"a" | "b"` → `"a" | "b" | "c"`) or was reordered. This is
 //                deliberate policy, the TypeScript counterpart of Rust's
@@ -186,12 +187,22 @@ export function maskSchemas(text) {
   }
 }
 
+const OPTIONAL_MEMBER = /\s*\b([A-Za-z_$][\w$]*)\?: [^;{}]+;/g;
+
+function withoutNewOptionalMembers(oldText, newText) {
+  return newText.replace(OPTIONAL_MEMBER, (member, name) =>
+    new RegExp(`\\b${name}\\??: `).test(oldText) ? member : "");
+}
+
 /**
  * Compare two signature texts. Returns "same", "widened" (only string-literal
- * unions gained members — compatible by policy) or "changed".
+ * unions gained members, or object types gained optional members — compatible
+ * by policy) or "changed".
  */
 export function compareText(a, b) {
   if (a === b) return "same";
+  const narrowed = withoutNewOptionalMembers(a, b);
+  if (narrowed !== b) return compareText(a, narrowed) === "changed" ? "changed" : "widened";
   // Tuples of string literals first (`readonly ["a", "b"]`, e.g. the
   // STANDARD_CODES that StandardCode is derived from): compatible when the old
   // elements are a PREFIX of the new — appended, not inserted or reordered.
@@ -290,7 +301,7 @@ function main(argv) {
     const label = `${PKG_NAME}@${version ?? JSON.parse(fs.readFileSync(path.join(baseDir, "package.json"), "utf8")).version}`;
     for (const [side, m] of [["release", base], ["PR", pr]])
       if (m.forgotten) console.log(`note: ${m.forgotten} declaration(s) in the ${side} are referenced but not exported; changes to them are not visible to this check`);
-    if (widened.length) console.log(`${widened.length} string-literal union(s)/tuple(s) gained members (compatible by policy):\n  ${widened.join("\n  ")}`);
+    if (widened.length) console.log(`${widened.length} item(s) gained string-literal union/tuple members or optional members (compatible by policy):\n  ${widened.join("\n  ")}`);
 
     if (breaks.length === 0) {
       console.log(`ok: API compatible with ${label} — ${added} item(s) added, ${widened.length} literal union(s)/tuple(s) widened, none removed or changed (${secs}s)`);
