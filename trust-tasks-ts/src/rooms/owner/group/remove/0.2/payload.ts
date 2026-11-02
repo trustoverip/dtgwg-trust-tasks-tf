@@ -9,7 +9,7 @@ import type { DigestMultibase, Ext, RevocationHead } from "../../../../../_share
 /**
  * A room's owner asks their own agent to remove a member: withdraw every credential the room gave them, at its host at once, and then remove their leaf from the room's MLS group and advance its epoch. 0.2 adds the withdrawal, made first.
  *
- * @deprecated superseded by rooms/owner/group/remove/0.3
+ * @deprecated superseded by rooms/owner/group/remove/0.4
  */
 export interface RoomsOwnerGroupRemovePayload {
   /**
@@ -58,7 +58,7 @@ export interface RoomsOwnerGroupRemovePayload {
 /**
  * Success response to rooms/owner/group/remove. Type https://trusttasks.org/spec/rooms/owner/group/remove/0.2#response. The revocation list in force at the host, and the room's new epoch, which the removed member holds no key for.
  *
- * @deprecated superseded by rooms/owner/group/remove/0.3
+ * @deprecated superseded by rooms/owner/group/remove/0.4
  */
 export interface RoomsOwnerGroupRemoveResponsePayload {
   /**
@@ -118,12 +118,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by rooms/owner/group/remove/0.3";
+export const DEPRECATION: string | null = "superseded by rooms/owner/group/remove/0.4";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by rooms/owner/group/remove/0.3
+ * @deprecated superseded by rooms/owner/group/remove/0.4
  */
 export type Payload = RoomsOwnerGroupRemovePayload;
 
@@ -133,7 +133,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/rooms/owner/group/
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by rooms/owner/group/remove/0.3
+ * @deprecated superseded by rooms/owner/group/remove/0.4
  */
 export type Response = RoomsOwnerGroupRemoveResponsePayload;
 

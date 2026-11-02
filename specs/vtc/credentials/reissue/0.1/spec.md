@@ -48,8 +48,8 @@ errorCodes:
     meaning: "The community's DID has no active attestation key to sign with. Add or rotate one first."
     retryable: true
 related:
-  - vta/webvh/dids/keys/revoke
-  - vta/webvh/dids/keys/list
+  - vta/dids/keys/revoke
+  - vta/dids/keys/list
   - vtc/members/renew
 ---
 
@@ -59,7 +59,7 @@ When a community's attestation key is revoked for compromise, verifiers stop acc
 it signed from the compromise time, and — without independent evidence of issuance time —
 everything it signed. The community owes its members replacements, and must re-sign every
 status list at once (VTI-KEY-133). The VTA reports how much is owed — `followUp` on
-[`keys/revoke`](../../../../vta/webvh/dids/keys/revoke/1.0/spec.md) — but it cannot do the
+[`keys/revoke`](../../../../vta/dids/keys/revoke/1.0/spec.md) — but it cannot do the
 work: re-issuing a membership credential is the community's decision, made by the VTC and
 signed by the VTA's signing oracle.
 

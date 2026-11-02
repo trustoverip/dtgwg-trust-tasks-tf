@@ -359,6 +359,10 @@ export type AnchorCadence = "never" | "renewal" | "manual";
  */
 export type Approval = "policyAllowed" | "approved" | "waived";
 /**
+ * The evidence an approval was recorded on, as `auth/step-up/approve-response` names it. Only the approver's own evidence is ever recorded: a proof by a key the VTA records as acting for an approver — a console signing key or any other delegation — is never an approval (CONVENTIONS.md §6.3).
+ */
+export type ApprovalEvidenceKind = "didSigned" | "webauthn" | "approverSigned";
+/**
  * An explicit statement of the capabilities a subject may approve. Exactly one of `ceiling` (the role's full approve ceiling), `none`, or `listed` with a NON-EMPTY list of CapabilityRef.
  */
 export type ApproveCapabilityScope = CapabilityScopeCeiling | CapabilityScopeNone | ApproveCapabilityScopeListed;
@@ -370,6 +374,10 @@ export type ApproverDid = string;
  * A human-readable name for where the approver lives — e.g. `Browser plugin — work laptop`. Chosen by the subject (or suggested by an inviter), untrusted, and attributed to its author wherever it is rendered. Absent rather than invented when none was chosen.
  */
 export type ApproverLabel = string;
+/**
+ * What an archived room's members may still do. `readOnly`: their credentials stand and they keep reading what the room holds; the room's host refuses every write, upload and curation from a member. `noAccess`: every credential the room issued before the archival is withdrawn at its host — a room reset — so the host refuses every member's every task; the content is kept intact, and each withdrawn admission is `suspended`, restored when the room is unarchived or made `readOnly`. Neither recalls what a member already read or saved, and on a sealed tier neither removes anyone from the room's group.
+ */
+export type ArchiveAccess = "readOnly" | "noAccess";
 /**
  * The metadata of one attestation: what a Vetting Statement would have said, minus its issuer, as vetting/attestation/0.1 defines it.
  */
@@ -588,6 +596,10 @@ export type ConsumerKind_DeviceV0_1 = Companion_DeviceV0_1 | Service_DeviceV0_1;
  */
 export type ConsumerKind_DeviceV0_2 = Companion_DeviceV0_2 | Service_DeviceV0_2;
 /**
+ * The trust context the notification is held in: the one the addressed DID belongs to.
+ */
+export type ContextId = string;
+/**
  * Opaque identifier of one of the maintainer's contexts, compared by the maintainer's own ancestry predicate. Its grammar is the maintainer's.
  */
 export type ContextPath = string;
@@ -675,6 +687,10 @@ export type DeviceAttestation_DeviceV0_2 =
  */
 export type DeviceLabel = string;
 /**
+ * The DID method an identity uses, as the method profile that governs it is named: `webvh` for a did:webvh identity, `scid:vh` for the did:scid:vh:1 form of one, `webs` for did:webs. Deliberately a pattern and not an enumeration: a method is added by publishing its profile under method-profiles/, never by changing this schema. A VTA MUST refuse a method it holds no profile for, or whose profile declares it ineligible, with `vta/dids:methodNotEligible`.
+ */
+export type DidMethodName = string;
+/**
  * A DID Core verification relationship.
  */
 export type DidVerificationRelationship =
@@ -691,6 +707,10 @@ export type Did_GitNsV0_1 = string;
  * A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.
  */
 export type Did_GitNsV0_3 = string;
+/**
+ * A DID.
+ */
+export type Did_NotificationsV0_1 = string;
 /**
  * A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.
  *
@@ -955,6 +975,10 @@ export type Handle = string;
  */
 export type HeadVersion = number;
 /**
+ * The named key role a key occupies in an identity (CONVENTIONS.md §2; VTI-KEY-070 onward). `attestation` — the only keys in `assertionMethod`; sign the identity's attestation artefacts (credentials, endorsements, status lists) through the VTA's signing service and nowhere else. Generated inside the VTA, never derived, never exportable, never in a backup. `operational` — the only keys the identity's own process uses in `authentication`; sign the node's own traffic (Trust Task requests and responses, DIDComm and TSP signatures, invitations, notices, audit checkpoints). Derived. `messaging` — the only keys in `keyAgreement`; sign nothing. X25519, derived or generated in its own right and never converted from a signing key. `update` — the identifier's change authority as its DID method states it (a did:webvh log's `updateKeys` and `nextKeyHashes`, a KERI key event log's current and next keys); never a role-bound verification method, never in `keyRoles`. Generated inside the VTA, never derived, never exportable, never in a backup, and always accompanied by a committed recovery key held outside the VTA's protection boundary. `authenticator` — a key held on a person's own authenticator (a WebAuthn passkey), listed in `authentication` of that person's identity only; used only to verify the person's WebAuthn assertions (sign-in and step-up evidence) and never to accept a Data Integrity proof. The VTA never holds its private half, so it is enrolled by the passkey ceremony and never generated, added or rotated by these tasks. Never permitted on the durable identity of a VTA, a VTC or a VTN. No role permits `capabilityInvocation` or `capabilityDelegation` (VTI-KEY-075). The set is an extensible registry: a consumer that meets a role it does not implement MUST rely on the key for nothing, and MUST NOT map it onto a role it does know (VTI-KEY-074).
+ */
+export type IdentityKeyRole = "attestation" | "operational" | "messaging" | "update" | "authenticator";
+/**
  * The media types a directory image may have — those a `CardBlobRef` admits.
  */
 export type ImageMediaType = "image/png" | "image/jpeg" | "image/webp" | "image/avif";
@@ -962,6 +986,10 @@ export type ImageMediaType = "image/png" | "image/jpeg" | "image/webp" | "image/
  * Who may ask the community to introduce them to this member. `anyone`: any active member who can find the entry. `groups`: only members who share a community group with them. `connections`: only members holding an attributed, in-force verified relationship with them. `off`: nobody. A refused introduction is never reported to its sender.
  */
 export type Introductions = "anyone" | "groups" | "connections" | "off";
+/**
+ * `wallet`: the invitation names a DID, and is claimed by signing as it (vtc/install/claim/start and finish 0.3). `passkey`: it names none, and the administrator's DID is the `did:key` of the passkey registered at its claim (vtc/install/claim/passkey/start and finish 0.1).
+ */
+export type InviteKind = "wallet" | "passkey";
 /**
  * `issued` is outstanding and revocable; `consumed` and `expired` are terminal.
  */
@@ -975,6 +1003,33 @@ export type JoinRequestId = string;
  * An optional note from the member to the group's managers. Plain text.
  */
 export type JoinRequestMessage = string;
+/**
+ * `planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same change. `addition` — a key joined a role without anything leaving it. `recovery` — the identifier's update authority moved to the committed recovery key, because the VTA's own update keys were lost or may be in someone else's hands.
+ */
+export type KeyChangeKind = "planned" | "compromise" | "addition" | "recovery";
+/**
+ * `preview` — nothing was written; the response carries the plan. `applied` — the change was made (and published, unless `publication.selfPublish`). `pendingApproval` — the plan is recorded and awaits further approvals. `awaitingRecoveryProof` — the plan is approved and waits for the recovery custodian's proof (`preview.recoverySigning`); nothing is published until it arrives.
+ */
+export type KeyChangeOutcome = "preview" | "applied" | "pendingApproval" | "awaitingRecoveryProof";
+/**
+ * `pendingApproval` — awaiting the approvals the VTA's policy requires; nothing is published. `awaitingRecoveryProof` — approved, and waiting for the recovery custodian's proof over the change; nothing is published. `staged` — successor published, not yet used. `overlapping` — successor active, predecessor `retiring`. `completed` — every predecessor retired, or the change is published and any overlap it began has ended. `aborted` — the successor was retired instead of the predecessor, or a revocation superseded the change. `expired` — the approvals or the recovery proof did not arrive before the preview expired; nothing was published.
+ */
+export type KeyChangeState =
+  | "pendingApproval"
+  | "awaitingRecoveryProof"
+  | "staged"
+  | "overlapping"
+  | "completed"
+  | "aborted"
+  | "expired";
+/**
+ * Where a key is in its role's lifecycle (CONVENTIONS.md §8, §10). `pending` — planned by a preview or a change awaiting approval; not published; custody projection only. `staged` — published and bound to its role but not yet used, until the publishing change's cache horizon. `active` — the key the VTA uses for new signatures (for `messaging`, advertises for new sessions; for `update`, the current authority). `retiring` — still published but never used to sign again; a retiring `messaging` key still decrypts until retirement. `retired` — removed by planned rotation; what it signed while published stays valid, judged against the identifier version current at issuance. `revoked` — withdrawn for compromise, recorded with `compromisedSince`; what it signed from then on establishes nothing. `committed` — an `update` key the identifier commits to as a successor but has not revealed (a did:webvh `nextKeyHashes` entry, a KERI next-key digest). `retired` and `revoked` are terminal.
+ */
+export type KeyLifecycleState = "pending" | "staged" | "active" | "retiring" | "retired" | "revoked" | "committed";
+/**
+ * Which view of the identity's key roles the caller was given (CONVENTIONS.md §11). `public` — only what the published identifier document and history already reveal. `custody` — additionally the VTA's custody state: pending keys, the custodian record and protection boundary behind each key, overlap deadlines, who initiated and approved each change, and why.
+ */
+export type KeyListProjection = "public" | "custody";
 /**
  * Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.
  */
@@ -1015,6 +1070,10 @@ export type Key_VtaV0_1 = string;
  * The interaction kind: a 1:1 direct message, a multi-party group, or a broadcast channel.
  */
 export type Kind = "dm" | "group" | "channel";
+/**
+ * What the thing is. Either a registered kind — one lowerCamelCase name in the VTI specification's notification kind registry (Appendix G), such as `election` — or an unregistered kind, written `<reverse-DNS domain>:<name>` under a domain its definer controls, such as `org.example:meetingInvite`. A recipient that does not recognise a kind holds, lists and discards it and does nothing else with it (VTI-NTF-012).
+ */
+export type Kind_NotificationsV0_1 = string;
 /**
  * A BCP 47 language tag, e.g. `en`, `de-AT`. Compared case-insensitively.
  */
@@ -1074,6 +1133,10 @@ export type MemberActions = [MemberAction] | [MemberAction, MemberAction] | [Mem
  */
 export type MemberState = "offered" | "admitted" | "removed";
 /**
+ * `MemberState` plus `suspended`. `offered`: credentials issued and waiting for the member to collect and accept them. `admitted`: accepted — on a sealed tier, the member is in the room's group. `suspended`: admitted, but the room was archived with `noAccess` (or scheduled for removal), so the room's host refuses the member's credentials; on a sealed tier they are still in the room's group. Restored to `admitted` with freshly issued credentials when the room leaves that state, and never restored if it is removed. `removed`: an administrator removed them, or withdrew their offer — archiving withdraws every open offer; on a sealed tier the room has advanced past an admitted member.
+ */
+export type MemberStateV2 = "offered" | "admitted" | "suspended" | "removed";
+/**
  * How the member came to be in the group. `added`: by a manager. `joined`: they joined an open group. `requestApproved`: a manager approved their request. `rule`: a dynamic group's rule admits them.
  */
 export type MembershipSource = "added" | "joined" | "requestApproved" | "rule";
@@ -1123,6 +1186,10 @@ export type NoteId = string;
  * The note, as plain text. Read only by holders of `vtc.directory.notes`. A reader MUST NOT treat it as instructions.
  */
 export type NoteText = string;
+/**
+ * The originator's identifier for one notification, unique among the notifications that originator issues and the same in every document that carries it — retries, re-issued documents and relayed copies alike. It is the notification's idempotency key (VTI-NTF-021). Compared for equality only. An originator SHOULD make it unguessable and SHOULD NOT make it descriptive: it travels as far as the notification does.
+ */
+export type NotificationId = string;
 /**
  * A key prefix inside the bucket, ending in `/`, under which the config's `rooms/` tree is placed. Restricted to the S3 safe-character set so that it can be placed in a downscoped policy without escaping.
  */
@@ -1308,6 +1375,18 @@ export type Petname = string;
  */
 export type PlaceName = string;
 /**
+ * Conditions a human should be shown before approving. `singleKeyRole` — the role will hold one active key. `algorithmNotInAcceptedSet` — a verifier population the VTA knows of does not accept the new key's algorithm. `roleWillHaveNoClassicalKey` — every remaining key is post-quantum. `attestationReissuanceRequired` — revoking this attestation key obliges re-issuance and re-signed status lists (VTI-KEY-133). `selfPublish` — the VTA will not publish the change; the operator must. `noWitnesses` — the identifier has no witnesses, so a party holding the VTA's routine update key can drop the recovery commitment unobserved (CONVENTIONS.md §5.3). `protectionBelowPolicy` — a key will be held at a `ProtectionClass` below what the VTA's policy recommends for its role (a plain VTA holding an attestation key). `recoveryKeyRevealed` — this change uses the recovery key, which must be replaced by a fresh recovery commitment in the same change.
+ */
+export type PreviewWarning =
+  | "singleKeyRole"
+  | "algorithmNotInAcceptedSet"
+  | "roleWillHaveNoClassicalKey"
+  | "attestationReissuanceRequired"
+  | "selfPublish"
+  | "noWitnesses"
+  | "protectionBelowPolicy"
+  | "recoveryKeyRevealed";
+/**
  * One line of a profile, in exactly one of four forms. Together they are the whole of a profile's flexibility, and each exists for a case the others handle badly.
  *
  * `{ref}` — use the pool attribute, live. Editing the pool updates every profile that references it, which is the point.
@@ -1359,6 +1438,10 @@ export type ProfileEntry =
  * The distinction between the first two and the last two is of kind, not degree: only `predicate` and `derived` avoid handing two verifiers a join key. A maintainer MUST default to the highest rung the credential's format supports, and MUST NOT silently fall to a lower one — a request that cannot be satisfied at the rung a producer asked for is refused, because a silent privacy downgrade discloses material the holder believed was hidden.
  */
 export type ProofRung = "predicate" | "derived" | "selectiveDisclosure" | "whole";
+/**
+ * How a private half is protected (CONVENTIONS.md §5.2). `software` — stored by the VTA without encryption independent of the host (a plain VTA). `encryptedAtRest` — wrapped under a key the VTA holds outside its store (a hardened VTA). `enclave` — held only inside an attested trusted execution environment, wrapped under a key released only to its measurement (a TEE VTA). `hardwareModule` — held by a hardware security module or cloud key service that performs the operation without releasing the key. `externalCustodian` — not held by this VTA at all: a recovery update key, or an `authenticator` key on a person's device.
+ */
+export type ProtectionClass = "software" | "encryptedAtRest" | "enclave" | "hardwareModule" | "externalCustodian";
 /**
  * Where a value comes from, and the member that makes this family worth building on a trust stack rather than in an address book. It survives to the verifier, so a recipient can tell — per field — what the holder typed from what an issuer attested.
  *
@@ -1492,6 +1575,10 @@ export type RecordEvidence = RecordEvidenceRecord | RecordEvidenceCredential;
  */
 export type RecordEvidenceList = [RecordEvidence, ...RecordEvidence[]];
 /**
+ * The VTA's own identifier for one held notification, stable across the revisions that replace it. Opaque and compared for equality only; unguessable, because a show of a record in a context the caller may not read is refused and an enumerable identifier would turn the refusal into an oracle.
+ */
+export type RecordId = string;
+/**
  * The path from one record's leaf to the room's `DataCommitment` — a Merkle inclusion proof, in the vocabulary this work already uses for it.
  *
  * **It is not called `proof`** because in this framework that word is taken: `proof` is the document's data-integrity proof (SPEC §7.3), and a payload member of the same name in the same document invites reading one for the other. The two are not interchangeable and the confusion would be silent.
@@ -1621,6 +1708,10 @@ export type RoomDescription = string;
  * A name for the room, chosen by an administrator: shown to administrators and to the members a room is offered to. Not part of the room's identity and never in anything a room's host can read. From `vtc/rooms/community/create` 0.3 and `vtc/rooms/community/update` 0.2 the community also writes it, through its own VTA, as the `name` of the room's own profile (`RoomProfile` in rooms/_shared), sealed inside the room for its members; earlier versions keep it out of the room altogether. MUST NOT carry personal data.
  */
 export type RoomLabel = string;
+/**
+ * Where a room the community owns stands in its owner's lifecycle — distinct from `HostedRoom.lifecycle`, which is the host's clock (`live`, `lapsed`, `dormant`, `reclaimable`) and is computed from the room's epoch, never set. `active`: open to change. `archived`: closed to change by an administrator — no admissions, and the room's host accepts no writes from its members; what members may still do is `ArchiveAccess`. Reversible with vtc/rooms/community/unarchive. `removalScheduled`: an administrator removed the room with a grace period; it admits nobody and its content is kept until `purgeAt`, and vtc/rooms/community/removal/cancel returns it to `archived`. `purging`: the grace period ended (or there was none) and the community is deleting the room's content from its host and storage; not reversible. `removed`: the content is gone; the community keeps only this record of the room, for its history.
+ */
+export type RoomState = "active" | "archived" | "removalScheduled" | "purging" | "removed";
 /**
  * A short identifier an administrator files a community-owned room under — `board`, `working-group`, `finance` — so the room list can be filtered. Lower-case letters, digits and hyphens, starting with a letter or digit. Owner-side tracking metadata for holders of `vtc.rooms.manage` only: never shown to members, never sent on the room's host path, and it confers nothing.
  */
@@ -1855,6 +1946,14 @@ export type SiteTarget_VaultV0_2 = WebOrigin_VaultV0_2 | Did_VaultV0_2 | IosApp_
  */
 export type Slot = string;
 /**
+ * The principal's disposition of a held notification: `active`, or `dismissed` by vta/notifications/dismiss. Dismissal is the principal's alone and changes nothing outside the VTA (VTI-NTF-052).
+ */
+export type State = "active" | "dismissed";
+/**
+ * Whether the thing is still open to the audience: `available`, or `withdrawn` — cancelled by its holder, or no longer open to the audience — in which case the recipient keeps the record only to show that it was withdrawn (VTI-NTF-024).
+ */
+export type Status = "available" | "withdrawn";
+/**
  * How the community authenticates to a config's backend. Absent on a `local` config, which needs none.
  *
  * `vta-account` (RECOMMENDED): an external account in the community's VTA, named by the context that owns it and its identifier there. The VTA holds the long-lived authority; the community holds nothing that outlives a credential lifetime, and asks for credentials scoped to one room's prefix for at most 15 minutes, every issuance audited at the VTA. Required for a `walrus` config other than a `sealed` one, since the VTA's `sui-signer` account signs its storage transactions.
@@ -2031,6 +2130,10 @@ export type TrusteePhase = "enrolling" | "dealing" | "confirming" | "keyed" | "d
  * A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.
  */
 export type Ulid = string;
+/**
+ * For an `update` key only (CONVENTIONS.md §5.3). `routine` — generated and held by the VTA, which authorizes the identity's ordinary changes with it. `recovery` — held by a recovery custodian in a protection boundary other than the VTA's; the VTA holds only its commitment, carries that commitment forward in every change it makes, and can use the key only by asking the custodian for a proof (`RecoverySigningRequest`).
+ */
+export type UpdateKeyClass = "routine" | "recovery";
 /**
  * Handle for one upload across begin, chunk, commit and abort, and — for a bundle — deploy. Recipient-generated and unguessable, which is what lets a reference to somebody else's upload be answered as not-found without confirming it exists. Opaque: a producer quotes what it was given.
  */
@@ -6418,6 +6521,54 @@ export interface CommunityRoomV2_VtcV0_3 {
   detailsUpdatedBy?: string;
 }
 /**
+ * What vtc/rooms/community/{get,list}/0.4 and vtc/rooms/community/{archive,unarchive,remove,removal/cancel}/0.1 return: `CommunityRoomV2` plus the room's `status` in its owner's lifecycle and the count of `suspended` admissions. A separate definition, not a change to `CommunityRoomV2`, so that the versions returning that keep the exact shape they published. For a room in state `purging` or `removed`, whose host record a purge deletes, `room` is the host record as it last stood before the purge began — the community keeps that snapshot with the room's record when the purge starts — and its `lifecycle` is what was computed then.
+ */
+export interface CommunityRoomV3 {
+  room: HostedRoom_VtcV0_3;
+  label: RoomLabel;
+  status: RoomStatus;
+  /**
+   * Absent when the room has none.
+   */
+  description?: RoomDescription;
+  /**
+   * Absent or empty when the room has none.
+   */
+  tags?: RoomTags;
+  /**
+   * The storage config receiving the room's new uploads.
+   */
+  storageConfig?: StorageConfigId;
+  /**
+   * Members in state `admitted`.
+   */
+  admitted: number;
+  /**
+   * Offers not yet accepted or withdrawn.
+   */
+  offered: number;
+  /**
+   * Admissions in state `suspended`: withdrawn while the room was archived with `noAccess`, and restored when it leaves that state. Absent when zero.
+   */
+  suspended?: number;
+  /**
+   * When the community's own `admin` authority over the room expires. A room whose owner's authority lapses can no longer advance its epoch, admit or remove; a community SHOULD renew it well before.
+   */
+  ownerAuthorityValidUntil?: string;
+  /**
+   * The administrator who created it.
+   */
+  createdBy?: string;
+  /**
+   * When `label`, `description` or `tags` last changed. Absent until the first change after creation. Distinct from `room.updatedAt`, which is the host record's and moves with the room's epoch and lifecycle.
+   */
+  detailsUpdatedAt?: string;
+  /**
+   * The administrator who made that change. Present exactly when `detailsUpdatedAt` is. The earlier values and who set them are in the community's audit trail, not here.
+   */
+  detailsUpdatedBy?: string;
+}
+/**
  * A community's portable configuration: its profile plus the configuration overrides a maintainer stores for itself. Deliberately excludes per-host layers (environment variables, on-disk config files) — those describe where a maintainer runs, not what the community is, and carrying them would make an import overwrite the target host's own deployment settings.
  *
  * This document is designed to survive a round-trip through a file. An operator exports it, keeps it, and feeds it back later — possibly to a different maintainer, possibly across a version boundary — so it is self-describing rather than relying on the Type URI of the envelope that happened to carry it.
@@ -7319,6 +7470,75 @@ export interface DidTemplateRecord_VtaV0_7 {
   createdBy: string;
 }
 /**
+ * A persisted template. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by get/create/update and carried per-item by list.
+ */
+export interface DidTemplateRecord_VtaV0_9 {
+  /**
+   * Template schema version. 1 is the historical shape, whose keys are implicitly an Ed25519 signing key and an X25519 key-agreement key. 2 adds the `keys` block, which makes those explicit and allows others.
+   */
+  schemaVersion: 1 | 2 | 3;
+  name: string;
+  kind: string;
+  description?: string | null;
+  methods?: string[];
+  requiredVars?: string[];
+  optionalVars?: {
+    [k: string]: unknown | undefined;
+  };
+  defaults?: {
+    [k: string]: unknown | undefined;
+  };
+  /**
+   * The keys this template needs, by slot name. REQUIRES `schemaVersion` 2.
+   *
+   * A slot's name becomes a document placeholder by an explicit rule — uppercase, `-` to `_`, suffix `_KEY_MB` — so slot `signing` is rendered into `{SIGNING_KEY_MB}` and slot `ka` into `{KA_KEY_MB}`. Those are the two names a `schemaVersion` 1 template already uses, which is deliberate: a v1 template is exactly a v2 template whose `keys` block is `{signing: [ed25519], ka: [x25519]}`, so an implementation can read both through one path and raising the version cannot change how a v1 template renders.
+   *
+   * An implementation MUST refuse a template that declares a slot whose placeholder never appears in `document` — the key would be minted and never published, so verifiers would continue to see only the keys that are, while the operator believes the template migrated. It MUST likewise refuse a slot placeholder in `document` that no slot declares, which would render as an unsubstituted literal.
+   */
+  keys?: {
+    [k: string]:
+      | {
+          /**
+           * What the key is for. Deliberately coarser than DID Core's five verification relationships: the template says what the key is, and the `document` body says where it appears. Encoding the relationship here as well would let the two disagree.
+           */
+          purpose: "signing" | "keyAgreement";
+          /**
+           * Acceptable algorithms, MOST PREFERRED FIRST. A list rather than a single value because a fleet does not migrate atomically: `["mldsa44", "ed25519"]` means mint ML-DSA-44 where the implementation can and Ed25519 otherwise, so one template serves a VTA with post-quantum support and one without. An implementation MUST NOT substitute an algorithm absent from this list; running out of candidates is an error, never a silent downgrade — a deployment intended to be post-quantum would otherwise ship classical keys with nothing reporting it. `minItems: 1` for the same reason: an empty list would express no preference and inherit whatever the implementation defaulted to.
+           *
+           * @minItems 1
+           */
+          algorithms: [
+            "ed25519" | "x25519" | "p256" | "mldsa44" | "mldsa65",
+            ...("ed25519" | "x25519" | "p256" | "mldsa44" | "mldsa65")[]
+          ];
+        }
+      | undefined;
+  };
+  /**
+   * The key roles of a key-role identity, one `RoleLayout` per role (vta/dids/_shared/0.1/CONVENTIONS.md §4). REQUIRED for, and only for, `schemaVersion` 3, which then MUST NOT carry `keys`. A v3 template describes only an identity's non-key members: its `document` MUST NOT contain `verificationMethod`, `authentication`, `assertionMethod`, `keyAgreement`, `capabilityInvocation`, `capabilityDelegation` or `keyRoles`, and the VTA renders all of them from this layout and the key-role registry — so a template can never place a key in a relationship its role does not own. Each listed algorithm is minted, one key each; unlike v2's `keys`, the list is not a preference order, and a VTA that cannot mint one refuses rather than substitutes. Used by vta/dids/create; a v1 or v2 template cannot create a key-role identity.
+   *
+   * @minItems 1
+   */
+  keyRoles?: [RoleLayout, ...RoleLayout[]];
+  document: {};
+  /**
+   * Resolved scope of the stored template.
+   */
+  scope: Scope_VtaV0_1;
+  /**
+   * When the template was first stored (RFC 3339).
+   */
+  createdAt: string;
+  /**
+   * When the template was last written (RFC 3339).
+   */
+  updatedAt: string;
+  /**
+   * DID of the admin who last wrote the template.
+   */
+  createdBy: string;
+}
+/**
  * Authored template shape: a DID document with `{TOKEN}` placeholders plus the variable contract the VTA's renderer enforces.
  */
 export interface DidTemplate_VtaV0_1 {
@@ -7429,6 +7649,83 @@ export interface DidTemplate_VtaV0_2 {
         }
       | undefined;
   };
+  /**
+   * The DID document body with `{TOKEN}` placeholders. `document.id` MUST contain the `{DID}` placeholder. Every `{TOKEN}` MUST be declared in requiredVars/optionalVars or be a reserved ambient name.
+   */
+  document: {};
+}
+/**
+ * Authored template shape: a DID document with `{TOKEN}` placeholders plus the variable contract the VTA's renderer enforces.
+ */
+export interface DidTemplate_VtaV0_9 {
+  /**
+   * Template schema version. 1 is the historical shape, whose keys are implicitly an Ed25519 signing key and an X25519 key-agreement key. 2 adds the `keys` block, which makes those explicit and allows others. 3 is a key-role template (`keyRoles`), whose document carries no key members.
+   */
+  schemaVersion: 1 | 2 | 3;
+  /**
+   * Template id within its scope. Lowercase alphanumeric and hyphen only.
+   */
+  name: string;
+  /**
+   * Classification hint, e.g. `mediator`, `did-host-http`, `app`. Drives downstream provisioning behaviour.
+   */
+  kind: string;
+  /**
+   * Human-readable description of what the template provisions.
+   */
+  description?: string | null;
+  /**
+   * DID methods this template targets, e.g. ["webvh", "web"] for a hosted DID or ["key"] for a did:key.
+   */
+  methods?: string[];
+  /**
+   * Variables the caller MUST supply at render time. MUST NOT include reserved ambient names (DID, SIGNING_KEY_MB, KA_KEY_MB, VTA_DID, VTA_URL, CONTEXT_ID, CONTEXT_DID, NOW).
+   */
+  requiredVars?: string[];
+  /**
+   * Variables with default values, keyed by variable name.
+   */
+  optionalVars?: {
+    [k: string]: unknown | undefined;
+  };
+  /**
+   * Hints for CLI / setup wizards (e.g. preRotationCount, portable, addMediatorService).
+   */
+  defaults?: {
+    [k: string]: unknown | undefined;
+  };
+  /**
+   * The keys this template needs, by slot name. REQUIRES `schemaVersion` 2.
+   *
+   * A slot's name becomes a document placeholder by an explicit rule — uppercase, `-` to `_`, suffix `_KEY_MB` — so slot `signing` is rendered into `{SIGNING_KEY_MB}` and slot `ka` into `{KA_KEY_MB}`. Those are the two names a `schemaVersion` 1 template already uses, which is deliberate: a v1 template is exactly a v2 template whose `keys` block is `{signing: [ed25519], ka: [x25519]}`, so an implementation can read both through one path and raising the version cannot change how a v1 template renders.
+   *
+   * An implementation MUST refuse a template that declares a slot whose placeholder never appears in `document` — the key would be minted and never published, so verifiers would continue to see only the keys that are, while the operator believes the template migrated. It MUST likewise refuse a slot placeholder in `document` that no slot declares, which would render as an unsubstituted literal.
+   */
+  keys?: {
+    [k: string]:
+      | {
+          /**
+           * What the key is for. Deliberately coarser than DID Core's five verification relationships: the template says what the key is, and the `document` body says where it appears. Encoding the relationship here as well would let the two disagree.
+           */
+          purpose: "signing" | "keyAgreement";
+          /**
+           * Acceptable algorithms, MOST PREFERRED FIRST. A list rather than a single value because a fleet does not migrate atomically: `["mldsa44", "ed25519"]` means mint ML-DSA-44 where the implementation can and Ed25519 otherwise, so one template serves a VTA with post-quantum support and one without. An implementation MUST NOT substitute an algorithm absent from this list; running out of candidates is an error, never a silent downgrade — a deployment intended to be post-quantum would otherwise ship classical keys with nothing reporting it. `minItems: 1` for the same reason: an empty list would express no preference and inherit whatever the implementation defaulted to.
+           *
+           * @minItems 1
+           */
+          algorithms: [
+            "ed25519" | "x25519" | "p256" | "mldsa44" | "mldsa65",
+            ...("ed25519" | "x25519" | "p256" | "mldsa44" | "mldsa65")[]
+          ];
+        }
+      | undefined;
+  };
+  /**
+   * The key roles of a key-role identity, one `RoleLayout` per role (vta/dids/_shared/0.1/CONVENTIONS.md §4). REQUIRED for, and only for, `schemaVersion` 3, which then MUST NOT carry `keys`. A v3 template describes only an identity's non-key members: its `document` MUST NOT contain `verificationMethod`, `authentication`, `assertionMethod`, `keyAgreement`, `capabilityInvocation`, `capabilityDelegation` or `keyRoles`, and the VTA renders all of them from this layout and the key-role registry — so a template can never place a key in a relationship its role does not own. Each listed algorithm is minted, one key each; unlike v2's `keys`, the list is not a preference order, and a VTA that cannot mint one refuses rather than substitutes. Used by vta/dids/create; a v1 or v2 template cannot create a key-role identity.
+   *
+   * @minItems 1
+   */
+  keyRoles?: [RoleLayout, ...RoleLayout[]];
   /**
    * The DID document body with `{TOKEN}` placeholders. `document.id` MUST contain the `{DID}` placeholder. Every `{TOKEN}` MUST be declared in requiredVars/optionalVars or be a reserved ambient name.
    */
@@ -7596,6 +7893,32 @@ export interface Disclosure {
   boardVisibility: BoardVisibility;
   auditors: string[];
   revote: Revote;
+  /**
+   * Always false: a voter can prove how they voted, so the community cannot protect a member against being made to vote a certain way.
+   */
+  coercionResistance: false;
+}
+/**
+ * The statement a community publishes, and shows a member before they request a ticket, about how one election is run (VTI-VOT-090). Generated from the election's manifest and the community's configuration, never written by hand. Under a `credential` roll it also says whose membership credential counts (`rollCredential`).
+ */
+export interface Disclosure_VotingV0_4 {
+  /**
+   * The ballot box's DID.
+   */
+  ballotBox: string;
+  /**
+   * Who operates the ballot box, as the community names them.
+   */
+  ballotBoxOperator: string;
+  /**
+   * Whether the party operating the community's VTC also operates the ballot box.
+   */
+  sameOperator: boolean;
+  trustees?: Trustees;
+  boardVisibility: BoardVisibility;
+  auditors: string[];
+  revote: Revote;
+  rollCredential?: RollCredentialDisclosure;
   /**
    * Always false: a voter can prove how they voted, so the community cannot protect a member against being made to vote a certain way.
    */
@@ -8394,11 +8717,13 @@ export interface FieldVisibility {
   [k: string]: Audience | undefined;
 }
 /**
- * The `file` member of a sealed record body: everything that describes a file, sealed with the record, signed by the record's author, and never seen by the host. Defined here so that clients interoperate; no host task carries it, because the host receives only ciphertext.
+ * Everything that describes a file. On an `attributed` or `private` room it is the `file` member of the sealed record body: sealed with the record, signed by the record's author, and never seen by the host. On an `open` room it is the `file` member of the record's `cleartext` (rooms/records/put/0.4), carrying its own `fileKey`, and the host reads it like the rest of the record. Defined here so that clients interoperate.
  *
  * **Byte encodings.** In every derivation below, `fileId` is its **32 decoded bytes**, never its base64url text; `roomId` is the **UTF-8 bytes** of the room identifier exactly as it appears on the wire; string constants are their ASCII bytes; `u8`, `u32be` and `u64be` are unsigned integers of that width, big-endian. Epochs are unsigned 64-bit on the wire. An implementation that holds epochs in a narrower type **MUST** refuse a value it cannot represent with `malformedRequest` (or, reading a manifest, refuse the file), and **MUST NOT** truncate it.
  *
  * **The file key.** `file_key = HKDF-SHA256(ikm = storage_key(epoch), salt = fileId, info = "openvtc/room/file/v1" || roomId || u64be(epoch))`, where `storage_key(epoch)` is the room's per-epoch storage key, the one records are sealed under. It is derived per file and never stored. It is bound to the room and the epoch, so a key released for one room cannot open a blob relocated from another, and releasing it exposes one file and nothing else.
+ *
+ * **The file key on an `open` room.** An open room has no group and so no storage key to derive from. There the uploader mints the file key itself — 32 bytes from a cryptographically secure random source, for this file only — and carries it in `fileKey`; a reader uses that key and derives nothing. Everything else below (padding, STREAM, the associated data, reading) is the same on every tier, with `epoch` the room's epoch when the file was written. `fileKey` **MUST** be present in an open room's manifest and **MUST** be absent from a sealed record body's, where the key is derived; a reader **MUST** refuse a file whose manifest breaks either rule. The key in the clear withholds nothing from the host or from anyone it serves the record to — the open tier withholds nothing from them — but it keeps the stored blob opaque to whoever holds only the storage, and keeps one blob format, and one reader, for every tier.
  *
  * **Padding.** With `padding: "padme"`, the plaintext of length `L = size` is extended with zero bytes to `padme(L)`: for `L < 2`, `padme(L) = L`; otherwise `E = floor(log2 L)`, `S = floor(log2 E) + 1`, `z = E − S`, `mask = 2^z − 1`, and `padme(L) = (L + mask) & ~mask`. The padded length is `padme(size)`; without padding it is `size`. Padding bytes **MUST** be zero.
  *
@@ -8417,7 +8742,7 @@ export interface FileManifest {
    */
   fileId: string;
   /**
-   * The file's name as the uploader gave it. Sealed: the host never sees it. Readers MUST treat it as untrusted text: strip path separators before using it as a local file name, and never interpret it as markup.
+   * The file's name as the uploader gave it. Sealed on `attributed` and `private` rooms, where the host never sees it; in the clear on `open` ones. Readers MUST treat it as untrusted text: strip path separators before using it as a local file name, and never interpret it as markup.
    */
   name: string;
   /**
@@ -8429,7 +8754,7 @@ export interface FileManifest {
    */
   size: number;
   /**
-   * Digest of the plaintext bytes. Signed, with the rest of the record body, by the record's author, so a reader that verifies it knows which member put exactly these bytes there.
+   * Digest of the plaintext bytes. On `attributed` and `private` rooms it is signed, with the rest of the record body, by the record's author, so a reader that verifies it knows which member put exactly these bytes there. On an `open` room it is the writer's claim as the host stores it, like the rest of the record.
    */
   digest: DigestMultibase;
   /**
@@ -8445,6 +8770,10 @@ export interface FileManifest {
    */
   padding?: "none" | "padme";
   blobRef: BlobRef;
+  /**
+   * The file key itself, 32 bytes base64url without padding: present on an `open` room only, where there is no storage key to derive it from. Minted by the uploader from a cryptographically secure random source for this one file and never reused. MUST be absent on `attributed` and `private` rooms, where the key is derived and never stored.
+   */
+  fileKey?: string;
 }
 /**
  * A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.
@@ -8648,6 +8977,45 @@ export interface GroupMember {
   credentialValidUntil?: string;
 }
 /**
+ * One notification the VTA holds, as a client with standing in its context sees it. `originator` and every entry of `relayedBy` were verified by the VTA when it accepted the notification (VTI-NTF-042); a client that does not take the VTA's word for them reads the document with vta/notifications/show and verifies it itself.
+ */
+export interface HeldNotification {
+  recordId: RecordId;
+  contextId: ContextId;
+  /**
+   * The principal's DID the notification, or the relay that delivered it, was addressed to.
+   */
+  addressee: Did_NotificationsV0_1;
+  /**
+   * The issuer of the notifications/notify document: who said the thing exists.
+   */
+  originator: Did_NotificationsV0_1;
+  /**
+   * The relayers the held revision passed through, in the order they relayed it: the first is the notification's own addressee, the last the relayer that delivered it to `addressee`. Empty for a notification the originator sent to `addressee` directly. The acceptance policy counted the last one (VTI-NTF-031).
+   *
+   * @maxItems 4
+   */
+  relayedBy:
+    | []
+    | [Did_NotificationsV0_1]
+    | [Did_NotificationsV0_1, Did_NotificationsV0_1]
+    | [Did_NotificationsV0_1, Did_NotificationsV0_1, Did_NotificationsV0_1]
+    | [Did_NotificationsV0_1, Did_NotificationsV0_1, Did_NotificationsV0_1, Did_NotificationsV0_1];
+  /**
+   * The notification's members at the revision held.
+   */
+  notification: Notification;
+  state: State;
+  /**
+   * When the VTA accepted the revision held.
+   */
+  receivedAt: string;
+  /**
+   * When the principal dismissed it. Present exactly when `state` is `dismissed`.
+   */
+  dismissedAt?: string;
+}
+/**
  * The applicant's proof that distinct eligible vetters of the community vetted it, as a join submission carries it under `extensions.hiddenVetting`. Built by vta/pcs/prove, verified by the community.
  */
 export interface HiddenVettingSubmission {
@@ -8790,6 +9158,140 @@ export interface HpkeArmoredEnvelope_VaultV0_2 {
    * Producer-assertion mode per the sealed-transfer framework. `didSigned` = Ed25519 signature by issuer; `attested` = TEE attestation quote (e.g. Nitro); `pinnedOnly` = OOB SHA-256 digest only (dev/test, NOT for production).
    */
   producerAssertion?: "didSigned" | "attested" | "pinnedOnly";
+}
+export interface IdentityChange {
+  /**
+   * `addKey` — a verification method joins its role's relationship and `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves its relationship and `keyRoles`, and stays in `verificationMethod` with `revoked` set to the compromise time (CONVENTIONS.md §9.1). `rotateUpdateKey` — the identifier's update authority moves to a committed routine successor. `commitUpdateKey` — a new routine successor is committed. `replaceRecoveryCommitment` — the recovery commitment changes. `useRecoveryKey` — the change is authorized by the recovery key, which the identifier then reveals.
+   */
+  op:
+    | "addKey"
+    | "retireKey"
+    | "revokeKey"
+    | "rotateUpdateKey"
+    | "commitUpdateKey"
+    | "replaceRecoveryCommitment"
+    | "useRecoveryKey";
+  role: IdentityKeyRole;
+  verificationMethod?: string;
+  keyType?: KeyType;
+  publicKeyMultibase?: string;
+  commitment?: string;
+  relationships?: DidVerificationRelationship[];
+}
+/**
+ * What a change would publish, computed by the VTA by running the handler it would run to apply it (CONVENTIONS.md §6.1). This is what a consent surface renders and what an approval is bound to.
+ */
+export interface IdentityChangePreview {
+  /**
+   * Opaque, unguessable identifier of this exact plan. Carried back by the apply request; every approval and any recovery proof is bound to it.
+   */
+  previewId: string;
+  method: DidMethodName;
+  /**
+   * The version identifier the plan was computed against. Absent only for a creation. The plan is void once the identifier moves past it.
+   */
+  baseVersionId?: string;
+  expiresAt: string;
+  /**
+   * Every change the plan would make, including the ones the caller did not ask for — in particular any movement of the update authority the method requires.
+   */
+  changes: IdentityChange[];
+  /**
+   * The complete identifier document the change would publish, `keyRoles` included. Public data by construction.
+   */
+  document: {};
+  warnings?: PreviewWarning[];
+  /**
+   * True when applying the plan also moves the identifier's update authority to a committed successor — every change under did:webvh pre-rotation, never a KERI interaction event. Stated as its own member because it is the consequence a reviewer most often misses.
+   */
+  updateKeyRotates: boolean;
+  recoverySigning?: RecoverySigningRequest;
+}
+/**
+ * How a key is held. Present only in the custody projection. Carries no key material, and a conforming VTA MUST NOT place any in `ext`.
+ */
+export interface IdentityKeyCustody {
+  /**
+   * The custodian record identifier (`keys/*`'s `keyId`) behind this key. Absent for a key this VTA does not hold (`protection: externalCustodian`).
+   */
+  keyId?: string;
+  origin?: KeyOrigin;
+  /**
+   * Whether the custodian would release the private half. Always `false` for `attestation` and `update` keys. Stated explicitly, never absent.
+   */
+  exportable: boolean;
+  /**
+   * True when no authority can make the key exportable. `true` implies `exportable: false`.
+   */
+  neverExportable: boolean;
+  /**
+   * Whether the key, or material it can be re-derived or decrypted from, is in the VTA's backups or any state transfer. Always `false` for `attestation` and `update` keys (VTI-KEY-112).
+   */
+  inBackups: boolean;
+  protection: ProtectionClass;
+  /**
+   * Opaque, VTA-assigned label of the protection boundary holding the key (CONVENTIONS.md §5.2). Two keys with the same label are lost or compromised together. A recovery update key MUST carry a label different from every routine update key's. Custody projection only; never published.
+   */
+  boundary?: string;
+  /**
+   * True once the private half has been destroyed — a retired `attestation` or `messaging` key. The record survives so the key's past signatures stay attributable.
+   */
+  destroyed?: boolean;
+}
+/**
+ * One key in one role. A key is in exactly one role for its whole life; a change of role is a retirement from one and an addition to another, with fresh material under a fresh identifier.
+ */
+export interface IdentityRoleKey {
+  /**
+   * The full verification-method identifier (`did#fragment`) the document publishes the key under and lists in `keyRoles`. Absent for `update` keys, which are never role-bound verification methods (VTI-KEY-093). A VTA minting a method SHOULD derive its fragment from the key (VTI-KEY-150).
+   */
+  verificationMethod?: string;
+  role: IdentityKeyRole;
+  updateKeyClass?: UpdateKeyClass;
+  /**
+   * The relationships the key is (or, while `pending`, will be) listed in: always exactly its role's one relationship. Empty for `update`, `retired` and `revoked` keys.
+   */
+  relationships?: DidVerificationRelationship[];
+  keyType: KeyType;
+  /**
+   * The public half, multibase-encoded, exactly as published. Absent for a `committed` update key, whose public half the identifier has not yet revealed.
+   */
+  publicKeyMultibase?: string;
+  /**
+   * For a `committed` update key: the commitment the identifier publishes (a did:webvh `nextKeyHashes` entry, a KERI next-key digest), in the method's own encoding.
+   */
+  commitment?: string;
+  state: KeyLifecycleState;
+  /**
+   * The method's version identifier of the change that first published the key or its commitment (method-profiles/: a did:webvh `versionId`, a KERI event's sequence number and digest). Absent while `pending`.
+   */
+  publishedInVersionId?: string;
+  /**
+   * Version identifier of the change that retired or revoked the key.
+   */
+  removedInVersionId?: string;
+  /**
+   * For a `staged` key: when the VTA will begin using it — no earlier than the publishing change's cache horizon.
+   */
+  activatesAt?: string;
+  /**
+   * For a `retiring` key: the end of its overlap. Custody projection only.
+   */
+  retireAfter?: string;
+  /**
+   * For a `revoked` key: the compromise time (VTI-KEY-121), published as the verification method's `revoked` value. Where it cannot be established, the time the key was first published.
+   */
+  compromisedSince?: string;
+  /**
+   * The rotation this key was introduced or retired by.
+   */
+  rotationId?: string;
+  /**
+   * Operator-facing label. Custody projection only.
+   */
+  label?: string;
+  custody?: IdentityKeyCustody;
+  ext?: Ext;
 }
 /**
  * Whether the edge is in force now, and if not, why not — the edge's resolved state, which is not the same thing as the event just recorded: restoring an edge whose `validUntil` passed while it was suspended records the restoration and still resolves `expired`. Exactly the members its `state` names are present.
@@ -8937,6 +9439,29 @@ export interface InviteSummary_VtcV0_1 {
   consumedAt?: string;
 }
 /**
+ * One outstanding or historical admin invite. Consumed rows are retained as audit history.
+ */
+export interface InviteSummary_VtcV0_2 {
+  /**
+   * Unique invite identifier; the revoke target.
+   */
+  jti: string;
+  kind: InviteKind;
+  status: InviteStatus;
+  /**
+   * The administrator's DID: for a wallet invitation the DID it names; for a passkey invitation the DID derived from the passkey that claimed it, so absent until it is consumed.
+   */
+  targetDid?: string;
+  /**
+   * When an `issued` invite lapses.
+   */
+  expiresAt?: string;
+  /**
+   * When the invite was redeemed, if it was.
+   */
+  consumedAt?: string;
+}
+/**
  * The members of an issuance receipt, deliberately left **open** so a consuming specification can `$ref` it under `allOf` and add its own, then close the result with `unevaluatedProperties: false`.
  *
  * A closure inside this definition would defeat that. Both `additionalProperties` and `unevaluatedProperties` are evaluated against the whole instance from within the subschema that declares them, and neither can see members the *outer* schema matched — so either one here rejects the consumer's extras. Only an `unevaluatedProperties` at the outer level sees everything the composition matched. Use `IssuedCredential` where a closed standalone shape is wanted.
@@ -9066,6 +9591,74 @@ export interface KdfParams {
   pCost: number;
 }
 /**
+ * Approval progress of a change the VTA's policy gates on approvals (CONVENTIONS.md §6).
+ */
+export interface KeyChangeApprovalState {
+  /**
+   * Distinct approvals the VTA's policy requires.
+   */
+  required: number;
+  /**
+   * Distinct approvals recorded so far, the initiator's own included.
+   */
+  received: number;
+  /**
+   * The approvals recorded. Custody projection only; omitted from a response to anyone who is not themselves an eligible approver of this change.
+   */
+  approvals?: RecordedApproval[];
+  /**
+   * When the preview, and every approval bound to it, stops being usable.
+   */
+  expiresAt: string;
+}
+/**
+ * One change to a role's key set, from preview to completion. The identifier's history is the authority for what was published; this record adds which change was which and, in the custody projection, who asked, who approved, and why.
+ */
+export interface KeyChangeRecord {
+  rotationId: string;
+  role: IdentityKeyRole;
+  kind: KeyChangeKind;
+  state: KeyChangeState;
+  /**
+   * Verification-method identifiers (for `update`, public keys or commitments) leaving the role.
+   */
+  predecessors?: string[];
+  /**
+   * Verification-method identifiers (for `update`, public keys or commitments) entering the role.
+   */
+  successors?: string[];
+  startedInVersionId?: string;
+  endedInVersionId?: string;
+  startedAt?: string;
+  /**
+   * Planned rotations: the publishing change's cache horizon (CONVENTIONS.md §10.1). The switch and any retirement happen no earlier.
+   */
+  cacheHorizonAt?: string;
+  /**
+   * When the successor becomes `active` and the predecessor `retiring`; never before `cacheHorizonAt`.
+   */
+  activatesAt?: string;
+  /**
+   * Custody projection only. End of the overlap.
+   */
+  overlapUntil?: string;
+  /**
+   * Custody projection only. Whether the VTA retires the predecessor itself at `overlapUntil`.
+   */
+  autoRetire?: boolean;
+  endedAt?: string;
+  /**
+   * Custody projection only. VID of the administrator whose signed request started the change.
+   */
+  initiatedBy?: string;
+  approvals?: KeyChangeApprovalState;
+  /**
+   * Custody projection only. The operator's stated reason. Never published.
+   */
+  reason?: string;
+  ext?: Ext;
+}
+/**
  * How a device custodies its private key material — maintainer policy input, mirroring `attestation`. See docs/design-notes/mobile-key-custody-profile.md.
  */
 export interface KeyCustody {
@@ -9144,6 +9737,25 @@ export interface KeyRoleApprovalState {
    * When the preview, and every approval bound to it, stops being usable.
    */
   expiresAt: string;
+}
+export interface KeyRoleSummary {
+  role: IdentityKeyRole;
+  /**
+   * The relationship this role owns. Empty for `update`.
+   */
+  relationships: DidVerificationRelationship[];
+  /**
+   * The role's keys, in the order the document publishes them. Terminal-state keys are included only when the request asked for them, except a `revoked` key the document still lists, which is always included.
+   */
+  keys: IdentityRoleKey[];
+  /**
+   * `update` only: whether the identifier's latest version commits to a recovery key in a boundary other than the VTA's (CONVENTIONS.md §5.3). `false` is a defect the VTA reports rather than hides.
+   */
+  recoveryCommitted?: boolean;
+  /**
+   * `update` only, where the method has one: the signing threshold over the current update keys, in the method's own notation (a KERI `kt`).
+   */
+  threshold?: string;
 }
 /**
  * Every key the entry's act scope reaches.
@@ -9279,6 +9891,96 @@ export interface Manifest_VotingV0_2 {
   resultsBeforeClose: boolean;
   /**
    * Counted ballots required before any text answer is disclosed (VTI-VOT-065).
+   */
+  textReleaseThreshold: number;
+}
+/**
+ * What an election asks and how it is decided (VTI-VOT-010). Its digest (`manifestDigest`) is the SHA-256 multihash of its RFC 8785 (JCS) canonicalization, and every cast is bound to it (VTI-VOT-011).
+ */
+export interface Manifest_VotingV0_3 {
+  electionId: ElectionId;
+  /**
+   * The community's DID.
+   */
+  community: string;
+  title?: string;
+  description?: string;
+  /**
+   * @minItems 1
+   * @maxItems 128
+   */
+  questions: [Question, ...Question[]];
+  secrecy: SecrecyLevel;
+  roll: RollRule;
+  registrationOpensAt: string;
+  votingOpensAt: string;
+  votingClosesAt: string;
+  revote: Revote;
+  board: {
+    visibility: BoardVisibility;
+    auditors: string[];
+  };
+  /**
+   * The DID of the voting service that holds the board.
+   */
+  ballotBox: string;
+  trustees?: Trustees;
+  /**
+   * Whether the community treats the result as deciding something; creating a binding election takes another administrator's consent (VTI-VOT-081).
+   */
+  binding: boolean;
+  allowEarlyClose: boolean;
+  /**
+   * Open elections only: whether running totals may be read while voting is open (VTI-VOT-061).
+   */
+  resultsBeforeClose: boolean;
+  /**
+   * Counted ballots required before any text answer is disclosed (VTI-VOT-065). At least 1, and SHOULD be at least 10: a written answer can identify its author by what it says or how it is phrased, and the fewer the ballots released together, the easier that is. Where it is below 10, the disclosure a member is shown before they request a ticket MUST say so, and MUST say that a written answer may identify its author (VTI-VOT-090).
+   */
+  textReleaseThreshold: number;
+}
+/**
+ * What an election asks and how it is decided (VTI-VOT-010). Its digest (`manifestDigest`) is the SHA-256 multihash of its RFC 8785 (JCS) canonicalization, and every cast is bound to it (VTI-VOT-011).
+ */
+export interface Manifest_VotingV0_4 {
+  electionId: ElectionId;
+  /**
+   * The community's DID.
+   */
+  community: string;
+  title?: string;
+  description?: string;
+  /**
+   * @minItems 1
+   * @maxItems 128
+   */
+  questions: [Question, ...Question[]];
+  secrecy: SecrecyLevel;
+  roll: RollRule_VotingV0_4;
+  registrationOpensAt: string;
+  votingOpensAt: string;
+  votingClosesAt: string;
+  revote: Revote;
+  board: {
+    visibility: BoardVisibility;
+    auditors: string[];
+  };
+  /**
+   * The DID of the voting service that holds the board.
+   */
+  ballotBox: string;
+  trustees?: Trustees;
+  /**
+   * Whether the community treats the result as deciding something; creating a binding election takes another administrator's consent (VTI-VOT-081).
+   */
+  binding: boolean;
+  allowEarlyClose: boolean;
+  /**
+   * Open elections only: whether running totals may be read while voting is open (VTI-VOT-061).
+   */
+  resultsBeforeClose: boolean;
+  /**
+   * Counted ballots required before any text answer is disclosed (VTI-VOT-065). At least 1, and SHOULD be at least 10: a written answer can identify its author by what it says or how it is phrased, and the fewer the ballots released together, the easier that is. Where it is below 10, the disclosure a member is shown before they request a ticket MUST say so, and MUST say that a written answer may identify its author (VTI-VOT-090).
    */
   textReleaseThreshold: number;
 }
@@ -9749,6 +10451,35 @@ export interface NewCardDefaults {
   introductions?: Introductions;
 }
 /**
+ * The members of one notification, as notifications/notify carries them and as a recipient's agent records them. The originator is the `issuer` of the notifications/notify document and the addressee its `recipient`; neither is repeated here, because the originator's proof covers both.
+ */
+export interface Notification {
+  notificationId: NotificationId;
+  /**
+   * The revision of this notification. A recipient replaces the record it holds with a higher revision and leaves it unchanged for an equal or lower one (VTI-NTF-022). The first revision is 1.
+   */
+  revision: number;
+  kind: Kind_NotificationsV0_1;
+  subject: Subject;
+  /**
+   * The DID whose holders or members the thing concerns — for an election under a credential roll, the DID the roll names (`roll.memberOf`); otherwise the community's own. It says whom the thing is for, not that the recipient is one of them: a recipient may be the audience itself, or a party the audience relayed the notification to.
+   */
+  audience: Did_NotificationsV0_1;
+  status: Status;
+  /**
+   * Whether the addressee may relay this notification to the parties it stands for (notifications/relay). The originator states it explicitly; an addressee MUST NOT relay a notification whose `relayable` is false, or whose kind may not be relayed (VTI-NTF-041).
+   */
+  relayable: boolean;
+  /**
+   * When the thing can first be acted on — for an election, when voting opens. Absent: it can be acted on now.
+   */
+  validFrom?: string;
+  /**
+   * When the thing can no longer be acted on, and the notification lapses — for an election, when voting closes. A recipient discards a notification received after it (VTI-NTF-032). Absent: the kind's definition says when it lapses.
+   */
+  validUntil?: string;
+}
+/**
  * A community's offer of admission to a room it owns, as the member it is addressed to sees it.
  */
 export interface Offer {
@@ -9890,6 +10621,24 @@ export interface PeerDepth {
   count: number;
   bytes: number;
   oldestAgeSeconds?: number;
+}
+/**
+ * A change of state the community began and has not finished, because a step at its VTA did not complete — most often a room reset the host accepted, after which the community's own credentials must be re-issued before it can act on the room again. `RoomStatus.state` stays what it was until the change finishes, but what the room's host enforces may already be the new state's: a pending move to `noAccess` means members' credentials may already be refused. The community finishes it by itself, retrying with backoff, and repeating the request that began it finishes it too; nothing else changes the room until it is finished.
+ */
+export interface PendingChange {
+  /**
+   * The state the change leads to.
+   */
+  state: RoomState;
+  /**
+   * The access it leads to, where `state` has one.
+   */
+  access?: ArchiveAccess;
+  beganAt: string;
+  /**
+   * What stopped the last attempt, for an administrator. Plain text; it names no member and carries no credential.
+   */
+  lastError?: string;
 }
 /**
  * What the author permits the record to be used for — for example, that a learner's record is for instructional personalisation only. OPTIONAL; absent means the author stated no limit beyond the room's own terms.
@@ -10337,6 +11086,30 @@ export interface PublicKeyCredentialRequestOptions {
   userVerification?: "discouraged" | "preferred" | "required";
 }
 /**
+ * How the change reaches resolvers.
+ */
+export interface Publication {
+  /**
+   * True when no hosting service holds the identifier for the VTA: the caller must publish `artifacts`, and until it does resolvers see the previous version.
+   */
+  selfPublish: boolean;
+  /**
+   * Present when `selfPublish` is true.
+   */
+  artifacts?: PublishedArtifact[];
+}
+/**
+ * A file the identifier's method publishes, as the method profile names it (`did.jsonl` for did:webvh, `did.json` and `keri.cesr` for did:webs).
+ */
+export interface PublishedArtifact {
+  name: string;
+  mediaType: string;
+  /**
+   * The artefact's content, or for an append-only artefact the appended part, as text.
+   */
+  content: string;
+}
+/**
  * A member's external card: a JSContact `Card` (RFC 9553) holding exactly their values whose visibility is `public`, mapped as `JSContactCard` maps them, with the member's W3C Data Integrity `proof`. The community serves it as received and never signs, composes or edits it (VTI-REG-004 item 4).
  *
  * Carried as an open object, and deliberately so: the proof covers every member of the card, and a typed binding that kept only the members named here would drop the rest and break the signature. So this schema constrains none of its members, and a consumer MUST check them itself: `@type`, `version`, `uid`, `issuer` and `proof` are present; `@type` is `Card`; `version` is `1.0`; `uid` is `urn:vtc-directory:<EntryId>`; `issuer` is the member's membership DID; `proof` is a `DataIntegrityProof` with `cryptosuite` `eddsa-jcs-2022` or `ecdsa-jcs-2019`, `proofPurpose` `assertionMethod`, and a `verificationMethod` of the member's membership DID authorized for `assertionMethod`; and the proof verifies over the card without it, before any member is relied on.
@@ -10375,6 +11148,24 @@ export interface PublishedEvent {
   endDate: string;
   groupFloor: number;
   tiers: Tier[];
+}
+/**
+ * How a purge is going. A purge deletes at the room's host and at each storage config holding its files, and some of those are remote; a step that fails is retried with backoff until it succeeds, and nothing is reported removed until every step has.
+ */
+export interface PurgeProgress {
+  /**
+   * Passes made so far; 0 until the first.
+   */
+  attempts: number;
+  lastAttemptAt?: string;
+  /**
+   * When the next pass is due. Absent while one runs.
+   */
+  nextAttemptAt?: string;
+  /**
+   * What stopped the last pass, for an administrator. Present only after a pass failed. Plain text, written by the community; it names no member and carries no credential.
+   */
+  lastError?: string;
 }
 export interface Apns {
   platform: "apns";
@@ -10801,6 +11592,51 @@ export interface RecordRetention {
    */
   ext?: Ext;
 }
+export interface RecordedApproval {
+  /**
+   * VID of the approver.
+   */
+  approver: string;
+  evidence: ApprovalEvidenceKind;
+  recordedAt?: string;
+}
+/**
+ * A recovery key offered for commitment (CONVENTIONS.md §5.3). The VTA computes the method's commitment from it, verifies `proofOfPossession`, and then keeps only the commitment. The key MUST be held by a custodian in a protection boundary other than the VTA's; a VTA MUST refuse one it generated or can derive (`vta/dids:recoveryCommitmentRequired`).
+ */
+export interface RecoveryCommitment {
+  keyType: KeyType;
+  /**
+   * The recovery key's public half. Not published by the VTA where the method commits by hash.
+   */
+  publicKeyMultibase: string;
+  /**
+   * Multibase signature by the recovery key over the UTF-8 bytes of `vta-dids-recovery-commitment/v1`, a zero byte, and the request's `previewId`. Absent on a dry run, which is how the `previewId` is obtained; REQUIRED on the apply request, and the only member besides `previewId`, `dryRun` and `recoveryProof` that may differ between the two.
+   */
+  proofOfPossession?: string;
+  /**
+   * Operator-facing name of the custodian. Custody projection only; never published.
+   */
+  label?: string;
+}
+/**
+ * What a recovery custodian must sign for a change that only the recovery key may authorize (CONVENTIONS.md §5.4, §9.4). The custodian MUST check `unsignedChange` itself — render it to its human, confirm that it reveals the recovery key it holds and commits to a fresh recovery key it also holds — and MUST NOT sign on the strength of this request's description alone.
+ */
+export interface RecoverySigningRequest {
+  /**
+   * The recovery commitment the identifier publishes; the custodian's key MUST be the one it commits to.
+   */
+  commitment: string;
+  keyType: KeyType;
+  /**
+   * The change exactly as it will be published, without the recovery proof, as JSON text in the method's own form (a did:webvh log entry, a KERI rotation event).
+   */
+  unsignedChange: string;
+  /**
+   * The proof the method requires over `unsignedChange`, without its signature value, as the method profile defines it (for did:webvh, a Data Integrity proof configuration with `proofPurpose: assertionMethod` and the recovery key's `did:key` as `verificationMethod`).
+   */
+  proofOptions: {};
+  expiresAt?: string;
+}
 /**
  * A resolvable, version-identified, hash-pinned pointer to one document: the host's terms (understanding/offer's termsRef) or one register of an agreement. The same `{ uri, version, digestMultibase }` shape as understanding/offer's termsRef and as the governance-framework reference the companion Verifiable Trust Infrastructure specification places in a DID document (VTI-KEY-052: a `GovernanceFramework` service whose `serviceEndpoint` is the `uri`, with `version` and `digestMultibase` members).
  */
@@ -10867,6 +11703,19 @@ export interface RegisteredInstance {
   servedDomains?: string[];
   lastSeenAt?: string;
   ext?: Ext;
+}
+/**
+ * What the node must now do that the change cannot (VTI-KEY-133, CONVENTIONS.md §9.6). Custody data, present when an `attestation` key is revoked or lost.
+ */
+export interface ReissuanceFollowUp {
+  /**
+   * Status lists signed by the revoked or lost key, which the node MUST re-sign at once under a sound attestation key.
+   */
+  statusListsToResign?: number;
+  /**
+   * Attestation artefacts still in force that the VTA's signing record shows the key signed, which the node MUST re-issue with identical claims and expiry.
+   */
+  artefactsToReissue?: number;
 }
 /**
  * A key a patch declined to apply, with the reason.
@@ -11411,6 +12260,18 @@ export interface RoleKeyCustody {
    */
   destroyed?: boolean;
 }
+/**
+ * The keys an identity is created with in one role (CONVENTIONS.md §4). A key-role DID template carries one per role; a creation request may narrow it but never widen it.
+ */
+export interface RoleLayout {
+  role: IdentityKeyRole;
+  /**
+   * The algorithms to mint, one key each, in publication order — `["ed25519", "mldsa44"]` mints a classical and a post-quantum attestation key that sign as a proof set. Every entry MUST suit the role (CONVENTIONS.md §2.2). A VTA that cannot mint one of them MUST refuse the creation with `vta/dids:unsupportedKeyType`; it never substitutes an algorithm or omits a key.
+   *
+   * @minItems 1
+   */
+  algorithms: [KeyType, ...KeyType[]];
+}
 export interface RoleSummary {
   role: KeyRole;
   /**
@@ -11427,11 +12288,43 @@ export interface RoleSummary {
   preRotationCommitments?: number;
 }
 /**
+ * Under a `credential` roll, whose membership credential admits a party to a ticket, as a member is shown it before they claim one (VTI-VOT-090): the DID the roll names, what kind of party it is to this community, and its name as the community knows it. Present in a disclosure exactly when the election's roll rule is `credential`.
+ */
+export interface RollCredentialDisclosure {
+  /**
+   * The manifest's `roll.memberOf`.
+   */
+  memberOf: string;
+  /**
+   * `thisCommunity`: the community itself. `communityGroup`: one of the community's own groups, whose membership credentials it authorizes the group to issue (VTI-DIR-083). `memberParty`: a party outside the community that is itself an active member of it — another community, a group of another community, or a network — whose own membership credentials admit their holders (VTI-VOT-026).
+   */
+  memberOfKind: "thisCommunity" | "communityGroup" | "memberParty";
+  /**
+   * The name the community shows for the party `memberOf` names: the group's name, or the member party's name as the community's records hold it. Absent where showing it would disclose more than the group's visibility admits (VTI-DIR-070).
+   */
+  memberOfName?: string;
+  /**
+   * Always true: claiming a ticket shows the community the presenter's membership credential for `memberOf`, so the community learns that the presenter is a member of that party.
+   */
+  presenterDisclosed?: true;
+}
+/**
  * Who may be issued a ticket (VTI-VOT-021): the community's active members, its active members and the parties `listed` names, or only the parties `listed` names.
  */
 export interface RollRule {
   rule: "members" | "membersAndListed" | "listed";
   listed?: string[];
+}
+/**
+ * Who may be issued a ticket (VTI-VOT-021): the community's active members (`members`), its active members and the parties `listed` names (`membersAndListed`), only the parties `listed` names (`listed`), or the holders of a membership credential for the one DID `memberOf` names (`credential`), proven by presentation when the holder claims their ticket and never resolved when the election is created (VTI-VOT-025). `memberOf` is present exactly when `rule` is `credential`, and `listed` is never present with it.
+ */
+export interface RollRule_VotingV0_4 {
+  rule: "members" | "membersAndListed" | "listed" | "credential";
+  listed?: string[];
+  /**
+   * The DID whose membership credential admits its holder, under the `credential` rule: this community, one of its groups, or a party that is itself an active member of this community — holding a membership credential this community issued it — such as another community, a group of another community, or a network (VTI-VOT-026). Always a DID, never a group's local identifier or name. A community refuses to create an election naming any other DID (vtc/elections/create:rollUntrusted).
+   */
+  memberOf?: string;
 }
 /**
  * The outcome of a rollback. Distinct from ServiceMutationResult because a rollback can legitimately publish nothing: if the previous state already equals the current one there is no change to write, and `kind: "noOp"` says so with `logEntryVersionId` absent. Treating that as a failure would be wrong — the requested state holds — and treating it as an ordinary success would report a log entry that does not exist.
@@ -11549,6 +12442,25 @@ export interface RoomMember {
   removedAt?: string;
 }
 /**
+ * `RoomMember` with `MemberStateV2`, and `suspendedAt`.
+ */
+export interface RoomMemberV2 {
+  member: string;
+  actions: MemberActions;
+  /**
+   * When the member's authority credential expires.
+   */
+  validUntil: string;
+  state: MemberStateV2;
+  offeredAt: string;
+  admittedAt?: string;
+  removedAt?: string;
+  /**
+   * Present exactly when `state` is `suspended`.
+   */
+  suspendedAt?: string;
+}
+/**
  * What vtc/rooms/memberships/list/0.1 returns: one room the community owns, and where the caller's admission to it stands in the community's own record. Unlike `OfferV2` it carries no credentials — those are collected with vtc/rooms/offers/list while an offer is open — and it is listed in every state, for as long as the community keeps the record, not only while an accept can be repeated. `label` and `description` are the room's as they stand when the record is read.
  */
 export interface RoomMembership {
@@ -11582,6 +12494,57 @@ export interface RoomMembership {
    * On an `attributed` or `private` room in state `admitted`: until when the community keeps the Welcome, so that a repeated vtc/rooms/offers/accept carrying the same KeyPackage is answered with it. Absent on an `open` room, in any other state, and once the community no longer keeps it. A surface finding the member admitted but the room absent from its key holder's rooms/keys/list finishes the acceptance before this time, and asks an administrator to re-admit the member after it.
    */
   repeatAcceptUntil?: string;
+}
+/**
+ * What vtc/rooms/memberships/list/0.2 returns: `RoomMembership` with `MemberStateV2`, `suspendedAt`, and the room's own state, so that a member can tell a room that is read-only, closed or going away from one they were removed from.
+ */
+export interface RoomMembershipV2 {
+  roomId: string;
+  /**
+   * The room's host: this community.
+   */
+  host: string;
+  label: RoomLabel;
+  /**
+   * Absent when the room has none.
+   */
+  description?: RoomDescription;
+  visibility: Visibility;
+  actions: MemberActions;
+  /**
+   * When the member's authority credential expires.
+   */
+  validUntil: string;
+  state: MemberStateV2;
+  offeredAt: string;
+  /**
+   * When the community recorded the admission. Present when `state` is `admitted`, and kept when it becomes `removed`.
+   */
+  admittedAt?: string;
+  /**
+   * Present exactly when `state` is `removed`.
+   */
+  removedAt?: string;
+  /**
+   * On an `attributed` or `private` room in state `admitted`: until when the community keeps the Welcome, so that a repeated vtc/rooms/offers/accept carrying the same KeyPackage is answered with it. Absent on an `open` room, in any other state, and once the community no longer keeps it. A surface finding the member admitted but the room absent from its key holder's rooms/keys/list finishes the acceptance before this time, and asks an administrator to re-admit the member after it.
+   */
+  repeatAcceptUntil?: string;
+  /**
+   * Present exactly when `state` is `suspended`.
+   */
+  suspendedAt?: string;
+  /**
+   * The room's state in its owner's lifecycle. `purging` is shown to members as `removalScheduled`: to them, the room is going away either way.
+   */
+  roomState: RoomState;
+  /**
+   * Present exactly when `roomState` is `archived` or `removalScheduled`.
+   */
+  roomAccess?: ArchiveAccess;
+  /**
+   * Present when `roomState` is `removalScheduled`: when the room's content is to be deleted.
+   */
+  purgeAt?: string;
 }
 /**
  * What a room says about itself to its own members: a name and, optionally, a description, short tags and an emoji, so that a member's wallet, portal or CLI can show what each room is rather than a DID.
@@ -11638,6 +12601,44 @@ export interface RoomRevocation {
    * OPTIONAL. After this instant every credential the entry matches has expired anyway, so a host MAY discard the entry and the room MAY omit it from later lists. Absent means the entry is kept for as long as the room keeps a list.
    */
   until?: string;
+}
+/**
+ * A room's state in its owner's lifecycle, and what that state needs to be understood.
+ */
+export interface RoomStatus {
+  state: RoomState;
+  /**
+   * Present exactly when `state` is `archived` or `removalScheduled`; always `noAccess` for `removalScheduled`.
+   */
+  access?: ArchiveAccess;
+  /**
+   * When the room entered `state`. Absent for a room that has been `active` since it was created.
+   */
+  changedAt?: string;
+  /**
+   * The administrator whose act put the room in `state`. Present exactly when `changedAt` is, except for `purging` and `removed` reached when a grace period ended, which no one did at that moment: then the administrator who scheduled the removal. The reason each gave is in the community's audit trail, not here.
+   */
+  changedBy?: string;
+  /**
+   * Present when `state` is `removalScheduled`: when the grace period ends and the purge begins. Kept when `state` is `purging` or `removed`, as when it became due.
+   */
+  purgeAt?: string;
+  /**
+   * Present exactly when `state` is `purging`.
+   */
+  purge?: PurgeProgress;
+  /**
+   * Present exactly when `state` is `removed`: when the last of the room's content was deleted.
+   */
+  removedAt?: string;
+  /**
+   * Admissions still `suspended` that the community is restoring, after the room left `noAccess` — the room re-issues each member's credentials and the member collects them as a renewal. Absent when there are none.
+   */
+  restoring?: number;
+  /**
+   * Present while a change of state is begun and not finished.
+   */
+  pendingChange?: PendingChange;
 }
 /**
  * One change to a role's key set, from preview to completion. The rotation history of a DID is the list of these; the log is the authority for what was published, and this record adds what the log cannot say — which change was which, and (custody projection only) who asked, who approved, and why.
@@ -12602,6 +13603,23 @@ export interface StreamDescriptor {
   expectedSha256: ExpectedSha256;
   expectedSizeBytes: ExpectedSizeBytes;
   expiresAt: ExpiresAt;
+}
+/**
+ * Where the thing is and how to open it. Only these three members: what the thing contains is shown by its holder, to a reader it admits, when the thing is opened with `openWith`.
+ */
+export interface Subject {
+  /**
+   * The DID of the party holding the thing — for an election, the community. The party a recipient sends `openWith` to.
+   */
+  heldBy: Did_NotificationsV0_1;
+  /**
+   * The thing's identifier at `heldBy`, in the form the `openWith` task takes it — for an election, its `electionId`.
+   */
+  id: string;
+  /**
+   * The Type URI of the Trust Task by which a recipient opens the thing at `heldBy` — for an election, `https://trusttasks.org/spec/vtc/elections/show/0.6`. A recipient opens it only at its principal's choice (VTI-NTF-053), and only by a version of that task it and `heldBy` both serve.
+   */
+  openWith: string;
 }
 /**
  * Withdraws a party: every credential naming them as subject or issuer whose `validFrom` is earlier than `revokedAt`.

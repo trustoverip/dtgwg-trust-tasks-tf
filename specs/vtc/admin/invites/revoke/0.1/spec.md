@@ -43,7 +43,7 @@ errorCodes:
 
 ## Abstract
 
-The **VTC Admin Invites — Revoke** Trust Task withdraws an outstanding administrator invite so its install URL can no longer be redeemed. The target is the `jti` returned by [`vtc/admin/invites/create`](../../create/0.1/) and listed by [`vtc/admin/invites/list`](../../list/0.1/).
+The **VTC Admin Invites — Revoke** Trust Task withdraws an outstanding administrator invite so its install URL can no longer be redeemed. The target is the `jti` returned by [`vtc/admin/invites/create`](../../create/0.2/) and listed by [`vtc/admin/invites/list`](../../list/0.2/).
 
 ## Conformance
 

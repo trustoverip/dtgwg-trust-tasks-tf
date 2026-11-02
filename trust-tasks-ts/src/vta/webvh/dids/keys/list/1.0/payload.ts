@@ -8,6 +8,8 @@ import type { DidVerificationRelationship, Ext, KeyOrigin, KeyRole, KeyRoleAppro
 
 /**
  * List a did:webvh's keys by role, with their state, and optionally the DID's rotation history and any changes awaiting approval.
+ *
+ * @deprecated retired; use vta/dids/keys/list/1.0
  */
 export interface VTAWebVHDIDsKeysListPayload {
   /**
@@ -32,6 +34,8 @@ export interface VTAWebVHDIDsKeysListPayload {
 }
 /**
  * Success response to vta/webvh/dids/keys/list. Type https://trusttasks.org/spec/vta/webvh/dids/keys/list/1.0#response.
+ *
+ * @deprecated retired; use vta/dids/keys/list/1.0
  */
 export interface VTAWebVHDIDsKeysListResponsePayload {
   did: string;
@@ -71,15 +75,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "retired; use vta/dids/keys/list/1.0";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated retired; use vta/dids/keys/list/1.0
+ */
 export type Payload = VTAWebVHDIDsKeysListPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/webvh/dids/keys/list/1.0#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated retired; use vta/dids/keys/list/1.0
+ */
 export type Response = VTAWebVHDIDsKeysListResponsePayload;
 
 /**

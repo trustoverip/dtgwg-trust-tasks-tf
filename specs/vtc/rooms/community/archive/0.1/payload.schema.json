@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/rooms/community/archive/0.1",
+  "title": "VTC Rooms Community Archive — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId",
+    "access",
+    "reason"
+  ],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "The room's identifier: its DID."
+    },
+    "access": {
+      "$ref": "../../../../../vtc/_shared/0.5/community-room.schema.json#/$defs/ArchiveAccess",
+      "description": "What the room's members may still do once it is archived. On a room already archived, the access to move it to."
+    },
+    "reason": {
+      "$ref": "../../../../../vtc/_shared/0.1/community-room.schema.json#/$defs/Reason"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Rooms Community Archive — response payload",
+      "description": "Success response to vtc/rooms/community/archive. Type https://trusttasks.org/spec/vtc/rooms/community/archive/0.1#response. The room as it now stands; whether anything changed; and, where the community's VTA withdrew credentials at the room's host, the revocation list in force there.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "room",
+        "changed"
+      ],
+      "properties": {
+        "room": {
+          "$ref": "../../../../../vtc/_shared/0.5/community-room.schema.json#/$defs/CommunityRoomV3"
+        },
+        "changed": {
+          "type": "boolean",
+          "description": "`false` when the room was already archived with `access`: nothing was written, withdrawn or audited."
+        },
+        "withdrawnOffers": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Open offers this archival withdrew. Absent when there were none."
+        },
+        "revocation": {
+          "$ref": "../../../../../rooms/_shared/0.1/room.schema.json#/$defs/RevocationHead",
+          "description": "Present when the community's VTA withdrew credentials at the room's host — a room reset for `noAccess`, or the open offers' credentials on an `open` or `attributed` room for `readOnly` — as the host accepted it."
+        },
+        "revokedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Present with `revocation`: the withdrawal's time. The host refuses every credential the withdrawal names that was issued before it."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

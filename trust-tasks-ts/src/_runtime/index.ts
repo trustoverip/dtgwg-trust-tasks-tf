@@ -14,6 +14,7 @@ export {
   TRUST_TASK_ERROR_TYPE_URI,
   enforceAudienceBinding,
   enforceSpecPolicy,
+  issuedAtNow,
   rejectWith,
   rejectWithRecipient,
   respondWith,

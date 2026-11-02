@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/dids/recover/1.0",
+  "title": "VTA DIDs — Recover — payload",
+  "description": "Ask a Verifiable Trust Agent to take over a key-role identity whose VTA was lost, with the identity's committed recovery key (CONVENTIONS.md §9.5; VTI-KEY-117). The recovering VTA generates new keys, and the recovery custodian signs the one change that publishes them.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "did",
+    "contextId",
+    "lostKeys",
+    "recoveryCommitment"
+  ],
+  "properties": {
+    "did": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The key-role identity, by DID (for a `did:scid` identity, the DID without `src`)."
+    },
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Context of this (the recovering) VTA the identity is placed in."
+    },
+    "history": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/PublishedArtifact"
+      },
+      "description": "The identity's published history as the method profile names it (for did:webvh, `did.jsonl` and, when witnessed, `did-witness.json`). Absent, the VTA resolves it. The VTA verifies it in full either way and never trusts it for being supplied."
+    },
+    "lostKeys": {
+      "type": "string",
+      "enum": [
+        "destroyed",
+        "mayBeExposed"
+      ],
+      "description": "`destroyed` — the lost VTA's keys are gone, not stolen: its attestation keys are retired, and what they signed stays valid (VTI-KEY-132). `mayBeExposed` — they may be in someone else's hands: every lost key is revoked from `compromisedSince`."
+    },
+    "compromisedSince": {
+      "type": "string",
+      "format": "date-time",
+      "description": "REQUIRED when `lostKeys` is `mayBeExposed`, refused otherwise (CONVENTIONS.md §9.2)."
+    },
+    "methodParameters": {
+      "type": "object",
+      "description": "Validated against the profile's `UpdateParameters`, for a recovery that also moves hosting or witnesses."
+    },
+    "recoveryCommitment": {
+      "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/RecoveryCommitment",
+      "description": "The fresh recovery key that replaces the one this recovery uses (VTI-KEY-128)."
+    },
+    "recoveryProof": {
+      "type": "object",
+      "description": "The recovery custodian's proof over `preview.recoverySigning.unsignedChange`, in the method profile's form. Absent until the custodian has signed; a request without it is answered `awaitingRecoveryProof`."
+    },
+    "expectedVersionId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optimistic-concurrency precondition: the version identifier (method profile §3) the caller based this change on, for example `keys/list`'s `versionId`. The VTA MUST refuse with `vta/dids:versionConflict` if the identity has moved past it. Not optional for anything a person looked at."
+    },
+    "dryRun": {
+      "type": "boolean",
+      "description": "Compute and return the preview without writing anything but the plan (CONVENTIONS.md §6.1). Absent reads as false."
+    },
+    "previewId": {
+      "type": "string",
+      "minLength": 16,
+      "description": "Apply exactly the plan a previous dry run of this same request returned, or nothing (CONVENTIONS.md §6.1); what every approval is bound to."
+    },
+    "reason": {
+      "type": "string",
+      "maxLength": 1024,
+      "description": "Why the change is being made, for the audit trail and for the other approvers. Never published."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA DIDs — Recover — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "did",
+        "outcome"
+      ],
+      "properties": {
+        "did": {
+          "type": "string",
+          "minLength": 1
+        },
+        "outcome": {
+          "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/KeyChangeOutcome"
+        },
+        "preview": {
+          "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/IdentityChangePreview",
+          "description": "Present when `outcome` is `preview`, `pendingApproval` or `awaitingRecoveryProof`: the plan, and what an approval is bound to."
+        },
+        "approvals": {
+          "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/KeyChangeApprovalState",
+          "description": "Present when `outcome` is `pendingApproval`."
+        },
+        "newVersionId": {
+          "type": "string",
+          "description": "Present when `outcome` is `applied`: the version identifier of the change. Pass it as the next change's `expectedVersionId`."
+        },
+        "keys": {
+          "type": "array",
+          "items": {
+            "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/IdentityRoleKey"
+          },
+          "description": "Every key whose state this change sets or would set, after the change."
+        },
+        "rotation": {
+          "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/KeyChangeRecord"
+        },
+        "publication": {
+          "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/Publication",
+          "description": "Present when `outcome` is `applied`."
+        },
+        "followUp": {
+          "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/ReissuanceFollowUp"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

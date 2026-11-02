@@ -67,7 +67,7 @@ The reason is symmetry of the invariant. If the host stopped serving a name whil
 
 ## Step-up
 
-Releasing a name is **destructive**: once free, the name may be registered by a different party, and the previous holder cannot unilaterally get it back. A consumer **MUST** gate this task behind operator **step-up** — an elevated authentication assurance level satisfied by an operator-signed approval (see [`auth/step-up/approve-response`](../../../../auth/step-up/approve-response/0.6/spec.md)) — and, until it is satisfied, respond with `stepUpRequired`.
+Releasing a name is **destructive**: once free, the name may be registered by a different party, and the previous holder cannot unilaterally get it back. A consumer **MUST** gate this task behind operator **step-up** — an elevated authentication assurance level satisfied by an operator-signed approval (see [`auth/step-up/approve-response`](../../../../auth/step-up/approve-response/0.7/spec.md)) — and, until it is satisfied, respond with `stepUpRequired`.
 
 Per the framework, this requirement is a **consumer policy** derived from the task's destructive classification; it is not, and cannot be, delegated to the registry. The declaration here is descriptive guidance, not a wire-enforceable flag.
 

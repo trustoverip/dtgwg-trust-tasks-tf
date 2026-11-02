@@ -8,6 +8,8 @@ import type { DidDocumentChange, DidDocumentPreview, DidVerificationRelationship
 
 /**
  * Revoke a did:webvh key for compromise: withdraw it from its role in one entry, without overlap, record the compromise time so verifiers judge its past signatures accordingly, and put a generated replacement in its place where the role would otherwise be empty.
+ *
+ * @deprecated retired; use vta/dids/keys/revoke/1.0
  */
 export interface VTAWebVHDIDsKeysRevokePayload {
   /**
@@ -52,6 +54,8 @@ export interface VTAWebVHDIDsKeysRevokePayload {
 }
 /**
  * Success response. Type https://trusttasks.org/spec/vta/webvh/dids/keys/revoke/1.0#response. A refusal is a `trust-task-error` document, never this.
+ *
+ * @deprecated retired; use vta/dids/keys/revoke/1.0
  */
 export interface VTAWebVHDIDsKeysRevokeResponsePayload {
   did: string;
@@ -117,15 +121,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "retired; use vta/dids/keys/revoke/1.0";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated retired; use vta/dids/keys/revoke/1.0
+ */
 export type Payload = VTAWebVHDIDsKeysRevokePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/webvh/dids/keys/revoke/1.0#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated retired; use vta/dids/keys/revoke/1.0
+ */
 export type Response = VTAWebVHDIDsKeysRevokeResponsePayload;
 
 /**

@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/notifications/notify/0.1",
+  "title": "Notifications — Notify — payload",
+  "description": "An originator tells the party a DID names — an individual, a group, a community or a network — that a thing exists which that party, or the parties it stands for, may act on or take part in: where it is held, its identifier there, the task that opens it, and the audience it concerns. Nothing of the thing's content. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "notification"
+  ],
+  "properties": {
+    "notification": {
+      "$ref": "../../_shared/0.1/notification.schema.json#/$defs/Notification"
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Notifications — Notify — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "notificationId",
+        "revision"
+      ],
+      "description": "Receipt of a notification the recipient verified. The same whether the recipient held it, declined it under its acceptance policy, or relayed it on, and never saying which (VTI-NTF-023).",
+      "properties": {
+        "notificationId": {
+          "$ref": "../../_shared/0.1/notification.schema.json#/$defs/NotificationId"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000,
+          "description": "The revision received, echoed."
+        }
+      }
+    }
+  }
+}

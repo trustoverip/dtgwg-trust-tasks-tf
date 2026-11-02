@@ -4,7 +4,7 @@
 #![allow(deprecated)]
 /// Why this specification version is deprecated (SPEC "Superseded and
 /// Withdrawn Versions"), or `None` while it is current.
-pub const DEPRECATION: Option<&str> = Some("superseded by vtc/install/claim/start/0.3");
+pub const DEPRECATION: Option<&str> = Some("retired; use vtc/install/claim/passkey/start/0.1");
 #[allow(unused_imports)]
 use serde::{Deserialize, Serialize};
 /// Error types.
@@ -122,7 +122,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by vtc/install/claim/start/0.3")]
+#[deprecated(note = "retired; use vtc/install/claim/passkey/start/0.1")]
 pub struct Payload {
     /**
     A short code the operator receives **out of band**, alongside the install URL but through a separate channel.
@@ -275,7 +275,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadInstallToken {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by vtc/install/claim/start/0.3")]
+#[deprecated(note = "retired; use vtc/install/claim/passkey/start/0.1")]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,

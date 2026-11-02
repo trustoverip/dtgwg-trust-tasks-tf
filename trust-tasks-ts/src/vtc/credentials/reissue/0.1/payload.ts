@@ -11,7 +11,7 @@ import type { Ext } from "../../../../_shared/components.js";
  */
 export interface VTCCredentialsReissuePayload {
   /**
-   * The revocation that requires re-issuance. The VTC MUST verify it against its own DID's key roles (vta/webvh/dids/keys/list) rather than trust it.
+   * The revocation that requires re-issuance. The VTC MUST verify it against its own DID's key roles (vta/dids/keys/list) rather than trust it.
    */
   cause: {
     /**
@@ -121,7 +121,7 @@ export const PAYLOAD_SCHEMA = {
       "required": [
         "verificationMethod"
       ],
-      "description": "The revocation that requires re-issuance. The VTC MUST verify it against its own DID's key roles (vta/webvh/dids/keys/list) rather than trust it.",
+      "description": "The revocation that requires re-issuance. The VTC MUST verify it against its own DID's key roles (vta/dids/keys/list) rather than trust it.",
       "properties": {
         "verificationMethod": {
           "type": "string",

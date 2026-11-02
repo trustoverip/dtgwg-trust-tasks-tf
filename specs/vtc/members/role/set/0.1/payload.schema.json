@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/members/role/set/0.1",
+  "title": "VTC Members Role Set — payload",
+  "description": "An administrator moves a subject's community role from one role to another, with a compare-and-swap on the current role. The administrative authority the entry holds follows the move only where it is the authority the current community role implies. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "subject",
+    "fromRole",
+    "toRole"
+  ],
+  "properties": {
+    "subject": {
+      "type": "string",
+      "pattern": "^did:",
+      "maxLength": 2048,
+      "description": "The DID whose community role moves. It holds an access-control entry at the community, of any community role but `application`."
+    },
+    "fromRole": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "The subject's current community role, in the community's wire form (`member`, `moderator`, `issuer`, `admin`, `custom:<name>`). The community refuses the move with `stateMismatch` when it differs from the role the entry holds."
+    },
+    "toRole": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "The community role to move the subject to, in the same wire form. Never `application`, which marks a non-member rather than a role a member holds."
+    },
+    "reason": {
+      "type": "string",
+      "maxLength": 1024,
+      "description": "Why, for the community's audit trail and for the administrators asked to approve the move if it is referred. Never published beyond the community."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Members Role Set — response payload",
+      "description": "Success response to vtc/members/role/set/0.1: the subject's community role as it now stands, the access-control entry that holds it, and the role credential re-issued for it. Type https://trusttasks.org/spec/vtc/members/role/set/0.1#response — carried directly, or on the request's threadId when a parked move executes after its approval.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "subject",
+        "role",
+        "previousRole",
+        "changed",
+        "entry"
+      ],
+      "properties": {
+        "subject": {
+          "type": "string",
+          "pattern": "^did:",
+          "maxLength": 2048,
+          "description": "The DID whose community role was set."
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "The community role the subject now holds. Equals the request's `toRole`."
+        },
+        "previousRole": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "The community role the subject held before. Equals the request's `fromRole`."
+        },
+        "changed": {
+          "type": "boolean",
+          "description": "False when `fromRole` equalled `toRole`: the subject already held the role, nothing was written and no credential was issued."
+        },
+        "entry": {
+          "$ref": "../../../../../acl/_shared/0.2/acl-entry.schema.json#/$defs/AclEntry",
+          "description": "The access-control entry as it now stands, every authority axis explicit, so the requester can see what administrative authority the move did or did not carry."
+        },
+        "roleVac": {
+          "type": "object",
+          "description": "The role credential issued at the new role: a Verifiable Authority Credential issued by the community whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\"role:<name>\"] }`, the shape vtc/join-requests/decide returns. Present exactly when the subject has a member record and `changed` is true; a subject holding an entry with no member record has no role credential to re-issue."
+        },
+        "approval": {
+          "$ref": "../../../../_shared/0.1/admission.schema.json#/$defs/Approval",
+          "description": "How the move came to execute: `policyAllowed` at once, `approved` after a parked move was approved by other administrators, or `waived` by the community's single-administrator mode on the requester's own bound re-authentication. Absent when `changed` is false."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC §4.5.1."
+        }
+      }
+    }
+  }
+}

@@ -11,7 +11,7 @@ import type { Ext } from "../../../../../_shared/components.js";
  */
 export interface AuthStepUpApproverAttestPayload {
   /**
-   * What the statement attests. `stepUp`: a re-authentication bound to one operation (carried in auth/step-up/approve-response/0.6). `decision`: the factor backing a consent decision (carried in task-consent/decision/0.2 `evidence`). `enrol`: proof of possession of the approver key at enrolment. Signed, so a statement made for one use is refused at another.
+   * What the statement attests. `stepUp`: a re-authentication bound to one operation (carried in auth/step-up/approve-response/0.7). `decision`: the factor backing a consent decision (carried in task-consent/decision/0.2 `evidence`). `enrol`: proof of possession of the approver key at enrolment. Signed, so a statement made for one use is refused at another.
    */
   purpose: "stepUp" | "decision" | "enrol";
   /**
@@ -89,7 +89,7 @@ export const PAYLOAD_SCHEMA = {
         "decision",
         "enrol"
       ],
-      "description": "What the statement attests. `stepUp`: a re-authentication bound to one operation (carried in auth/step-up/approve-response/0.6). `decision`: the factor backing a consent decision (carried in task-consent/decision/0.2 `evidence`). `enrol`: proof of possession of the approver key at enrolment. Signed, so a statement made for one use is refused at another."
+      "description": "What the statement attests. `stepUp`: a re-authentication bound to one operation (carried in auth/step-up/approve-response/0.7). `decision`: the factor backing a consent decision (carried in task-consent/decision/0.2 `evidence`). `enrol`: proof of possession of the approver key at enrolment. Signed, so a statement made for one use is refused at another."
     },
     "subject": {
       "type": "string",

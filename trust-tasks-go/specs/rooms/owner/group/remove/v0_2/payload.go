@@ -16,7 +16,7 @@ import (
 // in force at the host, and the room's new epoch, which the removed member holds no key
 // for.
 //
-// Deprecated: superseded by rooms/owner/group/remove/0.3
+// Deprecated: superseded by rooms/owner/group/remove/0.4
 type Response struct {
 	// The room.
 	RoomID string `json:"roomId"`
@@ -84,7 +84,7 @@ type DigestMultibase = string
 // credential the room gave them, at its host at once, and then remove their leaf from the
 // room's MLS group and advance its epoch. 0.2 adds the withdrawal, made first.
 //
-// Deprecated: superseded by rooms/owner/group/remove/0.3
+// Deprecated: superseded by rooms/owner/group/remove/0.4
 type Payload struct {
 	// The room whose group loses a member. The recipient MUST hold its group and a signing
 	// key for it.
@@ -133,7 +133,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = "superseded by rooms/owner/group/remove/0.3"
+const Deprecation = "superseded by rooms/owner/group/remove/0.4"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/rooms/owner/group/remove/0.2#response"

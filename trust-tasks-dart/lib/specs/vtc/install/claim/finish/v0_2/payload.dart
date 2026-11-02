@@ -13,7 +13,7 @@ import 'package:trust_tasks/trust_tasks.dart';
 typedef Ext = Map<String, dynamic>;
 
 /// VTC Install Claim Finish — response payload
-@Deprecated('superseded by vtc/install/claim/finish/0.3')
+@Deprecated('retired; use vtc/install/claim/passkey/finish/0.1')
 class Response {
   const Response({
     required this.adminDid,
@@ -44,7 +44,7 @@ class Response {
 }
 
 /// VTC Install Claim Finish — payload
-@Deprecated('superseded by vtc/install/claim/finish/0.3')
+@Deprecated('retired; use vtc/install/claim/passkey/finish/0.1')
 class Payload {
   const Payload({
     required this.installToken,
@@ -86,7 +86,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by vtc/install/claim/finish/0.3';
+const String? deprecation = 'retired; use vtc/install/claim/passkey/finish/0.1';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri =

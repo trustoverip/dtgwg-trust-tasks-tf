@@ -8,6 +8,8 @@ import type { DidDocumentChange, DidDocumentPreview, DidVerificationRelationship
 
 /**
  * Add a newly generated key to one role of a did:webvh, without removing any — a post-quantum key beside a classical one, or a second operational key.
+ *
+ * @deprecated retired; use vta/dids/keys/add/1.0
  */
 export interface VTAWebVHDIDsKeysAddPayload {
   /**
@@ -46,6 +48,8 @@ export interface VTAWebVHDIDsKeysAddPayload {
 }
 /**
  * Success response. Type https://trusttasks.org/spec/vta/webvh/dids/keys/add/1.0#response. A refusal is a `trust-task-error` document, never this.
+ *
+ * @deprecated retired; use vta/dids/keys/add/1.0
  */
 export interface VTAWebVHDIDsKeysAddResponsePayload {
   did: string;
@@ -98,15 +102,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "retired; use vta/dids/keys/add/1.0";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated retired; use vta/dids/keys/add/1.0
+ */
 export type Payload = VTAWebVHDIDsKeysAddPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/webvh/dids/keys/add/1.0#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated retired; use vta/dids/keys/add/1.0
+ */
 export type Response = VTAWebVHDIDsKeysAddResponsePayload;
 
 /**

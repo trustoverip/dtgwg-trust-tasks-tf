@@ -116,7 +116,7 @@ unchanged, and `removeNotes` removes it.
 
 ## Status of this Document
 
-This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues). Version 1.0 remains in force; 1.1 is a backwards-compatible MINOR increment ([SPEC.md §5.2](/SPEC.md#52-compatibility-rules)) — every 1.0 request is a valid 1.1 filing.
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues). 1.2 is a MINOR increment over 1.1 that is **not** backwards-compatible on the wire: it renames the response member `created` to `wasCreated` under [SPEC.md §5.2](/SPEC.md#52-compatibility-rules)'s `draft` allowance (see *Changes from 1.1*). The request is unchanged, so every 1.1 request is a valid 1.2 request.
 
 ## Changes from 1.1
 

@@ -9,7 +9,7 @@ import type { Builtin_VtaV0_1 as Builtin, Context_VtaV0_1 as Context, DidTemplat
 /**
  * Fetch one DID template on a VTA by name. Omit `contextId` to read from the global scope (any authenticated caller); set it to read a template scoped to that context (requires access to the context). The success response is the persisted DidTemplateRecord.
  *
- * @deprecated superseded by vta/did-templates/get/3.1
+ * @deprecated superseded by vta/did-templates/get/3.2
  */
 export interface VTADIDTemplateGetPayload {
   /**
@@ -46,12 +46,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by vta/did-templates/get/3.1";
+export const DEPRECATION: string | null = "superseded by vta/did-templates/get/3.2";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by vta/did-templates/get/3.1
+ * @deprecated superseded by vta/did-templates/get/3.2
  */
 export type Payload = VTADIDTemplateGetPayload;
 
@@ -61,7 +61,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/did-templates/
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by vta/did-templates/get/3.1
+ * @deprecated superseded by vta/did-templates/get/3.2
  */
 export type Response = DidTemplateRecord;
 

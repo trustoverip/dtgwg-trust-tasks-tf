@@ -14,7 +14,7 @@ typedef Ext = Map<String, dynamic>;
 
 /// The published entry. camelCase per the framework convention — note the counts are
 /// the state AFTER the update, including the rotation the caller did not ask for.
-@Deprecated('superseded by vta/webvh/dids/update/2.1')
+@Deprecated('superseded by vta/webvh/dids/update/1.1')
 class Response {
   const Response({
     required this.did,
@@ -77,7 +77,7 @@ class Response {
 
 /// Ask a Verifiable Trust Agent to publish a new entry in a did:webvh log it holds the
 /// update key for. The agent decides whether to do so; the caller proposes.
-@Deprecated('superseded by vta/webvh/dids/update/2.1')
+@Deprecated('superseded by vta/webvh/dids/update/1.1')
 class Payload {
   const Payload({
     required this.did,
@@ -166,7 +166,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by vta/webvh/dids/update/2.1';
+const String? deprecation = 'superseded by vta/webvh/dids/update/1.1';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/vta/webvh/dids/update/1.0';

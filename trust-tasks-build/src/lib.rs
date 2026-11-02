@@ -67,6 +67,35 @@
 //! `extends` chains with the runtime, so its dispatchers route a document of a
 //! locked version to the handler of a registered version it extends — the
 //! runtime's own table only knows the registry as of its release.
+//!
+//! # The Type URI index
+//!
+//! With [`Config::index`]`(true)` the file also carries a `schema_index`
+//! module — a drop-in for `trust_tasks_rs::schema_index` over the locked
+//! versions, for an application that validates or sizes a document by its
+//! Type URI before it has a type to name:
+//!
+//! ```ignore
+//! tasks::schema_index::schema_for(uri)              // Option<&'static str>
+//! tasks::schema_index::spec_policy_for(uri)         // Option<SpecPolicy>
+//! tasks::schema_index::error_codes_for(uri)         // Option<&'static [DeclaredErrorCode]>
+//! tasks::schema_index::max_document_bytes_for(uri)  // Option<usize>
+//! tasks::schema_index::TYPE_URIS                    // &[&str]
+//! tasks::schema_index::INDEX                        // &[trust_tasks_rs::type_index::IndexEntry]
+//! ```
+//!
+//! Each answers as `trust_tasks_rs::schema_index` does for the same version:
+//! a bare Type URI for the request side, one suffixed `#response` for the
+//! response; policy and error codes for the request only; `None` for a Type
+//! URI the lock does not pin. Without it, an application that dropped the
+//! prebuilt families has no index for its own tasks, and a consumer treating
+//! "no schema" as "skip validation" fails open. `INDEX` is the same answers as
+//! data, so an application split into several generated crates merges their
+//! indexes with `trust_tasks_rs::type_index::lookup(&[a::schema_index::INDEX,
+//! b::schema_index::INDEX], uri)`. The framework's own specifications cannot
+//! be locked and are not in it; `trust_tasks_rs::schema_index` (feature
+//! `validate`) answers for them, and `extends` chains are the runtime's
+//! `extension::extends_for` once `declare_extends()` has run.
 
 #![warn(missing_docs)]
 
@@ -168,7 +197,24 @@ impl Config {
     /// The path the generated code names the runtime by, when it is not
     /// `::trust_tasks_rs` — see [`Target::with_runtime`].
     pub fn runtime_path(mut self, path: &str) -> Self {
-        self.target = Target::with_runtime(path);
+        let index = self.target.index;
+        self.target = Target::with_runtime(path).index(index);
+        self
+    }
+
+    /// Also generate a `schema_index` module: the Type URI lookups of
+    /// `trust_tasks_rs::schema_index` over exactly the locked versions, and
+    /// the same answers as an `INDEX` table of
+    /// `trust_tasks_rs::type_index::IndexEntry` — see [the crate
+    /// documentation](crate#the-type-uri-index). Off by default.
+    ///
+    /// An application that validates a document by its Type URI needs this
+    /// once it drops the prebuilt families: `trust_tasks_rs::schema_index`
+    /// only knows the families compiled into `trust-tasks-rs`, and answers
+    /// `None` for everything else — which a consumer reading `None` as "no
+    /// schema, skip validation" turns into failing open.
+    pub fn index(mut self, on: bool) -> Self {
+        self.target = self.target.index(on);
         self
     }
 
@@ -359,6 +405,72 @@ mod tests {
         assert!(source.contains("::trust_tasks_rs::__private::regress::Regex"));
         assert_eq!(generated.inputs.len(), 2, "{:?}", generated.inputs);
         fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn the_index_is_opt_in_and_names_every_locked_uri() {
+        let dir = scratch("index");
+        let acme = "https://tasks.example.com/spec/demo/thing/0.2";
+        let lock = two_authorities(&dir, "acme", acme);
+
+        let off = Config::new().lockfile(&lock).generate().unwrap().source;
+        assert!(!off.contains("schema_index"), "the index is off by default");
+        assert!(!off.contains("type_index"));
+
+        let on = Config::new()
+            .lockfile(&lock)
+            .index(true)
+            .generate()
+            .unwrap();
+        let source = &on.source;
+        syn::parse_file(source).expect("the generated file parses");
+        assert!(source.starts_with(off.as_str()), "the index only appends");
+        assert!(source.contains("pub mod schema_index {"));
+        assert!(
+            source.contains("pub static INDEX: &[::trust_tasks_rs::type_index::IndexEntry] = &[")
+        );
+        for uri in [
+            "https://trusttasks.org/spec/demo/thing/0.2".to_string(),
+            "https://trusttasks.org/spec/demo/thing/0.2#response".to_string(),
+            acme.to_string(),
+            format!("{acme}#response"),
+        ] {
+            assert!(source.contains(&format!("        {uri:?},\n")), "{uri}");
+        }
+        assert!(source.contains(
+            "::trust_tasks_rs::SpecPolicy::of::<super::acme::demo::thing::v0_2::Payload>()"
+        ));
+        assert!(source.contains("super::demo::thing::v0_2::ERROR_CODES"));
+        // The demo bundle declares a request bound and no response bound.
+        assert!(source.contains(
+            "<super::demo::thing::v0_2::Payload as ::trust_tasks_rs::Payload>::MAX_DOCUMENT_BYTES"
+        ));
+        assert!(!source.contains(
+            "<super::demo::thing::v0_2::Response as ::trust_tasks_rs::Payload>::MAX_DOCUMENT_BYTES"
+        ));
+
+        // The option survives a later runtime_path, and follows it.
+        let facade = Config::new()
+            .lockfile(&lock)
+            .index(true)
+            .runtime_path("::facade")
+            .generate()
+            .unwrap()
+            .source;
+        assert!(facade.contains("pub static INDEX: &[::facade::type_index::IndexEntry]"));
+
+        // A source named for the index's module would collide with it.
+        let dir2 = scratch("index-collision");
+        let lock2 = two_authorities(&dir2, "schema-index", acme);
+        let e = Config::new()
+            .lockfile(&lock2)
+            .index(true)
+            .generate()
+            .unwrap_err()
+            .to_string();
+        assert!(e.contains("is named `schema_index`"), "{e}");
+        fs::remove_dir_all(&dir).ok();
+        fs::remove_dir_all(&dir2).ok();
     }
 
     #[test]

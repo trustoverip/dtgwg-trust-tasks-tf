@@ -1,0 +1,120 @@
+[
+  {
+    "note": "No manifest. The manifest is the whole of the request: the community registers exactly what it was sent.",
+    "payload": {}
+  },
+  {
+    "note": "An unknown top-level member. A creation carries the manifest and nothing beside it except `ext`; an option smuggled beside the manifest would not be covered by its digest.",
+    "payload": {
+      "manifest": {
+        "electionId": "board-2026",
+        "community": "did:webvh:QmCommunity:community.example",
+        "questions": [
+          { "key": "chair", "type": "choice", "options": [{ "key": "alice" }, { "key": "bob" }], "minSelections": 1, "maxSelections": 1, "optional": false }
+        ],
+        "secrecy": "open",
+        "roll": { "rule": "members" },
+        "registrationOpensAt": "2026-11-01T00:00:00Z",
+        "votingOpensAt": "2026-11-08T00:00:00Z",
+        "votingClosesAt": "2026-11-15T00:00:00Z",
+        "revote": "replace",
+        "board": { "visibility": "public", "auditors": [] },
+        "ballotBox": "did:web:ballots.example",
+        "binding": false,
+        "allowEarlyClose": false,
+        "resultsBeforeClose": false,
+        "textReleaseThreshold": 10
+      },
+      "skipConsent": true
+    }
+  },
+  {
+    "note": "A manifest missing `binding`. Whether an election takes a second administrator's consent is read from the manifest, so it cannot be left for a consumer to default.",
+    "payload": {
+      "manifest": {
+        "electionId": "board-2026",
+        "community": "did:webvh:QmCommunity:community.example",
+        "questions": [
+          { "key": "chair", "type": "choice", "options": [{ "key": "alice" }, { "key": "bob" }], "minSelections": 1, "maxSelections": 1, "optional": false }
+        ],
+        "secrecy": "open",
+        "roll": { "rule": "members" },
+        "registrationOpensAt": "2026-11-01T00:00:00Z",
+        "votingOpensAt": "2026-11-08T00:00:00Z",
+        "votingClosesAt": "2026-11-15T00:00:00Z",
+        "revote": "replace",
+        "board": { "visibility": "public", "auditors": [] },
+        "ballotBox": "did:web:ballots.example",
+        "allowEarlyClose": false,
+        "resultsBeforeClose": false,
+        "textReleaseThreshold": 10
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A `pendingConsent` state. A parked creation is answered with trust-task-next-step, never with this response; the response exists only once the creation has executed.",
+    "payload": {
+      "electionId": "board-2026",
+      "manifestDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+      "state": "pendingConsent"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A response without its manifest digest. The digest is what every ticket and cast of the election is bound to, so the requester must be able to compare it with the manifest it sent.",
+    "payload": {
+      "electionId": "board-2026",
+      "state": "registered"
+    }
+  },
+  {
+    "note": "A manifest that names its opening `votingOpens` — the 0.1 name; from 0.2 it is `votingOpensAt`.",
+    "payload": {
+      "manifest": {
+        "electionId": "board-2026",
+        "community": "did:webvh:QmCommunity:community.example",
+        "title": "Board election 2026",
+        "questions": [
+          {
+            "key": "chair",
+            "type": "choice",
+            "text": "Who should chair the board?",
+            "options": [
+              {
+                "key": "alice",
+                "label": "Alice"
+              },
+              {
+                "key": "bob",
+                "label": "Bob"
+              }
+            ],
+            "minSelections": 1,
+            "maxSelections": 1,
+            "optional": true
+          }
+        ],
+        "secrecy": "open",
+        "roll": {
+          "rule": "members"
+        },
+        "registrationOpensAt": "2026-11-01T00:00:00Z",
+        "votingOpens": "2026-11-08T00:00:00Z",
+        "votingClosesAt": "2026-11-15T00:00:00Z",
+        "revote": "replace",
+        "board": {
+          "visibility": "public",
+          "auditors": [
+            "did:web:audit.example"
+          ]
+        },
+        "ballotBox": "did:web:ballots.example",
+        "binding": true,
+        "allowEarlyClose": false,
+        "resultsBeforeClose": false,
+        "textReleaseThreshold": 10
+      }
+    }
+  }
+]

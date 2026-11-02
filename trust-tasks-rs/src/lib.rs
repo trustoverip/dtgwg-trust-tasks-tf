@@ -25,6 +25,10 @@
 //!   §7.2 makes the *same bound* as the replay record's retention.
 //!
 //! [`consume_inbound`] takes them together as [`ConsumeChecks`].
+//! [`consume_dispatched`] is the same pipeline for a consumer that holds a
+//! `TrustTask<serde_json::Value>` and routes it with an [`AsyncDispatcher`],
+//! reading each specification's declarations off the dispatcher's
+//! registrations.
 //!
 //! [Trust Tasks]: https://trusttasks.org/
 //!
@@ -59,6 +63,7 @@ pub mod guards;
 pub mod handlers;
 pub mod replay;
 pub mod specs;
+pub mod type_index;
 
 #[cfg(feature = "validate")]
 #[cfg_attr(docsrs, doc(cfg(feature = "validate")))]
@@ -72,11 +77,14 @@ pub use async_dispatch::AsyncDispatcher;
 pub use canonical::{canonical_json, sha256_hex};
 pub use ceremony::{Ceremony, CeremonyPrev};
 pub use consume::{
-    consume_inbound, ConsumeChecks, ConsumeOutcome, NoValidator, PayloadPolicy, PayloadValidator,
-    ProofPolicy, PROOF_NOT_ACCEPTED_BY_POLICY,
+    consume_dispatched, consume_inbound, ConsumeChecks, ConsumeOutcome, NoValidator, PayloadPolicy,
+    PayloadValidator, ProofPolicy, PROOF_NOT_ACCEPTED_BY_POLICY,
 };
 pub use dispatcher::Dispatcher;
-pub use document::{trust_task_error_type_uri, ErrorResponse, JsonLdContext, TrustTask};
+pub use document::{
+    issued_at_now, trust_task_error_type_uri, ErrorResponse, JsonLdContext, TrustTask,
+    TRUST_TASK_ERROR_TYPE_URI,
+};
 pub use error::{
     DeclaredErrorCode, ErrorPayload, InResponseTo, ParseCodeError, RejectReason, StandardCode,
     TrustTaskCode, IDENTITY_MISMATCH_WIRE_MESSAGE, PROOF_INVALID_WIRE_MESSAGE, STALE_WIRE_MESSAGE,

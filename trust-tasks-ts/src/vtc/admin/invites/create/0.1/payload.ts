@@ -6,6 +6,7 @@
 import type { Ext } from "../../../../../_shared/components.js";
 
 
+/** @deprecated superseded by vtc/admin/invites/create/0.2 */
 export interface VTCAdminInvitesCreatePayload {
   /**
    * Admin DID the install URL grants a passkey for.
@@ -21,6 +22,7 @@ export interface VTCAdminInvitesCreatePayload {
   label?: string;
   ext?: Ext;
 }
+/** @deprecated superseded by vtc/admin/invites/create/0.2 */
 export interface VTCAdminInvitesCreateResponsePayload {
   /**
    * Invite identifier; the revoke target.
@@ -65,15 +67,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by vtc/admin/invites/create/0.2";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vtc/admin/invites/create/0.2
+ */
 export type Payload = VTCAdminInvitesCreatePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/admin/invites/create/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vtc/admin/invites/create/0.2
+ */
 export type Response = VTCAdminInvitesCreateResponsePayload;
 
 /**

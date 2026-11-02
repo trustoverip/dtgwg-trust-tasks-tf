@@ -284,7 +284,7 @@ here; TypeScript's is a closed union and is the one side where adding a code is 
 **breaking** change. It still requires a new `trust-task-error` spec version —
 the code enum lives in that payload schema, so a document carrying a code the
 declared version doesn't list will not validate — and both SDKs must be pointed
-at the new version (`trust_task_error_type_uri()` in `trust-tasks-rs`,
+at the new version (`TRUST_TASK_ERROR_TYPE_URI` in `trust-tasks-rs`'s `document.rs`,
 `TRUST_TASK_ERROR_TYPE_URI` in `trust-tasks-ts`). Note that `trust-task-error`
 is in the codegen's `SKIP_SLUGS`: the Rust side is hand-modelled in `error.rs`,
 so regenerating will not pick a new code up for you.
@@ -468,6 +468,45 @@ four libraries act on it:
 
 `npm run extends-candidates` lists version pairs whose schemas already qualify;
 only an author can declare one, because the promise also covers meaning.
+
+## Instants the libraries write: whole seconds
+
+Every `issuedAt` a library stamps — error responses, success responses,
+requests the HTTPS client and the capability clients fill in — is UTC in whole
+seconds, rounded down: `2026-10-28T05:14:12Z`. SPEC §13.1 item 3 calls a
+full-precision timestamp a fingerprint, and readers with a narrower RFC 3339
+profile refused Rust's nanoseconds (#970). Rust stamps through
+`trust_tasks_rs::issued_at_now()`, TypeScript through `issuedAtNow()`, Go
+through `SystemClock`, Dart through `systemClock`; never write `Utc::now()` or
+`toISOString()` into a document field. **Readers take every RFC 3339
+precision and offset**, and a received document is never re-stamped (its
+proof and its item-11 digest cover what was sent). The same vectors are
+pinned in each library: `tests/issued_at_precision.rs`,
+`test/issued-at.test.ts`, `trusttasks/issued_at_test.go`,
+`test/issued_at_test.dart` — change one, change all four.
+
+## Consumers that route on the Type URI
+
+A consumer that takes a document of any type and dispatches on `type` (#969)
+needs the type-erased half of every binding:
+
+- **Rust.** The binding `pack_trust_task` / `unpack_trust_task` functions take
+  any `Serialize` / `DeserializeOwned` payload — `TrustTask<Value>` and
+  `ErrorResponse` included — because none of them reads a `Payload` constant.
+  `ErrorPayload` is a `Payload` whose `TYPE_URI` is the emitted
+  `TRUST_TASK_ERROR_TYPE_URI`. The guarded path is `consume_dispatched` (and
+  each consumer's `receive_dispatched` / `consume_dispatched`): it takes the
+  spec policy and schema from the `AsyncDispatcher` registration the document
+  routes to, refuses `unsupportedType` / `unsupportedVersion` / a payload `P`
+  cannot hold **before** the item-11 record is written, and otherwise runs
+  `consume_inbound`'s own body (`consume_core`). Do not give it a second copy
+  of the checks. The synchronous `Dispatcher` has no such path.
+- **TypeScript, Go, Dart.** No dispatcher: their consume functions take the
+  specification's policy as a value (`spec`), and their binding unpack is
+  already untyped, so the caller unpacks, looks up the spec for `type`, and
+  calls the consumer's `consume` — or answers `unsupportedType` with the
+  runtime's `reject` and packs it, since nothing executes. That is the
+  documented difference, not a gap to close by porting the dispatcher.
 
 ## Declared error codes are generated — Rust only, so far
 

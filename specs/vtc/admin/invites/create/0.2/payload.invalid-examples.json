@@ -1,0 +1,7 @@
+[
+  { "note": "`did`, when present, is a DID.", "payload": { "did": "admin@example.com" } },
+  { "note": "`did`, when present, is not empty.", "payload": { "did": "" } },
+  { "note": "`ttlSeconds` is capped at 24 hours.", "payload": { "ttlSeconds": 604800 } },
+  { "note": "`ttlSeconds` must be positive.", "payload": { "did": "did:key:z6MkAdmin", "ttlSeconds": 0 } },
+  { "note": "Unknown top-level member is rejected.", "payload": { "__x__": true } }
+]

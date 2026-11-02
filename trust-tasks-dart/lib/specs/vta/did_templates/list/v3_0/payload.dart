@@ -216,7 +216,7 @@ class DidTemplateRecord {
 typedef Ext = Map<String, dynamic>;
 
 /// Every stored template in the selected scope, in an array.
-@Deprecated('superseded by vta/did-templates/list/3.1')
+@Deprecated('superseded by vta/did-templates/list/3.2')
 class Response {
   const Response({
     required this.templates,
@@ -248,7 +248,7 @@ class Response {
 /// templates (any authenticated caller); set it to list the templates scoped to that
 /// context (requires access to the context). The success response is the array of
 /// persisted DidTemplateRecords for the selected scope.
-@Deprecated('superseded by vta/did-templates/list/3.1')
+@Deprecated('superseded by vta/did-templates/list/3.2')
 class Payload {
   const Payload({
     this.contextId,
@@ -282,7 +282,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by vta/did-templates/list/3.1';
+const String? deprecation = 'superseded by vta/did-templates/list/3.2';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/vta/did-templates/list/3.0';

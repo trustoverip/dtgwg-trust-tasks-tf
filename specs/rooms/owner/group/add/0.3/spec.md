@@ -186,7 +186,7 @@ A conforming recipient:
 4. **MUST** advance the room at `host` with [`rooms/epoch/mint`](../../../../epoch/mint/0.1/spec.md), carrying the new epoch, the link, the commit and a presentation of the caller's `admin` authority — minted as [`rooms/keys/present`](../../../../keys/present/0.2/spec.md) would mint it — in a document addressed to `host` whose proof covers its `recipient` ([SPEC §4.8.2](/SPEC.md#482-audience-binding)). The presentation is bound to the room, not to a host; the document's `recipient` is what binds the advance to `host`.
 5. **MUST** apply the pending admission only once the host has accepted the advance, and **MUST** discard it, leaving the group unchanged, when the host **refuses** it, refusing with `hostRefused`. When the outcome is unknown — the host could not be reached, or did not answer — it **MUST** keep the pending admission for item 6, because the host may have accepted, and refuse with `hostUnreachable` (`stage: advance`): discarding it then would leave the owner an epoch behind their own room.
 6. **MUST**, when it finds a pending advance for the room at a later request — an admission, a removal or a renewal, left by any of the three tasks at any version — settle it before going on to the request's own work and before building an advance of its own (item 3):
-   1. **A pending removal whose revocation list the host has not confirmed** — one left by [`rooms/owner/group/remove`](../../remove/0.3/spec.md) at `0.2` or later — **MUST** be settled as that specification's item 8 settles it, in full: the list is delivered to the host again first; a refusal of that repeat discards only what the refusal shows no host took; and only then is the advance settled, by step 2 below. Where that item says how "another task" answers, this task answers:
+   1. **A pending removal whose revocation list the host has not confirmed** — one left by [`rooms/owner/group/remove`](../../remove/0.4/spec.md) at `0.2` or later — **MUST** be settled as that specification's item 8 settles it, in full: the list is delivered to the host again first; a refusal of that repeat discards only what the refusal shows no host took; and only then is the advance settled, by step 2 below. Where that item says how "another task" answers, this task answers:
       - with `hostUnreachable` (`stage: revocation`) when the host does not answer the redelivered list, or the later list delivered in its place. The removal stays pending.
       - with `earlierRemovalRefused`, carrying the earlier removal's `member`, the host's `code` and whether the list was kept (`listKept`), whenever settling discards the removal or its advance.
 
@@ -256,7 +256,7 @@ It is `alreadyMember`, as it was.
 the window in which a caller retries — until the recipient's next advance of the room, which
 may itself remove the member, so that a request after it is no longer a retry of anything, or
 24 hours, whichever is sooner. A caller that needs a Welcome after that has a member with a
-leaf it can no longer join with, and the remedy is the owner's: remove them ([`rooms/owner/group/remove`](../../remove/0.3/spec.md))
+leaf it can no longer join with, and the remedy is the owner's: remove them ([`rooms/owner/group/remove`](../../remove/0.4/spec.md))
 and admit them again with a fresh KeyPackage.
 
 ## Request

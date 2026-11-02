@@ -117,7 +117,7 @@ under it.
 *This paragraph is non-normative.* The party that can produce a correct mint for a sealed
 room is therefore the one holding the owner's group: the owner's key holder, through
 [`rooms/owner/group/add`](../../../owner/group/add/0.3/spec.md),
-[`rooms/owner/group/remove`](../../../owner/group/remove/0.3/spec.md) and
+[`rooms/owner/group/remove`](../../../owner/group/remove/0.4/spec.md) and
 [`rooms/owner/group/renew`](../../../owner/group/renew/0.2/spec.md), the last of which
 renews a room without changing its membership. A member's own client holds no group key,
 and [`rooms/keys/act`](../../../keys/act/0.8/spec.md) refuses to complete a mint for a room

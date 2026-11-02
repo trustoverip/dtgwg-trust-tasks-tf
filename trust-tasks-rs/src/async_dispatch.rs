@@ -9,7 +9,7 @@ use std::pin::Pin;
 use serde_json::Value;
 
 use crate::dispatcher::{
-    build_error_response, canonical_key, downcast_payload, forward_target, RequestOrigin,
+    build_error_response, canonical_key, downcast_payload, resolve_route, RequestOrigin, RouteFacts,
 };
 use crate::document::{ErrorResponse, TrustTask};
 use crate::error::{ErrorPayload, RejectReason};
@@ -106,9 +106,11 @@ pub struct AsyncDispatcher<Ctx, R> {
     /// (SPEC §5.2 / §8.3). Keyed by authority as well as slug, as
     /// [`crate::Dispatcher`]'s is.
     slugs: HashSet<String>,
-    /// The payload schema of each registered handler's `P`, under the same
-    /// key, for pruning a forward-routed document (SPEC §5.2).
-    schemas: HashMap<String, Option<&'static str>>,
+    /// What each registered handler's `P` declares, under the same key: the
+    /// payload schema (for pruning a forward-routed document, SPEC §5.2) and
+    /// the checks [`consume_dispatched`](crate::consume_dispatched) applies
+    /// before the duplicate-execution record is written.
+    facts: HashMap<String, RouteFacts>,
 }
 
 impl<Ctx, R> Default for AsyncDispatcher<Ctx, R> {
@@ -124,7 +126,7 @@ impl<Ctx, R> AsyncDispatcher<Ctx, R> {
         Self {
             handlers: HashMap::new(),
             slugs: HashSet::new(),
-            schemas: HashMap::new(),
+            facts: HashMap::new(),
         }
     }
 
@@ -178,8 +180,8 @@ impl<Ctx, R> AsyncDispatcher<Ctx, R> {
             Box::pin(async move { Ok(fut.await) })
         };
         self.slugs.insert(P::type_uri().specification_key());
-        self.schemas
-            .insert(canonical_key(&P::type_uri()), P::PAYLOAD_SCHEMA);
+        self.facts
+            .insert(canonical_key(&P::type_uri()), RouteFacts::of::<P>());
         self.handlers
             .insert(canonical_key(&P::type_uri()), Box::new(wrapped));
         self
@@ -210,26 +212,31 @@ impl<Ctx, R> AsyncDispatcher<Ctx, R> {
     /// which a declared extension shares (the build refuses one that changes
     /// the proof requirement).
     pub async fn dispatch(&self, mut doc: TrustTask<Value>, ctx: Ctx) -> Result<R, RejectReason> {
-        let key = canonical_key(&doc.type_uri);
-        if let Some(handler) = self.handlers.get(&key) {
-            return handler(doc, ctx).await;
-        }
-        // SPEC §5.2 / §8.3: a recognized slug at an unregistered
-        // `MAJOR.MINOR` is `unsupportedVersion` — unless the version declares
-        // an extension of one that is registered; an unrecognized slug is
-        // `unsupportedType`.
-        if !self.slugs.contains(&doc.type_uri.specification_key()) {
-            return Err(RejectReason::UnsupportedType { type_uri: key });
-        }
-        match forward_target(&doc.type_uri, &self.handlers) {
-            Some(target) => {
-                if let Some(schema) = self.schemas.get(&target).copied().flatten() {
-                    crate::extension::prune_payload(&mut doc.payload, schema);
-                }
-                self.handlers[&target](doc, ctx).await
+        let (target, forwarded) = self.route(&doc.type_uri)?;
+        if forwarded {
+            if let Some(schema) = self.facts[&target].schema {
+                crate::extension::prune_payload(&mut doc.payload, schema);
             }
-            None => Err(RejectReason::UnsupportedVersion { type_uri: key }),
         }
+        self.handlers[&target](doc, ctx).await
+    }
+
+    /// The registered key `type_uri` routes to, and whether it is a forward
+    /// route (SPEC §5.2) — or the `unsupportedType` / `unsupportedVersion`
+    /// refusal. [`Self::dispatch`] and
+    /// [`consume_dispatched`](crate::consume_dispatched) both route through
+    /// this, so they cannot disagree about which handler a document reaches.
+    pub(crate) fn route(
+        &self,
+        type_uri: &crate::type_uri::TypeUri,
+    ) -> Result<(String, bool), RejectReason> {
+        resolve_route(type_uri, &self.handlers, &self.slugs)
+    }
+
+    /// What the handler registered under `key` declares. `key` comes from
+    /// [`Self::route`], so it is registered.
+    pub(crate) fn facts(&self, key: &str) -> RouteFacts {
+        self.facts[key]
     }
 
     /// Route `doc` to the registered handler, returning either the
@@ -258,15 +265,7 @@ impl<Ctx, R> AsyncDispatcher<Ctx, R> {
         // §8.1 needs `id`, `threadId`, `issuer`, `recipient` and `type`, and
         // §4.9.2 needs `parentThreadId`, to build the error response. The
         // handler consumes `doc`, so capture the small bits up front.
-        let origin = RequestOrigin {
-            id: doc.id.clone(),
-            thread_id: doc.thread_id.clone(),
-            parent_thread_id: doc.parent_thread_id.clone(),
-            ceremony: doc.ceremony.clone(),
-            type_uri: doc.type_uri.to_string(),
-            issuer: doc.issuer.clone(),
-            recipient: doc.recipient.clone(),
-        };
+        let origin = RequestOrigin::of(&doc);
 
         match self.dispatch(doc, ctx).await {
             Ok(value) => Ok(value),

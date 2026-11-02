@@ -124,7 +124,7 @@ A conforming **recipient** (the key holder):
 
 A profile written under epoch `E` is at `profile_key(E)`, sealed under `E`. A member who joins at a later epoch finds it only by walking back, and on a `fromJoin` room nobody can walk back below the epoch they joined at. So the profile is re-written at every advance, by the party that makes the advance — on a sealed room, the owner's key holder, which is the room's sole committer.
 
-A key holder that implements this task, and advances a sealed room's epoch for its principal by any task at any version — [`rooms/owner/group/add`](../../../../owner/group/add/0.3/spec.md), [`group/remove`](../../../../owner/group/remove/0.3/spec.md), [`group/renew`](../../../../owner/group/renew/0.2/spec.md) or another:
+A key holder that implements this task, and advances a sealed room's epoch for its principal by any task at any version — [`rooms/owner/group/add`](../../../../owner/group/add/0.3/spec.md), [`group/remove`](../../../../owner/group/remove/0.4/spec.md), [`group/renew`](../../../../owner/group/renew/0.2/spec.md) or another:
 
 1. **SHOULD**, before the advance, resolve the room's profile as [`rooms/keys/profile/read`](../../read/0.1/spec.md) does. Before, because after it a key holder of a `fromJoin` room can no longer open what was sealed under the epoch it left.
 2. When that found a profile and its principal holds the authority item 2 above requires, **SHOULD**, once the host has accepted the advance, write the same `RoomProfile` under the new epoch as its principal, as this task writes one. The re-written statement is its principal's, signed now; the earlier author's statement stays where it was, under the earlier epoch.

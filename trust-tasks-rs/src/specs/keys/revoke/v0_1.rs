@@ -540,7 +540,7 @@ pub mod error_codes {
     };
     /// `keys/revoke:boundToIdentifier`
     ///
-    /// The key is published in a key role of a DID the custodian maintains. Revoking the custodian record alone would leave the DID publishing a key nobody will announce as withdrawn; the key is revoked for compromise, or retired, through that DID's key-role tasks instead (`vta/webvh/dids/keys/revoke`, `vta/webvh/dids/keys/retire`).
+    /// The key is published in a key role of a DID the custodian maintains. Revoking the custodian record alone would leave the DID publishing a key nobody will announce as withdrawn; the key is revoked for compromise, or retired, through that DID's key-role tasks instead (`vta/dids/keys/revoke`, `vta/dids/keys/retire`).
     ///
     /// Declared `retryable: false`.
     pub const BOUND_TO_IDENTIFIER: crate::DeclaredErrorCode = crate::DeclaredErrorCode {

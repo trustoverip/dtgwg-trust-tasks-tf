@@ -8,6 +8,8 @@ import type { DidDocumentChange, DidDocumentPreview, DidVerificationRelationship
 
 /**
  * Ask a Verifiable Trust Agent to publish a new entry in a did:webvh log it holds the update key for, changing anything but the DID's keys. Keys change only through the key-role tasks (vta/_shared/0.3/CONVENTIONS.md).
+ *
+ * @deprecated retired; use vta/dids/update/1.0
  */
 export interface WebVHDIDUpdatePayload {
   /**
@@ -56,6 +58,8 @@ export interface WebVHDIDUpdatePayload {
 }
 /**
  * The outcome. `preview` and `pendingApproval` carry the plan; `applied` carries the published entry.
+ *
+ * @deprecated retired; use vta/dids/update/1.0
  */
 export interface WebVHDIDUpdateResponsePayload {
   did: string;
@@ -106,15 +110,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "retired; use vta/dids/update/1.0";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated retired; use vta/dids/update/1.0
+ */
 export type Payload = WebVHDIDUpdatePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/webvh/dids/update/2.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated retired; use vta/dids/update/1.0
+ */
 export type Response = WebVHDIDUpdateResponsePayload;
 
 /**

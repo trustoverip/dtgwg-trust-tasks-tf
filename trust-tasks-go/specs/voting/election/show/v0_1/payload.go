@@ -13,7 +13,7 @@ import (
 
 // Response Voting — Election Show — response payload
 //
-// Deprecated: superseded by voting/election/show/0.2
+// Deprecated: superseded by voting/election/show/0.4
 type Response struct {
 	Election ElectionSummary `json:"election"`
 
@@ -210,7 +210,7 @@ const (
 // Payload Reads one election at its ballot box: its state, manifest digest, admitted
 // count and current head, and the manifest where the caller may read the board.
 //
-// Deprecated: superseded by voting/election/show/0.2
+// Deprecated: superseded by voting/election/show/0.4
 type Payload struct {
 	// The community's DID.
 	Community  string     `json:"community"`
@@ -233,7 +233,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = "superseded by voting/election/show/0.2"
+const Deprecation = "superseded by voting/election/show/0.4"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/voting/election/show/0.1#response"

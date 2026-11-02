@@ -47,6 +47,8 @@ related:
 
 ## Abstract
 
+> **Live for identities created before key roles.** This version is how a pre-role did:webvh identity — one key in both `authentication` and `assertionMethod`, also holding the log's update authority — is managed until it is replaced. A key-role identity is managed with [`vta/dids/keys/rotate/1.0`](../../../../dids/keys/rotate/1.0/spec.md) and the rest of the method-neutral `vta/dids/*` family, and a VTA **MUST** refuse this version for a key-role identity with the framework's `unsupportedVersion`, because it cannot change one key role without the others (`vta/dids/_shared/0.1/CONVENTIONS.md` §3.1).
+
 **VTA WebVH DIDs — Rotate Keys** replaces the keys that speak for a `did:webvh`
 by appending a log entry that moves to the successor committed by the previous
 entry.

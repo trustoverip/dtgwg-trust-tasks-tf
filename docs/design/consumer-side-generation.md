@@ -272,6 +272,26 @@ with `EXTENDS` (every locked version's `extends`) and `declare_extends()`,
 which an application calls once at start-up. Additive: no existing signature
 changed.
 
+**Type URI index (opt-in).** `trust_tasks_rs::schema_index` — `schema_for`,
+`spec_policy_for`, `error_codes_for`, `max_document_bytes_for` — is a match
+over the prebuilt modules, gated per family, so an application that drops a
+family for generated tasks loses those tasks' entries, and a consumer reading
+`None` as "unknown, skip validation" fails open. `Config::index(true)` adds a
+`schema_index` module to the generated file with the same four functions over
+exactly the locked versions, plus `TYPE_URIS` and an `INDEX` table of
+`trust_tasks_rs::type_index::IndexEntry` (one per request and `#response`
+URI); the functions are thin wrappers over the table. Because the entry type
+lives in the runtime, an application split into several generated crates
+combines their tables with `type_index::lookup(&[a::schema_index::INDEX,
+b::schema_index::INDEX], uri)`. Off by default, so the generated file — and
+`trust-tasks-codegen`, which does not use `generate_locked` — is unchanged.
+`examples/consumer-app`'s `tests/index_equivalence.rs` compares every answer,
+for each locked URI in its bare, `#response` and `#request` forms and for URIs
+neither index knows, with `trust_tasks_rs::schema_index` built with the same
+families; a second lock under `index-equivalence/` covers request and response
+size bounds, a response-only bound, a task with no response and superseded
+versions.
+
 **Example.** `examples/consumer-app` pins `acl/grant/0.2`, `keys/list/0.2` and
 `vault/get/0.3`, builds with `trust-tasks-rs` `default-features = false`, and
 runs a round trip through a `Dispatcher` (a response, a declared error code, a

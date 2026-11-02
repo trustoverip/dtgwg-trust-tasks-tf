@@ -3,7 +3,8 @@ slug: vtc/install/claim/start
 version: "0.2"
 title: VTC Install Claim — Start
 summary: Begin first-admin enrolment against a fresh community — exchange the install token for a WebAuthn registration challenge.
-status: draft
+status: retired
+supersededBy: vtc/install/claim/passkey/start/0.1
 targetFrameworkVersion: "0.5.0"
 category: governance
 keywords: [vtc, install, bootstrap, passkey]

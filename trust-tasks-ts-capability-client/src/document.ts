@@ -36,7 +36,7 @@ export function buildDocument(
     type: typeUri,
     issuer: issuerDid,
     recipient: recipientDid,
-    issuedAt: new Date().toISOString(),
+    issuedAt: wholeSecondsNow(),
     payload,
   };
 }
@@ -59,7 +59,7 @@ export function buildDocument(
  */
 export function newAttempt(previous: CapabilityDocument): CapabilityDocument {
   const { proof: _proof, ...rest } = previous;
-  return { ...rest, id: freshId(), issuedAt: new Date().toISOString() };
+  return { ...rest, id: freshId(), issuedAt: wholeSecondsNow() };
 }
 
 /** Build a `governance/capability/list` request (status `all`). */
@@ -184,4 +184,14 @@ export function parseEnvelopeDocumentFor(
   const parsed = parseEnvelopeDocument(body);
   if (parsed === undefined) return undefined;
   return repliesTo(parsed[1], expectedThreadId) ? parsed[1] : undefined;
+}
+
+/**
+ * Now, in whole seconds (`2026-10-28T05:14:12Z`) — the form the core's
+ * `issuedAtNow` writes. SPEC §13.1 item 3: a millisecond timestamp is a
+ * fingerprint. Spelled out here rather than imported so this package keeps
+ * working with every core its peer range admits.
+ */
+function wholeSecondsNow(): string {
+  return new Date(Math.floor(Date.now() / 1000) * 1000).toISOString().replace(".000Z", "Z");
 }

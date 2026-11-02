@@ -57,7 +57,7 @@ related:
 
 **VTC Elections — List** pages through a community's elections — its polls, surveys and elections — as the caller may see them. A member sees the elections whose roll admits them, with whether they already hold a ticket for each; an administrator holding `vtc.elections.manage` sees every election, including one still being registered with its ballot box. The family's shared rules are in [`CONVENTIONS.md`](../../../../voting/_shared/0.1/CONVENTIONS.md).
 
-This is the read-many half of a split pair: [`vtc/elections/show`](../../show/0.2/spec.md) reads one election whole, and answers `electionUnknown` for one the caller may not see, where a list simply leaves it out.
+This is the read-many half of a split pair: [`vtc/elections/show`](../../show/0.3/spec.md) reads one election whole, and answers `electionUnknown` for one the caller may not see, where a list simply leaves it out.
 
 ## Status of this Document
 
@@ -165,7 +165,7 @@ The community already knows who took which ticket — it issued them — so `tic
 
 ### Retention
 
-Transient. The community keeps nothing of the request beyond its ordinary request log; the records it reads are kept under [`vtc/elections/create`](../../create/0.3/spec.md) and [`vtc/elections/tickets/issue`](../../tickets/issue/0.1/spec.md).
+Transient. The community keeps nothing of the request beyond its ordinary request log; the records it reads are kept under [`vtc/elections/create`](../../create/0.4/spec.md) and [`vtc/elections/tickets/issue`](../../tickets/issue/0.1/spec.md).
 
 ### Consent/purpose
 

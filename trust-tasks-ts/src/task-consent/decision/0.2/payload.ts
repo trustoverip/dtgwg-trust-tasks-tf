@@ -38,7 +38,7 @@ export interface TaskConsentDecisionPayload {
 export interface WebAuthn {
   kind: "webauthn";
   /**
-   * The unmodified AuthenticatorAssertionResponse from the platform WebAuthn API, the same shape auth/step-up/approve-response/0.6 carries. The WebAuthn challenge the approver's client passed to the authenticator MUST be the UTF-8 bytes of this decision's `challenge` value, so `clientDataJSON.challenge` is their base64url (no padding) encoding; the executor, as relying party, verifies it per WebAuthn Level 2 §7.2 against a credential enrolled to the approver whose DID made the document's proof. The commitment to the payload is the executor's binding: it issued that challenge for exactly one pending request, whose `payloadDigest` is salted with it.
+   * The unmodified AuthenticatorAssertionResponse from the platform WebAuthn API, the same shape auth/step-up/approve-response/0.7 carries. The WebAuthn challenge the approver's client passed to the authenticator MUST be the UTF-8 bytes of this decision's `challenge` value, so `clientDataJSON.challenge` is their base64url (no padding) encoding; the executor, as relying party, verifies it per WebAuthn Level 2 §7.2 against a credential enrolled to the approver whose DID made the document's proof. The commitment to the payload is the executor's binding: it issued that challenge for exactly one pending request, whose `payloadDigest` is salted with it.
    */
   assertion: AuthenticatorAssertionResponseLogin;
 }
@@ -179,7 +179,7 @@ export const PAYLOAD_SCHEMA = {
             },
             "assertion": {
               "$ref": "#/$defs/AssertionResponse",
-              "description": "The unmodified AuthenticatorAssertionResponse from the platform WebAuthn API, the same shape auth/step-up/approve-response/0.6 carries. The WebAuthn challenge the approver's client passed to the authenticator MUST be the UTF-8 bytes of this decision's `challenge` value, so `clientDataJSON.challenge` is their base64url (no padding) encoding; the executor, as relying party, verifies it per WebAuthn Level 2 §7.2 against a credential enrolled to the approver whose DID made the document's proof. The commitment to the payload is the executor's binding: it issued that challenge for exactly one pending request, whose `payloadDigest` is salted with it."
+              "description": "The unmodified AuthenticatorAssertionResponse from the platform WebAuthn API, the same shape auth/step-up/approve-response/0.7 carries. The WebAuthn challenge the approver's client passed to the authenticator MUST be the UTF-8 bytes of this decision's `challenge` value, so `clientDataJSON.challenge` is their base64url (no padding) encoding; the executor, as relying party, verifies it per WebAuthn Level 2 §7.2 against a credential enrolled to the approver whose DID made the document's proof. The commitment to the payload is the executor's binding: it issued that challenge for exactly one pending request, whose `payloadDigest` is salted with it."
             }
           }
         },
@@ -363,7 +363,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             },
             "assertion": {
               "$ref": "#/$defs/AssertionResponse",
-              "description": "The unmodified AuthenticatorAssertionResponse from the platform WebAuthn API, the same shape auth/step-up/approve-response/0.6 carries. The WebAuthn challenge the approver's client passed to the authenticator MUST be the UTF-8 bytes of this decision's `challenge` value, so `clientDataJSON.challenge` is their base64url (no padding) encoding; the executor, as relying party, verifies it per WebAuthn Level 2 §7.2 against a credential enrolled to the approver whose DID made the document's proof. The commitment to the payload is the executor's binding: it issued that challenge for exactly one pending request, whose `payloadDigest` is salted with it."
+              "description": "The unmodified AuthenticatorAssertionResponse from the platform WebAuthn API, the same shape auth/step-up/approve-response/0.7 carries. The WebAuthn challenge the approver's client passed to the authenticator MUST be the UTF-8 bytes of this decision's `challenge` value, so `clientDataJSON.challenge` is their base64url (no padding) encoding; the executor, as relying party, verifies it per WebAuthn Level 2 §7.2 against a credential enrolled to the approver whose DID made the document's proof. The commitment to the payload is the executor's binding: it issued that challenge for exactly one pending request, whose `payloadDigest` is salted with it."
             }
           }
         },

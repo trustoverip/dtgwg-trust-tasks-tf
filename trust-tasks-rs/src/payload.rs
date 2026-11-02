@@ -483,6 +483,10 @@ mod tests {
 /// holds a `TrustTask<serde_json::Value>`, so it has no `P` to read the
 /// constants from. [`schema_index::spec_policy_for`](crate::schema_index::spec_policy_for)
 /// hands it one keyed by URI.
+/// [`consume_dispatched`](crate::consume_dispatched) runs the whole §7.2
+/// pipeline for that consumer, taking the policy from the
+/// [`AsyncDispatcher`](crate::AsyncDispatcher) registration a document routes
+/// to.
 ///
 /// Both paths run [`SpecPolicy::enforce`], so they cannot diverge on the check
 /// set as new flag-driven rules are added — which is the whole reason this is a

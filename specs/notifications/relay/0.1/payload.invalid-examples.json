@@ -1,0 +1,22 @@
+[
+  {
+    "note": "Unknown top-level member — a relayer adding its own commentary — is refused: a relayer that wants to say something sends a notification of its own (VTI-NTF-045).",
+    "payload": {
+      "forwarded": {
+        "id": "urn:uuid:2f8c1a40-7d1e-4b8e-9a51-0c6f3e2d7a11",
+        "type": "https://trusttasks.org/spec/notifications/notify/0.1",
+        "issuer": "did:web:community.example",
+        "recipient": "did:web:partner.example",
+        "payload": {},
+        "proof": {}
+      },
+      "note": "Please vote for the slate."
+    }
+  },
+  {
+    "note": "An empty `forwarded` carries no document to verify; a relay always carries the document the relayer received.",
+    "payload": {
+      "forwarded": {}
+    }
+  }
+]

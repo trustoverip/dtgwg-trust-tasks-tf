@@ -1,0 +1,79 @@
+[
+  {
+    "note": "A notification carrying the thing's content — an election's title beside its reference — is refused: `subject` admits only heldBy, id and openWith (VTI-NTF-003).",
+    "payload": {
+      "notification": {
+        "notificationId": "n-1",
+        "revision": 1,
+        "kind": "election",
+        "subject": {
+          "heldBy": "did:web:community.example",
+          "id": "board-2027",
+          "openWith": "https://trusttasks.org/spec/vtc/elections/show/0.6",
+          "title": "Elect the 2027 board"
+        },
+        "audience": "did:web:partner.example",
+        "status": "available",
+        "relayable": true
+      }
+    }
+  },
+  {
+    "note": "An unregistered kind must be namespaced under a domain (`org.example:meetingInvite`); a bare hyphenated name is neither a registered name nor a namespaced one.",
+    "payload": {
+      "notification": {
+        "notificationId": "n-2",
+        "revision": 1,
+        "kind": "meeting-invite",
+        "subject": {
+          "heldBy": "did:web:community.example",
+          "id": "m-7",
+          "openWith": "https://example.org/spec/meetings/show/0.1"
+        },
+        "audience": "did:web:community.example",
+        "status": "available",
+        "relayable": false
+      }
+    }
+  },
+  {
+    "note": "`relayable` has no default: an originator says whether a notification may be relayed, and its absence is refused rather than read either way.",
+    "payload": {
+      "notification": {
+        "notificationId": "n-3",
+        "revision": 1,
+        "kind": "election",
+        "subject": {
+          "heldBy": "did:web:community.example",
+          "id": "board-2027",
+          "openWith": "https://trusttasks.org/spec/vtc/elections/show/0.6"
+        },
+        "audience": "did:web:partner.example",
+        "status": "available"
+      }
+    }
+  },
+  {
+    "note": "Revision 0 is refused: the first revision is 1, so that a recipient's comparison of revisions has a floor.",
+    "payload": {
+      "notification": {
+        "notificationId": "n-4",
+        "revision": 0,
+        "kind": "election",
+        "subject": {
+          "heldBy": "did:web:community.example",
+          "id": "board-2027",
+          "openWith": "https://trusttasks.org/spec/vtc/elections/show/0.6"
+        },
+        "audience": "did:web:partner.example",
+        "status": "available",
+        "relayable": true
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A receipt that says what the recipient did with the notification is refused: the reply is the same whether it was held, declined or relayed (VTI-NTF-023).",
+    "payload": { "notificationId": "n-1", "revision": 1, "disposition": "relayed" }
+  }
+]

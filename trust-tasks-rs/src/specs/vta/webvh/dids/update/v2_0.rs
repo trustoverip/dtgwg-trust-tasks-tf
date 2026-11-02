@@ -4,7 +4,7 @@
 #![allow(deprecated)]
 /// Why this specification version is deprecated (SPEC "Superseded and
 /// Withdrawn Versions"), or `None` while it is current.
-pub const DEPRECATION: Option<&str> = Some("superseded by vta/webvh/dids/update/2.1");
+pub const DEPRECATION: Option<&str> = Some("retired; use vta/dids/update/1.0");
 #[allow(unused_imports)]
 use serde::{Deserialize, Serialize};
 /// Error types.
@@ -704,7 +704,7 @@ impl ::std::convert::TryFrom<::std::string::String> for KeyType {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by vta/webvh/dids/update/2.1")]
+#[deprecated(note = "retired; use vta/dids/update/1.0")]
 pub struct Payload {
     ///The did:webvh being updated. The agent MUST verify it speaks for this subject.
     pub did: PayloadDid,
@@ -1000,7 +1000,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPreviewId {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by vta/webvh/dids/update/2.1")]
+#[deprecated(note = "retired; use vta/dids/update/1.0")]
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub approvals: ::std::option::Option<KeyRoleApprovalState>,

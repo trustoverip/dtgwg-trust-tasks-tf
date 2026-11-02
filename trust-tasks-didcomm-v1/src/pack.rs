@@ -49,7 +49,7 @@ use affinidi_messaging_didcomm_v1::protocols::basic_message;
 use affinidi_messaging_didcomm_v1::{MessageV1, UnpackResult};
 use serde::{de::DeserializeOwned, Serialize};
 use serde_json::{json, Value};
-use trust_tasks_rs::{Payload, TrustTask};
+use trust_tasks_rs::TrustTask;
 
 use crate::error::DidcommV1Error;
 use crate::handler::DidcommV1Handler;
@@ -97,9 +97,13 @@ fn summary(type_uri: &str) -> String {
 /// never the reverse — see [`crate::THREAD_MAPPING`] — and only where the
 /// value satisfies RFC 0008's shape: a non-representable correlator is
 /// omitted, never rewritten (the omit rule, binding §4).
+///
+/// `doc` may be any serializable document — a typed one, a
+/// `TrustTask<serde_json::Value>`, or the [`ErrorResponse`](trust_tasks_rs::ErrorResponse)
+/// a dispatcher returns.
 pub fn build_message<P>(doc: &TrustTask<P>) -> Result<MessageV1, DidcommV1Error>
 where
-    P: Payload + Serialize,
+    P: Serialize,
 {
     let document = serde_json::to_value(doc).map_err(DidcommV1Error::SerialiseDocument)?;
     let type_uri = doc.type_uri.to_string();
@@ -143,11 +147,16 @@ where
 /// `legacy-basic-message` feature is enabled — it is **on by default**, because
 /// §2.3 makes accepting it a MUST for a conforming `0.2` consumer — and its use
 /// is logged as superseded and reported on the handler.
+///
+/// `P` is any deserializable payload: a generated type, or
+/// `serde_json::Value` for a consumer that routes on `type` itself — see
+/// [`DidcommV1Consumer::receive_dispatched`](crate::DidcommV1Consumer::receive_dispatched), which also keeps
+/// the §7.2 item 11 record.
 pub fn unpack_trust_task<P>(
     unpacked: UnpackResult,
 ) -> Result<(TrustTask<P>, DidcommV1Handler), DidcommV1Error>
 where
-    P: Payload + DeserializeOwned,
+    P: DeserializeOwned,
 {
     unpack_received(unpacked).map(|(doc, _, handler)| (doc, handler))
 }
@@ -158,7 +167,7 @@ pub(crate) fn unpack_received<P>(
     unpacked: UnpackResult,
 ) -> Result<(TrustTask<P>, serde_json::Value, DidcommV1Handler), DidcommV1Error>
 where
-    P: Payload + DeserializeOwned,
+    P: DeserializeOwned,
 {
     // A v1 envelope authenticates a verkey, not a DID, so there are two ways to
     // arrive without an attributable sender and they are worth telling apart.

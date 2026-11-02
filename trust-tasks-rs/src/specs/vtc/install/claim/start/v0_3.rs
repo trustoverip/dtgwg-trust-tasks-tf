@@ -770,7 +770,7 @@ pub mod error_codes {
     };
     /// `vtc/install/claim/start:tokenNamesNoDid`
     ///
-    /// The install token was issued for a passkey claim and names no administrator DID. Claim it with vtc/install/claim/start 0.2, or have the operator issue a token naming the founder's DID.
+    /// The install token was issued for a passkey claim and names no administrator DID. Claim it with vtc/install/claim/passkey/start, or have the operator issue a token naming the founder's DID.
     ///
     /// Declared `retryable: false`.
     pub const TOKEN_NAMES_NO_DID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {

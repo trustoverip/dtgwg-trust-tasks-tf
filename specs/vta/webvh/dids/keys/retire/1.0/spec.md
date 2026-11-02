@@ -3,7 +3,8 @@ slug: vta/webvh/dids/keys/retire
 version: "1.0"
 title: "VTA WebVH DIDs — Keys Retire"
 summary: "An administrator retires one key of a did:webvh by planned retirement — completing a rotation, aborting one, or removing an added key. What the key signed while published stays valid."
-status: draft
+status: retired
+supersededBy: vta/dids/keys/retire/1.0
 targetFrameworkVersion: "0.5.0"
 category: key-management
 keywords:
@@ -74,6 +75,10 @@ related:
   - vta/webvh/dids/keys/revoke
   - vta/webvh/dids/keys/list
 ---
+
+## Retired
+
+This version is **retired** in favour of [`vta/dids/keys/retire/1.0`](../../../../../dids/keys/retire/1.0/spec.md), the method-neutral key-role family (conventions: `vta/dids/_shared/0.1/CONVENTIONS.md`). Key roles are not specific to did:webvh: the same roles, custody, approval and compromise rules apply to every DID method that supports key rotation, and what differs by method is stated in that family's method profiles. The successor also adds what this version lacked — a creation path (`vta/dids/create`), a recovery key held outside the VTA, and recovery after the loss of the VTA. Nothing deployed sent this version. A pre-role did:webvh identity is still managed with `vta/webvh/dids/update/1.0` and `vta/webvh/dids/rotate-keys/1.0`, which stay live.
 
 ## Abstract
 

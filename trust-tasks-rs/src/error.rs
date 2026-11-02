@@ -192,6 +192,31 @@ impl ErrorPayload {
     }
 }
 
+/// `trust-task-error` is a *Trust Task specification* like any other (SPEC
+/// §8.1), so its payload is a [`Payload`](crate::Payload): an error response
+/// can be built with [`TrustTask::for_payload`](crate::TrustTask::for_payload),
+/// sealed by a binding's `pack_trust_task`, consumed with
+/// [`consume_inbound`](crate::consume_inbound) and routed by a
+/// [`Dispatcher`](crate::Dispatcher).
+///
+/// [`TYPE_URI`](crate::Payload::TYPE_URI) is the version this library
+/// **emits** ([`crate::trust_task_error_type_uri`]), because a `Payload`'s Type
+/// URI is the one its documents are stamped with. Deserializing is more
+/// lenient than that: the `0.1` snake_case codes still parse. A dispatcher
+/// routes `0.6`, and any later version whose declared extension chain reaches
+/// it (SPEC §5.2); an earlier version's document is `unsupportedVersion` there,
+/// so a producer reading replies from older peers reads them untyped.
+///
+/// The constants are the `0.6` front matter's, hand-copied because the
+/// codegen skips this slug: the original producer (`recipient`) is a
+/// **REQUIRED** party, and a proof is `RECOMMENDED`, not required.
+/// [`PAYLOAD_SCHEMA`](crate::Payload::PAYLOAD_SCHEMA) stays `None`: the type is
+/// the constraint, as it was before this impl existed.
+impl crate::Payload for ErrorPayload {
+    const TYPE_URI: &'static str = crate::document::TRUST_TASK_ERROR_TYPE_URI;
+    const IS_RECIPIENT_REQUIRED: bool = true;
+}
+
 impl From<StandardCode> for ErrorPayload {
     fn from(code: StandardCode) -> Self {
         Self::new(code)

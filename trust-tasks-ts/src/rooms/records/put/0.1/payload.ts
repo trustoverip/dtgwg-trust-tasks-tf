@@ -6,7 +6,7 @@
 import type { AuthorityPresentation, Ext, SealedRecord } from "../../../../_shared/components.js";
 
 
-/** @deprecated superseded by rooms/records/put/0.3 */
+/** @deprecated superseded by rooms/records/put/0.4 */
 export interface RoomsRecordsPutPayload {
   /**
    * The room's identifier. A host verifies the presentation against credentials issued by this identifier, never against a member list of its own — which is what lets a room move hosts without reissuing a credential.
@@ -48,7 +48,7 @@ export interface RoomsRecordsPutPayload {
 /**
  * Success response to rooms/records/put. Type https://trusttasks.org/spec/rooms/records/put/0.1#response.
  *
- * @deprecated superseded by rooms/records/put/0.3
+ * @deprecated superseded by rooms/records/put/0.4
  */
 export interface RoomsRecordsPutResponsePayload {
   /**
@@ -86,12 +86,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by rooms/records/put/0.3";
+export const DEPRECATION: string | null = "superseded by rooms/records/put/0.4";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by rooms/records/put/0.3
+ * @deprecated superseded by rooms/records/put/0.4
  */
 export type Payload = RoomsRecordsPutPayload;
 
@@ -101,7 +101,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/rooms/records/put/
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by rooms/records/put/0.3
+ * @deprecated superseded by rooms/records/put/0.4
  */
 export type Response = RoomsRecordsPutResponsePayload;
 

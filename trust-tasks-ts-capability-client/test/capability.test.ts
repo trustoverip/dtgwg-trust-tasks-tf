@@ -207,3 +207,12 @@ test("unused import guard", () => {
   const d = buildDocument("did:a", "did:b", "https://trusttasks.org/spec/git-trust/grant/0.1", { x: 1 });
   assert.equal(d.payload.x, 1);
 });
+
+// #970 / SPEC §13.1 item 3: a millisecond `issuedAt` is a fingerprint. Built and
+// re-attempted documents are stamped in whole seconds, as the core stamps them.
+test("issuedAt is stamped in whole seconds", () => {
+  const wholeSeconds = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/;
+  const built = buildListDocument("did:a", "did:v");
+  assert.match(built.issuedAt as string, wholeSeconds);
+  assert.match(newAttempt(built).issuedAt as string, wholeSeconds);
+});

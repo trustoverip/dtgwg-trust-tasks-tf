@@ -7,4 +7,17 @@
  * `extendsChain` follows them transitively.
  */
 export const EXTENDS_BY_TYPE_URI: Readonly<Record<string, string>> = Object.freeze({
+  "https://trusttasks.org/spec/rooms/keys/act/0.10": "0.9",
+  "https://trusttasks.org/spec/rooms/keys/act/0.9": "0.8",
+  "https://trusttasks.org/spec/rooms/records/put/0.4": "0.3",
+  "https://trusttasks.org/spec/vta/did-templates/create/3.2": "3.1",
+  "https://trusttasks.org/spec/vta/did-templates/get/3.2": "3.1",
+  "https://trusttasks.org/spec/vta/did-templates/list/3.2": "3.1",
+  "https://trusttasks.org/spec/vta/did-templates/update/3.2": "3.1",
+  "https://trusttasks.org/spec/vta/webvh/dids/update/1.1": "1.0",
+  "https://trusttasks.org/spec/vtc/elections/list/0.4": "0.3",
+  "https://trusttasks.org/spec/vtc/elections/list/0.5": "0.4",
+  "https://trusttasks.org/spec/vtc/elections/show/0.5": "0.4",
+  "https://trusttasks.org/spec/vtc/elections/show/0.6": "0.5",
+  "https://trusttasks.org/spec/vtc/elections/tickets/issue/0.2": "0.1",
 });

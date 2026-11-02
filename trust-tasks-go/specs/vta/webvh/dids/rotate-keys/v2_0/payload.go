@@ -14,6 +14,8 @@ import (
 // Response Success response. Type
 // https://trusttasks.org/spec/vta/webvh/dids/rotate-keys/2.0#response. A refusal is a
 // `trust-task-error` document, never this.
+//
+// Deprecated: retired; use vta/dids/keys/rotate/1.0
 type Response struct {
 	DID     string               `json:"did"`
 	Outcome KeyRoleChangeOutcome `json:"outcome"`
@@ -446,6 +448,8 @@ const (
 // than every cached copy of the document can have seen it, and retire the predecessor at
 // the end of an overlap. For the update role, move the log's update key to its committed
 // successor.
+//
+// Deprecated: retired; use vta/dids/keys/rotate/1.0
 type Payload struct {
 	// The DID whose keys change.
 	DID string `json:"did"`
@@ -523,7 +527,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "retired; use vta/dids/keys/rotate/1.0"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/webvh/dids/rotate-keys/2.0#response"

@@ -1,5 +1,7 @@
 # DID key roles — conventions for the vta/webvh/dids key-role tasks
 
+> **Retired.** These conventions are superseded by the method-neutral key-role conventions, [`vta/dids/_shared/0.1/CONVENTIONS.md`](../../dids/_shared/0.1/CONVENTIONS.md), and the tasks below are retired in favour of the `vta/dids/*` family. Key roles are not specific to did:webvh; what differs by DID method is in that family's method profiles. This document stays published so that the retired versions remain readable.
+
 This document holds the invariants shared by every task that reads or changes the
 **key roles** of a `did:webvh` a VTA holds keys for — its own, and those of the VTCs and
 VTNs provisioned on it:

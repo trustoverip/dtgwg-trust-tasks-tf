@@ -1,0 +1,33 @@
+# Written by `trust-tasks`. Do not edit by hand.
+version = 1
+registry = "https://trusttasks.org"
+
+[[task]]
+slug = "acl/list"
+version = "0.1"
+type_uri = "https://trusttasks.org/spec/acl/list/0.1"
+digest = "sha256:f93774a9d236d372226fb5b710e8fc31f50fb7089f2868423e7d0e9d93c6e39f"
+
+[[task]]
+slug = "keys/sign-document"
+version = "0.1"
+type_uri = "https://trusttasks.org/spec/keys/sign-document/0.1"
+digest = "sha256:7f79b8d6e3ff0df24251d8e8d335c926761aa0819b71cd55fcf93ac9da9267f7"
+
+[[task]]
+slug = "rooms/blobs/chunk"
+version = "0.1"
+type_uri = "https://trusttasks.org/spec/rooms/blobs/chunk/0.1"
+digest = "sha256:88a24489bb30ff91e16e714dc6d1bec93153ffc7a35b7a4e06a8c8de9c12ad47"
+
+[[task]]
+slug = "sync/event"
+version = "0.1"
+type_uri = "https://trusttasks.org/spec/sync/event/0.1"
+digest = "sha256:014b1c8e8a555d2f6cc0a549f83eee5a883a1e2ad052a7c10317ec212f45ef7c"
+
+[[task]]
+slug = "vault/get"
+version = "0.3"
+type_uri = "https://trusttasks.org/spec/vault/get/0.3"
+digest = "sha256:80c54273ae56b155960b6c9c2ab703519dfcf5c05d60c17ba5303fb04f4ce8ec"

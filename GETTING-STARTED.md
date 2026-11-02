@@ -74,6 +74,15 @@ seconds and 0.4 GB. `trust-tasks generate` verifies the lock, then runs each
 language's own generator — it installs nothing, and Rust needs no command at
 all because `build.rs` is the generator.
 
+**Dispatching by Type URI?** If your consumer looks a received document's
+schema or policy up by its `type` string (`trust_tasks_rs::schema_index`) —
+a validating gate in front of the handlers, say — add `.index(true)` to the
+`Config` in `build.rs` and use the generated `tasks::schema_index` instead.
+The runtime's index only knows the prebuilt families, so without it every task
+you generated answers `None`, and a gate that reads `None` as "skip
+validation" fails open. See
+[`trust-tasks-build`](./trust-tasks-build/README.md#the-type-uri-index--indextrue).
+
 `trust-tasks` is a facade: it re-exports the framework's crates behind Cargo
 features so you pick a transport rather than a set of version numbers.
 Everything in it is a `pub use` — `trust_tasks::TrustTask` **is**

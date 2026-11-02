@@ -39,7 +39,7 @@ type TicketRequest struct {
 // Response Exactly the vtc/elections/tickets/issue/0.1 request payload, without its ext —
 // and, when the request named `member`, that request as a document signed as the member.
 //
-// Deprecated: superseded by vta/pcs/voter/register/0.2
+// Deprecated: superseded by vta/pcs/voter/register/0.5
 type Response struct {
 	ElectionID ElectionID `json:"electionId"`
 
@@ -237,7 +237,7 @@ type Multibase = string
 // ticket for one election; the VTA derives a voter key for that election alone and keeps
 // the blinding state.
 //
-// Deprecated: superseded by vta/pcs/voter/register/0.2
+// Deprecated: superseded by vta/pcs/voter/register/0.5
 type Payload struct {
 	// The context the voter belongs to. The election's voter key is derived from a path
 	// allocated under this context's base.
@@ -278,7 +278,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = "superseded by vta/pcs/voter/register/0.2"
+const Deprecation = "superseded by vta/pcs/voter/register/0.5"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/pcs/voter/register/0.1#response"

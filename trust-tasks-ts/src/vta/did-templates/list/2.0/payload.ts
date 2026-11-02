@@ -9,7 +9,7 @@ import type { Builtin_VtaV0_1 as Builtin, Context_VtaV0_1 as Context, DidTemplat
 /**
  * List the DID templates in one scope on a VTA. Omit `contextId` to list the global templates (any authenticated caller); set it to list the templates scoped to that context (requires access to the context). The success response is the array of persisted DidTemplateRecords for the selected scope.
  *
- * @deprecated superseded by vta/did-templates/list/3.1
+ * @deprecated superseded by vta/did-templates/list/3.2
  */
 export interface VTADIDTemplateListPayload {
   /**
@@ -24,7 +24,7 @@ export interface VTADIDTemplateListPayload {
 /**
  * Every stored template in the selected scope, in an array.
  *
- * @deprecated superseded by vta/did-templates/list/3.1
+ * @deprecated superseded by vta/did-templates/list/3.2
  */
 export interface VTADIDTemplateListResponsePayload {
   /**
@@ -57,12 +57,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by vta/did-templates/list/3.1";
+export const DEPRECATION: string | null = "superseded by vta/did-templates/list/3.2";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by vta/did-templates/list/3.1
+ * @deprecated superseded by vta/did-templates/list/3.2
  */
 export type Payload = VTADIDTemplateListPayload;
 
@@ -72,7 +72,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/did-templates/
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by vta/did-templates/list/3.1
+ * @deprecated superseded by vta/did-templates/list/3.2
  */
 export type Response = VTADIDTemplateListResponsePayload;
 

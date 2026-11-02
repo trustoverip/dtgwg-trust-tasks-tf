@@ -1,0 +1,45 @@
+[
+  {
+    "note": "No reason.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board",
+      "graceDays": 30
+    }
+  },
+  {
+    "note": "A negative grace period.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board",
+      "graceDays": -1,
+      "reason": "Superseded by the 2027 board pack."
+    }
+  },
+  {
+    "note": "A grace period longer than a year.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board",
+      "graceDays": 400,
+      "reason": "Superseded by the 2027 board pack."
+    }
+  },
+  {
+    "note": "A grace period that is not a whole number of days.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board",
+      "graceDays": 1.5,
+      "reason": "Superseded by the 2027 board pack."
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board",
+      "reason": "Superseded by the 2027 board pack.",
+      "ext": {
+        "bare-key": {
+          "anything": "here"
+        }
+      }
+    }
+  }
+]

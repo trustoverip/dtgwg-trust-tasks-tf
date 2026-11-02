@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.36.7](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-v0.36.6...trust-tasks-v0.36.7) — 2026-11-02
+
+
+## [0.36.6](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-v0.36.5...trust-tasks-v0.36.6) — 2026-11-01
+
+
+## [0.36.5](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-v0.36.4...trust-tasks-v0.36.5) — 2026-11-01
+
+
+## [0.36.4](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-v0.36.3...trust-tasks-v0.36.4) — 2026-10-30
+
+
+## [0.36.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-v0.36.2...trust-tasks-v0.36.3) — 2026-10-30
+
+
+## [0.36.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-v0.36.1...trust-tasks-v0.36.2) — 2026-10-29
+
+
 ## [0.36.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-v0.36.0...trust-tasks-v0.36.1) — 2026-10-28
 
 
