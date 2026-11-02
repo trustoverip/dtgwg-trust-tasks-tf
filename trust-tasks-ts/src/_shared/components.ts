@@ -10404,6 +10404,46 @@ export interface MonitorFilter {
    */
   failuresOnly?: boolean;
 }
+export interface NetworkMembership {
+  /**
+   * The network's DID.
+   */
+  network: string;
+  /**
+   * Where the network's API is reached: the base its `/.well-known/vtn` profile is served under.
+   */
+  url: string;
+  /**
+   * The network's name, as its profile gives it.
+   */
+  name?: string;
+  /**
+   * `acknowledged`: the community is a member — it signed the acknowledgement of the network's grant. `repudiated`: the community rejected the network's listing of it. `departed`: the community left, by repudiating the grant.
+   */
+  state: "acknowledged" | "repudiated" | "departed";
+  /**
+   * The network's listing credential naming the community, as the community verified it.
+   */
+  listing: {};
+  /**
+   * The network's membership grant (VMC), once the community acknowledged.
+   */
+  grant?: {};
+  /**
+   * The community's acknowledgement (VMC carrying the grant's digest).
+   */
+  acknowledgement?: {};
+  /**
+   * The community's repudiation (VSC) of the listing, or — on departure — of the grant.
+   */
+  repudiation?: {};
+  /**
+   * @maxItems 64
+   */
+  groups: RegisteredGroup[];
+  joinedAt?: string;
+  updatedAt: string;
+}
 /**
  * The discoverability a card has when the community creates it, before its member chooses. A new card is never published beyond the community (VTI-DIR-042), so there is no member for that here: `externalCards` says whether the member may turn it on.
  */
@@ -11633,6 +11673,33 @@ export interface RegisteredCredential {
    */
   lastUsedAt?: string;
 }
+export interface RegisteredGroup {
+  /**
+   * A role the network defines, e.g. `admins`: lowercase letters, digits, `-` and `_`.
+   */
+  role: string;
+  /**
+   * The community's identifier for the group.
+   */
+  groupId: string;
+  /**
+   * The group's own DID, which the registration names as its subject.
+   */
+  groupDid: string;
+  /**
+   * Where the network delivers broadcasts for the group: the community's relay endpoint for it.
+   */
+  endpoint: string;
+  /**
+   * The community's `servesRole` statement (VSC): the group serves `role` in the network.
+   */
+  registration: {};
+  /**
+   * The network's `groupRegistered` statement (VSC), bound to the registration's digest.
+   */
+  acceptance: {};
+  registeredAt: string;
+}
 /**
  * The `ServiceInstance` shape of `did-management/_shared/0.1`, with `lastSeen` renamed `lastSeenAt`; named apart from `service-instance.schema.json`'s `ServiceInstance`, a different shape, so the two do not collide in generated code.
  */
@@ -12071,6 +12138,16 @@ export interface RightRecord_GitNsV0_6 {
    * Present exactly when the subject gave themselves this right through git-ns/right/break-glass. Absent for every other record.
    */
   breakGlass?: BreakGlass_GitNsV0_6;
+}
+export interface RoleAssignment {
+  /**
+   * A role the network defines, e.g. `admins`: lowercase letters, digits, `-` and `_`.
+   */
+  role: string;
+  /**
+   * The community group to serve the role.
+   */
+  groupId: string;
 }
 /**
  * A grant set by reference: the capability ceiling of a defined role, conferred as resource grants exactly as a `grants` binding confers its list. It never assigns the role itself — an entry's administrative role and its community role stay direct assignments.

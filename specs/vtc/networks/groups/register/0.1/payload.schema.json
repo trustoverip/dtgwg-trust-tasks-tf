@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/networks/groups/register/0.1",
+  "title": "VTC Networks — Groups — Register — payload",
+  "description": "Register a community group to serve a role in a network the community belongs to, replacing the group registered for that role if there is one. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "network",
+    "role",
+    "groupId"
+  ],
+  "properties": {
+    "network": {
+      "type": "string",
+      "pattern": "^did:[a-z0-9]+:.+$",
+      "maxLength": 2048,
+      "description": "The network's DID."
+    },
+    "role": {
+      "type": "string",
+      "pattern": "^[a-z0-9_-]{1,64}$",
+      "description": "The network's role."
+    },
+    "groupId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "The community group to serve it."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Networks — Groups — Register — response payload",
+      "description": "The membership with the group registered.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "membership"
+      ],
+      "properties": {
+        "membership": {
+          "$ref": "../../../../_shared/0.6/network-membership.schema.json#/$defs/NetworkMembership"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

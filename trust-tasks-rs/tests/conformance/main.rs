@@ -2628,6 +2628,34 @@ mod vtc {
             mod v0_1;
         }
     }
+    mod networks {
+        mod evidence {
+            mod v0_1;
+        }
+        mod groups {
+            mod register {
+                mod v0_1;
+            }
+        }
+        mod join {
+            mod v0_1;
+        }
+        mod leave {
+            mod v0_1;
+        }
+        mod list {
+            mod v0_1;
+        }
+        mod notice {
+            mod v0_1;
+        }
+        mod repudiate {
+            mod v0_1;
+        }
+        mod show {
+            mod v0_1;
+        }
+    }
     mod oid4vp {
         mod identities {
             mod list {
