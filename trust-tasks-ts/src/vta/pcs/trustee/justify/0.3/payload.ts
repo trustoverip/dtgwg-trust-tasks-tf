@@ -9,7 +9,7 @@ import type { BoardVisibility, ChoiceQuestion, ElectionId, Ext, Key_VotingV0_1 a
 /**
  * The dealer's VTA reveals the share it dealt to a trustee that complained, and returns the voting/trustees/justify request signed as the dealer.
  *
- * @deprecated superseded by vta/pcs/trustee/justify/0.4
+ * @deprecated superseded by vta/pcs/trustee/justify/0.5
  */
 export interface VTAPCSTrusteeJustifyPayload {
   /**
@@ -33,7 +33,7 @@ export interface VTAPCSTrusteeJustifyPayload {
   recipient: TrusteeIndex;
   ext?: Ext;
 }
-/** @deprecated superseded by vta/pcs/trustee/justify/0.4 */
+/** @deprecated superseded by vta/pcs/trustee/justify/0.5 */
 export interface VTAPCSTrusteeJustifyResponsePayload {
   document: JustifyDocument;
   ext?: Ext;
@@ -84,12 +84,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by vta/pcs/trustee/justify/0.4";
+export const DEPRECATION: string | null = "superseded by vta/pcs/trustee/justify/0.5";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by vta/pcs/trustee/justify/0.4
+ * @deprecated superseded by vta/pcs/trustee/justify/0.5
  */
 export type Payload = VTAPCSTrusteeJustifyPayload;
 
@@ -99,7 +99,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/pcs/trustee/ju
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by vta/pcs/trustee/justify/0.4
+ * @deprecated superseded by vta/pcs/trustee/justify/0.5
  */
 export type Response = VTAPCSTrusteeJustifyResponsePayload;
 

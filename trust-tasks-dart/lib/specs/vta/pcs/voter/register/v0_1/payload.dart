@@ -167,7 +167,7 @@ typedef Ext = Map<String, dynamic>;
 
 /// Exactly the vtc/elections/tickets/issue/0.1 request payload, without its ext — and,
 /// when the request named `member`, that request as a document signed as the member.
-@Deprecated('superseded by vta/pcs/voter/register/0.3')
+@Deprecated('superseded by vta/pcs/voter/register/0.4')
 class Response {
   const Response({
     required this.electionId,
@@ -529,7 +529,7 @@ class VotingParameters {
 /// A voter's client asks its VTA for the blinded request that obtains the voter's
 /// ticket for one election; the VTA derives a voter key for that election alone and
 /// keeps the blinding state.
-@Deprecated('superseded by vta/pcs/voter/register/0.3')
+@Deprecated('superseded by vta/pcs/voter/register/0.4')
 class Payload {
   const Payload({
     required this.contextId,
@@ -592,7 +592,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by vta/pcs/voter/register/0.3';
+const String? deprecation = 'superseded by vta/pcs/voter/register/0.4';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/vta/pcs/voter/register/0.1';

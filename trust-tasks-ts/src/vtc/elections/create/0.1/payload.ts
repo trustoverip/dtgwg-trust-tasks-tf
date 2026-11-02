@@ -9,7 +9,7 @@ import type { ActionId, BoardVisibility, ChoiceQuestion, DigestMultibase, Electi
 /**
  * An administrator creates an election of the community: the community checks the manifest, records the election and registers it with the ballot box the manifest names. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
  *
- * @deprecated superseded by vtc/elections/create/0.4
+ * @deprecated superseded by vtc/elections/create/0.5
  */
 export interface VTCElectionsCreatePayload {
   /**
@@ -21,7 +21,7 @@ export interface VTCElectionsCreatePayload {
 /**
  * Success response to vtc/elections/create/0.1: the election as recorded. Type https://trusttasks.org/spec/vtc/elections/create/0.1#response — carried directly, or on the request's threadId when a parked creation executes after its approval.
  *
- * @deprecated superseded by vtc/elections/create/0.4
+ * @deprecated superseded by vtc/elections/create/0.5
  */
 export interface VTCElectionsCreateResponsePayload {
   electionId: ElectionId;
@@ -60,12 +60,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by vtc/elections/create/0.4";
+export const DEPRECATION: string | null = "superseded by vtc/elections/create/0.5";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by vtc/elections/create/0.4
+ * @deprecated superseded by vtc/elections/create/0.5
  */
 export type Payload = VTCElectionsCreatePayload;
 
@@ -75,7 +75,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/elections/crea
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by vtc/elections/create/0.4
+ * @deprecated superseded by vtc/elections/create/0.5
  */
 export type Response = VTCElectionsCreateResponsePayload;
 

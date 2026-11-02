@@ -7842,6 +7842,32 @@ export interface Disclosure {
   coercionResistance: false;
 }
 /**
+ * The statement a community publishes, and shows a member before they request a ticket, about how one election is run (VTI-VOT-090). Generated from the election's manifest and the community's configuration, never written by hand. Under a `credential` roll it also says whose membership credential counts (`rollCredential`).
+ */
+export interface Disclosure_VotingV0_4 {
+  /**
+   * The ballot box's DID.
+   */
+  ballotBox: string;
+  /**
+   * Who operates the ballot box, as the community names them.
+   */
+  ballotBoxOperator: string;
+  /**
+   * Whether the party operating the community's VTC also operates the ballot box.
+   */
+  sameOperator: boolean;
+  trustees?: Trustees;
+  boardVisibility: BoardVisibility;
+  auditors: string[];
+  revote: Revote;
+  rollCredential?: RollCredentialDisclosure;
+  /**
+   * Always false: a voter can prove how they voted, so the community cannot protect a member against being made to vote a certain way.
+   */
+  coercionResistance: false;
+}
+/**
  * The member's three discoverability decisions, made separately.
  */
 export interface Discoverability {
@@ -9790,6 +9816,51 @@ export interface Manifest_VotingV0_3 {
   questions: [Question, ...Question[]];
   secrecy: SecrecyLevel;
   roll: RollRule;
+  registrationOpensAt: string;
+  votingOpensAt: string;
+  votingClosesAt: string;
+  revote: Revote;
+  board: {
+    visibility: BoardVisibility;
+    auditors: string[];
+  };
+  /**
+   * The DID of the voting service that holds the board.
+   */
+  ballotBox: string;
+  trustees?: Trustees;
+  /**
+   * Whether the community treats the result as deciding something; creating a binding election takes another administrator's consent (VTI-VOT-081).
+   */
+  binding: boolean;
+  allowEarlyClose: boolean;
+  /**
+   * Open elections only: whether running totals may be read while voting is open (VTI-VOT-061).
+   */
+  resultsBeforeClose: boolean;
+  /**
+   * Counted ballots required before any text answer is disclosed (VTI-VOT-065). At least 1, and SHOULD be at least 10: a written answer can identify its author by what it says or how it is phrased, and the fewer the ballots released together, the easier that is. Where it is below 10, the disclosure a member is shown before they request a ticket MUST say so, and MUST say that a written answer may identify its author (VTI-VOT-090).
+   */
+  textReleaseThreshold: number;
+}
+/**
+ * What an election asks and how it is decided (VTI-VOT-010). Its digest (`manifestDigest`) is the SHA-256 multihash of its RFC 8785 (JCS) canonicalization, and every cast is bound to it (VTI-VOT-011).
+ */
+export interface Manifest_VotingV0_4 {
+  electionId: ElectionId;
+  /**
+   * The community's DID.
+   */
+  community: string;
+  title?: string;
+  description?: string;
+  /**
+   * @minItems 1
+   * @maxItems 128
+   */
+  questions: [Question, ...Question[]];
+  secrecy: SecrecyLevel;
+  roll: RollRule_VotingV0_4;
   registrationOpensAt: string;
   votingOpensAt: string;
   votingClosesAt: string;
@@ -12071,11 +12142,43 @@ export interface RoleSummary {
   preRotationCommitments?: number;
 }
 /**
+ * Under a `credential` roll, whose membership credential admits a party to a ticket, as a member is shown it before they claim one (VTI-VOT-090): the DID the roll names, what kind of party it is to this community, and its name as the community knows it. Present in a disclosure exactly when the election's roll rule is `credential`.
+ */
+export interface RollCredentialDisclosure {
+  /**
+   * The manifest's `roll.memberOf`.
+   */
+  memberOf: string;
+  /**
+   * `thisCommunity`: the community itself. `communityGroup`: one of the community's own groups, whose membership credentials it authorizes the group to issue (VTI-DIR-083). `recognisedCommunity`: another community this community recognises. `recognisedNetwork`: a network this community recognises.
+   */
+  memberOfKind: "thisCommunity" | "communityGroup" | "recognisedCommunity" | "recognisedNetwork";
+  /**
+   * The name the community shows for the party `memberOf` names: the group's name, or the recognised community's or network's. Absent where showing it would disclose more than the group's visibility admits (VTI-DIR-070).
+   */
+  memberOfName?: string;
+  /**
+   * Always true: claiming a ticket shows the community the presenter's membership credential for `memberOf`, so the community learns that the presenter is a member of that party.
+   */
+  presenterDisclosed?: true;
+}
+/**
  * Who may be issued a ticket (VTI-VOT-021): the community's active members, its active members and the parties `listed` names, or only the parties `listed` names.
  */
 export interface RollRule {
   rule: "members" | "membersAndListed" | "listed";
   listed?: string[];
+}
+/**
+ * Who may be issued a ticket (VTI-VOT-021): the community's active members (`members`), its active members and the parties `listed` names (`membersAndListed`), only the parties `listed` names (`listed`), or the holders of a membership credential for the one DID `memberOf` names (`credential`), proven by presentation when the holder claims their ticket and never resolved when the election is created (VTI-VOT-025). `memberOf` is present exactly when `rule` is `credential`, and `listed` is never present with it.
+ */
+export interface RollRule_VotingV0_4 {
+  rule: "members" | "membersAndListed" | "listed" | "credential";
+  listed?: string[];
+  /**
+   * The DID whose membership credential admits its holder, under the `credential` rule: this community, one of its groups, or a community or network this community recognises (VTI-VOT-026). Always a DID, never a group's local identifier or name. A community refuses to create an election naming any other DID (vtc/elections/create:rollUntrusted).
+   */
+  memberOf?: string;
 }
 /**
  * The outcome of a rollback. Distinct from ServiceMutationResult because a rollback can legitimately publish nothing: if the previous state already equals the current one there is no change to write, and `kind: "noOp"` says so with `logEntryVersionId` absent. Treating that as a failure would be wrong — the requested state holds — and treating it as an ordinary success would report a log entry that does not exist.

@@ -74,7 +74,7 @@ class ResponseCastDocument {
 }
 
 /// VTA PCS — Vote Encrypted — response payload
-@Deprecated('superseded by vta/pcs/vote-encrypted/0.4')
+@Deprecated('superseded by vta/pcs/vote-encrypted/0.5')
 class Response {
   const Response({
     required this.castDocument,
@@ -544,7 +544,7 @@ class VotingParameters {
 /// The voter's VTA checks a ballot against the manifest, encrypts it to the election
 /// key as the election's level requires, and returns the cast signed by a key made for
 /// it alone.
-@Deprecated('superseded by vta/pcs/vote-encrypted/0.4')
+@Deprecated('superseded by vta/pcs/vote-encrypted/0.5')
 class Payload {
   const Payload({
     required this.contextId,
@@ -603,7 +603,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by vta/pcs/vote-encrypted/0.4';
+const String? deprecation = 'superseded by vta/pcs/vote-encrypted/0.5';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/vta/pcs/vote-encrypted/0.2';
