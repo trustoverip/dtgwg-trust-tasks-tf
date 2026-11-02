@@ -64,7 +64,11 @@
         "counterAgreement": {
           "properties": { "decision": { "const": "countered" } }
         }
-      }
+      },
+      "anyOf": [
+        { "properties": { "decision": { "enum": ["accepted", "refused"] } } },
+        { "required": ["counterAgreement"] }
+      ]
     }
   }
 }

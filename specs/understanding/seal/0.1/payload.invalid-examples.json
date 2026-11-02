@@ -97,5 +97,14 @@
         "effectiveFrom": "2026-09-24T10:10:00Z"
       }
     }
+  },
+  {
+    "note": "decision: countered without counterAgreement — a counter carries its single alternative, and a bare counter offers none.",
+    "variant": "response",
+    "payload": {
+      "decision": "countered",
+      "taskContext": "urn:uuid:1a2b3c4d-0004-4000-8000-000000000001",
+      "taskDigestMultibase": "zQmT6nR3sVwXeJhK4d8f2gY1pQ9mN7bC5aE3wD6rL8sU2v"
+    }
   }
 ]
