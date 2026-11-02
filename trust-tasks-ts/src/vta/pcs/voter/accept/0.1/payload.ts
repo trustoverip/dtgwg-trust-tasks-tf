@@ -24,7 +24,7 @@ export interface VTAPCSVoterAcceptPayload {
    */
   parameters: VotingParameters;
   /**
-   * The payload of the community's vtc/elections/tickets/issue/0.1 response, without its ext.
+   * The payload of the community's vtc/elections/tickets/issue/0.3 response, without its ext.
    */
   response: {
     electionId: ElectionId;
@@ -130,7 +130,7 @@ export const PAYLOAD_SCHEMA = {
         "label",
         "preCredential"
       ],
-      "description": "The payload of the community's vtc/elections/tickets/issue/0.1 response, without its ext.",
+      "description": "The payload of the community's vtc/elections/tickets/issue/0.3 response, without its ext.",
       "properties": {
         "electionId": {
           "$ref": "#/$defs/ElectionId"

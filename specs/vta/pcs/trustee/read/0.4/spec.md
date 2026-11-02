@@ -68,7 +68,7 @@ which carries the manifest the trustee tasks take and the time voting closed —
 On a private board the ballot box answers those reads only to a party it can identify as one of
 the manifest's trustees (CONVENTIONS §9.6), so the request must be signed by the trustee; the
 trustee's key lives in its VTA, and this task lets a client that holds none read as the trustee,
-as [`vta/pcs/voter/read`](../../../voter/read/0.5/spec.md) does for a voter. The family's shared
+as [`vta/pcs/voter/read`](../../../voter/read/0.6/spec.md) does for a voter. The family's shared
 rules are in [`CONVENTIONS.md`](../../../../../voting/_shared/0.1/CONVENTIONS.md).
 
 ## Status of this Document

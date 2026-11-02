@@ -80,7 +80,7 @@ to register those levels (`voting/election/register:unsupportedSecrecy`).
   fourth roll rule, `credential`, with a member `roll.memberOf`: a ticket goes to whoever holds a
   membership credential for that one DID — the community, one of its groups, or a party that is
   itself an active member of the community (VTI-VOT-026) — proven by a presentation carried in
-  `vtc/elections/tickets/issue/0.2` when the holder claims their ticket, and never resolved when
+  `vtc/elections/tickets/issue/0.2` (and its successors) when the holder claims their ticket, and never resolved when
   the election is created (VTI-VOT-025). One ticket is held against the credential's subject,
   never against `memberOf` (VTI-VOT-027). The roll's size is not known to anyone, so turnout is
   counted ballots against tickets issued (VTI-VOT-028). The disclosure says whose credential
@@ -88,13 +88,26 @@ to register those levels (`voting/election/register:unsupportedSecrecy`).
 - **Member-party election.** An election whose credential roll names a **member party** — a
   party other than the community and its groups, which is itself a member of the community.
   The community holds no record of that party's members, so such an election is shown only to
-  administrators, to the party itself and, through `vtc/elections/show/0.5`, to a reader who
+  administrators, to the party itself and, through `vtc/elections/show/0.5` and later, to a reader who
   presents in the read their membership credential for the party, checked as a ticket claim's
-  is; to anyone else it is `electionUnknown` (VTI-VOT-015). A list never carries a presentation,
+  is; to anyone else it is `electionUnknown` (VTI-VOT-015). A claim of its ticket is answered the
+  same way: from `vtc/elections/tickets/issue/0.3`, a signer who has not proven that membership in
+  the claim itself is `electionUnknown`, never `presentationRequired`, `membershipNotProven`,
+  `membershipRevoked`, `rollUntrusted`, `notOpen` or `manifestMismatch` (VTI-VOT-017). A list never carries a presentation,
   and never shows such an election to a reader who would need one — not even as a stub of its
   identifier and schedule: its voters learn of it from the party, or from a link, and read it by
   `show`. A member's VTA presents the credential only where the member chose it, for one read
-  (`vta/pcs/voter/read/0.5`, VTI-VOT-016).
+  (`vta/pcs/voter/read/0.5`, VTI-VOT-016), and, from `vta/pcs/voter/read/0.6`, only where it was
+  issued by the party the client names in `memberOf`.
+- **A presentation is verified first.** From `vtc/elections/show/0.6` and
+  `vtc/elections/tickets/issue/0.3`, a community verifies a presentation a request carries — its
+  binding, its holder, the credential's proof, validity period and status — before it looks up the
+  election the request names, and without reference to it. Where a check cannot be completed
+  because something it does not control — the issuer's DID document, a status list, a trust
+  registry — could not be obtained, it answers the framework's standard `indeterminate` (SPEC
+  §8.3, retryable), identically whether the election exists, whatever its roll, and whether the
+  caller could see it; never `electionUnknown` (VTI-VOT-018). The checks made after the lookup
+  read only the community's own records, so an outage is never an oracle for an election.
 - **Ticket.** A predicate credential system (PCS) class credential, issued blind by the
   community under the class `voter/<electionId>` and its **voting key**. It admits its holder to
   vote in one election and identifies nobody.
@@ -172,8 +185,8 @@ The reference implementation is the `vti-voting` crate of verifiable-trust-infra
 | `voting/trustees/status` | As the board reads, and — whatever the board's visibility — every trustee the manifest names: a trustee cannot take its next step without it (§9.6) |
 | `voting/trustees/authorize` | The community the payload names, by proof (§9.7) |
 | `vtc/elections/create`, `close`, `cancel`, `certify` | `vtc.elections.manage` (VTI-VOT-080); `create` of a `binding` manifest takes another administrator's consent (VTI-VOT-081) |
-| `vtc/elections/list`, `show` | A member, for an election whose roll admits them; under a `credential` roll naming the community or one of its groups, a caller its records show the roll could admit (`list/0.5` Conformance item 1); under one naming a member party, the party itself and — in `show/0.5` only, never in a list — a reader whose presentation of their membership of the party passes (`show/0.5` Conformance item 8, VTI-VOT-015); `vtc.elections.manage` for every election |
-| `vtc/elections/tickets/issue` | The proven signer is eligible under the roll rule and holds no ticket for the election (VTI-VOT-021, VTI-VOT-022); under a `credential` roll, eligibility is the presentation the request carries, checked at issuance (VTI-VOT-025) |
+| `vtc/elections/list`, `show` | A member, for an election whose roll admits them; under a `credential` roll naming the community or one of its groups, a caller its records show the roll could admit (`list/0.5` Conformance item 1); under one naming a member party, the party itself and — in `show/0.5` and later only, never in a list — a reader whose presentation of their membership of the party passes (`show/0.6` Conformance item 8, VTI-VOT-015); `vtc.elections.manage` for every election |
+| `vtc/elections/tickets/issue` | The proven signer is eligible under the roll rule and holds no ticket for the election (VTI-VOT-021, VTI-VOT-022); under a `credential` roll, eligibility is the presentation the request carries, checked at issuance (VTI-VOT-025); for a member-party election, a signer that is neither an administrator nor the party itself and has not proven the membership in the request is answered `electionUnknown` (`tickets/issue/0.3` Conformance item 3, VTI-VOT-017) |
 | `vta/pcs/voter/*`, `vta/pcs/vote`, `vta/pcs/vote-encrypted` | Standing over the context; as a capability, **`pcsVoter`** (`device/_shared/0.2` `Capability`). Not `sign`; a VTA **MUST NOT** require `sign` |
 | `vta/pcs/trustee/*` | Standing over the context and over the trustee persona; as a capability, **`pcsTrustee`**. Not `sign` |
 
@@ -218,7 +231,11 @@ that declares them:
 | `alreadyIssued` | The requester already holds a ticket for this election |
 
 Every other refusal uses the framework's standard codes (SPEC §8.3), such as
-`permissionDenied` and `malformedRequest`. A repeat that conflicts with what a node already holds
+`permissionDenied` and `malformedRequest`. A check that cannot be completed because something the
+node does not control could not be obtained — a status list, a trust registry, an issuer's DID
+document — is the standard `indeterminate`, never a task-specific code and never
+`electionUnknown`; where it concerns a presentation, it is answered before the election is looked
+up (§1, *A presentation is verified first*). A repeat that conflicts with what a node already holds
 has a task-specific code (`voting/election/register:alreadyRegistered`,
 `vtc/elections/create:electionExists`, `vtc/elections/certify:alreadyCertified`,
 `vta/pcs/voter/register:electionChanged`): the framework defines no standard `conflict`.

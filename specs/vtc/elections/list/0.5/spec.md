@@ -89,7 +89,7 @@ A conforming **community** (`recipient`):
 
 ## Authorization
 
-The authority is **the caller's standing toward each election**: being a party the election's roll admits, or holding `vtc.elections.manage` at the community. Under a `credential` roll the standing to vote is proven only by the presentation a ticket claim carries ([`vtc/elections/tickets/issue`](../../tickets/issue/0.2/spec.md)), so seeing an election under one is not standing to take its ticket. Where the roll names a member party, the community's records hold no standing for the party's members, and a list carries no presentation that could prove one: a reader who presented every membership credential they hold to find the elections that concern them would show the community all of them. Such an election is therefore listed only to the party itself — whose members are the ones asked, and which could in any case issue itself a credential and present it — and to administrators. Both are read from the community's own records at execution time, per election. The proof or the transport identity says who is asking ([SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10); it is the key the standing is looked up by, not the standing. A caller with standing toward no election is answered with an empty page, not a refusal: a list's empty page is not a statement that nothing exists.
+The authority is **the caller's standing toward each election**: being a party the election's roll admits, or holding `vtc.elections.manage` at the community. Under a `credential` roll the standing to vote is proven only by the presentation a ticket claim carries ([`vtc/elections/tickets/issue`](../../tickets/issue/0.3/spec.md)), so seeing an election under one is not standing to take its ticket. Where the roll names a member party, the community's records hold no standing for the party's members, and a list carries no presentation that could prove one: a reader who presented every membership credential they hold to find the elections that concern them would show the community all of them. Such an election is therefore listed only to the party itself — whose members are the ones asked, and which could in any case issue itself a credential and present it — and to administrators. Both are read from the community's own records at execution time, per election. The proof or the transport identity says who is asking ([SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10); it is the key the standing is looked up by, not the standing. A caller with standing toward no election is answered with an empty page, not a refusal: a list's empty page is not a statement that nothing exists.
 
 ## Definitions
 
@@ -166,7 +166,7 @@ Leaving an election whose roll names a member party out of every other caller's 
 
 ### Retention
 
-Transient. The community keeps nothing of the request beyond its ordinary request log; the records it reads are kept under [`vtc/elections/create`](../../create/0.5/spec.md) and [`vtc/elections/tickets/issue`](../../tickets/issue/0.2/spec.md).
+Transient. The community keeps nothing of the request beyond its ordinary request log; the records it reads are kept under [`vtc/elections/create`](../../create/0.5/spec.md) and [`vtc/elections/tickets/issue`](../../tickets/issue/0.3/spec.md).
 
 ### Consent/purpose
 
