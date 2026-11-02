@@ -11,6 +11,54 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.28.8 — 2026-11-02
+
+
+### Added
+
+- **vtc/rooms/community**: Archive, unarchive, remove and removal/cancel 0.1; get/list 0.4, members/add+list 0.2, memberships/list 0.2 (#1006)
+
+A community could create a room it owns and change its members, but never
+  close or end one. This adds an owner's lifecycle for a community-owned room,
+  distinct from the host's computed clock (live/lapsed/dormant/reclaimable):
+
+  - active
+  - archived, with an access: readOnly (members keep reading; the host refuses
+    every write, upload and curation) or noAccess (the community's VTA resets
+    the room — one `room` withdrawal — and re-issues the community's own
+    credentials; each admitted member becomes `suspended`). Open offers are
+    withdrawn either way. Reversible: vtc/rooms/community/unarchive restores
+    suspended members in the background by re-issuing their membership and
+    authority, collected as an offers/list renewal.
+  - removalScheduled: only from archived (removal is the second of two
+    deliberate acts). The room is noAccess and its content kept until purgeAt,
+    after a grace period (graceDays, or the community's configured default;
+    30 days in the reference implementation). vtc/rooms/community/removal/cancel
+    returns it to archived/noAccess.
+  - purging: graceDays 0, or the grace period ended. Deletes every record,
+    epoch link, commit, revocation list, file in every storage config, transfer
+    and the host record; drops kept credentials and owed removals; unbinds
+    groups; stops serving a serverless DID log; SHOULD have the VTA delete the
+    room's DID (a refusal there does not hold the purge). Retried with backoff,
+    progress in status.purge, never reversible.
+  - removed: a tombstone with the host record as it last stood.
+
+  A change part-way through at the VTA (a reset the host accepted before the
+  community's own credentials were re-issued) is reported as
+  status.pendingChange and finished by the community.
+
+  New shared definitions in vtc/_shared/0.5 (RoomState, ArchiveAccess,
+  RoomStatus, PendingChange, PurgeProgress, CommunityRoomV3, MemberStateV2,
+  RoomMemberV2, RoomMembershipV2). get/list 0.4 carry status (list gains a
+  `states` filter; removed rooms only when asked for); members/add 0.2 refuses
+  a room that is not active (wrongState); members/list 0.2 and
+  memberships/list 0.2 add `suspended`, and memberships/list the room's own
+  state so member surfaces can say read-only, closed or going away.
+  rooms/keys/act 0.10 adds vtc/rooms/memberships/list/0.2 to its table so a
+  member's key holder can sign it.
+
+  Rust, TS, Go and Dart bindings regenerated.
+
 ## 0.28.7 — 2026-11-01
 
 
