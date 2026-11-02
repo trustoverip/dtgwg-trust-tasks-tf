@@ -69,12 +69,14 @@ retention:
     retain a copy for on the citing party's behalf.
 errorCodes:
   - code: understanding/seal:exchangeNotFound
-    meaning: The `exchangeId` does not name a live understanding/exchange response between these two parties.
+    meaning: The `exchangeId` does not name a live understanding/exchange response. Not used for a request whose `exchangeId` resolves but whose `issuer` is the wrong party; that is `understanding/seal:issuerMismatch`.
     retryable: false
   - code: understanding/seal:issuerMismatch
     meaning: >-
       The request's `issuer` is not the party the understanding/exchange response named by
-      `exchangeId` was addressed to — that response's `recipient`.
+      `exchangeId` was addressed to — that response's `recipient`. Takes precedence over
+      `understanding/seal:exchangeNotFound` once the exchange resolves: the exchange exists, so a
+      wrong issuer is reported as this code, not as a missing exchange.
     retryable: false
   - code: understanding/seal:understandingInsufficient
     meaning: The exchange named by `exchangeId` recorded outcome "insufficient". A seal cannot be grounded in a failed exchange.
@@ -258,7 +260,9 @@ that opened this engagement, with a passed `understanding/exchange` — recorded
 request's `issuer` **MUST** be the party that exchange's response was addressed to — its
 `recipient`. A recipient **MUST** verify both before evaluating the proposal: that the exchange
 resolved with that outcome, per `understanding/seal:understandingInsufficient`, and that the
-issuer matches, refusing any other issuer with `understanding/seal:issuerMismatch`. The binding
+issuer matches, refusing any other issuer with `understanding/seal:issuerMismatch` — which, once
+the exchange resolves, takes precedence over `understanding/seal:exchangeNotFound`; that code is
+reserved for an `exchangeId` that names no live exchange response at all. The binding
 is not optional: `threadId`, `parentThreadId` and a document's `id` are correlation handles, not
 secrets, so without it a third party that learned an `exchangeId` could propose against someone
 else's passed exchange, and the host's acceptance — the record this family exists to produce —
