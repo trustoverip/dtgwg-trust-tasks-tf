@@ -157,6 +157,12 @@ pub mod keys;
     note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
 )]
 pub mod messaging;
+#[cfg(feature = "notifications")]
+#[cfg(not(test))]
+#[deprecated(
+    note = "the prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI and generate them in build.rs with `trust-tasks-build` (GETTING-STARTED.md, \"Generate only the tasks you use\")"
+)]
+pub mod notifications;
 #[cfg(feature = "peer-check")]
 #[cfg(not(test))]
 #[deprecated(

@@ -2184,6 +2184,18 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "messaging")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/messaging/stats/show/0.1#response" => <crate::specs::messaging::stats::show::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "notifications")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/notifications/notify/0.1" => <crate::specs::notifications::notify::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "notifications")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/notifications/notify/0.1#response" => <crate::specs::notifications::notify::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "notifications")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/notifications/relay/0.1" => <crate::specs::notifications::relay::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "notifications")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/notifications/relay/0.1#response" => <crate::specs::notifications::relay::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "peer-check")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/peer-check/ask/0.1" => <crate::specs::peer_check::ask::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -4298,6 +4310,24 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/metrics/show/0.1#response" => <crate::specs::vta::metrics::show::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/notifications/dismiss/0.1" => <crate::specs::vta::notifications::dismiss::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/notifications/dismiss/0.1#response" => <crate::specs::vta::notifications::dismiss::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/notifications/list/0.1" => <crate::specs::vta::notifications::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/notifications/list/0.1#response" => <crate::specs::vta::notifications::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/notifications/show/0.1" => <crate::specs::vta::notifications::show::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/notifications/show/0.1#response" => <crate::specs::vta::notifications::show::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/passkey-vms/enroll-challenge/0.1" => <crate::specs::vta::passkey_vms::enroll_challenge::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -9213,6 +9243,16 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         "https://trusttasks.org/spec/messaging/stats/show/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::messaging::stats::show::v0_1::Payload,
         >()),
+        #[cfg(feature = "notifications")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/notifications/notify/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::notifications::notify::v0_1::Payload,
+        >()),
+        #[cfg(feature = "notifications")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/notifications/relay/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::notifications::relay::v0_1::Payload,
+        >()),
         #[cfg(feature = "peer-check")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/peer-check/ask/0.1" => Some(crate::SpecPolicy::of::<
@@ -11180,6 +11220,23 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/metrics/show/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::vta::metrics::show::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/notifications/dismiss/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vta::notifications::dismiss::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/notifications/list/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::notifications::list::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/notifications/show/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::notifications::show::v0_1::Payload,
         >()),
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
@@ -15802,6 +15859,16 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         "https://trusttasks.org/spec/messaging/stats/show/0.1" => {
             Some(crate::specs::messaging::stats::show::v0_1::ERROR_CODES)
         }
+        #[cfg(feature = "notifications")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/notifications/notify/0.1" => {
+            Some(crate::specs::notifications::notify::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "notifications")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/notifications/relay/0.1" => {
+            Some(crate::specs::notifications::relay::v0_1::ERROR_CODES)
+        }
         #[cfg(feature = "peer-check")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/peer-check/ask/0.1" => {
@@ -17587,6 +17654,21 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/metrics/show/0.1" => {
             Some(crate::specs::vta::metrics::show::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/notifications/dismiss/0.1" => {
+            Some(crate::specs::vta::notifications::dismiss::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/notifications/list/0.1" => {
+            Some(crate::specs::vta::notifications::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/notifications/show/0.1" => {
+            Some(crate::specs::vta::notifications::show::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
@@ -19937,6 +20019,18 @@ pub fn max_document_bytes_for(type_uri: &str) -> Option<usize> {
         #[cfg(feature = "keys")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/keys/sign-jws/0.1#response" => <crate::specs::keys::sign_jws::v0_1::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "notifications")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/notifications/notify/0.1" => <crate::specs::notifications::notify::v0_1::Payload as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "notifications")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/notifications/notify/0.1#response" => <crate::specs::notifications::notify::v0_1::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "notifications")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/notifications/relay/0.1" => <crate::specs::notifications::relay::v0_1::Payload as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "notifications")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/notifications/relay/0.1#response" => <crate::specs::notifications::relay::v0_1::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/blobs/chunk/0.1#response" => <crate::specs::rooms::blobs::chunk::v0_1::Response as crate::Payload>::MAX_DOCUMENT_BYTES,

@@ -56,6 +56,7 @@ all-specs = [
     "governance",
     "keys",
     "messaging",
+    "notifications",
     "peer-check",
     "persona",
     "policy",
@@ -92,6 +93,7 @@ git-trust = []
 governance = []
 keys = []
 messaging = []
+notifications = []
 peer-check = []
 persona = []
 policy = []
