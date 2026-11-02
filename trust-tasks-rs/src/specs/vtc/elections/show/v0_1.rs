@@ -4,7 +4,7 @@
 #![allow(deprecated)]
 /// Why this specification version is deprecated (SPEC "Superseded and
 /// Withdrawn Versions"), or `None` while it is current.
-pub const DEPRECATION: Option<&str> = Some("superseded by vtc/elections/show/0.4");
+pub const DEPRECATION: Option<&str> = Some("superseded by vtc/elections/show/0.5");
 #[allow(unused_imports)]
 use serde::{Deserialize, Serialize};
 /// Error types.
@@ -1202,7 +1202,7 @@ impl<'de> ::serde::Deserialize<'de> for Multibase {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by vtc/elections/show/0.4")]
+#[deprecated(note = "superseded by vtc/elections/show/0.5")]
 pub struct Payload {
     #[serde(rename = "electionId")]
     pub election_id: ElectionId,
@@ -1607,7 +1607,7 @@ impl ::std::convert::TryFrom<::std::string::String> for RegistrarState {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by vtc/elections/show/0.4")]
+#[deprecated(note = "superseded by vtc/elections/show/0.5")]
 pub struct Response {
     ///With electionKey: the trustees' signed steps it forms from, through the board's electionKey entry, each exactly as received. A voter's VTA forms the key itself from these (vta/pcs/vote-encrypted/0.2).
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]

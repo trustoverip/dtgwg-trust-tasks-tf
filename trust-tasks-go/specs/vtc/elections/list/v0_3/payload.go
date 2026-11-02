@@ -52,7 +52,7 @@ type ElectionListItem struct {
 // Response Success response to vtc/elections/list/0.2: one page of the elections the
 // caller may see.
 //
-// Deprecated: superseded by vtc/elections/list/0.4
+// Deprecated: superseded by vtc/elections/list/0.5
 type Response struct {
 	Elections []ElectionListItem `json:"elections"`
 
@@ -75,7 +75,7 @@ type ElectionID = string
 // caller may see. The outer document members (id, type, issuer, recipient, issuedAt,
 // expiresAt, proof) are owned by the framework — SPEC §6.3.
 //
-// Deprecated: superseded by vtc/elections/list/0.4
+// Deprecated: superseded by vtc/elections/list/0.5
 type Payload struct {
 	State *RegistrarState `json:"state,omitempty"`
 
@@ -103,7 +103,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = "superseded by vtc/elections/list/0.4"
+const Deprecation = "superseded by vtc/elections/list/0.5"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/elections/list/0.3#response"

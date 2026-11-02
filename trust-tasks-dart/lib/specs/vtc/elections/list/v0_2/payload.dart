@@ -105,7 +105,7 @@ typedef Ext = Map<String, dynamic>;
 
 /// Success response to vtc/elections/list/0.2: one page of the elections the caller
 /// may see.
-@Deprecated('superseded by vtc/elections/list/0.4')
+@Deprecated('superseded by vtc/elections/list/0.5')
 class Response {
   const Response({
     required this.elections,
@@ -140,7 +140,7 @@ class Response {
 /// A member or an administrator pages through the community's elections that the
 /// caller may see. The outer document members (id, type, issuer, recipient, issuedAt,
 /// expiresAt, proof) are owned by the framework — SPEC §6.3.
-@Deprecated('superseded by vtc/elections/list/0.4')
+@Deprecated('superseded by vtc/elections/list/0.5')
 class Payload {
   const Payload({
     this.state,
@@ -185,7 +185,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by vtc/elections/list/0.4';
+const String? deprecation = 'superseded by vtc/elections/list/0.5';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/vtc/elections/list/0.2';

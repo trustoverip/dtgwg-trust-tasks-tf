@@ -1889,6 +1889,7 @@ mod vta {
                 mod v0_2;
                 mod v0_3;
                 mod v0_4;
+                mod v0_5;
             }
             mod receipt {
                 mod v0_1;
@@ -2313,12 +2314,14 @@ mod vtc {
             mod v0_2;
             mod v0_3;
             mod v0_4;
+            mod v0_5;
         }
         mod show {
             mod v0_1;
             mod v0_2;
             mod v0_3;
             mod v0_4;
+            mod v0_5;
         }
         mod tickets {
             mod issue {

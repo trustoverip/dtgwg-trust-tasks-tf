@@ -2675,6 +2675,9 @@ export import VtaPcsVoterRead_v0_3 = _VtaPcsVoterRead_v0_3;
 import * as _VtaPcsVoterRead_v0_4 from "./vta/pcs/voter/read/0.4/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtaPcsVoterRead_v0_4 = _VtaPcsVoterRead_v0_4;
+import * as _VtaPcsVoterRead_v0_5 from "./vta/pcs/voter/read/0.5/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtaPcsVoterRead_v0_5 = _VtaPcsVoterRead_v0_5;
 import * as _VtaPcsVoterReceipt_v0_1 from "./vta/pcs/voter/receipt/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtaPcsVoterReceipt_v0_1 = _VtaPcsVoterReceipt_v0_1;
@@ -3260,6 +3263,9 @@ export import VtcElectionsList_v0_3 = _VtcElectionsList_v0_3;
 import * as _VtcElectionsList_v0_4 from "./vtc/elections/list/0.4/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtcElectionsList_v0_4 = _VtcElectionsList_v0_4;
+import * as _VtcElectionsList_v0_5 from "./vtc/elections/list/0.5/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcElectionsList_v0_5 = _VtcElectionsList_v0_5;
 import * as _VtcElectionsShow_v0_1 from "./vtc/elections/show/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtcElectionsShow_v0_1 = _VtcElectionsShow_v0_1;
@@ -3272,6 +3278,9 @@ export import VtcElectionsShow_v0_3 = _VtcElectionsShow_v0_3;
 import * as _VtcElectionsShow_v0_4 from "./vtc/elections/show/0.4/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtcElectionsShow_v0_4 = _VtcElectionsShow_v0_4;
+import * as _VtcElectionsShow_v0_5 from "./vtc/elections/show/0.5/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcElectionsShow_v0_5 = _VtcElectionsShow_v0_5;
 import * as _VtcElectionsTicketsIssue_v0_1 from "./vtc/elections/tickets/issue/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtcElectionsTicketsIssue_v0_1 = _VtcElectionsTicketsIssue_v0_1;
