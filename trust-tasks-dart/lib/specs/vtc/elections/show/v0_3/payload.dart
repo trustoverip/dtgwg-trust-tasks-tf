@@ -755,7 +755,7 @@ typedef SignedRequest = Map<String, dynamic>;
 typedef TrusteeCeremony = List<SignedRequest>;
 
 /// Success response to vtc/elections/show/0.1: one election, whole.
-@Deprecated('superseded by vtc/elections/show/0.5')
+@Deprecated('superseded by vtc/elections/show/0.6')
 class Response {
   const Response({
     required this.manifest,
@@ -856,7 +856,7 @@ class Response {
 /// kept and, once certified, the certified result. The outer document members (id,
 /// type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework —
 /// SPEC §6.3.
-@Deprecated('superseded by vtc/elections/show/0.5')
+@Deprecated('superseded by vtc/elections/show/0.6')
 class Payload {
   const Payload({
     required this.electionId,
@@ -886,7 +886,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by vtc/elections/show/0.5';
+const String? deprecation = 'superseded by vtc/elections/show/0.6';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/vtc/elections/show/0.3';

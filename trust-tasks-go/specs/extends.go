@@ -21,6 +21,7 @@ var extendsIndex = map[string]string{
 	"https://trusttasks.org/spec/vtc/elections/list/0.4":          "0.3",
 	"https://trusttasks.org/spec/vtc/elections/list/0.5":          "0.4",
 	"https://trusttasks.org/spec/vtc/elections/show/0.5":          "0.4",
+	"https://trusttasks.org/spec/vtc/elections/show/0.6":          "0.5",
 	"https://trusttasks.org/spec/vtc/elections/tickets/issue/0.2": "0.1",
 }
 
