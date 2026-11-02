@@ -219,13 +219,13 @@ export const PAYLOAD_SCHEMA = {
           "minLength": 1,
           "maxLength": 512,
           "pattern": "^https://\\S+$",
-          "description": "The Type URI of the Trust Task by which a recipient opens the thing at `heldBy` — for an election, `https://trusttasks.org/spec/vtc/elections/show/0.5`. A recipient opens it only at its principal's choice (VTI-NTF-053), and only by a version of that task it and `heldBy` both serve."
+          "description": "The Type URI of the Trust Task by which a recipient opens the thing at `heldBy` — for an election, `https://trusttasks.org/spec/vtc/elections/show/0.6`. A recipient opens it only at its principal's choice (VTI-NTF-053), and only by a version of that task it and `heldBy` both serve."
         }
       }
     },
     "Kind": {
       "title": "Kind",
-      "description": "What the thing is. Either a registered kind — one lowerCamelCase name listed in the kind registry of notifications/notify, such as `election` — or an unregistered kind, written `<reverse-DNS domain>:<name>` under a domain its definer controls, such as `org.example:meetingInvite`. A recipient that does not recognise a kind holds, lists and discards it and does nothing else with it (VTI-NTF-012).",
+      "description": "What the thing is. Either a registered kind — one lowerCamelCase name in the VTI specification's notification kind registry (Appendix G), such as `election` — or an unregistered kind, written `<reverse-DNS domain>:<name>` under a domain its definer controls, such as `org.example:meetingInvite`. A recipient that does not recognise a kind holds, lists and discards it and does nothing else with it (VTI-NTF-012).",
       "type": "string",
       "minLength": 1,
       "maxLength": 256,
@@ -375,13 +375,13 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "minLength": 1,
           "maxLength": 512,
           "pattern": "^https://\\S+$",
-          "description": "The Type URI of the Trust Task by which a recipient opens the thing at `heldBy` — for an election, `https://trusttasks.org/spec/vtc/elections/show/0.5`. A recipient opens it only at its principal's choice (VTI-NTF-053), and only by a version of that task it and `heldBy` both serve."
+          "description": "The Type URI of the Trust Task by which a recipient opens the thing at `heldBy` — for an election, `https://trusttasks.org/spec/vtc/elections/show/0.6`. A recipient opens it only at its principal's choice (VTI-NTF-053), and only by a version of that task it and `heldBy` both serve."
         }
       }
     },
     "Kind": {
       "title": "Kind",
-      "description": "What the thing is. Either a registered kind — one lowerCamelCase name listed in the kind registry of notifications/notify, such as `election` — or an unregistered kind, written `<reverse-DNS domain>:<name>` under a domain its definer controls, such as `org.example:meetingInvite`. A recipient that does not recognise a kind holds, lists and discards it and does nothing else with it (VTI-NTF-012).",
+      "description": "What the thing is. Either a registered kind — one lowerCamelCase name in the VTI specification's notification kind registry (Appendix G), such as `election` — or an unregistered kind, written `<reverse-DNS domain>:<name>` under a domain its definer controls, such as `org.example:meetingInvite`. A recipient that does not recognise a kind holds, lists and discards it and does nothing else with it (VTI-NTF-012).",
       "type": "string",
       "minLength": 1,
       "maxLength": 256,

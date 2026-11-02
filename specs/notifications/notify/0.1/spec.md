@@ -79,7 +79,7 @@ opens it, and the audience it concerns: *election `board-2027` at community C is
 members of party P; open it with `vtc/elections/show`*. It carries nothing of the thing itself.
 
 The task is generic. What the thing is — an election, or anything else — is the notification's
-`kind`, drawn from an extensible [registry](#kind-registry). An addressee that stands for others
+`kind`, named from an extensible registry kept in the VTI specification ([Kinds](#kinds)). An addressee that stands for others
 decides for itself whether and how to pass a notification on; when it does, it uses
 [`notifications/relay`](../../relay/0.1/spec.md), which carries this document unchanged so the
 final recipient can still verify its originator. A member's agent holds the notifications it
@@ -104,7 +104,11 @@ A conforming **producer** (the originator) **MUST**:
 
 1. Address the document to exactly one DID, as `recipient`, and only to a party the thing
    concerns or a party that stands for those it concerns (VTI-NTF-005).
-2. Sign the document (`proof`) as `issuer`, whatever transport carries it (VTI-NTF-001).
+2. Sign the document (`proof`) as `issuer`, whatever transport carries it (VTI-NTF-001), and
+   issue every revision of one notification as the same identity. A node issues its
+   notifications as its durable identity (VTI-KEY-001) — a `did:webvh` identifier, in either of its
+   forms, which a key rotation does not change — since that identifier is half of the
+   notification's deduplication key (VTI-NTF-021).
 3. Choose a `notificationId` unique among the notifications it issues, and carry the same
    `notificationId` and `revision` in every attempt at one delivery and in every new document it
    issues for it (VTI-NTF-021). A retry is a new document with a new `id` and the same
@@ -126,9 +130,10 @@ A conforming **consumer** (the addressee, or its agent) **MUST**:
 2. Decide whether to hold it by its stated acceptance policy (VTI-NTF-030). A VTA's policy, unless
    its principal chose otherwise, holds a notification only from a party with which the principal
    has a relationship: a community, group or network whose membership credential the principal
-   holds; a party holding an access control entry at the VTA; or a party the principal chose to
-   hear from.
-3. Hold at most one record per `issuer` and `notificationId`: replace it with a higher `revision`,
+   holds; a party with which the principal holds a verifiable relationship credential; a party
+   holding an access control entry at the VTA; or a party the principal chose to hear from.
+3. Hold at most one record per `issuer` and `notificationId`, comparing `issuer` identifiers as
+   VTI-KEY-160 – VTI-KEY-169 require for the form they take: replace it with a higher `revision`,
    leave it for an equal or lower one (VTI-NTF-022), and discard a notification whose
    `validUntil` has passed.
 4. Answer a document it verified with a receipt that echoes `notificationId` and `revision`, the
@@ -166,7 +171,7 @@ it spends on the rest (VTI-NTF-033).
   - **`notificationId`** — the originator's identifier for it, unique among the notifications
     that originator issues, and the same across retries, re-issued documents and relays.
   - **`revision`** — starts at 1; a higher one replaces a lower one.
-  - **`kind`** — what the thing is: a registered name from the [kind registry](#kind-registry),
+  - **`kind`** — what the thing is: a name registered in VTI Appendix G ([Kinds](#kinds)),
     or `<reverse-DNS domain>:<name>` under a domain the kind's definer controls.
   - **`subject`** — **`heldBy`**, the DID holding the thing; **`id`**, its identifier there;
     **`openWith`**, the Type URI of the task that opens it.
@@ -177,29 +182,28 @@ it spends on the rest (VTI-NTF-033).
     The notification lapses at `validUntil`, or as its kind's definition says.
 - **Originator** — the `issuer`. **Addressee** — the `recipient`.
 
-## Kind registry
+## Kinds
 
-A kind is registered by adding a row to this table in a pull request to this registry, naming
-the definition that states, for the kind (VTI-NTF-011): what the thing is; the task that opens
-it; what `audience` means; what a notification of the kind may carry beyond the members above —
-nothing, unless the definition says otherwise; whether it may be relayed; and when it lapses. A
-kind defined elsewhere uses a namespaced name (`org.example:meetingInvite`) and needs no row.
+`kind` names what the thing is. **The registry of kinds is not in this specification**: it is
+Appendix G of the [Verifiable Trust Infrastructure specification](https://trustoverip.github.io/dtgwg-vti-spec/)
+(VTI-NTF-010), kept there as that specification keeps its capability registry, so that registering
+a kind needs no new version of this task. This schema fixes only the form of a name: a
+lowerCamelCase name registered there, such as `election`, or `<reverse-DNS domain>:<name>` for a
+kind defined under a domain its definer controls, such as `org.example:meetingInvite`, which
+needs no registration. A kind's definition states what the thing is, the task that opens it, what
+`audience` means, what a notification of the kind may carry beyond the members above (nothing,
+unless it says otherwise), whether it may be relayed and what a relay of it discloses, and when it
+lapses (VTI-NTF-011). A consumer does nothing with a kind it does not recognise beyond holding,
+listing and discarding it (consumer item 5).
 
-| Kind | Thing | `subject.heldBy` / `subject.id` | `subject.openWith` | `audience` | Relayable | Lapses | Defined by |
-|---|---|---|---|---|---|---|---|
-| `election` | an election, poll or survey of a community | the community's DID / the election's `electionId` | [`vtc/elections/show`](../../../vtc/elections/show/0.5/spec.md) | the DID the election's credential roll names (`roll.memberOf`), or the community's own DID under any other roll rule | yes | at `validUntil`, the close of voting | VTI-NTF-060 – VTI-NTF-063 |
-
-**The `election` kind.** A community **SHOULD** send one to the party a credential roll names
-when that party is itself a member of the community, once the election is registered with its
-ballot box, and to no other party; and **MUST** withdraw it if the election is cancelled before
-voting closes (VTI-NTF-061). Such an election is never in the community's
-[`vtc/elections/list`](../../../vtc/elections/list/0.5/spec.md), not even its identifier
-(VTI-VOT-015), so this notification — sent to the party, which alone holds the roster, and relayed
-by it to its members — is how those members learn of it. It carries `validFrom` and `validUntil`
-as the voting period, and nothing else of the election: no title, questions, options or roll
-size. A member's agent shows a notified election as notified — community, identifier, audience,
-period — until the member opens it with `vtc/elections/show`, presenting their membership
-credential for the audience only by their own choice (VTI-VOT-016, VTI-NTF-063).
+*Informative.* A notification of the kind `election`, as VTI-NTF-060 – VTI-NTF-063 define it, names
+the community as `subject.heldBy`, the `electionId` as `subject.id` and
+[`vtc/elections/show/0.6`](../../../vtc/elections/show/0.6/spec.md) as `subject.openWith`; its
+`audience` is the DID the election's credential roll names, or the community's own; and its period
+is the voting period. A community **MUST** send one to a member party a credential roll names once
+the election is registered, and withdraw it if the election is cancelled before voting closes
+(VTI-NTF-061). It is how that party's members learn of an election the community's
+[`vtc/elections/list`](../../../vtc/elections/list/0.5/spec.md) never shows them (VTI-VOT-015).
 
 ## Request
 
@@ -227,7 +231,7 @@ it relay.
       "subject": {
         "heldBy": "did:web:community.example",
         "id": "board-2027",
-        "openWith": "https://trusttasks.org/spec/vtc/elections/show/0.5"
+        "openWith": "https://trusttasks.org/spec/vtc/elections/show/0.6"
       },
       "audience": "did:web:partner.example",
       "status": "available",
@@ -264,7 +268,7 @@ it relay.
       "subject": {
         "heldBy": "did:web:community.example",
         "id": "board-2027",
-        "openWith": "https://trusttasks.org/spec/vtc/elections/show/0.5"
+        "openWith": "https://trusttasks.org/spec/vtc/elections/show/0.6"
       },
       "audience": "did:web:partner.example",
       "status": "withdrawn",

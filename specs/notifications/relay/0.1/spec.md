@@ -105,10 +105,20 @@ A conforming **producer** (the relayer) **MUST**:
 3. Address each relay to one party and sign it as `issuer`.
 4. **MUST NOT** tell the originator, or any earlier relayer, whom it relayed to, how many, or
    whether it relayed at all (VTI-NTF-043).
+5. Relay every later revision of a notification it relayed — a withdrawal included — to every
+   party it relayed an earlier revision to (VTI-NTF-044). It therefore keeps a record of those
+   parties, until the notification's `validUntil` passes or, for a notification with no
+   `validUntil`, for a period it states and applies to every such notification, and uses that
+   record for nothing else. A revision arriving after the record is gone **MAY** be relayed as a
+   new notification would be.
+6. Before relaying a notification of a kind whose definition says a relay discloses something
+   about the relayer, have shown whoever decides the relay — the relayer's administrator, or the
+   principal — what it discloses (VTI-NTF-046). For the kind `election`, a relay shows each party
+   it reaches that the relayer is a member of the community holding the election, which the
+   relayer's own listing in that community's directory may keep from them (VTI-DIR-040).
 
 A conforming producer **SHOULD** apply its own acceptance policy before relaying, since its
-recipients accept the relay on the relayer's standing, and **SHOULD** relay a later revision it
-accepts — a withdrawal included — to every party it relayed an earlier revision to (VTI-NTF-044).
+recipients accept the relay on the relayer's standing.
 
 A conforming **consumer** (the relay's recipient, or its agent) **MUST**:
 
@@ -190,7 +200,7 @@ from `did:web:community.example` and relays it to its member `did:key:z6MkMember
           "subject": {
             "heldBy": "did:web:community.example",
             "id": "board-2027",
-            "openWith": "https://trusttasks.org/spec/vtc/elections/show/0.5"
+            "openWith": "https://trusttasks.org/spec/vtc/elections/show/0.6"
           },
           "audience": "did:web:partner.example",
           "status": "available",

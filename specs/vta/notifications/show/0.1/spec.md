@@ -150,7 +150,7 @@ proofs included.
         "subject": {
           "heldBy": "did:web:community.example",
           "id": "board-2027",
-          "openWith": "https://trusttasks.org/spec/vtc/elections/show/0.5"
+          "openWith": "https://trusttasks.org/spec/vtc/elections/show/0.6"
         },
         "audience": "did:web:partner.example",
         "status": "available",

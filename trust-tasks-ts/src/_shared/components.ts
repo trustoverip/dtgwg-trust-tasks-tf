@@ -1071,7 +1071,7 @@ export type Key_VtaV0_1 = string;
  */
 export type Kind = "dm" | "group" | "channel";
 /**
- * What the thing is. Either a registered kind — one lowerCamelCase name listed in the kind registry of notifications/notify, such as `election` — or an unregistered kind, written `<reverse-DNS domain>:<name>` under a domain its definer controls, such as `org.example:meetingInvite`. A recipient that does not recognise a kind holds, lists and discards it and does nothing else with it (VTI-NTF-012).
+ * What the thing is. Either a registered kind — one lowerCamelCase name in the VTI specification's notification kind registry (Appendix G), such as `election` — or an unregistered kind, written `<reverse-DNS domain>:<name>` under a domain its definer controls, such as `org.example:meetingInvite`. A recipient that does not recognise a kind holds, lists and discards it and does nothing else with it (VTI-NTF-012).
  */
 export type Kind_NotificationsV0_1 = string;
 /**
@@ -13567,7 +13567,7 @@ export interface Subject {
    */
   id: string;
   /**
-   * The Type URI of the Trust Task by which a recipient opens the thing at `heldBy` — for an election, `https://trusttasks.org/spec/vtc/elections/show/0.5`. A recipient opens it only at its principal's choice (VTI-NTF-053), and only by a version of that task it and `heldBy` both serve.
+   * The Type URI of the Trust Task by which a recipient opens the thing at `heldBy` — for an election, `https://trusttasks.org/spec/vtc/elections/show/0.6`. A recipient opens it only at its principal's choice (VTI-NTF-053), and only by a version of that task it and `heldBy` both serve.
    */
   openWith: string;
 }
