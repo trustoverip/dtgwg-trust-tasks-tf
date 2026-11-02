@@ -15,7 +15,7 @@ import (
 // https://trusttasks.org/spec/vtc/rooms/community/list/0.2#response. One page of the
 // rooms the community owns.
 //
-// Deprecated: superseded by vtc/rooms/community/list/0.3
+// Deprecated: superseded by vtc/rooms/community/list/0.4
 type Response struct {
 	Items []CommunityRoomV2 `json:"items"`
 
@@ -177,7 +177,7 @@ const (
 
 // Payload VTC Rooms Community List — payload
 //
-// Deprecated: superseded by vtc/rooms/community/list/0.3
+// Deprecated: superseded by vtc/rooms/community/list/0.4
 type Payload struct {
 	// Opaque continuation token from a previous page's `nextCursor`.
 	Cursor *string `json:"cursor,omitempty"`
@@ -205,7 +205,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = "superseded by vtc/rooms/community/list/0.3"
+const Deprecation = "superseded by vtc/rooms/community/list/0.4"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/rooms/community/list/0.2#response"
