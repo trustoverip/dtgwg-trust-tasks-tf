@@ -15,4 +15,6 @@ export const EXTENDS_BY_TYPE_URI: Readonly<Record<string, string>> = Object.free
   "https://trusttasks.org/spec/vta/did-templates/list/3.2": "3.1",
   "https://trusttasks.org/spec/vta/did-templates/update/3.2": "3.1",
   "https://trusttasks.org/spec/vta/webvh/dids/update/1.1": "1.0",
+  "https://trusttasks.org/spec/vtc/elections/list/0.4": "0.3",
+  "https://trusttasks.org/spec/vtc/elections/tickets/issue/0.2": "0.1",
 });

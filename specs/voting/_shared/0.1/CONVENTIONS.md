@@ -76,6 +76,15 @@ to register those levels (`voting/election/register:unsupportedSecrecy`).
   manifest's `textReleaseThreshold` be as low as 1 where `0.1` and `0.2` require at least 10
   (VTI-VOT-065). It **SHOULD** be at least 10; below 10, the disclosure a member is shown before
   they request a ticket says so, and that a written answer may identify its author (VTI-VOT-090).
+- **Credential roll.** `voting/_shared/0.4` defines the same members as `0.3`, and appends a
+  fourth roll rule, `credential`, with a member `roll.memberOf`: a ticket goes to whoever holds a
+  membership credential for that one DID — the community, one of its groups, or a party that is
+  itself an active member of the community (VTI-VOT-026) — proven by a presentation carried in
+  `vtc/elections/tickets/issue/0.2` when the holder claims their ticket, and never resolved when
+  the election is created (VTI-VOT-025). One ticket is held against the credential's subject,
+  never against `memberOf` (VTI-VOT-027). The roll's size is not known to anyone, so turnout is
+  counted ballots against tickets issued (VTI-VOT-028). The disclosure says whose credential
+  counts (`rollCredential`, VTI-VOT-090).
 - **Ticket.** A predicate credential system (PCS) class credential, issued blind by the
   community under the class `voter/<electionId>` and its **voting key**. It admits its holder to
   vote in one election and identifies nobody.
@@ -153,8 +162,8 @@ The reference implementation is the `vti-voting` crate of verifiable-trust-infra
 | `voting/trustees/status` | As the board reads, and — whatever the board's visibility — every trustee the manifest names: a trustee cannot take its next step without it (§9.6) |
 | `voting/trustees/authorize` | The community the payload names, by proof (§9.7) |
 | `vtc/elections/create`, `close`, `cancel`, `certify` | `vtc.elections.manage` (VTI-VOT-080); `create` of a `binding` manifest takes another administrator's consent (VTI-VOT-081) |
-| `vtc/elections/list`, `show` | A member, for an election whose roll admits them; `vtc.elections.manage` for every election |
-| `vtc/elections/tickets/issue` | The proven signer is eligible under the roll rule and holds no ticket for the election (VTI-VOT-021, VTI-VOT-022) |
+| `vtc/elections/list`, `show` | A member, for an election whose roll admits them; under a `credential` roll, a caller it could admit (`list/0.4` Conformance item 1); `vtc.elections.manage` for every election |
+| `vtc/elections/tickets/issue` | The proven signer is eligible under the roll rule and holds no ticket for the election (VTI-VOT-021, VTI-VOT-022); under a `credential` roll, eligibility is the presentation the request carries, checked at issuance (VTI-VOT-025) |
 | `vta/pcs/voter/*`, `vta/pcs/vote`, `vta/pcs/vote-encrypted` | Standing over the context; as a capability, **`pcsVoter`** (`device/_shared/0.2` `Capability`). Not `sign`; a VTA **MUST NOT** require `sign` |
 | `vta/pcs/trustee/*` | Standing over the context and over the trustee persona; as a capability, **`pcsTrustee`**. Not `sign` |
 

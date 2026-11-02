@@ -39,7 +39,7 @@ type CastDocument struct {
 
 // Response VTA PCS — Vote — response payload
 //
-// Deprecated: superseded by vta/pcs/vote/0.3
+// Deprecated: superseded by vta/pcs/vote/0.4
 type Response struct {
 	CastDocument CastDocument `json:"castDocument"`
 
@@ -233,7 +233,7 @@ type Multibase = string
 // voting/ballot/cast document, signed by a did:key used for this cast alone, for the
 // client to send.
 //
-// Deprecated: superseded by vta/pcs/vote/0.3
+// Deprecated: superseded by vta/pcs/vote/0.4
 type Payload struct {
 	// The context the voter belongs to.
 	ContextID string `json:"contextId"`
@@ -269,7 +269,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = "superseded by vta/pcs/vote/0.3"
+const Deprecation = "superseded by vta/pcs/vote/0.4"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/pcs/vote/0.1#response"

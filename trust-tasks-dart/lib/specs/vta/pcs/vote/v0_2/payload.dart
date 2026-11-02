@@ -75,7 +75,7 @@ class CastDocument {
 typedef Ext = Map<String, dynamic>;
 
 /// VTA PCS — Vote — response payload
-@Deprecated('superseded by vta/pcs/vote/0.3')
+@Deprecated('superseded by vta/pcs/vote/0.4')
 class Response {
   const Response({
     required this.castDocument,
@@ -538,7 +538,7 @@ class VotingParameters {
 /// manifest, makes the ticket's attestation over it, and returns the complete
 /// voting/ballot/cast document, signed by a did:key used for this cast alone, for the
 /// client to send.
-@Deprecated('superseded by vta/pcs/vote/0.3')
+@Deprecated('superseded by vta/pcs/vote/0.4')
 class Payload {
   const Payload({
     required this.contextId,
@@ -596,7 +596,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by vta/pcs/vote/0.3';
+const String? deprecation = 'superseded by vta/pcs/vote/0.4';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/vta/pcs/vote/0.2';

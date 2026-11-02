@@ -52,7 +52,7 @@ related:
 
 ## Abstract
 
-**VTC Elections — Ballot Boxes — List** reads the voting services a community will register an election with: its **trusted ballot boxes** (VTI-VOT-082). A manifest must name one of them in `ballotBox`, or [`vtc/elections/create`](../../../create/0.4/spec.md) refuses it with `ballotBoxNotTrusted`; until now an administrator writing a manifest had to learn the list from whoever operates the community's host. Each entry carries what members are told about that ballot box when an election names it — who operates it, and whether the community's own operator does (VTI-VOT-090) — so the administrator choosing one sees what their members will. The family's shared rules are in [`CONVENTIONS.md`](../../../../../voting/_shared/0.1/CONVENTIONS.md).
+**VTC Elections — Ballot Boxes — List** reads the voting services a community will register an election with: its **trusted ballot boxes** (VTI-VOT-082). A manifest must name one of them in `ballotBox`, or [`vtc/elections/create`](../../../create/0.5/spec.md) refuses it with `ballotBoxNotTrusted`; until now an administrator writing a manifest had to learn the list from whoever operates the community's host. Each entry carries what members are told about that ballot box when an election names it — who operates it, and whether the community's own operator does (VTI-VOT-090) — so the administrator choosing one sees what their members will. The family's shared rules are in [`CONVENTIONS.md`](../../../../../voting/_shared/0.1/CONVENTIONS.md).
 
 ## Status of this Document
 
@@ -67,8 +67,8 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 A conforming **community** (`recipient`):
 
 1. **MUST** refuse a requester without `vtc.elections.manage` (VTI-VOT-080), read from the signer's live access-control entry at execution time, with `permissionDenied`.
-2. **MUST** answer every ballot box it trusts at the moment it answers, and only those: exactly the list [`vtc/elections/create`](../../../create/0.4/spec.md) checks `ballotBox` against. A ballot box listed here **MUST** be one a create naming it would not refuse as `ballotBoxNotTrusted`, and one it would refuse **MUST NOT** be listed.
-3. **MUST** answer each entry's `did` exactly as `ballotBox` must name it — `create` compares the two verbatim — and its `operator` and `sameOperator` exactly as [`vtc/elections/show`](../../../show/0.3/spec.md) would disclose them, as `ballotBoxOperator` and `sameOperator`, for an election naming it. `sameOperator` **MUST** be true whenever the party operating the community's VTC also operates that ballot box.
+2. **MUST** answer every ballot box it trusts at the moment it answers, and only those: exactly the list [`vtc/elections/create`](../../../create/0.5/spec.md) checks `ballotBox` against. A ballot box listed here **MUST** be one a create naming it would not refuse as `ballotBoxNotTrusted`, and one it would refuse **MUST NOT** be listed.
+3. **MUST** answer each entry's `did` exactly as `ballotBox` must name it — `create` compares the two verbatim — and its `operator` and `sameOperator` exactly as [`vtc/elections/show`](../../../show/0.4/spec.md) would disclose them, as `ballotBoxOperator` and `sameOperator`, for an election naming it. `sameOperator` **MUST** be true whenever the party operating the community's VTC also operates that ballot box.
 4. **MUST** answer an empty `ballotBoxes` when it trusts none.
 
 A conforming **administrator** (`issuer`) **MUST NOT** treat the answer as lasting: the list is the community's configuration, which its operator may change at any time, and `create` checks `ballotBox` against the list as it then stands.
