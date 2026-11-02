@@ -16,6 +16,7 @@
     "answers": {
       "type": "array",
       "minItems": 1,
+      "maxItems": 64,
       "items": { "$ref": "#/$defs/Answer" },
       "description": "The joining party's answers to the host's comprehension questions, in the order the host posed them or any order the host's own question format tolerates."
     },
