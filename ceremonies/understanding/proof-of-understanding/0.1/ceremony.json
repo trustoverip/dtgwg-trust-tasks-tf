@@ -49,6 +49,7 @@
       "issuer": "joining-party",
       "recipient": "host",
       "description": "The two parties record a bilateral agreement grounded in the passed exchange. The host may accept, refuse, or counter with exactly one alternative agreement; a countered proposal may be answered with at most one further request re-proposing the countered terms — IEEE 7012-2025 §5.3.1's three-way choice (accept, a single alternative, reject) under §5.2.2's rule that there is no negotiation beyond the single choice by either party. Every decision — accepted, countered or refused — is carried in this step's success response as `decision` (SPEC §8, \"A decision is not a failure\"). This ceremony's completion predicate (below) checks only that the seal step's exchange is present, per this evidence layer's own limits (it cannot express a check over response content) — a relying party MUST additionally confirm, from the step's own documents, that its terminal document is the understanding/seal/0.1#response that decides the request it names and carries `decision: \"accepted\"`, since ceremony-level completion alone does not distinguish a sealed agreement from a refused or countered-and-abandoned one.",
+      "maxRounds": 2,
       "prev": ["exchange"],
       "terminal": true,
       "compensatable": false
@@ -69,7 +70,7 @@
   "exposure": {
     "discloses": "metadata",
     "actsAsSubject": false,
-    "rationale": "max() over the steps: offer, exchange, and seal each disclose only metadata — terms references, comprehension answers, and the agreement reference (or, on the error paths, a refusal or a counter-proposal, also metadata-only). This ceremony no longer includes a step that discloses secret material or acts as the subject of an access grant; graduated access following a seal is out of scope for this ceremony (see understanding/seal's Abstract) and is expected to be conferred separately by a Verifiable Authority Credential citing this ceremony's seal step, not modeled here. enactmentPrivacy is shared because all three steps reach the same two parties, and a single correlatable record of the engagement is the point: it is what makes the seal citable as evidence (see understanding/seal's Correlation section)."
+    "rationale": "max() over the steps: offer, exchange, and seal each disclose only metadata — terms references, comprehension answers, and the agreement reference (or a refusal or counter-proposal, carried as `decision` and also metadata-only). This ceremony no longer includes a step that discloses secret material or acts as the subject of an access grant; graduated access following a seal is out of scope for this ceremony (see understanding/seal's Abstract) and is expected to be conferred separately by a Verifiable Authority Credential citing this ceremony's seal step, not modeled here. enactmentPrivacy is shared because all three steps reach the same two parties, and a single correlatable record of the engagement is the point: it is what makes the seal citable as evidence (see understanding/seal's Correlation section)."
   },
   "related": [
     "understanding/offer",
