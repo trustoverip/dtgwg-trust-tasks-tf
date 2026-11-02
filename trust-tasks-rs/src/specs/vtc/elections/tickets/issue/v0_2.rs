@@ -1281,7 +1281,7 @@ pub mod error_codes {
     };
     /// `vtc/elections/tickets/issue:rollUntrusted`
     ///
-    /// `roll.memberOf` is no longer a party the community trusts: its recognition of that community or network has been withdrawn, or the group no longer exists, since the election was created (VTI-VOT-026). No ticket is issued under it.
+    /// `roll.memberOf` is no longer a party the community trusts for the roll (VTI-VOT-026): it names a group the community no longer holds, or a member party whose own membership of the community has since expired, been suspended, been removed or had its membership credential revoked. No ticket is issued under it.
     ///
     /// Declared `retryable: false`.
     pub const ROLL_UNTRUSTED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
@@ -1291,7 +1291,7 @@ pub mod error_codes {
     };
     /// `vtc/elections/tickets/issue:membershipIndeterminate`
     ///
-    /// The community could not determine, now, whether the credential is revoked or whether it still recognises `roll.memberOf`: a status list or the trust registry could not be reached or answered too long ago (VTI-CRD-012, VTI-REG-012). Nothing was recorded; the same document may be sent again.
+    /// The community could not determine, now, whether the presented credential, or the membership credential it issued the party `roll.memberOf` names, is revoked: a status list or the trust registry its issuer publishes status through could not be reached or answered too long ago (VTI-CRD-012, VTI-REG-012). Nothing was recorded; the same document may be sent again.
     ///
     /// Declared `retryable: true`.
     pub const MEMBERSHIP_INDETERMINATE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {

@@ -449,7 +449,7 @@ export const PAYLOAD_SCHEMA = {
           "minLength": 8,
           "maxLength": 2048,
           "pattern": "^did:[a-z0-9]+:\\S+$",
-          "description": "The DID whose membership credential admits its holder, under the `credential` rule: this community, one of its groups, or a community or network this community recognises (VTI-VOT-026). Always a DID, never a group's local identifier or name. A community refuses to create an election naming any other DID (vtc/elections/create:rollUntrusted)."
+          "description": "The DID whose membership credential admits its holder, under the `credential` rule: this community, one of its groups, or a party that is itself an active member of this community — holding a membership credential this community issued it — such as another community, a group of another community, or a network (VTI-VOT-026). Always a DID, never a group's local identifier or name. A community refuses to create an election naming any other DID (vtc/elections/create:rollUntrusted)."
         }
       },
       "dependentSchemas": {
@@ -1037,7 +1037,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "minLength": 8,
           "maxLength": 2048,
           "pattern": "^did:[a-z0-9]+:\\S+$",
-          "description": "The DID whose membership credential admits its holder, under the `credential` rule: this community, one of its groups, or a community or network this community recognises (VTI-VOT-026). Always a DID, never a group's local identifier or name. A community refuses to create an election naming any other DID (vtc/elections/create:rollUntrusted)."
+          "description": "The DID whose membership credential admits its holder, under the `credential` rule: this community, one of its groups, or a party that is itself an active member of this community — holding a membership credential this community issued it — such as another community, a group of another community, or a network (VTI-VOT-026). Always a DID, never a group's local identifier or name. A community refuses to create an election naming any other DID (vtc/elections/create:rollUntrusted)."
         }
       },
       "dependentSchemas": {

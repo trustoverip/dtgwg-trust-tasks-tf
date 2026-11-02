@@ -90,10 +90,11 @@ class RollRule {
   final List<String>? listed;
 
   /// The DID whose membership credential admits its holder, under the `credential` rule:
-  /// this community, one of its groups, or a community or network this community
-  /// recognises (VTI-VOT-026). Always a DID, never a group's local identifier or name. A
-  /// community refuses to create an election naming any other DID
-  /// (vtc/elections/create:rollUntrusted).
+  /// this community, one of its groups, or a party that is itself an active member of
+  /// this community — holding a membership credential this community issued it — such as
+  /// another community, a group of another community, or a network (VTI-VOT-026). Always
+  /// a DID, never a group's local identifier or name. A community refuses to create an
+  /// election naming any other DID (vtc/elections/create:rollUntrusted).
   final String? memberOf;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
@@ -1158,8 +1159,9 @@ class ElectionSummary {
 
 /// `thisCommunity`: the community itself. `communityGroup`: one of the community's own
 /// groups, whose membership credentials it authorizes the group to issue
-/// (VTI-DIR-083). `recognisedCommunity`: another community this community recognises.
-/// `recognisedNetwork`: a network this community recognises.
+/// (VTI-DIR-083). `memberParty`: a party outside the community that is itself an
+/// active member of it — another community, a group of another community, or a network
+/// — whose own membership credentials admit their holders (VTI-VOT-026).
 ///
 /// An extension type rather than an enum: a value from a newer MINOR of this
 /// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
@@ -1169,18 +1171,15 @@ extension type const RollCredentialDisclosureMemberOfKind(String value) {
       RollCredentialDisclosureMemberOfKind('thisCommunity');
   static const RollCredentialDisclosureMemberOfKind communityGroup =
       RollCredentialDisclosureMemberOfKind('communityGroup');
-  static const RollCredentialDisclosureMemberOfKind recognisedCommunity =
-      RollCredentialDisclosureMemberOfKind('recognisedCommunity');
-  static const RollCredentialDisclosureMemberOfKind recognisedNetwork =
-      RollCredentialDisclosureMemberOfKind('recognisedNetwork');
+  static const RollCredentialDisclosureMemberOfKind memberParty =
+      RollCredentialDisclosureMemberOfKind('memberParty');
 
   /// Every value this specification's schema permits.
   static const List<RollCredentialDisclosureMemberOfKind> values =
       <RollCredentialDisclosureMemberOfKind>[
     thisCommunity,
     communityGroup,
-    recognisedCommunity,
-    recognisedNetwork
+    memberParty
   ];
 }
 
@@ -1212,13 +1211,14 @@ class RollCredentialDisclosure {
 
   /// `thisCommunity`: the community itself. `communityGroup`: one of the community's own
   /// groups, whose membership credentials it authorizes the group to issue
-  /// (VTI-DIR-083). `recognisedCommunity`: another community this community recognises.
-  /// `recognisedNetwork`: a network this community recognises.
+  /// (VTI-DIR-083). `memberParty`: a party outside the community that is itself an
+  /// active member of it — another community, a group of another community, or a network
+  /// — whose own membership credentials admit their holders (VTI-VOT-026).
   final RollCredentialDisclosureMemberOfKind memberOfKind;
 
   /// The name the community shows for the party `memberOf` names: the group's name, or
-  /// the recognised community's or network's. Absent where showing it would disclose
-  /// more than the group's visibility admits (VTI-DIR-070).
+  /// the member party's name as the community's records hold it. Absent where showing it
+  /// would disclose more than the group's visibility admits (VTI-DIR-070).
   final String? memberOfName;
 
   /// Always true: claiming a ticket shows the community the presenter's membership

@@ -57,10 +57,11 @@ type RollRule struct {
 	Listed *[]string    `json:"listed,omitempty"`
 
 	// The DID whose membership credential admits its holder, under the `credential` rule:
-	// this community, one of its groups, or a community or network this community recognises
-	// (VTI-VOT-026). Always a DID, never a group's local identifier or name. A community
-	// refuses to create an election naming any other DID
-	// (vtc/elections/create:rollUntrusted).
+	// this community, one of its groups, or a party that is itself an active member of this
+	// community — holding a membership credential this community issued it — such as another
+	// community, a group of another community, or a network (VTI-VOT-026). Always a DID,
+	// never a group's local identifier or name. A community refuses to create an election
+	// naming any other DID (vtc/elections/create:rollUntrusted).
 	MemberOf *string `json:"memberOf,omitempty"`
 }
 
@@ -294,16 +295,17 @@ type Disclosure struct {
 
 // RollCredentialDisclosureMemberOfKind `thisCommunity`: the community itself.
 // `communityGroup`: one of the community's own groups, whose membership credentials it
-// authorizes the group to issue (VTI-DIR-083). `recognisedCommunity`: another community
-// this community recognises. `recognisedNetwork`: a network this community recognises.
+// authorizes the group to issue (VTI-DIR-083). `memberParty`: a party outside the
+// community that is itself an active member of it — another community, a group of another
+// community, or a network — whose own membership credentials admit their holders
+// (VTI-VOT-026).
 type RollCredentialDisclosureMemberOfKind string
 
 // Values RollCredentialDisclosureMemberOfKind may take, per this specification's schema.
 const (
-	RollCredentialDisclosureMemberOfKindThisCommunity       RollCredentialDisclosureMemberOfKind = "thisCommunity"
-	RollCredentialDisclosureMemberOfKindCommunityGroup      RollCredentialDisclosureMemberOfKind = "communityGroup"
-	RollCredentialDisclosureMemberOfKindRecognisedCommunity RollCredentialDisclosureMemberOfKind = "recognisedCommunity"
-	RollCredentialDisclosureMemberOfKindRecognisedNetwork   RollCredentialDisclosureMemberOfKind = "recognisedNetwork"
+	RollCredentialDisclosureMemberOfKindThisCommunity  RollCredentialDisclosureMemberOfKind = "thisCommunity"
+	RollCredentialDisclosureMemberOfKindCommunityGroup RollCredentialDisclosureMemberOfKind = "communityGroup"
+	RollCredentialDisclosureMemberOfKindMemberParty    RollCredentialDisclosureMemberOfKind = "memberParty"
 )
 
 // RollCredentialDisclosure Under a `credential` roll, whose membership credential admits
@@ -317,13 +319,14 @@ type RollCredentialDisclosure struct {
 
 	// `thisCommunity`: the community itself. `communityGroup`: one of the community's own
 	// groups, whose membership credentials it authorizes the group to issue (VTI-DIR-083).
-	// `recognisedCommunity`: another community this community recognises.
-	// `recognisedNetwork`: a network this community recognises.
+	// `memberParty`: a party outside the community that is itself an active member of it —
+	// another community, a group of another community, or a network — whose own membership
+	// credentials admit their holders (VTI-VOT-026).
 	MemberOfKind RollCredentialDisclosureMemberOfKind `json:"memberOfKind"`
 
 	// The name the community shows for the party `memberOf` names: the group's name, or the
-	// recognised community's or network's. Absent where showing it would disclose more than
-	// the group's visibility admits (VTI-DIR-070).
+	// member party's name as the community's records hold it. Absent where showing it would
+	// disclose more than the group's visibility admits (VTI-DIR-070).
 	MemberOfName *string `json:"memberOfName,omitempty"`
 
 	// Always true: claiming a ticket shows the community the presenter's membership

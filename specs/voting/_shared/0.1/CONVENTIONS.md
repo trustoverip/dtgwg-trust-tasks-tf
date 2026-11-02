@@ -78,8 +78,8 @@ to register those levels (`voting/election/register:unsupportedSecrecy`).
   they request a ticket says so, and that a written answer may identify its author (VTI-VOT-090).
 - **Credential roll.** `voting/_shared/0.4` defines the same members as `0.3`, and appends a
   fourth roll rule, `credential`, with a member `roll.memberOf`: a ticket goes to whoever holds a
-  membership credential for that one DID — the community, one of its groups, or a community or
-  network it recognises (VTI-VOT-026) — proven by a presentation carried in
+  membership credential for that one DID — the community, one of its groups, or a party that is
+  itself an active member of the community (VTI-VOT-026) — proven by a presentation carried in
   `vtc/elections/tickets/issue/0.2` when the holder claims their ticket, and never resolved when
   the election is created (VTI-VOT-025). One ticket is held against the credential's subject,
   never against `memberOf` (VTI-VOT-027). The roll's size is not known to anyone, so turnout is
