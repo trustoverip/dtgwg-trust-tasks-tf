@@ -107,6 +107,10 @@ fn rejects_invalid_response_examples() {
             "counterAgreement beside decision: accepted — an alternative is carried only by a counter.",
             "{\n  \"counterAgreement\": {\n    \"effectiveFrom\": \"2026-09-24T10:10:00Z\",\n    \"name\": \"Data retention (6 months)\",\n    \"rosterItems\": [\n      \"data-retention-6mo\"\n    ]\n  },\n  \"decision\": \"accepted\",\n  \"taskContext\": \"urn:uuid:1a2b3c4d-0004-4000-8000-000000000001\",\n  \"taskDigestMultibase\": \"zQmT6nR3sVwXeJhK4d8f2gY1pQ9mN7bC5aE3wD6rL8sU2v\"\n}",
         ),
+        (
+            "decision: countered without counterAgreement — a counter carries its single alternative, and a bare counter offers none.",
+            "{\n  \"decision\": \"countered\",\n  \"taskContext\": \"urn:uuid:1a2b3c4d-0004-4000-8000-000000000001\",\n  \"taskDigestMultibase\": \"zQmT6nR3sVwXeJhK4d8f2gY1pQ9mN7bC5aE3wD6rL8sU2v\"\n}",
+        ),
     ];
     for (i, (note, raw)) in fixtures.iter().enumerate() {
         let value: serde_json::Value = match serde_json::from_str(raw) {

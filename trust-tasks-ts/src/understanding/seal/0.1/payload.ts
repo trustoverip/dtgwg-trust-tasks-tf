@@ -7,6 +7,17 @@ import type { Agreement, DigestMultibase, Ext, RegisterRef } from "../../../_sha
 
 
 /**
+ * The second party's decision on the request named by taskContext — accepted, countered or refused — bound by taskDigestMultibase per SPEC §4.9.3 and §7.3 item 20.5's first binding form, so this response can serve as this specification's declared outcome evidence (see spec.md front matter, outcomeEvidence). A signed refusal or counter is evidence of the same kind as a signed acceptance; a party citing this response as the record that an agreement was reached MUST check that `decision` is `accepted`.
+ */
+export type UnderstandingSealResponsePayload =
+  | {
+      decision?: "accepted" | "refused";
+    }
+  | {
+      [k: string]: unknown | undefined;
+    };
+
+/**
  * The first party (the joining party) proposes a bilateral agreement, through a handshake modelled on (but not conforming to) IEEE 7012-2025, grounded in a passed understanding/exchange; the second party (the host) accepts it, refuses it, or counters with a single alternative. All three are decisions, reported in the response (SPEC §8, "A decision is not a failure") — see spec.md Authorization. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
  */
 export interface UnderstandingSealPayload {
@@ -19,31 +30,6 @@ export interface UnderstandingSealPayload {
    * Present only on the single follow-up permitted after a counter: the `id` of the understanding/seal request the second party countered. See spec.md Authorization, "Answering a counter", for the conditions a recipient MUST check before accepting this follow-up rather than refusing it with understanding/seal:negotiationExhausted.
    */
   respondsTo?: string;
-  /**
-   * Ecosystem-defined extension members per SPEC.md §4.5.1.
-   */
-  ext?: Ext;
-}
-/**
- * The second party's decision on the request named by taskContext — accepted, countered or refused — bound by taskDigestMultibase per SPEC §4.9.3 and §7.3 item 20.5's first binding form, so this response can serve as this specification's declared outcome evidence (see spec.md front matter, outcomeEvidence). A signed refusal or counter is evidence of the same kind as a signed acceptance; a party citing this response as the record that an agreement was reached MUST check that `decision` is `accepted`.
- */
-export interface UnderstandingSealResponsePayload {
-  /**
-   * The second party's decision, per spec.md Authorization: `accepted` seals the proposed agreement; `countered` offers the single alternative carried in `counterAgreement` (never in answer to a request that carries `respondsTo`); `refused` declines outright, with no reason given or owed.
-   */
-  decision: "accepted" | "countered" | "refused";
-  /**
-   * The `id` of the understanding/seal request this response decides — the initiating document of this exchange per SPEC §4.9.1. For an acceptance, this is the original proposal unless a counter was answered, in which case it is the follow-up request that re-proposed the countered terms.
-   */
-  taskContext: string;
-  /**
-   * The task digest of the request named by `taskContext`, computed per SPEC §4.9.3 as multibase(multihash(H(JCS(document ∖ proof)))) over the FULL request document — not merely its `agreement` member — so the binding also covers `exchangeId` and, where present, `respondsTo`.
-   */
-  taskDigestMultibase: DigestMultibase;
-  /**
-   * The second party's single alternative agreement, drawn from the same roster, per IEEE 7012-2025 §5.3.1(b). Present exactly when `decision` is `countered`: the schema refuses it beside any other decision, and spec.md Response requires it with `countered`.
-   */
-  counterAgreement?: Agreement;
   /**
    * Ecosystem-defined extension members per SPEC.md §4.5.1.
    */
@@ -171,7 +157,24 @@ export const PAYLOAD_SCHEMA = {
             }
           }
         }
-      }
+      },
+      "anyOf": [
+        {
+          "properties": {
+            "decision": {
+              "enum": [
+                "accepted",
+                "refused"
+              ]
+            }
+          }
+        },
+        {
+          "required": [
+            "counterAgreement"
+          ]
+        }
+      ]
     },
     "Ext": {
       "title": "Ext",
@@ -332,7 +335,24 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             }
           }
         }
-      }
+      },
+      "anyOf": [
+        {
+          "properties": {
+            "decision": {
+              "enum": [
+                "accepted",
+                "refused"
+              ]
+            }
+          }
+        },
+        {
+          "required": [
+            "counterAgreement"
+          ]
+        }
+      ]
     },
     "Ext": {
       "title": "Ext",

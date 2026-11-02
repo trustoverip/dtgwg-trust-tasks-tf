@@ -659,31 +659,159 @@ impl<'de> ::serde::Deserialize<'de> for RegisterRefVersion {
 ///The second party's decision on the request named by taskContext — accepted, countered or refused — bound by taskDigestMultibase per SPEC §4.9.3 and §7.3 item 20.5's first binding form, so this response can serve as this specification's declared outcome evidence (see spec.md front matter, outcomeEvidence). A signed refusal or counter is evidence of the same kind as a signed acceptance; a party citing this response as the record that an agreement was reached MUST check that `decision` is `accepted`.
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[serde(deny_unknown_fields)]
+#[serde(untagged, deny_unknown_fields)]
 #[non_exhaustive]
-pub struct Response {
-    ///The second party's single alternative agreement, drawn from the same roster, per IEEE 7012-2025 §5.3.1(b). Present exactly when `decision` is `countered`: the schema refuses it beside any other decision, and spec.md Response requires it with `countered`.
-    #[serde(
-        rename = "counterAgreement",
-        default,
-        skip_serializing_if = "::std::option::Option::is_none"
-    )]
-    pub counter_agreement: ::std::option::Option<Agreement>,
-    ///The second party's decision, per spec.md Authorization: `accepted` seals the proposed agreement; `countered` offers the single alternative carried in `counterAgreement` (never in answer to a request that carries `respondsTo`); `refused` declines outright, with no reason given or owed.
-    pub decision: ResponseDecision,
-    ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-    pub ext: ::std::option::Option<Ext>,
-    ///The `id` of the understanding/seal request this response decides — the initiating document of this exchange per SPEC §4.9.1. For an acceptance, this is the original proposal unless a counter was answered, in which case it is the follow-up request that re-proposed the countered terms.
-    #[serde(rename = "taskContext")]
-    pub task_context: ResponseTaskContext,
-    ///The task digest of the request named by `taskContext`, computed per SPEC §4.9.3 as multibase(multihash(H(JCS(document ∖ proof)))) over the FULL request document — not merely its `agreement` member — so the binding also covers `exchangeId` and, where present, `respondsTo`.
-    #[serde(rename = "taskDigestMultibase")]
-    pub task_digest_multibase: DigestMultibase,
+pub enum Response {
+    Variant0 {
+        decision: ResponseVariant0Decision,
+        ///Ecosystem-defined extension members per SPEC.md §4.5.1.
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        ext: ::std::option::Option<Ext>,
+        ///The `id` of the understanding/seal request this response decides — the initiating document of this exchange per SPEC §4.9.1. For an acceptance, this is the original proposal unless a counter was answered, in which case it is the follow-up request that re-proposed the countered terms.
+        #[serde(rename = "taskContext")]
+        task_context: ResponseVariant0TaskContext,
+        ///The task digest of the request named by `taskContext`, computed per SPEC §4.9.3 as multibase(multihash(H(JCS(document ∖ proof)))) over the FULL request document — not merely its `agreement` member — so the binding also covers `exchangeId` and, where present, `respondsTo`.
+        #[serde(rename = "taskDigestMultibase")]
+        task_digest_multibase: DigestMultibase,
+    },
+    Variant1 {
+        ///The second party's single alternative agreement, drawn from the same roster, per IEEE 7012-2025 §5.3.1(b). Present exactly when `decision` is `countered`: the schema refuses it beside any other decision, and spec.md Response requires it with `countered`.
+        #[serde(rename = "counterAgreement")]
+        counter_agreement: Agreement,
+        ///The second party's decision, per spec.md Authorization: `accepted` seals the proposed agreement; `countered` offers the single alternative carried in `counterAgreement` (never in answer to a request that carries `respondsTo`); `refused` declines outright, with no reason given or owed.
+        decision: ResponseVariant1Decision,
+        ///Ecosystem-defined extension members per SPEC.md §4.5.1.
+        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+        ext: ::std::option::Option<Ext>,
+        ///The `id` of the understanding/seal request this response decides — the initiating document of this exchange per SPEC §4.9.1. For an acceptance, this is the original proposal unless a counter was answered, in which case it is the follow-up request that re-proposed the countered terms.
+        #[serde(rename = "taskContext")]
+        task_context: ResponseVariant1TaskContext,
+        ///The task digest of the request named by `taskContext`, computed per SPEC §4.9.3 as multibase(multihash(H(JCS(document ∖ proof)))) over the FULL request document — not merely its `agreement` member — so the binding also covers `exchangeId` and, where present, `respondsTo`.
+        #[serde(rename = "taskDigestMultibase")]
+        task_digest_multibase: DigestMultibase,
+    },
 }
-impl Response {
-    pub fn builder() -> builder::Response {
-        Default::default()
+///`ResponseVariant0Decision`
+///
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+#[non_exhaustive]
+pub enum ResponseVariant0Decision {
+    #[serde(rename = "accepted")]
+    Accepted,
+    #[serde(rename = "refused")]
+    Refused,
+}
+impl ::std::fmt::Display for ResponseVariant0Decision {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Accepted => f.write_str("accepted"),
+            Self::Refused => f.write_str("refused"),
+        }
+    }
+}
+impl ::std::str::FromStr for ResponseVariant0Decision {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "accepted" => Ok(Self::Accepted),
+            "refused" => Ok(Self::Refused),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for ResponseVariant0Decision {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ResponseVariant0Decision {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ResponseVariant0Decision {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///The `id` of the understanding/seal request this response decides — the initiating document of this exchange per SPEC §4.9.1. For an acceptance, this is the original proposal unless a counter was answered, in which case it is the follow-up request that re-proposed the countered terms.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ResponseVariant0TaskContext(::std::string::String);
+impl ::std::ops::Deref for ResponseVariant0TaskContext {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ResponseVariant0TaskContext> for ::std::string::String {
+    fn from(value: ResponseVariant0TaskContext) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ResponseVariant0TaskContext {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 256usize {
+            return Err("longer than 256 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ResponseVariant0TaskContext {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ResponseVariant0TaskContext {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ResponseVariant0TaskContext {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ResponseVariant0TaskContext {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
     }
 }
 ///The second party's decision, per spec.md Authorization: `accepted` seals the proposed agreement; `countered` offers the single alternative carried in `counterAgreement` (never in answer to a request that carries `respondsTo`); `refused` declines outright, with no reason given or owed.
@@ -701,41 +829,33 @@ impl Response {
     PartialOrd,
 )]
 #[non_exhaustive]
-pub enum ResponseDecision {
-    #[serde(rename = "accepted")]
-    Accepted,
+pub enum ResponseVariant1Decision {
     #[serde(rename = "countered")]
     Countered,
-    #[serde(rename = "refused")]
-    Refused,
 }
-impl ::std::fmt::Display for ResponseDecision {
+impl ::std::fmt::Display for ResponseVariant1Decision {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         match *self {
-            Self::Accepted => f.write_str("accepted"),
             Self::Countered => f.write_str("countered"),
-            Self::Refused => f.write_str("refused"),
         }
     }
 }
-impl ::std::str::FromStr for ResponseDecision {
+impl ::std::str::FromStr for ResponseVariant1Decision {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         match value {
-            "accepted" => Ok(Self::Accepted),
             "countered" => Ok(Self::Countered),
-            "refused" => Ok(Self::Refused),
             _ => Err("invalid value".into()),
         }
     }
 }
-impl ::std::convert::TryFrom<&str> for ResponseDecision {
+impl ::std::convert::TryFrom<&str> for ResponseVariant1Decision {
     type Error = self::error::ConversionError;
     fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String> for ResponseDecision {
+impl ::std::convert::TryFrom<&::std::string::String> for ResponseVariant1Decision {
     type Error = self::error::ConversionError;
     fn try_from(
         value: &::std::string::String,
@@ -743,7 +863,7 @@ impl ::std::convert::TryFrom<&::std::string::String> for ResponseDecision {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<::std::string::String> for ResponseDecision {
+impl ::std::convert::TryFrom<::std::string::String> for ResponseVariant1Decision {
     type Error = self::error::ConversionError;
     fn try_from(
         value: ::std::string::String,
@@ -755,19 +875,19 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseDecision {
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
-pub struct ResponseTaskContext(::std::string::String);
-impl ::std::ops::Deref for ResponseTaskContext {
+pub struct ResponseVariant1TaskContext(::std::string::String);
+impl ::std::ops::Deref for ResponseVariant1TaskContext {
     type Target = ::std::string::String;
     fn deref(&self) -> &::std::string::String {
         &self.0
     }
 }
-impl ::std::convert::From<ResponseTaskContext> for ::std::string::String {
-    fn from(value: ResponseTaskContext) -> Self {
+impl ::std::convert::From<ResponseVariant1TaskContext> for ::std::string::String {
+    fn from(value: ResponseVariant1TaskContext) -> Self {
         value.0
     }
 }
-impl ::std::str::FromStr for ResponseTaskContext {
+impl ::std::str::FromStr for ResponseVariant1TaskContext {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() > 256usize {
@@ -779,13 +899,13 @@ impl ::std::str::FromStr for ResponseTaskContext {
         Ok(Self(value.to_string()))
     }
 }
-impl ::std::convert::TryFrom<&str> for ResponseTaskContext {
+impl ::std::convert::TryFrom<&str> for ResponseVariant1TaskContext {
     type Error = self::error::ConversionError;
     fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String> for ResponseTaskContext {
+impl ::std::convert::TryFrom<&::std::string::String> for ResponseVariant1TaskContext {
     type Error = self::error::ConversionError;
     fn try_from(
         value: &::std::string::String,
@@ -793,7 +913,7 @@ impl ::std::convert::TryFrom<&::std::string::String> for ResponseTaskContext {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<::std::string::String> for ResponseTaskContext {
+impl ::std::convert::TryFrom<::std::string::String> for ResponseVariant1TaskContext {
     type Error = self::error::ConversionError;
     fn try_from(
         value: ::std::string::String,
@@ -801,7 +921,7 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseTaskContext {
         value.parse()
     }
 }
-impl<'de> ::serde::Deserialize<'de> for ResponseTaskContext {
+impl<'de> ::serde::Deserialize<'de> for ResponseVariant1TaskContext {
     fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
     where
         D: ::serde::Deserializer<'de>,
@@ -1102,103 +1222,6 @@ pub mod builder {
             }
         }
     }
-    #[derive(Clone, Debug)]
-    pub struct Response {
-        counter_agreement:
-            ::std::result::Result<::std::option::Option<super::Agreement>, ::std::string::String>,
-        decision: ::std::result::Result<super::ResponseDecision, ::std::string::String>,
-        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
-        task_context: ::std::result::Result<super::ResponseTaskContext, ::std::string::String>,
-        task_digest_multibase: ::std::result::Result<super::DigestMultibase, ::std::string::String>,
-    }
-    impl ::std::default::Default for Response {
-        fn default() -> Self {
-            Self {
-                counter_agreement: Ok(Default::default()),
-                decision: Err("no value supplied for decision".to_string()),
-                ext: Ok(Default::default()),
-                task_context: Err("no value supplied for task_context".to_string()),
-                task_digest_multibase: Err(
-                    "no value supplied for task_digest_multibase".to_string()
-                ),
-            }
-        }
-    }
-    impl Response {
-        pub fn counter_agreement<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<super::Agreement>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.counter_agreement = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for counter_agreement: {e}"));
-            self
-        }
-        pub fn decision<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::ResponseDecision>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.decision = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for decision: {e}"));
-            self
-        }
-        pub fn ext<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.ext = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for ext: {e}"));
-            self
-        }
-        pub fn task_context<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::ResponseTaskContext>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.task_context = value
-                .try_into()
-                .map_err(|e| format!("error converting supplied value for task_context: {e}"));
-            self
-        }
-        pub fn task_digest_multibase<T>(mut self, value: T) -> Self
-        where
-            T: ::std::convert::TryInto<super::DigestMultibase>,
-            T::Error: ::std::fmt::Display,
-        {
-            self.task_digest_multibase = value.try_into().map_err(|e| {
-                format!("error converting supplied value for task_digest_multibase: {e}")
-            });
-            self
-        }
-    }
-    impl ::std::convert::TryFrom<Response> for super::Response {
-        type Error = super::error::ConversionError;
-        fn try_from(value: Response) -> ::std::result::Result<Self, super::error::ConversionError> {
-            Ok(Self {
-                counter_agreement: value.counter_agreement?,
-                decision: value.decision?,
-                ext: value.ext?,
-                task_context: value.task_context?,
-                task_digest_multibase: value.task_digest_multibase?,
-            })
-        }
-    }
-    impl ::std::convert::From<super::Response> for Response {
-        fn from(value: super::Response) -> Self {
-            Self {
-                counter_agreement: Ok(value.counter_agreement),
-                decision: Ok(value.decision),
-                ext: Ok(value.ext),
-                task_context: Ok(value.task_context),
-                task_digest_multibase: Ok(value.task_digest_multibase),
-            }
-        }
-    }
 }
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/understanding/seal/0.1";
@@ -1206,7 +1229,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"Agreement\":{\"additionalProperties\":false,\"properties\":{\"effectiveFrom\":{\"description\":\"When the agreement takes effect.\",\"format\":\"date-time\",\"type\":\"string\"},\"effectiveUntil\":{\"description\":\"OPTIONAL. When the agreement lapses on its own terms, absent a separate termination.\",\"format\":\"date-time\",\"type\":\"string\"},\"legalRef\":{\"$ref\":\"#/$defs/RegisterRef\",\"description\":\"OPTIONAL pointer to the agreement's canonical legal-register text.\"},\"machineReadableRef\":{\"$ref\":\"#/$defs/RegisterRef\",\"description\":\"OPTIONAL pointer to the agreement's machine-readable register (for example JSON-LD).\"},\"name\":{\"description\":\"A consistent, transparent name for this agreement, meaningful to a non-specialist — IEEE 7012-2025 §4.3. A separate version member is not carried: §4.3's own note permits a release date in place of a version number, and `effectiveFrom` already serves that role.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"rosterItems\":{\"description\":\"The agreed terms, as identifiers into the roster the grounding understanding/offer response's termsRef names. MUST be drawn from that same roster — see understanding/seal's Authorization section.\",\"items\":{\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"name\",\"rosterItems\",\"effectiveFrom\"],\"title\":\"Agreement\",\"type\":\"object\"},\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"RegisterRef\":{\"additionalProperties\":false,\"description\":\"A resolvable, version-identified, hash-pinned pointer to one document: the host's terms (understanding/offer's termsRef) or one register of an agreement. The same `{ uri, version, digestMultibase }` shape as understanding/offer's termsRef and as the governance-framework reference the companion Verifiable Trust Infrastructure specification places in a DID document (VTI-KEY-052: a `GovernanceFramework` service whose `serviceEndpoint` is the `uri`, with `version` and `digestMultibase` members).\",\"properties\":{\"digestMultibase\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"The multibase-encoded multihash of the resolved document's bytes at this `version`, so a party that fetches `uri` later can confirm it is the same content this reference named.\"},\"mediaType\":{\"description\":\"The media type of the resolved document (e.g. \\\"application/ld+json\\\", \\\"text/html\\\").\",\"maxLength\":255,\"minLength\":1,\"type\":\"string\"},\"uri\":{\"description\":\"Where the document can be resolved.\",\"format\":\"iri\",\"maxLength\":2048,\"type\":\"string\"},\"version\":{\"description\":\"The publisher's own version label for the resolved document.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"uri\",\"version\",\"digestMultibase\"],\"title\":\"RegisterRef\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"dependentSchemas\":{\"counterAgreement\":{\"properties\":{\"decision\":{\"const\":\"countered\"}}}},\"description\":\"The second party's decision on the request named by taskContext — accepted, countered or refused — bound by taskDigestMultibase per SPEC §4.9.3 and §7.3 item 20.5's first binding form, so this response can serve as this specification's declared outcome evidence (see spec.md front matter, outcomeEvidence). A signed refusal or counter is evidence of the same kind as a signed acceptance; a party citing this response as the record that an agreement was reached MUST check that `decision` is `accepted`.\",\"properties\":{\"counterAgreement\":{\"$ref\":\"#/$defs/Agreement\",\"description\":\"The second party's single alternative agreement, drawn from the same roster, per IEEE 7012-2025 §5.3.1(b). Present exactly when `decision` is `countered`: the schema refuses it beside any other decision, and spec.md Response requires it with `countered`.\"},\"decision\":{\"description\":\"The second party's decision, per spec.md Authorization: `accepted` seals the proposed agreement; `countered` offers the single alternative carried in `counterAgreement` (never in answer to a request that carries `respondsTo`); `refused` declines outright, with no reason given or owed.\",\"enum\":[\"accepted\",\"countered\",\"refused\"],\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"taskContext\":{\"description\":\"The `id` of the understanding/seal request this response decides — the initiating document of this exchange per SPEC §4.9.1. For an acceptance, this is the original proposal unless a counter was answered, in which case it is the follow-up request that re-proposed the countered terms.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"taskDigestMultibase\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"The task digest of the request named by `taskContext`, computed per SPEC §4.9.3 as multibase(multihash(H(JCS(document ∖ proof)))) over the FULL request document — not merely its `agreement` member — so the binding also covers `exchangeId` and, where present, `respondsTo`.\"}},\"required\":[\"decision\",\"taskContext\",\"taskDigestMultibase\"],\"title\":\"Understanding — Seal — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/understanding/seal/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The first party (the joining party) proposes a bilateral agreement, through a handshake modelled on (but not conforming to) IEEE 7012-2025, grounded in a passed understanding/exchange; the second party (the host) accepts it, refuses it, or counters with a single alternative. All three are decisions, reported in the response (SPEC §8, \\\"A decision is not a failure\\\") — see spec.md Authorization. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"agreement\":{\"$ref\":\"#/$defs/Agreement\"},\"exchangeId\":{\"description\":\"The `id` of the understanding/exchange response this seal is grounded in. Its recorded outcome MUST be \\\"understood\\\". Grounds at most one seal negotiation — see spec.md Authorization, \\\"One negotiation per exchange\\\".\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"respondsTo\":{\"description\":\"Present only on the single follow-up permitted after a counter: the `id` of the understanding/seal request the second party countered. See spec.md Authorization, \\\"Answering a counter\\\", for the conditions a recipient MUST check before accepting this follow-up rather than refusing it with understanding/seal:negotiationExhausted.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"exchangeId\",\"agreement\"],\"title\":\"Understanding — Seal — payload\",\"type\":\"object\"}\n",
+        "{\"$defs\":{\"Agreement\":{\"additionalProperties\":false,\"properties\":{\"effectiveFrom\":{\"description\":\"When the agreement takes effect.\",\"format\":\"date-time\",\"type\":\"string\"},\"effectiveUntil\":{\"description\":\"OPTIONAL. When the agreement lapses on its own terms, absent a separate termination.\",\"format\":\"date-time\",\"type\":\"string\"},\"legalRef\":{\"$ref\":\"#/$defs/RegisterRef\",\"description\":\"OPTIONAL pointer to the agreement's canonical legal-register text.\"},\"machineReadableRef\":{\"$ref\":\"#/$defs/RegisterRef\",\"description\":\"OPTIONAL pointer to the agreement's machine-readable register (for example JSON-LD).\"},\"name\":{\"description\":\"A consistent, transparent name for this agreement, meaningful to a non-specialist — IEEE 7012-2025 §4.3. A separate version member is not carried: §4.3's own note permits a release date in place of a version number, and `effectiveFrom` already serves that role.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"rosterItems\":{\"description\":\"The agreed terms, as identifiers into the roster the grounding understanding/offer response's termsRef names. MUST be drawn from that same roster — see understanding/seal's Authorization section.\",\"items\":{\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"name\",\"rosterItems\",\"effectiveFrom\"],\"title\":\"Agreement\",\"type\":\"object\"},\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"RegisterRef\":{\"additionalProperties\":false,\"description\":\"A resolvable, version-identified, hash-pinned pointer to one document: the host's terms (understanding/offer's termsRef) or one register of an agreement. The same `{ uri, version, digestMultibase }` shape as understanding/offer's termsRef and as the governance-framework reference the companion Verifiable Trust Infrastructure specification places in a DID document (VTI-KEY-052: a `GovernanceFramework` service whose `serviceEndpoint` is the `uri`, with `version` and `digestMultibase` members).\",\"properties\":{\"digestMultibase\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"The multibase-encoded multihash of the resolved document's bytes at this `version`, so a party that fetches `uri` later can confirm it is the same content this reference named.\"},\"mediaType\":{\"description\":\"The media type of the resolved document (e.g. \\\"application/ld+json\\\", \\\"text/html\\\").\",\"maxLength\":255,\"minLength\":1,\"type\":\"string\"},\"uri\":{\"description\":\"Where the document can be resolved.\",\"format\":\"iri\",\"maxLength\":2048,\"type\":\"string\"},\"version\":{\"description\":\"The publisher's own version label for the resolved document.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"uri\",\"version\",\"digestMultibase\"],\"title\":\"RegisterRef\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"anyOf\":[{\"properties\":{\"decision\":{\"enum\":[\"accepted\",\"refused\"]}}},{\"required\":[\"counterAgreement\"]}],\"dependentSchemas\":{\"counterAgreement\":{\"properties\":{\"decision\":{\"const\":\"countered\"}}}},\"description\":\"The second party's decision on the request named by taskContext — accepted, countered or refused — bound by taskDigestMultibase per SPEC §4.9.3 and §7.3 item 20.5's first binding form, so this response can serve as this specification's declared outcome evidence (see spec.md front matter, outcomeEvidence). A signed refusal or counter is evidence of the same kind as a signed acceptance; a party citing this response as the record that an agreement was reached MUST check that `decision` is `accepted`.\",\"properties\":{\"counterAgreement\":{\"$ref\":\"#/$defs/Agreement\",\"description\":\"The second party's single alternative agreement, drawn from the same roster, per IEEE 7012-2025 §5.3.1(b). Present exactly when `decision` is `countered`: the schema refuses it beside any other decision, and spec.md Response requires it with `countered`.\"},\"decision\":{\"description\":\"The second party's decision, per spec.md Authorization: `accepted` seals the proposed agreement; `countered` offers the single alternative carried in `counterAgreement` (never in answer to a request that carries `respondsTo`); `refused` declines outright, with no reason given or owed.\",\"enum\":[\"accepted\",\"countered\",\"refused\"],\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"taskContext\":{\"description\":\"The `id` of the understanding/seal request this response decides — the initiating document of this exchange per SPEC §4.9.1. For an acceptance, this is the original proposal unless a counter was answered, in which case it is the follow-up request that re-proposed the countered terms.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"taskDigestMultibase\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"The task digest of the request named by `taskContext`, computed per SPEC §4.9.3 as multibase(multihash(H(JCS(document ∖ proof)))) over the FULL request document — not merely its `agreement` member — so the binding also covers `exchangeId` and, where present, `respondsTo`.\"}},\"required\":[\"decision\",\"taskContext\",\"taskDigestMultibase\"],\"title\":\"Understanding — Seal — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/understanding/seal/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The first party (the joining party) proposes a bilateral agreement, through a handshake modelled on (but not conforming to) IEEE 7012-2025, grounded in a passed understanding/exchange; the second party (the host) accepts it, refuses it, or counters with a single alternative. All three are decisions, reported in the response (SPEC §8, \\\"A decision is not a failure\\\") — see spec.md Authorization. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"agreement\":{\"$ref\":\"#/$defs/Agreement\"},\"exchangeId\":{\"description\":\"The `id` of the understanding/exchange response this seal is grounded in. Its recorded outcome MUST be \\\"understood\\\". Grounds at most one seal negotiation — see spec.md Authorization, \\\"One negotiation per exchange\\\".\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"respondsTo\":{\"description\":\"Present only on the single follow-up permitted after a counter: the `id` of the understanding/seal request the second party countered. See spec.md Authorization, \\\"Answering a counter\\\", for the conditions a recipient MUST check before accepting this follow-up rather than refusing it with understanding/seal:negotiationExhausted.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"exchangeId\",\"agreement\"],\"title\":\"Understanding — Seal — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1215,7 +1238,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"Agreement\":{\"additionalProperties\":false,\"properties\":{\"effectiveFrom\":{\"description\":\"When the agreement takes effect.\",\"format\":\"date-time\",\"type\":\"string\"},\"effectiveUntil\":{\"description\":\"OPTIONAL. When the agreement lapses on its own terms, absent a separate termination.\",\"format\":\"date-time\",\"type\":\"string\"},\"legalRef\":{\"$ref\":\"#/$defs/RegisterRef\",\"description\":\"OPTIONAL pointer to the agreement's canonical legal-register text.\"},\"machineReadableRef\":{\"$ref\":\"#/$defs/RegisterRef\",\"description\":\"OPTIONAL pointer to the agreement's machine-readable register (for example JSON-LD).\"},\"name\":{\"description\":\"A consistent, transparent name for this agreement, meaningful to a non-specialist — IEEE 7012-2025 §4.3. A separate version member is not carried: §4.3's own note permits a release date in place of a version number, and `effectiveFrom` already serves that role.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"rosterItems\":{\"description\":\"The agreed terms, as identifiers into the roster the grounding understanding/offer response's termsRef names. MUST be drawn from that same roster — see understanding/seal's Authorization section.\",\"items\":{\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"name\",\"rosterItems\",\"effectiveFrom\"],\"title\":\"Agreement\",\"type\":\"object\"},\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"RegisterRef\":{\"additionalProperties\":false,\"description\":\"A resolvable, version-identified, hash-pinned pointer to one document: the host's terms (understanding/offer's termsRef) or one register of an agreement. The same `{ uri, version, digestMultibase }` shape as understanding/offer's termsRef and as the governance-framework reference the companion Verifiable Trust Infrastructure specification places in a DID document (VTI-KEY-052: a `GovernanceFramework` service whose `serviceEndpoint` is the `uri`, with `version` and `digestMultibase` members).\",\"properties\":{\"digestMultibase\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"The multibase-encoded multihash of the resolved document's bytes at this `version`, so a party that fetches `uri` later can confirm it is the same content this reference named.\"},\"mediaType\":{\"description\":\"The media type of the resolved document (e.g. \\\"application/ld+json\\\", \\\"text/html\\\").\",\"maxLength\":255,\"minLength\":1,\"type\":\"string\"},\"uri\":{\"description\":\"Where the document can be resolved.\",\"format\":\"iri\",\"maxLength\":2048,\"type\":\"string\"},\"version\":{\"description\":\"The publisher's own version label for the resolved document.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"uri\",\"version\",\"digestMultibase\"],\"title\":\"RegisterRef\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"dependentSchemas\":{\"counterAgreement\":{\"properties\":{\"decision\":{\"const\":\"countered\"}}}},\"description\":\"The second party's decision on the request named by taskContext — accepted, countered or refused — bound by taskDigestMultibase per SPEC §4.9.3 and §7.3 item 20.5's first binding form, so this response can serve as this specification's declared outcome evidence (see spec.md front matter, outcomeEvidence). A signed refusal or counter is evidence of the same kind as a signed acceptance; a party citing this response as the record that an agreement was reached MUST check that `decision` is `accepted`.\",\"properties\":{\"counterAgreement\":{\"$ref\":\"#/$defs/Agreement\",\"description\":\"The second party's single alternative agreement, drawn from the same roster, per IEEE 7012-2025 §5.3.1(b). Present exactly when `decision` is `countered`: the schema refuses it beside any other decision, and spec.md Response requires it with `countered`.\"},\"decision\":{\"description\":\"The second party's decision, per spec.md Authorization: `accepted` seals the proposed agreement; `countered` offers the single alternative carried in `counterAgreement` (never in answer to a request that carries `respondsTo`); `refused` declines outright, with no reason given or owed.\",\"enum\":[\"accepted\",\"countered\",\"refused\"],\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"taskContext\":{\"description\":\"The `id` of the understanding/seal request this response decides — the initiating document of this exchange per SPEC §4.9.1. For an acceptance, this is the original proposal unless a counter was answered, in which case it is the follow-up request that re-proposed the countered terms.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"taskDigestMultibase\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"The task digest of the request named by `taskContext`, computed per SPEC §4.9.3 as multibase(multihash(H(JCS(document ∖ proof)))) over the FULL request document — not merely its `agreement` member — so the binding also covers `exchangeId` and, where present, `respondsTo`.\"}},\"required\":[\"decision\",\"taskContext\",\"taskDigestMultibase\"],\"title\":\"Understanding — Seal — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
+        "{\"$defs\":{\"Agreement\":{\"additionalProperties\":false,\"properties\":{\"effectiveFrom\":{\"description\":\"When the agreement takes effect.\",\"format\":\"date-time\",\"type\":\"string\"},\"effectiveUntil\":{\"description\":\"OPTIONAL. When the agreement lapses on its own terms, absent a separate termination.\",\"format\":\"date-time\",\"type\":\"string\"},\"legalRef\":{\"$ref\":\"#/$defs/RegisterRef\",\"description\":\"OPTIONAL pointer to the agreement's canonical legal-register text.\"},\"machineReadableRef\":{\"$ref\":\"#/$defs/RegisterRef\",\"description\":\"OPTIONAL pointer to the agreement's machine-readable register (for example JSON-LD).\"},\"name\":{\"description\":\"A consistent, transparent name for this agreement, meaningful to a non-specialist — IEEE 7012-2025 §4.3. A separate version member is not carried: §4.3's own note permits a release date in place of a version number, and `effectiveFrom` already serves that role.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"rosterItems\":{\"description\":\"The agreed terms, as identifiers into the roster the grounding understanding/offer response's termsRef names. MUST be drawn from that same roster — see understanding/seal's Authorization section.\",\"items\":{\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"name\",\"rosterItems\",\"effectiveFrom\"],\"title\":\"Agreement\",\"type\":\"object\"},\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"RegisterRef\":{\"additionalProperties\":false,\"description\":\"A resolvable, version-identified, hash-pinned pointer to one document: the host's terms (understanding/offer's termsRef) or one register of an agreement. The same `{ uri, version, digestMultibase }` shape as understanding/offer's termsRef and as the governance-framework reference the companion Verifiable Trust Infrastructure specification places in a DID document (VTI-KEY-052: a `GovernanceFramework` service whose `serviceEndpoint` is the `uri`, with `version` and `digestMultibase` members).\",\"properties\":{\"digestMultibase\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"The multibase-encoded multihash of the resolved document's bytes at this `version`, so a party that fetches `uri` later can confirm it is the same content this reference named.\"},\"mediaType\":{\"description\":\"The media type of the resolved document (e.g. \\\"application/ld+json\\\", \\\"text/html\\\").\",\"maxLength\":255,\"minLength\":1,\"type\":\"string\"},\"uri\":{\"description\":\"Where the document can be resolved.\",\"format\":\"iri\",\"maxLength\":2048,\"type\":\"string\"},\"version\":{\"description\":\"The publisher's own version label for the resolved document.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"uri\",\"version\",\"digestMultibase\"],\"title\":\"RegisterRef\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"anyOf\":[{\"properties\":{\"decision\":{\"enum\":[\"accepted\",\"refused\"]}}},{\"required\":[\"counterAgreement\"]}],\"dependentSchemas\":{\"counterAgreement\":{\"properties\":{\"decision\":{\"const\":\"countered\"}}}},\"description\":\"The second party's decision on the request named by taskContext — accepted, countered or refused — bound by taskDigestMultibase per SPEC §4.9.3 and §7.3 item 20.5's first binding form, so this response can serve as this specification's declared outcome evidence (see spec.md front matter, outcomeEvidence). A signed refusal or counter is evidence of the same kind as a signed acceptance; a party citing this response as the record that an agreement was reached MUST check that `decision` is `accepted`.\",\"properties\":{\"counterAgreement\":{\"$ref\":\"#/$defs/Agreement\",\"description\":\"The second party's single alternative agreement, drawn from the same roster, per IEEE 7012-2025 §5.3.1(b). Present exactly when `decision` is `countered`: the schema refuses it beside any other decision, and spec.md Response requires it with `countered`.\"},\"decision\":{\"description\":\"The second party's decision, per spec.md Authorization: `accepted` seals the proposed agreement; `countered` offers the single alternative carried in `counterAgreement` (never in answer to a request that carries `respondsTo`); `refused` declines outright, with no reason given or owed.\",\"enum\":[\"accepted\",\"countered\",\"refused\"],\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"taskContext\":{\"description\":\"The `id` of the understanding/seal request this response decides — the initiating document of this exchange per SPEC §4.9.1. For an acceptance, this is the original proposal unless a counter was answered, in which case it is the follow-up request that re-proposed the countered terms.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"taskDigestMultibase\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"The task digest of the request named by `taskContext`, computed per SPEC §4.9.3 as multibase(multihash(H(JCS(document ∖ proof)))) over the FULL request document — not merely its `agreement` member — so the binding also covers `exchangeId` and, where present, `respondsTo`.\"}},\"required\":[\"decision\",\"taskContext\",\"taskDigestMultibase\"],\"title\":\"Understanding — Seal — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {
@@ -1245,7 +1268,7 @@ pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
 pub mod error_codes {
     /// `understanding/seal:exchangeNotFound`
     ///
-    /// The `exchangeId` does not name a live understanding/exchange response between these two parties.
+    /// The `exchangeId` does not name a live understanding/exchange response. Not used for a request whose `exchangeId` resolves but whose `issuer` is the wrong party; that is `understanding/seal:issuerMismatch`.
     ///
     /// Declared `retryable: false`.
     pub const EXCHANGE_NOT_FOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
@@ -1255,7 +1278,7 @@ pub mod error_codes {
     };
     /// `understanding/seal:issuerMismatch`
     ///
-    /// The request's `issuer` is not the party the understanding/exchange response named by `exchangeId` was addressed to — that response's `recipient`.
+    /// The request's `issuer` is not the party the understanding/exchange response named by `exchangeId` was addressed to — that response's `recipient`. Takes precedence over `understanding/seal:exchangeNotFound` once the exchange resolves: the exchange exists, so a wrong issuer is reported as this code, not as a missing exchange.
     ///
     /// Declared `retryable: false`.
     pub const ISSUER_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {

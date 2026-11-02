@@ -18,6 +18,7 @@ export interface UnderstandingExchangePayload {
    * The joining party's answers to the host's comprehension questions, in the order the host posed them or any order the host's own question format tolerates.
    *
    * @minItems 1
+   * @maxItems 64
    */
   answers: [Answer, ...Answer[]];
   /**
@@ -114,6 +115,7 @@ export const PAYLOAD_SCHEMA = {
     "answers": {
       "type": "array",
       "minItems": 1,
+      "maxItems": 64,
       "items": {
         "$ref": "#/$defs/Answer"
       },
