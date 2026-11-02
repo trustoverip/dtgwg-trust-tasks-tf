@@ -4,7 +4,7 @@
 #![allow(deprecated)]
 /// Why this specification version is deprecated (SPEC "Superseded and
 /// Withdrawn Versions"), or `None` while it is current.
-pub const DEPRECATION: Option<&str> = Some("superseded by vta/pcs/voter/read/0.4");
+pub const DEPRECATION: Option<&str> = Some("superseded by vta/pcs/voter/read/0.5");
 #[allow(unused_imports)]
 use serde::{Deserialize, Serialize};
 /// Error types.
@@ -122,7 +122,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by vta/pcs/voter/read/0.4")]
+#[deprecated(note = "superseded by vta/pcs/voter/read/0.5")]
 pub struct Payload {
     ///The community's DID: the recipient of the signed request.
     pub community: PayloadCommunity,
@@ -693,7 +693,7 @@ impl ::std::convert::TryFrom<::std::string::String> for ReadDocumentType {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by vta/pcs/voter/read/0.4")]
+#[deprecated(note = "superseded by vta/pcs/voter/read/0.5")]
 pub struct Response {
     pub document: ReadDocument,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
