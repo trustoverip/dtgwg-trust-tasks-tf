@@ -53,6 +53,8 @@ type Certification struct {
 }
 
 // Response Success response to vtc/elections/show/0.5: one election, whole.
+//
+// Deprecated: superseded by vtc/elections/show/0.6
 type Response struct {
 	Manifest Manifest `json:"manifest"`
 
@@ -422,6 +424,8 @@ type QuestionResult struct {
 // names a member party, a reader the community holds no record of reads it by presenting
 // their membership credential for that party. The outer document members (id, type,
 // issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+//
+// Deprecated: superseded by vtc/elections/show/0.6
 type Payload struct {
 	ElectionID ElectionID `json:"electionId"`
 
@@ -452,7 +456,7 @@ const Extends = "0.4"
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by vtc/elections/show/0.6"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/elections/show/0.5#response"

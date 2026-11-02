@@ -8,6 +8,8 @@ import type { DigestMultibase, ElectionId, Ext, Multibase_VotingV0_1 as Multibas
 
 /**
  * An eligible party asks the community to blind-issue its ticket for one election: the community checks eligibility against its own records and signs a commitment it cannot open, so the ticket its voter's agent unblinds is one the community has never seen. Under a credential roll the party also presents its membership credential for the party the roll names, which the community checks at that moment. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by vtc/elections/tickets/issue/0.3
  */
 export interface VTCElectionsTicketsIssuePayload {
   electionId: ElectionId;
@@ -55,6 +57,8 @@ export interface RootRequest {
 }
 /**
  * Success response to vtc/elections/tickets/issue/0.2: the blind pre-credential. The voter's VTA unblinds it into a ticket the community has never seen (vta/pcs/voter/accept).
+ *
+ * @deprecated superseded by vtc/elections/tickets/issue/0.3
  */
 export interface VTCElectionsTicketsIssueResponsePayload {
   electionId: ElectionId;
@@ -89,15 +93,23 @@ export const EXTENDS: string | null = "0.1";
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by vtc/elections/tickets/issue/0.3";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vtc/elections/tickets/issue/0.3
+ */
 export type Payload = VTCElectionsTicketsIssuePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/elections/tickets/issue/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vtc/elections/tickets/issue/0.3
+ */
 export type Response = VTCElectionsTicketsIssueResponsePayload;
 
 /**

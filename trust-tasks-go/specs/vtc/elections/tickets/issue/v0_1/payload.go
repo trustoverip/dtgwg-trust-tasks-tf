@@ -43,7 +43,7 @@ type RootRequest struct {
 // The voter's VTA unblinds it into a ticket the community has never seen
 // (vta/pcs/voter/accept).
 //
-// Deprecated: superseded by vtc/elections/tickets/issue/0.2
+// Deprecated: superseded by vtc/elections/tickets/issue/0.3
 type Response struct {
 	ElectionID ElectionID `json:"electionId"`
 
@@ -97,7 +97,7 @@ type DigestMultibase = string
 // community has never seen. The outer document members (id, type, issuer, recipient,
 // issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
 //
-// Deprecated: superseded by vtc/elections/tickets/issue/0.2
+// Deprecated: superseded by vtc/elections/tickets/issue/0.3
 type Payload struct {
 	ElectionID ElectionID `json:"electionId"`
 
@@ -123,7 +123,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = "superseded by vtc/elections/tickets/issue/0.2"
+const Deprecation = "superseded by vtc/elections/tickets/issue/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/elections/tickets/issue/0.1#response"

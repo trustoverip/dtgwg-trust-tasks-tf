@@ -44,6 +44,8 @@ type ReadDocument struct {
 }
 
 // Response The signed read, to send to the community.
+//
+// Deprecated: superseded by vta/pcs/voter/read/0.6
 type Response struct {
 	Document ReadDocument `json:"document"`
 	Ext      *Ext         `json:"ext,omitempty"`
@@ -67,6 +69,8 @@ const (
 // elections as the member without holding the member's key. For a show of an election put
 // to the members of a party that is itself a member of the community, the VTA can present
 // the member's credential for that party from its vault, bound to the read it signs.
+//
+// Deprecated: superseded by vta/pcs/voter/read/0.6
 type Payload struct {
 	// The context the voter belongs to.
 	ContextID string `json:"contextId"`
@@ -108,7 +112,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by vta/pcs/voter/read/0.6"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/pcs/voter/read/0.5#response"
