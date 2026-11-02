@@ -1261,6 +1261,15 @@ export import MessagingQueueStatus_v0_1 = _MessagingQueueStatus_v0_1;
 import * as _MessagingStatsShow_v0_1 from "./messaging/stats/show/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import MessagingStatsShow_v0_1 = _MessagingStatsShow_v0_1;
+import * as _NotificationShared_v0_1 from "./notifications/_shared/0.1/notification.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import NotificationShared_v0_1 = _NotificationShared_v0_1;
+import * as _NotificationsNotify_v0_1 from "./notifications/notify/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import NotificationsNotify_v0_1 = _NotificationsNotify_v0_1;
+import * as _NotificationsRelay_v0_1 from "./notifications/relay/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import NotificationsRelay_v0_1 = _NotificationsRelay_v0_1;
 import * as _PeerCheckAsk_v0_1 from "./peer-check/ask/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import PeerCheckAsk_v0_1 = _PeerCheckAsk_v0_1;
@@ -2507,6 +2516,18 @@ export import VtaMemoryPut_v0_1 = _VtaMemoryPut_v0_1;
 import * as _VtaMetricsShow_v0_1 from "./vta/metrics/show/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtaMetricsShow_v0_1 = _VtaMetricsShow_v0_1;
+import * as _HeldNotificationShared_v0_1 from "./vta/notifications/_shared/0.1/held-notification.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import HeldNotificationShared_v0_1 = _HeldNotificationShared_v0_1;
+import * as _VtaNotificationsDismiss_v0_1 from "./vta/notifications/dismiss/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtaNotificationsDismiss_v0_1 = _VtaNotificationsDismiss_v0_1;
+import * as _VtaNotificationsList_v0_1 from "./vta/notifications/list/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtaNotificationsList_v0_1 = _VtaNotificationsList_v0_1;
+import * as _VtaNotificationsShow_v0_1 from "./vta/notifications/show/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtaNotificationsShow_v0_1 = _VtaNotificationsShow_v0_1;
 import * as _VtaPasskeyVmsEnrollChallenge_v0_1 from "./vta/passkey-vms/enroll-challenge/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtaPasskeyVmsEnrollChallenge_v0_1 = _VtaPasskeyVmsEnrollChallenge_v0_1;

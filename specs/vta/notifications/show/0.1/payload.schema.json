@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/notifications/show/0.1",
+  "title": "VTA Notifications — Show — payload",
+  "description": "A client with standing in a trust context reads one notification its VTA holds there, with the document that delivered it exactly as received — the notifications/notify document, or the notifications/relay document carrying it — so the client can verify the originator's proof and every relay itself rather than take the VTA's word (VTI-NTF-050). A read changes nothing, and sends nothing to anyone. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contextId",
+    "recordId"
+  ],
+  "properties": {
+    "contextId": {
+      "$ref": "../../_shared/0.1/held-notification.schema.json#/$defs/ContextId"
+    },
+    "recordId": {
+      "$ref": "../../_shared/0.1/held-notification.schema.json#/$defs/RecordId"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Notifications — Show — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "item",
+        "document"
+      ],
+      "properties": {
+        "item": {
+          "$ref": "../../_shared/0.1/held-notification.schema.json#/$defs/HeldNotification"
+        },
+        "document": {
+          "type": "object",
+          "minProperties": 1,
+          "description": "The document that delivered the revision held, kept whole and exactly as received — proof included: the notifications/notify/0.1 document, or the outermost notifications/relay/0.1 document. An opaque object, so that every member its issuer signed survives unchanged for the client to verify."
+        }
+      }
+    }
+  }
+}

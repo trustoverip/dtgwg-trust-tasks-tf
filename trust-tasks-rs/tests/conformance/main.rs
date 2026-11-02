@@ -982,6 +982,15 @@ mod messaging {
         }
     }
 }
+#[cfg(feature = "notifications")]
+mod notifications {
+    mod notify {
+        mod v0_1;
+    }
+    mod relay {
+        mod v0_1;
+    }
+}
 #[cfg(feature = "peer-check")]
 mod peer_check {
     mod ask {
@@ -1766,6 +1775,17 @@ mod vta {
         }
     }
     mod metrics {
+        mod show {
+            mod v0_1;
+        }
+    }
+    mod notifications {
+        mod dismiss {
+            mod v0_1;
+        }
+        mod list {
+            mod v0_1;
+        }
         mod show {
             mod v0_1;
         }

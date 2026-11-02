@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/notifications/list/0.1",
+  "title": "VTA Notifications — List — payload",
+  "description": "A client with standing in a trust context lists the notifications its VTA holds there for the principal — for example, every notification of the kind `election`, which with the elections the community's own list shows is the member's view of the elections they may take part in (VTI-NTF-063). Dismissed and lapsed notifications are left out unless asked for. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contextId"
+  ],
+  "properties": {
+    "contextId": {
+      "$ref": "../../_shared/0.1/held-notification.schema.json#/$defs/ContextId"
+    },
+    "kind": {
+      "$ref": "../../../../notifications/_shared/0.1/notification.schema.json#/$defs/Kind",
+      "description": "Only notifications of this kind."
+    },
+    "heldBy": {
+      "$ref": "../../../../notifications/_shared/0.1/notification.schema.json#/$defs/Did",
+      "description": "Only notifications whose thing is held by this DID — for example, one community's elections."
+    },
+    "includeDismissed": {
+      "type": "boolean",
+      "description": "Also return notifications the principal dismissed. Absent or false: active ones only."
+    },
+    "includeLapsed": {
+      "type": "boolean",
+      "description": "Also return notifications that are withdrawn, or whose `validUntil` has passed, and that the VTA still holds (VTI-NTF-052). Absent or false: only notifications whose thing can still be acted on."
+    },
+    "cursor": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "An opaque cursor from a previous response's `nextCursor`, for the same filters. The VTA refuses one it did not issue."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200,
+      "description": "The most items to return."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Notifications — List — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items"
+      ],
+      "description": "One page of the held notifications that match, most recently received first.",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "../../_shared/0.1/held-notification.schema.json#/$defs/HeldNotification"
+          }
+        },
+        "nextCursor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "description": "Present when more items remain; absent on the last page."
+        }
+      }
+    }
+  }
+}

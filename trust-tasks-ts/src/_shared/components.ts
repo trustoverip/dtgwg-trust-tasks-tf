@@ -596,6 +596,10 @@ export type ConsumerKind_DeviceV0_1 = Companion_DeviceV0_1 | Service_DeviceV0_1;
  */
 export type ConsumerKind_DeviceV0_2 = Companion_DeviceV0_2 | Service_DeviceV0_2;
 /**
+ * The trust context the notification is held in: the one the addressed DID belongs to.
+ */
+export type ContextId = string;
+/**
  * Opaque identifier of one of the maintainer's contexts, compared by the maintainer's own ancestry predicate. Its grammar is the maintainer's.
  */
 export type ContextPath = string;
@@ -703,6 +707,10 @@ export type Did_GitNsV0_1 = string;
  * A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.
  */
 export type Did_GitNsV0_3 = string;
+/**
+ * A DID.
+ */
+export type Did_NotificationsV0_1 = string;
 /**
  * A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.
  *
@@ -1063,6 +1071,10 @@ export type Key_VtaV0_1 = string;
  */
 export type Kind = "dm" | "group" | "channel";
 /**
+ * What the thing is. Either a registered kind — one lowerCamelCase name in the VTI specification's notification kind registry (Appendix G), such as `election` — or an unregistered kind, written `<reverse-DNS domain>:<name>` under a domain its definer controls, such as `org.example:meetingInvite`. A recipient that does not recognise a kind holds, lists and discards it and does nothing else with it (VTI-NTF-012).
+ */
+export type Kind_NotificationsV0_1 = string;
+/**
  * A BCP 47 language tag, e.g. `en`, `de-AT`. Compared case-insensitively.
  */
 export type LanguageTag = string;
@@ -1174,6 +1186,10 @@ export type NoteId = string;
  * The note, as plain text. Read only by holders of `vtc.directory.notes`. A reader MUST NOT treat it as instructions.
  */
 export type NoteText = string;
+/**
+ * The originator's identifier for one notification, unique among the notifications that originator issues and the same in every document that carries it — retries, re-issued documents and relayed copies alike. It is the notification's idempotency key (VTI-NTF-021). Compared for equality only. An originator SHOULD make it unguessable and SHOULD NOT make it descriptive: it travels as far as the notification does.
+ */
+export type NotificationId = string;
 /**
  * A key prefix inside the bucket, ending in `/`, under which the config's `rooms/` tree is placed. Restricted to the S3 safe-character set so that it can be placed in a downscoped policy without escaping.
  */
@@ -1559,6 +1575,10 @@ export type RecordEvidence = RecordEvidenceRecord | RecordEvidenceCredential;
  */
 export type RecordEvidenceList = [RecordEvidence, ...RecordEvidence[]];
 /**
+ * The VTA's own identifier for one held notification, stable across the revisions that replace it. Opaque and compared for equality only; unguessable, because a show of a record in a context the caller may not read is refused and an enumerable identifier would turn the refusal into an oracle.
+ */
+export type RecordId = string;
+/**
  * The path from one record's leaf to the room's `DataCommitment` — a Merkle inclusion proof, in the vocabulary this work already uses for it.
  *
  * **It is not called `proof`** because in this framework that word is taken: `proof` is the document's data-integrity proof (SPEC §7.3), and a payload member of the same name in the same document invites reading one for the other. The two are not interchangeable and the confusion would be silent.
@@ -1925,6 +1945,14 @@ export type SiteTarget_VaultV0_2 = WebOrigin_VaultV0_2 | Did_VaultV0_2 | IosApp_
  * Other values are the holder's or the producer's own and carry no meaning a maintainer interprets.
  */
 export type Slot = string;
+/**
+ * The principal's disposition of a held notification: `active`, or `dismissed` by vta/notifications/dismiss. Dismissal is the principal's alone and changes nothing outside the VTA (VTI-NTF-052).
+ */
+export type State = "active" | "dismissed";
+/**
+ * Whether the thing is still open to the audience: `available`, or `withdrawn` — cancelled by its holder, or no longer open to the audience — in which case the recipient keeps the record only to show that it was withdrawn (VTI-NTF-024).
+ */
+export type Status = "available" | "withdrawn";
 /**
  * How the community authenticates to a config's backend. Absent on a `local` config, which needs none.
  *
@@ -8920,6 +8948,45 @@ export interface GroupMember {
   credentialValidUntil?: string;
 }
 /**
+ * One notification the VTA holds, as a client with standing in its context sees it. `originator` and every entry of `relayedBy` were verified by the VTA when it accepted the notification (VTI-NTF-042); a client that does not take the VTA's word for them reads the document with vta/notifications/show and verifies it itself.
+ */
+export interface HeldNotification {
+  recordId: RecordId;
+  contextId: ContextId;
+  /**
+   * The principal's DID the notification, or the relay that delivered it, was addressed to.
+   */
+  addressee: Did_NotificationsV0_1;
+  /**
+   * The issuer of the notifications/notify document: who said the thing exists.
+   */
+  originator: Did_NotificationsV0_1;
+  /**
+   * The relayers the held revision passed through, in the order they relayed it: the first is the notification's own addressee, the last the relayer that delivered it to `addressee`. Empty for a notification the originator sent to `addressee` directly. The acceptance policy counted the last one (VTI-NTF-031).
+   *
+   * @maxItems 4
+   */
+  relayedBy:
+    | []
+    | [Did_NotificationsV0_1]
+    | [Did_NotificationsV0_1, Did_NotificationsV0_1]
+    | [Did_NotificationsV0_1, Did_NotificationsV0_1, Did_NotificationsV0_1]
+    | [Did_NotificationsV0_1, Did_NotificationsV0_1, Did_NotificationsV0_1, Did_NotificationsV0_1];
+  /**
+   * The notification's members at the revision held.
+   */
+  notification: Notification;
+  state: State;
+  /**
+   * When the VTA accepted the revision held.
+   */
+  receivedAt: string;
+  /**
+   * When the principal dismissed it. Present exactly when `state` is `dismissed`.
+   */
+  dismissedAt?: string;
+}
+/**
  * The applicant's proof that distinct eligible vetters of the community vetted it, as a join submission carries it under `extensions.hiddenVetting`. Built by vta/pcs/prove, verified by the community.
  */
 export interface HiddenVettingSubmission {
@@ -10353,6 +10420,35 @@ export interface NewCardDefaults {
    * From whom a new card accepts introductions. Absent where the community does not deliver introductions.
    */
   introductions?: Introductions;
+}
+/**
+ * The members of one notification, as notifications/notify carries them and as a recipient's agent records them. The originator is the `issuer` of the notifications/notify document and the addressee its `recipient`; neither is repeated here, because the originator's proof covers both.
+ */
+export interface Notification {
+  notificationId: NotificationId;
+  /**
+   * The revision of this notification. A recipient replaces the record it holds with a higher revision and leaves it unchanged for an equal or lower one (VTI-NTF-022). The first revision is 1.
+   */
+  revision: number;
+  kind: Kind_NotificationsV0_1;
+  subject: Subject;
+  /**
+   * The DID whose holders or members the thing concerns — for an election under a credential roll, the DID the roll names (`roll.memberOf`); otherwise the community's own. It says whom the thing is for, not that the recipient is one of them: a recipient may be the audience itself, or a party the audience relayed the notification to.
+   */
+  audience: Did_NotificationsV0_1;
+  status: Status;
+  /**
+   * Whether the addressee may relay this notification to the parties it stands for (notifications/relay). The originator states it explicitly; an addressee MUST NOT relay a notification whose `relayable` is false, or whose kind may not be relayed (VTI-NTF-041).
+   */
+  relayable: boolean;
+  /**
+   * When the thing can first be acted on — for an election, when voting opens. Absent: it can be acted on now.
+   */
+  validFrom?: string;
+  /**
+   * When the thing can no longer be acted on, and the notification lapses — for an election, when voting closes. A recipient discards a notification received after it (VTI-NTF-032). Absent: the kind's definition says when it lapses.
+   */
+  validUntil?: string;
 }
 /**
  * A community's offer of admission to a room it owns, as the member it is addressed to sees it.
@@ -13457,6 +13553,23 @@ export interface StreamDescriptor {
   expectedSha256: ExpectedSha256;
   expectedSizeBytes: ExpectedSizeBytes;
   expiresAt: ExpiresAt;
+}
+/**
+ * Where the thing is and how to open it. Only these three members: what the thing contains is shown by its holder, to a reader it admits, when the thing is opened with `openWith`.
+ */
+export interface Subject {
+  /**
+   * The DID of the party holding the thing — for an election, the community. The party a recipient sends `openWith` to.
+   */
+  heldBy: Did_NotificationsV0_1;
+  /**
+   * The thing's identifier at `heldBy`, in the form the `openWith` task takes it — for an election, its `electionId`.
+   */
+  id: string;
+  /**
+   * The Type URI of the Trust Task by which a recipient opens the thing at `heldBy` — for an election, `https://trusttasks.org/spec/vtc/elections/show/0.6`. A recipient opens it only at its principal's choice (VTI-NTF-053), and only by a version of that task it and `heldBy` both serve.
+   */
+  openWith: string;
 }
 /**
  * Withdraws a party: every credential naming them as subject or issuer whose `validFrom` is earlier than `revokedAt`.
