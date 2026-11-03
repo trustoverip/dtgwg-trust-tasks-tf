@@ -1,0 +1,16 @@
+[
+  {
+    "note": "No `identifier`: a release names the identifier whose claim it ends.",
+    "payload": {
+      "contextId": "personal"
+    }
+  },
+  {
+    "note": "Unknown member — a release that asks to end another client's claim at once — is refused: a release by anyone but the claimant ends the claim only at its end (VTI-NTF-084).",
+    "payload": {
+      "contextId": "personal",
+      "identifier": "did:webvh:QmPersona:persona.example",
+      "immediate": true
+    }
+  }
+]

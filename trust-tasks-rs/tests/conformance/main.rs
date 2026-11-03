@@ -1633,6 +1633,17 @@ mod vta {
             mod v1_0;
         }
     }
+    mod collection {
+        mod claim {
+            mod v0_1;
+        }
+        mod list {
+            mod v0_1;
+        }
+        mod release {
+            mod v0_1;
+        }
+    }
     mod contexts {
         mod create {
             mod v1_0;
