@@ -225,6 +225,11 @@ deanonymisation, and the audit log holds no second copy.
 The community already knows which members enrolled. A reset adds that this member lost a key,
 which the administrator learns from the member anyway.
 
+The community is declared `identifierScope: public` because the reset acts on its own enrolment
+record, which is keyed on its published DID and on the member DID it recognises; a pairwise
+identifier for the community would leave the administrator unable to say which community's record
+they are changing.
+
 ### Retention
 
 The reset lives on the enrolment record until re-binding or cancellation. A community SHOULD keep

@@ -184,6 +184,12 @@ task hands that record only to the member it describes.
 None beyond what the member already knows about themselves. A client SHOULD NOT forward the
 answer anywhere but to its own PCS engine.
 
+Both parties are declared `identifierScope: public` for the same reason as in
+[`pcs-root`](../../../pcs-root/0.1/spec.md): the binding is keyed on the member DID the community
+recognises, and the community must resolve the requester to that membership row to know whose
+record to return. A pairwise identifier would name no record, and the community's own DID is the
+one its manifest publishes.
+
 ### Authenticity of the answer
 
 The answer travels on the same authenticated channel as the request. A client SHOULD treat it as
@@ -195,3 +201,8 @@ member's own engine at an identifier it cannot derive, which ends in
 
 None at the community. A client MAY keep the identifier to compare against its engine, and SHOULD
 discard it once the engine matches.
+
+### Consent/purpose
+
+The member asks in order to recover or re-bind their own hidden-vetting key. The community answers
+from the record it already keeps to enforce one identifier per member, and collects nothing new.

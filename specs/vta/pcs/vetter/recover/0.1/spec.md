@@ -222,3 +222,8 @@ None. The identifier is the member's own, given to their own VTA.
 
 The engine record keeps the recovered key's path, as it would have had the record never been
 lost.
+
+### Consent/purpose
+
+The identifier is supplied by the vetter's own client to restore the vetter's own key, and is used
+for nothing else. The VTA keeps no copy beyond the engine record it restores.
