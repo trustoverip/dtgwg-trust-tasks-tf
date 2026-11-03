@@ -11,6 +11,94 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.9.20 — 2026-11-03
+
+
+### Added
+
+- **vtn**: The Verifiable Trust Network's own Trust Tasks (vtn/*/0.1) (#1020)
+
+A Verifiable Trust Network curates communities and networks into a
+  nestable published set (VTI-VTN-001 - 063). Its API was interim REST;
+  these are its Trust Tasks:
+
+  - a listed party toward the network: entries/show, membership/{offer,
+    acknowledge,repudiate}, groups/register, relay/deliver, roles/list,
+    rooms/{list,pass}
+  - reading the published set: directory/{search,federated,summary},
+    graph/{show,member}
+  - administration: listings/{create,update,suspend,reinstate,remove,list,
+    show}, audit/list, groups/list, broadcasts/{send,list,show},
+    outbox/{list,retry}
+  - the network as a member of a parent: memberships/{list,join,repudiate,
+    leave,groups/add}
+  - vtn/_shared/0.1: entry, directory, graph, groups, relay, membership and
+    rooms shapes
+
+  Trust Tasks are the API; DTG credentials remain the evidence: lists/1,
+  the VMC pair, repudiates/1, and a revocable groupRegistered acceptance
+  binding the signed vtn/groups/register request by digest. Browser
+  sign-in reuses auth/oob/* and auth/signing-key/*. Short lifetimes for
+  anything not revocable: room passes at most 24 hours, broadcasts at
+  most 7 days.
+
+- **vetting**: Recover or reset a hidden-vetting key (vtc/vetting/vetters/pcs-binding/{show,reset}/0.1, vta/pcs/vetter/recover/0.1) (#1018)
+
+* feat(vtc,vta): recover or reset a hidden-vetting key — vtc/vetting/vetters/pcs-binding/{show,reset}/0.1 and vta/pcs/vetter/recover/0.1
+
+  A community binds each vetter to one PCS identifier for good, so a vetter
+  whose VTA engine lost track of its key was locked out of hidden vetting
+  for as long as they stayed a member; revoking and re-granting the vetter
+  role does not touch the binding.
+
+  - vtc/vetting/vetters/pcs-binding/show/0.1: a member reads their own
+    binding, and the state of any reset.
+  - vta/pcs/vetter/recover/0.1: the VTA searches the keys it can derive for
+    the context and restores the bound one, while the engine's current key
+    holds nothing a community issued.
+  - vtc/vetting/vetters/pcs-binding/reset/0.1: an administrator resets the
+    binding when the key is gone. A new identifier is bound only once no
+    label the old one enrolled under is live, and a retired label never
+    comes back, so the member is never counted twice.
+
+  pcs-root/0.1 and the vta/pcs conventions point at the new tasks.
+
+- **notifications**: Deposit to the VTA, the community's received notifications, and four fixes (#1017)
+
+Follow-up to #1012, implementing dtgwg-vti-spec's Notifications follow-up
+  (VTI-NTF-006, 025, 034, 047, 054 – 056, 070 – 074).
+
+  New tasks:
+
+  - vta/notifications/deposit/0.1 — a client that receives a notify or relay
+    for a DID whose keys its VTA holds (a persona DID whose mediator socket the
+    client holds) hands the document to the VTA exactly as received. The VTA
+    verifies it exactly as a direct delivery, counts for acceptance the party
+    that delivered the document and never the depositing client, keeps one
+    record per originator and notificationId, and answers with the same
+    receipt whatever it did. Gated by standing in the context; retry class 2;
+    notAddressedHere, documentInvalid.
+  - vtc/notifications/list/0.1, show/0.1 — a community's administrators read
+    the notifications addressed to the community (vtc.notifications.read).
+  - vtc/notifications/relay/0.1 — an administrator's decision to relay one to
+    all members, one group's or one role's (vtc.notifications.relay, qualified
+    by group), refused until the disclosure is acknowledged; never to the
+    community itself, the originator or any earlier relayer; later revisions
+    follow without a further decision. destructive; retry class 2.
+
+  Fixes to notifications/notify/0.1 and notifications/relay/0.1, prose only
+  (no schema, error code or proof requirement changes):
+
+  - relay producer item 2 now agrees with consumer item 2: a relayer may relay
+    only where its relay makes at most four relays in all.
+  - notification and relay proofs carry proofPurpose authentication with the
+    operational key (VTI-KEY-081/082); examples updated from assertionMethod.
+    VTI-KEY-107 applies to the relay received, not to forwarded layers.
+  - a withdrawal keeps the period of the revision it replaces.
+  - the originator re-checks VTI-NTF-005 for every revision it issues, except
+    a withdrawal; election withdrawal covers an early close.
+  - a relayer never relays to the originator or an earlier relayer.
+
 ## 0.9.19 — 2026-11-03
 
 
