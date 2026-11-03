@@ -1,0 +1,41 @@
+[
+  {
+    "note": "`scope` `group` without `groupId` names no group: the community cannot resolve whom to relay to.",
+    "payload": {
+      "recordId": "rn-4Tq8Zr2Lw9Ks6Pm1",
+      "recipients": { "scope": "group" },
+      "disclosureAcknowledged": true
+    }
+  },
+  {
+    "note": "`role` with `scope` `allMembers` is ambiguous — every member, or one role's holders — and is refused rather than read as either.",
+    "payload": {
+      "recordId": "rn-4Tq8Zr2Lw9Ks6Pm1",
+      "recipients": { "scope": "allMembers", "role": "moderator" },
+      "disclosureAcknowledged": true
+    }
+  },
+  {
+    "note": "`groupId` with `scope` `role` is ambiguous in the same way.",
+    "payload": {
+      "recordId": "rn-4Tq8Zr2Lw9Ks6Pm1",
+      "recipients": { "scope": "role", "role": "moderator", "groupId": "grp_abcdefghijklmnop" },
+      "disclosureAcknowledged": true
+    }
+  },
+  {
+    "note": "Naming members one by one is not a selection the task offers: a relay decision reaches all members, one group's or one role's, resolved by the community from its own records (VTI-NTF-072).",
+    "payload": {
+      "recordId": "rn-4Tq8Zr2Lw9Ks6Pm1",
+      "recipients": { "scope": "allMembers", "dids": ["did:key:z6MkMember"] },
+      "disclosureAcknowledged": true
+    }
+  },
+  {
+    "note": "No `recipients`: a relay decision always says whom it reaches.",
+    "payload": {
+      "recordId": "rn-4Tq8Zr2Lw9Ks6Pm1",
+      "disclosureAcknowledged": true
+    }
+  }
+]

@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/notifications/list/0.1",
+  "title": "VTC Notifications — List — payload",
+  "description": "An administrator with `vtc.notifications.read` lists the notifications the community holds as their addressee — filtered by kind or holder — with, for each, whether the community may relay it, what a relay of it would disclose, and the relay decisions already made (VTI-NTF-070). Lapsed notifications are left out unless asked for. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "kind": {
+      "$ref": "../../../../notifications/_shared/0.1/notification.schema.json#/$defs/Kind",
+      "description": "Only notifications of this kind."
+    },
+    "heldBy": {
+      "$ref": "../../../../notifications/_shared/0.1/notification.schema.json#/$defs/Did",
+      "description": "Only notifications whose thing is held by this DID — for example, one community's elections."
+    },
+    "includeLapsed": {
+      "type": "boolean",
+      "description": "Also return notifications that are withdrawn, or whose `validUntil` has passed, and that the community still holds. Absent or false: only notifications whose thing can still be acted on."
+    },
+    "cursor": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "An opaque cursor from a previous response's `nextCursor`, for the same filters. The community refuses one it did not issue."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200,
+      "description": "The most items to return."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Notifications — List — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items"
+      ],
+      "description": "One page of the received notifications that match, most recently received first.",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "../../_shared/0.1/received-notification.schema.json#/$defs/ReceivedNotification"
+          }
+        },
+        "nextCursor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "description": "Present when more items remain; absent on the last page."
+        }
+      }
+    }
+  }
+}

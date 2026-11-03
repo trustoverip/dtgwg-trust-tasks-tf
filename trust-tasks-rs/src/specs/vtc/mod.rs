@@ -17,6 +17,7 @@ pub mod invitations;
 pub mod join_requests;
 pub mod members;
 pub mod networks;
+pub mod notifications;
 pub mod oid4vp;
 pub mod operator;
 pub mod policies;
