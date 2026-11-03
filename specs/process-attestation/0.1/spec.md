@@ -68,20 +68,24 @@ outcomeEvidence:
       response: /payload/challenge
   rationale: >-
     A Verifier retains the response as its record that an attestation exchange
-    about this artifact completed, and a party outside the exchange — an
-    authorship credential's `taskContext`, a publisher's audit record — may cite
-    it. The response reproduces, under the Holder's proof, the challenge the
-    request freshly supplied. The challenge form is permitted (SPEC §7.3 item
-    20.5.2) because the Verifier that minted the challenge is the party whose
-    record the citation rests on.
+    about this artifact completed, and a credential or record the Verifier
+    issues — an authorship credential's `taskContext`, the Verifier's own audit
+    record — may cite it. The response reproduces, under the Holder's proof, the
+    challenge the request freshly supplied. The challenge form is permitted
+    (SPEC §7.3 item 20.5.2) because this specification requires the citing
+    artifact to be issued by the request's `issuer`, the Verifier that minted
+    the challenge (the outcome-evidence rule under Response), so a relying party
+    already depends on that Verifier for what the artifact states.
 maxDocumentBytes:
   response: 294912
   rationale: >-
     The largest member a response can carry is an inline receipt,
     `receiptReference.data`, bounded at 262144 characters of base64url text. The
     rest of the document — artifact, challenge, assessment, disclosed aggregates
-    and the proof — fits in the remaining 32 KiB. A receipt larger than the inline
-    bound MUST use the `uri` form, so no chunked transfer is needed.
+    and the proof — is expected to fit in the remaining 32 KiB; the schema does
+    not bound every member, and a document over the bound does not conform. A
+    receipt larger than the inline bound MUST use the `uri` form, so no chunked
+    transfer is needed.
 errorCodes: []
 related:
   - trust-ceremony-receipt
@@ -269,6 +273,14 @@ Holder's proof, the `challenge` the request freshly supplied
 ([SPEC §7.3 item 20](/SPEC.md#73-specification-requirements)). A credential or
 record that cites this exchange names the request's `id` and relies on that
 reproduction; sharing a `threadId` is not a binding.
+
+Only the Verifier vouches for the challenge's freshness: it could reuse a
+challenge with a `threadId` and present one exchange's response as the outcome of
+another. A credential or record that cites this exchange as evidence of completion
+MUST therefore be issued by the party that issued the request, and a consumer MUST
+NOT treat this response as outcome evidence for a citing artifact whose issuer is
+not the request's `issuer`. A party other than the Verifier that wants to cite an
+attestation runs the task itself, as its own Verifier.
 
 Malformed requests, unsupported versions, and a missing required proof are answered
 with `trust-task-error` carrying the standard §8.3 codes (`malformedRequest`,
