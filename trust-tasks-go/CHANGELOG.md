@@ -11,6 +11,13 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.10.9 — 2026-11-03
+
+
+### Added
+
+- **git-ns**: Bridge event 0.6 and job 0.7 — orphaned namespaces, and binding an owner again (#1015)
+
 ## 0.10.8 — 2026-11-03
 
 

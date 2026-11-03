@@ -11,6 +11,13 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.9.19 — 2026-11-03
+
+
+### Added
+
+- **git-ns**: Bridge event 0.6 and job 0.7 — orphaned namespaces, and binding an owner again (#1015)
+
 ## 0.9.18 — 2026-11-03
 
 

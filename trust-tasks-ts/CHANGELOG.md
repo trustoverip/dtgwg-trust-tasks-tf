@@ -11,6 +11,13 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.28.10 — 2026-11-03
+
+
+### Added
+
+- **git-ns**: Bridge event 0.6 and job 0.7 — orphaned namespaces, and binding an owner again (#1015)
+
 ## 0.28.9 — 2026-11-03
 
 

@@ -31,6 +31,14 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.36.9](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.36.8...trust-tasks-rs-v0.36.9) — 2026-11-03
+
+
+### Added
+
+- **git-ns**: Bridge event 0.6 and job 0.7 — orphaned namespaces, and binding an owner again ([#1015](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1015))
+
+
 ## [0.36.8](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.36.7...trust-tasks-rs-v0.36.8) — 2026-11-03
 
 
