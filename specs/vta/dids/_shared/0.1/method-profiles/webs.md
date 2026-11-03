@@ -59,6 +59,11 @@ The `update` role is the key state: the current signing keys `k` with threshold 
   never the identifier. This meets CONVENTIONS.md §5.4's second paragraph without a
   witness.
 - **Replacing the recovery commitment** is a rotation, and so needs K: it commits a fresh K′.
+- **By level** (CONVENTIONS.md §3.4). The shape above is level 3, and the next-key threshold
+  stands in for the witness of CONVENTIONS.md §5.4 (VTI-KEY-129). At level 2, `n` commits
+  R′ alone with `nt: "1"`. `keyAssurance.recoveryCommitment` names K's digest as it appears
+  in `n`, and a verifier checks that K alone satisfies `nt` — which is what a level-3
+  structure means under this method, and a stronger check than did:webvh allows.
 
 ## 3. Versions
 
@@ -69,7 +74,7 @@ DID parameter.
 ## 4. Rendering
 
 Per extension A: role keys from the anchored record, in their roles' relationships;
-`keyRoles` and `revoked` from the record; key-state keys in no relationship. Witnesses
+`keyRoles`, `keyAssurance` and `revoked` from the record; key-state keys in no relationship. Witnesses
 (`b`, `bt`) receipt every event, and **SHOULD** be at least one in a boundary other than the
 VTA's (CONVENTIONS.md §5.4).
 

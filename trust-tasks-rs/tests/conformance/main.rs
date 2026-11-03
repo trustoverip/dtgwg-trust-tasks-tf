@@ -1741,6 +1741,7 @@ mod vta {
     mod dids {
         mod create {
             mod v1_0;
+            mod v1_1;
         }
         mod keys {
             mod add {
@@ -1763,6 +1764,9 @@ mod vta {
             mod v1_0;
         }
         mod update {
+            mod v1_0;
+        }
+        mod upgrade {
             mod v1_0;
         }
     }

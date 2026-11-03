@@ -3,7 +3,7 @@
  * Source: specs/vta/dids/keys/list/1.0/payload.schema.json
  */
 
-import type { ApprovalEvidenceKind, DidMethodName, DidVerificationRelationship, Ext, IdentityKeyCustody, IdentityKeyRole, IdentityRoleKey, KeyChangeApprovalState, KeyChangeKind, KeyChangeRecord, KeyChangeState, KeyLifecycleState, KeyListProjection, KeyOrigin, KeyRoleSummary, KeyType, ProtectionClass, RecordedApproval, UpdateKeyClass } from "../../../../../_shared/components.js";
+import type { ApprovalEvidenceKind, DidMethodName, DidVerificationRelationship, Ext, IdentityKeyCustody, IdentityKeyRole, IdentityRoleKey, KeyAssuranceLevel, KeyChangeApprovalState, KeyChangeKind, KeyChangeRecord, KeyChangeState, KeyLifecycleState, KeyListProjection, KeyOrigin, KeyRoleSummary, KeyType, ProtectionClass, RecordedApproval, RecoveryCustodian, RecoveryCustodianKind, UpdateKeyClass } from "../../../../../_shared/components.js";
 
 
 /**
@@ -37,6 +37,10 @@ export interface VTADIDsKeysListResponsePayload {
    * The version the answer describes. Pass it as `expectedVersionId` to a change made on its strength.
    */
   versionId: string;
+  /**
+   * The key assurance level the identity's latest version declares, as a verifier would establish it (CONVENTIONS.md §3.4.3). In both projections: the document already publishes it.
+   */
+  assuranceLevel?: KeyAssuranceLevel;
   projection: KeyListProjection;
   /**
    * One entry per role asked for, including roles with no keys.
@@ -50,7 +54,7 @@ export interface VTADIDsKeysListResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { ApprovalEvidenceKind, DidMethodName, DidVerificationRelationship, Ext, IdentityKeyCustody, IdentityKeyRole, IdentityRoleKey, KeyChangeApprovalState, KeyChangeKind, KeyChangeRecord, KeyChangeState, KeyLifecycleState, KeyListProjection, KeyOrigin, KeyRoleSummary, KeyType, ProtectionClass, RecordedApproval, UpdateKeyClass };
+export type { ApprovalEvidenceKind, DidMethodName, DidVerificationRelationship, Ext, IdentityKeyCustody, IdentityKeyRole, IdentityRoleKey, KeyAssuranceLevel, KeyChangeApprovalState, KeyChangeKind, KeyChangeRecord, KeyChangeState, KeyLifecycleState, KeyListProjection, KeyOrigin, KeyRoleSummary, KeyType, ProtectionClass, RecordedApproval, RecoveryCustodian, RecoveryCustodianKind, UpdateKeyClass };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/dids/keys/list/1.0" as const;
@@ -150,6 +154,10 @@ export const PAYLOAD_SCHEMA = {
           "type": "string",
           "description": "The version the answer describes. Pass it as `expectedVersionId` to a change made on its strength."
         },
+        "assuranceLevel": {
+          "$ref": "#/$defs/KeyAssuranceLevel",
+          "description": "The key assurance level the identity's latest version declares, as a verifier would establish it (CONVENTIONS.md §3.4.3). In both projections: the document already publishes it."
+        },
         "projection": {
           "$ref": "#/$defs/KeyListProjection"
         },
@@ -406,7 +414,7 @@ export const PAYLOAD_SCHEMA = {
         },
         "recoveryCommitted": {
           "type": "boolean",
-          "description": "`update` only: whether the identifier's latest version commits to a recovery key in a boundary other than the VTA's (CONVENTIONS.md §5.3). `false` is a defect the VTA reports rather than hides."
+          "description": "`update` only: whether the identifier's latest version commits to a recovery key in a boundary other than the VTA's (CONVENTIONS.md §5.3). Always `true` at level 3, where `false` is a defect the VTA reports rather than hides; always `false` at level 2."
         },
         "threshold": {
           "type": "string",
@@ -522,7 +530,7 @@ export const PAYLOAD_SCHEMA = {
         },
         "exportable": {
           "type": "boolean",
-          "description": "Whether the custodian would release the private half. Always `false` for `attestation` and `update` keys. Stated explicitly, never absent."
+          "description": "Whether the custodian would release the private half by any operation other than the VTA's own backup. Always `false` for `attestation` and `update` keys. Stated explicitly, never absent."
         },
         "neverExportable": {
           "type": "boolean",
@@ -530,7 +538,7 @@ export const PAYLOAD_SCHEMA = {
         },
         "inBackups": {
           "type": "boolean",
-          "description": "Whether the key, or material it can be re-derived or decrypted from, is in the VTA's backups or any state transfer. Always `false` for `attestation` and `update` keys (VTI-KEY-112)."
+          "description": "Whether the key, or material it can be re-derived or decrypted from, is in the VTA's backups or any state transfer. Always `false` for `attestation` and `update` keys of a level-3 identity (VTI-KEY-112); at level 2 such a key may be in the VTA's own backup and nowhere else (CONVENTIONS.md §5.5)."
         },
         "protection": {
           "$ref": "#/$defs/ProtectionClass"
@@ -544,8 +552,56 @@ export const PAYLOAD_SCHEMA = {
         "destroyed": {
           "type": "boolean",
           "description": "True once the private half has been destroyed — a retired `attestation` or `messaging` key. The record survives so the key's past signatures stay attributable."
+        },
+        "custodian": {
+          "$ref": "#/$defs/RecoveryCustodian",
+          "description": "The recovery update key only: the kind of recovery custodian the operator declared when committing it (CONVENTIONS.md §5.6). Custody projection only; never published."
         }
       }
+    },
+    "RecoveryCustodian": {
+      "title": "RecoveryCustodian",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind"
+      ],
+      "description": "What the operator declares about who holds a recovery key. The VTA cannot verify it — it verifies the proof of possession and refuses a key it generated or can derive — and uses it to route a recovery signing request and to report custody. Custody projection only; never published (VTI-KEY-150, VTI-KEY-206).",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/RecoveryCustodianKind"
+        },
+        "did": {
+          "type": "string",
+          "minLength": 1,
+          "description": "`vta` only: the custodian VTA's DID, to which the recovering or revoking VTA MAY send the recovery signing request. Absent, the request is carried out of band."
+        },
+        "participants": {
+          "type": "array",
+          "minItems": 3,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "`thresholdGroup` only: the participants' VTA DIDs, n of them. A threshold group has at least three participants, because 2 ≤ t < n (VTI-KEY-210)."
+        },
+        "threshold": {
+          "type": "integer",
+          "minimum": 2,
+          "description": "`thresholdGroup` only: t, the number of participants that together sign. MUST be less than the number of `participants`."
+        }
+      }
+    },
+    "RecoveryCustodianKind": {
+      "title": "RecoveryCustodianKind",
+      "type": "string",
+      "enum": [
+        "separateKey",
+        "vta",
+        "thresholdGroup"
+      ],
+      "description": "The kinds of recovery custodian VTI-KEY-205 admits (CONVENTIONS.md §5.6). `separateKey` — a key held away from every VTA of the identity: an offline key file, a hardware token, a key service whose credentials no such VTA holds, or a key from a recovery mnemonic no such VTA has seen. `vta` — a second VTA with its own seed, operator and host. `thresholdGroup` — a threshold custodian: t of n VTAs holding FROST shares of the key (§5.7)."
     },
     "ProtectionClass": {
       "title": "ProtectionClass",
@@ -625,6 +681,16 @@ export const PAYLOAD_SCHEMA = {
         "custody"
       ],
       "description": "Which view of the identity's key roles the caller was given (CONVENTIONS.md §11). `public` — only what the published identifier document and history already reveal. `custody` — additionally the VTA's custody state: pending keys, the custodian record and protection boundary behind each key, overlap deadlines, who initiated and approved each change, and why."
+    },
+    "KeyAssuranceLevel": {
+      "title": "KeyAssuranceLevel",
+      "type": "integer",
+      "enum": [
+        1,
+        2,
+        3
+      ],
+      "description": "A service DID's key assurance level (VTI-KEY-194; CONVENTIONS.md §3.4). `1` — single key: no `keyRoles`, one key signs everything. `2` — role-separated: `keyRoles`, with the `attestation` and `update` keys held by the VTA, which may derive them and back them up. `3` — recoverable: level 2 with those keys generated and in no backup, a recovery key held by a recovery custodian outside the VTA, and a witness enforcing it. Declared in the document's `keyAssurance` member."
     },
     "DidMethodName": {
       "title": "DidMethodName",
@@ -663,6 +729,10 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "type": "string",
           "description": "The version the answer describes. Pass it as `expectedVersionId` to a change made on its strength."
         },
+        "assuranceLevel": {
+          "$ref": "#/$defs/KeyAssuranceLevel",
+          "description": "The key assurance level the identity's latest version declares, as a verifier would establish it (CONVENTIONS.md §3.4.3). In both projections: the document already publishes it."
+        },
         "projection": {
           "$ref": "#/$defs/KeyListProjection"
         },
@@ -919,7 +989,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "recoveryCommitted": {
           "type": "boolean",
-          "description": "`update` only: whether the identifier's latest version commits to a recovery key in a boundary other than the VTA's (CONVENTIONS.md §5.3). `false` is a defect the VTA reports rather than hides."
+          "description": "`update` only: whether the identifier's latest version commits to a recovery key in a boundary other than the VTA's (CONVENTIONS.md §5.3). Always `true` at level 3, where `false` is a defect the VTA reports rather than hides; always `false` at level 2."
         },
         "threshold": {
           "type": "string",
@@ -1035,7 +1105,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "exportable": {
           "type": "boolean",
-          "description": "Whether the custodian would release the private half. Always `false` for `attestation` and `update` keys. Stated explicitly, never absent."
+          "description": "Whether the custodian would release the private half by any operation other than the VTA's own backup. Always `false` for `attestation` and `update` keys. Stated explicitly, never absent."
         },
         "neverExportable": {
           "type": "boolean",
@@ -1043,7 +1113,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "inBackups": {
           "type": "boolean",
-          "description": "Whether the key, or material it can be re-derived or decrypted from, is in the VTA's backups or any state transfer. Always `false` for `attestation` and `update` keys (VTI-KEY-112)."
+          "description": "Whether the key, or material it can be re-derived or decrypted from, is in the VTA's backups or any state transfer. Always `false` for `attestation` and `update` keys of a level-3 identity (VTI-KEY-112); at level 2 such a key may be in the VTA's own backup and nowhere else (CONVENTIONS.md §5.5)."
         },
         "protection": {
           "$ref": "#/$defs/ProtectionClass"
@@ -1057,8 +1127,56 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "destroyed": {
           "type": "boolean",
           "description": "True once the private half has been destroyed — a retired `attestation` or `messaging` key. The record survives so the key's past signatures stay attributable."
+        },
+        "custodian": {
+          "$ref": "#/$defs/RecoveryCustodian",
+          "description": "The recovery update key only: the kind of recovery custodian the operator declared when committing it (CONVENTIONS.md §5.6). Custody projection only; never published."
         }
       }
+    },
+    "RecoveryCustodian": {
+      "title": "RecoveryCustodian",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind"
+      ],
+      "description": "What the operator declares about who holds a recovery key. The VTA cannot verify it — it verifies the proof of possession and refuses a key it generated or can derive — and uses it to route a recovery signing request and to report custody. Custody projection only; never published (VTI-KEY-150, VTI-KEY-206).",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/RecoveryCustodianKind"
+        },
+        "did": {
+          "type": "string",
+          "minLength": 1,
+          "description": "`vta` only: the custodian VTA's DID, to which the recovering or revoking VTA MAY send the recovery signing request. Absent, the request is carried out of band."
+        },
+        "participants": {
+          "type": "array",
+          "minItems": 3,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "`thresholdGroup` only: the participants' VTA DIDs, n of them. A threshold group has at least three participants, because 2 ≤ t < n (VTI-KEY-210)."
+        },
+        "threshold": {
+          "type": "integer",
+          "minimum": 2,
+          "description": "`thresholdGroup` only: t, the number of participants that together sign. MUST be less than the number of `participants`."
+        }
+      }
+    },
+    "RecoveryCustodianKind": {
+      "title": "RecoveryCustodianKind",
+      "type": "string",
+      "enum": [
+        "separateKey",
+        "vta",
+        "thresholdGroup"
+      ],
+      "description": "The kinds of recovery custodian VTI-KEY-205 admits (CONVENTIONS.md §5.6). `separateKey` — a key held away from every VTA of the identity: an offline key file, a hardware token, a key service whose credentials no such VTA holds, or a key from a recovery mnemonic no such VTA has seen. `vta` — a second VTA with its own seed, operator and host. `thresholdGroup` — a threshold custodian: t of n VTAs holding FROST shares of the key (§5.7)."
     },
     "ProtectionClass": {
       "title": "ProtectionClass",
@@ -1138,6 +1256,16 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "custody"
       ],
       "description": "Which view of the identity's key roles the caller was given (CONVENTIONS.md §11). `public` — only what the published identifier document and history already reveal. `custody` — additionally the VTA's custody state: pending keys, the custodian record and protection boundary behind each key, overlap deadlines, who initiated and approved each change, and why."
+    },
+    "KeyAssuranceLevel": {
+      "title": "KeyAssuranceLevel",
+      "type": "integer",
+      "enum": [
+        1,
+        2,
+        3
+      ],
+      "description": "A service DID's key assurance level (VTI-KEY-194; CONVENTIONS.md §3.4). `1` — single key: no `keyRoles`, one key signs everything. `2` — role-separated: `keyRoles`, with the `attestation` and `update` keys held by the VTA, which may derive them and back them up. `3` — recoverable: level 2 with those keys generated and in no backup, a recovery key held by a recovery custodian outside the VTA, and a witness enforcing it. Declared in the document's `keyAssurance` member."
     },
     "DidMethodName": {
       "title": "DidMethodName",
