@@ -2508,6 +2508,7 @@ pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
     error_codes::APPROVER_IN_EVENT,
     error_codes::SIGNER_CHANGED,
     error_codes::OTHER_CRITERION,
+    error_codes::LABEL_RETIRED,
 ];
 /// One constant per extended error code this specification declares
 /// (SPEC §7.3 item 9), named for its local part.
@@ -2573,6 +2574,16 @@ pub mod error_codes {
     /// Declared `retryable: false`.
     pub const OTHER_CRITERION: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "vtc/vetting/hidden/publish:otherCriterion",
+        retryable: false,
+        details_schema: ::core::option::Option::None,
+    };
+    /// `vtc/vetting/hidden/publish:labelRetired`
+    ///
+    /// `livePeriods` names a vetter label the community has retired: one a member's previous hidden-vetting identifier enrolled under before that member was re-bound (vtc/vetting/vetters/pcs-binding/reset). A credential under that label could still attest, so the member would count twice. A retired label never becomes live again.
+    ///
+    /// Declared `retryable: false`.
+    pub const LABEL_RETIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "vtc/vetting/hidden/publish:labelRetired",
         retryable: false,
         details_schema: ::core::option::Option::None,
     };

@@ -4,6 +4,7 @@ pub mod event_mode;
 pub mod grant;
 pub mod grants;
 pub mod list;
+pub mod pcs_binding;
 pub mod pcs_root;
 pub mod pcs_tokens;
 pub mod profile;

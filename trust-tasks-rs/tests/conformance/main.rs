@@ -1888,6 +1888,9 @@ mod vta {
             mod v0_1;
         }
         mod vetter {
+            mod recover {
+                mod v0_1;
+            }
             mod show {
                 mod v0_1;
             }
@@ -2977,6 +2980,14 @@ mod vtc {
             }
             mod list {
                 mod v0_1;
+            }
+            mod pcs_binding {
+                mod reset {
+                    mod v0_1;
+                }
+                mod show {
+                    mod v0_1;
+                }
             }
             mod pcs_root {
                 mod v0_1;
