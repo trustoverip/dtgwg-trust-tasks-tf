@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/boards/create/0.1",
+  "title": "VTC Boards — Create — payload",
+  "description": "An administrator creates a board where members propose ideas, leave notes and vote on each accepted idea through an election of its own. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "title",
+    "audience",
+    "proposals",
+    "voting",
+    "template"
+  ],
+  "properties": {
+    "title": {
+      "$ref": "../../_shared/0.1/board.schema.json#/$defs/BoardTitle"
+    },
+    "description": {
+      "$ref": "../../_shared/0.1/board.schema.json#/$defs/BoardDescription"
+    },
+    "audience": {
+      "$ref": "../../_shared/0.1/board.schema.json#/$defs/BoardAudience"
+    },
+    "proposals": {
+      "$ref": "../../_shared/0.1/board.schema.json#/$defs/Window"
+    },
+    "voting": {
+      "$ref": "../../_shared/0.1/board.schema.json#/$defs/Window"
+    },
+    "topics": {
+      "type": "array",
+      "maxItems": 32,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "../../_shared/0.1/board.schema.json#/$defs/Topic"
+      }
+    },
+    "formats": {
+      "type": "array",
+      "maxItems": 16,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "../../_shared/0.1/board.schema.json#/$defs/IdeaFormat"
+      }
+    },
+    "maxIdeasPerMember": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "selectionRule": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "timetable": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "$ref": "../../_shared/0.1/board.schema.json#/$defs/Slot"
+      }
+    },
+    "template": {
+      "$ref": "../../_shared/0.1/board.schema.json#/$defs/ElectionTemplate"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Boards — Create — response payload",
+      "description": "The success response to a vtc/boards/create/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/boards/create/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "board"
+      ],
+      "properties": {
+        "board": {
+          "$ref": "../../_shared/0.1/board.schema.json#/$defs/Board"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

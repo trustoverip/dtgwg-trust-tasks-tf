@@ -2171,6 +2171,51 @@ mod vtc {
             mod v0_1;
         }
     }
+    mod boards {
+        mod create {
+            mod v0_1;
+        }
+        mod ideas {
+            mod decide {
+                mod v0_1;
+            }
+            mod propose {
+                mod v0_1;
+            }
+            mod select {
+                mod v0_1;
+            }
+            mod update {
+                mod v0_1;
+            }
+            mod withdraw {
+                mod v0_1;
+            }
+        }
+        mod list {
+            mod v0_1;
+        }
+        mod notes {
+            mod add {
+                mod v0_1;
+            }
+            mod hide {
+                mod v0_1;
+            }
+            mod list {
+                mod v0_1;
+            }
+            mod withdraw {
+                mod v0_1;
+            }
+        }
+        mod show {
+            mod v0_1;
+        }
+        mod update {
+            mod v0_1;
+        }
+    }
     mod ceremonies {
         mod list {
             mod v0_1;

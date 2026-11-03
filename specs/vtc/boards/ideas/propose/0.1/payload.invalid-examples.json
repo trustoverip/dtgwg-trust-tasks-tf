@@ -1,0 +1,17 @@
+[
+  {
+    "note": "A proposal with no description.",
+    "payload": {
+      "boardId": "brd_Uc7N2qLm4Rt8Vx1Z",
+      "title": "x"
+    }
+  },
+  {
+    "note": "A title longer than 200 characters.",
+    "payload": {
+      "boardId": "brd_Uc7N2qLm4Rt8Vx1Z",
+      "title": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "description": "y"
+    }
+  }
+]
