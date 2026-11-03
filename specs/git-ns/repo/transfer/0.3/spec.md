@@ -63,7 +63,7 @@ related:
 
 ## Abstract
 
-An owner hands their ownership of a repository to someone else. `to` is recorded as an owner and the caller's own `git.repo.own` record is revoked, in one step, so the repository never has fewer owners than before. Ownership moves between people; the repository stays where it is on the forge. Moving a repository to another forge owner is a forge operation, which the bridge reports as `repoTransferred` ([`git-ns/bridge/event`](../../../../git-ns/bridge/event/0.5/spec.md)).
+An owner hands their ownership of a repository to someone else. `to` is recorded as an owner and the caller's own `git.repo.own` record is revoked, in one step, so the repository never has fewer owners than before. Ownership moves between people; the repository stays where it is on the forge. Moving a repository to another forge owner is a forge operation, which the bridge reports as `repoTransferred` ([`git-ns/bridge/event`](../../../../git-ns/bridge/event/0.6/spec.md)).
 
 ## Changes from 0.2
 

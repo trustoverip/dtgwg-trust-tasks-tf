@@ -106,7 +106,7 @@ The actor sends the request to the VTC. See the top-level schema in [`payload.sc
 2. Refuses a repository it records as `active`, `orphaned` or `archived` with `git-ns/repo/adopt:alreadyManaged`. A `detached` repository — one whose namespace was unbound and bound again, or which moved back into the namespace — **MAY** be adopted again, and gets no rights back beyond `owners`.
 3. Checks the authorization above, then policy for each owner, which may refuse with `git-ns:policyDenied`.
 4. Records the repository as `active` and each owner's `git.repo.own`, with `grantedBy` set to the actor, and publishes them.
-5. In bridge mode, sends the bridge an `inspect` job, then a `bootstrap` job for whatever the inspection finds missing ([`git-ns/bridge/job`](../../../../git-ns/bridge/job/0.6/spec.md)), and projects roles. Until the inspection's result arrives the repository has no `forgeId` and its sync state is `pending`. If the inspection finds no such repository, the VTC sets it `detached`.
+5. In bridge mode, sends the bridge an `inspect` job, then a `bootstrap` job for whatever the inspection finds missing ([`git-ns/bridge/job`](../../../../git-ns/bridge/job/0.7/spec.md)), and projects roles. Until the inspection's result arrives the repository has no `forgeId` and its sync state is `pending`. If the inspection finds no such repository, the VTC sets it `detached`.
 
 ### Adopting a repository created before the namespace was bound
 

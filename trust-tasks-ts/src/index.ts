@@ -844,6 +844,9 @@ export import GitNsBridgeEvent_v0_4 = _GitNsBridgeEvent_v0_4;
 import * as _GitNsBridgeEvent_v0_5 from "./git-ns/bridge/event/0.5/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import GitNsBridgeEvent_v0_5 = _GitNsBridgeEvent_v0_5;
+import * as _GitNsBridgeEvent_v0_6 from "./git-ns/bridge/event/0.6/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import GitNsBridgeEvent_v0_6 = _GitNsBridgeEvent_v0_6;
 import * as _GitNsBridgeJob_v0_1 from "./git-ns/bridge/job/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import GitNsBridgeJob_v0_1 = _GitNsBridgeJob_v0_1;
@@ -862,6 +865,9 @@ export import GitNsBridgeJob_v0_5 = _GitNsBridgeJob_v0_5;
 import * as _GitNsBridgeJob_v0_6 from "./git-ns/bridge/job/0.6/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import GitNsBridgeJob_v0_6 = _GitNsBridgeJob_v0_6;
+import * as _GitNsBridgeJob_v0_7 from "./git-ns/bridge/job/0.7/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import GitNsBridgeJob_v0_7 = _GitNsBridgeJob_v0_7;
 import * as _GitNsBridgeJobList_v0_1 from "./git-ns/bridge/job/list/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import GitNsBridgeJobList_v0_1 = _GitNsBridgeJobList_v0_1;
