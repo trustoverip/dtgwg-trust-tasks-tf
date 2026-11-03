@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/collection/_shared/0.1/collection",
+  "title": "VTA Collection — shared definitions",
+  "description": "Shared shapes for the collection of messages for a principal's identifiers. A VTA collects, from the mediator each identifier's DID document advertises, the messages queued for every identifier whose messaging keys it holds in one of the principal's trust contexts — its personas — unless a client of the principal holds a collection claim for it: a lease, granted by vta/collection/claim and ended by vta/collection/release or at its end, under which that client is the identifier's one collector. The mediator permits one connection per identifier, so at most one party collects for an identifier at a time (VTI-NTF-080 – VTI-NTF-092).",
+  "$defs": {
+    "ContextId": {
+      "title": "ContextId",
+      "description": "The trust context the identifier belongs to.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "Did": {
+      "title": "Did",
+      "description": "A DID.",
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 2048,
+      "pattern": "^did:[a-z0-9]+:\\S+$"
+    },
+    "Claim": {
+      "title": "Claim",
+      "description": "A collection claim in force for one identifier: the client that is its collector, when the claim ends, and whether the claimant may still renew it. A claim released by a party other than its claimant, or whose claimant's access control entry no longer gives it standing in the context, is not renewable and still ends at `endsAt`, because the claimant is still connected until its own clock tells it to stop (VTI-NTF-084).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "claimant",
+        "endsAt",
+        "renewable"
+      ],
+      "properties": {
+        "claimant": {
+          "$ref": "#/$defs/Did",
+          "description": "The client holding the claim: the subject of the access control entry it was granted to."
+        },
+        "endsAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the claim ends unless renewed. The claimant stops collecting before this instant less its clock-skew tolerance; the VTA resumes no earlier than this instant plus its own (VTI-NTF-083, VTI-NTF-084)."
+        },
+        "renewable": {
+          "type": "boolean",
+          "description": "Whether the claimant may renew the claim with vta/collection/claim before it ends."
+        }
+      }
+    },
+    "Collector": {
+      "title": "Collector",
+      "description": "Who collects for an identifier: `vta`, the VTA itself; `client`, the claimant of a collection claim in force; or `none`, nobody, for the reason given in `notCollectedReason`.",
+      "type": "string",
+      "enum": [
+        "vta",
+        "client",
+        "none"
+      ]
+    },
+    "NotCollectedReason": {
+      "title": "NotCollectedReason",
+      "description": "Why nobody collects for an identifier the VTA would otherwise collect for: `limit`, the VTA is at the bound it states on the number of identifiers it collects for (VTI-NTF-088); `conflict`, another connection for the identifier kept closing the VTA's, and the VTA stopped after the bound it states until the conflict is resolved (VTI-NTF-085).",
+      "type": "string",
+      "enum": [
+        "limit",
+        "conflict"
+      ]
+    },
+    "CollectionEntry": {
+      "title": "CollectionEntry",
+      "description": "The collection state of one identifier. `claim` is present exactly when `collector` is `client`, and `notCollectedReason` exactly when it is `none`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "identifier",
+        "collector"
+      ],
+      "properties": {
+        "identifier": {
+          "$ref": "#/$defs/Did"
+        },
+        "collector": {
+          "$ref": "#/$defs/Collector"
+        },
+        "claim": {
+          "$ref": "#/$defs/Claim"
+        },
+        "notCollectedReason": {
+          "$ref": "#/$defs/NotCollectedReason"
+        }
+      },
+      "dependentSchemas": {
+        "claim": {
+          "properties": {
+            "collector": {
+              "const": "client"
+            }
+          }
+        },
+        "notCollectedReason": {
+          "properties": {
+            "collector": {
+              "const": "none"
+            }
+          }
+        },
+        "collector": {
+          "anyOf": [
+            {
+              "properties": {
+                "collector": {
+                  "const": "vta"
+                }
+              },
+              "not": {
+                "anyOf": [
+                  {
+                    "required": [
+                      "claim"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "notCollectedReason"
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "required": [
+                "claim"
+              ]
+            },
+            {
+              "required": [
+                "notCollectedReason"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  }
+}
