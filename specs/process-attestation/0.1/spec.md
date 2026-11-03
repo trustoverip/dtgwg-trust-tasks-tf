@@ -69,8 +69,8 @@ outcomeEvidence:
   rationale: >-
     A Verifier retains the response as its record that an attestation exchange
     about this artifact completed, and a credential or record the Verifier
-    issues — an authorship credential's `taskContext`, the Verifier's own audit
-    record — may cite it. The response reproduces, under the Holder's proof, the
+    issues, such as an authorship credential's `taskContext` or the Verifier's
+    own audit record, may cite it. The response reproduces, under the Holder's proof, the
     challenge the request freshly supplied. The challenge form is permitted
     (SPEC §7.3 item 20.5.2) because this specification requires the citing
     artifact to be issued by the request's `issuer`, the Verifier that minted
@@ -81,8 +81,8 @@ maxDocumentBytes:
   rationale: >-
     The largest member a response can carry is an inline receipt,
     `receiptReference.data`, bounded at 262144 characters of base64url text. The
-    rest of the document — artifact, challenge, assessment, disclosed aggregates
-    and the proof — is expected to fit in the remaining 32 KiB; the schema does
+    rest of the document (artifact, challenge, assessment, disclosed aggregates
+    and the proof) is expected to fit in the remaining 32 KiB; the schema does
     not bound every member, and a document over the bound does not conform. A
     receipt larger than the inline bound MUST use the `uri` form, so no chunked
     transfer is needed.
@@ -305,7 +305,7 @@ specification defines no extended error codes of its own.
       "algorithm": "sha-256"
     },
     "assessment": {
-      "primitive": "https://writerslogic.com/.well-known/rats-eat-profile-pop-1.0.json",
+      "primitive": "https://lf-decentralized-trust-labs.github.io/proof-of-effort/profiles/rats-eat-profile-pop-1.0.json",
       "determination": "authentic"
     },
     "receiptReference": {
@@ -402,10 +402,11 @@ the WritersProof implementation) fills the members this specification leaves to
 the primitive, so that two implementations of this task over CPoE agree.
 
 **`assessment.primitive`** is
-`https://writerslogic.com/.well-known/rats-eat-profile-pop-1.0.json`, the
-profile under which a CPoE attestation result is issued. The document is
-dereferenceable and self-describing. The `urn:ietf:params:` identifiers the
-CPoE drafts name are not registered and are not used here.
+`https://lf-decentralized-trust-labs.github.io/proof-of-effort/profiles/rats-eat-profile-pop-1.0.json`,
+the profile under which a CPoE attestation result is issued, published by the
+LF Decentralized Trust `proof-of-effort` project. The document is
+dereferenceable and self-describing. The `urn:ietf:params:` identifiers the CPoE
+drafts name are not registered and are not used here.
 
 **`assessment.determination`** is the attestation result's verdict: one of
 `authentic`, `inconclusive`, `suspicious` or `invalid`. The six-value forensic

@@ -13,7 +13,7 @@
       "algorithm": "sha-256"
     },
     "assessment": {
-      "primitive": "https://writerslogic.com/.well-known/rats-eat-profile-pop-1.0.json",
+      "primitive": "https://lf-decentralized-trust-labs.github.io/proof-of-effort/profiles/rats-eat-profile-pop-1.0.json",
       "determination": "authentic"
     },
     "receiptReference": {
@@ -39,6 +39,6 @@
     "created": "2026-09-09T14:02:14Z",
     "verificationMethod": "did:key:z6MkvDqGT54cXesYGvABpF1UapVNwjCqRcafi4Px6Thv5T3Z#z6MkvDqGT54cXesYGvABpF1UapVNwjCqRcafi4Px6Thv5T3Z",
     "proofPurpose": "authentication",
-    "proofValue": "z65ZGFYVTws2DT6Lk2Md3p7w4Pf7FfmfCEiHxguMnQoRWs3RS2av5pvmLnyarYn5LZ91tFJ1baRknQvCikEoe9gGV"
+    "proofValue": "z2GLRE9oTn22atTySWDGwd1dBZ6cSD2Kkxu21tY6KrkgbwoZ6RUMdnBb8Z6VtKQ11oGC5Vh3DKU5AbrKHCizYX2XX"
   }
 }
