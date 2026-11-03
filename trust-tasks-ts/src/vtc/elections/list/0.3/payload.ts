@@ -21,6 +21,8 @@ export type RegistrarState =
 
 /**
  * A member or an administrator pages through the community's elections that the caller may see. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by vtc/elections/list/0.5
  */
 export interface VTCElectionsListPayload {
   state?: RegistrarState;
@@ -36,6 +38,8 @@ export interface VTCElectionsListPayload {
 }
 /**
  * Success response to vtc/elections/list/0.2: one page of the elections the caller may see.
+ *
+ * @deprecated superseded by vtc/elections/list/0.5
  */
 export interface VTCElectionsListResponsePayload {
   /**
@@ -90,15 +94,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by vtc/elections/list/0.5";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vtc/elections/list/0.5
+ */
 export type Payload = VTCElectionsListPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/elections/list/0.3#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vtc/elections/list/0.5
+ */
 export type Response = VTCElectionsListResponsePayload;
 
 /**

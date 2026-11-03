@@ -11,6 +11,7 @@ pub mod health;
 pub mod management;
 pub mod memory;
 pub mod metrics;
+pub mod notifications;
 pub mod passkey_vms;
 pub mod pcs;
 pub mod restore;

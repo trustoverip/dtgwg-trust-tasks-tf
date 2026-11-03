@@ -53,12 +53,26 @@ pub const DEFAULT_SKEW: TimeDelta = TimeDelta::seconds(60);
 /// them one bound.
 pub const DEFAULT_MAX_AGE: TimeDelta = TimeDelta::minutes(5);
 
+/// The expiry horizon [`FreshnessPolicy::consequential`] applies: the furthest
+/// after `issuedAt` a stated `expiresAt` is honoured.
+///
+/// A document's `expiresAt` fixes its acceptance window and the replay
+/// record's retention (SPEC §7.2, *Bounding the record*), so without a horizon
+/// the producer alone decides how long the consumer must remember its `id`.
+/// Thirty days covers a store-and-forward delivery to a recipient that is
+/// offline for weeks; a later `expiresAt` is clamped to it, not refused.
+pub const DEFAULT_EXPIRY_HORIZON: TimeDelta = TimeDelta::days(30);
+
 /// How a consumer bounds a document in time before acting on it.
 ///
 /// Every field is explicit; there is no "unset means whatever the library
 /// felt like" case. See the [module documentation](self) for the reasoning and
 /// for which constructor to reach for.
+///
+/// `#[non_exhaustive]`: build one from [`Default`] or
+/// [`consequential`](Self::consequential) and the `with_*` builders.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[non_exhaustive]
 pub struct FreshnessPolicy {
     /// Tolerance applied when comparing the document's timestamps against the
     /// consumer's own clock, per the allowance in SPEC §4.2. Applied to the
@@ -72,10 +86,27 @@ pub struct FreshnessPolicy {
     pub skew: TimeDelta,
 
     /// The oldest `issuedAt` this consumer will accept, measured back from
-    /// `now`. `None` means unbounded — the pre-existing behaviour, and the
-    /// only setting under which a document carrying neither timestamp can be
-    /// accepted.
+    /// `now`, for a document that carries **no** `expiresAt`. `None` means
+    /// unbounded — the only setting under which a document carrying neither
+    /// timestamp can be accepted.
+    ///
+    /// A document that states an `expiresAt` is bounded by it instead (SPEC
+    /// §7.2, *Bounding the record*: the maximum age applies "where `expiresAt`
+    /// is absent"), up to [`expiry_horizon`](Self::expiry_horizon).
     pub max_age: Option<TimeDelta>,
+
+    /// The furthest after `issuedAt` a stated `expiresAt` is honoured. A
+    /// document whose `expiresAt` lies beyond `issuedAt + expiry_horizon` is
+    /// treated as expiring there: accepted until then (plus
+    /// [`skew`](Self::skew)) and refused as `expired` after, never refused for
+    /// stating the later instant. `None` honours any `expiresAt`.
+    ///
+    /// The horizon runs from `issuedAt`, so it does not apply to a document
+    /// without one: such a document is bounded by its `expiresAt` alone. A
+    /// horizon counted from first sight would drop the record while the
+    /// document is still acceptable, and a later copy would run again. Set
+    /// [`require_issued_at`](Self::require_issued_at) to refuse such documents.
+    pub expiry_horizon: Option<TimeDelta>,
 
     /// Reject a document that carries no `issuedAt` at all, with
     /// `malformedRequest`.
@@ -102,6 +133,7 @@ impl Default for FreshnessPolicy {
         Self {
             skew: DEFAULT_SKEW,
             max_age: None,
+            expiry_horizon: None,
             require_issued_at: false,
         }
     }
@@ -110,13 +142,15 @@ impl Default for FreshnessPolicy {
 impl FreshnessPolicy {
     /// The posture SPEC §7.2 (*Bounding the record*) describes for a
     /// *consequential Trust Task*: `issuedAt` REQUIRED and a bounded
-    /// acceptance window ([`DEFAULT_MAX_AGE`]), so that every accepted
-    /// document sits inside a window the [`ReplayGuard`](crate::ReplayGuard)
-    /// can retain a record for.
+    /// acceptance window ([`DEFAULT_MAX_AGE`] without an `expiresAt`, the
+    /// `expiresAt` up to [`DEFAULT_EXPIRY_HORIZON`] with one), so that every
+    /// accepted document sits inside a window the
+    /// [`ReplayGuard`](crate::ReplayGuard) can retain a record for.
     pub fn consequential() -> Self {
         Self {
             skew: DEFAULT_SKEW,
             max_age: Some(DEFAULT_MAX_AGE),
+            expiry_horizon: Some(DEFAULT_EXPIRY_HORIZON),
             require_issued_at: true,
         }
     }
@@ -125,6 +159,13 @@ impl FreshnessPolicy {
     #[must_use]
     pub fn with_max_age(mut self, max_age: TimeDelta) -> Self {
         self.max_age = Some(max_age);
+        self
+    }
+
+    /// Builder: set the expiry horizon.
+    #[must_use]
+    pub fn with_expiry_horizon(mut self, horizon: TimeDelta) -> Self {
+        self.expiry_horizon = Some(horizon);
         self
     }
 
@@ -146,26 +187,39 @@ impl FreshnessPolicy {
     /// this consumer's willingness to execute it, which SPEC §7.2 makes the
     /// same instant as the end of the replay record's required retention.
     ///
-    /// `expiresAt` fixes it where present. Otherwise it is
-    /// `issuedAt + max_age + skew` — the same bound
+    /// `expiresAt` fixes it where present, clamped to
+    /// `issuedAt + expiry_horizon + skew` where it lies beyond the horizon.
+    /// Otherwise it is `issuedAt + max_age + skew`. Each is the same bound
     /// [`validate_freshness`](TrustTask::validate_freshness) accepts up to, so a
     /// replay arriving inside the skew allowance still finds the record.
     /// `None` means this policy places no bound on the
     /// document, in which case a consumer **MUST NOT** execute a consequential
     /// task on it: it has no window in which to retain the record.
+    ///
+    /// Where the producer stamped neither `issuedAt` nor `expiresAt`, `now`
+    /// stands in for the `issuedAt`: the record then lives a full window from
+    /// first sight, which is the longest the document could still be arriving
+    /// from a queue.
     pub fn record_expiry<P>(
         &self,
         doc: &TrustTask<P>,
         now: DateTime<Utc>,
     ) -> Option<DateTime<Utc>> {
         if let Some(expires_at) = doc.expires_at {
-            return Some(expires_at);
+            // No `issuedAt`, no horizon: see `expiry_horizon`.
+            return Some(match doc.issued_at.and_then(|i| self.horizon_end(i)) {
+                Some(horizon_end) if expires_at > horizon_end => horizon_end + self.skew,
+                _ => expires_at,
+            });
         }
         let max_age = self.max_age?;
-        // Fall back to `now` when the producer stamped no `issuedAt`: the
-        // record then lives a full window from first sight, which is the
-        // longest the document could still be arriving from a queue.
         Some(doc.issued_at.unwrap_or(now) + max_age + self.skew)
+    }
+
+    /// `issued_at + expiry_horizon`, or `None` with no horizon (or one past
+    /// the representable range, which bounds nothing).
+    fn horizon_end(&self, issued_at: DateTime<Utc>) -> Option<DateTime<Utc>> {
+        issued_at.checked_add_signed(self.expiry_horizon?)
     }
 }
 
@@ -185,8 +239,12 @@ impl<P> TrustTask<P> {
     ///    validity interval containing no valid instant.
     /// 3. `issuedAt` absent while [`FreshnessPolicy::require_issued_at`] →
     ///    `malformedRequest`.
-    /// 4. `issuedAt` older than `max_age + skew` → `expired`.
-    /// 5. Neither `issuedAt` nor `expiresAt`, under a policy that sets a
+    /// 4. With an `expiresAt`: `issuedAt` older than `expiry_horizon + skew`
+    ///    → `expired`. The `expiresAt` itself is
+    ///    [`validate_basic`](Self::validate_basic)'s to apply, and `max_age`
+    ///    is not applied at all (SPEC §7.2, *Bounding the record*).
+    /// 5. Without one: `issuedAt` older than `max_age + skew` → `expired`.
+    /// 6. Neither `issuedAt` nor `expiresAt`, under a policy that sets a
     ///    `max_age` → `expired`. There is no window to place the document in.
     pub fn validate_freshness(
         &self,
@@ -205,6 +263,18 @@ impl<P> TrustTask<P> {
                         reason: EXPIRY_NOT_AFTER_ISSUANCE.to_string(),
                     });
                 }
+                // The producer's `expiresAt` is the window. Past the horizon
+                // it is clamped there, not refused: the document was
+                // acceptable, and is now merely older than this consumer
+                // will remember it.
+                if let Some(horizon_end) = policy.horizon_end(issued_at) {
+                    if expires_at > horizon_end && horizon_end + policy.skew < now {
+                        return Err(RejectReason::Stale {
+                            detail: StaleReason::OlderThanWindow,
+                        });
+                    }
+                }
+                return Ok(());
             }
             if let Some(max_age) = policy.max_age {
                 if issued_at + max_age + policy.skew < now {
@@ -271,7 +341,8 @@ pub const ISSUED_AT_REQUIRED_BY_SPEC: &str =
 /// off the wire.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum StaleReason {
-    /// `issuedAt` is further back than the consumer's acceptance window.
+    /// `issuedAt` is further back than the consumer's acceptance window: its
+    /// maximum age, or for a document with an `expiresAt`, its expiry horizon.
     OlderThanWindow,
     /// The document carries neither `issuedAt` nor `expiresAt`, so the
     /// consumer has no window in which to place it (SPEC §7.2).
@@ -429,6 +500,100 @@ mod tests {
         assert_eq!(
             FreshnessPolicy::default().record_expiry(&without, now),
             None
+        );
+    }
+
+    /// SPEC §7.2 (*Bounding the record*): the maximum age applies "where
+    /// `expiresAt` is absent". A document stating a later expiry is acceptable
+    /// until then, however old its `issuedAt`, and the record lasts as long.
+    #[test]
+    fn a_stated_expiry_replaces_the_maximum_age() {
+        let now = t("2026-08-26T12:00:00Z");
+        let policy = FreshnessPolicy::consequential();
+
+        // Two hours old, far past the five-minute max age, expiry still ahead.
+        let held = doc_at(
+            Some(t("2026-08-26T10:00:00Z")),
+            Some(t("2026-08-26T16:00:00Z")),
+        );
+        assert!(held.validate_freshness(now, &policy).is_ok());
+        assert_eq!(
+            policy.record_expiry(&held, now),
+            Some(t("2026-08-26T16:00:00Z"))
+        );
+
+        // The same age with no expiry is still refused by the max age.
+        let unstated = doc_at(Some(t("2026-08-26T10:00:00Z")), None);
+        assert_eq!(
+            unstated
+                .validate_freshness(now, &policy)
+                .unwrap_err()
+                .code(),
+            StandardCode::Expired
+        );
+    }
+
+    /// An expiry beyond the horizon is clamped to it, not refused: accepted
+    /// until `issuedAt + horizon + skew`, refused as `expired` after, and the
+    /// record kept exactly that long.
+    #[test]
+    fn an_expiry_beyond_the_horizon_is_clamped_to_it() {
+        let policy = FreshnessPolicy::consequential();
+        let issued = t("2026-08-01T00:00:00Z");
+        let far = doc_at(Some(issued), Some(t("2027-08-01T00:00:00Z")));
+        let horizon_end = issued + DEFAULT_EXPIRY_HORIZON;
+
+        // Inside the horizon: accepted, though the expiry is a year out.
+        let early = t("2026-08-02T00:00:00Z");
+        assert!(far.validate_freshness(early, &policy).is_ok());
+        assert_eq!(
+            policy.record_expiry(&far, early),
+            Some(horizon_end + DEFAULT_SKEW)
+        );
+
+        // Past the horizon but inside the skew tolerance: still accepted, and
+        // the record still held.
+        let edge = horizon_end + TimeDelta::seconds(30);
+        assert!(far.validate_freshness(edge, &policy).is_ok());
+        assert!(policy.record_expiry(&far, edge).unwrap() >= edge);
+
+        // Beyond both: refused as stale, not malformed.
+        let late = horizon_end + DEFAULT_SKEW + TimeDelta::seconds(1);
+        assert_eq!(
+            far.validate_freshness(late, &policy).unwrap_err().code(),
+            StandardCode::Expired
+        );
+
+        // An expiry inside the horizon is not moved.
+        let near = doc_at(Some(issued), Some(t("2026-08-20T00:00:00Z")));
+        assert_eq!(
+            policy.record_expiry(&near, early),
+            Some(t("2026-08-20T00:00:00Z"))
+        );
+
+        // No horizon: any stated expiry is honoured.
+        let unbounded = FreshnessPolicy::default().with_max_age(DEFAULT_MAX_AGE);
+        assert!(far.validate_freshness(late, &unbounded).is_ok());
+        assert_eq!(
+            unbounded.record_expiry(&far, late),
+            Some(t("2027-08-01T00:00:00Z"))
+        );
+    }
+
+    /// Without an `issuedAt` the horizon has nothing to run from. Counting it
+    /// from first sight would drop the record while the document is still
+    /// acceptable, and the next copy would run again, so the expiry stands.
+    #[test]
+    fn the_horizon_needs_an_issued_at() {
+        let now = t("2026-08-26T12:00:00Z");
+        let policy = FreshnessPolicy::default()
+            .with_max_age(DEFAULT_MAX_AGE)
+            .with_expiry_horizon(DEFAULT_EXPIRY_HORIZON);
+        let doc = doc_at(None, Some(t("2027-08-26T12:00:00Z")));
+        assert!(doc.validate_freshness(now, &policy).is_ok());
+        assert_eq!(
+            policy.record_expiry(&doc, now),
+            Some(t("2027-08-26T12:00:00Z"))
         );
     }
 

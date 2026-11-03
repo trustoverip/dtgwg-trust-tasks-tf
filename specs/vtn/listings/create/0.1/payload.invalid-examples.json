@@ -1,0 +1,37 @@
+[
+  {
+    "note": "Missing `kind` — the listing credential's `nodeType` cannot be chosen (VTI-VTN-031).",
+    "payload": {
+      "did": "did:example:community"
+    }
+  },
+  {
+    "note": "A `kind` outside community|network.",
+    "payload": {
+      "did": "did:example:community",
+      "kind": "person"
+    }
+  },
+  {
+    "note": "A `did` that is not a DID.",
+    "payload": {
+      "did": "https://community.example",
+      "kind": "community"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An entry without its listing credential.",
+    "payload": {
+      "entry": {
+        "did": "did:example:community",
+        "kind": "community",
+        "profile": {},
+        "state": "listed",
+        "createdAt": "2026-11-03T10:00:00Z",
+        "updatedAt": "2026-11-03T10:00:00Z",
+        "history": []
+      }
+    }
+  }
+]

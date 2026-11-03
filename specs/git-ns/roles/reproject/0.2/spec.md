@@ -72,9 +72,9 @@ related:
 
 ## Abstract
 
-In a bridge-mode namespace the VTC **projects** its rights onto the forge: for each repository it sends the bridge a [`git-ns/bridge/job`](../../../../git-ns/bridge/job/0.6/spec.md) `projectRoles` job listing everyone who should hold a forge role there and their right, and the bridge maps each right to a forge role with its **role map** and converges the forge. The VTC sends a repository's roles when they change — a grant, a revocation, a linked account, a departure — and not otherwise.
+In a bridge-mode namespace the VTC **projects** its rights onto the forge: for each repository it sends the bridge a [`git-ns/bridge/job`](../../../../git-ns/bridge/job/0.7/spec.md) `projectRoles` job listing everyone who should hold a forge role there and their right, and the bridge maps each right to a forge role with its **role map** and converges the forge. The VTC sends a repository's roles when they change — a grant, a revocation, a linked account, a departure — and not otherwise.
 
-So a change that alters what the rights *mean* on the forge, without altering any right, reaches a repository only at its next unrelated projection. The usual one is a change to the bridge's role map: a community that decides maintainers get `admin` on its Forgejo instance, or that committers on one repository get `write`. The bridge reports such a change, and each repository it leaves projected under the old map, with [`git-ns/bridge/event`](../../../../git-ns/bridge/event/0.5/spec.md) `roleMapReported`, and a VTC re-projects those repositories itself. This task is the same re-projection, asked for: by an administrator who changed the map with a bridge too old to report it, by an owner or administrator who wants a forge they suspect has drifted brought back into line, or by anyone entitled who is simply not willing to wait.
+So a change that alters what the rights *mean* on the forge, without altering any right, reaches a repository only at its next unrelated projection. The usual one is a change to the bridge's role map: a community that decides maintainers get `admin` on its Forgejo instance, or that committers on one repository get `write`. The bridge reports such a change, and each repository it leaves projected under the old map, with [`git-ns/bridge/event`](../../../../git-ns/bridge/event/0.6/spec.md) `roleMapReported`, and a VTC re-projects those repositories itself. This task is the same re-projection, asked for: by an administrator who changed the map with a bridge too old to report it, by an owner or administrator who wants a forge they suspect has drifted brought back into line, or by anyone entitled who is simply not willing to wait.
 
 It changes no right and publishes nothing. It sends the bridge exactly what the VTC's records already say.
 
@@ -112,7 +112,7 @@ The community-administrator capability grants nothing *in* a namespace ([`git-ns
 
 **Re-projection** — for one repository: a `projectRoles` job with its **complete** `desiredRoles`, recomputed from the VTC's records at the time it is queued exactly as for any projection, sent whether or not the set differs from the one last sent. For a namespace: a re-projection of every repository the VTC records in it as `active` or `orphaned`. `pendingCreate`, `unmanaged`, `archived` and `detached` repositories have no roles to project.
 
-**Role map** — as in [`git-ns/bridge/event`](../../../../git-ns/bridge/event/0.5/spec.md). The bridge applies its own when it runs the job; the request cannot name one, and the VTC does not send one.
+**Role map** — as in [`git-ns/bridge/event`](../../../../git-ns/bridge/event/0.6/spec.md). The bridge applies its own when it runs the job; the request cannot name one, and the VTC does not send one.
 
 **`reason`** — the caller's account of why, kept with the audit record. Free text; it is never sent to the bridge or published.
 
@@ -128,7 +128,7 @@ The requester sends the request to the VTC. See the top-level schema in [`payloa
 6. Queues a re-projection of each repository covered. Where a `projectRoles` job for a repository is already queued and not yet sent, the VTC **MAY** replace it with the re-projection rather than queue a second; it **MUST NOT** drop the re-projection in favour of a job computed earlier.
 7. Records an audit event carrying the caller, `resource`, `reason` and the repositories covered, and answers with `repos`, the repositories it queued a re-projection for. The response **MUST NOT** be sent before the jobs and the audit event are durable.
 
-The work on the forge is asynchronous, as every projection is: each job's [`git-ns/bridge/result`](../../../../git-ns/bridge/result/0.2/spec.md) says how it ended, and a VTC **SHOULD** show a repository whose re-projection failed as it shows any failed projection. A re-projection that succeeds clears a repository from the `stale` list of the last `roleMapReported` the VTC holds ([`git-ns/bridge/event`](../../../../git-ns/bridge/event/0.5/spec.md), request step 5).
+The work on the forge is asynchronous, as every projection is: each job's [`git-ns/bridge/result`](../../../../git-ns/bridge/result/0.2/spec.md) says how it ended, and a VTC **SHOULD** show a repository whose re-projection failed as it shows any failed projection. A re-projection that succeeds clears a repository from the `stale` list of the last `roleMapReported` the VTC holds ([`git-ns/bridge/event`](../../../../git-ns/bridge/event/0.6/spec.md), request step 5).
 
 Sending the request again is harmless: every job is convergent, and one that finds the forge already matching changes nothing.
 

@@ -70,7 +70,7 @@ class ResponseDocument {
 }
 
 /// VTA PCS — Trustee Enrol — response payload
-@Deprecated('superseded by vta/pcs/trustee/enrol/0.2')
+@Deprecated('superseded by vta/pcs/trustee/enrol/0.4')
 class Response {
   const Response({
     required this.document,
@@ -390,7 +390,7 @@ class Manifest {
 
 /// The trustee's VTA generates the election's transport key and returns the
 /// voting/trustees/enrol request signed as the trustee.
-@Deprecated('superseded by vta/pcs/trustee/enrol/0.2')
+@Deprecated('superseded by vta/pcs/trustee/enrol/0.4')
 class Payload {
   const Payload({
     required this.contextId,
@@ -442,7 +442,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by vta/pcs/trustee/enrol/0.2';
+const String? deprecation = 'superseded by vta/pcs/trustee/enrol/0.4';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/vta/pcs/trustee/enrol/0.1';

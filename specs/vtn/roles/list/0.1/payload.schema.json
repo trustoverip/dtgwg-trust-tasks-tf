@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtn/roles/list/0.1",
+  "title": "VTN Roles — List — payload",
+  "description": "A request for the roles a network defines. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "membership": {
+      "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/Membership",
+      "description": "The requester's membership credential from a member community, where the network's directory admits members only and nothing else admits the requester."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTN Roles — List — response payload",
+      "description": "Every role the network defines.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roles"
+      ],
+      "properties": {
+        "roles": {
+          "type": "array",
+          "items": {
+            "$ref": "../../../_shared/0.1/groups.schema.json#/$defs/RoleDef"
+          },
+          "description": "The roles, each with whether a party must register a group for it."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

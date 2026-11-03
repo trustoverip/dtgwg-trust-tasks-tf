@@ -229,7 +229,7 @@ class ResponseNext {
 }
 
 /// Whether the bridge took the job.
-@Deprecated('superseded by git-ns/bridge/job/0.6')
+@Deprecated('superseded by git-ns/bridge/job/0.7')
 class Response {
   const Response({
     required this.jobId,
@@ -318,7 +318,7 @@ extension type const PayloadKind(String value) {
 /// bridge holds those. Which optional members a job carries is fixed by its `kind`
 /// (see the specification's kind table); a bridge refuses a job that carries a member
 /// its kind does not use, or lacks one its kind requires.
-@Deprecated('superseded by git-ns/bridge/job/0.6')
+@Deprecated('superseded by git-ns/bridge/job/0.7')
 class Payload {
   const Payload({
     required this.jobId,
@@ -454,7 +454,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by git-ns/bridge/job/0.6';
+const String? deprecation = 'superseded by git-ns/bridge/job/0.7';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/git-ns/bridge/job/0.5';

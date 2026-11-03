@@ -1,0 +1,49 @@
+[
+  {
+    "note": "No room.",
+    "payload": {}
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board",
+      "ext": {
+        "bare-key": {
+          "anything": "here"
+        }
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A host record whose createdAt is integer seconds — the 0.2 encoding; HostedRoom's instants are RFC 3339 date-time strings from 0.3 on.",
+    "payload": {
+      "room": {
+        "room": {
+          "roomId": "did:webvh:example.com:rooms:board",
+          "ownerDid": "did:example:community",
+          "visibility": "private",
+          "retentionPolicy": "chained",
+          "epoch": 1,
+          "lifecycle": "live",
+          "epochExpiresAt": "2026-10-19T00:00:00Z",
+          "retentionDays": 90,
+          "createdAt": 1760436000,
+          "updatedAt": "2025-10-14T10:00:00Z"
+        },
+        "label": "Board pack",
+        "description": "Papers for the next board meeting: agenda, minutes in draft, and the finance pack.",
+        "tags": [
+          "board"
+        ],
+        "storageConfig": "local",
+        "admitted": 0,
+        "offered": 0,
+        "ownerAuthorityValidUntil": "2027-10-14T10:00:00Z",
+        "createdBy": "did:example:administrator",
+        "detailsUpdatedAt": "2026-10-15T09:30:00Z",
+        "detailsUpdatedBy": "did:example:secretary"
+      }
+    }
+  }
+]

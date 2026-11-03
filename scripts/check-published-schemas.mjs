@@ -32,6 +32,12 @@
 // comparison is against the file as released, not as it is on main: a version
 // merged since the last release has reached no library yet, so it can still be
 // fixed in place. A file new since the release is not constrained.
+//
+// `specs/spec.meta.schema.json` is not compared. It validates spec front
+// matter at build time and is compiled into no library: the binding
+// generators list it in `NOT_PAYLOAD_SCHEMAS`, and a change that rejects an
+// existing spec already fails `npm run build`, which validates every spec
+// against it.
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { incompatibilities, frontMatterIncompatibilities } from "./lib/schema-compat.mjs";
@@ -48,7 +54,8 @@ const baseRef = process.env.PUBLISHED_BASE_REF || "origin/main";
 const base = git("merge-base", baseRef, "HEAD");
 const changed = git("diff", "--name-only", "--diff-filter=M", base, "HEAD", "--", "specs")
   .split("\n")
-  .filter((p) => p.endsWith(".json") || p.endsWith("/spec.md"));
+  .filter((p) => p.endsWith(".json") || p.endsWith("/spec.md"))
+  .filter((p) => p !== "specs/spec.meta.schema.json");
 
 const atRelease = (file) => {
   try {

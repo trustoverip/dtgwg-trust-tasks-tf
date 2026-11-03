@@ -1,0 +1,309 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtn/_shared/0.1/entry.schema.json",
+  "title": "VTN — Entries",
+  "description": "An entry in a Verifiable Trust Network's published set: a community or network the network lists, its lifecycle state, and the credentials that evidence it (VTI-VTN-010 – VTI-VTN-013, VTI-VTN-031). Shared by the vtn/* tasks.",
+  "$defs": {
+    "Did": {
+      "type": "string",
+      "pattern": "^did:[a-z0-9]+:.+$",
+      "maxLength": 2048,
+      "description": "A DID."
+    },
+    "EntryKind": {
+      "type": "string",
+      "enum": [
+        "community",
+        "network"
+      ],
+      "description": "What the entry lists (VTI-VTN-031): a community, whose entries are its members, or a network, whose entries are further listings. A listing credential carries the same fact as `nodeType` `VTC` or `VTN`."
+    },
+    "EntryState": {
+      "type": "string",
+      "enum": [
+        "listed",
+        "acknowledged",
+        "repudiated",
+        "suspended",
+        "removed",
+        "departed"
+      ],
+      "description": "`listed`: the network lists the party and the party has not answered; this is never membership (VTI-VTN-013). `acknowledged`: the party acknowledged the network's grant; it is a member. `repudiated`: the party rejected the listing. `suspended`: the network suspended the membership; reversible. `removed`: the network ended the entry. `departed`: the party left, by repudiating the grant."
+    },
+    "EntryProfile": {
+      "description": "What the directory shows about an entry, set by the network's administrators.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {
+        "description": {
+          "$ref": "#/$defs/Description"
+        },
+        "url": {
+          "$ref": "#/$defs/Url"
+        },
+        "tags": {
+          "$ref": "#/$defs/Tags"
+        }
+      }
+    },
+    "Issued": {
+      "description": "A credential the network issued, with where its status is kept.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "credential",
+        "statusIndex"
+      ],
+      "properties": {
+        "credential": {
+          "$ref": "#/$defs/Credential",
+          "description": "The credential as issued."
+        },
+        "statusIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The credential's index in the network's status lists."
+        }
+      }
+    },
+    "StateChange": {
+      "description": "One transition in an entry's lifecycle.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "changedAt",
+        "to"
+      ],
+      "properties": {
+        "changedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the state changed."
+        },
+        "from": {
+          "$ref": "#/$defs/EntryState",
+          "description": "The state before; absent for the first listing."
+        },
+        "to": {
+          "$ref": "#/$defs/EntryState"
+        },
+        "reason": {
+          "$ref": "#/$defs/Reason"
+        }
+      }
+    },
+    "Credential": {
+      "type": "object",
+      "description": "A DTG credential (W3C VC 2.0, JSON) exactly as signed. Verified by the party relying on it, never by its shape here: it is an open object so a binding cannot narrow away a member the proof covers."
+    },
+    "Membership": {
+      "type": "object",
+      "description": "A person's membership credential (VMC) from a community that is a member of this network, holder-bound to the requester's identity. Open for the same reason as `Credential`."
+    },
+    "Entry": {
+      "description": "An entry as its network's administrators see it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "did",
+        "kind",
+        "profile",
+        "state",
+        "createdAt",
+        "updatedAt",
+        "listing",
+        "history"
+      ],
+      "properties": {
+        "did": {
+          "$ref": "#/$defs/Did",
+          "description": "The listed party's DID."
+        },
+        "kind": {
+          "$ref": "#/$defs/EntryKind"
+        },
+        "label": {
+          "$ref": "#/$defs/Label"
+        },
+        "profile": {
+          "$ref": "#/$defs/EntryProfile"
+        },
+        "state": {
+          "$ref": "#/$defs/EntryState"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the party was first listed."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the entry last changed."
+        },
+        "listing": {
+          "$ref": "#/$defs/Issued",
+          "description": "The listing credential (`lists/1`)."
+        },
+        "offer": {
+          "$ref": "#/$defs/Issued",
+          "description": "The unsigned membership grant offered to the party, before it acknowledged."
+        },
+        "grant": {
+          "$ref": "#/$defs/Issued",
+          "description": "The signed membership grant (VMC), once the party acknowledged."
+        },
+        "ack": {
+          "$ref": "#/$defs/Credential",
+          "description": "The party's acknowledgement (VMC carrying the grant's digest)."
+        },
+        "repudiation": {
+          "$ref": "#/$defs/Credential",
+          "description": "The party's repudiation (`repudiates/1`) of the listing or the grant."
+        },
+        "history": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/StateChange"
+          },
+          "description": "Every transition, oldest first."
+        }
+      }
+    },
+    "IndexEntry": {
+      "description": "An entry as the network publishes it, with the credentials a verifier needs.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "did",
+        "kind",
+        "state",
+        "acknowledged",
+        "profile",
+        "listing"
+      ],
+      "properties": {
+        "did": {
+          "$ref": "#/$defs/Did",
+          "description": "The listed party's DID."
+        },
+        "kind": {
+          "$ref": "#/$defs/EntryKind"
+        },
+        "state": {
+          "$ref": "#/$defs/EntryState"
+        },
+        "acknowledged": {
+          "type": "boolean",
+          "description": "Whether the party acknowledged: true only for a member. Every published entry states it (VTI-VTN-013)."
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 200,
+          "description": "The name the directory shows."
+        },
+        "profile": {
+          "$ref": "#/$defs/EntryProfile"
+        },
+        "listing": {
+          "$ref": "#/$defs/Credential",
+          "description": "The listing credential."
+        },
+        "grant": {
+          "$ref": "#/$defs/Credential",
+          "description": "The membership grant, once acknowledged."
+        },
+        "acknowledgement": {
+          "$ref": "#/$defs/Credential",
+          "description": "The party's acknowledgement."
+        },
+        "repudiation": {
+          "$ref": "#/$defs/Credential",
+          "description": "The party's repudiation."
+        }
+      }
+    },
+    "AuditEvent": {
+      "description": "One change to the published set, as the audit trail records it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "occurredAt",
+        "did",
+        "event",
+        "to",
+        "actor"
+      ],
+      "properties": {
+        "occurredAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When it happened."
+        },
+        "did": {
+          "$ref": "#/$defs/Did",
+          "description": "The entry it happened to."
+        },
+        "event": {
+          "type": "string",
+          "enum": [
+            "list",
+            "acknowledge",
+            "repudiate",
+            "suspend",
+            "reinstate",
+            "remove",
+            "depart",
+            "update"
+          ],
+          "description": "What happened."
+        },
+        "to": {
+          "$ref": "#/$defs/EntryState",
+          "description": "The entry's state afterwards."
+        },
+        "actor": {
+          "$ref": "#/$defs/Did",
+          "description": "Who did it: an administrator, or the listed party."
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 1000,
+          "description": "The reason given, if any."
+        }
+      }
+    },
+    "Label": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "The name the directory shows."
+    },
+    "Description": {
+      "type": "string",
+      "maxLength": 2000,
+      "description": "What the listed party is, for the directory."
+    },
+    "Url": {
+      "type": "string",
+      "format": "uri",
+      "maxLength": 2048,
+      "description": "The party's public address."
+    },
+    "Tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64
+      },
+      "description": "Free-text tags the directory searches.",
+      "maxItems": 32
+    },
+    "Reason": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "The reason given, if any."
+    }
+  }
+}

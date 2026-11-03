@@ -179,7 +179,7 @@ The request carries at most a namespace and a paging cursor. The response carrie
 
 Interleaving audit rows and job state into one timeline is itself the point of this task, and its principal privacy property. A namespace admin who is not a community administrator sees only their own namespaces' history — the same boundary [`git-ns/namespace/list`](../../../namespace/list/0.2/spec.md) and [`git-ns/repo/list`](../../../repo/list/0.2/spec.md) draw — and a right-to-be-forgotten erasure that has removed `actor`/`subject` from an audit row removes them from this timeline identically: this task reads the same rows, not a separate copy that could retain what the erasure removed.
 
-The **VTC** declares `identifierScope: public`; the **administrator** `pairwise`, matching the rest of the read family. `namespace`, `resource` and `right` are already visible to a namespace's administrators through the tasks that produced each row ([`git-ns/right/grant`](../../../right/grant/0.4/spec.md), [`git-ns/bridge/job`](../../../bridge/job/0.6/spec.md)); this task adds the ordering and the interleaving, not a new identifier.
+The **VTC** declares `identifierScope: public`; the **administrator** `pairwise`, matching the rest of the read family. `namespace`, `resource` and `right` are already visible to a namespace's administrators through the tasks that produced each row ([`git-ns/right/grant`](../../../right/grant/0.4/spec.md), [`git-ns/bridge/job`](../../../bridge/job/0.7/spec.md)); this task adds the ordering and the interleaving, not a new identifier.
 
 ### Retention
 

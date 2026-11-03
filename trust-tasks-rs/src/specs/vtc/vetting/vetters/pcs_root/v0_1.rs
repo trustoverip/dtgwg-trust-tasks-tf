@@ -912,7 +912,7 @@ pub mod error_codes {
     };
     /// `vtc/vetting/vetters/pcs-root:identifierRebound`
     ///
-    /// `id` is not the identifier this member was bound to at their first enrolment. A member holding two identifiers could be counted twice in one proof.
+    /// `id` is not the identifier this member was bound to at their first enrolment. A member holding two identifiers could be counted twice in one proof. A member who lost the key reads the recorded identifier with vtc/vetting/vetters/pcs-binding/show and recovers it, or asks an administrator for vtc/vetting/vetters/pcs-binding/reset.
     ///
     /// Declared `retryable: false`.
     pub const IDENTIFIER_REBOUND: crate::DeclaredErrorCode = crate::DeclaredErrorCode {

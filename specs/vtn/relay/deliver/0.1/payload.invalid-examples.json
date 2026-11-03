@@ -1,0 +1,23 @@
+[
+  {
+    "note": "Missing `role` — the network cannot tell which of its groups is addressed.",
+    "payload": {
+      "envelope": { "message": {}, "hops": [] }
+    }
+  },
+  {
+    "note": "An envelope without its hops.",
+    "payload": {
+      "role": "admins",
+      "envelope": { "message": {} }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A refusal is an error, not a status: `refused` is a receipt status for a downstream delivery only.",
+    "payload": {
+      "status": "refused",
+      "relayed": []
+    }
+  }
+]

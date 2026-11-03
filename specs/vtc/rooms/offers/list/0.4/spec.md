@@ -55,14 +55,14 @@ related:
 
 **VTC Rooms — Offers — List** is how a member collects what a room the community owns has issued them. It returns:
 
-- **offers** — the caller's open offers of admission ([`vtc/rooms/community/members/add`](../../../../../vtc/rooms/community/members/add/0.1/spec.md), or a group's room binding, [`vtc/groups/bindings/add`](../../../../../vtc/groups/bindings/add/0.1/spec.md)), and accepted ones while a repeated accept can still be answered, each with the three credentials the room issued them;
+- **offers** — the caller's open offers of admission ([`vtc/rooms/community/members/add`](../../../../../vtc/rooms/community/members/add/0.2/spec.md), or a group's room binding, [`vtc/groups/bindings/add`](../../../../../vtc/groups/bindings/add/0.1/spec.md)), and accepted ones while a repeated accept can still be answered, each with the three credentials the room issued them;
 - **renewals** — fresh membership and authority credentials for an admission the caller already holds, issued before the ones they hold expire.
 
 The member's surface — the community's member portal, or their wallet — stores the credentials with the member's own key holder. For an offer it then, on a sealed tier, asks the key holder for a KeyPackage against the invitation ([`rooms/keys/key-package`](../../../../../rooms/keys/key-package/0.2/spec.md)) and accepts ([`vtc/rooms/offers/accept`](../../../../../vtc/rooms/offers/accept/0.1/spec.md)). A renewal needs nothing more: the member is already in the room, and storing its credentials in place of the ones they renew is the whole of taking it up.
 
 A community renews an admission it made through a group's room binding for as long as the member stays in the group, as that binding requires ([`vtc/groups/bindings/add`](../../../../../vtc/groups/bindings/add/0.1/spec.md)). It **MAY** renew a direct admission the same way.
 
-An offer leaves this list once a repeated accept can no longer be answered, and a renewal once the credentials it replaces expire. Where the member stands in each room the community owns, for as long as the community keeps the record, is [`vtc/rooms/memberships/list`](../../../../../vtc/rooms/memberships/list/0.1/spec.md), which every surface reads so that each shows the member the same rooms.
+An offer leaves this list once a repeated accept can no longer be answered, and a renewal once the credentials it replaces expire. Where the member stands in each room the community owns, for as long as the community keeps the record, is [`vtc/rooms/memberships/list`](../../../../../vtc/rooms/memberships/list/0.2/spec.md), which every surface reads so that each shows the member the same rooms.
 
 ## Status of this Document
 
@@ -92,7 +92,7 @@ A conforming **community** (`recipient`):
 4. **MUST** fill `label` and `description` from the room's current details, not from a copy taken when the offer or renewal was made, and **MUST NOT** include the room's tags or anything else of its administrators' tracking.
 5. **MUST** issue a renewal through the room's key holder before recording it, granting exactly the actions of the admission it renews — never more — and **MUST NOT** issue an invitation with it.
 6. **MUST** list a renewal, on the page answered without a `cursor`, from when it is issued until the credentials it renews expire; **MUST** list only the latest renewal of an admission; and **MUST** stop listing it once the member is removed from the room or the renewal is superseded by a later one.
-7. **MUST** record the renewed `validUntil` as the admission's own once it lists the renewal, so that [`vtc/rooms/memberships/list`](../../../../../vtc/rooms/memberships/list/0.1/spec.md) and [`vtc/rooms/community/members/list`](../../../../../vtc/rooms/community/members/list/0.1/spec.md) show it.
+7. **MUST** record the renewed `validUntil` as the admission's own once it lists the renewal, so that [`vtc/rooms/memberships/list`](../../../../../vtc/rooms/memberships/list/0.2/spec.md) and [`vtc/rooms/community/members/list`](../../../../../vtc/rooms/community/members/list/0.2/spec.md) show it.
 
 ### Surface
 

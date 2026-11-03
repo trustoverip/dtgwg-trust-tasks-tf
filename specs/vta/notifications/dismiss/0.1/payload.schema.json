@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/notifications/dismiss/0.1",
+  "title": "VTA Notifications — Dismiss — payload",
+  "description": "A client with standing in a trust context dismisses one notification its VTA holds there, so that it leaves the principal's default list. Dismissal is the principal's alone and changes nothing outside the VTA: the originator, any relayer and the thing's holder are told nothing, and the notification stays readable, and listable when asked for, until it lapses (VTI-NTF-052). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contextId",
+    "recordId"
+  ],
+  "properties": {
+    "contextId": {
+      "$ref": "../../_shared/0.1/held-notification.schema.json#/$defs/ContextId"
+    },
+    "recordId": {
+      "$ref": "../../_shared/0.1/held-notification.schema.json#/$defs/RecordId"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Notifications — Dismiss — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "recordId",
+        "changed"
+      ],
+      "properties": {
+        "recordId": {
+          "$ref": "../../_shared/0.1/held-notification.schema.json#/$defs/RecordId"
+        },
+        "changed": {
+          "type": "boolean",
+          "description": "Whether this request dismissed it: false when it was already dismissed."
+        }
+      }
+    }
+  }
+}

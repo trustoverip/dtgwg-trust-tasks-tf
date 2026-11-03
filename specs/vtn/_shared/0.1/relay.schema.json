@@ -1,0 +1,205 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtn/_shared/0.1/relay.schema.json",
+  "title": "VTN — Broadcast and relay",
+  "description": "A message an origin network sends to a role, how each network relays it to its members' groups, and the receipts that come back. Repeats are dropped by message id, and a hop limit applies.",
+  "$defs": {
+    "Envelope": {
+      "description": "A broadcast in transit.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "message",
+        "hops"
+      ],
+      "properties": {
+        "message": {
+          "$ref": "entry.schema.json#/$defs/Credential",
+          "description": "The message, signed by the origin network."
+        },
+        "hops": {
+          "type": "array",
+          "items": {
+            "$ref": "entry.schema.json#/$defs/Credential"
+          },
+          "description": "One signed hop per relay step, each by the network that owns the previous hop's group.",
+          "maxItems": 16
+        }
+      }
+    },
+    "DeliveryStatus": {
+      "type": "string",
+      "enum": [
+        "delivered",
+        "duplicate",
+        "refused",
+        "queued",
+        "failed"
+      ],
+      "description": "What happened to one delivery. `queued` will be retried."
+    },
+    "Receipt": {
+      "description": "The outcome of one delivery.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "group",
+        "member",
+        "status"
+      ],
+      "properties": {
+        "group": {
+          "type": "string",
+          "maxLength": 2048,
+          "description": "The group delivered to."
+        },
+        "member": {
+          "$ref": "entry.schema.json#/$defs/Did",
+          "description": "The member that owns it."
+        },
+        "status": {
+          "$ref": "#/$defs/DeliveryStatus"
+        },
+        "detail": {
+          "type": "string",
+          "maxLength": 1000,
+          "description": "Why, for anything but `delivered`."
+        },
+        "network": {
+          "type": "boolean",
+          "description": "Whether the group is a network group, which relays further."
+        },
+        "relayed": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Receipt"
+          },
+          "description": "The receipts the network group's own relay returned."
+        }
+      }
+    },
+    "BroadcastRecord": {
+      "description": "A broadcast as this network sent or relayed it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "direction",
+        "role",
+        "message",
+        "recordedAt",
+        "receipts",
+        "reached"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 2048,
+          "description": "The message id."
+        },
+        "direction": {
+          "type": "string",
+          "enum": [
+            "sent",
+            "received"
+          ],
+          "description": "Whether this network sent it or received it to relay."
+        },
+        "role": {
+          "$ref": "groups.schema.json#/$defs/RoleName",
+          "description": "The role it was addressed to."
+        },
+        "message": {
+          "$ref": "entry.schema.json#/$defs/Credential",
+          "description": "The signed message."
+        },
+        "from": {
+          "$ref": "entry.schema.json#/$defs/Did",
+          "description": "For a received message, the network that delivered it."
+        },
+        "actor": {
+          "$ref": "entry.schema.json#/$defs/Did",
+          "description": "For a sent message, the administrator that sent it."
+        },
+        "recordedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When."
+        },
+        "receipts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Receipt"
+          },
+          "description": "Per group."
+        },
+        "reached": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Groups delivered to, counting relays."
+        }
+      }
+    },
+    "OutboxItem": {
+      "description": "A delivery waiting to be retried.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "messageId",
+        "group",
+        "member",
+        "endpoint",
+        "envelope",
+        "attempts",
+        "nextAttemptAt",
+        "expiresAt",
+        "lastError"
+      ],
+      "properties": {
+        "messageId": {
+          "type": "string",
+          "maxLength": 2048,
+          "description": "The message id."
+        },
+        "group": {
+          "type": "string",
+          "maxLength": 2048,
+          "description": "The group."
+        },
+        "member": {
+          "$ref": "entry.schema.json#/$defs/Did",
+          "description": "Its member."
+        },
+        "endpoint": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 2048,
+          "description": "Where it is being delivered."
+        },
+        "envelope": {
+          "$ref": "#/$defs/Envelope"
+        },
+        "attempts": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Attempts so far."
+        },
+        "nextAttemptAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When it is next tried."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When it is given up."
+        },
+        "lastError": {
+          "type": "string",
+          "maxLength": 1000,
+          "description": "The last failure."
+        }
+      }
+    }
+  }
+}

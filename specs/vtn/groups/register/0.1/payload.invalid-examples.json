@@ -1,0 +1,32 @@
+[
+  {
+    "note": "An endpoint that is not HTTPS.",
+    "payload": {
+      "role": "admins",
+      "group": "did:example:community-admins",
+      "endpoint": "http://community.example/relay"
+    }
+  },
+  {
+    "note": "A role name that is not a lowercase identifier.",
+    "payload": {
+      "role": "Admins",
+      "group": "did:example:community-admins",
+      "endpoint": "https://community.example/relay"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A registration without the network's acceptance credential.",
+    "payload": {
+      "group": {
+        "member": "did:example:health-au",
+        "role": "admins",
+        "group": "did:example:health-au#role-admins",
+        "endpoint": "https://health-au.example/v1/trust-tasks",
+        "registration": {},
+        "registeredAt": "2026-11-03T09:00:01Z"
+      }
+    }
+  }
+]
