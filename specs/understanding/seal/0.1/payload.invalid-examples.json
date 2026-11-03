@@ -106,5 +106,17 @@
       "taskContext": "urn:uuid:1a2b3c4d-0004-4000-8000-000000000001",
       "taskDigestMultibase": "zQmT6nR3sVwXeJhK4d8f2gY1pQ9mN7bC5aE3wD6rL8sU2v"
     }
+  },
+  {
+    "note": "exchangeDigestMultibase that is not a multibase multihash — a bare hex digest hard-codes an algorithm and is non-conforming.",
+    "payload": {
+      "exchangeId": "urn:uuid:1a2b3c4d-0003-4000-8000-000000000002",
+      "exchangeDigestMultibase": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "agreement": {
+        "name": "Data retention (12 months)",
+        "rosterItems": ["data-retention-12mo"],
+        "effectiveFrom": "2026-09-24T10:10:00Z"
+      }
+    }
   }
 ]

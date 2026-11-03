@@ -78,6 +78,12 @@ errorCodes:
       `understanding/seal:exchangeNotFound` once the exchange resolves: the exchange exists, so a
       wrong issuer is reported as this code, not as a missing exchange.
     retryable: false
+  - code: understanding/seal:exchangeDigestMismatch
+    meaning: >-
+      The request carried `exchangeDigestMultibase`, and it does not equal the task digest of the
+      understanding/exchange response named by `exchangeId`, as the recipient recomputes it from
+      its own record. Never returned for a request that omits the member.
+    retryable: false
   - code: understanding/seal:understandingInsufficient
     meaning: The exchange named by `exchangeId` recorded outcome "insufficient". A seal cannot be grounded in a failed exchange.
     retryable: false
@@ -262,7 +268,11 @@ request's `issuer` **MUST** be the party that exchange's response was addressed 
 resolved with that outcome, per `understanding/seal:understandingInsufficient`, and that the
 issuer matches, refusing any other issuer with `understanding/seal:issuerMismatch` — which, once
 the exchange resolves, takes precedence over `understanding/seal:exchangeNotFound`; that code is
-reserved for an `exchangeId` that names no live exchange response at all. The binding
+reserved for an `exchangeId` that names no live exchange response at all. A request that carries
+`exchangeDigestMultibase` adds a further check: the recipient **MUST** recompute the task digest
+of the exchange response it holds under `exchangeId` and refuse a mismatch with
+`understanding/seal:exchangeDigestMismatch`; a request that omits the member is not refused for
+that. The binding
 is not optional: `threadId`, `parentThreadId` and a document's `id` are correlation handles, not
 secrets, so without it a third party that learned an `exchangeId` could propose against someone
 else's passed exchange, and the host's acceptance — the record this family exists to produce —
@@ -343,12 +353,11 @@ assurance the parties separately agreed to rely on.
   Relationship to IEEE 7012-2025, above.
 * **Exchange reference.** `exchangeId` — the `id` of the `understanding/exchange` response this
   seal is grounded in, verified by the host against its own record of that exchange (Authorization,
-  above). This is a first-party check, not the external-citation binding SPEC §7.3 item 20
-  exists for: the host verifying `exchangeId` is the same party that issued the cited exchange's
-  response in the first place, so it already holds the record a stranger would need a digest to
-  trust. A party that is *not* the host and needs to verify an `understanding/exchange` outcome
-  independently has no declared `outcomeEvidence` to rely on for it — that is a known limit of
-  this family, not addressed by this version.
+  above). `exchangeDigestMultibase`, where present, is the task digest (SPEC §4.9.3) of that
+  response, pairing the id with the exact document. The host verifying either is the same party
+  that issued the cited response, so this is a first-party check; a party that is *not* the host
+  verifies the exchange's outcome through `understanding/exchange`'s own `outcomeEvidence`
+  declaration, whose response carries the digest of the exchange request it decides.
 * **Decision.** The response's `decision`: `accepted`, `countered` or `refused`. See
   Authorization, above.
 * **Counter.** A response with `decision: "countered"`, carrying `counterAgreement`, the second
@@ -394,6 +403,7 @@ request on a given `exchangeId` after the first is refused with
   "parentThreadId": "urn:uuid:1a2b3c4d-0003-4000-8000-000000000001",
   "payload": {
     "exchangeId": "urn:uuid:1a2b3c4d-0003-4000-8000-000000000002",
+    "exchangeDigestMultibase": "zQmY2kNd8TvB5xRc3JhW7sPf4aG9mL6eD1uQ8zCpH3kV",
     "agreement": {
       "name": "Data retention (12 months)",
       "rosterItems": ["data-retention-12mo", "no-third-party-sharing"],

@@ -26,5 +26,26 @@
       "answers": [{ "questionId": "retention-period", "answer": "12-months" }],
       "score": 0.9
     }
+  },
+  {
+    "note": "offerDigestMultibase that is not a multibase multihash — a hex string hard-codes an algorithm into the wire contract and is non-conforming.",
+    "payload": {
+      "offerId": "urn:uuid:1a2b3c4d-0001-4000-8000-000000000002",
+      "offerDigestMultibase": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "answers": [{ "questionId": "retention-period", "answer": "12-months" }]
+    }
+  },
+  {
+    "note": "Response without taskContext and taskDigestMultibase — an unbound determination cannot serve as the declared outcome evidence.",
+    "variant": "response",
+    "payload": { "outcome": "understood" }
+  },
+  {
+    "note": "Response with taskContext but no taskDigestMultibase — an id alone is a name, not a binding (SPEC §4.9.3).",
+    "variant": "response",
+    "payload": {
+      "outcome": "understood",
+      "taskContext": "urn:uuid:1a2b3c4d-0003-4000-8000-000000000001"
+    }
   }
 ]

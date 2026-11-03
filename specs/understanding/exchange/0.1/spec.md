@@ -44,6 +44,26 @@ exposure:
     host that writes questions eliciting personal information changes that; a host SHOULD write
     questions that test comprehension of the terms rather than solicit personal data. The
     response discloses only a pass/fail determination and an optional opaque score.
+outcomeEvidence:
+  response: https://trusttasks.org/spec/understanding/exchange/0.1#response
+  binding:
+    id: /payload/taskContext
+    taskDigest: /payload/taskDigestMultibase
+  rationale: >-
+    The host's determination is the evidence `understanding/seal` is grounded in, and a
+    relationship credential or VAC formed after a seal may cite the comprehension check that
+    preceded it. The host is this exchange's *responder*, not the request's producer, so the
+    freshness-challenge binding form (SPEC §7.3 item 20.5's second form) is unavailable; this
+    declaration uses the first form, the id-plus-task-digest binding of SPEC §4.9.3, computed
+    over the request in full so it also binds `offerId` and any `offerDigestMultibase`. The
+    response reports both outcomes, `understood` and `insufficient`, so a party citing it as
+    evidence that understanding was shown checks `/payload/outcome` is `understood`.
+retention:
+  class: durable
+  rationale: >-
+    A passed exchange is cited as the grounding of a seal, and through the seal by later
+    relationship credentials, VACs and disputes, none of which this task's own documents retain
+    a copy for on the citing party's behalf.
 errorCodes:
   - code: understanding/exchange:offerNotFound
     meaning: The `offerId` does not name a live understanding/offer response this host issued.
@@ -53,6 +73,12 @@ errorCodes:
       The request's `issuer` is not the party the understanding/offer response named by `offerId`
       was addressed to — that response's `recipient`, the identifier the opening request was issued
       under. A `proposedIdentifier` carried by the opening request does not satisfy this rule.
+    retryable: false
+  - code: understanding/exchange:offerDigestMismatch
+    meaning: >-
+      The request carried `offerDigestMultibase`, and it does not equal the task digest of the
+      understanding/offer response named by `offerId`, as the host recomputes it from its own
+      record. Never returned for a request that omits the member.
     retryable: false
   - code: understanding/exchange:termsStale
     meaning: The terms version named by `offerId` is no longer current; the joining party must open a new understanding/offer.
@@ -84,14 +110,15 @@ approach to making a choice safe to make without testing it is to keep the roste
 agreements small, not to examine whether a given party understood the one it picked; this task
 gates entry to `understanding/seal`'s 7012-style handshake with an explicit check instead.
 
-This specification declares no `outcomeEvidence` ([SPEC §7.3 item 20](/SPEC.md#73-specification-requirements)):
-the only party that currently cites this exchange's outcome is `understanding/seal`, by a bare
-`exchangeId`, and the party checking it is the host — the same party that issued the response
-being cited. That is a first-party lookup against the host's own record, not the third-party
-citation item 20's digest binding exists to protect: a stranger who was not this exchange's host
-has no way to verify an `exchangeId` independently, and this version of the specification does
-not provide one. A future need for a third party to cite this exchange's outcome directly would
-require adding that declaration; it is a known gap, not an oversight.
+This specification declares `outcomeEvidence` ([SPEC §7.3 item 20](/SPEC.md#73-specification-requirements)):
+its `#response`, bound to the decided request by `taskContext` and `taskDigestMultibase`, so a
+party outside the exchange — a relationship credential, a VAC, a dispute — can cite the
+comprehension check as evidence that understanding was tested. The chain is digest-bound end to
+end: this exchange's request MAY carry the task digest of the offer response it answers
+(`offerDigestMultibase`), the response carries the digest of this request, and
+`understanding/seal` MAY carry the digest of this response (`exchangeDigestMultibase`). Both
+request-side digests are optional, so a host and joining party that do not need third-party
+verification can omit them; a recipient that is handed one **MUST** verify it.
 
 ## Status of this Document
 
@@ -126,6 +153,12 @@ recipient **MUST** make both before evaluating the answers:
    the thread. `proposedIdentifier` governs only the identity recorded at `understanding/seal`,
    not who may continue the engagement.
 
+A request that carries `offerDigestMultibase` adds a third check: the host **MUST** recompute the
+task digest of the offer response it holds under `offerId` and refuse a request whose value does
+not match, decoded multihash bytes against decoded multihash bytes (SPEC §4.9.3), with
+`understanding/exchange:offerDigestMismatch`. A request that omits the member is not refused for
+that.
+
 The second check is what makes the first worth anything. `threadId` and a document's `id` are
 correlation handles, not secrets: the offer response's `id` passes through whatever transport
 carried it, and any party that learns it can cite it as `offerId`. Without the issuer binding, a
@@ -149,12 +182,19 @@ not constrain how a host reaches it.
 * **Host** (`host`). The party that named the terms in its `understanding/offer` response and now
   evaluates the answers; identified by `recipient`.
 * **Offer reference.** `offerId` — the `id` of the `understanding/offer` response this exchange
-  answers against, naming which terms version the answers are about.
+  answers against, naming which terms version the answers are about. `offerDigestMultibase`,
+  where present, is the task digest ([SPEC §4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names))
+  of that response, pairing the id with the exact document answered against.
 * **Answer.** One `{ questionId, answer }` pair. `questionId` and the universe of valid answers
   are defined by the host's terms document, out of band; both are opaque strings to this
   specification.
 * **Outcome.** The host's determination of whether the answers demonstrate understanding of
   the named terms: `understood` or `insufficient`.
+* **Outcome evidence binding.** `taskContext` and `taskDigestMultibase` in the response — the
+  decided request's `id` and its task digest per SPEC §4.9.3, computed over the full request
+  document. Together they let a party outside this exchange cite the response, per this
+  specification's `outcomeEvidence` declaration; a party citing it as evidence that understanding
+  was shown also checks `outcome` is `understood`.
 
 ## Request
 
@@ -177,6 +217,7 @@ host, with `parentThreadId` set to the `understanding/offer` request's `threadId
   "parentThreadId": "urn:uuid:1a2b3c4d-0001-4000-8000-000000000001",
   "payload": {
     "offerId": "urn:uuid:1a2b3c4d-0001-4000-8000-000000000002",
+    "offerDigestMultibase": "zQmW9tJc3RnX6vKd2LhY8sPf5aG1mB7eD4uQ3zCpH6kN",
     "answers": [
       { "questionId": "retention-period", "answer": "12-months" },
       { "questionId": "third-party-sharing", "answer": "none" }
@@ -199,8 +240,12 @@ A success *response* document carries `type:
 https://trusttasks.org/spec/understanding/exchange/0.1#response`, with a payload that validates
 against the `$anchor: "response"` sub-schema in `payload.schema.json`. Issued by the host.
 
-The response payload is `{ outcome, score? }`. A joining party proceeding to
-`understanding/seal` **MUST** carry this document's `id` forward as `exchangeId`.
+The response payload is `{ outcome, taskContext, taskDigestMultibase, score? }`. `taskContext`
+**MUST** be the `id` of the request this response determines, and the host **MUST** compute
+`taskDigestMultibase` over that request in full, exactly as received, with only its top-level
+`proof` removed (SPEC §4.9.3). A joining party proceeding to `understanding/seal` **MUST** carry
+this document's `id` forward as `exchangeId`, and **MAY** carry its task digest as
+`exchangeDigestMultibase`.
 
 Failures use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response`
 variant. `outcome: insufficient` is not a failure — it is the host's normal, evidentiary
@@ -219,7 +264,9 @@ determination that the answers did not demonstrate understanding, and it is carr
   "recipient": "did:example:alice",
   "issuedAt": "2026-09-24T10:05:01Z",
   "payload": {
-    "outcome": "understood"
+    "outcome": "understood",
+    "taskContext": "urn:uuid:1a2b3c4d-0003-4000-8000-000000000001",
+    "taskDigestMultibase": "zQmP4wKe7LhN2cBxV9dR5tY3sGf8mJ6aD1uQ7zXpH4kC"
   },
   "proof": {
     "type": "DataIntegrityProof",
@@ -236,11 +283,11 @@ determination that the answers did not demonstrate understanding, and it is carr
 
 ### Data carried
 
-The request carries `offerId` and the joining party's `answers`. A host **MUST NOT** write
+The request carries `offerId`, optionally `offerDigestMultibase`, and the joining party's `answers`. A host **MUST NOT** write
 comprehension questions that solicit personal data the terms do not themselves require — the
 task's payload is intended to carry facts about the terms, echoed back, not facts about the
-joining party. The response carries only `outcome` and an optional opaque `score`; it never
-carries the answers back or the host's grading rationale.
+joining party. The response carries only `outcome`, the `taskContext` and `taskDigestMultibase` binding, and an
+optional opaque `score`; it never carries the answers back or the host's grading rationale.
 
 ### Correlation
 
