@@ -56,8 +56,8 @@ maxDocumentBytes:
   request: 98304
   response: 4096
   rationale: >-
-    At most four layers, each a notification or relay document of at most 16 KiB with its proof,
-    plus this envelope.
+    At most four relays in all and the notification inside them — five layers — each at most 16 KiB
+    with its proof.
 errorCodes:
   - code: notifications/relay:chainInvalid
     meaning: >-
@@ -70,6 +70,8 @@ related:
   - notifications/notify
   - vta/notifications/list
   - vta/notifications/show
+  - vta/notifications/deposit
+  - vtc/notifications/relay
 ---
 
 ## Abstract
@@ -100,11 +102,18 @@ A conforming **producer** (the relayer) **MUST**:
    the relayer's own DID — and carry that document in `forwarded` exactly as received, proof
    included, never altered, restated or re-signed (VTI-NTF-041).
 2. **MUST NOT** relay a notification whose `relayable` is `false`, or whose kind may not be
-   relayed, and **MUST NOT** relay a relay that already carries three relays (so that its own
-   would make more than four).
-3. Address each relay to one party and sign it as `issuer`.
+   relayed, and **MUST** relay only where its own relay makes **at most four relays in all**,
+   counting its own and every relay in the chain it received — the bound consumer item 2 applies
+   (VTI-NTF-041, VTI-NTF-042). A relayer may therefore relay a notification it received directly,
+   or by a chain of up to three relays, and **MUST NOT** relay one that reached it through four.
+3. Address each relay to one party and sign it as `issuer`, with the proof purpose
+   `authentication` and its `operational` key, as `notifications/notify` producer item 2 requires of
+   the originator (VTI-NTF-006): a relay is the relayer's statement that it passed the notification
+   on, and attests nothing.
 4. **MUST NOT** tell the originator, or any earlier relayer, whom it relayed to, how many, or
-   whether it relayed at all (VTI-NTF-043).
+   whether it relayed at all (VTI-NTF-043), and therefore **MUST NOT** relay the notification to its
+   originator, to any relayer the chain it received names, or to itself (VTI-NTF-047): a relay
+   received is a report that the relayer relayed.
 5. Relay every later revision of a notification it relayed — a withdrawal included — to every
    party it relayed an earlier revision to (VTI-NTF-044). It therefore keeps a record of those
    parties, until the notification's `validUntil` passes or, for a notification with no
@@ -128,7 +137,10 @@ A conforming **consumer** (the relay's recipient, or its agent) **MUST**:
    `https://trusttasks.org/spec/notifications/notify/0.1` or
    `https://trusttasks.org/spec/notifications/relay/0.1`, and that it validates as a document of
    that type — without re-applying its acceptance window or `expiresAt`, which bound when it could
-   be delivered to its own recipient, not how long it remains evidence; that its `recipient` is
+   be delivered to its own recipient, not how long it remains evidence, and without treating its
+   proof as one the recipient accepts a request on (VTI-KEY-107 applies to the relay received, whose
+   acceptance window, recipient and identifier the recipient checks; a forwarded layer's replay is
+   absorbed by the notification's own key, consumer item 4); that its `recipient` is
    the `issuer` of the relay carrying it; that its `proof` verifies against its own `issuer`, over
    the document exactly as received; and that the innermost layer is a `notifications/notify`
    document whose `relayable` is `true`. It refuses a relay that fails any of these, or that
@@ -143,6 +155,12 @@ A conforming **consumer** (the relay's recipient, or its agent) **MUST**:
    beyond holding it unless the principal chooses.
 5. Read the relay as the relayer's statement that it passed the originator's notification on,
    and never as the relayer's statement about the thing (VTI-NTF-045).
+
+A relay addressed to a DID whose keys a VTA holds and whose transport a client holds is handed to
+the VTA by that client, exactly as received, with
+[`vta/notifications/deposit`](../../../vta/notifications/deposit/0.1/spec.md), and the VTA is the
+consumer above (VTI-NTF-054, VTI-NTF-055). A community decides a relay of a notification it holds
+with [`vtc/notifications/relay`](../../../vtc/notifications/relay/0.1/spec.md) (VTI-NTF-071).
 
 **Retry class** (VTI-OPS-060): the second, as for `notifications/notify`. The idempotency key is
 the innermost notification's originator and `notificationId`, with `revision`: one notification
@@ -214,7 +232,7 @@ from `did:web:community.example` and relays it to its member `did:key:z6MkMember
         "cryptosuite": "eddsa-jcs-2022",
         "created": "2027-03-01T09:00:00Z",
         "verificationMethod": "did:web:community.example#key-1",
-        "proofPurpose": "assertionMethod",
+        "proofPurpose": "authentication",
         "proofValue": "z5Lk..."
       }
     }
@@ -224,7 +242,7 @@ from `did:web:community.example` and relays it to its member `did:key:z6MkMember
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2027-03-01T11:20:00Z",
     "verificationMethod": "did:web:partner.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z2Rw..."
   }
 }

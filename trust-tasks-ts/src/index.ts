@@ -2525,6 +2525,9 @@ export import VtaMetricsShow_v0_1 = _VtaMetricsShow_v0_1;
 import * as _HeldNotificationShared_v0_1 from "./vta/notifications/_shared/0.1/held-notification.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import HeldNotificationShared_v0_1 = _HeldNotificationShared_v0_1;
+import * as _VtaNotificationsDeposit_v0_1 from "./vta/notifications/deposit/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtaNotificationsDeposit_v0_1 = _VtaNotificationsDeposit_v0_1;
 import * as _VtaNotificationsDismiss_v0_1 from "./vta/notifications/dismiss/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtaNotificationsDismiss_v0_1 = _VtaNotificationsDismiss_v0_1;
@@ -3635,6 +3638,18 @@ export import VtcNetworksRepudiate_v0_1 = _VtcNetworksRepudiate_v0_1;
 import * as _VtcNetworksShow_v0_1 from "./vtc/networks/show/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtcNetworksShow_v0_1 = _VtcNetworksShow_v0_1;
+import * as _ReceivedNotificationShared_v0_1 from "./vtc/notifications/_shared/0.1/received-notification.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import ReceivedNotificationShared_v0_1 = _ReceivedNotificationShared_v0_1;
+import * as _VtcNotificationsList_v0_1 from "./vtc/notifications/list/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcNotificationsList_v0_1 = _VtcNotificationsList_v0_1;
+import * as _VtcNotificationsRelay_v0_1 from "./vtc/notifications/relay/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcNotificationsRelay_v0_1 = _VtcNotificationsRelay_v0_1;
+import * as _VtcNotificationsShow_v0_1 from "./vtc/notifications/show/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcNotificationsShow_v0_1 = _VtcNotificationsShow_v0_1;
 import * as _VtcOid4vpIdentitiesList_v0_1 from "./vtc/oid4vp/identities/list/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtcOid4vpIdentitiesList_v0_1 = _VtcOid4vpIdentitiesList_v0_1;

@@ -1782,6 +1782,9 @@ mod vta {
         }
     }
     mod notifications {
+        mod deposit {
+            mod v0_1;
+        }
         mod dismiss {
             mod v0_1;
         }
@@ -2655,6 +2658,17 @@ mod vtc {
             mod v0_1;
         }
         mod repudiate {
+            mod v0_1;
+        }
+        mod show {
+            mod v0_1;
+        }
+    }
+    mod notifications {
+        mod list {
+            mod v0_1;
+        }
+        mod relay {
             mod v0_1;
         }
         mod show {

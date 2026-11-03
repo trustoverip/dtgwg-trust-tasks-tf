@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/notifications/deposit/0.1",
+  "title": "VTA Notifications — Deposit — payload",
+  "description": "A client with standing in a trust context hands its VTA a notifications/notify or notifications/relay document it received for a DID the VTA holds keys of in that context — a persona DID whose mediator socket the client holds — exactly as received, proof included. The VTA verifies and holds it exactly as if the document had been delivered to it directly: the same layer-by-layer verification, the same acceptance policy counting the party that delivered the document and never the depositing client, the same one record per originator and notificationId, and the same receipt whatever it did (VTI-NTF-054 – VTI-NTF-056). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contextId",
+    "document"
+  ],
+  "properties": {
+    "contextId": {
+      "$ref": "../../_shared/0.1/held-notification.schema.json#/$defs/ContextId",
+      "description": "The trust context the addressed DID belongs to, in which the VTA holds the notification if it accepts it."
+    },
+    "document": {
+      "$ref": "#/$defs/DepositedDocument"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "DepositedDocument": {
+      "title": "DepositedDocument",
+      "description": "The notifications/notify/0.1 or notifications/relay/0.1 document the client received, kept whole and exactly as received — proof included — never restated, re-serialised from a typed form, or re-signed. Deliberately an opaque object, so that every member its issuer signed survives byte for byte for the VTA, and later the principal's client through vta/notifications/show, to verify. Its `recipient` MUST be a DID the VTA holds keys of in `contextId`.",
+      "type": "object",
+      "minProperties": 1
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Notifications — Deposit — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "notificationId",
+        "revision"
+      ],
+      "description": "Receipt of a deposited document the VTA verified, naming the innermost notification. The same whether the VTA held it, declined it under its acceptance policy, or already held the revision, and never saying which (VTI-NTF-023, VTI-NTF-055).",
+      "properties": {
+        "notificationId": {
+          "$ref": "../../../../notifications/_shared/0.1/notification.schema.json#/$defs/NotificationId"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000,
+          "description": "The revision of the innermost notification, echoed."
+        }
+      }
+    }
+  }
+}
