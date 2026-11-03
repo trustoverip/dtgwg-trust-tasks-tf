@@ -15,7 +15,7 @@ export type JobState = "pending" | "accepted" | "succeeded" | "partial" | "faile
  */
 export type JobId = string;
 /**
- * What the job asks the bridge to do — the same eight kinds git-ns/bridge/job/0.6 defines. Kept as its own enum here, rather than a cross-file $ref, because job/0.6 declares its `kind` inline rather than as a named $def; the two lists change together.
+ * What the job asks the bridge to do — the same eight kinds git-ns/bridge/job/0.7 defines. Kept as its own enum here, rather than a cross-file $ref, because job/0.6 declares its `kind` inline rather than as a named $def; the two lists change together.
  */
 export type JobKind =
   | "projectRoles"
@@ -188,7 +188,7 @@ export const PAYLOAD_SCHEMA = {
         "beginAccountLink",
         "closePullRequest"
       ],
-      "description": "What the job asks the bridge to do — the same eight kinds git-ns/bridge/job/0.6 defines. Kept as its own enum here, rather than a cross-file $ref, because job/0.6 declares its `kind` inline rather than as a named $def; the two lists change together."
+      "description": "What the job asks the bridge to do — the same eight kinds git-ns/bridge/job/0.7 defines. Kept as its own enum here, rather than a cross-file $ref, because job/0.6 declares its `kind` inline rather than as a named $def; the two lists change together."
     },
     "JobState": {
       "title": "JobState",
@@ -355,7 +355,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "beginAccountLink",
         "closePullRequest"
       ],
-      "description": "What the job asks the bridge to do — the same eight kinds git-ns/bridge/job/0.6 defines. Kept as its own enum here, rather than a cross-file $ref, because job/0.6 declares its `kind` inline rather than as a named $def; the two lists change together."
+      "description": "What the job asks the bridge to do — the same eight kinds git-ns/bridge/job/0.7 defines. Kept as its own enum here, rather than a cross-file $ref, because job/0.6 declares its `kind` inline rather than as a named $def; the two lists change together."
     },
     "JobState": {
       "title": "JobState",

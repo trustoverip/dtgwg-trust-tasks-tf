@@ -90,9 +90,9 @@ related:
 
 ## Abstract
 
-In a bridge-mode namespace the bridge compares each repository on the forge with the VTC's projection of it and reports every difference as a **drift item** ([`git-ns/bridge/event`](../../../../git-ns/bridge/event/0.5/spec.md)); members read them in each repository's `sync.drift` through [`git-ns/view`](../../../../git-ns/view/0.6/spec.md). Some drift the VTC answers by itself — by policy it re-applies a weakened ruleset — and some it only reports: most often a collaborator somebody added, or a role somebody raised, in the forge's own interface.
+In a bridge-mode namespace the bridge compares each repository on the forge with the VTC's projection of it and reports every difference as a **drift item** ([`git-ns/bridge/event`](../../../../git-ns/bridge/event/0.6/spec.md)); members read them in each repository's `sync.drift` through [`git-ns/view`](../../../../git-ns/view/0.6/spec.md). Some drift the VTC answers by itself — by policy it re-applies a weakened ruleset — and some it only reports: most often a collaborator somebody added, or a role somebody raised, in the forge's own interface.
 
-This task is how an owner of the repository answers a reported item. **`adopt`** accepts the forge-side change by recording it as a VTC right for the member the resolver names, under exactly the rules a [`git-ns/right/grant`](../../../../git-ns/right/grant/0.4/spec.md) would meet, so the projection comes to match the forge. **`revert`** keeps the projection as it is and has the bridge undo the forge-side change with a [`git-ns/bridge/job`](../../../../git-ns/bridge/job/0.6/spec.md). The VTC stays the source of truth either way: adopting changes the truth deliberately, reverting restores the forge to it.
+This task is how an owner of the repository answers a reported item. **`adopt`** accepts the forge-side change by recording it as a VTC right for the member the resolver names, under exactly the rules a [`git-ns/right/grant`](../../../../git-ns/right/grant/0.4/spec.md) would meet, so the projection comes to match the forge. **`revert`** keeps the projection as it is and has the bridge undo the forge-side change with a [`git-ns/bridge/job`](../../../../git-ns/bridge/job/0.7/spec.md). The VTC stays the source of truth either way: adopting changes the truth deliberately, reverting restores the forge to it.
 
 ## Changes from 0.3
 
@@ -174,7 +174,7 @@ Only a role that a member holds, and a right can express, can be adopted. A conf
 
 A revert never changes a VTC right. It sends the bridge the job that makes the forge match the projection again:
 
-| Item | Job ([`git-ns/bridge/job`](../../../../git-ns/bridge/job/0.6/spec.md)) |
+| Item | Job ([`git-ns/bridge/job`](../../../../git-ns/bridge/job/0.7/spec.md)) |
 |---|---|
 | `roleAdded` | `projectRoles` on the repository, with its complete `desiredRoles` and `removeAccounts` naming the item's account. **Requires `git-ns/bridge/job` 0.2 or later.** |
 | `roleChanged`, `roleRemoved` | `projectRoles` on the repository, with its complete `desiredRoles`, which list the account at its projected level. `0.1` suffices. |

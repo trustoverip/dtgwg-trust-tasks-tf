@@ -31,6 +31,125 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.36.9](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.36.8...trust-tasks-rs-v0.36.9) — 2026-11-03
+
+
+### Added
+
+- **git-ns**: Bridge event 0.6 and job 0.7 — orphaned namespaces, and binding an owner again ([#1015](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1015))
+
+
+## [0.36.8](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.36.7...trust-tasks-rs-v0.36.8) — 2026-11-03
+
+
+### Added
+
+- **vtc/networks**: A community's side of Verifiable Trust Network membership ([#1014](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1014))
+
+A Verifiable Trust Network (VTN) curates communities and networks
+  (dtgwg-vti-spec 11a-vtn.md, VTI-VTN-001..063). Listing is one-sided;
+  membership is the listed party's acknowledgement. These tasks are the
+  community's side of that relationship.
+
+  - vtc/networks/list, vtc/networks/show (0.1): the community's network
+    memberships, with the credentials that evidence each state.
+  - vtc/networks/join (0.1): accept a listing. The community checks the
+    network at the URL is the DID the administrator named, verifies the
+    listing, registers groups for the network's roles (required ones first),
+    signs the acknowledgement as itself and verifies the grant.
+  - vtc/networks/repudiate (0.1): reject a listing; the network publishes
+    the repudiation beside it (VTI-VTN-012).
+  - vtc/networks/leave (0.1): depart by repudiating the grant (VTI-VTN-053).
+  - vtc/networks/groups/register (0.1): nominate a community group to serve
+    a network role. The community is the registrant; the network learns
+    the group's DID, never its members.
+  - vtc/networks/notice (0.1): the community passes a network broadcast on
+    to members of the registered group, carrying the network's signed
+    envelope unchanged. Distinct from notifications/notify, which carries
+    a reference and none of the content (VTI-NTF-003).
+  - vtc/networks/evidence (0.1): a member gets the registration and
+    acceptance linking their group to a network, to present for a network
+    room pass.
+
+  The shared NetworkMembership, RegisteredGroup and RoleAssignment records
+  are in vtc/_shared/0.6/network-membership.schema.json. Rust, TypeScript,
+  Go and Dart bindings are regenerated.
+
+- **notifications**: A generic notification family — notify, relay, and the VTA's list, show and dismiss ([#1012](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1012))
+
+notifications/notify/0.1 tells the party a DID names (an individual,
+  group, community or network) that a thing exists it, or those it stands
+  for, may take part in: where it is held, its identifier there, the task
+  that opens it, and the audience it concerns, with a kind from an
+  extensible registry (`election` registered) and nothing of the thing's
+  content. Signed by the originator; deduplicated by issuer +
+  notificationId, with revision for change and withdrawal; the receipt is
+  the same whatever the recipient did.
+
+  notifications/relay/0.1 lets the addressee pass it on, carrying the
+  received document whole and opaque so every signed member survives; the
+  recipient verifies every layer, to at most four relays.
+
+  vta/notifications/list, show and dismiss (0.1) are the principal's view
+  of what its VTA holds, per context; show returns the delivering document
+  as received.
+
+  Implements VTI-NTF-001 – VTI-NTF-063 (trustoverip/dtgwg-vti-spec#91).
+
+- **voting**: A member-party election's ticket claim says nothing to an unproven claimant, and a presentation outage is indeterminate whatever the election (vtc/elections/tickets/issue/0.3, vtc/elections/show/0.6, vta/pcs/voter/register/0.5, vta/pcs/voter/read/0.6) ([#1011](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1011))
+
+Follows trustoverip/dtgwg-vti-spec#90 (VTI-VOT-015 - VTI-VOT-018,
+  VTI-VOT-025).
+
+- **voting**: An election put to a member party's members is shown only to a reader who proves that membership (vtc/elections/show/0.5, vtc/elections/list/0.5, vta/pcs/voter/read/0.5) ([#1010](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1010))
+
+Follows trustoverip/dtgwg-vti-spec VTI-VOT-015/016. Under show/0.4 and
+  list/0.4, an election whose credential roll names a member party was shown
+  to any caller, so its title, questions and options were public.
+
+  - vtc/elections/show/0.5 (extends 0.4): optional `presentation` in the form
+    tickets/issue/0.2 carries (nonce = document id, domain/aud = community,
+    in a document the holder signs). Considered only for a member-party
+    election the caller cannot otherwise see, in a signed document within the
+    acceptance window and used once; checked as tickets/issue/0.2 item 5.2 to
+    5.4. Every failure, indeterminate included, is electionUnknown. Never a
+    refusal for carrying one. maxDocumentBytes.request 98304.
+  - vtc/elections/list/0.5 (extends 0.4): prose only. A member-party
+    election is listed only to administrators and the party itself; to
+    everyone else it is omitted, with no stub. A list never carries a
+    presentation.
+  - vta/pcs/voter/read/0.5: signs list/0.5 and show/0.5; optional
+    `membershipCredential` (only with read = show, a dependentSchemas rule),
+    which the engine presents from the vault in the show it signs. New code
+    membershipCredentialUnusable.
+  - CONVENTIONS.md: a Member-party election term, and the §4 row for
+    list/show.
+
+- **voting**: A credential roll, proven when the ticket is claimed (voting/_shared/0.4, vtc/elections/tickets/issue/0.2) ([#1008](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1008))
+
+* feat(voting): a credential roll, proven when the ticket is claimed (voting/_shared/0.4, vtc/elections/tickets/issue/0.2)
+
+  Follows trustoverip/dtgwg-vti-spec#88 (VTI-VOT-021, VTI-VOT-022,
+  VTI-VOT-025 – VTI-VOT-028, VTI-VOT-090).
+
+  voting/_shared/0.4 appends `credential` to the roll rule, with `roll.memberOf`
+  naming exactly one DID: the community, one of its groups, or a community or
+  network it recognises. memberOf is required with `credential` and refused with
+  every other rule, and `listed` is refused with `credential` (dependentSchemas,
+  which the generators read as an optional member). Disclosure gains an optional
+  RollCredentialDisclosure saying whose credential counts (VTI-VOT-090).
+
+  Every task carrying the manifest takes a new version re-pinned to 0.4, and the
+  signed reads name the newer reads. vtc/elections/tickets/issue/0.2 (extends 0.1)
+  carries the membership presentation, bound to the document's id and the
+  community, checked at issuance, with five appended error codes.
+  vtc/elections/create/0.5 refuses an untrusted memberOf (rollUntrusted,
+  rollIndeterminate). vta/pcs/voter/register/0.4 presents a vault credential in
+  the ticket document it signs. vtc/elections/list/0.4 (extends 0.3) says who sees
+  an election under a credential roll.
+
+
+
 ## [0.36.7](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.36.6...trust-tasks-rs-v0.36.7) — 2026-11-02
 
 

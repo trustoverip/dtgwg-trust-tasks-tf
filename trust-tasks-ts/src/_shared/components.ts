@@ -1534,6 +1534,10 @@ export type Queue = "receive" | "send";
  */
 export type Reason = string;
 /**
+ * Which of the community's members a relay decision reaches: `allMembers` — every active member; `group` — the active members of one community group; `role` — the active members holding one community role.
+ */
+export type RecipientScope = "allMembers" | "group" | "role";
+/**
  * What kind of claim a record is, as its author states it. OPTIONAL wherever it appears; absent means the author did not say, and a reader shows it as unstated rather than assuming any of these.
  *
  *   - `declared` — the author's own statement: a decision, a preference, an intention, a commitment. True because the author says so, and only as far as the author speaks for it.
@@ -1578,6 +1582,10 @@ export type RecordEvidenceList = [RecordEvidence, ...RecordEvidence[]];
  * The VTA's own identifier for one held notification, stable across the revisions that replace it. Opaque and compared for equality only; unguessable, because a show of a record in a context the caller may not read is refused and an enumerable identifier would turn the refusal into an oracle.
  */
 export type RecordId = string;
+/**
+ * The community's own identifier for one received notification, stable across the revisions that replace it. Opaque and compared for equality only; unguessable, because a read by a caller without the capability is refused and an enumerable identifier would turn the refusal into an oracle.
+ */
+export type RecordId_VtcNotificationsV0_1 = string;
 /**
  * The path from one record's leaf to the room's `DataCommitment` — a Merkle inclusion proof, in the vocabulary this work already uses for it.
  *
@@ -10433,6 +10441,46 @@ export interface MonitorFilter {
    */
   failuresOnly?: boolean;
 }
+export interface NetworkMembership {
+  /**
+   * The network's DID.
+   */
+  network: string;
+  /**
+   * Where the network's API is reached: the base its `/.well-known/vtn` profile is served under.
+   */
+  url: string;
+  /**
+   * The network's name, as its profile gives it.
+   */
+  name?: string;
+  /**
+   * `acknowledged`: the community is a member — it signed the acknowledgement of the network's grant. `repudiated`: the community rejected the network's listing of it. `departed`: the community left, by repudiating the grant.
+   */
+  state: "acknowledged" | "repudiated" | "departed";
+  /**
+   * The network's listing credential naming the community, as the community verified it.
+   */
+  listing: {};
+  /**
+   * The network's membership grant (VMC), once the community acknowledged.
+   */
+  grant?: {};
+  /**
+   * The community's acknowledgement (VMC carrying the grant's digest).
+   */
+  acknowledgement?: {};
+  /**
+   * The community's repudiation (VSC) of the listing, or — on departure — of the grant.
+   */
+  repudiation?: {};
+  /**
+   * @maxItems 64
+   */
+  groups: RegisteredGroup[];
+  joinedAt?: string;
+  updatedAt: string;
+}
 /**
  * The discoverability a card has when the community creates it, before its member chooses. A new card is never published beyond the community (VTI-DIR-042), so there is no member for that here: `externalCards` says whether the member may turn it on.
  */
@@ -11421,6 +11469,61 @@ export interface ReadVerification {
   };
 }
 /**
+ * One notification the community holds, as an administrator with `vtc.notifications.read` sees it. `originator`, `deliveredBy` and every entry of `relayedBy` were verified by the community when it accepted the notification (VTI-NTF-042); an administrator that does not take the community's word for them reads the document with vtc/notifications/show and verifies it.
+ */
+export interface ReceivedNotification {
+  recordId: RecordId_VtcNotificationsV0_1;
+  /**
+   * The issuer of the notifications/notify document: who said the thing exists.
+   */
+  originator: Did_NotificationsV0_1;
+  /**
+   * The relayers the held revision passed through before it reached the community, in the order they relayed it; the last delivered it here, and is the party the acceptance policy counted (VTI-NTF-031). Empty for a notification the originator sent the community directly.
+   *
+   * @maxItems 4
+   */
+  relayedBy:
+    | []
+    | [Did_NotificationsV0_1]
+    | [Did_NotificationsV0_1, Did_NotificationsV0_1]
+    | [Did_NotificationsV0_1, Did_NotificationsV0_1, Did_NotificationsV0_1]
+    | [Did_NotificationsV0_1, Did_NotificationsV0_1, Did_NotificationsV0_1, Did_NotificationsV0_1];
+  /**
+   * The notification's members at the revision held.
+   */
+  notification: Notification;
+  /**
+   * When the community accepted the revision held.
+   */
+  receivedAt: string;
+  /**
+   * Whether the community may relay the revision held now: its `relayable` is true, its kind may be relayed, the received chain carries at most three relays so that the community's own makes at most four (VTI-NTF-041), and it is neither withdrawn nor past its `validUntil`.
+   */
+  mayRelay: boolean;
+  /**
+   * What a relay of the notification discloses about the community, as the kind's definition states it (VTI-NTF-046) — for the kind `election`, that the community is a member of the community holding the election. Present exactly when the kind's definition says a relay discloses something; the administrator deciding a relay is shown it, and acknowledges it in vtc/notifications/relay.
+   */
+  relayDisclosure?: string;
+  /**
+   * The relay decisions made for this notification, oldest first. Empty while none has been. Every later revision, a withdrawal included, is relayed to every party an earlier one was, without a new decision (VTI-NTF-044).
+   */
+  relayDecisions: RelayDecision[];
+}
+/**
+ * The members a relay decision reaches, resolved by the community from its own records when the decision is made (VTI-NTF-072). `groupId` is present exactly when `scope` is `group`, and `role` exactly when `scope` is `role`. Whatever the scope, the community never relays to itself, to the notification's originator, or to any relayer the received chain names (VTI-NTF-047), and relays to each party at most once per revision.
+ */
+export interface Recipients {
+  scope: RecipientScope;
+  /**
+   * The community group whose active members the relay reaches.
+   */
+  groupId?: GroupId;
+  /**
+   * The community role whose active holders the relay reaches, in the wire form the community's member records use — for example `moderator`, or `custom:editor`.
+   */
+  role?: string;
+}
+/**
  * Cites a credential.
  */
 export interface RecordEvidenceCredential {
@@ -11683,6 +11786,33 @@ export interface RegisteredCredential {
    */
   lastUsedAt?: string;
 }
+export interface RegisteredGroup {
+  /**
+   * A role the network defines, e.g. `admins`: lowercase letters, digits, `-` and `_`.
+   */
+  role: string;
+  /**
+   * The community's identifier for the group.
+   */
+  groupId: string;
+  /**
+   * The group's own DID, which the registration names as its subject.
+   */
+  groupDid: string;
+  /**
+   * Where the network delivers broadcasts for the group: the community's relay endpoint for it.
+   */
+  endpoint: string;
+  /**
+   * The community's `servesRole` statement (VSC): the group serves `role` in the network.
+   */
+  registration: {};
+  /**
+   * The network's `groupRegistered` statement (VSC), bound to the registration's digest.
+   */
+  acceptance: {};
+  registeredAt: string;
+}
 /**
  * The `ServiceInstance` shape of `did-management/_shared/0.1`, with `lastSeen` renamed `lastSeenAt`; named apart from `service-instance.schema.json`'s `ServiceInstance`, a different shape, so the two do not collide in generated code.
  */
@@ -11726,6 +11856,24 @@ export interface RejectedKey {
    * Why the key was rejected — unknown key, wrong type, out-of-range, allowlist mismatch, etc.
    */
   reason: string;
+}
+/**
+ * One administrator's decision to relay a received notification, as the community records it (VTI-NTF-073). It records the selection and how many parties it added, never who they are: the record of whom the community relayed to exists only to relay later revisions to them (VTI-NTF-044).
+ */
+export interface RelayDecision {
+  /**
+   * When the decision was made.
+   */
+  decidedAt: string;
+  /**
+   * The administrator who made it.
+   */
+  decidedBy: Did_NotificationsV0_1;
+  recipients: Recipients;
+  /**
+   * How many parties this decision added to those the notification is relayed to. Parties an earlier decision already reached are not counted again.
+   */
+  recipientCount: number;
 }
 /**
  * The two credentials a renewal replaces, serialized as rooms/owner/{issue-membership,issue-authority} return them: a membership and an authority granting the same actions until the renewal's `validUntil`. No invitation: the member is already admitted, and a renewal never opens a second way in. The member's surface stores each with the member's key holder **in place of** the one it renews, never beside it.
@@ -12121,6 +12269,16 @@ export interface RightRecord_GitNsV0_6 {
    * Present exactly when the subject gave themselves this right through git-ns/right/break-glass. Absent for every other record.
    */
   breakGlass?: BreakGlass_GitNsV0_6;
+}
+export interface RoleAssignment {
+  /**
+   * A role the network defines, e.g. `admins`: lowercase letters, digits, `-` and `_`.
+   */
+  role: string;
+  /**
+   * The community group to serve the role.
+   */
+  groupId: string;
 }
 /**
  * A grant set by reference: the capability ceiling of a defined role, conferred as resource grants exactly as a `grants` binding confers its list. It never assigns the role itself — an entry's administrative role and its community role stay direct assignments.

@@ -23,7 +23,7 @@ export type ForgeEvent =
 /**
  * The bridge tells the VTC something happened on the forge — translated from the forge's webhook or found by an inspection sweep — together with any drift it now sees.
  *
- * @deprecated superseded by git-ns/bridge/event/0.5
+ * @deprecated superseded by git-ns/bridge/event/0.6
  */
 export interface GitNamespacesBridgeEventPayload {
   /**
@@ -104,7 +104,7 @@ export interface BindCompleted {
 /**
  * The VTC has recorded the event. Nothing else is returned.
  *
- * @deprecated superseded by git-ns/bridge/event/0.5
+ * @deprecated superseded by git-ns/bridge/event/0.6
  */
 export interface GitNamespacesBridgeEventResponsePayload {
   ext?: Ext;
@@ -130,12 +130,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by git-ns/bridge/event/0.5";
+export const DEPRECATION: string | null = "superseded by git-ns/bridge/event/0.6";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by git-ns/bridge/event/0.5
+ * @deprecated superseded by git-ns/bridge/event/0.6
  */
 export type Payload = GitNamespacesBridgeEventPayload;
 
@@ -145,7 +145,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/git-ns/bridge/even
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by git-ns/bridge/event/0.5
+ * @deprecated superseded by git-ns/bridge/event/0.6
  */
 export type Response = GitNamespacesBridgeEventResponsePayload;
 

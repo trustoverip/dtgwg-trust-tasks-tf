@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/notifications/show/0.1",
+  "title": "VTC Notifications — Show — payload",
+  "description": "An administrator with `vtc.notifications.read` reads one notification the community holds as its addressee, with the document that delivered it exactly as received — the notifications/notify document, or the notifications/relay document carrying it — so the administrator can verify the originator's proof and every relay before deciding a relay (VTI-NTF-070). A read changes nothing, and sends nothing to anyone. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "recordId"
+  ],
+  "properties": {
+    "recordId": {
+      "$ref": "../../_shared/0.1/received-notification.schema.json#/$defs/RecordId"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Notifications — Show — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "item",
+        "document"
+      ],
+      "properties": {
+        "item": {
+          "$ref": "../../_shared/0.1/received-notification.schema.json#/$defs/ReceivedNotification"
+        },
+        "document": {
+          "type": "object",
+          "minProperties": 1,
+          "description": "The document that delivered the revision held, kept whole and exactly as received — proof included: the notifications/notify/0.1 document, or the outermost notifications/relay/0.1 document. An opaque object, so that every member its issuer signed survives unchanged for the administrator to verify. It is also what a relay carries in `forwarded`."
+        }
+      }
+    }
+  }
+}

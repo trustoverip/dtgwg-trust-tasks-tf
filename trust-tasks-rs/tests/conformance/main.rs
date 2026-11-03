@@ -670,6 +670,7 @@ mod git_ns {
             mod v0_3;
             mod v0_4;
             mod v0_5;
+            mod v0_6;
         }
         mod job {
             mod list {
@@ -684,6 +685,7 @@ mod git_ns {
             mod v0_4;
             mod v0_5;
             mod v0_6;
+            mod v0_7;
         }
         mod result {
             mod v0_1;
@@ -1792,6 +1794,9 @@ mod vta {
         }
     }
     mod notifications {
+        mod deposit {
+            mod v0_1;
+        }
         mod dismiss {
             mod v0_1;
         }
@@ -2637,6 +2642,45 @@ mod vtc {
             mod v0_1;
         }
         mod vmc {
+            mod v0_1;
+        }
+    }
+    mod networks {
+        mod evidence {
+            mod v0_1;
+        }
+        mod groups {
+            mod register {
+                mod v0_1;
+            }
+        }
+        mod join {
+            mod v0_1;
+        }
+        mod leave {
+            mod v0_1;
+        }
+        mod list {
+            mod v0_1;
+        }
+        mod notice {
+            mod v0_1;
+        }
+        mod repudiate {
+            mod v0_1;
+        }
+        mod show {
+            mod v0_1;
+        }
+    }
+    mod notifications {
+        mod list {
+            mod v0_1;
+        }
+        mod relay {
+            mod v0_1;
+        }
+        mod show {
             mod v0_1;
         }
     }
