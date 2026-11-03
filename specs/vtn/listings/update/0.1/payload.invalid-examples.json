@@ -1,0 +1,20 @@
+[
+  {
+    "note": "Missing `did` — there is no entry to edit.",
+    "payload": {
+      "label": "St Vincent's Health"
+    }
+  },
+  {
+    "note": "`kind` cannot be edited: it is in the listing credential, which this task does not reissue.",
+    "payload": {
+      "did": "did:example:community",
+      "kind": "network"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `entry`.",
+    "payload": {}
+  }
+]

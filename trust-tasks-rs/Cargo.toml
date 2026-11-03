@@ -73,6 +73,7 @@ all-specs = [
     "vrc",
     "vta",
     "vtc",
+    "vtn",
     "webvh",
     "witness",
 ]
@@ -110,6 +111,7 @@ voting = []
 vrc = []
 vta = []
 vtc = []
+vtn = []
 webvh = []
 witness = []
 # trust-tasks-codegen:end

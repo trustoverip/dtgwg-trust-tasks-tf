@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtn/groups/list/0.1",
+  "title": "VTN Groups — List — payload",
+  "description": "An administrator's request for the network's group registrations. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [],
+  "properties": {
+    "role": {
+      "$ref": "../../../_shared/0.1/groups.schema.json#/$defs/RoleName",
+      "description": "Only groups registered for this role."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTN Groups — List — response payload",
+      "description": "The matching group registrations.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "groups"
+      ],
+      "properties": {
+        "groups": {
+          "type": "array",
+          "items": {
+            "$ref": "../../../_shared/0.1/groups.schema.json#/$defs/RegisteredGroup"
+          },
+          "description": "The registrations, each with its signed request and response."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

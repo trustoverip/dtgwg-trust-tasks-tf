@@ -1,0 +1,29 @@
+[
+  {
+    "note": "Unknown request member — the list takes no filter; every upstream membership is returned.",
+    "payload": {
+      "state": "acknowledged"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `memberships`.",
+    "payload": {}
+  },
+  {
+    "variant": "response",
+    "note": "A membership in state `listed` — a parent merely listing this network is not a membership (VTI-VTN-013).",
+    "payload": {
+      "memberships": [
+        {
+          "network": "did:example:whn",
+          "url": "https://whn.example.org",
+          "state": "listed",
+          "listing": {},
+          "groups": [],
+          "updatedAt": "2026-11-03T10:00:00Z"
+        }
+      ]
+    }
+  }
+]

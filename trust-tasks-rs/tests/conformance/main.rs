@@ -3048,6 +3048,136 @@ mod vtc {
         }
     }
 }
+#[cfg(feature = "vtn")]
+mod vtn {
+    mod audit {
+        mod list {
+            mod v0_1;
+        }
+    }
+    mod broadcasts {
+        mod list {
+            mod v0_1;
+        }
+        mod send {
+            mod v0_1;
+        }
+        mod show {
+            mod v0_1;
+        }
+    }
+    mod directory {
+        mod federated {
+            mod v0_1;
+        }
+        mod search {
+            mod v0_1;
+        }
+        mod summary {
+            mod v0_1;
+        }
+    }
+    mod entries {
+        mod show {
+            mod v0_1;
+        }
+    }
+    mod graph {
+        mod member {
+            mod v0_1;
+        }
+        mod show {
+            mod v0_1;
+        }
+    }
+    mod groups {
+        mod list {
+            mod v0_1;
+        }
+        mod register {
+            mod v0_1;
+        }
+    }
+    mod listings {
+        mod create {
+            mod v0_1;
+        }
+        mod list {
+            mod v0_1;
+        }
+        mod reinstate {
+            mod v0_1;
+        }
+        mod remove {
+            mod v0_1;
+        }
+        mod show {
+            mod v0_1;
+        }
+        mod suspend {
+            mod v0_1;
+        }
+        mod update {
+            mod v0_1;
+        }
+    }
+    mod membership {
+        mod acknowledge {
+            mod v0_1;
+        }
+        mod offer {
+            mod v0_1;
+        }
+        mod repudiate {
+            mod v0_1;
+        }
+    }
+    mod memberships {
+        mod groups {
+            mod add {
+                mod v0_1;
+            }
+        }
+        mod join {
+            mod v0_1;
+        }
+        mod leave {
+            mod v0_1;
+        }
+        mod list {
+            mod v0_1;
+        }
+        mod repudiate {
+            mod v0_1;
+        }
+    }
+    mod outbox {
+        mod list {
+            mod v0_1;
+        }
+        mod retry {
+            mod v0_1;
+        }
+    }
+    mod relay {
+        mod deliver {
+            mod v0_1;
+        }
+    }
+    mod roles {
+        mod list {
+            mod v0_1;
+        }
+    }
+    mod rooms {
+        mod list {
+            mod v0_1;
+        }
+        mod pass {
+            mod v0_1;
+        }
+    }
+}
 #[cfg(feature = "webvh")]
 mod webvh {
     mod sync {

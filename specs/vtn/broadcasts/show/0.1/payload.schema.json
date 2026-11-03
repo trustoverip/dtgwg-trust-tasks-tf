@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtn/broadcasts/show/0.1",
+  "title": "VTN Broadcasts — Show — payload",
+  "description": "An administrator's request for one broadcast record, by message id. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "description": "The broadcast's message id."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTN Broadcasts — Show — response payload",
+      "description": "The broadcast record, with its receipts as they stand.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "broadcast"
+      ],
+      "properties": {
+        "broadcast": {
+          "$ref": "../../../_shared/0.1/relay.schema.json#/$defs/BroadcastRecord"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

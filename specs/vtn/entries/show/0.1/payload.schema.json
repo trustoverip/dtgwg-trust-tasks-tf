@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtn/entries/show/0.1",
+  "title": "VTN Entries — Show — payload",
+  "description": "A request for one listed party's published entry. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "did"
+  ],
+  "properties": {
+    "did": {
+      "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/Did",
+      "description": "The DID of the listed party whose entry is asked for."
+    },
+    "membership": {
+      "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/Membership",
+      "description": "The requester's membership credential from a member community, where the network's directory admits members only and nothing else admits the requester."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTN Entries — Show — response payload",
+      "description": "The party's entry as the network publishes it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entry"
+      ],
+      "properties": {
+        "entry": {
+          "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/IndexEntry"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

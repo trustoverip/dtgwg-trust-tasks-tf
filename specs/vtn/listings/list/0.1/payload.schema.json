@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtn/listings/list/0.1",
+  "title": "VTN Listings — List — payload",
+  "description": "An administrator's request for the network's entries. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [],
+  "properties": {
+    "state": {
+      "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/EntryState",
+      "description": "Only entries in this state. Absent means every state."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTN Listings — List — response payload",
+      "description": "Every matching entry, in the administrators' view.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entries"
+      ],
+      "properties": {
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/Entry"
+          },
+          "description": "The entries, removed and departed included."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

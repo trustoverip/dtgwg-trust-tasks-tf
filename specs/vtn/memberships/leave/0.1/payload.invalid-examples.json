@@ -1,0 +1,17 @@
+[
+  {
+    "note": "Missing `network`.",
+    "payload": {}
+  },
+  {
+    "note": "`network` that is not a DID.",
+    "payload": {
+      "network": "https://whn.example.org"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `membership`.",
+    "payload": {}
+  }
+]

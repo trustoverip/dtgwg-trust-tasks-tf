@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtn/outbox/retry/0.1",
+  "title": "VTN Outbox — Retry — payload",
+  "description": "An administrator's instruction to retry every queued delivery now. Takes no members. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTN Outbox — Retry — response payload",
+      "description": "How many deliveries were attempted.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "attempted"
+      ],
+      "properties": {
+        "attempted": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Queued deliveries attempted by this request. Deliveries that had already expired are settled as failed and not counted."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

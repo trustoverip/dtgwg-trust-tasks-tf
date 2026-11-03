@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtn/graph/member/0.1",
+  "title": "VTN Graph — Member Network — payload",
+  "description": "A request to expand one member network's graph. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "did"
+  ],
+  "properties": {
+    "did": {
+      "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/Did",
+      "description": "The member network to expand."
+    },
+    "membership": {
+      "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/Membership",
+      "description": "A person's membership credential from a member community, holder-bound to the signer; admits the person to a `members` directory."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTN Graph — Member Network — response payload",
+      "description": "The member network's graph, from its verified signed index.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "graph"
+      ],
+      "properties": {
+        "graph": {
+          "$ref": "../../../_shared/0.1/graph.schema.json#/$defs/Graph"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

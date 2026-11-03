@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtn/audit/list/0.1",
+  "title": "VTN Audit — List — payload",
+  "description": "An administrator's request for the network's audit trail. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [],
+  "properties": {
+    "did": {
+      "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/Did",
+      "description": "Only events for this entry."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "description": "Only the most recent this many matching events. Absent means all."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTN Audit — List — response payload",
+      "description": "The matching audit events, oldest first.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "events"
+      ],
+      "properties": {
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/AuditEvent"
+          },
+          "description": "The events, oldest first."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

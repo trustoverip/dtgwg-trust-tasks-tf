@@ -1,0 +1,31 @@
+[
+  {
+    "note": "Missing `did`.",
+    "payload": {}
+  },
+  {
+    "note": "A `did` that is not a DID.",
+    "payload": {
+      "did": "community"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `entry`.",
+    "payload": {}
+  },
+  {
+    "variant": "response",
+    "note": "The published view in place of the admin view.",
+    "payload": {
+      "entry": {
+        "did": "did:example:community",
+        "kind": "community",
+        "state": "acknowledged",
+        "acknowledged": true,
+        "profile": {},
+        "listing": {}
+      }
+    }
+  }
+]

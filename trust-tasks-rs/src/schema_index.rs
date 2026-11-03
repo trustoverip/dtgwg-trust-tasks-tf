@@ -7094,6 +7094,204 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/website/upload/commit/0.1#response" => <crate::specs::vtc::website::upload::commit::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/audit/list/0.1" => <crate::specs::vtn::audit::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/audit/list/0.1#response" => <crate::specs::vtn::audit::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/broadcasts/list/0.1" => <crate::specs::vtn::broadcasts::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/broadcasts/list/0.1#response" => <crate::specs::vtn::broadcasts::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/broadcasts/send/0.1" => <crate::specs::vtn::broadcasts::send::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/broadcasts/send/0.1#response" => <crate::specs::vtn::broadcasts::send::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/broadcasts/show/0.1" => <crate::specs::vtn::broadcasts::show::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/broadcasts/show/0.1#response" => <crate::specs::vtn::broadcasts::show::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/directory/federated/0.1" => <crate::specs::vtn::directory::federated::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/directory/federated/0.1#response" => <crate::specs::vtn::directory::federated::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/directory/search/0.1" => <crate::specs::vtn::directory::search::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/directory/search/0.1#response" => <crate::specs::vtn::directory::search::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/directory/summary/0.1" => <crate::specs::vtn::directory::summary::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/directory/summary/0.1#response" => <crate::specs::vtn::directory::summary::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/entries/show/0.1" => <crate::specs::vtn::entries::show::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/entries/show/0.1#response" => <crate::specs::vtn::entries::show::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/graph/member/0.1" => <crate::specs::vtn::graph::member::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/graph/member/0.1#response" => <crate::specs::vtn::graph::member::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/graph/show/0.1" => <crate::specs::vtn::graph::show::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/graph/show/0.1#response" => <crate::specs::vtn::graph::show::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/groups/list/0.1" => <crate::specs::vtn::groups::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/groups/list/0.1#response" => <crate::specs::vtn::groups::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/groups/register/0.1" => <crate::specs::vtn::groups::register::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/groups/register/0.1#response" => <crate::specs::vtn::groups::register::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/listings/create/0.1" => <crate::specs::vtn::listings::create::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/listings/create/0.1#response" => <crate::specs::vtn::listings::create::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/listings/list/0.1" => <crate::specs::vtn::listings::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/listings/list/0.1#response" => <crate::specs::vtn::listings::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/listings/reinstate/0.1" => <crate::specs::vtn::listings::reinstate::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/listings/reinstate/0.1#response" => <crate::specs::vtn::listings::reinstate::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/listings/remove/0.1" => <crate::specs::vtn::listings::remove::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/listings/remove/0.1#response" => <crate::specs::vtn::listings::remove::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/listings/show/0.1" => <crate::specs::vtn::listings::show::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/listings/show/0.1#response" => <crate::specs::vtn::listings::show::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/listings/suspend/0.1" => <crate::specs::vtn::listings::suspend::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/listings/suspend/0.1#response" => <crate::specs::vtn::listings::suspend::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/listings/update/0.1" => <crate::specs::vtn::listings::update::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/listings/update/0.1#response" => <crate::specs::vtn::listings::update::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/membership/acknowledge/0.1" => <crate::specs::vtn::membership::acknowledge::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/membership/acknowledge/0.1#response" => <crate::specs::vtn::membership::acknowledge::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/membership/offer/0.1" => <crate::specs::vtn::membership::offer::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/membership/offer/0.1#response" => <crate::specs::vtn::membership::offer::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/membership/repudiate/0.1" => <crate::specs::vtn::membership::repudiate::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/membership/repudiate/0.1#response" => <crate::specs::vtn::membership::repudiate::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/memberships/groups/add/0.1" => <crate::specs::vtn::memberships::groups::add::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/memberships/groups/add/0.1#response" => <crate::specs::vtn::memberships::groups::add::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/memberships/join/0.1" => <crate::specs::vtn::memberships::join::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/memberships/join/0.1#response" => <crate::specs::vtn::memberships::join::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/memberships/leave/0.1" => <crate::specs::vtn::memberships::leave::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/memberships/leave/0.1#response" => <crate::specs::vtn::memberships::leave::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/memberships/list/0.1" => <crate::specs::vtn::memberships::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/memberships/list/0.1#response" => <crate::specs::vtn::memberships::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/memberships/repudiate/0.1" => <crate::specs::vtn::memberships::repudiate::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/memberships/repudiate/0.1#response" => <crate::specs::vtn::memberships::repudiate::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/outbox/list/0.1" => <crate::specs::vtn::outbox::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/outbox/list/0.1#response" => <crate::specs::vtn::outbox::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/outbox/retry/0.1" => <crate::specs::vtn::outbox::retry::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/outbox/retry/0.1#response" => <crate::specs::vtn::outbox::retry::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/relay/deliver/0.1" => <crate::specs::vtn::relay::deliver::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/relay/deliver/0.1#response" => <crate::specs::vtn::relay::deliver::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/roles/list/0.1" => <crate::specs::vtn::roles::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/roles/list/0.1#response" => <crate::specs::vtn::roles::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/rooms/list/0.1" => <crate::specs::vtn::rooms::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/rooms/list/0.1#response" => <crate::specs::vtn::rooms::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/rooms/pass/0.1" => <crate::specs::vtn::rooms::pass::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/rooms/pass/0.1#response" => <crate::specs::vtn::rooms::pass::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "webvh")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/webvh/sync/batch/0.1" => <crate::specs::webvh::sync::batch::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -14151,6 +14349,179 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
                 crate::specs::vtc::website::upload::commit::v0_1::Payload,
             >())
         }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/audit/list/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtn::audit::list::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/broadcasts/list/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtn::broadcasts::list::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/broadcasts/send/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtn::broadcasts::send::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/broadcasts/show/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtn::broadcasts::show::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/directory/federated/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtn::directory::federated::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/directory/search/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtn::directory::search::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/directory/summary/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtn::directory::summary::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/entries/show/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtn::entries::show::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/graph/member/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtn::graph::member::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/graph/show/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtn::graph::show::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/groups/list/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtn::groups::list::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/groups/register/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtn::groups::register::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/listings/create/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtn::listings::create::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/listings/list/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtn::listings::list::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/listings/reinstate/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtn::listings::reinstate::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/listings/remove/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtn::listings::remove::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/listings/show/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtn::listings::show::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/listings/suspend/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtn::listings::suspend::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/listings/update/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtn::listings::update::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/membership/acknowledge/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtn::membership::acknowledge::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/membership/offer/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtn::membership::offer::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/membership/repudiate/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtn::membership::repudiate::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/memberships/groups/add/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtn::memberships::groups::add::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/memberships/join/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtn::memberships::join::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/memberships/leave/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtn::memberships::leave::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/memberships/list/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtn::memberships::list::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/memberships/repudiate/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtn::memberships::repudiate::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/outbox/list/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtn::outbox::list::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/outbox/retry/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtn::outbox::retry::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/relay/deliver/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtn::relay::deliver::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/roles/list/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtn::roles::list::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/rooms/list/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtn::rooms::list::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/rooms/pass/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtn::rooms::pass::v0_1::Payload,
+        >()),
         #[cfg(feature = "webvh")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/webvh/sync/batch/0.1" => Some(crate::SpecPolicy::of::<
@@ -20247,6 +20618,171 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/website/upload/commit/0.1" => {
             Some(crate::specs::vtc::website::upload::commit::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/audit/list/0.1" => {
+            Some(crate::specs::vtn::audit::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/broadcasts/list/0.1" => {
+            Some(crate::specs::vtn::broadcasts::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/broadcasts/send/0.1" => {
+            Some(crate::specs::vtn::broadcasts::send::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/broadcasts/show/0.1" => {
+            Some(crate::specs::vtn::broadcasts::show::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/directory/federated/0.1" => {
+            Some(crate::specs::vtn::directory::federated::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/directory/search/0.1" => {
+            Some(crate::specs::vtn::directory::search::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/directory/summary/0.1" => {
+            Some(crate::specs::vtn::directory::summary::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/entries/show/0.1" => {
+            Some(crate::specs::vtn::entries::show::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/graph/member/0.1" => {
+            Some(crate::specs::vtn::graph::member::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/graph/show/0.1" => {
+            Some(crate::specs::vtn::graph::show::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/groups/list/0.1" => {
+            Some(crate::specs::vtn::groups::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/groups/register/0.1" => {
+            Some(crate::specs::vtn::groups::register::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/listings/create/0.1" => {
+            Some(crate::specs::vtn::listings::create::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/listings/list/0.1" => {
+            Some(crate::specs::vtn::listings::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/listings/reinstate/0.1" => {
+            Some(crate::specs::vtn::listings::reinstate::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/listings/remove/0.1" => {
+            Some(crate::specs::vtn::listings::remove::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/listings/show/0.1" => {
+            Some(crate::specs::vtn::listings::show::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/listings/suspend/0.1" => {
+            Some(crate::specs::vtn::listings::suspend::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/listings/update/0.1" => {
+            Some(crate::specs::vtn::listings::update::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/membership/acknowledge/0.1" => {
+            Some(crate::specs::vtn::membership::acknowledge::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/membership/offer/0.1" => {
+            Some(crate::specs::vtn::membership::offer::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/membership/repudiate/0.1" => {
+            Some(crate::specs::vtn::membership::repudiate::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/memberships/groups/add/0.1" => {
+            Some(crate::specs::vtn::memberships::groups::add::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/memberships/join/0.1" => {
+            Some(crate::specs::vtn::memberships::join::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/memberships/leave/0.1" => {
+            Some(crate::specs::vtn::memberships::leave::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/memberships/list/0.1" => {
+            Some(crate::specs::vtn::memberships::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/memberships/repudiate/0.1" => {
+            Some(crate::specs::vtn::memberships::repudiate::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/outbox/list/0.1" => {
+            Some(crate::specs::vtn::outbox::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/outbox/retry/0.1" => {
+            Some(crate::specs::vtn::outbox::retry::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/relay/deliver/0.1" => {
+            Some(crate::specs::vtn::relay::deliver::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/roles/list/0.1" => {
+            Some(crate::specs::vtn::roles::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/rooms/list/0.1" => {
+            Some(crate::specs::vtn::rooms::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/rooms/pass/0.1" => {
+            Some(crate::specs::vtn::rooms::pass::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "webvh")]
         #[cfg(not(test))]

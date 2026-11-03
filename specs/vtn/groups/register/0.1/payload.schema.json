@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtn/groups/register/0.1",
+  "title": "VTN Groups — Register — payload",
+  "description": "A member's registration of one of its groups to serve a network role. The signed document is the registration. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "role",
+    "group",
+    "endpoint"
+  ],
+  "properties": {
+    "role": {
+      "$ref": "../../../_shared/0.1/groups.schema.json#/$defs/RoleName",
+      "description": "The network's role the group serves."
+    },
+    "group": {
+      "type": "string",
+      "pattern": "^did:[a-z0-9]+:.+$",
+      "maxLength": 2048,
+      "description": "The group: a DID of the member's, or for a network its network group `<networkDid>#role-<localRole>`."
+    },
+    "endpoint": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https://",
+      "maxLength": 2048,
+      "description": "The HTTPS URL at which the network delivers broadcasts for the group."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTN Groups — Register — response payload",
+      "description": "The registration as recorded: the member's signed request and the network's groupRegistered credential accepting it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "group"
+      ],
+      "properties": {
+        "group": {
+          "$ref": "../../../_shared/0.1/groups.schema.json#/$defs/RegisteredGroup"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,20 @@
+[
+  {
+    "note": "Missing `did` — there is no entry to act on.",
+    "payload": {
+      "reason": "Governance review"
+    }
+  },
+  {
+    "note": "A `reason` that is not a string.",
+    "payload": {
+      "did": "did:example:community",
+      "reason": 7
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `entry`.",
+    "payload": {}
+  }
+]

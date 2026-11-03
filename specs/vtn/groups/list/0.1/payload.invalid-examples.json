@@ -1,0 +1,35 @@
+[
+  {
+    "note": "A role name that is not a lowercase identifier.",
+    "payload": {
+      "role": "Clinical Alerts"
+    }
+  },
+  {
+    "note": "An unknown member.",
+    "payload": {
+      "member": "did:example:community"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `groups`.",
+    "payload": {}
+  },
+  {
+    "variant": "response",
+    "note": "A registration without the network's signed acceptance.",
+    "payload": {
+      "groups": [
+        {
+          "member": "did:example:community",
+          "role": "clinical-alerts",
+          "group": "did:example:community-alerts",
+          "endpoint": "https://stvincents.example/v1/trust-tasks",
+          "registration": {},
+          "registeredAt": "2026-10-21T14:00:00Z"
+        }
+      ]
+    }
+  }
+]

@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtn/relay/deliver/0.1",
+  "title": "VTN Relay — Deliver — payload",
+  "description": "A parent network's delivery of a broadcast envelope to this network's group for a role. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "role",
+    "envelope"
+  ],
+  "properties": {
+    "role": {
+      "$ref": "../../../_shared/0.1/groups.schema.json#/$defs/RoleName",
+      "description": "This network's local role whose network group the delivery addresses."
+    },
+    "envelope": {
+      "$ref": "../../../_shared/0.1/relay.schema.json#/$defs/Envelope"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTN Relay — Deliver — response payload",
+      "description": "What happened to the message here, and the receipts of this network's own deliveries.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "relayed"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "delivered",
+            "duplicate"
+          ],
+          "description": "`delivered`: accepted and relayed. `duplicate`: seen before; nothing relayed."
+        },
+        "relayed": {
+          "type": "array",
+          "items": {
+            "$ref": "../../../_shared/0.1/relay.schema.json#/$defs/Receipt"
+          },
+          "description": "One receipt per group this network delivered to; empty for a duplicate."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

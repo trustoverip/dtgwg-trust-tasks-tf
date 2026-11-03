@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtn/memberships/groups/add/0.1",
+  "title": "VTN Memberships — Groups — Add — payload",
+  "description": "Register one of this network's network groups to serve a role at a parent network it is a member of. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "network",
+    "parentRole",
+    "localRole"
+  ],
+  "properties": {
+    "network": {
+      "$ref": "../../../../_shared/0.1/entry.schema.json#/$defs/Did",
+      "description": "The parent network's DID."
+    },
+    "parentRole": {
+      "$ref": "../../../../_shared/0.1/groups.schema.json#/$defs/RoleName",
+      "description": "The parent's role to serve."
+    },
+    "localRole": {
+      "$ref": "../../../../_shared/0.1/groups.schema.json#/$defs/RoleName",
+      "description": "This network's role whose network group (`<did>#role-<localRole>`) serves it."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTN Memberships — Groups — Add — response payload",
+      "description": "The membership as it now stands, with the new registration.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "membership"
+      ],
+      "properties": {
+        "membership": {
+          "$ref": "../../../../_shared/0.1/membership.schema.json#/$defs/UpstreamMembership",
+          "description": "This network's membership of the parent as it now stands."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

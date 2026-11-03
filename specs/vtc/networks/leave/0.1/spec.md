@@ -138,10 +138,10 @@ The community answers with the sub-schema reachable via `$anchor: "response"`. A
         "validFrom": "2026-11-01T09:00:00Z",
         "credentialSubject": {
           "id": "did:example:community",
-          "predicate": "https://openvtc.org/vtn/vsc/lists/1",
+          "predicate": "https://registry.trustoverip.org/dtg/vsc/lists/1",
           "object": {
             "value": {
-              "kind": "community",
+              "nodeType": "VTC",
               "framework": {
                 "iri": "https://whn.example.org/governance",
                 "version": "1.0"
@@ -227,7 +227,7 @@ The community answers with the sub-schema reachable via `$anchor: "response"`. A
         "validFrom": "2026-11-01T09:00:00Z",
         "credentialSubject": {
           "id": "did:example:whn",
-          "predicate": "https://openvtc.org/vtn/vsc/repudiates/1",
+          "predicate": "https://registry.trustoverip.org/dtg/vsc/repudiates/1",
           "object": {
             "digestMultibase": "zQmRepudiated"
           }
