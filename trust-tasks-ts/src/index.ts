@@ -2657,6 +2657,9 @@ export import VtaPcsTrusteeRead_v0_4 = _VtaPcsTrusteeRead_v0_4;
 import * as _VtaPcsVerifyAttestation_v0_1 from "./vta/pcs/verify-attestation/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtaPcsVerifyAttestation_v0_1 = _VtaPcsVerifyAttestation_v0_1;
+import * as _VtaPcsVetterRecover_v0_1 from "./vta/pcs/vetter/recover/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtaPcsVetterRecover_v0_1 = _VtaPcsVetterRecover_v0_1;
 import * as _VtaPcsVetterShow_v0_1 from "./vta/pcs/vetter/show/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtaPcsVetterShow_v0_1 = _VtaPcsVetterShow_v0_1;
@@ -3983,6 +3986,12 @@ export import VtcVettingVettersGrantsList_v0_1 = _VtcVettingVettersGrantsList_v0
 import * as _VtcVettingVettersList_v0_1 from "./vtc/vetting/vetters/list/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtcVettingVettersList_v0_1 = _VtcVettingVettersList_v0_1;
+import * as _VtcVettingVettersPcsBindingReset_v0_1 from "./vtc/vetting/vetters/pcs-binding/reset/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcVettingVettersPcsBindingReset_v0_1 = _VtcVettingVettersPcsBindingReset_v0_1;
+import * as _VtcVettingVettersPcsBindingShow_v0_1 from "./vtc/vetting/vetters/pcs-binding/show/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcVettingVettersPcsBindingShow_v0_1 = _VtcVettingVettersPcsBindingShow_v0_1;
 import * as _VtcVettingVettersPcsRoot_v0_1 from "./vtc/vetting/vetters/pcs-root/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtcVettingVettersPcsRoot_v0_1 = _VtcVettingVettersPcsRoot_v0_1;
