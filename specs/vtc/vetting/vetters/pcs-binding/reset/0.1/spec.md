@@ -96,7 +96,9 @@ A conforming **community** (`recipient`):
 
 1. Applies the [SPEC §7.2](/SPEC.md#72-consumer-requirements) pipeline, and refuses a sender
    without the community-administrator capability with the framework's `permissionDenied`.
-2. Refuses a `memberDid` it holds no enrolment record for with `notBound`.
+2. Refuses a `memberDid` it holds no enrolment record for, or a record with no identifier, with
+   `notBound`. Current membership is not required: a removed member's binding may be reset ahead
+   of their return, and resetting it grants nothing while they hold no live vetter grant.
 3. Where the member's binding is already reset and not yet re-bound, **MUST** return the existing
    reset's `resetAt` unchanged and record nothing new. A repeated reset is indistinguishable from
    the first ([SPEC §7.2](/SPEC.md#72-consumer-requirements) item 11).
@@ -130,7 +132,8 @@ refusing a new identifier until that label is gone.
 A community that has re-bound a member **MUST NOT** afterwards accept attestations under any label
 the old identifier was enrolled under, and so **MUST** refuse to make such a label live again
 through [`vtc/vetting/hidden/publish`](../../../../hidden/publish/0.1/spec.md). A label that has
-left the live set is retired for good; vetter labels name months, and a past month never needs to
+left the live set is retired for good, for every vetter — publish refuses it with
+`hidden/publish:labelRetired`; vetter labels name months, and a past month never needs to
 be live again.
 
 ### Shortening the wait

@@ -102,23 +102,38 @@ A conforming **consumer** (the PCS engine) **MUST**:
 1. Validate the document per [SPEC §7.2](/SPEC.md#72-consumer-requirements), and refuse a caller
    without standing under [Authorization](#authorization) with `permissionDenied`.
 2. If an engine exists for (`contextId`, `community`) under a `memberDid` other than the one
-   named, refuse with `memberMismatch`.
+   named, refuse with `memberMismatch`. The engine belongs to another member identity in this
+   community; the vetter acts as that member, and neither recovery nor a reset changes which
+   member DID an engine serves.
 3. If the engine's key already has the identifier `boundId`, change nothing and answer
    `recovered: false`.
-4. If the engine's current key holds a class credential, unspent or spent tokens, or attestations
-   it made, refuse with `engineEnrolled`. Its key is one a community has issued to; replacing it
-   would strand that state, and the community it was issued by bound that key, not `boundId`.
+4. If the engine holds any state a community issued to its current key — a class credential,
+   tokens, or an entry in its attestation log — refuse with `engineEnrolled`. Its key is one a
+   community has issued to; replacing it would strand that state. A community that issued to
+   that key bound it, so `boundId` differing means the client read a stale or wrong binding; it
+   re-reads the binding rather than asking for a reset.
 5. Search for a key with the identifier `boundId` among the keys it can derive for `contextId`
-   under the suite the engine runs, and **MUST NOT** search any other context's keys. The search
-   **MUST** be bounded (an implementation states its bound), and **MUST** consider every seed
-   generation the VTA still holds.
+   under the suite the engine runs: the member-key paths the context has allocated, under every
+   seed generation the VTA still holds. It **MUST NOT** search any other context's keys, and
+   **MUST NOT** select a key another PCS engine holds — an applicant, voter or trustee key, or a
+   vetter key for another community. A PCS identifier is a function of the key alone, so without
+   that exclusion one key could act in two roles. The search **MUST** be bounded and the
+   implementation states its bound; when the candidates exceed it, the VTA searches none of them
+   and refuses with `notFound`, saying so in the message, rather than report a partial search as
+   a miss. A path a restore has rewound the allocation counter below is not searched; the remedy
+   is a reset.
 6. If it finds one: replace the engine's key reference with the found key's, discard the engine
    state held under the replaced key (enrolments and draws in flight — rule 4 has established
    there is nothing else), create the engine if none existed, audit the recovery without the
-   identifier, and answer `recovered: true` with the engine's summary.
-7. If it finds none, and an engine for `community` whose identifier is `boundId` exists under
-   another context the caller has standing over, refuse with `heldInAnotherContext`, naming that
-   context in the message. Otherwise refuse with `notFound`.
+   identifier, and answer `recovered: true` with the engine's summary. It SHOULD audit the search
+   itself whether or not it finds a key, and need not audit a `recovered: false` answer, which
+   changes nothing.
+7. If an engine for `community` whose identifier is `boundId` exists under another context the
+   caller has standing over, refuse with `heldInAnotherContext`, naming that context in the
+   message. The VTA MAY check this before searching: a key derived under another context's base is
+   never found in this one, so the order does not change the answer. Otherwise, when the search
+   finds nothing, refuse with `notFound`. A context that does not exist, or a `boundId` that is not
+   a valid identifier under the suite, is also `notFound`.
 8. Never return, log or audit a key, a seed or a derivation path.
 
 [Conventions §3](../../../../_shared/0.4/CONVENTIONS.md#3-one-vetter-key-per-community) — one key per

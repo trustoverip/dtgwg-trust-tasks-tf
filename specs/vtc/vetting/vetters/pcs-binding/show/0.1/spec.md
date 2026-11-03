@@ -83,10 +83,11 @@ A conforming **community** (`recipient`):
    that is not a member with `notAMember`.
 2. **MUST** answer about the requester only. The request names no member, and a community
    **MUST NOT** accept a member identifier in `ext` or anywhere else.
-3. Answers `bound: false` and an empty `enrolledLabels` for a member it holds no enrolment record
+3. **MUST** include `id` when `bound` is true and **MUST NOT** include it otherwise.
+4. Answers `bound: false` and an empty `enrolledLabels` for a member it holds no enrolment record
    for — including a member who is not a vetter. Whether a member holds a vetter grant is not
    what this task reports.
-4. When a reset is pending ([`pcs-binding/reset`](../../reset/0.1/spec.md)), **MUST** include
+5. When a reset is pending ([`pcs-binding/reset`](../../reset/0.1/spec.md)), **MUST** include
    `reset`, with `waitingOn` computed against the labels it accepts at the time of the answer.
 
 ## Authorization
@@ -102,12 +103,26 @@ may.
 **Recorded identifier** (`id`) — the PCS identifier the community bound to this member at their
 first enrolment, as [`pcs-root`](../../../pcs-root/0.1/spec.md) defines it.
 
-**Live labels** — the vetter class labels the community currently accepts attestations under
-(its published `liveVetterLabels`).
+**Live labels** — the vetter class labels (`vetter/<YYYY-MM>`) the community currently accepts
+attestations under: its published `liveVetterLabels`. Token labels and event labels are not
+class labels and never appear in `waitingOn`. With hidden vetting withdrawn, no label is live and
+a pending reset reads `open: true`; that can change back if hidden vetting is published again with
+a waited-on label still listed, which is why a community re-checks at every enrolment request
+([reset](../../reset/0.1/spec.md#enrolment-after-a-reset)).
 
 **`waitingOn`** — the recorded identifier's enrolled labels that are still live. A credential
 under any of them can still attest, so a second identifier bound now could count the same member
 twice in one proof.
+
+### Reading the answer after a refusal
+
+`pcs-root` refuses a new identifier with the same `identifierRebound` whether the member is bound
+for good or a reset is waiting on a live label. This read is how a client tells the two apart:
+`reset` absent means recover the key or ask for a reset; `reset` with `open: false` means wait for
+the labels in `waitingOn` to retire; `open: true` means enrol now. A client waiting on a reset
+SHOULD read again when the community publishes a new set of live labels (a change of its join
+manifest's `liveVetterLabels`), and SHOULD NOT read more often than every 15 minutes otherwise:
+labels retire on the community's schedule, at most monthly.
 
 ## Request
 
@@ -168,6 +183,13 @@ task hands that record only to the member it describes.
 
 None beyond what the member already knows about themselves. A client SHOULD NOT forward the
 answer anywhere but to its own PCS engine.
+
+### Authenticity of the answer
+
+The answer travels on the same authenticated channel as the request. A client SHOULD treat it as
+it treats the community's other enrolment answers. A forged answer could at worst point the
+member's own engine at an identifier it cannot derive, which ends in
+`vta/pcs/vetter/recover:notFound` and changes nothing.
 
 ### Retention
 

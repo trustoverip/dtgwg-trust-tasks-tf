@@ -21,7 +21,7 @@ export interface VTCVettingPCSBindingShowResponsePayload {
    */
   bound: boolean;
   /**
-   * The PCS identifier recorded at this member's first enrolment, multibase base58btc. While a reset is pending it is still the recorded one: enrolling with it again cancels the reset.
+   * The PCS identifier recorded at this member's first enrolment, multibase base58btc. Present if and only if `bound` is true; a consumer treats `bound: true` without `id` as not bound. While a reset is pending it is still the recorded one: enrolling with it again cancels the reset.
    */
   id?: string;
   /**
@@ -120,7 +120,7 @@ export const PAYLOAD_SCHEMA = {
         "id": {
           "type": "string",
           "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$",
-          "description": "The PCS identifier recorded at this member's first enrolment, multibase base58btc. While a reset is pending it is still the recorded one: enrolling with it again cancels the reset."
+          "description": "The PCS identifier recorded at this member's first enrolment, multibase base58btc. Present if and only if `bound` is true; a consumer treats `bound: true` without `id` as not bound. While a reset is pending it is still the recorded one: enrolling with it again cancels the reset."
         },
         "enrolledLabels": {
           "type": "array",
@@ -204,7 +204,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "id": {
           "type": "string",
           "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$",
-          "description": "The PCS identifier recorded at this member's first enrolment, multibase base58btc. While a reset is pending it is still the recorded one: enrolling with it again cancels the reset."
+          "description": "The PCS identifier recorded at this member's first enrolment, multibase base58btc. Present if and only if `bound` is true; a consumer treats `bound: true` without `id` as not bound. While a reset is pending it is still the recorded one: enrolling with it again cancels the reset."
         },
         "enrolledLabels": {
           "type": "array",
