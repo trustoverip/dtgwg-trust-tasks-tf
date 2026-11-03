@@ -3007,7 +3007,7 @@ function BindingsPage({ setRoute }) {
 
                   {b.implementations && b.implementations.length > 0 && (
                     <div style={{ display: "flex", gap: "var(--tt-space-3)", flexWrap: "wrap", fontFamily: "var(--tt-font-mono)", fontSize: "var(--tt-text-xs)", color: "var(--tt-text-muted)", letterSpacing: "0.06em" }}>
-                      <span style={{ textTransform: "uppercase" }}>Reference impl{b.implementations.length === 1 ? "" : "s"}:</span>
+                      <span style={{ textTransform: "uppercase" }}>Implementation{b.implementations.length === 1 ? "" : "s"}:</span>
                       {b.implementations.map(impl => (
                         <span key={impl.name}>{impl.name} ({impl.language})</span>
                       ))}
@@ -3194,7 +3194,7 @@ function BindingSpecPage({ slug, version, setRoute }) {
           <span><b>Status</b> &nbsp; <TTStatus status={binding.status} /></span>
           <span><b>Target framework</b> &nbsp; trust-task/0.1</span>
           {binding.implementations && binding.implementations.length > 0 && (
-            <span><b>Reference impl</b> &nbsp; {binding.implementations.map((impl, i) => (
+            <span><b>Implementation{binding.implementations.length === 1 ? "" : "s"}</b> &nbsp; {binding.implementations.map((impl, i) => (
               <React.Fragment key={impl.name}>
                 {i > 0 && ", "}
                 <a href={impl.href} target="_blank" rel="noreferrer">{impl.name}</a>
