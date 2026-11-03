@@ -11,6 +11,290 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.28.11 — 2026-11-03
+
+
+### Added
+
+- **vtn**: The Verifiable Trust Network's own Trust Tasks (vtn/*/0.1) (#1020)
+
+A Verifiable Trust Network curates communities and networks into a
+  nestable published set (VTI-VTN-001 - 063). Its API was interim REST;
+  these are its Trust Tasks:
+
+  - a listed party toward the network: entries/show, membership/{offer,
+    acknowledge,repudiate}, groups/register, relay/deliver, roles/list,
+    rooms/{list,pass}
+  - reading the published set: directory/{search,federated,summary},
+    graph/{show,member}
+  - administration: listings/{create,update,suspend,reinstate,remove,list,
+    show}, audit/list, groups/list, broadcasts/{send,list,show},
+    outbox/{list,retry}
+  - the network as a member of a parent: memberships/{list,join,repudiate,
+    leave,groups/add}
+  - vtn/_shared/0.1: entry, directory, graph, groups, relay, membership and
+    rooms shapes
+
+  Trust Tasks are the API; DTG credentials remain the evidence: lists/1,
+  the VMC pair, repudiates/1, and a revocable groupRegistered acceptance
+  binding the signed vtn/groups/register request by digest. Browser
+  sign-in reuses auth/oob/* and auth/signing-key/*. Short lifetimes for
+  anything not revocable: room passes at most 24 hours, broadcasts at
+  most 7 days.
+
+- **vetting**: Recover or reset a hidden-vetting key (vtc/vetting/vetters/pcs-binding/{show,reset}/0.1, vta/pcs/vetter/recover/0.1) (#1018)
+
+* feat(vtc,vta): recover or reset a hidden-vetting key — vtc/vetting/vetters/pcs-binding/{show,reset}/0.1 and vta/pcs/vetter/recover/0.1
+
+  A community binds each vetter to one PCS identifier for good, so a vetter
+  whose VTA engine lost track of its key was locked out of hidden vetting
+  for as long as they stayed a member; revoking and re-granting the vetter
+  role does not touch the binding.
+
+  - vtc/vetting/vetters/pcs-binding/show/0.1: a member reads their own
+    binding, and the state of any reset.
+  - vta/pcs/vetter/recover/0.1: the VTA searches the keys it can derive for
+    the context and restores the bound one, while the engine's current key
+    holds nothing a community issued.
+  - vtc/vetting/vetters/pcs-binding/reset/0.1: an administrator resets the
+    binding when the key is gone. A new identifier is bound only once no
+    label the old one enrolled under is live, and a retired label never
+    comes back, so the member is never counted twice.
+
+  pcs-root/0.1 and the vta/pcs conventions point at the new tasks.
+
+- **notifications**: Deposit to the VTA, the community's received notifications, and four fixes (#1017)
+
+Follow-up to #1012, implementing dtgwg-vti-spec's Notifications follow-up
+  (VTI-NTF-006, 025, 034, 047, 054 – 056, 070 – 074).
+
+  New tasks:
+
+  - vta/notifications/deposit/0.1 — a client that receives a notify or relay
+    for a DID whose keys its VTA holds (a persona DID whose mediator socket the
+    client holds) hands the document to the VTA exactly as received. The VTA
+    verifies it exactly as a direct delivery, counts for acceptance the party
+    that delivered the document and never the depositing client, keeps one
+    record per originator and notificationId, and answers with the same
+    receipt whatever it did. Gated by standing in the context; retry class 2;
+    notAddressedHere, documentInvalid.
+  - vtc/notifications/list/0.1, show/0.1 — a community's administrators read
+    the notifications addressed to the community (vtc.notifications.read).
+  - vtc/notifications/relay/0.1 — an administrator's decision to relay one to
+    all members, one group's or one role's (vtc.notifications.relay, qualified
+    by group), refused until the disclosure is acknowledged; never to the
+    community itself, the originator or any earlier relayer; later revisions
+    follow without a further decision. destructive; retry class 2.
+
+  Fixes to notifications/notify/0.1 and notifications/relay/0.1, prose only
+  (no schema, error code or proof requirement changes):
+
+  - relay producer item 2 now agrees with consumer item 2: a relayer may relay
+    only where its relay makes at most four relays in all.
+  - notification and relay proofs carry proofPurpose authentication with the
+    operational key (VTI-KEY-081/082); examples updated from assertionMethod.
+    VTI-KEY-107 applies to the relay received, not to forwarded layers.
+  - a withdrawal keeps the period of the revision it replaces.
+  - the originator re-checks VTI-NTF-005 for every revision it issues, except
+    a withdrawal; election withdrawal covers an early close.
+  - a relayer never relays to the originator or an earlier relayer.
+
+## 0.28.10 — 2026-11-03
+
+
+### Added
+
+- **git-ns**: Bridge event 0.6 and job 0.7 — orphaned namespaces, and binding an owner again (#1015)
+
+## 0.28.9 — 2026-11-03
+
+
+### Added
+
+- **vtc/networks**: A community's side of Verifiable Trust Network membership (#1014)
+
+A Verifiable Trust Network (VTN) curates communities and networks
+  (dtgwg-vti-spec 11a-vtn.md, VTI-VTN-001..063). Listing is one-sided;
+  membership is the listed party's acknowledgement. These tasks are the
+  community's side of that relationship.
+
+  - vtc/networks/list, vtc/networks/show (0.1): the community's network
+    memberships, with the credentials that evidence each state.
+  - vtc/networks/join (0.1): accept a listing. The community checks the
+    network at the URL is the DID the administrator named, verifies the
+    listing, registers groups for the network's roles (required ones first),
+    signs the acknowledgement as itself and verifies the grant.
+  - vtc/networks/repudiate (0.1): reject a listing; the network publishes
+    the repudiation beside it (VTI-VTN-012).
+  - vtc/networks/leave (0.1): depart by repudiating the grant (VTI-VTN-053).
+  - vtc/networks/groups/register (0.1): nominate a community group to serve
+    a network role. The community is the registrant; the network learns
+    the group's DID, never its members.
+  - vtc/networks/notice (0.1): the community passes a network broadcast on
+    to members of the registered group, carrying the network's signed
+    envelope unchanged. Distinct from notifications/notify, which carries
+    a reference and none of the content (VTI-NTF-003).
+  - vtc/networks/evidence (0.1): a member gets the registration and
+    acceptance linking their group to a network, to present for a network
+    room pass.
+
+  The shared NetworkMembership, RegisteredGroup and RoleAssignment records
+  are in vtc/_shared/0.6/network-membership.schema.json. Rust, TypeScript,
+  Go and Dart bindings are regenerated.
+
+- **notifications**: A generic notification family — notify, relay, and the VTA's list, show and dismiss (#1012)
+
+notifications/notify/0.1 tells the party a DID names (an individual,
+  group, community or network) that a thing exists it, or those it stands
+  for, may take part in: where it is held, its identifier there, the task
+  that opens it, and the audience it concerns, with a kind from an
+  extensible registry (`election` registered) and nothing of the thing's
+  content. Signed by the originator; deduplicated by issuer +
+  notificationId, with revision for change and withdrawal; the receipt is
+  the same whatever the recipient did.
+
+  notifications/relay/0.1 lets the addressee pass it on, carrying the
+  received document whole and opaque so every signed member survives; the
+  recipient verifies every layer, to at most four relays.
+
+  vta/notifications/list, show and dismiss (0.1) are the principal's view
+  of what its VTA holds, per context; show returns the delivering document
+  as received.
+
+  Implements VTI-NTF-001 – VTI-NTF-063 (trustoverip/dtgwg-vti-spec#91).
+
+- **voting**: A member-party election's ticket claim says nothing to an unproven claimant, and a presentation outage is indeterminate whatever the election (vtc/elections/tickets/issue/0.3, vtc/elections/show/0.6, vta/pcs/voter/register/0.5, vta/pcs/voter/read/0.6) (#1011)
+
+Follows trustoverip/dtgwg-vti-spec#90 (VTI-VOT-015 - VTI-VOT-018,
+  VTI-VOT-025).
+
+- **voting**: An election put to a member party's members is shown only to a reader who proves that membership (vtc/elections/show/0.5, vtc/elections/list/0.5, vta/pcs/voter/read/0.5) (#1010)
+
+Follows trustoverip/dtgwg-vti-spec VTI-VOT-015/016. Under show/0.4 and
+  list/0.4, an election whose credential roll names a member party was shown
+  to any caller, so its title, questions and options were public.
+
+  - vtc/elections/show/0.5 (extends 0.4): optional `presentation` in the form
+    tickets/issue/0.2 carries (nonce = document id, domain/aud = community,
+    in a document the holder signs). Considered only for a member-party
+    election the caller cannot otherwise see, in a signed document within the
+    acceptance window and used once; checked as tickets/issue/0.2 item 5.2 to
+    5.4. Every failure, indeterminate included, is electionUnknown. Never a
+    refusal for carrying one. maxDocumentBytes.request 98304.
+  - vtc/elections/list/0.5 (extends 0.4): prose only. A member-party
+    election is listed only to administrators and the party itself; to
+    everyone else it is omitted, with no stub. A list never carries a
+    presentation.
+  - vta/pcs/voter/read/0.5: signs list/0.5 and show/0.5; optional
+    `membershipCredential` (only with read = show, a dependentSchemas rule),
+    which the engine presents from the vault in the show it signs. New code
+    membershipCredentialUnusable.
+  - CONVENTIONS.md: a Member-party election term, and the §4 row for
+    list/show.
+
+- **voting**: A credential roll, proven when the ticket is claimed (voting/_shared/0.4, vtc/elections/tickets/issue/0.2) (#1008)
+
+* feat(voting): a credential roll, proven when the ticket is claimed (voting/_shared/0.4, vtc/elections/tickets/issue/0.2)
+
+  Follows trustoverip/dtgwg-vti-spec#88 (VTI-VOT-021, VTI-VOT-022,
+  VTI-VOT-025 – VTI-VOT-028, VTI-VOT-090).
+
+  voting/_shared/0.4 appends `credential` to the roll rule, with `roll.memberOf`
+  naming exactly one DID: the community, one of its groups, or a community or
+  network it recognises. memberOf is required with `credential` and refused with
+  every other rule, and `listed` is refused with `credential` (dependentSchemas,
+  which the generators read as an optional member). Disclosure gains an optional
+  RollCredentialDisclosure saying whose credential counts (VTI-VOT-090).
+
+  Every task carrying the manifest takes a new version re-pinned to 0.4, and the
+  signed reads name the newer reads. vtc/elections/tickets/issue/0.2 (extends 0.1)
+  carries the membership presentation, bound to the document's id and the
+  community, checked at issuance, with five appended error codes.
+  vtc/elections/create/0.5 refuses an untrusted memberOf (rollUntrusted,
+  rollIndeterminate). vta/pcs/voter/register/0.4 presents a vault credential in
+  the ticket document it signs. vtc/elections/list/0.4 (extends 0.3) says who sees
+  an election under a credential roll.
+
+## 0.28.8 — 2026-11-02
+
+
+### Added
+
+- **vtc/rooms/community**: Archive, unarchive, remove and removal/cancel 0.1; get/list 0.4, members/add+list 0.2, memberships/list 0.2 (#1006)
+
+A community could create a room it owns and change its members, but never
+  close or end one. This adds an owner's lifecycle for a community-owned room,
+  distinct from the host's computed clock (live/lapsed/dormant/reclaimable):
+
+  - active
+  - archived, with an access: readOnly (members keep reading; the host refuses
+    every write, upload and curation) or noAccess (the community's VTA resets
+    the room — one `room` withdrawal — and re-issues the community's own
+    credentials; each admitted member becomes `suspended`). Open offers are
+    withdrawn either way. Reversible: vtc/rooms/community/unarchive restores
+    suspended members in the background by re-issuing their membership and
+    authority, collected as an offers/list renewal.
+  - removalScheduled: only from archived (removal is the second of two
+    deliberate acts). The room is noAccess and its content kept until purgeAt,
+    after a grace period (graceDays, or the community's configured default;
+    30 days in the reference implementation). vtc/rooms/community/removal/cancel
+    returns it to archived/noAccess.
+  - purging: graceDays 0, or the grace period ended. Deletes every record,
+    epoch link, commit, revocation list, file in every storage config, transfer
+    and the host record; drops kept credentials and owed removals; unbinds
+    groups; stops serving a serverless DID log; SHOULD have the VTA delete the
+    room's DID (a refusal there does not hold the purge). Retried with backoff,
+    progress in status.purge, never reversible.
+  - removed: a tombstone with the host record as it last stood.
+
+  A change part-way through at the VTA (a reset the host accepted before the
+  community's own credentials were re-issued) is reported as
+  status.pendingChange and finished by the community.
+
+  New shared definitions in vtc/_shared/0.5 (RoomState, ArchiveAccess,
+  RoomStatus, PendingChange, PurgeProgress, CommunityRoomV3, MemberStateV2,
+  RoomMemberV2, RoomMembershipV2). get/list 0.4 carry status (list gains a
+  `states` filter; removed rooms only when asked for); members/add 0.2 refuses
+  a room that is not active (wrongState); members/list 0.2 and
+  memberships/list 0.2 add `suspended`, and memberships/list the room's own
+  state so member surfaces can say read-only, closed or going away.
+  rooms/keys/act 0.10 adds vtc/rooms/memberships/list/0.2 to its table so a
+  member's key holder can sign it.
+
+  Rust, TS, Go and Dart bindings regenerated.
+
+## 0.28.7 — 2026-11-01
+
+
+### Added
+
+- **voting**: TextReleaseThreshold may be as low as 1, disclosed below 10 (voting/_shared/0.3) (#1002)
+
+* spec(voting): textReleaseThreshold may be as low as 1, disclosed below 10 (voting/_shared/0.3)
+
+  VTI-VOT-065 now lets an election release text answers from a threshold of
+  1: it MUST be at least 1 and SHOULD be at least 10, and below 10 the
+  disclosure a member is shown before requesting a ticket MUST say so and
+  that a written answer may identify its author (VTI-VOT-090). Small
+  communities and surveys need written answers; the risk is disclosed rather
+  than forbidden.
+
+  voting/_shared/0.3 is 0.2 with Manifest.textReleaseThreshold minimum 1.
+  Every task whose schema carries the Manifest gets a new version pinned to
+  it: voting/election/register/0.3, voting/election/show/0.3,
+  vta/pcs/trustee/{deal/0.4, enrol/0.3, justify/0.4, keys/0.4},
+  vta/pcs/vote/0.3, vta/pcs/vote-encrypted/0.4, vta/pcs/voter/register/0.3,
+  vtc/elections/create/0.4 and vtc/elections/show/0.3. The two signed reads
+  that name a show version on the wire move with it: vta/pcs/trustee/read/0.3
+  and vta/pcs/voter/read/0.3. Prose references in current specs follow.
+
+## 0.28.6 — 2026-11-01
+
+
+### Build & CI
+
+- **ts**: An object type that only gains optional members is API-compatible (#995)
+
 ## 0.28.5 — 2026-11-01
 
 

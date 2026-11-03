@@ -1,0 +1,20 @@
+[
+  {
+    "note": "No reason.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:board",
+      "reason": "The auditors asked for the papers to be kept.",
+      "ext": {
+        "bare-key": {
+          "anything": "here"
+        }
+      }
+    }
+  }
+]

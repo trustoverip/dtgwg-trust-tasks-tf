@@ -1,0 +1,20 @@
+[
+  {
+    "note": "A membership credential given as a string rather than the credential.",
+    "payload": {
+      "membership": "urn:uuid:00000000-0000-4000-8000-0000000c0031"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `rooms`.",
+    "payload": {}
+  },
+  {
+    "variant": "response",
+    "note": "A room that does not say which role may enter it.",
+    "payload": {
+      "rooms": [{ "id": "pandemic-response", "name": "Pandemic Response", "passMinutes": 60 }]
+    }
+  }
+]

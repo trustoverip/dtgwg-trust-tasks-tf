@@ -1,0 +1,39 @@
+[
+  {
+    "note": "A `state` outside the entry lifecycle.",
+    "payload": {
+      "state": "member"
+    }
+  },
+  {
+    "note": "An unknown member.",
+    "payload": {
+      "kind": "community"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `entries`.",
+    "payload": {}
+  },
+  {
+    "variant": "response",
+    "note": "An entry without its history.",
+    "payload": {
+      "entries": [
+        {
+          "did": "did:example:clinic",
+          "kind": "community",
+          "profile": {},
+          "state": "listed",
+          "createdAt": "2026-11-02T09:00:00Z",
+          "updatedAt": "2026-11-02T09:00:00Z",
+          "listing": {
+            "credential": {},
+            "statusIndex": 7
+          }
+        }
+      ]
+    }
+  }
+]

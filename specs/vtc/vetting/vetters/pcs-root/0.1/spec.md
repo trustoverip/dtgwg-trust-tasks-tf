@@ -56,13 +56,15 @@ errorCodes:
     meaning: "This member has already enrolled under `label`, and the community will not issue to them again under it — it does not re-issue, or the member has used the re-issues it allows (see Recovering a lost answer). One enrolment per member per label is what makes distinct tags distinct people. The member enrols again at the next label."
     retryable: false
   - code: vtc/vetting/vetters/pcs-root:identifierRebound
-    meaning: "`id` is not the identifier this member was bound to at their first enrolment. A member holding two identifiers could be counted twice in one proof."
+    meaning: "`id` is not the identifier this member was bound to at their first enrolment. A member holding two identifiers could be counted twice in one proof. A member who lost the key reads the recorded identifier with vtc/vetting/vetters/pcs-binding/show and recovers it, or asks an administrator for vtc/vetting/vetters/pcs-binding/reset."
     retryable: false
   - code: vtc/vetting/vetters/pcs-root:badRequest
     meaning: "The blinded request does not verify under the community's published parameters."
     retryable: false
 related:
   - vtc/vetting/vetters/grant
+  - vtc/vetting/vetters/pcs-binding/show
+  - vtc/vetting/vetters/pcs-binding/reset
   - vtc/vetting/vetters/pcs-tokens
   - vetting/attestation
 ---
@@ -136,6 +138,18 @@ again, which replaces the blinding state for the label and keeps the key, and so
 passes the new answer to [`vta/pcs/root-accept`](../../../../../vta/pcs/root-accept/0.1/spec.md). A
 refusal with `alreadyEnrolled` means this community does not re-issue, or no longer will for this
 label; the vetter enrols at the next one.
+
+### A lost key
+
+Revoking and re-granting the vetter role does not change the binding. A vetter whose key is lost
+— not just an answer — first reads the recorded identifier with
+[`vtc/vetting/vetters/pcs-binding/show`](../../pcs-binding/show/0.1/spec.md) and has its engine
+recover the key ([`vta/pcs/vetter/recover`](../../../../../vta/pcs/vetter/recover/0.1/spec.md)
+for a VTA-held key). If the key cannot be recovered, an administrator resets the binding
+([`vtc/vetting/vetters/pcs-binding/reset`](../../pcs-binding/reset/0.1/spec.md)), and the
+community binds a new identifier once no label the old one enrolled under is live. That task's
+[Enrolment after a reset](../../pcs-binding/reset/0.1/spec.md#enrolment-after-a-reset) refines
+rule 2 above and the identifier check in this section.
 
 ## Definitions
 

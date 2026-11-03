@@ -29,6 +29,7 @@ The tasks are:
 | Vetter | [`vta/pcs/tokens/abandon`](../../pcs/tokens/abandon/0.1/spec.md) | Discards a draw the community refused |
 | Vetter | [`vta/pcs/attest`](../../pcs/attest/0.1/spec.md) | Spends a token and attests for an applicant |
 | Vetter | [`vta/pcs/vetter/show`](../../pcs/vetter/show/0.1/spec.md) | Reads the vetter engine's state back |
+| Vetter | [`vta/pcs/vetter/recover`](../../pcs/vetter/recover/0.1/spec.md) | Restores the key a community bound the vetter to, when the engine lost track of it |
 
 The engine has a third role beside vetter and applicant: the **voter** of community voting.
 [`vta/pcs/voter/register`](../../pcs/voter/register/0.1/spec.md),
@@ -92,6 +93,11 @@ that pair runs against the same engine; a later `memberDid` that differs is refu
 `<slug>:memberMismatch`, because the community binds every token draw to the member that
 signs it.
 
+If the engine record is lost or replaced while the seed survives, the key the community bound is
+still derivable. [`vta/pcs/vetter/recover`](../../pcs/vetter/recover/0.1/spec.md) finds it and
+makes it the engine's key again — only while the engine's current key holds nothing a community
+issued — so the engine still ends with exactly one key, and it is the bound one.
+
 An applicant engine holds a fresh `usk` for each application and **MUST NOT** reuse one: an
 applicant identifier seen in two applications links them.
 
@@ -102,7 +108,7 @@ to act in the context the engine belongs to. Where that entitlement is expressed
 capability, the registered values are:
 
 - **`pcsVetter`** — for `vta/pcs/root-request`, `root-accept`, `tokens/request`,
-  `tokens/accept`, `tokens/abandon`, `attest` and `vetter/show`;
+  `tokens/accept`, `tokens/abandon`, `attest`, `vetter/show` and `vetter/recover`;
 - **`pcsApplicant`** — for `vta/pcs/applications/create`, `applications/show`,
   `applications/delete`, `verify-attestation` and `prove`.
 

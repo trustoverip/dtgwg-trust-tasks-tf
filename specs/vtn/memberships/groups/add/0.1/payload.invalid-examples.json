@@ -1,0 +1,38 @@
+[
+  {
+    "note": "Missing `localRole` — the parent's role must be served by one of this network's roles.",
+    "payload": {
+      "network": "did:example:whn",
+      "parentRole": "admins"
+    }
+  },
+  {
+    "note": "A role name with a space.",
+    "payload": {
+      "network": "did:example:whn",
+      "parentRole": "site admins",
+      "localRole": "admins"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An upstream group without the parent's signed `acceptance` — a registration alone is not evidence.",
+    "payload": {
+      "membership": {
+        "network": "did:example:whn",
+        "url": "https://whn.example.org",
+        "state": "acknowledged",
+        "listing": {},
+        "groups": [
+          {
+            "parentRole": "admins",
+            "localRole": "admins",
+            "group": "did:example:regional#role-admins",
+            "registration": {}
+          }
+        ],
+        "updatedAt": "2026-11-03T10:00:00Z"
+      }
+    }
+  }
+]

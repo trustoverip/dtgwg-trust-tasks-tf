@@ -61,7 +61,8 @@
 //! §7.2 (*Bounding the record*): the consumer "**MUST** retain the record for
 //! at least as long as it remains willing to execute that document", and "the
 //! two bounds are the same bound". [`FreshnessPolicy::record_expiry`] computes
-//! that instant — `expiresAt` where present, otherwise `issuedAt + max_age` —
+//! that instant — `expiresAt` where present (no later than the policy's expiry
+//! horizon), otherwise `issuedAt + max_age` —
 //! and it is what [`ReplayGuard::claim`] is handed as `retain_until`. This is
 //! why the freshness policy and the replay guard are one feature and not two.
 //!

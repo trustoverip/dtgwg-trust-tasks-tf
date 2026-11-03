@@ -64,6 +64,9 @@ errorCodes:
   - code: vtc/vetting/hidden/publish:otherCriterion
     meaning: "Hidden vetting is already on for a different criterion. A community runs it on at most one criterion, because enrolment, the drip and the challenge are served from a single configuration. Withdraw it from the other criterion first."
     retryable: false
+  - code: vtc/vetting/hidden/publish:labelRetired
+    meaning: "`livePeriods` names a vetter label the community has retired: one a member's previous hidden-vetting identifier enrolled under before that member was re-bound (vtc/vetting/vetters/pcs-binding/reset). A credential under that label could still attest, so the member would count twice. A retired label never becomes live again."
+    retryable: false
 related:
   - vtc/vetting/hidden/show
   - vtc/vetting/hidden/withdraw
@@ -102,8 +105,9 @@ A conforming **community** (`recipient`):
    - An event's `approvedBy` that is **new or changed** relative to the stored configuration **MUST** equal the publishing signer's principal — the signer, or the identity its delegated signing key acts for — else the community refuses with `vtc/vetting/hidden/publish:approverNotSigner`. An approver names themselves.
    - An `approvedBy` **unchanged** from the stored value **MAY** be re-sent by any administrator, so that a re-publish preserves the approvals already given. Read the stored value with [`vtc/vetting/hidden/show`](../../show/0.1/spec.md); the manifest does not carry it.
    - The community **MUST** refuse with `vtc/vetting/hidden/publish:approverInEvent` when an event's `approvedBy` names a member who has asked to vet at that event through [`vtc/vetting/vetters/event-mode`](../../../vetters/event-mode/0.1/spec.md), which forbids the requesting member being its own approver.
-8. Stores the full configuration (`stored`) and republishes the criterion's manifest entry, then answers with `criterionId`, `stored`, `published` and the criterion's `requirementsDigest` **after** the change.
-9. **MUST NOT** include `approvedBy` or `graceDays` in any event inside `published` — those are the community's own record and a vetter is told the effective close date when its request is approved, not handed the raw grace period here.
+8. **MUST** refuse with `vtc/vetting/hidden/publish:labelRetired` when `livePeriods` names the period of a retired vetter label ([`vtc/vetting/vetters/pcs-binding/reset`](../../../vetters/pcs-binding/reset/0.1/spec.md#labels-never-come-back)). Retirement is community-wide: one re-bound member is enough to keep that label from ever being live again, for every vetter.
+9. Stores the full configuration (`stored`) and republishes the criterion's manifest entry, then answers with `criterionId`, `stored`, `published` and the criterion's `requirementsDigest` **after** the change.
+10. **MUST NOT** include `approvedBy` or `graceDays` in any event inside `published` — those are the community's own record and a vetter is told the effective close date when its request is approved, not handed the raw grace period here.
 
 ## Authorization
 

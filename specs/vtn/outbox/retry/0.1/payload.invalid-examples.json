@@ -1,0 +1,15 @@
+[
+  {
+    "note": "A selector this task does not define: a retry covers every queued delivery.",
+    "payload": {
+      "messageId": "urn:uuid:00000000-0000-4000-8000-0000000b0001"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A negative count.",
+    "payload": {
+      "attempted": -1
+    }
+  }
+]

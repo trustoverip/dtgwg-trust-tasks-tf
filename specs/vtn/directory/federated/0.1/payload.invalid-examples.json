@@ -1,0 +1,39 @@
+[
+  {
+    "note": "A `state` outside the entry lifecycle.",
+    "payload": {
+      "state": "member"
+    }
+  },
+  {
+    "note": "`membersOnly` given as a string.",
+    "payload": {
+      "membersOnly": "yes"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `unreachable`: a member network that could not be searched would be silently dropped (VTI-REG-012).",
+    "payload": {
+      "determinedAt": "2026-11-03T10:00:02Z",
+      "results": []
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A federated result without its path.",
+    "payload": {
+      "determinedAt": "2026-11-03T10:00:02Z",
+      "results": [
+        {
+          "did": "did:example:community",
+          "kind": "community",
+          "state": "acknowledged",
+          "acknowledged": true,
+          "listedBy": "did:example:whn"
+        }
+      ],
+      "unreachable": []
+    }
+  }
+]

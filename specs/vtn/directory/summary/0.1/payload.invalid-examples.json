@@ -1,0 +1,29 @@
+[
+  {
+    "note": "A membership credential given as a bare id.",
+    "payload": {
+      "membership": "urn:uuid:00000000-0000-4000-8000-0000000c0031"
+    }
+  },
+  {
+    "note": "An unknown member.",
+    "payload": {
+      "includeCounts": true
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `summary`.",
+    "payload": {}
+  },
+  {
+    "variant": "response",
+    "note": "Counts without the members/non-members split (VTI-VTN-013).",
+    "payload": {
+      "summary": {
+        "communities": 40,
+        "networks": 3
+      }
+    }
+  }
+]

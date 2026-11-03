@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/notifications/relay/0.1",
+  "title": "Notifications — Relay — payload",
+  "description": "A party that stands for others — a group, a community, a network — passes a notification it was addressed to on to one of them, carrying the document it received exactly as received, proof included, so the final recipient verifies the originator's own signature. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "forwarded"
+  ],
+  "properties": {
+    "forwarded": {
+      "$ref": "#/$defs/ForwardedDocument"
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "ForwardedDocument": {
+      "title": "ForwardedDocument",
+      "description": "The Trust Task document the relayer received, kept whole and exactly as received — proof included — never restated, re-serialised from a typed form, or re-signed: a notifications/notify/0.1 document, or a notifications/relay/0.1 document whose own `forwarded` carries the next layer in. Deliberately an opaque object, so that every member the originator signed — `issuedAt`, `expiresAt`, `threadId` and any other envelope member — survives every relay byte for byte. Its `recipient` MUST be this relay's `issuer`, because only the addressee of a notification may relay it (VTI-NTF-041). The recipient validates each layer as a document of its own `type`, to at most four relays in all (VTI-NTF-042).",
+      "type": "object",
+      "minProperties": 1
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "Notifications — Relay — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "notificationId",
+        "revision"
+      ],
+      "description": "Receipt of a relay the recipient verified, naming the innermost notification. The same whether the recipient held it, declined it under its acceptance policy, or relayed it on, and never saying which (VTI-NTF-023).",
+      "properties": {
+        "notificationId": {
+          "$ref": "../../_shared/0.1/notification.schema.json#/$defs/NotificationId"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000,
+          "description": "The revision of the innermost notification, echoed."
+        }
+      }
+    }
+  }
+}

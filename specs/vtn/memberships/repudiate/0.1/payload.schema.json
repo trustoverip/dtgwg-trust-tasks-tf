@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtn/memberships/repudiate/0.1",
+  "title": "VTN Memberships — Repudiate — payload",
+  "description": "Reject a parent network's listing of this network. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "url",
+    "network"
+  ],
+  "properties": {
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "maxLength": 2048,
+      "description": "The parent network's base URL."
+    },
+    "network": {
+      "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/Did",
+      "description": "The parent network's DID. This network refuses if the network found at `url` answers as another DID."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTN Memberships — Repudiate — response payload",
+      "description": "The membership record, in state `repudiated`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "membership"
+      ],
+      "properties": {
+        "membership": {
+          "$ref": "../../../_shared/0.1/membership.schema.json#/$defs/UpstreamMembership",
+          "description": "This network's membership of the parent as it now stands."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

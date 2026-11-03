@@ -9,7 +9,7 @@ import type { BoardVisibility, ChoiceQuestion, ElectionId, Ext, Key_VotingV0_1 a
 /**
  * The trustee's VTA deals its contribution to the election key and returns the voting/trustees/deal request signed as the trustee.
  *
- * @deprecated superseded by vta/pcs/trustee/deal/0.3
+ * @deprecated superseded by vta/pcs/trustee/deal/0.5
  */
 export interface VTAPCSTrusteeDealPayload {
   /**
@@ -32,7 +32,7 @@ export interface VTAPCSTrusteeDealPayload {
   ceremony: TrusteeCeremony;
   ext?: Ext;
 }
-/** @deprecated superseded by vta/pcs/trustee/deal/0.3 */
+/** @deprecated superseded by vta/pcs/trustee/deal/0.5 */
 export interface VTAPCSTrusteeDealResponsePayload {
   document: DealDocument;
   ext?: Ext;
@@ -83,12 +83,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by vta/pcs/trustee/deal/0.3";
+export const DEPRECATION: string | null = "superseded by vta/pcs/trustee/deal/0.5";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by vta/pcs/trustee/deal/0.3
+ * @deprecated superseded by vta/pcs/trustee/deal/0.5
  */
 export type Payload = VTAPCSTrusteeDealPayload;
 
@@ -98,7 +98,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/pcs/trustee/de
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by vta/pcs/trustee/deal/0.3
+ * @deprecated superseded by vta/pcs/trustee/deal/0.5
  */
 export type Response = VTAPCSTrusteeDealResponsePayload;
 

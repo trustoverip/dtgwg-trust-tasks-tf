@@ -1,0 +1,37 @@
+[
+  {
+    "note": "An envelope with no hops — a broadcast reaches a group only through at least one signed hop.",
+    "payload": {
+      "network": "did:example:whn",
+      "role": "admins",
+      "groupId": "admins",
+      "envelope": {
+        "message": {},
+        "hops": []
+      }
+    }
+  },
+  {
+    "note": "Missing `envelope` — a notice carries the network's signed envelope, never a restatement of it.",
+    "payload": {
+      "network": "did:example:whn",
+      "role": "admins",
+      "groupId": "admins"
+    }
+  },
+  {
+    "note": "Extra envelope member — the envelope is carried unchanged.",
+    "payload": {
+      "network": "did:example:whn",
+      "role": "admins",
+      "groupId": "admins",
+      "envelope": {
+        "message": {},
+        "hops": [
+          {}
+        ],
+        "summary": "…"
+      }
+    }
+  }
+]

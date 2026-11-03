@@ -1,6 +1,6 @@
 [package]
 name = "trust-tasks-rs"
-version = "0.36.5"
+version = "0.36.10"
 edition = "2021"
 # Effective MSRV is constrained by the workspace's transitive deps and
 # the Affinidi crates (`affinidi-data-integrity`, `affinidi-messaging-*`)
@@ -56,6 +56,7 @@ all-specs = [
     "governance",
     "keys",
     "messaging",
+    "notifications",
     "peer-check",
     "persona",
     "policy",
@@ -72,6 +73,7 @@ all-specs = [
     "vrc",
     "vta",
     "vtc",
+    "vtn",
     "webvh",
     "witness",
 ]
@@ -92,6 +94,7 @@ git-trust = []
 governance = []
 keys = []
 messaging = []
+notifications = []
 peer-check = []
 persona = []
 policy = []
@@ -108,6 +111,7 @@ voting = []
 vrc = []
 vta = []
 vtc = []
+vtn = []
 webvh = []
 witness = []
 # trust-tasks-codegen:end

@@ -1,0 +1,13 @@
+[
+  {
+    "note": "A filter this task does not define.",
+    "payload": {
+      "member": "did:example:community"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `items`.",
+    "payload": {}
+  }
+]

@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtn/memberships/leave/0.1",
+  "title": "VTN Memberships — Leave — payload",
+  "description": "Withdraw this network from a parent network by repudiating the parent's membership grant. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "network"
+  ],
+  "properties": {
+    "network": {
+      "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/Did",
+      "description": "The parent network's DID."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTN Memberships — Leave — response payload",
+      "description": "The membership record, in state `departed`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "membership"
+      ],
+      "properties": {
+        "membership": {
+          "$ref": "../../../_shared/0.1/membership.schema.json#/$defs/UpstreamMembership",
+          "description": "This network's membership of the parent as it now stands."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

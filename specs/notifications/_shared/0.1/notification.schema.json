@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/notifications/_shared/0.1/notification",
+  "title": "Notifications — shared definitions",
+  "description": "Shared shapes for NOTIFICATIONS: a signed statement by an ORIGINATOR, addressed to one DID — an individual, a group, a community or a network — that a THING exists which the addressee, or the parties it stands for, may act on or take part in.\n\nTHE MODEL. A notification names the thing by where it is held (`subject.heldBy`), its identifier there (`subject.id`) and the Trust Task that opens it (`subject.openWith`), and names the AUDIENCE: the DID whose holders or members the thing concerns. It carries nothing of the thing's content. It confers no authority and is no evidence of eligibility: whether a recipient may take part is decided by the holder when the thing is opened, as if no notification had been sent (VTI-NTF-003, VTI-NTF-004).\n\nIDENTITY AND DEDUPLICATION. A notification is identified by its originator's DID (the `issuer` of the notifications/notify document — for a node, its durable identity, which a key rotation does not change) together with `notificationId`, which the originator chooses and keeps unique among the notifications it issues. Every delivery attempt, every re-issued document and every relayed copy of one notification carries the same `notificationId` and `revision`, so a recipient holds at most one record per originator and `notificationId` (VTI-NTF-021, VTI-NTF-022). An originator changes or withdraws a notification by issuing a higher `revision`.\n\nKINDS. `kind` names what the thing is: a name registered in the notification kind registry of the VTI specification (Appendix G), or a name under a domain its definer controls (`org.example:meetingInvite`). The registry is kept outside this schema, which fixes only the form of a name, so registering a kind needs no new version of any task. Each kind's definition states what `subject` and `audience` mean for it, whether it may be relayed and what a relay discloses (VTI-NTF-010, VTI-NTF-011).",
+  "$defs": {
+    "Did": {
+      "title": "Did",
+      "description": "A DID.",
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 2048,
+      "pattern": "^did:[a-z0-9]+:\\S+$"
+    },
+    "NotificationId": {
+      "title": "NotificationId",
+      "description": "The originator's identifier for one notification, unique among the notifications that originator issues and the same in every document that carries it — retries, re-issued documents and relayed copies alike. It is the notification's idempotency key (VTI-NTF-021). Compared for equality only. An originator SHOULD make it unguessable and SHOULD NOT make it descriptive: it travels as far as the notification does.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[A-Za-z0-9._~:-]+$"
+    },
+    "Kind": {
+      "title": "Kind",
+      "description": "What the thing is. Either a registered kind — one lowerCamelCase name in the VTI specification's notification kind registry (Appendix G), such as `election` — or an unregistered kind, written `<reverse-DNS domain>:<name>` under a domain its definer controls, such as `org.example:meetingInvite`. A recipient that does not recognise a kind holds, lists and discards it and does nothing else with it (VTI-NTF-012).",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^([a-z][a-zA-Z0-9]{0,63}|[a-z0-9]+(-[a-z0-9]+)*(\\.[a-z0-9]+(-[a-z0-9]+)*)+:[a-z][a-zA-Z0-9]{0,63})$"
+    },
+    "Subject": {
+      "title": "Subject",
+      "description": "Where the thing is and how to open it. Only these three members: what the thing contains is shown by its holder, to a reader it admits, when the thing is opened with `openWith`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "heldBy",
+        "id",
+        "openWith"
+      ],
+      "properties": {
+        "heldBy": {
+          "$ref": "#/$defs/Did",
+          "description": "The DID of the party holding the thing — for an election, the community. The party a recipient sends `openWith` to."
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "The thing's identifier at `heldBy`, in the form the `openWith` task takes it — for an election, its `electionId`."
+        },
+        "openWith": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "pattern": "^https://\\S+$",
+          "description": "The Type URI of the Trust Task by which a recipient opens the thing at `heldBy` — for an election, `https://trusttasks.org/spec/vtc/elections/show/0.6`. A recipient opens it only at its principal's choice (VTI-NTF-053), and only by a version of that task it and `heldBy` both serve."
+        }
+      }
+    },
+    "Status": {
+      "title": "Status",
+      "description": "Whether the thing is still open to the audience: `available`, or `withdrawn` — cancelled by its holder, or no longer open to the audience — in which case the recipient keeps the record only to show that it was withdrawn (VTI-NTF-024).",
+      "type": "string",
+      "enum": [
+        "available",
+        "withdrawn"
+      ]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "The members of one notification, as notifications/notify carries them and as a recipient's agent records them. The originator is the `issuer` of the notifications/notify document and the addressee its `recipient`; neither is repeated here, because the originator's proof covers both.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "notificationId",
+        "revision",
+        "kind",
+        "subject",
+        "audience",
+        "status",
+        "relayable"
+      ],
+      "properties": {
+        "notificationId": {
+          "$ref": "#/$defs/NotificationId"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000,
+          "description": "The revision of this notification. A recipient replaces the record it holds with a higher revision and leaves it unchanged for an equal or lower one (VTI-NTF-022). The first revision is 1."
+        },
+        "kind": {
+          "$ref": "#/$defs/Kind"
+        },
+        "subject": {
+          "$ref": "#/$defs/Subject"
+        },
+        "audience": {
+          "$ref": "#/$defs/Did",
+          "description": "The DID whose holders or members the thing concerns — for an election under a credential roll, the DID the roll names (`roll.memberOf`); otherwise the community's own. It says whom the thing is for, not that the recipient is one of them: a recipient may be the audience itself, or a party the audience relayed the notification to."
+        },
+        "status": {
+          "$ref": "#/$defs/Status"
+        },
+        "relayable": {
+          "type": "boolean",
+          "description": "Whether the addressee may relay this notification to the parties it stands for (notifications/relay). The originator states it explicitly; an addressee MUST NOT relay a notification whose `relayable` is false, or whose kind may not be relayed (VTI-NTF-041)."
+        },
+        "validFrom": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the thing can first be acted on — for an election, when voting opens. Absent: it can be acted on now."
+        },
+        "validUntil": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the thing can no longer be acted on, and the notification lapses — for an election, when voting closes. A recipient discards a notification received after it (VTI-NTF-032). Absent: the kind's definition says when it lapses."
+        }
+      }
+    }
+  }
+}

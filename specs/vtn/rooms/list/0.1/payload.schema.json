@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtn/rooms/list/0.1",
+  "title": "VTN Rooms — List — payload",
+  "description": "A request for the rooms a network opens. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "membership": {
+      "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/Membership",
+      "description": "The requester's membership credential from a member community, where the network's directory admits members only and nothing else admits the requester."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTN Rooms — List — response payload",
+      "description": "Every room the network opens.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rooms"
+      ],
+      "properties": {
+        "rooms": {
+          "type": "array",
+          "items": {
+            "$ref": "../../../_shared/0.1/rooms.schema.json#/$defs/RoomDef"
+          },
+          "description": "The rooms."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

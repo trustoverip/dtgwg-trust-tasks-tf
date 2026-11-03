@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtn/_shared/0.1/groups.schema.json",
+  "title": "VTN — Roles and groups",
+  "description": "A network's roles, and the groups its members register to serve them. A registration is the member's signed vtn/groups/register request; the network accepts it by issuing a revocable groupRegistered credential (`https://openvtc.org/vtn/vsc/groupRegistered/1`, interim OpenVTC predicate) whose `digestMultibase` is the digest of that request, and revokes it when the registration ends.",
+  "$defs": {
+    "RoleName": {
+      "type": "string",
+      "pattern": "^[a-z0-9_-]{1,64}$",
+      "description": "A role's name: 1–64 lowercase letters, digits, `-` or `_`."
+    },
+    "RoleDef": {
+      "description": "A role the network defines.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "required"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/RoleName"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 1000,
+          "description": "What the role is for."
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Whether a party must register a group for it before its acknowledgement is accepted."
+        }
+      }
+    },
+    "SignedTask": {
+      "type": "object",
+      "description": "A complete Trust Task document, with its proof, exactly as signed and received. Verified as a document in its own right; open so its proof still covers every member, and so its digest can be recomputed."
+    },
+    "RegisteredGroup": {
+      "description": "A group serving a role: the member's signed registration and the network's groupRegistered credential accepting it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "member",
+        "role",
+        "group",
+        "endpoint",
+        "registration",
+        "acceptance",
+        "registeredAt"
+      ],
+      "properties": {
+        "member": {
+          "$ref": "entry.schema.json#/$defs/Did",
+          "description": "The member that registered the group."
+        },
+        "role": {
+          "$ref": "#/$defs/RoleName"
+        },
+        "group": {
+          "type": "string",
+          "maxLength": 2048,
+          "description": "The group: a DID, or for a network group a DID URL on the network's DID (`<did>#role-<name>`)."
+        },
+        "endpoint": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 2048,
+          "description": "Where the network delivers broadcasts for the group."
+        },
+        "registration": {
+          "$ref": "#/$defs/SignedTask",
+          "description": "The member's signed vtn/groups/register request."
+        },
+        "acceptance": {
+          "$ref": "entry.schema.json#/$defs/Credential",
+          "description": "The network's groupRegistered credential: a statement (`https://openvtc.org/vtn/vsc/groupRegistered/1`) issued by the accepting network, subject the group, `object.digestMultibase` the digest of `registration`, with a `credentialStatus` on the network's revocation list."
+        },
+        "registeredAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the network accepted the registration."
+        }
+      }
+    },
+    "ChainLink": {
+      "description": "One registration on the path from a person's community up to the network a room belongs to: the member's signed request and the accepting network's groupRegistered credential.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "registration",
+        "acceptance"
+      ],
+      "properties": {
+        "registration": {
+          "$ref": "#/$defs/SignedTask",
+          "description": "A member's signed vtn/groups/register request."
+        },
+        "acceptance": {
+          "$ref": "entry.schema.json#/$defs/Credential",
+          "description": "The network's groupRegistered credential: a statement (`https://openvtc.org/vtn/vsc/groupRegistered/1`) issued by the accepting network, subject the group, `object.digestMultibase` the digest of `registration`, with a `credentialStatus` on the network's revocation list."
+        }
+      }
+    }
+  }
+}

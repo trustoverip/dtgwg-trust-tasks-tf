@@ -9,7 +9,7 @@ import type { ElectionId, Ext } from "../../../../../_shared/components.js";
 /**
  * A trustee's client asks its VTA for a voting/trustees/status or voting/election/show request signed as the trustee, so it can follow the election's ceremony at the ballot box — on a private board as on a public one — without holding the trustee's key.
  *
- * @deprecated superseded by vta/pcs/trustee/read/0.2
+ * @deprecated superseded by vta/pcs/trustee/read/0.4
  */
 export interface VTAPCSTrusteeReadPayload {
   /**
@@ -38,7 +38,7 @@ export interface VTAPCSTrusteeReadPayload {
 /**
  * The signed read, to send to the ballot box.
  *
- * @deprecated superseded by vta/pcs/trustee/read/0.2
+ * @deprecated superseded by vta/pcs/trustee/read/0.4
  */
 export interface VTAPCSTrusteeReadResponsePayload {
   document: ReadDocument;
@@ -92,12 +92,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by vta/pcs/trustee/read/0.2";
+export const DEPRECATION: string | null = "superseded by vta/pcs/trustee/read/0.4";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by vta/pcs/trustee/read/0.2
+ * @deprecated superseded by vta/pcs/trustee/read/0.4
  */
 export type Payload = VTAPCSTrusteeReadPayload;
 
@@ -107,7 +107,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/pcs/trustee/re
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by vta/pcs/trustee/read/0.2
+ * @deprecated superseded by vta/pcs/trustee/read/0.4
  */
 export type Response = VTAPCSTrusteeReadResponsePayload;
 

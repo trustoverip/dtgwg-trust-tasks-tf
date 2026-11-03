@@ -120,7 +120,7 @@ What it buys is that the three steps of joining each answer a repeat with their 
 2. the room's owner, asked again to admit the same KeyPackage, answers with the Welcome it already made ([`vtc/rooms/offers/accept`](../../../../vtc/rooms/offers/accept/0.1/spec.md), *Repeating an accept*; [`rooms/owner/group/add`](../../../owner/group/add/0.3/spec.md) item 8);
 3. the key holder, handed a Welcome for a group it already joined for the member, answers `alreadyJoined` ([`rooms/keys/welcome`](../../welcome/0.1/spec.md)).
 
-A surface that runs all three, from the start, finishes whatever any surface began — and cannot tell, and need not, whether one did. [`vtc/rooms/memberships/list`](../../../../vtc/rooms/memberships/list/0.1/spec.md) sets out when a surface does so.
+A surface that runs all three, from the start, finishes whatever any surface began — and cannot tell, and need not, whether one did. [`vtc/rooms/memberships/list`](../../../../vtc/rooms/memberships/list/0.2/spec.md) sets out when a surface does so.
 
 ### The private half is retained, so the mint is not free
 

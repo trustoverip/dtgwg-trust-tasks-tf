@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/notifications/_shared/0.1/held-notification",
+  "title": "VTA Notifications — shared definitions",
+  "description": "Shared shapes for the notifications a VTA holds for its principal: each a notifications/notify notification the VTA accepted for a DID it holds keys of, directly or by notifications/relay, filed in the trust context that DID belongs to (VTI-NTF-050). A VTA holds at most one record per originator and notificationId, replaced by a higher revision (VTI-NTF-022). Its principal's client lists them with vta/notifications/list, reads one whole with vta/notifications/show, and dismisses one with vta/notifications/dismiss. Holding a notification tells nobody anything: the VTA sends nothing to the originator, a relayer or the thing's holder because of it, and opens the thing only at the principal's choice (VTI-NTF-053).",
+  "$defs": {
+    "RecordId": {
+      "title": "RecordId",
+      "description": "The VTA's own identifier for one held notification, stable across the revisions that replace it. Opaque and compared for equality only; unguessable, because a show of a record in a context the caller may not read is refused and an enumerable identifier would turn the refusal into an oracle.",
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9._~:-]+$"
+    },
+    "ContextId": {
+      "title": "ContextId",
+      "description": "The trust context the notification is held in: the one the addressed DID belongs to.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "State": {
+      "title": "State",
+      "description": "The principal's disposition of a held notification: `active`, or `dismissed` by vta/notifications/dismiss. Dismissal is the principal's alone and changes nothing outside the VTA (VTI-NTF-052).",
+      "type": "string",
+      "enum": [
+        "active",
+        "dismissed"
+      ]
+    },
+    "HeldNotification": {
+      "title": "HeldNotification",
+      "description": "One notification the VTA holds, as a client with standing in its context sees it. `originator` and every entry of `relayedBy` were verified by the VTA when it accepted the notification (VTI-NTF-042); a client that does not take the VTA's word for them reads the document with vta/notifications/show and verifies it itself.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "recordId",
+        "contextId",
+        "addressee",
+        "originator",
+        "relayedBy",
+        "notification",
+        "state",
+        "receivedAt"
+      ],
+      "properties": {
+        "recordId": {
+          "$ref": "#/$defs/RecordId"
+        },
+        "contextId": {
+          "$ref": "#/$defs/ContextId"
+        },
+        "addressee": {
+          "$ref": "../../../../notifications/_shared/0.1/notification.schema.json#/$defs/Did",
+          "description": "The principal's DID the notification, or the relay that delivered it, was addressed to."
+        },
+        "originator": {
+          "$ref": "../../../../notifications/_shared/0.1/notification.schema.json#/$defs/Did",
+          "description": "The issuer of the notifications/notify document: who said the thing exists."
+        },
+        "relayedBy": {
+          "type": "array",
+          "maxItems": 4,
+          "items": {
+            "$ref": "../../../../notifications/_shared/0.1/notification.schema.json#/$defs/Did"
+          },
+          "description": "The relayers the held revision passed through, in the order they relayed it: the first is the notification's own addressee, the last the relayer that delivered it to `addressee`. Empty for a notification the originator sent to `addressee` directly. The acceptance policy counted the last one (VTI-NTF-031)."
+        },
+        "notification": {
+          "$ref": "../../../../notifications/_shared/0.1/notification.schema.json#/$defs/Notification",
+          "description": "The notification's members at the revision held."
+        },
+        "state": {
+          "$ref": "#/$defs/State"
+        },
+        "receivedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the VTA accepted the revision held."
+        },
+        "dismissedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the principal dismissed it. Present exactly when `state` is `dismissed`."
+        }
+      },
+      "dependentSchemas": {
+        "state": {
+          "anyOf": [
+            {
+              "required": [
+                "dismissedAt"
+              ]
+            },
+            {
+              "properties": {
+                "state": {
+                  "const": "active"
+                }
+              }
+            }
+          ]
+        },
+        "dismissedAt": {
+          "properties": {
+            "state": {
+              "const": "dismissed"
+            }
+          }
+        }
+      }
+    }
+  }
+}

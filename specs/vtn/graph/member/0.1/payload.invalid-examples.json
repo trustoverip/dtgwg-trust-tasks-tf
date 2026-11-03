@@ -1,0 +1,36 @@
+[
+  {
+    "note": "Missing `did` — there is no member network to expand.",
+    "payload": {}
+  },
+  {
+    "note": "A `did` that is not a DID.",
+    "payload": {
+      "did": "https://whn.example"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `graph`.",
+    "payload": {}
+  },
+  {
+    "variant": "response",
+    "note": "An edge without its credential.",
+    "payload": {
+      "graph": {
+        "nodes": [],
+        "edges": [
+          {
+            "id": "urn:uuid:00000000-0000-4000-8000-0000000c0011",
+            "source": "did:example:whn",
+            "target": "did:example:community",
+            "role": "listing",
+            "credType": "StatementCredential",
+            "status": "unchecked"
+          }
+        ]
+      }
+    }
+  }
+]

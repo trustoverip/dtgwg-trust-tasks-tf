@@ -1,0 +1,17 @@
+[
+  {
+    "note": "Missing `repudiation` — there is nothing to repudiate with.",
+    "payload": {}
+  },
+  {
+    "note": "A repudiation given as a digest string rather than the signed statement.",
+    "payload": {
+      "repudiation": "zQmGrantDigest"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `entry`.",
+    "payload": {}
+  }
+]

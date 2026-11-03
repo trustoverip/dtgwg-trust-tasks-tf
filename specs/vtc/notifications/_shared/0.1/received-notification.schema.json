@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/notifications/_shared/0.1/received-notification",
+  "title": "VTC Notifications — shared definitions",
+  "description": "Shared shapes for the notifications a Verifiable Trust Community holds as their addressee: each a notifications/notify notification the community accepted, directly or by notifications/relay, under its stated acceptance policy (VTI-NTF-034). A community holds at most one record per originator and notificationId, replaced by a higher revision (VTI-NTF-022). Its administrators list them with vtc/notifications/list, read one whole with vtc/notifications/show, and decide a relay of one to members with vtc/notifications/relay (VTI-NTF-070 – VTI-NTF-074). Holding a notification tells nobody anything: the community sends nothing to the originator, a relayer or the thing's holder because of it, and relays it only on an administrator's decision. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build and the codegen).",
+  "$defs": {
+    "RecordId": {
+      "title": "RecordId",
+      "description": "The community's own identifier for one received notification, stable across the revisions that replace it. Opaque and compared for equality only; unguessable, because a read by a caller without the capability is refused and an enumerable identifier would turn the refusal into an oracle.",
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9._~:-]+$"
+    },
+    "RecipientScope": {
+      "title": "RecipientScope",
+      "description": "Which of the community's members a relay decision reaches: `allMembers` — every active member; `group` — the active members of one community group; `role` — the active members holding one community role.",
+      "type": "string",
+      "enum": [
+        "allMembers",
+        "group",
+        "role"
+      ]
+    },
+    "Recipients": {
+      "title": "Recipients",
+      "description": "The members a relay decision reaches, resolved by the community from its own records when the decision is made (VTI-NTF-072). `groupId` is present exactly when `scope` is `group`, and `role` exactly when `scope` is `role`. Whatever the scope, the community never relays to itself, to the notification's originator, or to any relayer the received chain names (VTI-NTF-047), and relays to each party at most once per revision.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scope"
+      ],
+      "properties": {
+        "scope": {
+          "$ref": "#/$defs/RecipientScope"
+        },
+        "groupId": {
+          "$ref": "../../../groups/_shared/0.1/group.schema.json#/$defs/GroupId",
+          "description": "The community group whose active members the relay reaches."
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "The community role whose active holders the relay reaches, in the wire form the community's member records use — for example `moderator`, or `custom:editor`."
+        }
+      },
+      "dependentSchemas": {
+        "scope": {
+          "anyOf": [
+            {
+              "required": [
+                "groupId"
+              ]
+            },
+            {
+              "required": [
+                "role"
+              ]
+            },
+            {
+              "properties": {
+                "scope": {
+                  "const": "allMembers"
+                }
+              }
+            }
+          ]
+        },
+        "groupId": {
+          "properties": {
+            "scope": {
+              "const": "group"
+            }
+          }
+        },
+        "role": {
+          "properties": {
+            "scope": {
+              "const": "role"
+            }
+          }
+        }
+      }
+    },
+    "RelayDecision": {
+      "title": "RelayDecision",
+      "description": "One administrator's decision to relay a received notification, as the community records it (VTI-NTF-073). It records the selection and how many parties it added, never who they are: the record of whom the community relayed to exists only to relay later revisions to them (VTI-NTF-044).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decidedAt",
+        "decidedBy",
+        "recipients",
+        "recipientCount"
+      ],
+      "properties": {
+        "decidedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the decision was made."
+        },
+        "decidedBy": {
+          "$ref": "../../../../notifications/_shared/0.1/notification.schema.json#/$defs/Did",
+          "description": "The administrator who made it."
+        },
+        "recipients": {
+          "$ref": "#/$defs/Recipients"
+        },
+        "recipientCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many parties this decision added to those the notification is relayed to. Parties an earlier decision already reached are not counted again."
+        }
+      }
+    },
+    "ReceivedNotification": {
+      "title": "ReceivedNotification",
+      "description": "One notification the community holds, as an administrator with `vtc.notifications.read` sees it. `originator`, `deliveredBy` and every entry of `relayedBy` were verified by the community when it accepted the notification (VTI-NTF-042); an administrator that does not take the community's word for them reads the document with vtc/notifications/show and verifies it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "recordId",
+        "originator",
+        "relayedBy",
+        "notification",
+        "receivedAt",
+        "mayRelay",
+        "relayDecisions"
+      ],
+      "properties": {
+        "recordId": {
+          "$ref": "#/$defs/RecordId"
+        },
+        "originator": {
+          "$ref": "../../../../notifications/_shared/0.1/notification.schema.json#/$defs/Did",
+          "description": "The issuer of the notifications/notify document: who said the thing exists."
+        },
+        "relayedBy": {
+          "type": "array",
+          "maxItems": 4,
+          "items": {
+            "$ref": "../../../../notifications/_shared/0.1/notification.schema.json#/$defs/Did"
+          },
+          "description": "The relayers the held revision passed through before it reached the community, in the order they relayed it; the last delivered it here, and is the party the acceptance policy counted (VTI-NTF-031). Empty for a notification the originator sent the community directly."
+        },
+        "notification": {
+          "$ref": "../../../../notifications/_shared/0.1/notification.schema.json#/$defs/Notification",
+          "description": "The notification's members at the revision held."
+        },
+        "receivedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the community accepted the revision held."
+        },
+        "mayRelay": {
+          "type": "boolean",
+          "description": "Whether the community may relay the revision held now: its `relayable` is true, its kind may be relayed, the received chain carries at most three relays so that the community's own makes at most four (VTI-NTF-041), and it is neither withdrawn nor past its `validUntil`."
+        },
+        "relayDisclosure": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "description": "What a relay of the notification discloses about the community, as the kind's definition states it (VTI-NTF-046) — for the kind `election`, that the community is a member of the community holding the election. Present exactly when the kind's definition says a relay discloses something; the administrator deciding a relay is shown it, and acknowledges it in vtc/notifications/relay."
+        },
+        "relayDecisions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RelayDecision"
+          },
+          "description": "The relay decisions made for this notification, oldest first. Empty while none has been. Every later revision, a withdrawal included, is relayed to every party an earlier one was, without a new decision (VTI-NTF-044)."
+        }
+      }
+    }
+  }
+}

@@ -9,6 +9,7 @@
 pub(crate) fn declared_extends(type_uri: &str) -> Option<&'static str> {
     #[allow(clippy::match_single_binding)]
     match type_uri {
+        "https://trusttasks.org/spec/rooms/keys/act/0.10" => Some("0.9"),
         "https://trusttasks.org/spec/rooms/keys/act/0.9" => Some("0.8"),
         "https://trusttasks.org/spec/rooms/records/put/0.4" => Some("0.3"),
         "https://trusttasks.org/spec/vta/did-templates/create/3.2" => Some("3.1"),
@@ -16,6 +17,11 @@ pub(crate) fn declared_extends(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vta/did-templates/list/3.2" => Some("3.1"),
         "https://trusttasks.org/spec/vta/did-templates/update/3.2" => Some("3.1"),
         "https://trusttasks.org/spec/vta/webvh/dids/update/1.1" => Some("1.0"),
+        "https://trusttasks.org/spec/vtc/elections/list/0.4" => Some("0.3"),
+        "https://trusttasks.org/spec/vtc/elections/list/0.5" => Some("0.4"),
+        "https://trusttasks.org/spec/vtc/elections/show/0.5" => Some("0.4"),
+        "https://trusttasks.org/spec/vtc/elections/show/0.6" => Some("0.5"),
+        "https://trusttasks.org/spec/vtc/elections/tickets/issue/0.2" => Some("0.1"),
         _ => None,
     }
 }

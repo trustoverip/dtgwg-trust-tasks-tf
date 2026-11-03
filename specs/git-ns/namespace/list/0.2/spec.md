@@ -93,7 +93,7 @@ The capability and `git.ns.admin` are read from the VTC's own records at executi
 
 **Forge status** — what the bridge serving the namespace last reported about its standing on the forge owner. It is the bridge's report, carried for display; the VTC takes no decision on it.
 
-**Role map** — as in [`git-ns/bridge/event`](../../../bridge/event/0.5/spec.md): the forge role each repository right projects to, as the bridge serving the namespace last reported it.
+**Role map** — as in [`git-ns/bridge/event`](../../../bridge/event/0.6/spec.md): the forge role each repository right projects to, as the bridge serving the namespace last reported it.
 
 ## Request
 

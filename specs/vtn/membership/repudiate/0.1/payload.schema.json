@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtn/membership/repudiate/0.1",
+  "title": "VTN Membership — Repudiate — payload",
+  "description": "A listed party's repudiation of its listing, or a member's repudiation of its grant. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "repudiation"
+  ],
+  "properties": {
+    "repudiation": {
+      "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/Credential",
+      "description": "The party's `repudiates/1` statement, issued by the requester about the network, whose `credentialSubject.object.digestMultibase` names the listing or the grant."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTN Membership — Repudiate — response payload",
+      "description": "The party's entry as it now stands, with its repudiation.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entry"
+      ],
+      "properties": {
+        "entry": {
+          "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/IndexEntry"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

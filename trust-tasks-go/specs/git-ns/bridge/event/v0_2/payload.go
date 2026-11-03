@@ -23,7 +23,7 @@ type ForgeEvent = map[string]json.RawMessage
 
 // Response The VTC has recorded the event. Nothing else is returned.
 //
-// Deprecated: superseded by git-ns/bridge/event/0.5
+// Deprecated: superseded by git-ns/bridge/event/0.6
 type Response struct {
 	Ext *Ext `json:"ext,omitempty"`
 }
@@ -108,7 +108,7 @@ type NamespaceID = string
 // Payload The bridge tells the VTC something happened on the forge — translated from the
 // forge's webhook or found by an inspection sweep — together with any drift it now sees.
 //
-// Deprecated: superseded by git-ns/bridge/event/0.5
+// Deprecated: superseded by git-ns/bridge/event/0.6
 type Payload struct {
 	// The namespace the event happened in.
 	Namespace NamespaceID `json:"namespace"`
@@ -135,7 +135,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = "superseded by git-ns/bridge/event/0.5"
+const Deprecation = "superseded by git-ns/bridge/event/0.6"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/git-ns/bridge/event/0.2#response"
