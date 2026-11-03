@@ -8,7 +8,7 @@
 use trust_tasks_rs::specs::understanding::exchange::v0_1 as spec;
 #[test]
 fn request_example_1() {
-    const JSON: &str = "{\n  \"id\": \"urn:uuid:1a2b3c4d-0003-4000-8000-000000000001\",\n  \"type\": \"https://trusttasks.org/spec/understanding/exchange/0.1\",\n  \"issuer\": \"did:example:alice\",\n  \"recipient\": \"did:example:host\",\n  \"issuedAt\": \"2026-09-24T10:05:00Z\",\n  \"threadId\": \"urn:uuid:1a2b3c4d-0003-4000-8000-000000000001\",\n  \"parentThreadId\": \"urn:uuid:1a2b3c4d-0001-4000-8000-000000000001\",\n  \"payload\": {\n    \"offerId\": \"urn:uuid:1a2b3c4d-0001-4000-8000-000000000002\",\n    \"answers\": [\n      { \"questionId\": \"retention-period\", \"answer\": \"12-months\" },\n      { \"questionId\": \"third-party-sharing\", \"answer\": \"none\" }\n    ]\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"verificationMethod\": \"did:example:alice#key-1\",\n    \"created\": \"2026-09-24T10:05:00Z\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z3kg...\"\n  }\n}\n";
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:1a2b3c4d-0003-4000-8000-000000000001\",\n  \"type\": \"https://trusttasks.org/spec/understanding/exchange/0.1\",\n  \"issuer\": \"did:example:alice\",\n  \"recipient\": \"did:example:host\",\n  \"issuedAt\": \"2026-09-24T10:05:00Z\",\n  \"threadId\": \"urn:uuid:1a2b3c4d-0003-4000-8000-000000000001\",\n  \"parentThreadId\": \"urn:uuid:1a2b3c4d-0001-4000-8000-000000000001\",\n  \"payload\": {\n    \"offerId\": \"urn:uuid:1a2b3c4d-0001-4000-8000-000000000002\",\n    \"offerDigestMultibase\": \"zQmW9tJc3RnX6vKd2LhY8sPf5aG1mB7eD4uQ3zCpH6kN\",\n    \"answers\": [\n      { \"questionId\": \"retention-period\", \"answer\": \"12-months\" },\n      { \"questionId\": \"third-party-sharing\", \"answer\": \"none\" }\n    ]\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"verificationMethod\": \"did:example:alice#key-1\",\n    \"created\": \"2026-09-24T10:05:00Z\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z3kg...\"\n  }\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Payload> =
         serde_json::from_str(JSON).expect("deserialize request example");
     let rendered = serde_json::to_value(&doc).expect("re-serialize");
@@ -17,7 +17,7 @@ fn request_example_1() {
 }
 #[test]
 fn response_example_1() {
-    const JSON: &str = "{\n  \"id\": \"urn:uuid:1a2b3c4d-0003-4000-8000-000000000002\",\n  \"type\": \"https://trusttasks.org/spec/understanding/exchange/0.1#response\",\n  \"threadId\": \"urn:uuid:1a2b3c4d-0003-4000-8000-000000000001\",\n  \"parentThreadId\": \"urn:uuid:1a2b3c4d-0001-4000-8000-000000000001\",\n  \"issuer\": \"did:example:host\",\n  \"recipient\": \"did:example:alice\",\n  \"issuedAt\": \"2026-09-24T10:05:01Z\",\n  \"payload\": {\n    \"outcome\": \"understood\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"verificationMethod\": \"did:example:host#key-1\",\n    \"created\": \"2026-09-24T10:05:01Z\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z6ab...\"\n  }\n}\n";
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:1a2b3c4d-0003-4000-8000-000000000002\",\n  \"type\": \"https://trusttasks.org/spec/understanding/exchange/0.1#response\",\n  \"threadId\": \"urn:uuid:1a2b3c4d-0003-4000-8000-000000000001\",\n  \"parentThreadId\": \"urn:uuid:1a2b3c4d-0001-4000-8000-000000000001\",\n  \"issuer\": \"did:example:host\",\n  \"recipient\": \"did:example:alice\",\n  \"issuedAt\": \"2026-09-24T10:05:01Z\",\n  \"payload\": {\n    \"outcome\": \"understood\",\n    \"taskContext\": \"urn:uuid:1a2b3c4d-0003-4000-8000-000000000001\",\n    \"taskDigestMultibase\": \"zQmP4wKe7LhN2cBxV9dR5tY3sGf8mJ6aD1uQ7zXpH4kC\"\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"verificationMethod\": \"did:example:host#key-1\",\n    \"created\": \"2026-09-24T10:05:01Z\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"z6ab...\"\n  }\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Response> =
         serde_json::from_str(JSON).expect("deserialize response example");
     let rendered = serde_json::to_value(&doc).expect("re-serialize");
@@ -50,6 +50,10 @@ fn rejects_invalid_examples() {
             "Unknown top-level payload member — additionalProperties: false catches `score`, which belongs only in the response.",
             "{\n  \"answers\": [\n    {\n      \"answer\": \"12-months\",\n      \"questionId\": \"retention-period\"\n    }\n  ],\n  \"offerId\": \"urn:uuid:1a2b3c4d-0001-4000-8000-000000000002\",\n  \"score\": 0.9\n}",
         ),
+        (
+            "offerDigestMultibase that is not a multibase multihash — a hex string hard-codes an algorithm into the wire contract and is non-conforming.",
+            "{\n  \"answers\": [\n    {\n      \"answer\": \"12-months\",\n      \"questionId\": \"retention-period\"\n    }\n  ],\n  \"offerDigestMultibase\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",\n  \"offerId\": \"urn:uuid:1a2b3c4d-0001-4000-8000-000000000002\"\n}",
+        ),
     ];
     for (i, (note, raw)) in fixtures.iter().enumerate() {
         let value: serde_json::Value = match serde_json::from_str(raw) {
@@ -61,6 +65,42 @@ fn rejects_invalid_examples() {
         assert!(
             !(serde_ok && schema_ok),
             "invalid-example #{} ({:?}) was accepted by both serde and JSON Schema; \
+                         the fixture's stated failure class is no longer caught:\n{}",
+            i + 1,
+            note,
+            raw
+        );
+    }
+}
+/// Each `"variant": "response"` fixture in
+/// `payload.invalid-examples.json` MUST be rejected as a
+/// response payload by at least one of: serde deserialization
+/// into `Response`, or JSON-Schema validation against the
+/// `$anchor: "response"` sub-schema (validate feature).
+#[cfg(feature = "validate")]
+#[test]
+fn rejects_invalid_response_examples() {
+    use trust_tasks_rs::validate::ValidatedPayload;
+    let fixtures: &[(&str, &str)] = &[
+        (
+            "Response without taskContext and taskDigestMultibase — an unbound determination cannot serve as the declared outcome evidence.",
+            "{\n  \"outcome\": \"understood\"\n}",
+        ),
+        (
+            "Response with taskContext but no taskDigestMultibase — an id alone is a name, not a binding (SPEC §4.9.3).",
+            "{\n  \"outcome\": \"understood\",\n  \"taskContext\": \"urn:uuid:1a2b3c4d-0003-4000-8000-000000000001\"\n}",
+        ),
+    ];
+    for (i, (note, raw)) in fixtures.iter().enumerate() {
+        let value: serde_json::Value = match serde_json::from_str(raw) {
+            Ok(v) => v,
+            Err(_) => continue,
+        };
+        let serde_ok = serde_json::from_value::<spec::Response>(value.clone()).is_ok();
+        let schema_ok = spec::Response::validate_value(&value).is_ok();
+        assert!(
+            !(serde_ok && schema_ok),
+            "invalid response example #{} ({:?}) was accepted by both serde and JSON Schema; \
                          the fixture's stated failure class is no longer caught:\n{}",
             i + 1,
             note,

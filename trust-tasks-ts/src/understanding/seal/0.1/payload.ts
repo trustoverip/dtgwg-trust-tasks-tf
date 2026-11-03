@@ -25,6 +25,10 @@ export interface UnderstandingSealPayload {
    * The `id` of the understanding/exchange response this seal is grounded in. Its recorded outcome MUST be "understood". Grounds at most one seal negotiation — see spec.md Authorization, "One negotiation per exchange".
    */
   exchangeId: string;
+  /**
+   * OPTIONAL. The task digest of the understanding/exchange response named by `exchangeId`, computed per SPEC §4.9.3 as multibase(multihash(H(JCS(document ∖ proof)))) over that response in full — which itself carries the digest of the exchange request it decides. When present, the host MUST recompute it from its own record of the exchange response and refuse a mismatch with understanding/seal:exchangeDigestMismatch.
+   */
+  exchangeDigestMultibase?: DigestMultibase;
   agreement: Agreement;
   /**
    * Present only on the single follow-up permitted after a counter: the `id` of the understanding/seal request the second party countered. See spec.md Authorization, "Answering a counter", for the conditions a recipient MUST check before accepting this follow-up rather than refusing it with understanding/seal:negotiationExhausted.
@@ -93,6 +97,10 @@ export const PAYLOAD_SCHEMA = {
       "minLength": 1,
       "maxLength": 256,
       "description": "The `id` of the understanding/exchange response this seal is grounded in. Its recorded outcome MUST be \"understood\". Grounds at most one seal negotiation — see spec.md Authorization, \"One negotiation per exchange\"."
+    },
+    "exchangeDigestMultibase": {
+      "$ref": "#/$defs/DigestMultibase",
+      "description": "OPTIONAL. The task digest of the understanding/exchange response named by `exchangeId`, computed per SPEC §4.9.3 as multibase(multihash(H(JCS(document ∖ proof)))) over that response in full — which itself carries the digest of the exchange request it decides. When present, the host MUST recompute it from its own record of the exchange response and refuse a mismatch with understanding/seal:exchangeDigestMismatch."
     },
     "agreement": {
       "$ref": "#/$defs/Agreement"

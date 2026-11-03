@@ -170,6 +170,81 @@ impl<'de> ::serde::Deserialize<'de> for AnswerQuestionId {
             })
     }
 }
+/**
+A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.
+
+Multihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.
+
+This definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.
+
+Restricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that "interoperability is not guaranteed between implementations using such values", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.*/
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct DigestMultibase(::std::string::String);
+impl ::std::ops::Deref for DigestMultibase {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<DigestMultibase> for ::std::string::String {
+    fn from(value: DigestMultibase) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for DigestMultibase {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() < 16usize {
+            return Err("shorter than 16 characters".into());
+        }
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$").unwrap()
+            });
+        if PATTERN.find(value).is_none() {
+            return Err(
+                "doesn't match pattern \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\"".into(),
+            );
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for DigestMultibase {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for DigestMultibase {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for DigestMultibase {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
@@ -265,6 +340,13 @@ pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
+    ///OPTIONAL. The task digest of the understanding/offer response named by `offerId`, computed per SPEC §4.9.3 as multibase(multihash(H(JCS(document ∖ proof)))) over that response in full. Pairs the id with the exact document the joining party answered against, so the offer -> exchange -> seal chain is digest-bound end to end. When present, the host MUST recompute it from its own record of the offer response and refuse a mismatch with understanding/exchange:offerDigestMismatch.
+    #[serde(
+        rename = "offerDigestMultibase",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub offer_digest_multibase: ::std::option::Option<DigestMultibase>,
     ///The `id` of the understanding/offer response this exchange answers against, naming which terms version the answers are about.
     #[serde(rename = "offerId")]
     pub offer_id: PayloadOfferId,
@@ -336,7 +418,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadOfferId {
             })
     }
 }
-///The host's determination of whether the answers demonstrate understanding. Failures use trust-task-error, not this shape; outcome: insufficient is a normal determination, not a failure.
+///The host's determination of whether the answers demonstrate understanding, bound by taskContext and taskDigestMultibase per SPEC §4.9.3 and §7.3 item 20.5's first binding form, so this response can serve as this specification's declared outcome evidence (see spec.md front matter, outcomeEvidence). Failures use trust-task-error, not this shape; outcome: insufficient is a normal determination, not a failure.
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
@@ -350,6 +432,12 @@ pub struct Response {
     ///An OPTIONAL, host-defined score. Opaque to this specification — neither its scale nor its passing threshold is standardized.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub score: ::std::option::Option<f64>,
+    ///The `id` of the understanding/exchange request this response determines — the initiating document of this exchange per SPEC §4.9.1.
+    #[serde(rename = "taskContext")]
+    pub task_context: ResponseTaskContext,
+    ///The task digest of the request named by `taskContext`, computed per SPEC §4.9.3 as multibase(multihash(H(JCS(document ∖ proof)))) over the FULL request document — so the binding also covers `offerId`, the answers, and `offerDigestMultibase` where present.
+    #[serde(rename = "taskDigestMultibase")]
+    pub task_digest_multibase: DigestMultibase,
 }
 impl Response {
     pub fn builder() -> builder::Response {
@@ -417,6 +505,68 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseOutcome {
         value.parse()
     }
 }
+///The `id` of the understanding/exchange request this response determines — the initiating document of this exchange per SPEC §4.9.1.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct ResponseTaskContext(::std::string::String);
+impl ::std::ops::Deref for ResponseTaskContext {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<ResponseTaskContext> for ::std::string::String {
+    fn from(value: ResponseTaskContext) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for ResponseTaskContext {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 256usize {
+            return Err("longer than 256 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for ResponseTaskContext {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for ResponseTaskContext {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for ResponseTaskContext {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for ResponseTaskContext {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
 /// Types for composing complex structures.
 pub mod builder {
     #[derive(Clone, Debug)]
@@ -475,6 +625,10 @@ pub mod builder {
     pub struct Payload {
         answers: ::std::result::Result<::std::vec::Vec<super::Answer>, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        offer_digest_multibase: ::std::result::Result<
+            ::std::option::Option<super::DigestMultibase>,
+            ::std::string::String,
+        >,
         offer_id: ::std::result::Result<super::PayloadOfferId, ::std::string::String>,
     }
     impl ::std::default::Default for Payload {
@@ -482,6 +636,7 @@ pub mod builder {
             Self {
                 answers: Err("no value supplied for answers".to_string()),
                 ext: Ok(Default::default()),
+                offer_digest_multibase: Ok(Default::default()),
                 offer_id: Err("no value supplied for offer_id".to_string()),
             }
         }
@@ -507,6 +662,16 @@ pub mod builder {
                 .map_err(|e| format!("error converting supplied value for ext: {e}"));
             self
         }
+        pub fn offer_digest_multibase<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::DigestMultibase>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.offer_digest_multibase = value.try_into().map_err(|e| {
+                format!("error converting supplied value for offer_digest_multibase: {e}")
+            });
+            self
+        }
         pub fn offer_id<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<super::PayloadOfferId>,
@@ -524,6 +689,7 @@ pub mod builder {
             Ok(Self {
                 answers: value.answers?,
                 ext: value.ext?,
+                offer_digest_multibase: value.offer_digest_multibase?,
                 offer_id: value.offer_id?,
             })
         }
@@ -533,6 +699,7 @@ pub mod builder {
             Self {
                 answers: Ok(value.answers),
                 ext: Ok(value.ext),
+                offer_digest_multibase: Ok(value.offer_digest_multibase),
                 offer_id: Ok(value.offer_id),
             }
         }
@@ -542,6 +709,8 @@ pub mod builder {
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         outcome: ::std::result::Result<super::ResponseOutcome, ::std::string::String>,
         score: ::std::result::Result<::std::option::Option<f64>, ::std::string::String>,
+        task_context: ::std::result::Result<super::ResponseTaskContext, ::std::string::String>,
+        task_digest_multibase: ::std::result::Result<super::DigestMultibase, ::std::string::String>,
     }
     impl ::std::default::Default for Response {
         fn default() -> Self {
@@ -549,6 +718,10 @@ pub mod builder {
                 ext: Ok(Default::default()),
                 outcome: Err("no value supplied for outcome".to_string()),
                 score: Ok(Default::default()),
+                task_context: Err("no value supplied for task_context".to_string()),
+                task_digest_multibase: Err(
+                    "no value supplied for task_digest_multibase".to_string()
+                ),
             }
         }
     }
@@ -583,6 +756,26 @@ pub mod builder {
                 .map_err(|e| format!("error converting supplied value for score: {e}"));
             self
         }
+        pub fn task_context<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::ResponseTaskContext>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.task_context = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for task_context: {e}"));
+            self
+        }
+        pub fn task_digest_multibase<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::DigestMultibase>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.task_digest_multibase = value.try_into().map_err(|e| {
+                format!("error converting supplied value for task_digest_multibase: {e}")
+            });
+            self
+        }
     }
     impl ::std::convert::TryFrom<Response> for super::Response {
         type Error = super::error::ConversionError;
@@ -591,6 +784,8 @@ pub mod builder {
                 ext: value.ext?,
                 outcome: value.outcome?,
                 score: value.score?,
+                task_context: value.task_context?,
+                task_digest_multibase: value.task_digest_multibase?,
             })
         }
     }
@@ -600,6 +795,8 @@ pub mod builder {
                 ext: Ok(value.ext),
                 outcome: Ok(value.outcome),
                 score: Ok(value.score),
+                task_context: Ok(value.task_context),
+                task_digest_multibase: Ok(value.task_digest_multibase),
             }
         }
     }
@@ -610,7 +807,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"Answer\":{\"additionalProperties\":false,\"properties\":{\"answer\":{\"description\":\"The joining party's answer. Its accepted values and format are defined by the host's terms document, out of band.\",\"maxLength\":4096,\"type\":\"string\"},\"questionId\":{\"description\":\"Identifies which of the host's comprehension questions this answers. Defined by the host's terms document, out of band; opaque to this specification.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"questionId\",\"answer\"],\"title\":\"Answer\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The host's determination of whether the answers demonstrate understanding. Failures use trust-task-error, not this shape; outcome: insufficient is a normal determination, not a failure.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"outcome\":{\"description\":\"The host's determination.\",\"enum\":[\"understood\",\"insufficient\"],\"type\":\"string\"},\"score\":{\"description\":\"An OPTIONAL, host-defined score. Opaque to this specification — neither its scale nor its passing threshold is standardized.\",\"type\":\"number\"}},\"required\":[\"outcome\"],\"title\":\"Understanding — Exchange — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/understanding/exchange/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A joining party answers a host's comprehension questions about the terms named in an understanding/offer response; the host records whether the answers demonstrate understanding. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"answers\":{\"description\":\"The joining party's answers to the host's comprehension questions, in the order the host posed them or any order the host's own question format tolerates.\",\"items\":{\"$ref\":\"#/$defs/Answer\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"offerId\":{\"description\":\"The `id` of the understanding/offer response this exchange answers against, naming which terms version the answers are about.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"offerId\",\"answers\"],\"title\":\"Understanding — Exchange — payload\",\"type\":\"object\"}\n",
+        "{\"$defs\":{\"Answer\":{\"additionalProperties\":false,\"properties\":{\"answer\":{\"description\":\"The joining party's answer. Its accepted values and format are defined by the host's terms document, out of band.\",\"maxLength\":4096,\"type\":\"string\"},\"questionId\":{\"description\":\"Identifies which of the host's comprehension questions this answers. Defined by the host's terms document, out of band; opaque to this specification.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"questionId\",\"answer\"],\"title\":\"Answer\",\"type\":\"object\"},\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The host's determination of whether the answers demonstrate understanding, bound by taskContext and taskDigestMultibase per SPEC §4.9.3 and §7.3 item 20.5's first binding form, so this response can serve as this specification's declared outcome evidence (see spec.md front matter, outcomeEvidence). Failures use trust-task-error, not this shape; outcome: insufficient is a normal determination, not a failure.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"outcome\":{\"description\":\"The host's determination.\",\"enum\":[\"understood\",\"insufficient\"],\"type\":\"string\"},\"score\":{\"description\":\"An OPTIONAL, host-defined score. Opaque to this specification — neither its scale nor its passing threshold is standardized.\",\"type\":\"number\"},\"taskContext\":{\"description\":\"The `id` of the understanding/exchange request this response determines — the initiating document of this exchange per SPEC §4.9.1.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"taskDigestMultibase\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"The task digest of the request named by `taskContext`, computed per SPEC §4.9.3 as multibase(multihash(H(JCS(document ∖ proof)))) over the FULL request document — so the binding also covers `offerId`, the answers, and `offerDigestMultibase` where present.\"}},\"required\":[\"outcome\",\"taskContext\",\"taskDigestMultibase\"],\"title\":\"Understanding — Exchange — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/understanding/exchange/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A joining party answers a host's comprehension questions about the terms named in an understanding/offer response; the host records whether the answers demonstrate understanding. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"answers\":{\"description\":\"The joining party's answers to the host's comprehension questions, in the order the host posed them or any order the host's own question format tolerates.\",\"items\":{\"$ref\":\"#/$defs/Answer\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"offerDigestMultibase\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"OPTIONAL. The task digest of the understanding/offer response named by `offerId`, computed per SPEC §4.9.3 as multibase(multihash(H(JCS(document ∖ proof)))) over that response in full. Pairs the id with the exact document the joining party answered against, so the offer -> exchange -> seal chain is digest-bound end to end. When present, the host MUST recompute it from its own record of the offer response and refuse a mismatch with understanding/exchange:offerDigestMismatch.\"},\"offerId\":{\"description\":\"The `id` of the understanding/offer response this exchange answers against, naming which terms version the answers are about.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"offerId\",\"answers\"],\"title\":\"Understanding — Exchange — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -620,7 +817,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"Answer\":{\"additionalProperties\":false,\"properties\":{\"answer\":{\"description\":\"The joining party's answer. Its accepted values and format are defined by the host's terms document, out of band.\",\"maxLength\":4096,\"type\":\"string\"},\"questionId\":{\"description\":\"Identifies which of the host's comprehension questions this answers. Defined by the host's terms document, out of band; opaque to this specification.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"questionId\",\"answer\"],\"title\":\"Answer\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The host's determination of whether the answers demonstrate understanding. Failures use trust-task-error, not this shape; outcome: insufficient is a normal determination, not a failure.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"outcome\":{\"description\":\"The host's determination.\",\"enum\":[\"understood\",\"insufficient\"],\"type\":\"string\"},\"score\":{\"description\":\"An OPTIONAL, host-defined score. Opaque to this specification — neither its scale nor its passing threshold is standardized.\",\"type\":\"number\"}},\"required\":[\"outcome\"],\"title\":\"Understanding — Exchange — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
+        "{\"$defs\":{\"Answer\":{\"additionalProperties\":false,\"properties\":{\"answer\":{\"description\":\"The joining party's answer. Its accepted values and format are defined by the host's terms document, out of band.\",\"maxLength\":4096,\"type\":\"string\"},\"questionId\":{\"description\":\"Identifies which of the host's comprehension questions this answers. Defined by the host's terms document, out of band; opaque to this specification.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"questionId\",\"answer\"],\"title\":\"Answer\",\"type\":\"object\"},\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The host's determination of whether the answers demonstrate understanding, bound by taskContext and taskDigestMultibase per SPEC §4.9.3 and §7.3 item 20.5's first binding form, so this response can serve as this specification's declared outcome evidence (see spec.md front matter, outcomeEvidence). Failures use trust-task-error, not this shape; outcome: insufficient is a normal determination, not a failure.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"outcome\":{\"description\":\"The host's determination.\",\"enum\":[\"understood\",\"insufficient\"],\"type\":\"string\"},\"score\":{\"description\":\"An OPTIONAL, host-defined score. Opaque to this specification — neither its scale nor its passing threshold is standardized.\",\"type\":\"number\"},\"taskContext\":{\"description\":\"The `id` of the understanding/exchange request this response determines — the initiating document of this exchange per SPEC §4.9.1.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"taskDigestMultibase\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"The task digest of the request named by `taskContext`, computed per SPEC §4.9.3 as multibase(multihash(H(JCS(document ∖ proof)))) over the FULL request document — so the binding also covers `offerId`, the answers, and `offerDigestMultibase` where present.\"}},\"required\":[\"outcome\",\"taskContext\",\"taskDigestMultibase\"],\"title\":\"Understanding — Exchange — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {
@@ -636,6 +833,7 @@ pub const EXTENDS: Option<&str> = None;
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
     error_codes::OFFER_NOT_FOUND,
     error_codes::ISSUER_MISMATCH,
+    error_codes::OFFER_DIGEST_MISMATCH,
     error_codes::TERMS_STALE,
 ];
 /// One constant per extended error code this specification declares
@@ -662,6 +860,16 @@ pub mod error_codes {
     /// Declared `retryable: false`.
     pub const ISSUER_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
         code: "understanding/exchange:issuerMismatch",
+        retryable: false,
+        details_schema: ::core::option::Option::None,
+    };
+    /// `understanding/exchange:offerDigestMismatch`
+    ///
+    /// The request carried `offerDigestMultibase`, and it does not equal the task digest of the understanding/offer response named by `offerId`, as the host recomputes it from its own record. Never returned for a request that omits the member.
+    ///
+    /// Declared `retryable: false`.
+    pub const OFFER_DIGEST_MISMATCH: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
+        code: "understanding/exchange:offerDigestMismatch",
         retryable: false,
         details_schema: ::core::option::Option::None,
     };

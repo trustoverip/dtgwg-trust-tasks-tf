@@ -3,7 +3,7 @@
  * Source: specs/understanding/exchange/0.1/payload.schema.json
  */
 
-import type { Ext } from "../../../_shared/components.js";
+import type { DigestMultibase, Ext } from "../../../_shared/components.js";
 
 
 /**
@@ -14,6 +14,10 @@ export interface UnderstandingExchangePayload {
    * The `id` of the understanding/offer response this exchange answers against, naming which terms version the answers are about.
    */
   offerId: string;
+  /**
+   * OPTIONAL. The task digest of the understanding/offer response named by `offerId`, computed per SPEC §4.9.3 as multibase(multihash(H(JCS(document ∖ proof)))) over that response in full. Pairs the id with the exact document the joining party answered against, so the offer -> exchange -> seal chain is digest-bound end to end. When present, the host MUST recompute it from its own record of the offer response and refuse a mismatch with understanding/exchange:offerDigestMismatch.
+   */
+  offerDigestMultibase?: DigestMultibase;
   /**
    * The joining party's answers to the host's comprehension questions, in the order the host posed them or any order the host's own question format tolerates.
    *
@@ -37,13 +41,21 @@ export interface Answer {
   answer: string;
 }
 /**
- * The host's determination of whether the answers demonstrate understanding. Failures use trust-task-error, not this shape; outcome: insufficient is a normal determination, not a failure.
+ * The host's determination of whether the answers demonstrate understanding, bound by taskContext and taskDigestMultibase per SPEC §4.9.3 and §7.3 item 20.5's first binding form, so this response can serve as this specification's declared outcome evidence (see spec.md front matter, outcomeEvidence). Failures use trust-task-error, not this shape; outcome: insufficient is a normal determination, not a failure.
  */
 export interface UnderstandingExchangeResponsePayload {
   /**
    * The host's determination.
    */
   outcome: "understood" | "insufficient";
+  /**
+   * The `id` of the understanding/exchange request this response determines — the initiating document of this exchange per SPEC §4.9.1.
+   */
+  taskContext: string;
+  /**
+   * The task digest of the request named by `taskContext`, computed per SPEC §4.9.3 as multibase(multihash(H(JCS(document ∖ proof)))) over the FULL request document — so the binding also covers `offerId`, the answers, and `offerDigestMultibase` where present.
+   */
+  taskDigestMultibase: DigestMultibase;
   /**
    * An OPTIONAL, host-defined score. Opaque to this specification — neither its scale nor its passing threshold is standardized.
    */
@@ -55,7 +67,7 @@ export interface UnderstandingExchangeResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { Ext };
+export type { DigestMultibase, Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/understanding/exchange/0.1" as const;
@@ -112,6 +124,10 @@ export const PAYLOAD_SCHEMA = {
       "maxLength": 256,
       "description": "The `id` of the understanding/offer response this exchange answers against, naming which terms version the answers are about."
     },
+    "offerDigestMultibase": {
+      "$ref": "#/$defs/DigestMultibase",
+      "description": "OPTIONAL. The task digest of the understanding/offer response named by `offerId`, computed per SPEC §4.9.3 as multibase(multihash(H(JCS(document ∖ proof)))) over that response in full. Pairs the id with the exact document the joining party answered against, so the offer -> exchange -> seal chain is digest-bound end to end. When present, the host MUST recompute it from its own record of the offer response and refuse a mismatch with understanding/exchange:offerDigestMismatch."
+    },
     "answers": {
       "type": "array",
       "minItems": 1,
@@ -152,11 +168,13 @@ export const PAYLOAD_SCHEMA = {
     "Response": {
       "$anchor": "response",
       "title": "Understanding — Exchange — response payload",
-      "description": "The host's determination of whether the answers demonstrate understanding. Failures use trust-task-error, not this shape; outcome: insufficient is a normal determination, not a failure.",
+      "description": "The host's determination of whether the answers demonstrate understanding, bound by taskContext and taskDigestMultibase per SPEC §4.9.3 and §7.3 item 20.5's first binding form, so this response can serve as this specification's declared outcome evidence (see spec.md front matter, outcomeEvidence). Failures use trust-task-error, not this shape; outcome: insufficient is a normal determination, not a failure.",
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "outcome"
+        "outcome",
+        "taskContext",
+        "taskDigestMultibase"
       ],
       "properties": {
         "outcome": {
@@ -166,6 +184,16 @@ export const PAYLOAD_SCHEMA = {
             "insufficient"
           ],
           "description": "The host's determination."
+        },
+        "taskContext": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "The `id` of the understanding/exchange request this response determines — the initiating document of this exchange per SPEC §4.9.1."
+        },
+        "taskDigestMultibase": {
+          "$ref": "#/$defs/DigestMultibase",
+          "description": "The task digest of the request named by `taskContext`, computed per SPEC §4.9.3 as multibase(multihash(H(JCS(document ∖ proof)))) over the FULL request document — so the binding also covers `offerId`, the answers, and `offerDigestMultibase` where present."
         },
         "score": {
           "type": "number",
@@ -186,6 +214,16 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
+    },
+    "DigestMultibase": {
+      "title": "DigestMultibase",
+      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
+      "type": "string",
+      "minLength": 16,
+      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
+      "examples": [
+        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+      ]
     }
   }
 } as const;
@@ -220,11 +258,13 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
     "Response": {
       "$anchor": "response",
       "title": "Understanding — Exchange — response payload",
-      "description": "The host's determination of whether the answers demonstrate understanding. Failures use trust-task-error, not this shape; outcome: insufficient is a normal determination, not a failure.",
+      "description": "The host's determination of whether the answers demonstrate understanding, bound by taskContext and taskDigestMultibase per SPEC §4.9.3 and §7.3 item 20.5's first binding form, so this response can serve as this specification's declared outcome evidence (see spec.md front matter, outcomeEvidence). Failures use trust-task-error, not this shape; outcome: insufficient is a normal determination, not a failure.",
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "outcome"
+        "outcome",
+        "taskContext",
+        "taskDigestMultibase"
       ],
       "properties": {
         "outcome": {
@@ -234,6 +274,16 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "insufficient"
           ],
           "description": "The host's determination."
+        },
+        "taskContext": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "The `id` of the understanding/exchange request this response determines — the initiating document of this exchange per SPEC §4.9.1."
+        },
+        "taskDigestMultibase": {
+          "$ref": "#/$defs/DigestMultibase",
+          "description": "The task digest of the request named by `taskContext`, computed per SPEC §4.9.3 as multibase(multihash(H(JCS(document ∖ proof)))) over the FULL request document — so the binding also covers `offerId`, the answers, and `offerDigestMultibase` where present."
         },
         "score": {
           "type": "number",
@@ -254,6 +304,16 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
+    },
+    "DigestMultibase": {
+      "title": "DigestMultibase",
+      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
+      "type": "string",
+      "minLength": 16,
+      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
+      "examples": [
+        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+      ]
     }
   }
 } as const;
