@@ -1,0 +1,29 @@
+[
+  {
+    "note": "Missing `membership` — there is no evidence the person belongs to a group.",
+    "payload": {
+      "room": "pandemic-response",
+      "chain": []
+    }
+  },
+  {
+    "note": "A chain link with a registration but no acceptance.",
+    "payload": {
+      "room": "pandemic-response",
+      "membership": {},
+      "chain": [
+        { "registration": {} }
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A pass without the networks it was issued through.",
+    "payload": {
+      "pass": {
+        "room": { "id": "pandemic-response", "name": "Pandemic Response", "role": "admins", "passMinutes": 60 },
+        "pass": {}
+      }
+    }
+  }
+]

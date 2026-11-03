@@ -1,0 +1,26 @@
+[
+  {
+    "note": "Missing `id`.",
+    "payload": {}
+  },
+  {
+    "note": "An empty `id`.",
+    "payload": {
+      "id": ""
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A record without its receipts.",
+    "payload": {
+      "broadcast": {
+        "id": "urn:uuid:00000000-0000-4000-8000-0000000b0001",
+        "direction": "sent",
+        "role": "admins",
+        "message": {},
+        "recordedAt": "2026-11-03T16:00:01Z",
+        "reached": 0
+      }
+    }
+  }
+]

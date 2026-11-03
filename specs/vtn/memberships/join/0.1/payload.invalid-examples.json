@@ -1,0 +1,39 @@
+[
+  {
+    "note": "Missing `network` — the administrator must say which DID they expect at the URL, so a URL alone cannot point this network at an impostor.",
+    "payload": {
+      "url": "https://whn.example.org",
+      "roles": []
+    }
+  },
+  {
+    "note": "A role mapping without `localRole`.",
+    "payload": {
+      "url": "https://whn.example.org",
+      "network": "did:example:whn",
+      "roles": [
+        {
+          "parentRole": "admins"
+        }
+      ]
+    }
+  },
+  {
+    "note": "A role name with capitals — roles are lowercase identifiers.",
+    "payload": {
+      "url": "https://whn.example.org",
+      "network": "did:example:whn",
+      "roles": [
+        {
+          "parentRole": "Admins",
+          "localRole": "admins"
+        }
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `membership`.",
+    "payload": {}
+  }
+]

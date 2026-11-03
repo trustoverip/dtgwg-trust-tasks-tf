@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtn/_shared/0.1/membership.schema.json",
+  "title": "VTN — Upstream membership",
+  "description": "This network's own membership of a parent network: the mirror of a community's network membership (vtc/_shared network-membership), for a network that is itself a member.",
+  "$defs": {
+    "RoleMapping": {
+      "description": "Which of this network's roles serves a parent's role.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "parentRole",
+        "localRole"
+      ],
+      "properties": {
+        "parentRole": {
+          "$ref": "groups.schema.json#/$defs/RoleName",
+          "description": "The parent's role."
+        },
+        "localRole": {
+          "$ref": "groups.schema.json#/$defs/RoleName",
+          "description": "This network's role whose network group serves it."
+        }
+      }
+    },
+    "UpstreamGroup": {
+      "description": "A group this network registered at its parent.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "parentRole",
+        "localRole",
+        "group",
+        "registration",
+        "acceptance"
+      ],
+      "properties": {
+        "parentRole": {
+          "$ref": "groups.schema.json#/$defs/RoleName"
+        },
+        "localRole": {
+          "$ref": "groups.schema.json#/$defs/RoleName"
+        },
+        "group": {
+          "type": "string",
+          "maxLength": 2048,
+          "description": "This network's network group (`<did>#role-<localRole>`)."
+        },
+        "registration": {
+          "$ref": "groups.schema.json#/$defs/SignedTask",
+          "description": "This network's signed vtn/groups/register request to the parent."
+        },
+        "acceptance": {
+          "$ref": "entry.schema.json#/$defs/Credential",
+          "description": "The parent's groupRegistered credential accepting the registration: issued by the parent, subject this network's network group, `object.digestMultibase` the digest of `registration`, revocable on the parent's status list."
+        }
+      }
+    },
+    "UpstreamMembership": {
+      "description": "This network's membership of a parent.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "network",
+        "url",
+        "state",
+        "listing",
+        "groups",
+        "updatedAt"
+      ],
+      "properties": {
+        "network": {
+          "$ref": "entry.schema.json#/$defs/Did",
+          "description": "The parent network."
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 2048,
+          "description": "Where the parent is reached."
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 200,
+          "description": "The parent's name."
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "acknowledged",
+            "repudiated",
+            "departed"
+          ],
+          "description": "`acknowledged`: this network is a member. `repudiated`: it rejected the parent's listing. `departed`: it left."
+        },
+        "listing": {
+          "$ref": "entry.schema.json#/$defs/Credential",
+          "description": "The parent's listing of this network, as verified."
+        },
+        "grant": {
+          "$ref": "entry.schema.json#/$defs/Credential",
+          "description": "The parent's grant."
+        },
+        "acknowledgement": {
+          "$ref": "entry.schema.json#/$defs/Credential",
+          "description": "This network's acknowledgement."
+        },
+        "repudiation": {
+          "$ref": "entry.schema.json#/$defs/Credential",
+          "description": "This network's repudiation of the listing or grant."
+        },
+        "groups": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/UpstreamGroup"
+          },
+          "description": "Groups registered at the parent."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When it last changed."
+        }
+      }
+    }
+  }
+}

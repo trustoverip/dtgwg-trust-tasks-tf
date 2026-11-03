@@ -1,0 +1,22 @@
+[
+  {
+    "note": "Missing `body` — there is nothing to send.",
+    "payload": {
+      "role": "admins",
+      "subject": "Network maintenance"
+    }
+  },
+  {
+    "note": "A role that is not a role name.",
+    "payload": {
+      "role": "All Admins",
+      "subject": "Network maintenance",
+      "body": "The directory is read-only on Saturday."
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `broadcast`.",
+    "payload": {}
+  }
+]

@@ -1,0 +1,25 @@
+[
+  {
+    "note": "Missing `did` — there is no entry to look up.",
+    "payload": {}
+  },
+  {
+    "note": "`did` that is not a DID.",
+    "payload": {
+      "did": "health-au"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An entry without the acknowledgement state every published entry carries (VTI-VTN-013).",
+    "payload": {
+      "entry": {
+        "did": "did:example:health-au",
+        "kind": "network",
+        "state": "listed",
+        "profile": {},
+        "listing": {}
+      }
+    }
+  }
+]

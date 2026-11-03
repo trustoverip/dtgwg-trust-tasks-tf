@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtn/broadcasts/list/0.1",
+  "title": "VTN Broadcasts — List — payload",
+  "description": "An administrator's request for the broadcasts this network sent or relayed, newest first. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "description": "The most records to return. Absent: all of them."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTN Broadcasts — List — response payload",
+      "description": "The broadcast records, newest first.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "broadcasts"
+      ],
+      "properties": {
+        "broadcasts": {
+          "type": "array",
+          "items": {
+            "$ref": "../../../_shared/0.1/relay.schema.json#/$defs/BroadcastRecord"
+          },
+          "description": "Sent and received broadcasts, newest first."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+[
+  {
+    "note": "Missing `acknowledgement` — there is nothing to acknowledge the offer with.",
+    "payload": {}
+  },
+  {
+    "note": "An acknowledgement that is not an object.",
+    "payload": {
+      "acknowledgement": "urn:uuid:00000000-0000-4000-8000-0000000c0021"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `entry`.",
+    "payload": {}
+  },
+  {
+    "variant": "response",
+    "note": "An entry without the acknowledgement state every published entry carries (VTI-VTN-013).",
+    "payload": {
+      "entry": {
+        "did": "did:example:community",
+        "kind": "community",
+        "state": "acknowledged",
+        "profile": {},
+        "listing": {}
+      }
+    }
+  }
+]

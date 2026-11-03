@@ -1,0 +1,33 @@
+[
+  {
+    "note": "A `limit` of zero.",
+    "payload": {
+      "limit": 0
+    }
+  },
+  {
+    "note": "A `limit` above 1000.",
+    "payload": {
+      "limit": 5000
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `events`.",
+    "payload": {}
+  },
+  {
+    "variant": "response",
+    "note": "An event that does not say who acted.",
+    "payload": {
+      "events": [
+        {
+          "occurredAt": "2026-11-01T08:15:00Z",
+          "did": "did:example:community",
+          "event": "suspend",
+          "to": "suspended"
+        }
+      ]
+    }
+  }
+]

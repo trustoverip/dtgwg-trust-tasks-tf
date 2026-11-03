@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtn/listings/update/0.1",
+  "title": "VTN Listings — Update — payload",
+  "description": "An administrator's edit to an entry's directory profile. No credential is reissued. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "did"
+  ],
+  "properties": {
+    "did": {
+      "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/Did",
+      "description": "The DID of the entry to edit."
+    },
+    "label": {
+      "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/Label",
+      "description": "The new label. Absent: kept. An empty string clears it."
+    },
+    "description": {
+      "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/Description",
+      "description": "The new description. Absent: kept. An empty string clears it."
+    },
+    "url": {
+      "type": "string",
+      "maxLength": 2048,
+      "pattern": "^(https?://\\S+)?$",
+      "description": "The new address, an http(s) URL. Absent: kept. An empty string clears it."
+    },
+    "tags": {
+      "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/Tags",
+      "description": "The new tags, replacing the old ones. Absent: kept. An empty array clears them."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTN Listings — Update — response payload",
+      "description": "The entry with its new label and profile. Its state and credentials are unchanged.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entry"
+      ],
+      "properties": {
+        "entry": {
+          "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/Entry"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

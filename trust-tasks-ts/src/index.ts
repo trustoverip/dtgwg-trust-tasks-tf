@@ -4061,6 +4061,126 @@ export import VtcWebsiteUploadChunk_v0_1 = _VtcWebsiteUploadChunk_v0_1;
 import * as _VtcWebsiteUploadCommit_v0_1 from "./vtc/website/upload/commit/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtcWebsiteUploadCommit_v0_1 = _VtcWebsiteUploadCommit_v0_1;
+import * as _DirectoryShared_v0_1 from "./vtn/_shared/0.1/directory.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import DirectoryShared_v0_1 = _DirectoryShared_v0_1;
+import * as _EntryShared_v0_1 from "./vtn/_shared/0.1/entry.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import EntryShared_v0_1 = _EntryShared_v0_1;
+import * as _GraphShared_v0_1 from "./vtn/_shared/0.1/graph.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import GraphShared_v0_1 = _GraphShared_v0_1;
+import * as _GroupsShared_v0_1 from "./vtn/_shared/0.1/groups.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import GroupsShared_v0_1 = _GroupsShared_v0_1;
+import * as _MembershipShared_v0_1 from "./vtn/_shared/0.1/membership.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import MembershipShared_v0_1 = _MembershipShared_v0_1;
+import * as _RelayShared_v0_1 from "./vtn/_shared/0.1/relay.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import RelayShared_v0_1 = _RelayShared_v0_1;
+import * as _RoomsShared_v0_1 from "./vtn/_shared/0.1/rooms.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import RoomsShared_v0_1 = _RoomsShared_v0_1;
+import * as _VtnAuditList_v0_1 from "./vtn/audit/list/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtnAuditList_v0_1 = _VtnAuditList_v0_1;
+import * as _VtnBroadcastsList_v0_1 from "./vtn/broadcasts/list/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtnBroadcastsList_v0_1 = _VtnBroadcastsList_v0_1;
+import * as _VtnBroadcastsSend_v0_1 from "./vtn/broadcasts/send/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtnBroadcastsSend_v0_1 = _VtnBroadcastsSend_v0_1;
+import * as _VtnBroadcastsShow_v0_1 from "./vtn/broadcasts/show/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtnBroadcastsShow_v0_1 = _VtnBroadcastsShow_v0_1;
+import * as _VtnDirectoryFederated_v0_1 from "./vtn/directory/federated/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtnDirectoryFederated_v0_1 = _VtnDirectoryFederated_v0_1;
+import * as _VtnDirectorySearch_v0_1 from "./vtn/directory/search/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtnDirectorySearch_v0_1 = _VtnDirectorySearch_v0_1;
+import * as _VtnDirectorySummary_v0_1 from "./vtn/directory/summary/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtnDirectorySummary_v0_1 = _VtnDirectorySummary_v0_1;
+import * as _VtnEntriesShow_v0_1 from "./vtn/entries/show/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtnEntriesShow_v0_1 = _VtnEntriesShow_v0_1;
+import * as _VtnGraphMember_v0_1 from "./vtn/graph/member/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtnGraphMember_v0_1 = _VtnGraphMember_v0_1;
+import * as _VtnGraphShow_v0_1 from "./vtn/graph/show/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtnGraphShow_v0_1 = _VtnGraphShow_v0_1;
+import * as _VtnGroupsList_v0_1 from "./vtn/groups/list/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtnGroupsList_v0_1 = _VtnGroupsList_v0_1;
+import * as _VtnGroupsRegister_v0_1 from "./vtn/groups/register/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtnGroupsRegister_v0_1 = _VtnGroupsRegister_v0_1;
+import * as _VtnListingsCreate_v0_1 from "./vtn/listings/create/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtnListingsCreate_v0_1 = _VtnListingsCreate_v0_1;
+import * as _VtnListingsList_v0_1 from "./vtn/listings/list/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtnListingsList_v0_1 = _VtnListingsList_v0_1;
+import * as _VtnListingsReinstate_v0_1 from "./vtn/listings/reinstate/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtnListingsReinstate_v0_1 = _VtnListingsReinstate_v0_1;
+import * as _VtnListingsRemove_v0_1 from "./vtn/listings/remove/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtnListingsRemove_v0_1 = _VtnListingsRemove_v0_1;
+import * as _VtnListingsShow_v0_1 from "./vtn/listings/show/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtnListingsShow_v0_1 = _VtnListingsShow_v0_1;
+import * as _VtnListingsSuspend_v0_1 from "./vtn/listings/suspend/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtnListingsSuspend_v0_1 = _VtnListingsSuspend_v0_1;
+import * as _VtnListingsUpdate_v0_1 from "./vtn/listings/update/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtnListingsUpdate_v0_1 = _VtnListingsUpdate_v0_1;
+import * as _VtnMembershipAcknowledge_v0_1 from "./vtn/membership/acknowledge/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtnMembershipAcknowledge_v0_1 = _VtnMembershipAcknowledge_v0_1;
+import * as _VtnMembershipOffer_v0_1 from "./vtn/membership/offer/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtnMembershipOffer_v0_1 = _VtnMembershipOffer_v0_1;
+import * as _VtnMembershipRepudiate_v0_1 from "./vtn/membership/repudiate/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtnMembershipRepudiate_v0_1 = _VtnMembershipRepudiate_v0_1;
+import * as _VtnMembershipsGroupsAdd_v0_1 from "./vtn/memberships/groups/add/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtnMembershipsGroupsAdd_v0_1 = _VtnMembershipsGroupsAdd_v0_1;
+import * as _VtnMembershipsJoin_v0_1 from "./vtn/memberships/join/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtnMembershipsJoin_v0_1 = _VtnMembershipsJoin_v0_1;
+import * as _VtnMembershipsLeave_v0_1 from "./vtn/memberships/leave/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtnMembershipsLeave_v0_1 = _VtnMembershipsLeave_v0_1;
+import * as _VtnMembershipsList_v0_1 from "./vtn/memberships/list/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtnMembershipsList_v0_1 = _VtnMembershipsList_v0_1;
+import * as _VtnMembershipsRepudiate_v0_1 from "./vtn/memberships/repudiate/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtnMembershipsRepudiate_v0_1 = _VtnMembershipsRepudiate_v0_1;
+import * as _VtnOutboxList_v0_1 from "./vtn/outbox/list/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtnOutboxList_v0_1 = _VtnOutboxList_v0_1;
+import * as _VtnOutboxRetry_v0_1 from "./vtn/outbox/retry/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtnOutboxRetry_v0_1 = _VtnOutboxRetry_v0_1;
+import * as _VtnRelayDeliver_v0_1 from "./vtn/relay/deliver/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtnRelayDeliver_v0_1 = _VtnRelayDeliver_v0_1;
+import * as _VtnRolesList_v0_1 from "./vtn/roles/list/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtnRolesList_v0_1 = _VtnRolesList_v0_1;
+import * as _VtnRoomsList_v0_1 from "./vtn/rooms/list/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtnRoomsList_v0_1 = _VtnRoomsList_v0_1;
+import * as _VtnRoomsPass_v0_1 from "./vtn/rooms/pass/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtnRoomsPass_v0_1 = _VtnRoomsPass_v0_1;
 import * as _SyncUpdateShared_v0_1 from "./webvh/_shared/0.1/sync-update.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import SyncUpdateShared_v0_1 = _SyncUpdateShared_v0_1;

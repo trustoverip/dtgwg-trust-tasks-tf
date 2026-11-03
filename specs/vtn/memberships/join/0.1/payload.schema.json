@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtn/memberships/join/0.1",
+  "title": "VTN Memberships — Join — payload",
+  "description": "Accept a parent network's listing of this network: register this network's groups for the parent's roles, then acknowledge the parent's membership offer. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "url",
+    "network",
+    "roles"
+  ],
+  "properties": {
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "maxLength": 2048,
+      "description": "The parent network's base URL, as the parent's administrators gave it. Where it is reached, not who it is."
+    },
+    "network": {
+      "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/Did",
+      "description": "The parent network's DID. This network refuses if the network found at `url` answers as another DID."
+    },
+    "roles": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "$ref": "../../../_shared/0.1/membership.schema.json#/$defs/RoleMapping"
+      },
+      "description": "Which of this network's roles serves each parent role. A role the parent requires that is not mapped is served by this network's role of the same name."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTN Memberships — Join — response payload",
+      "description": "The membership as it now stands.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "membership"
+      ],
+      "properties": {
+        "membership": {
+          "$ref": "../../../_shared/0.1/membership.schema.json#/$defs/UpstreamMembership",
+          "description": "This network's membership of the parent as it now stands."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

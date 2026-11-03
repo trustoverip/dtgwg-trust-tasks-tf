@@ -1,0 +1,32 @@
+[
+  {
+    "note": "A `kind` that is neither community nor network.",
+    "payload": {
+      "kind": "person"
+    }
+  },
+  {
+    "note": "A membership credential given as a bare id rather than the credential.",
+    "payload": {
+      "membership": "urn:uuid:00000000-0000-4000-8000-0000000c0031"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `entries`.",
+    "payload": {}
+  },
+  {
+    "variant": "response",
+    "note": "A result without the acknowledgement state every published entry carries (VTI-VTN-013).",
+    "payload": {
+      "entries": [
+        {
+          "did": "did:example:community",
+          "kind": "community",
+          "state": "listed"
+        }
+      ]
+    }
+  }
+]
