@@ -6199,6 +6199,51 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vtc/members/vmc/0.1#response" => <crate::specs::vtc::members::vmc::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/networks/evidence/0.1" => <crate::specs::vtc::networks::evidence::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/networks/evidence/0.1#response" => <crate::specs::vtc::networks::evidence::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/networks/groups/register/0.1" => <crate::specs::vtc::networks::groups::register::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/networks/groups/register/0.1#response" => <crate::specs::vtc::networks::groups::register::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/networks/join/0.1" => <crate::specs::vtc::networks::join::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/networks/join/0.1#response" => <crate::specs::vtc::networks::join::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/networks/leave/0.1" => <crate::specs::vtc::networks::leave::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/networks/leave/0.1#response" => <crate::specs::vtc::networks::leave::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/networks/list/0.1" => <crate::specs::vtc::networks::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/networks/list/0.1#response" => <crate::specs::vtc::networks::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/networks/notice/0.1" => <crate::specs::vtc::networks::notice::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/networks/repudiate/0.1" => <crate::specs::vtc::networks::repudiate::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/networks/repudiate/0.1#response" => <crate::specs::vtc::networks::repudiate::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/networks/show/0.1" => <crate::specs::vtc::networks::show::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/networks/show/0.1#response" => <crate::specs::vtc::networks::show::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/oid4vp/identities/list/0.1" => <crate::specs::vtc::oid4vp::identities::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
@@ -13103,6 +13148,48 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/networks/evidence/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::networks::evidence::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/networks/groups/register/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtc::networks::groups::register::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/networks/join/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::networks::join::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/networks/leave/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::networks::leave::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/networks/list/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::networks::list::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/networks/notice/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::networks::notice::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/networks/repudiate/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::networks::repudiate::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/networks/show/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::networks::show::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/oid4vp/identities/list/0.1" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::vtc::oid4vp::identities::list::v0_1::Payload,
@@ -19300,6 +19387,46 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/members/vmc/0.1" => {
             Some(crate::specs::vtc::members::vmc::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/networks/evidence/0.1" => {
+            Some(crate::specs::vtc::networks::evidence::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/networks/groups/register/0.1" => {
+            Some(crate::specs::vtc::networks::groups::register::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/networks/join/0.1" => {
+            Some(crate::specs::vtc::networks::join::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/networks/leave/0.1" => {
+            Some(crate::specs::vtc::networks::leave::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/networks/list/0.1" => {
+            Some(crate::specs::vtc::networks::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/networks/notice/0.1" => {
+            Some(crate::specs::vtc::networks::notice::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/networks/repudiate/0.1" => {
+            Some(crate::specs::vtc::networks::repudiate::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/networks/show/0.1" => {
+            Some(crate::specs::vtc::networks::show::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
