@@ -1534,6 +1534,10 @@ export type Queue = "receive" | "send";
  */
 export type Reason = string;
 /**
+ * Which of the community's members a relay decision reaches: `allMembers` — every active member; `group` — the active members of one community group; `role` — the active members holding one community role.
+ */
+export type RecipientScope = "allMembers" | "group" | "role";
+/**
  * What kind of claim a record is, as its author states it. OPTIONAL wherever it appears; absent means the author did not say, and a reader shows it as unstated rather than assuming any of these.
  *
  *   - `declared` — the author's own statement: a decision, a preference, an intention, a commitment. True because the author says so, and only as far as the author speaks for it.
@@ -1578,6 +1582,10 @@ export type RecordEvidenceList = [RecordEvidence, ...RecordEvidence[]];
  * The VTA's own identifier for one held notification, stable across the revisions that replace it. Opaque and compared for equality only; unguessable, because a show of a record in a context the caller may not read is refused and an enumerable identifier would turn the refusal into an oracle.
  */
 export type RecordId = string;
+/**
+ * The community's own identifier for one received notification, stable across the revisions that replace it. Opaque and compared for equality only; unguessable, because a read by a caller without the capability is refused and an enumerable identifier would turn the refusal into an oracle.
+ */
+export type RecordId_VtcNotificationsV0_1 = string;
 /**
  * The path from one record's leaf to the room's `DataCommitment` — a Merkle inclusion proof, in the vocabulary this work already uses for it.
  *
@@ -11432,6 +11440,61 @@ export interface ReadVerification {
   };
 }
 /**
+ * One notification the community holds, as an administrator with `vtc.notifications.read` sees it. `originator`, `deliveredBy` and every entry of `relayedBy` were verified by the community when it accepted the notification (VTI-NTF-042); an administrator that does not take the community's word for them reads the document with vtc/notifications/show and verifies it.
+ */
+export interface ReceivedNotification {
+  recordId: RecordId_VtcNotificationsV0_1;
+  /**
+   * The issuer of the notifications/notify document: who said the thing exists.
+   */
+  originator: Did_NotificationsV0_1;
+  /**
+   * The relayers the held revision passed through before it reached the community, in the order they relayed it; the last delivered it here, and is the party the acceptance policy counted (VTI-NTF-031). Empty for a notification the originator sent the community directly.
+   *
+   * @maxItems 4
+   */
+  relayedBy:
+    | []
+    | [Did_NotificationsV0_1]
+    | [Did_NotificationsV0_1, Did_NotificationsV0_1]
+    | [Did_NotificationsV0_1, Did_NotificationsV0_1, Did_NotificationsV0_1]
+    | [Did_NotificationsV0_1, Did_NotificationsV0_1, Did_NotificationsV0_1, Did_NotificationsV0_1];
+  /**
+   * The notification's members at the revision held.
+   */
+  notification: Notification;
+  /**
+   * When the community accepted the revision held.
+   */
+  receivedAt: string;
+  /**
+   * Whether the community may relay the revision held now: its `relayable` is true, its kind may be relayed, the received chain carries at most three relays so that the community's own makes at most four (VTI-NTF-041), and it is neither withdrawn nor past its `validUntil`.
+   */
+  mayRelay: boolean;
+  /**
+   * What a relay of the notification discloses about the community, as the kind's definition states it (VTI-NTF-046) — for the kind `election`, that the community is a member of the community holding the election. Present exactly when the kind's definition says a relay discloses something; the administrator deciding a relay is shown it, and acknowledges it in vtc/notifications/relay.
+   */
+  relayDisclosure?: string;
+  /**
+   * The relay decisions made for this notification, oldest first. Empty while none has been. Every later revision, a withdrawal included, is relayed to every party an earlier one was, without a new decision (VTI-NTF-044).
+   */
+  relayDecisions: RelayDecision[];
+}
+/**
+ * The members a relay decision reaches, resolved by the community from its own records when the decision is made (VTI-NTF-072). `groupId` is present exactly when `scope` is `group`, and `role` exactly when `scope` is `role`. Whatever the scope, the community never relays to itself, to the notification's originator, or to any relayer the received chain names (VTI-NTF-047), and relays to each party at most once per revision.
+ */
+export interface Recipients {
+  scope: RecipientScope;
+  /**
+   * The community group whose active members the relay reaches.
+   */
+  groupId?: GroupId;
+  /**
+   * The community role whose active holders the relay reaches, in the wire form the community's member records use — for example `moderator`, or `custom:editor`.
+   */
+  role?: string;
+}
+/**
  * Cites a credential.
  */
 export interface RecordEvidenceCredential {
@@ -11743,6 +11806,24 @@ export interface RejectedKey {
    * Why the key was rejected — unknown key, wrong type, out-of-range, allowlist mismatch, etc.
    */
   reason: string;
+}
+/**
+ * One administrator's decision to relay a received notification, as the community records it (VTI-NTF-073). It records the selection and how many parties it added, never who they are: the record of whom the community relayed to exists only to relay later revisions to them (VTI-NTF-044).
+ */
+export interface RelayDecision {
+  /**
+   * When the decision was made.
+   */
+  decidedAt: string;
+  /**
+   * The administrator who made it.
+   */
+  decidedBy: Did_NotificationsV0_1;
+  recipients: Recipients;
+  /**
+   * How many parties this decision added to those the notification is relayed to. Parties an earlier decision already reached are not counted again.
+   */
+  recipientCount: number;
 }
 /**
  * The two credentials a renewal replaces, serialized as rooms/owner/{issue-membership,issue-authority} return them: a membership and an authority granting the same actions until the renewal's `validUntil`. No invitation: the member is already admitted, and a renewal never opens a second way in. The member's surface stores each with the member's key holder **in place of** the one it renews, never beside it.

@@ -66,6 +66,9 @@ related:
   - vta/notifications/list
   - vta/notifications/show
   - vta/notifications/dismiss
+  - vta/notifications/deposit
+  - vtc/notifications/list
+  - vtc/notifications/relay
   - vtc/elections/show
   - vtc/elections/list
 ---
@@ -86,7 +89,13 @@ final recipient can still verify its originator. A member's agent holds the noti
 accepts, and its principal's client reads them with
 [`vta/notifications/list`](../../../vta/notifications/list/0.1/spec.md),
 [`vta/notifications/show`](../../../vta/notifications/show/0.1/spec.md) and
-[`vta/notifications/dismiss`](../../../vta/notifications/dismiss/0.1/spec.md).
+[`vta/notifications/dismiss`](../../../vta/notifications/dismiss/0.1/spec.md); a client that receives
+a notification for a DID whose keys the VTA holds hands it over with
+[`vta/notifications/deposit`](../../../vta/notifications/deposit/0.1/spec.md). A community's
+administrators read the notifications addressed to the community, and decide a relay of one to its
+members, with [`vtc/notifications/list`](../../../vtc/notifications/list/0.1/spec.md),
+[`vtc/notifications/show`](../../../vtc/notifications/show/0.1/spec.md) and
+[`vtc/notifications/relay`](../../../vtc/notifications/relay/0.1/spec.md).
 
 The requirements this task implements are those of the *Notifications* chapter of the
 [Verifiable Trust Infrastructure specification](https://trustoverip.github.io/dtgwg-vti-spec/)
@@ -103,12 +112,22 @@ The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, 
 A conforming **producer** (the originator) **MUST**:
 
 1. Address the document to exactly one DID, as `recipient`, and only to a party the thing
-   concerns or a party that stands for those it concerns (VTI-NTF-005).
+   concerns or a party that stands for those it concerns (VTI-NTF-005), as its records show when it
+   issues each document — every revision, and every new document VTI-TRN-046 issues for one — so
+   that a party no longer concerned is not sent a revision that still offers the thing. A withdrawal
+   is the exception: it goes to every party an earlier revision was sent to, whatever the records
+   then show, because it tells them only that what they were told no longer holds. A retransmission
+   of the same document by the delivery layer is not a new issue.
 2. Sign the document (`proof`) as `issuer`, whatever transport carries it (VTI-NTF-001), and
    issue every revision of one notification as the same identity. A node issues its
    notifications as its durable identity (VTI-KEY-001) — a `did:webvh` identifier, in either of its
    forms, which a key rotation does not change — since that identifier is half of the
-   notification's deduplication key (VTI-NTF-021).
+   notification's deduplication key (VTI-NTF-021). The proof **MUST** carry the proof purpose
+   `authentication`, made with the originator's `operational` key (VTI-NTF-006): a notification is a
+   Trust Task request document asserting no decision about anyone's membership, standing or
+   authority, so it is not an attestation (VTI-KEY-081, VTI-KEY-082), and the proof shows only that
+   the originator produced the document and that it is unaltered, which is all a recipient — or a
+   relay's recipient, who never had a session with the originator — relies on it for.
 3. Choose a `notificationId` unique among the notifications it issues, and carry the same
    `notificationId` and `revision` in every attempt at one delivery and in every new document it
    issues for it (VTI-NTF-021). A retry is a new document with a new `id` and the same
@@ -118,15 +137,21 @@ A conforming **producer** (the originator) **MUST**:
    (VTI-NTF-003).
 5. State `relayable` explicitly, and set it `false` for a kind whose definition forbids relaying.
 6. Change or withdraw a notification only by sending the same addressee a higher `revision`
-   under the same `notificationId`; to withdraw it, with `status` `withdrawn` (VTI-NTF-024).
+   under the same `notificationId`; to withdraw it, with `status` `withdrawn` (VTI-NTF-024). A
+   withdrawal **MUST** state the same `validFrom` and `validUntil` as the revision it replaces, and
+   none where that revision stated none (VTI-NTF-025): recipients and relayers bound how long they
+   keep the record, and the relayer its record of whom it relayed to, by the period, so a withdrawal
+   that dropped it would be kept longer than the notification it withdraws.
 7. Treat the notification as delivered only on the evidence VTI-TRN-040 requires; a receipt
    (`#response`) is a correlated protocol reply. **MUST NOT** ask a relayer whom it relayed to.
 
 A conforming **consumer** (the addressee, or its agent) **MUST**:
 
 1. Validate the document per [SPEC §7.2](/SPEC.md#72-consumer-requirements), including that it
-   is the `recipient` and that `proof` verifies against `issuer`, and discard a document that
-   fails (VTI-NTF-032).
+   is the `recipient` and that `proof` verifies against `issuer` under the relationship its
+   `proofPurpose` names ([SPEC §4.7.3](/SPEC.md#473-proof-purpose-and-verification-relationship)),
+   and discard a document that fails (VTI-NTF-032). Whatever purpose the proof names, it reads the
+   proof as evidence of who produced the document and nothing more (VTI-NTF-006).
 2. Decide whether to hold it by its stated acceptance policy (VTI-NTF-030). A VTA's policy, unless
    its principal chose otherwise, holds a notification only from a party with which the principal
    has a relationship: a community, group or network whose membership credential the principal
@@ -144,6 +169,14 @@ A conforming **consumer** (the addressee, or its agent) **MUST**:
    anyone, may take part in the thing (VTI-NTF-004); and **MUST NOT**, in consequence of
    receiving it, send anything to the originator or to `subject.heldBy`, or open the thing except
    at its principal's choice (VTI-NTF-053).
+
+Where the addressee's keys are held by a VTA and its transport by a client of that VTA — a persona
+DID whose mediator socket the principal's client holds — the client is the party that receives the
+document and the VTA is the consumer above. The client **MUST** hand the document to the VTA exactly
+as received with [`vta/notifications/deposit`](../../../vta/notifications/deposit/0.1/spec.md), and
+answers the originator itself with the receipt of consumer item 4, the same whatever the VTA does
+with the deposit (VTI-NTF-054). The VTA's acceptance policy applies to a deposited notification
+unchanged (VTI-NTF-055).
 
 **Retry class** (VTI-OPS-060): the second — a durable effect whose repeat is harmless. The
 idempotency key is the pair of `issuer` and `notificationId`, with `revision`; a repeat is
@@ -201,8 +234,8 @@ the community as `subject.heldBy`, the `electionId` as `subject.id` and
 [`vtc/elections/show/0.6`](../../../vtc/elections/show/0.6/spec.md) as `subject.openWith`; its
 `audience` is the DID the election's credential roll names, or the community's own; and its period
 is the voting period. A community **MUST** send one to a member party a credential roll names once
-the election is registered, and withdraw it if the election is cancelled before voting closes
-(VTI-NTF-061). It is how that party's members learn of an election the community's
+the election is registered, and withdraw it if the election is cancelled, or closed early, before
+the time the notification states voting closes (VTI-NTF-061). It is how that party's members learn of an election the community's
 [`vtc/elections/list`](../../../vtc/elections/list/0.5/spec.md) never shows them (VTI-VOT-015).
 
 ## Request
@@ -245,13 +278,15 @@ it relay.
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2027-03-01T09:00:00Z",
     "verificationMethod": "did:web:community.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z5Lk..."
   }
 }
 ```
 
 ### The election is cancelled: revision 2 withdraws it
+
+The withdrawal keeps the period revision 1 stated (producer item 6).
 
 ```json
 {
@@ -272,7 +307,9 @@ it relay.
       },
       "audience": "did:web:partner.example",
       "status": "withdrawn",
-      "relayable": true
+      "relayable": true,
+      "validFrom": "2027-03-08T00:00:00Z",
+      "validUntil": "2027-03-15T00:00:00Z"
     }
   },
   "proof": {
@@ -280,7 +317,7 @@ it relay.
     "cryptosuite": "eddsa-jcs-2022",
     "created": "2027-03-10T14:30:00Z",
     "verificationMethod": "did:web:community.example#key-1",
-    "proofPurpose": "assertionMethod",
+    "proofPurpose": "authentication",
     "proofValue": "z3Hq..."
   }
 }

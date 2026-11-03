@@ -1,0 +1,37 @@
+[
+  {
+    "note": "No `contextId`: the VTA must be told which context the addressed DID belongs to, and checks the caller's standing there before reading the document (VTI-NTF-056).",
+    "payload": {
+      "document": {
+        "id": "urn:uuid:2f8c1a40-7d1e-4b8e-9a51-0c6f3e2d7a11",
+        "type": "https://trusttasks.org/spec/notifications/notify/0.1",
+        "issuer": "did:web:community.example",
+        "recipient": "did:webvh:QmPersona:persona.example",
+        "payload": {},
+        "proof": {}
+      }
+    }
+  },
+  {
+    "note": "An empty `document` carries nothing to verify; a deposit always carries the document the client received.",
+    "payload": {
+      "contextId": "personal",
+      "document": {}
+    }
+  },
+  {
+    "note": "Unknown top-level member — a client stating its own view of the sender, such as whether it trusts it — is refused: the VTA's acceptance policy decides, on the document alone (VTI-NTF-055).",
+    "payload": {
+      "contextId": "personal",
+      "document": {
+        "id": "urn:uuid:2f8c1a40-7d1e-4b8e-9a51-0c6f3e2d7a11",
+        "type": "https://trusttasks.org/spec/notifications/notify/0.1",
+        "issuer": "did:web:community.example",
+        "recipient": "did:webvh:QmPersona:persona.example",
+        "payload": {},
+        "proof": {}
+      },
+      "accept": true
+    }
+  }
+]
