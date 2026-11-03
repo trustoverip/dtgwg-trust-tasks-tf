@@ -90,7 +90,9 @@ pub use error::{
     TrustTaskCode, IDENTITY_MISMATCH_WIRE_MESSAGE, PROOF_INVALID_WIRE_MESSAGE, STALE_WIRE_MESSAGE,
     UNAVAILABLE_WIRE_MESSAGE, WRONG_RECIPIENT_WIRE_MESSAGE,
 };
-pub use freshness::{FreshnessPolicy, StaleReason, DEFAULT_MAX_AGE, DEFAULT_SKEW};
+pub use freshness::{
+    FreshnessPolicy, StaleReason, DEFAULT_EXPIRY_HORIZON, DEFAULT_MAX_AGE, DEFAULT_SKEW,
+};
 pub use payload::{Payload, RequestPayload, SpecPolicy};
 pub use proof::{
     erase_verifier, DynProofVerifier, ErasedVerifier, Proof, ProofVerifier, VerificationError,
