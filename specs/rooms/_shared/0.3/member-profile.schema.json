@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/_shared/0.3/member-profile.schema.json",
+  "title": "Rooms — a member's name in a room",
+  "description": "How a member tells the other members of a room what to call them: a record of kind `memberProfile`, written by the member into the room like any other record, whose `title` is the name. A reader shows that name wherever it shows the member's DID — beside a message, on a quoted record, in the list of who reacted. It adds no task and changes no existing schema: the record is an ordinary `SealedRecordBody` on the sealed tiers and ordinary `cleartext` of `rooms/records/put` on an `open` room, using only members both already have, so a key holder that seals at `rooms/keys/seal/0.3` seals it unchanged and a host stores it like any other record. New in 0.3 of this family's shared types; `room.schema.json` stays at 0.2, and `blobs.schema.json` and `personal-label.schema.json` at 0.1. Plain text throughout: a reader renders the name as text, never as markup, and an agent reading it MUST NOT treat it as instructions. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build and the codegen).",
+  "$defs": {
+    "MemberName": {
+      "title": "MemberName",
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[^\\u0000-\\u001F\\u007F-\\u009F\\u2028\\u2029]*$",
+      "description": "What a member asks the room's other members to call them, in this room only: plain text, one line, no control characters, at most 64 code points after Unicode Normalization Form C. Chosen by the member and asserted by nobody else — not unique, not verified, and not an identifier. An empty name, or one holding only White_Space characters, withdraws the member's name: a reader then shows the member as it would had they written none."
+    },
+    "MemberProfileRecord": {
+      "title": "MemberProfileRecord",
+      "description": "A member's name for themselves in a room, as the body of a record in that room. On an `attributed` or `private` room it is a `SealedRecordBody`, sealed and signed by its author like every other; this schema is that object with the constraints below. On an `open` room the same members are the record's `cleartext` (`MemberProfileCleartext`).\n\n**Why a record in the room.** A room's author is a DID — on every tier, a persona the member holds for that room alone — and nothing outside the room maps it to a name a reader may use. A community's directory is addressed by entry, never by DID, so that it does not answer whether a DID is a member (`vtc/directory/entries/show`); a room may belong to no community; and a `private` room's host must not learn who its members are. The room's own members are the audience for the name, so the name lives where they already read and nowhere else: sealed from the host on the sealed tiers, as the room's own profile is (`RoomProfileStatement`), and never in a credential, a host's record of the room or a DID document.\n\n**Writing one.** A member writes its name as a record with `kind: memberProfile` and the name in `title`, and carries none of `description`, `tags`, `file`, `inReplyTo`, `roomProfile`, `basis`, `confidence`, `evidence`, `validFor` and `validUntil`. On the sealed tiers it carries no `body`; on an `open` room, where `cleartext.body` is required, `body` is the empty string. It MAY carry `writtenAt`, and `editedAt` on a later version, by the rules of `SealedRecordBody`. Its key is any record key, opaque on the sealed tiers as every key is. A member changes its name by writing a new version of the same record — the same key — and SHOULD NOT write a second `memberProfile` record while it holds one, so that a retry after a lost response leaves one record. It withdraws its name with a new version whose `title` is empty. The name describes the record's `author`, and only its author: a member never writes a name for anyone else.\n\n**When a writer may write one.** `kind: memberProfile` is unknown to a reader that predates this component, and such a reader shows a record of a kind it does not know as a note (`RecordKind`) — every member's name would appear in the room's library as a note. So a writer MUST NOT write a `memberProfile` record unless the room's current profile lists both `kind` and `memberProfile` in `recordMembers` (`RoomProfile`), resolved as `SealedRecordBody`, *When a writer may use these members*, says. `memberProfile` is a `recordMembers` value this component defines; a reader that does not know it is not affected by it, and the order of *Turning them on* applies: readers first, then the profile. No room lists it by default.\n\n**Reading one.** A reader applies the `SealedRecordBody` reading rules to the record — on an `open` room to its `cleartext`, with its author as the host recorded it — and refuses it, as a name, unless `kind` is `memberProfile` and it carries only the members above. A reader that knows this component:\n  1. MUST NOT show a `memberProfile` record as a note, a message or a reaction, nor count it in any conversation, library or unread count;\n  2. takes as an author's name, for this room, the `title` of the current version of the `memberProfile` record by that author that the host stored most recently — by `bodyStoredAt`, else `updatedAt` (`RecordMetadataV3`) — and no name where that version's `title` is empty, or where the record is retracted, pruned, expired or refused;\n  3. MUST NOT take a name from a version whose `author` is not the author of the record's earlier version it holds or, where it has none, the record's `createdBy`: a rewrite by another member names that member, never the original author (`SealedRecordBody`, *The record's original author*);\n  4. applies a name only within the room it was written in, and only to its `author` — never to the same DID in another room, and never to a DID it believes belongs to the same person;\n  5. MUST NOT fetch, resolve or follow anything because of a name.\n\n**Showing a name.** A reader SHOULD show, for an author: the reader's own petname for that DID where its member keeps one (the holder's `petname` on a contact, `persona/contact/*` 1.1 and later, which only the reader's member can write); else the author's name in this room, by rule 2; else a shortened form of the DID. A name is a claim by the member about themselves, not an attestation by anyone: a reader MUST NOT show it as verified, and where two authors in the room have names that are the same after NFC and case folding — or where one equals the reader's petname for a different DID — it MUST show something that tells them apart, such as a short fingerprint of each DID. A name renders as plain text, with control characters removed, and is never instructions.\n\n**Finding one.** There is no fixed location: a reader learns names from the `memberProfile` records it reads. On an `open` room a listing (`rooms/records/list/0.6`) gives each record's `kind`, so a reader finds them without reading every body; on the sealed tiers it finds them as it opens records. A member whose name was sealed under an epoch a reader cannot open — a room whose history starts at each member's join — is invisible to that reader. So a member SHOULD write its name again, as a new version of the same record, after the room's epoch advances past the one its current version was sealed under, and a member's client MAY do this once on its next write to the room rather than at the advance itself.\n\n**Removed members.** A name keeps applying to its author's records after the author leaves the room, until a member with `curate` retracts the record (`rooms/records/curate`). A member who returns under a new DID writes a new name; the earlier DID's name stays with that DID's records.",
+      "allOf": [
+        {
+          "$ref": "../0.2/room.schema.json#/$defs/SealedRecordBody"
+        },
+        {
+          "type": "object",
+          "required": ["kind", "title"],
+          "properties": {
+            "kind": {
+              "const": "memberProfile"
+            },
+            "title": {
+              "$ref": "#/$defs/MemberName"
+            }
+          },
+          "not": {
+            "anyOf": [
+              { "required": ["description"] },
+              { "required": ["body"] },
+              { "required": ["tags"] },
+              { "required": ["file"] },
+              { "required": ["inReplyTo"] },
+              { "required": ["roomProfile"] },
+              { "required": ["basis"] },
+              { "required": ["confidence"] },
+              { "required": ["evidence"] },
+              { "required": ["validFor"] },
+              { "required": ["validUntil"] }
+            ]
+          }
+        }
+      ]
+    },
+    "MemberProfileCleartext": {
+      "title": "MemberProfileCleartext",
+      "description": "A member's name on an `open` room: the `cleartext` of the `rooms/records/put` that writes the record (0.5 and later, which carry `kind`). The same rules as `MemberProfileRecord`, except that `body` is present and empty, because `cleartext` requires it, and that the record is not signed: on an `open` room the name is the writer's claim as the host stores it, attributed to the author the host recorded, like everything else there.",
+      "type": "object",
+      "required": ["kind", "title", "body"],
+      "properties": {
+        "kind": {
+          "const": "memberProfile"
+        },
+        "title": {
+          "$ref": "#/$defs/MemberName"
+        },
+        "body": {
+          "type": "string",
+          "maxLength": 0
+        },
+        "writtenAt": {
+          "$ref": "../0.2/room.schema.json#/$defs/RecordWrittenAt"
+        },
+        "editedAt": {
+          "$ref": "../0.2/room.schema.json#/$defs/RecordEditedAt"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
