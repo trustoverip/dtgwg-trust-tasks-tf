@@ -45,7 +45,7 @@ errorCodes:
     meaning: "The recipient holds no valid, unconsumed invitation from this room for this party."
     retryable: false
   - code: rooms/keys/welcome:alreadyJoined
-    meaning: "The recipient already holds group state for this room for the member the invitation names. State it holds for another member it serves is not a join by this one."
+    meaning: "The recipient already holds current group state for this room for the member the invitation names — state that no commit it has processed since removed the member from. State from which a processed commit removed the member is a prior membership, not a join, and state it holds for another member it serves is not a join by this one."
     retryable: false
   - code: rooms/keys/welcome:welcomeInvalid
     meaning: "The Welcome did not process — wrong KeyPackage, malformed, or missing the ratchet tree."
@@ -92,14 +92,42 @@ single-use; a second Welcome under the same invitation is `notInvited`, not a se
 
 ### Joining twice is refused, not merged
 
-A recipient already holding group state for `roomId` for the member the invitation names
-**MUST** answer `alreadyJoined`. A key holder serving several members — several principals,
-or several personas of one — keeps one group state per member per room; state it holds for
-another member is not a join by this one and **MUST NOT** cause `alreadyJoined`. Two
-group states for one member in one room is a condition nothing downstream can resolve: an
-[`open`](../../open/0.2/spec.md) call has no way to choose, and choosing wrong returns
-"did not open" for a record the member can plainly see. Leaving and rejoining is a removal
-followed by a fresh invitation, not a second Welcome.
+A recipient already holding **current** group state for `roomId` for the member the
+invitation names **MUST** answer `alreadyJoined`. Group state is current from the Welcome that
+formed it until the recipient processes a commit that removes the member from the room's
+group. A key holder serving several members — several principals, or several personas of
+one — keeps one current group state per member per room; state it holds for another member is
+not a join by this one and **MUST NOT** cause `alreadyJoined`. Two current group states for
+one member in one room is a condition nothing downstream can resolve: both cover the same
+epochs, an [`open`](../../open/0.2/spec.md) call has nothing to choose between them by, and
+choosing wrong returns "did not open" for a record the member can plainly see.
+
+### Rejoining after a removal
+
+Leaving and rejoining is a removal followed by a fresh invitation, not a second Welcome under
+the first one ([`rooms/owner/group/remove`](../../../owner/group/remove/0.4/spec.md),
+*Re-admitting someone removed*; [`rooms/owner/revoke`](../../../owner/revoke/0.1/spec.md),
+*Re-admitting a party*). The fresh invitation is answered by a Welcome like any other, and
+this task is where it arrives.
+
+A removal does not take the member's group state away. Once the recipient processes a commit
+that removes the member, the state it held becomes a **prior membership**: the member's state
+for the epochs at or after the one it joined at and below the epoch of the removal. A prior
+membership is not a join and **MUST NOT** cause `alreadyJoined`. A recipient holding only
+prior memberships for `roomId` for the member the invitation names **MUST** process a Welcome
+that arrives under a valid, unconsumed invitation exactly as it would a first join, and the
+group state that Welcome forms is the member's current state. It **MUST** keep each prior
+membership beside it, unmerged, for records sealed under the epochs that membership covers
+(*Retention*).
+
+A member may have several prior memberships, one per removal, each covering the epochs at or
+after its own join epoch and below its own removal epoch. They never overlap one another or
+the current state: a member is removed before it is re-admitted, and the commit admitting it
+again comes after the one removing it, so every join epoch is at or after the removal epoch
+before it. For any epoch, therefore, at most one of a member's states covers it, and
+[`open`](../../open/0.2/spec.md) chooses by the record's epoch rather than between states. An
+epoch at or after a removal epoch and below the next join epoch is covered by none: the
+member was not in the group when it was sealed.
 
 ### The response says which epoch
 
@@ -140,9 +168,17 @@ the host from the path entirely rather than relying on it not to look.
 
 ### Retention
 
-The recipient retains group key material for as long as the membership lasts. It **MUST**
-discard it on removal from the group, or it retains the ability to open everything sealed up
-to the epoch it was removed at — which is exactly what the removal was for.
+The recipient retains group key material for as long as the membership lasts, and after a
+removal keeps it as a prior membership (*Rejoining after a removal*). A removal is
+forward-only: what it takes from the member is every epoch from the removal on, which no state
+the member holds can reach, because no later epoch derives from one the member had. It does
+not take back what was sealed while the member was in the group — the member could open that
+then, and a recipient that discarded the state would not unread it, only turn a record the
+member had already seen into `didNotOpen`. The recipient **MUST** keep a prior membership's
+state for records sealed under the epochs it covers, subject to the room's epoch floor: the
+room erases its history below an epoch with [`rooms/epoch/prune`](../../../epoch/prune/0.2/spec.md),
+and a key holder discards what it holds below the floor when it learns of it, prior
+memberships included.
 
 ### Consent/purpose
 
