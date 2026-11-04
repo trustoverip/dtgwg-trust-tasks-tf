@@ -31,6 +31,17 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.37.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.37.0...trust-tasks-rs-v0.37.1) — 2026-11-04
+
+
+### Added
+
+- **vtc/boards**: Community boards — propose ideas, leave notes, vote on each accepted idea through its own election (vtc/boards/*/0.1) ([#1025](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1025))
+
+Thirteen tasks implementing the VTI Community Boards chapter (VTI-BRD-001 – VTI-BRD-080): create, update, list and show a board; propose, update, withdraw, decide (accept opens an election from the board's template) and select ideas; add, list, withdraw and hide notes. A board never reports tickets or ballots (VTI-BRD-033); the shared ElectionTemplate is a manifest less the members the community fills in per idea, and is never binding.
+
+
+
 ## [0.37.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.36.10...trust-tasks-rs-v0.37.0) — 2026-11-04
 
 

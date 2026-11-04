@@ -11,6 +11,15 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.28.13 — 2026-11-04
+
+
+### Added
+
+- **vtc/boards**: Community boards — propose ideas, leave notes, vote on each accepted idea through its own election (vtc/boards/*/0.1) (#1025)
+
+Thirteen tasks implementing the VTI Community Boards chapter (VTI-BRD-001 – VTI-BRD-080): create, update, list and show a board; propose, update, withdraw, decide (accept opens an election from the board's template) and select ideas; add, list, withdraw and hide notes. A board never reports tickets or ballots (VTI-BRD-033); the shared ElectionTemplate is a manifest less the members the community fills in per idea, and is never binding.
+
 ## 0.28.12 — 2026-11-04
 
 
