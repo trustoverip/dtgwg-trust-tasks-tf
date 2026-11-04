@@ -8,6 +8,8 @@ import type { AuthorityPresentation, BlobRef, DigestMultibase, Ext, FileManifest
 
 /**
  * A member writes a record to a data room, authorized by an authority chain the room itself issued. 0.2 added `blobs`: a record can carry a file, whose ciphertext the host stores outside the record and whose description is sealed inside it. 0.3 lets an `open` room's `cleartext` carry the record's provenance — `basis`, `confidence`, `evidence`, `validFor` — and its `validUntil`, which the sealed tiers carry inside the signed `SealedRecordBody`. 0.4 lets an `open` room's record carry a file: its `FileManifest`, with the file key it was sealed under, in `cleartext.file`.
+ *
+ * @deprecated superseded by rooms/records/put/0.5
  */
 export interface RoomsRecordsPutPayload {
   /**
@@ -71,6 +73,8 @@ export interface RoomsRecordsPutPayload {
 }
 /**
  * Success response to rooms/records/put. Type https://trusttasks.org/spec/rooms/records/put/0.3#response.
+ *
+ * @deprecated superseded by rooms/records/put/0.5
  */
 export interface RoomsRecordsPutResponsePayload {
   /**
@@ -108,15 +112,23 @@ export const EXTENDS: string | null = "0.3";
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by rooms/records/put/0.5";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by rooms/records/put/0.5
+ */
 export type Payload = RoomsRecordsPutPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/rooms/records/put/0.4#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by rooms/records/put/0.5
+ */
 export type Response = RoomsRecordsPutResponsePayload;
 
 /**

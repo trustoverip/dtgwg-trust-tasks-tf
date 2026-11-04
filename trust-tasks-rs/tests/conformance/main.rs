@@ -1226,6 +1226,7 @@ mod rooms {
         mod act {
             mod v0_1;
             mod v0_10;
+            mod v0_11;
             mod v0_2;
             mod v0_3;
             mod v0_4;
@@ -1338,6 +1339,7 @@ mod rooms {
             mod v0_2;
             mod v0_3;
             mod v0_4;
+            mod v0_5;
         }
         mod retention {
             mod set {

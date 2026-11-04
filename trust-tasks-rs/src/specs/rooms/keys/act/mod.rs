@@ -2,6 +2,7 @@
 
 pub mod v0_1;
 pub mod v0_10;
+pub mod v0_11;
 pub mod v0_2;
 pub mod v0_3;
 pub mod v0_4;

@@ -11,8 +11,10 @@ import "strings"
 // extends (SPEC §5.2 "Declared extension"). Versions declaring none are absent.
 var extendsIndex = map[string]string{
 	"https://trusttasks.org/spec/rooms/keys/act/0.10":             "0.9",
+	"https://trusttasks.org/spec/rooms/keys/act/0.11":             "0.10",
 	"https://trusttasks.org/spec/rooms/keys/act/0.9":              "0.8",
 	"https://trusttasks.org/spec/rooms/records/put/0.4":           "0.3",
+	"https://trusttasks.org/spec/rooms/records/put/0.5":           "0.4",
 	"https://trusttasks.org/spec/vta/did-templates/create/3.2":    "3.1",
 	"https://trusttasks.org/spec/vta/did-templates/get/3.2":       "3.1",
 	"https://trusttasks.org/spec/vta/did-templates/list/3.2":      "3.1",

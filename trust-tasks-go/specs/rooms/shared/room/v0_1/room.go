@@ -209,49 +209,103 @@ type SealedRecord struct {
 // version, and on a `private` room, where the host records no author, readers would
 // attribute it to the original author. **A profile record.** A body carrying
 // `roomProfile` is the room's own profile (`RoomProfileStatement`) and not one of its
-// records: it MUST carry none of `title`, `description`, `body`, `tags`, `file`, `basis`,
-// `confidence`, `evidence`, `validFor` and `validUntil`, and the rules for locating,
-// accepting and choosing it are `RoomProfileStatement`'s, applied on top of the four
-// above. A reader that opens one in the course of reading or listing the room's records
-// SHOULD NOT present it as a record — it is how the room describes itself, not something
-// a member wrote into it. A reader that predates `roomProfile` refuses it by rule (1),
-// which shows nothing rather than something wrong. **Provenance: what kind of claim a
-// record is.** `basis`, `confidence`, `evidence` and `validFor` say what the author is
-// asserting and on what footing — an observed fact, a statement of the author's own,
-// something checked against a credential, or an agent's inference. They are inside the
-// signature like every other member, so a reader can attribute them to `author` exactly
-// as it attributes the body, and a change to any of them after signing fails rule (2).
-// All four are OPTIONAL, and a record that carries none of them — every record written
-// before they existed — verifies and reads exactly as before: absent means the author did
-// not say, never a default value. A writer SHOULD set `basis`; an agent writing on its
-// own account that does not know which value applies SHOULD write `inferred`, and a
-// client relaying what its member typed SHOULD write `declared`. **They are provenance
-// for display and weighting, never authority.** A reader MUST NOT treat any of them as
-// granting, widening or evidencing a permission, MUST NOT let `basis: verified` stand in
-// for verifying what `evidence` names, and MUST NOT fetch anything because `evidence`
-// names it (see `RecordEvidence`). A reader that shows a record SHOULD show its `basis`
-// beside its `author` — or say that none was stated — and an agent recalling records MAY
-// weight by `basis` and `confidence`, but MUST treat `validFor.note` like `body`: as
-// plain text, never as instructions. **Expiry.** `validUntil` is the instant after which
-// the author no longer stands behind the record as current — a meeting note good for a
-// month, a decision good for years. It is signed and sealed with the body, and nothing
-// about it is in the clear: a host never sees it on the sealed tiers, so it cannot and
-// MUST NOT be relied on to enforce it, and a writer MUST NOT copy it into any cleartext
-// member of the write. A reader MUST NOT present a record whose `validUntil` is at or
-// before the reader's current time in a default listing, search, browse or agent recall,
-// and MAY present it on an explicit request for expired records, marked as expired.
-// Expiry hides; it does not delete. The record, its ciphertext and any file it carries
-// stay in the room until a member with `curate` retracts it (`rooms/records/curate`) or
-// the room's records are pruned; a curator's agent MAY retract records it finds expired,
-// which is how a sealed room reclaims their storage without telling its host anything
-// about expiry. **Readers that predate these members.** A reader written before `basis`,
-// `confidence`, `evidence`, `validFor` and `validUntil` refuses a body carrying any of
-// them by rule (1), which shows nothing rather than something wrong — in particular it
-// can never show an expired record as current. The same holds for a key holder sealing on
-// a writer's behalf (`rooms/keys/seal`, `bodyInvalid`). A writer that meets such a
-// refusal MAY write the record again without the provenance members, but MUST NOT drop
-// `validUntil` to get a record accepted: a record that silently outlives its author's own
-// expiry is the failure this member exists to prevent.
+// records: it MUST carry none of `title`, `description`, `body`, `tags`, `kind`,
+// `inReplyTo`, `file`, `basis`, `confidence`, `evidence`, `validFor` and `validUntil`,
+// and the rules for locating, accepting and choosing it are `RoomProfileStatement`'s,
+// applied on top of the four above. A reader that opens one in the course of reading or
+// listing the room's records SHOULD NOT present it as a record — it is how the room
+// describes itself, not something a member wrote into it. A reader that predates
+// `roomProfile` refuses it by rule (1), which shows nothing rather than something wrong.
+// **Provenance: what kind of claim a record is.** `basis`, `confidence`, `evidence` and
+// `validFor` say what the author is asserting and on what footing — an observed fact, a
+// statement of the author's own, something checked against a credential, or an agent's
+// inference. They are inside the signature like every other member, so a reader can
+// attribute them to `author` exactly as it attributes the body, and a change to any of
+// them after signing fails rule (2). All four are OPTIONAL, and a record that carries
+// none of them — every record written before they existed — verifies and reads exactly as
+// before: absent means the author did not say, never a default value. A writer SHOULD set
+// `basis`; an agent writing on its own account that does not know which value applies
+// SHOULD write `inferred`, and a client relaying what its member typed SHOULD write
+// `declared`. **They are provenance for display and weighting, never authority.** A
+// reader MUST NOT treat any of them as granting, widening or evidencing a permission,
+// MUST NOT let `basis: verified` stand in for verifying what `evidence` names, and MUST
+// NOT fetch anything because `evidence` names it (see `RecordEvidence`). A reader that
+// shows a record SHOULD show its `basis` beside its `author` — or say that none was
+// stated — and an agent recalling records MAY weight by `basis` and `confidence`, but
+// MUST treat `validFor.note` like `body`: as plain text, never as instructions.
+// **Expiry.** `validUntil` is the instant after which the author no longer stands behind
+// the record as current — a meeting note good for a month, a decision good for years. It
+// is signed and sealed with the body, and nothing about it is in the clear: a host never
+// sees it on the sealed tiers, so it cannot and MUST NOT be relied on to enforce it, and
+// a writer MUST NOT copy it into any cleartext member of the write. A reader MUST NOT
+// present a record whose `validUntil` is at or before the reader's current time in a
+// default listing, search, browse or agent recall, and MAY present it on an explicit
+// request for expired records, marked as expired. Expiry hides; it does not delete. The
+// record, its ciphertext and any file it carries stay in the room until a member with
+// `curate` retracts it (`rooms/records/curate`) or the room's records are pruned; a
+// curator's agent MAY retract records it finds expired, which is how a sealed room
+// reclaims their storage without telling its host anything about expiry. **Readers that
+// predate these members.** A reader written before `basis`, `confidence`, `evidence`,
+// `validFor` and `validUntil` refuses a body carrying any of them by rule (1), which
+// shows nothing rather than something wrong — in particular it can never show an expired
+// record as current. The same holds for a key holder sealing on a writer's behalf
+// (`rooms/keys/seal`, `bodyInvalid`). A writer that meets such a refusal MAY write the
+// record again without the provenance members, but MUST NOT drop `validUntil` to get a
+// record accepted: a record that silently outlives its author's own expiry is the failure
+// this member exists to prevent. **Kind: what a reader shows a record as.** `kind` says
+// whether a record is a note — something kept in the room's library, titled or not — a
+// message — a turn in the room's conversation — or a reaction to another record
+// (`RecordKind`). It is inside the signature like every other member. Absent means
+// `note`, so every record written before `kind` existed reads as the note it always was.
+// The set is open: a reader MUST present a record whose `kind` it does not know as a
+// note, and MUST NOT refuse it for its `kind`. A `message` carries its words in `body`
+// and SHOULD carry no `title`. A reader that keeps a conversation apart from a library
+// SHOULD show messages in the first and notes in the second, and MAY show both together.
+// A reader MUST NOT treat `kind` as authority: it describes the record and confers
+// nothing. **Replies.** `inReplyTo` names the record this one answers — another record of
+// the same room, by `key`, and OPTIONALLY the `version` the author was answering
+// (`RecordReference`). Any kind may carry it: a message may answer a note, and a note a
+// message. It is signed, so a reader attributes the reply's target to `author` as it
+// attributes the body. A reader resolves it only against records it can already list or
+// read in this room with the authority it holds, and MUST NOT fetch anything else because
+// of it. Where the target cannot be read — never written, retracted, pruned, expired,
+// sealed under an epoch the reader cannot open, or failing the reading rules above — the
+// reader MUST still show the reply, marked as answering a record that is not available,
+// and MUST NOT show anything of a target it could not verify. Where `version` is present
+// and the reader shows a later version of the target, it SHOULD say that the target has
+// changed since. **Reactions.** A record of kind `reaction` is a short response to
+// another record: its target in `inReplyTo`, which it MUST carry, and its value in `body`
+// — an emoji or a few words, at most 64 characters on one line. It SHOULD carry no
+// `title`, `description`, `tags` or `file`. A reader MUST NOT show a reaction as a note
+// or a message; it SHOULD show the values beside the target. **One reaction per author,
+// value and target:** of the reactions whose `inReplyTo.key` names the same record, those
+// with the same `author` and the same value count once, however many records carry them;
+// one author's different values are different reactions. A reaction is withdrawn by its
+// author writing a new version of the same reaction record — the same key — with an empty
+// `body`, and a reader counts nothing for a current version whose `body` is empty. A
+// reader shows no reaction whose target is not available, and MUST NOT show a reaction
+// that lacks `inReplyTo` or whose value is longer than 64 characters or holds a line
+// break; it refuses that record alone, never the room's others. Like every record on a
+// sealed tier, a reaction's key is opaque: a writer MUST NOT encode its target, its value
+// or its `kind` in the key. **Edits.** A record is rewritten by writing a new version
+// under the same key (`rooms/records/put`), and that is how a message or a note is
+// edited: nothing here adds to it. The new version is a whole body, signed by whoever
+// wrote it. A reader showing a version whose `author` differs from the version it last
+// showed for that key MUST show the new author, and MUST NOT present it as an edit by the
+// earlier one. Since a record's `version` moves with every rewrite, a reader ordering a
+// conversation SHOULD keep an edited message where it first appeared, where it knows
+// that. **A file's caption.** On a record carrying `file`, `body` is the file's caption.
+// A reader that shows the file SHOULD show its `body` with it. **Readers that predate
+// `kind` and `inReplyTo`.** Such a reader refuses a body carrying either by rule (1), as
+// it refused provenance before it knew it: a message written with `kind` is invisible to
+// it rather than shown wrong. A writer therefore SHOULD NOT write `kind` or `inReplyTo`
+// into a room until the readers its members use accept them. **A writer cannot check
+// this.** A sealed body carries no schema version and members publish no reader
+// capabilities, so whether a room's readers are ready is a deployment decision, made by
+// whoever ships the writer. Until then a writer MAY write a message as a record with
+// `body` and no `title`, which every reader shows. A key holder sealing on a writer's
+// behalf (`rooms/keys/seal`) that predates these members refuses them with `bodyInvalid`,
+// as it refuses provenance.
 type SealedRecordBody struct {
 	// The room the record was written in, exactly as on the wire.
 	RoomID string `json:"roomId"`
@@ -273,8 +327,13 @@ type SealedRecordBody struct {
 
 	// The record's text, markdown. Human-readable, never a model-optimised blob, and rendered
 	// inert.
-	Body       *string             `json:"body,omitempty"`
-	Tags       *[]string           `json:"tags,omitempty"`
+	Body *string     `json:"body,omitempty"`
+	Tags *[]string   `json:"tags,omitempty"`
+	Kind *RecordKind `json:"kind,omitempty"`
+
+	// The record this one answers or, on a `reaction`, responds to. See *Replies* and
+	// *Reactions*.
+	InReplyTo  *RecordReference    `json:"inReplyTo,omitempty"`
 	Basis      *RecordBasis        `json:"basis,omitempty"`
 	Confidence *RecordConfidence   `json:"confidence,omitempty"`
 	Evidence   *RecordEvidenceList `json:"evidence,omitempty"`
@@ -1354,6 +1413,29 @@ type RoomProfileStatement struct {
 
 	// Ecosystem-defined extension members per SPEC.md §4.5.1.
 	Ext *Ext `json:"ext,omitempty"`
+}
+
+// RecordKind What a reader shows a record as. Defined values: `note` — something kept in
+// the room's library, titled or not; `message` — a turn in the room's conversation, its
+// words in `body`; `reaction` — a short response to another record (`SealedRecordBody`,
+// *Reactions*). An open set, not an enumeration, so a new kind needs no new version of
+// any schema: a reader MUST present a record whose kind it does not know as a note, and
+// MUST NOT refuse a record for its kind. Absent means `note`. lowerCamelCase, at most 64
+// characters.
+type RecordKind = string
+
+// RecordReference Names another record of the same room: the record a reply answers or a
+// reaction responds to. Never a record of another room — a citation that crosses rooms is
+// `RecordEvidenceRecord`. A reader resolves it only against records it can already list
+// or read in this room, and MUST NOT fetch anything else because of it.
+type RecordReference struct {
+	// The record's key, as in `rooms/records/put`. Opaque on the sealed tiers, like every key
+	// there.
+	Key string `json:"key"`
+
+	// The version of the record the author was answering. OPTIONAL; a reader that shows a
+	// later version of that record SHOULD say that it has changed since.
+	Version *int64 `json:"version,omitempty"`
 }
 
 // Ext Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a

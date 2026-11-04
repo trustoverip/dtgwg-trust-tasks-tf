@@ -1703,6 +1703,10 @@ export type RecordId = string;
  */
 export type RecordId_VtcNotificationsV0_1 = string;
 /**
+ * What a reader shows a record as. Defined values: `note` — something kept in the room's library, titled or not; `message` — a turn in the room's conversation, its words in `body`; `reaction` — a short response to another record (`SealedRecordBody`, *Reactions*). An open set, not an enumeration, so a new kind needs no new version of any schema: a reader MUST present a record whose kind it does not know as a note, and MUST NOT refuse a record for its kind. Absent means `note`. lowerCamelCase, at most 64 characters.
+ */
+export type RecordKind = string;
+/**
  * The path from one record's leaf to the room's `DataCommitment` — a Merkle inclusion proof, in the vocabulary this work already uses for it.
  *
  * **It is not called `proof`** because in this framework that word is taken: `proof` is the document's data-integrity proof (SPEC §7.3), and a payload member of the same name in the same document invites reading one for the other. The two are not interchangeable and the confusion would be silent.
@@ -12798,6 +12802,19 @@ export interface RecordPrune_RoomsV0_2 {
    * How many records were removed, tombstones included. A prune that removed nothing leaves no mark.
    */
   removed: number;
+}
+/**
+ * Names another record of the same room: the record a reply answers or a reaction responds to. Never a record of another room — a citation that crosses rooms is `RecordEvidenceRecord`. A reader resolves it only against records it can already list or read in this room, and MUST NOT fetch anything else because of it.
+ */
+export interface RecordReference {
+  /**
+   * The record's key, as in `rooms/records/put`. Opaque on the sealed tiers, like every key there.
+   */
+  key: string;
+  /**
+   * The version of the record the author was answering. OPTIONAL; a reader that shows a later version of that record SHOULD say that it has changed since.
+   */
+  version?: number;
 }
 /**
  * How long a room keeps its records, by age: the room's **record retention**. Records older than it states become **eligible** to be removed by `rooms/records/prune`; nothing is removed until a holder of `admin` asks for a prune, and nothing a prune removes can be brought back.
