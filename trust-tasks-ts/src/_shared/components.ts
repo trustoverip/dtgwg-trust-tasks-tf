@@ -1227,9 +1227,9 @@ export type NamespaceId = string;
  */
 export type NodeKind = "network" | "community";
 /**
- * Why nobody collects for an identifier the VTA would otherwise collect for: `limit`, the VTA is at the bound it states on the number of identifiers it collects for (VTI-NTF-088); `conflict`, another connection for the identifier kept closing the VTA's, and the VTA stopped after the bound it states until the conflict is resolved (VTI-NTF-085).
+ * Why nobody collects for an identifier the VTA would otherwise collect for: `limit`, the VTA is at the bound it states on the number of identifiers it collects for (VTI-NTF-088); `conflict`, another connection for the identifier kept closing the VTA's, and the VTA stopped after the bound it states until the conflict is resolved (VTI-NTF-085). `disabled`, the VTA's operator has not enabled collection by default (VTI-NTF-093), so the VTA collects for no identifier a client has not claimed.
  */
-export type NotCollectedReason = "limit" | "conflict";
+export type NotCollectedReason = "limit" | "conflict" | "disabled";
 /**
  * Opaque identifier of one note: `note_` followed by 16 to 64 base64url characters.
  */
