@@ -203,7 +203,7 @@ Per [SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements), verifying the VID, 
 
 ### Re-admitting someone removed
 
-On a room that is not `private`, the withdrawal reaches what the room issued `member` **before** `revokedAt`, and nothing after. Admitting them again is admitting them as anybody is admitted — fresh credentials ([`rooms/owner/issue-membership`](../../../issue-membership/0.1/spec.md), [`rooms/owner/issue-authority`](../../../issue-authority/0.2/spec.md)) and a new leaf ([`rooms/owner/group/add`](../../add/0.3/spec.md)) — and the withdrawal does not have to be undone. What they delegated before removal stays withdrawn. On a `private` room nothing was withdrawn, and re-admission is a new leaf alone.
+On a room that is not `private`, the withdrawal reaches what the room issued `member` **before** `revokedAt`, and nothing after. Admitting them again is admitting them as anybody is admitted — fresh credentials ([`rooms/owner/issue-membership`](../../../issue-membership/0.1/spec.md), [`rooms/owner/issue-authority`](../../../issue-authority/0.2/spec.md)) and a new leaf ([`rooms/owner/group/add`](../../add/0.3/spec.md)) — and the withdrawal does not have to be undone. Their key holder joins by the new Welcome and keeps the group state this removal left it as a prior membership, for what was sealed before it ([`rooms/keys/welcome`](../../../../keys/welcome/0.1/spec.md), *Rejoining after a removal*); that state is not a join, and does not make the key holder refuse the Welcome as `alreadyJoined`. What they delegated before removal stays withdrawn. On a `private` room nothing was withdrawn, and re-admission is a new leaf alone.
 
 ## Request
 
