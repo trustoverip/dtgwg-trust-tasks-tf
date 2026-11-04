@@ -69,7 +69,7 @@ use tower::timeout::TimeoutLayer;
 use tower::ServiceBuilder;
 use trust_tasks_rs::{
     discovery::DiscoveryRegistry, document_digest, erase_verifier,
-    specs::trust_task_discovery::v0_3 as discovery, DocumentDigest, DynProofVerifier, ErrorPayload,
+    specs::trust_task_discovery::v0_4 as discovery, DocumentDigest, DynProofVerifier, ErrorPayload,
     ErrorResponse, FreshnessPolicy, InMemoryReplayGuard, Payload, ProofVerifier, RejectReason,
     ReplayGuard, ReplayVerdict, RequestPayload, ResolvedParties, StaleReason, StandardCode,
     TransportHandler, TrustTask, PROOF_NOT_ACCEPTED_BY_POLICY,
@@ -78,12 +78,12 @@ use uuid::Uuid;
 
 use crate::auth::{Auth, BearerAuth};
 
-// --- trust-task-discovery 0.1 / 0.2 (superseded) ----------------------------
+// --- trust-task-discovery 0.1 / 0.2 / 0.3 (superseded) ----------------------
 // 0.1 and 0.2 are superseded by 0.3 and served until they are withdrawn; the
 // withdrawal batch deletes `server/superseded_discovery.rs` and every block
 // marked like this one.
 mod superseded_discovery;
-// --- end trust-task-discovery 0.1 / 0.2 (superseded) ------------------------
+// --- end trust-task-discovery 0.1 / 0.2 / 0.3 (superseded) ------------------
 use crate::handler::HttpsHandler;
 use crate::status::status_for_code;
 
@@ -517,7 +517,7 @@ impl HttpsServerBuilder {
     /// **after** every other `.on(...)`; URIs registered afterward will not
     /// be included.
     ///
-    /// A 0.3 response also advertises the acceptance window this server
+    /// A 0.4 response also advertises the acceptance window this server
     /// enforces — its [`Self::freshness`] policy, whenever that is set — so a
     /// producer holding a document can tell whether it will still be
     /// accepted. A policy with no `max_age` has no window to state, and none
@@ -538,30 +538,30 @@ impl HttpsServerBuilder {
         // somehow guessed they could ask wouldn't see their own protocol
         // listed back.
         registry.register_payload::<discovery::Payload>();
-        // --- trust-task-discovery 0.1 / 0.2 (superseded) ----------------------------
+        // --- trust-task-discovery 0.1 / 0.2 / 0.3 (superseded) ----------------------
         superseded_discovery::register(&mut registry);
-        // --- end trust-task-discovery 0.1 / 0.2 (superseded) ------------------------
+        // --- end trust-task-discovery 0.1 / 0.2 / 0.3 (superseded) ------------------
         self.install_discovery(registry, true)
     }
 
-    /// Install the discovery handlers. With `advertise_freshness`, a 0.3
-    /// response states the window of the freshness policy the built server
+    /// Install the discovery handlers. With `advertise_freshness`, a 0.4
+    /// (or 0.3) response states the window of the freshness policy the built server
     /// applies.
     fn install_discovery(self, registry: DiscoveryRegistry, advertise_freshness: bool) -> Self {
         let public = Arc::clone(&self.public_discovery);
         let applied_freshness = Arc::clone(&self.applied_freshness);
         let this = self;
-        // --- trust-task-discovery 0.1 / 0.2 (superseded) ----------------------------
-        let this = this.with_superseded_discovery(registry.clone());
-        // --- end trust-task-discovery 0.1 / 0.2 (superseded) ------------------------
+        // --- trust-task-discovery 0.1 / 0.2 / 0.3 (superseded) ----------------------
+        let this = this.with_superseded_discovery(registry.clone(), advertise_freshness);
+        // --- end trust-task-discovery 0.1 / 0.2 / 0.3 (superseded) ------------------
         this.on::<discovery::Payload, _>(move |req, ctx| {
             refuse_unauthenticated_discovery(&public, ctx.authenticated_sender.is_none())?;
             Ok(match applied_freshness.get() {
                 Some(policy) if advertise_freshness => registry
                     .clone()
                     .acceptance_window_from(policy)
-                    .respond_to_v0_3(&req.payload),
-                _ => registry.respond_to_v0_3(&req.payload),
+                    .respond_to_v0_4(&req.payload),
+                _ => registry.respond_to_v0_4(&req.payload),
             })
         })
     }

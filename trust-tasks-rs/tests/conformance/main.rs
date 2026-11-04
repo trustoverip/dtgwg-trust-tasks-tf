@@ -1384,6 +1384,7 @@ mod trust_task_discovery {
     mod v0_1;
     mod v0_2;
     mod v0_3;
+    mod v0_4;
 }
 mod trust_task_next_step {
     mod v0_1;
