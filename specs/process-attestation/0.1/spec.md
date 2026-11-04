@@ -11,7 +11,9 @@ authors:
   - David L. Condrey (https://github.com/dcondrey)
 knownImplementations:
   - https://github.com/LF-Decentralized-Trust-labs/proof-of-effort
-  - https://writersproof.com
+  - url: https://writersproof.com
+    role: Holder
+    name: WritersProof
 parties:
   - role: Verifier
     requirement: REQUIRED
@@ -277,7 +279,7 @@ reproduction; sharing a `threadId` is not a binding.
 Only the Verifier vouches for the challenge's freshness: it could reuse a
 challenge with a `threadId` and present one exchange's response as the outcome of
 another. A credential or record that cites this exchange as evidence of completion
-MUST therefore be issued by the party that issued the request, and a consumer MUST
+MUST therefore be issued by the party that issued the request, and a relying party MUST
 NOT treat this response as outcome evidence for a citing artifact whose issuer is
 not the request's `issuer`. A party other than the Verifier that wants to cite an
 attestation runs the task itself, as its own Verifier.
