@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/changed/0.1",
+  "title": "Rooms — Changed — payload",
+  "description": "One-way signal from a room's host to the address of an armed `rooms/watch`: the room has moved past the version the member had read to. The room and its latest version, and nothing about what changed. There is no #response form. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["roomId", "latestVersion"],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The room the watch was armed on, exactly as the member named it."
+    },
+    "latestVersion": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "The highest version the room had taken when the host sent the signal: the version a `rooms/records/list` with the member's watermark as `sinceVersion` would at least reach. A hint for the reader, who learns what changed only by listing."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1. A host MUST NOT put anything here about what changed."
+    }
+  }
+}

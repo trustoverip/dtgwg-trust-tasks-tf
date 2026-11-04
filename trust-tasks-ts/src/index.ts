@@ -1657,6 +1657,9 @@ export import RoomsBlobsUploadCommit_v0_1 = _RoomsBlobsUploadCommit_v0_1;
 import * as _RoomsBlobsUploadCommit_v0_2 from "./rooms/blobs/upload/commit/0.2/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomsBlobsUploadCommit_v0_2 = _RoomsBlobsUploadCommit_v0_2;
+import * as _RoomsChanged_v0_1 from "./rooms/changed/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import RoomsChanged_v0_1 = _RoomsChanged_v0_1;
 import * as _RoomsCreate_v0_1 from "./rooms/create/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomsCreate_v0_1 = _RoomsCreate_v0_1;
@@ -1930,6 +1933,9 @@ export import RoomsRevocationsPut_v0_1 = _RoomsRevocationsPut_v0_1;
 import * as _RoomsUsage_v0_1 from "./rooms/usage/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomsUsage_v0_1 = _RoomsUsage_v0_1;
+import * as _RoomsWatch_v0_1 from "./rooms/watch/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import RoomsWatch_v0_1 = _RoomsWatch_v0_1;
 import * as _SyncEventShared_v0_1 from "./sync/_shared/0.1/sync-event.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import SyncEventShared_v0_1 = _SyncEventShared_v0_1;

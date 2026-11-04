@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/watch/0.1",
+  "title": "Rooms — Watch — payload",
+  "description": "A member asks a room's host to send one content-free `rooms/changed` signal to an address the member names, the first time the room moves past a version the member has read to. One signal per arming: a member re-arms the watch after it has caught up. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["roomId", "presentation", "address"],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The room to watch. A host verifies the presentation against credentials issued by this identifier, never against a member list of its own."
+    },
+    "presentation": {
+      "$ref": "../../_shared/0.2/room.schema.json#/$defs/AuthorityPresentation",
+      "description": "Must confer `read` at this room's scope — the grant a listing takes, since a signal says no more than a listing would."
+    },
+    "address": {
+      "type": "string",
+      "pattern": "^did:",
+      "maxLength": 1000,
+      "description": "The DID the host sends the signal to, over a transport that DID's document advertises and the host speaks. Chosen by the member. It identifies the watch: a request naming the same room and address re-arms or cancels that watch, and one naming another address is another watch. On a `private` room it MUST be a DID the member uses for nothing else (*Security & Privacy*)."
+    },
+    "sinceVersion": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "The highest version of the room the member has read to — the watermark it would pass as `sinceVersion` to `rooms/records/list`. The host signals as soon as the room's latest version is above it, at once if it already is, so that a change landing between the member's last listing and this request is not missed. Absent means the room's latest version when the host arms the watch, which a member that has just listed the room may rely on only if it accepts missing a change made in between."
+    },
+    "leaseSeconds": {
+      "type": "integer",
+      "minimum": 60,
+      "maximum": 2592000,
+      "description": "How long the member asks the watch to last if it does not fire, in seconds, up to 30 days. A host MAY grant less, and says what it granted in `expiresAt`. Absent means the host's default."
+    },
+    "cancel": {
+      "type": "boolean",
+      "const": true,
+      "description": "End the watch on this room and address. Only `true` is meaningful, so only `true` is accepted. A producer sends neither `sinceVersion` nor `leaseSeconds` with it, and a host ignores them on a cancel. A cancel of a watch the host does not hold succeeds and says `armed: false`, so a retry is harmless."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms — Watch — response payload",
+      "description": "Success response to rooms/watch. Type https://trusttasks.org/spec/rooms/watch/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["roomId", "address", "armed"],
+      "properties": {
+        "roomId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "address": {
+          "type": "string",
+          "pattern": "^did:",
+          "maxLength": 1000,
+          "description": "The address, echoed."
+        },
+        "armed": {
+          "type": "boolean",
+          "description": "`true`: the host will send one signal to `address` the first time the room is above `sinceVersion`, or has sent it already because the room was. `false`: the watch was cancelled, or there was none to cancel."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Present when `armed` is `true`: when the host forgets the watch if it has not fired — the lease granted, never later than the earliest instant at which any credential of the presentation stops being valid."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

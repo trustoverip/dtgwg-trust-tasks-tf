@@ -1197,6 +1197,9 @@ mod rooms {
             }
         }
     }
+    mod changed {
+        mod v0_1;
+    }
     mod create {
         mod v0_1;
         mod v0_2;
@@ -1361,6 +1364,9 @@ mod rooms {
         }
     }
     mod usage {
+        mod v0_1;
+    }
+    mod watch {
         mod v0_1;
     }
 }
