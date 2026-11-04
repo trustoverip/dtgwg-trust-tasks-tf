@@ -46,6 +46,18 @@
       "cryptosuite": "eddsa-jcs-2022",
       "expect": "invalid",
       "why": "The previous document with both timestamps rewritten to the Z form and the proof left as it was. It must fail: the signature covers the spelling, so a verifier that accepts this is not checking the bytes it received."
+    },
+    {
+      "file": "eddsa-jcs-2022-process-attestation-response.json",
+      "cryptosuite": "eddsa-jcs-2022",
+      "expect": "valid",
+      "why": "A process-attestation/0.1 attested response — the spec's own worked example, issued by the did:key Holder with proofPurpose authentication (the purpose SPEC §4.7.3 recommends and the registry's signers default to). Pins that a response carrying a receipt reference, a receipt digest and disclosed aggregates verifies in every library, so a Holder built on one library is checked by a Verifier built on another."
+    },
+    {
+      "file": "eddsa-jcs-2022-process-attestation-response-tampered.json",
+      "cryptosuite": "eddsa-jcs-2022",
+      "expect": "invalid",
+      "why": "The same response with `disclosed.timeline.checkpointCount` altered after signing. The proof covers the disclosed aggregates, not only the envelope: a Holder cannot adjust what it disclosed without re-signing."
     }
   ]
 }
