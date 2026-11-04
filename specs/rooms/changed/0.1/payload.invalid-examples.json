@@ -1,0 +1,24 @@
+[
+  {
+    "note": "A signal saying what changed. The signal is the same whatever moved the room, so that it carries nothing to its address's mediator, to a push gateway or to the platform push service but that something arrived; on the sealed tiers the host could not know the kind in any case.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "latestVersion": 415,
+      "kind": "message"
+    }
+  },
+  {
+    "note": "A signal counting the changes. One signal per arming exists so that neither the number nor the rhythm of signals says how busy the room was.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "latestVersion": 415,
+      "changes": 3
+    }
+  },
+  {
+    "note": "No version. Without it a reader cannot tell a signal it has already caught up past from one it has not.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal"
+    }
+  }
+]
