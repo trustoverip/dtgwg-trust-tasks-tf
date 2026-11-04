@@ -479,7 +479,7 @@ pub const ERROR_CODES: &[crate::DeclaredErrorCode] = &[
 pub mod error_codes {
     /// `vta/collection/claim:notCollectable`
     ///
-    /// `identifier` is not one the VTA collects for in `contextId`: the VTA does not hold its messaging keys there, its DID document advertises no transport through a mediator, or it is the VTA's own durable identity, another node's or host service's, or an identity the VTA provisioned for another party, each of which its own holder collects for (VTI-NTF-080).
+    /// `identifier` is not one the VTA would collect for in `contextId`, whether or not collection by default is enabled (VTI-NTF-093): the VTA does not hold its messaging keys there, its DID document advertises no transport through a mediator, or it is the VTA's own durable identity, another node's or host service's, or an identity the VTA provisioned for another party, each of which its own holder collects for (VTI-NTF-080).
     ///
     /// Declared `retryable: false`.
     pub const NOT_COLLECTABLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {

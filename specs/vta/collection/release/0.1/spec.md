@@ -5,7 +5,7 @@ title: "VTA Collection — Release"
 summary: "A client releases the collection claim for a persona DID — its own, ending it at once once it has stopped collecting, or another client's, which then ends at its stated end without renewal — so that the VTA collects for the DID again."
 status: draft
 targetFrameworkVersion: "0.6.0"
-category: messaging
+category: notifications
 keywords:
   - collection
   - mediator
@@ -84,10 +84,11 @@ A conforming **consumer** (the VTA) **MUST**:
 
 1. Validate the document per [SPEC §7.2](/SPEC.md#72-consumer-requirements), and refuse with
    `permissionDenied` a caller without standing under [Authorization](#authorization).
-2. Refuse with `vta/collection/release:notCollectable` an `identifier` VTI-NTF-080 does not require
-   it to collect for in `contextId`.
+2. Refuse with `vta/collection/release:notCollectable` an `identifier` VTI-NTF-080 does not name in
+   `contextId`.
 3. Where the caller is the claim's claimant, end the claim at once, resume collecting for the
-   identifier, and answer with the instant it ended.
+   identifier where collection by default is enabled (VTI-NTF-093), and answer with the instant it
+   ended.
 4. Where the caller is not the claimant, make the claim unrenewable, leave its end unchanged, and
    answer with that end; it **MUST NOT** resume collecting before that end plus its own clock-skew
    tolerance (VTI-NTF-084).

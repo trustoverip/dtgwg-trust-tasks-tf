@@ -5,7 +5,7 @@ title: "VTA Collection — List"
 summary: "A client lists who collects the messages queued at the mediator for each of the principal's persona DIDs in one trust context — the VTA, a claiming client and until when, or nobody and why."
 status: draft
 targetFrameworkVersion: "0.6.0"
-category: messaging
+category: notifications
 keywords:
   - collection
   - mediator
@@ -52,7 +52,8 @@ addressed to each of its persona DIDs in one trust context (VTI-NTF-091): the VT
 for every such DID no client has claimed (VTI-NTF-080); a client holding a claim made with
 [`vta/collection/claim`](../../claim/0.1/spec.md), with the claim's end and whether it can still be
 renewed; or nobody, because the VTA is at the bound it states on the identifiers it collects for, or
-because another connection kept evicting its own and it stopped (VTI-NTF-085, VTI-NTF-088). The last
+because another connection kept evicting its own and it stopped (VTI-NTF-085, VTI-NTF-088), or
+because its operator has not enabled collection by default (VTI-NTF-093). The last
 is the one a principal needs to see: a persona nobody collects for is one whose notifications never
 arrive, and nothing else reports it.
 
@@ -75,7 +76,8 @@ A conforming **consumer** (the VTA) **MUST**:
 1. Validate the document per [SPEC §7.2](/SPEC.md#72-consumer-requirements).
 2. Refuse with `permissionDenied` a caller without standing under [Authorization](#authorization),
    and answer nothing about any other context (VTI-NTF-091).
-3. Return every identifier of `contextId` that VTI-NTF-080 requires it to collect for, matching
+3. Return every identifier of `contextId` that VTI-NTF-080 names, whether or not collection by
+   default is enabled (VTI-NTF-093), matching
    every filter given: `identifier` only, where given; of `collector` only, where given.
 4. For each, state its `collector`: `client` with its `claim` while a claim is in force, including
    one that is no longer renewable; `vta` while the VTA collects for it; and `none` with its

@@ -47,13 +47,15 @@ const (
 // collect for: `limit`, the VTA is at the bound it states on the number of identifiers it
 // collects for (VTI-NTF-088); `conflict`, another connection for the identifier kept
 // closing the VTA's, and the VTA stopped after the bound it states until the conflict is
-// resolved (VTI-NTF-085).
+// resolved (VTI-NTF-085). `disabled`, the VTA's operator has not enabled collection by
+// default (VTI-NTF-093), so the VTA collects for no identifier a client has not claimed.
 type NotCollectedReason string
 
 // Values NotCollectedReason may take, per this specification's schema.
 const (
 	NotCollectedReasonLimit    NotCollectedReason = "limit"
 	NotCollectedReasonConflict NotCollectedReason = "conflict"
+	NotCollectedReasonDisabled NotCollectedReason = "disabled"
 )
 
 // CollectionEntry The collection state of one identifier. `claim` is present exactly when
