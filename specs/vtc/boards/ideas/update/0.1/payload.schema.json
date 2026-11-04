@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/boards/ideas/update/0.1",
+  "title": "VTC Boards — Ideas — Update — payload",
+  "description": "A proposer changes their idea's title, description, format or topic while it is still proposed. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "ideaId"
+  ],
+  "properties": {
+    "ideaId": {
+      "$ref": "../../../_shared/0.1/board.schema.json#/$defs/IdeaId"
+    },
+    "title": {
+      "$ref": "../../../_shared/0.1/board.schema.json#/$defs/IdeaTitle"
+    },
+    "description": {
+      "$ref": "../../../_shared/0.1/board.schema.json#/$defs/IdeaDescription"
+    },
+    "format": {
+      "$ref": "../../../_shared/0.1/board.schema.json#/$defs/IdeaFormat"
+    },
+    "topic": {
+      "$ref": "../../../_shared/0.1/board.schema.json#/$defs/Topic"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Boards — Ideas — Update — response payload",
+      "description": "The success response to a vtc/boards/ideas/update/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/boards/ideas/update/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "idea"
+      ],
+      "properties": {
+        "idea": {
+          "$ref": "../../../_shared/0.1/board.schema.json#/$defs/Idea"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+[
+  {
+    "note": "A malformed note identifier.",
+    "payload": {
+      "noteId": "note-1"
+    }
+  }
+]

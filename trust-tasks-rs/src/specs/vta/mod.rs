@@ -3,6 +3,7 @@
 pub mod app_state;
 pub mod attestation;
 pub mod backup;
+pub mod collection;
 pub mod contexts;
 pub mod credentials;
 pub mod did_templates;

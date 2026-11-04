@@ -31,6 +31,93 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.37.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.37.0...trust-tasks-rs-v0.37.1) — 2026-11-04
+
+
+### Added
+
+- **vtc/boards**: Community boards — propose ideas, leave notes, vote on each accepted idea through its own election (vtc/boards/*/0.1) ([#1025](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1025))
+
+Thirteen tasks implementing the VTI Community Boards chapter (VTI-BRD-001 – VTI-BRD-080): create, update, list and show a board; propose, update, withdraw, decide (accept opens an election from the board's template) and select ideas; add, list, withdraw and hide notes. A board never reports tickets or ballots (VTI-BRD-033); the shared ElectionTemplate is a manifest less the members the community fills in per idea, and is never binding.
+
+
+
+## [0.37.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.36.10...trust-tasks-rs-v0.37.0) — 2026-11-04
+
+
+### Added
+
+- **vta/collection**: Claim, release and list who collects a persona DID's messages at the mediator ([#1023](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1023))
+
+Implements dtgwg-vti-spec's collection for the principal's identifiers
+  (VTI-NTF-080 – VTI-NTF-092).
+
+  A VTA collects, at the mediator each DID document advertises, the messages
+  for every identifier whose messaging keys it holds in one of the principal's
+  trust contexts — its personas — unless a client has claimed it. The mediator
+  permits one connection per DID, so at most one party collects at a time.
+
+  New tasks (family vta/collection, category messaging):
+
+  - vta/collection/claim/0.1 — a client becomes an identifier's one collector
+    until a stated end (a lease, at most thirty days), or renews its claim. The
+    VTA stops collecting and closes its connection before it grants; the client
+    connects only after the grant and closes before the end unless renewed.
+    notCollectable, claimHeld, claimNotRenewable. Retry class 2.
+  - vta/collection/release/0.1 — the claimant ends its claim at once, having
+    stopped collecting; any other party with standing makes it unrenewable,
+    and it still ends at its end. notCollectable. Retry class 2.
+  - vta/collection/list/0.1 — who collects for each identifier of a context:
+    the VTA, a claimant (with the end and whether renewable), or nobody, with
+    the reason (limit, conflict).
+
+- **rs**: A stated expiresAt replaces the maximum age, up to an expiry horizon ([#1021](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1021))
+
+SPEC §7.2 (Bounding the record) applies the maximum age over issuedAt
+  "where expiresAt is absent". validate_freshness applied it whatever the
+  document stated, so a document whose producer stated a day-long expiry was
+  refused as stale after five minutes, and a store-and-forward delivery could
+  outlive only the consumer's maximum age.
+
+  - validate_freshness applies max_age only to a document without an
+    expiresAt. One with an expiresAt is bounded by it (validate_basic),
+    clamped to issuedAt + expiry_horizon (+ skew): accepted until then,
+    refused as expired after, never refused for stating a later instant.
+  - FreshnessPolicy gains expiry_horizon and with_expiry_horizon;
+    consequential() sets DEFAULT_EXPIRY_HORIZON (30 days). The default
+    policy sets none.
+  - record_expiry clamps the same way, so the replay record lasts exactly as
+    long as the document is acceptable. Without an issuedAt the horizon has
+    nothing to run from and the expiry stands: a horizon from first sight
+    would drop the record while a copy is still acceptable.
+  - FreshnessPolicy is now #[non_exhaustive].
+
+  Breaking, in behaviour as well as API: a consumer that caps its replay
+  record at issuedAt + max_age + skew, relying on validate_freshness to
+  refuse older documents, must cap at record_expiry instead, or an
+  expiresAt-bounded document accepted past its max age would execute twice.
+
+
+
+### Specifications
+
+- **vta/collection**: Category notifications, a disabled reason, and the 24-hour lease ([#1024](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1024))
+
+Follows dtgwg-vti-spec#97's VTI-NTF-093 and lease recommendation.
+
+  - Category messaging -> notifications for claim, release and list.
+  - NotCollectedReason gains `disabled` (appended): the operator has not
+    enabled collection by default (VTI-NTF-093). Claims are still granted,
+    renewed, released and listed while it is off; notCollectable and list
+    scope now refer to the identifiers VTI-NTF-080 names whether or not it is
+    enabled, and a claimant's release resumes collection only where enabled.
+  - Claim: a producer SHOULD request 86400 seconds and renew at half the
+    period granted; the VTA's stated maximum SHOULD NOT exceed thirty days.
+
+  Rust, TS, Go and Dart bindings regenerated.
+
+
+
 ## [0.36.10](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.36.9...trust-tasks-rs-v0.36.10) — 2026-11-03
 
 
