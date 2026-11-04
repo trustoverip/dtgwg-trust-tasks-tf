@@ -4,7 +4,7 @@
 #![allow(deprecated)]
 /// Why this specification version is deprecated (SPEC "Superseded and
 /// Withdrawn Versions"), or `None` while it is current.
-pub const DEPRECATION: Option<&str> = Some("superseded by rooms/records/get/0.2");
+pub const DEPRECATION: Option<&str> = Some("superseded by rooms/records/get/0.3");
 #[allow(unused_imports)]
 use serde::{Deserialize, Serialize};
 /// Error types.
@@ -344,7 +344,7 @@ impl ::std::fmt::Display for HeadVersion {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by rooms/records/get/0.2")]
+#[deprecated(note = "superseded by rooms/records/get/0.3")]
 pub struct Payload {
     ///Ecosystem-defined extension members per SPEC.md §4.5.1.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -531,7 +531,7 @@ impl RecordTraceItem {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by rooms/records/get/0.2")]
+#[deprecated(note = "superseded by rooms/records/get/0.3")]
 pub struct Response {
     /**
     The member who wrote it. Present on `open` and `attributed`, absent on `private` where the author is sealed with the body. Committed. Mirrors `CommittedRecord`, which fixes the leaf preimage; see the note on `trace`.

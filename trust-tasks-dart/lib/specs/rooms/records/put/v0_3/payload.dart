@@ -14,7 +14,7 @@ typedef Ext = Map<String, dynamic>;
 
 /// Success response to rooms/records/put. Type
 /// https://trusttasks.org/spec/rooms/records/put/0.3#response.
-@Deprecated('superseded by rooms/records/put/0.4')
+@Deprecated('superseded by rooms/records/put/0.5')
 class Response {
   const Response({
     required this.key,
@@ -502,7 +502,7 @@ class PayloadCleartext {
 /// an `open` room's `cleartext` carry the record's provenance — `basis`, `confidence`,
 /// `evidence`, `validFor` — and its `validUntil`, which the sealed tiers carry inside
 /// the signed `SealedRecordBody`.
-@Deprecated('superseded by rooms/records/put/0.4')
+@Deprecated('superseded by rooms/records/put/0.5')
 class Payload {
   const Payload({
     required this.roomId,
@@ -595,7 +595,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by rooms/records/put/0.4';
+const String? deprecation = 'superseded by rooms/records/put/0.5';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/rooms/records/put/0.3';

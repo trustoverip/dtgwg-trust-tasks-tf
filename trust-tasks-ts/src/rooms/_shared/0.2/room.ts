@@ -14,4 +14,4 @@ export interface RoomsSharedTypes {
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../../_shared/components.js".
  */
-export type { AuthorityPresentation, DataCommitment, HeadVersion, ReadVerification, RecordCount, RecordMetadata, RecordMetadataV2, RecordPrune_RoomsV0_2 as RecordPrune, RecordRetention, RetentionPolicy, Visibility } from "../../../_shared/components.js";
+export type { AuthorityPresentation, DataCommitment, HeadVersion, ReadVerification, RecordCount, RecordKind, RecordMetadata, RecordMetadataV2, RecordMetadataV3, RecordPrune_RoomsV0_2 as RecordPrune, RecordRetention, RetentionPolicy, Visibility } from "../../../_shared/components.js";
