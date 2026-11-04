@@ -1,0 +1,15 @@
+[
+  {
+    "note": "An update naming no board.",
+    "payload": {
+      "status": "closed"
+    }
+  },
+  {
+    "note": "Reopening a board: `status` only moves forward.",
+    "payload": {
+      "boardId": "brd_Uc7N2qLm4Rt8Vx1Z",
+      "status": "open"
+    }
+  }
+]
