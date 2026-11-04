@@ -2187,6 +2187,9 @@ mod vtc {
         mod create {
             mod v0_1;
         }
+        mod delete {
+            mod v0_1;
+        }
         mod ideas {
             mod decide {
                 mod v0_1;

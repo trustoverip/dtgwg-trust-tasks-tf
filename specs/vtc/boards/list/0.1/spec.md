@@ -179,7 +179,7 @@ On success the community answers with a document of type `https://trusttasks.org
             "auditors": []
           },
           "ballotBox": "did:example:ballot-box",
-          "allowEarlyClose": false,
+          "allowEarlyClose": true,
           "resultsBeforeClose": false,
           "textReleaseThreshold": 10
         },

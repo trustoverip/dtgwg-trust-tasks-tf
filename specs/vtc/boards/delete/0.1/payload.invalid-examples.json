@@ -1,0 +1,15 @@
+[
+  {
+    "note": "`reason` is REQUIRED for a destructive act.",
+    "payload": {
+      "boardId": "brd_Uc7N2qLm4Rt8Vx1Z"
+    }
+  },
+  {
+    "note": "`reason` must not be empty.",
+    "payload": {
+      "boardId": "brd_Uc7N2qLm4Rt8Vx1Z",
+      "reason": ""
+    }
+  }
+]

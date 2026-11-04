@@ -2,7 +2,7 @@
 slug: vtc/boards/update
 version: '0.1'
 title: "VTC Boards — Update"
-summary: "A facilitator changes a board's title, description, topics, formats, timetable or selection rule, closes or archives it, or — before voting opens — its schedule; changing its election template takes an elections manager."
+summary: "A facilitator changes a board's title, description, topics, formats, timetable or selection rule, closes or archives it — which ends the voting on its ideas — or, before voting opens, its schedule; changing its election template takes an elections manager."
 status: draft
 targetFrameworkVersion: 0.6.0
 category: governance
@@ -24,7 +24,7 @@ issuedAtRequirement:
   rationale: "Consequential, so SPEC §7.3 item 17 sets REQUIRED as the floor. A replayed update could undo a later one."
 sideEffects:
   level: mutating
-  rationale: "Changes the board; closing and archiving cannot be undone (VTI-BRD-005)."
+  rationale: "Changes the board; closing and archiving cannot be undone (VTI-BRD-005), and closing closes early or cancels the elections opened on it (VTI-BRD-006)."
 exposure:
   discloses: metadata
   ingests: metadata
@@ -47,7 +47,7 @@ errorCodes:
   meaning: "The board is archived and takes no change (VTI-BRD-005)."
   retryable: false
 - code: vtc/boards/update:templateInvalid
-  meaning: "The new election template is not one the community would accept (VTI-BRD-030)."
+  meaning: "The new election template is not one the community would accept, or does not allow closing early (VTI-BRD-030)."
   retryable: false
 - code: vtc/boards/update:ballotBoxNotTrusted
   meaning: "The new template's ballot box is not on the community's list (VTI-VOT-082)."
@@ -64,7 +64,7 @@ related:
 ---
 ## Abstract
 
-The **VTC Boards — Update** Trust Task changes a board. Every member it carries replaces the board's current value; a member it omits is left as it is. `status` moves the board forward: `closed` stops new ideas and notes, `archived` stops every change (VTI-BRD-005).
+The **VTC Boards — Update** Trust Task changes a board. Every member it carries replaces the board's current value; a member it omits is left as it is. `status` moves the board forward: `closed` stops new ideas and notes and ends the voting on the board's ideas — each election open for voting is closed early, so its count is final, and each not yet open is cancelled (VTI-BRD-006) — and `archived` stops every change (VTI-BRD-005).
 
 A facilitator of the board may change everything but the election template, which only a holder of `vtc.elections.manage` may change (VTI-BRD-002). The audience and the voting window are fixed once voting opens (VTI-BRD-004), and a changed template applies only to elections opened after it; an election already registered keeps its manifest (VTI-VOT-013).
 
@@ -87,6 +87,8 @@ A conforming **consumer** (the community) **MUST**:
 3. Check the board as it would be after the change, as `vtc/boards/create` items 2–4 check a new one (`scheduleInvalid`, `timetableInvalid`, `templateInvalid`, `ballotBoxNotTrusted`), and refuse removing a slot a selected idea is placed in (`timetableInvalid`).
 4. Apply the change atomically, answer the board as `vtc/boards/show` would, and record an audit event for it (VTI-BRD-080).
 5. **MUST NOT** change the manifest of an election already opened for an idea; a changed template applies only to elections opened after it.
+6. On a `status` that closes the board — `closed`, or `archived` from `open` — record the board as closed first, then end the voting on it (VTI-BRD-006): close early each election open for voting whose manifest allows it, cancel each not yet open for voting or not yet registered (its idea moves to `notSelected`), and leave each that does not allow closing early to close when its manifest says. Keep asking the ballot box until it has answered each request; the community's election retry owner owns those retries, and the answer does not wait for them. Answer `closing` with what was asked for and which ideas run on to their own close. The closing facilitator need not hold `vtc.elections.manage` (VTI-VOT-080).
+7. Refuse a `template` that does not allow closing early (`templateInvalid`, VTI-BRD-030).
 
 ## Authorization
 
@@ -137,7 +139,7 @@ The facilitator (`issuer`) sends the community maintainer (`recipient`) a docume
 
 On success the community answers with a document of type `https://trusttasks.org/spec/vtc/boards/update/0.1#response` whose `payload` validates against `$defs.Response`. A refusal is a `trust-task-error` document carrying one of the codes above or a framework standard code.
 
-### The board, closed
+### The board, closed before voting opened: its four open ideas' elections cancelled
 
 ```json
 {
@@ -213,7 +215,7 @@ On success the community answers with a document of type `https://trusttasks.org
           "auditors": []
         },
         "ballotBox": "did:example:ballot-box",
-        "allowEarlyClose": false,
+        "allowEarlyClose": true,
         "resultsBeforeClose": false,
         "textReleaseThreshold": 10
       },
@@ -228,6 +230,11 @@ On success the community answers with a document of type `https://trusttasks.org
         "merged": 0,
         "withdrawn": 0
       }
+    },
+    "closing": {
+      "closedEarly": 0,
+      "cancelled": 4,
+      "runningToClose": []
     }
   },
   "proof": {
