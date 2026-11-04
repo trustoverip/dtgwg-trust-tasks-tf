@@ -5,15 +5,17 @@ import 'package:test/test.dart';
 // tasks an application uses (dart run trust_tasks:generate).
 // ignore: deprecated_member_use
 import 'package:trust_tasks/specs/acl/grant/v0_2/payload.dart' as acl_grant;
-// --- trust-task-discovery 0.1 / 0.2 (superseded) -----------------------------
-// Delete these two imports, and the group marked the same way below, when the
+// --- trust-task-discovery 0.1 / 0.2 / 0.3 (superseded) -----------------------
+// Delete these three imports, and the group marked the same way below, when the
 // withdrawal batch removes 0.1 and 0.2.
 import 'package:trust_tasks/specs/trust_task_discovery/v0_1/payload.dart'
     as discovery_v0_1;
 import 'package:trust_tasks/specs/trust_task_discovery/v0_2/payload.dart'
     as discovery_v0_2;
-// --- end trust-task-discovery 0.1 / 0.2 -------------------------------------
 import 'package:trust_tasks/specs/trust_task_discovery/v0_3/payload.dart'
+    as discovery_v0_3;
+// --- end trust-task-discovery 0.1 / 0.2 / 0.3 -------------------------------
+import 'package:trust_tasks/specs/trust_task_discovery/v0_4/payload.dart'
     as discovery;
 import 'package:trust_tasks/trust_tasks.dart';
 import 'package:trust_tasks_https/trust_tasks_https.dart';
@@ -415,7 +417,7 @@ void main() {
       expect(payload['frameworkVersion'], '0.6.0');
     });
 
-    test('a 0.3 answer validates against the 0.3 response schema', () async {
+    test('a 0.4 answer validates against the 0.4 response schema', () async {
       final s = echoServer()..enableDiscovery(frameworkVersion: '0.6.1');
       final reply = await s.handle(post(query(patterns: ['*'])));
       expect(reply.status, 200);
@@ -452,7 +454,7 @@ void main() {
       expect(read.acceptanceWindow?.clockSkewSeconds, 60);
     });
 
-    test('a request outside the 0.3 request schema is refused', () async {
+    test('a request outside the 0.4 request schema is refused', () async {
       final s = echoServer()..enableDiscovery();
       final ok = query(patterns: ['acl/*']);
       expect(_violations(discovery.payloadSchemaJson, ok['payload']), isEmpty);
@@ -461,7 +463,7 @@ void main() {
       expect(codeOf(await s.handle(post(bad))), 'malformedRequest');
     });
 
-    test('patterns filter the 0.3 answer', () async {
+    test('patterns filter the 0.4 answer', () async {
       final s = echoServer()..enableDiscovery();
       final reply = await s.handle(post(query(patterns: [_slugOf(echoType)])));
       final payload = bodyOf(reply)['payload'] as Map<String, dynamic>;
@@ -483,9 +485,11 @@ void main() {
         requireIssuedAt: true,
       )))['acceptanceWindow'];
       // Never wider than enforced (responder rule 1): fractions round down.
+      // No expiryHorizonSeconds: FreshnessPolicy has no horizon, so the
+      // maximum age applies to every document, which is what its absence says.
       expect(window, {'maxAgeSeconds': 90, 'clockSkewSeconds': 5});
 
-      // An unbounded window has no 0.3 spelling, so none is stated.
+      // An unbounded window has no spelling, so none is stated.
       expect(
         (await ask(FreshnessPolicy.defaults)).containsKey('acceptanceWindow'),
         isFalse,
@@ -515,16 +519,30 @@ void main() {
     });
   });
 
-  // --- trust-task-discovery 0.1 / 0.2 (superseded) -----------------------------
-  // Delete this group, and the two imports marked the same way at the top of
-  // this file, when the withdrawal batch removes 0.1 and 0.2.
-  group('discovery 0.1 / 0.2 (superseded, still answered)', () {
+  // --- trust-task-discovery 0.1 / 0.2 / 0.3 (superseded) -----------------------
+  // Delete this group, and the three imports marked the same way at the top of
+  // this file, when the withdrawal batch removes 0.1, 0.2 and 0.3.
+  group('discovery 0.1 / 0.2 / 0.3 (superseded, still answered)', () {
     Map<String, dynamic> query01() => echoDoc(type: discovery_v0_1.typeUri)
       ..['payload'] = <String, dynamic>{};
     Map<String, dynamic> query02() => echoDoc(type: discovery_v0_2.typeUri)
       ..['payload'] = <String, dynamic>{};
 
-    test('0.1 and 0.2 are listed beside 0.3', () async {
+    test('answers 0.3 in 0.3, with the window', () async {
+      final s = echoServer()..enableDiscovery();
+      // ignore: deprecated_member_use
+      final reply = await s.handle(post(echoDoc(type: discovery_v0_3.typeUri)
+        ..['payload'] = <String, dynamic>{}));
+      expect(reply.status, 200);
+      final body = bodyOf(reply);
+      // ignore: deprecated_member_use
+      expect(body['type'], '${discovery_v0_3.typeUri}#response');
+      final payload = body['payload'] as Map<String, dynamic>;
+      expect(payload['acceptanceWindow'],
+          {'maxAgeSeconds': 300, 'clockSkewSeconds': 60});
+    });
+
+    test('0.1, 0.2 and 0.3 are listed beside 0.4', () async {
       final s = echoServer()..enableDiscovery();
       final payload = bodyOf(await s.handle(post(query01())))['payload']
           as Map<String, dynamic>;
@@ -535,6 +553,8 @@ void main() {
             notifyType,
             discovery_v0_1.typeUri,
             discovery_v0_2.typeUri,
+            // ignore: deprecated_member_use
+            discovery_v0_3.typeUri,
             discovery.typeUri,
           ]..sort());
       // 0.1 admits only MAJOR.MINOR.

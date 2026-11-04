@@ -1,24 +1,27 @@
-// --- trust-task-discovery 0.1 / 0.2 (superseded) ----------------------------
-//! `trust-task-discovery` 0.1 and 0.2 — superseded by 0.3, and answered only
-//! because a responder answers each version in the version it was asked.
+// --- trust-task-discovery 0.1 / 0.2 / 0.3 (superseded) ----------------------
+//! `trust-task-discovery` 0.1, 0.2 and 0.3 — superseded by 0.4, and answered
+//! only because a responder answers each version in the version it was asked.
 //!
-//! **Everything for those two versions is in this file**, so withdrawing them
-//! is deleting it and the `mod superseded;` line in `discovery.rs` — the
-//! methods [`DiscoveryRegistry::respond_to`] (0.1) and
-//! [`DiscoveryRegistry::respond_to_v0_2`] (0.2), and their tests, go with it.
-//! Nothing else in the crate calls them.
+//! **Everything for those versions is in this file**, so withdrawing them is
+//! deleting it and the `mod superseded;` line in `discovery.rs` — the methods
+//! [`DiscoveryRegistry::respond_to`] (0.1),
+//! [`DiscoveryRegistry::respond_to_v0_2`] (0.2) and
+//! [`DiscoveryRegistry::respond_to_v0_3`] (0.3), and their tests, go with it.
+//! Nothing else in the crate calls them. (0.3's tests are still in
+//! `discovery.rs`, which tests the window through it and 0.4 alike.)
 
-// The generated 0.1 and 0.2 types are deprecated (superseded); naming them is
-// the point of this file.
+// The generated 0.1, 0.2 and 0.3 types are deprecated (superseded); naming
+// them is the point of this file.
 #![allow(deprecated)]
 
-use super::{framework_version_parts, DiscoveryRegistry};
+use super::{framework_version_parts, AcceptanceWindow, DiscoveryRegistry};
 use crate::specs::trust_task_discovery::v0_1 as wire;
 use crate::specs::trust_task_discovery::v0_2 as wire_v0_2;
+use crate::specs::trust_task_discovery::v0_3 as wire_v0_3;
 
 impl DiscoveryRegistry {
     /// Build a response to a `trust-task-discovery/0.1` `query`: the same
-    /// matching as [`Self::respond_to_v0_3`], with `frameworkVersion` written
+    /// matching as [`Self::respond_to_v0_4`], with `frameworkVersion` written
     /// `MAJOR.MINOR` — 0.1 admits nothing finer, so the configured release is
     /// written without its PATCH — and no acceptance window, which 0.1
     /// cannot carry.
@@ -30,7 +33,7 @@ impl DiscoveryRegistry {
     /// ([`wire::ResponseSupportedTypesItem::Object`]) carrying the
     /// `requiredExt` array.
     ///
-    /// 0.1 is superseded by 0.3; this is removed when 0.1 is withdrawn.
+    /// 0.1 is superseded; this is removed when 0.1 is withdrawn.
     pub fn respond_to(&self, query: &wire::Payload) -> wire::Response {
         // Generated `Payload` wraps each pattern in a `PayloadPatternsItem`
         // newtype; deref to &str for matching.
@@ -63,12 +66,12 @@ impl DiscoveryRegistry {
     }
 
     /// Build a response to a `trust-task-discovery/0.2` `query`: the same
-    /// matching as [`Self::respond_to_v0_3`], with `frameworkVersion` written
+    /// matching as [`Self::respond_to_v0_4`], with `frameworkVersion` written
     /// as the full three-part release (SPEC §5.1.1) — a two-part configured
     /// value is written as its `.0` — and no acceptance window, which 0.2
     /// cannot carry.
     ///
-    /// 0.2 is superseded by 0.3; this is removed when 0.2 is withdrawn.
+    /// 0.2 is superseded; this is removed when 0.2 is withdrawn.
     pub fn respond_to_v0_2(&self, query: &wire_v0_2::Payload) -> wire_v0_2::Response {
         let patterns: Vec<&str> = query.patterns.iter().map(|p| p.as_str()).collect();
         let supported_types: Vec<wire_v0_2::ResponseSupportedTypesItem> = self
@@ -88,6 +91,74 @@ impl DiscoveryRegistry {
                 .three_part_framework_version()
                 .and_then(|v| v.parse().ok()),
         }
+    }
+
+    /// Build a response to a `trust-task-discovery/0.3` `query`, listing
+    /// every registered Type URI whose slug matches at least one of the
+    /// query's patterns. Absent or empty patterns produce the full list.
+    ///
+    /// A URI with no annotation is emitted in shorthand form
+    /// ([`wire_v0_3::ResponseSupportedTypesItem::Uri`]). One with a
+    /// `requiredExt` policy ([`Self::with_required_ext`]) or a window of its
+    /// own ([`Self::with_acceptance_window_for`]) is emitted in expanded form
+    /// ([`wire_v0_3::ResponseSupportedTypesItem::Object`]) carrying them.
+    /// `frameworkVersion` is the full three-part release (SPEC §5.1.1), and
+    /// the response-level `acceptanceWindow` is present when one was
+    /// configured ([`Self::acceptance_window`],
+    /// [`Self::acceptance_window_from`]).
+    ///
+    /// 0.3 is superseded by 0.4; this is removed when 0.3 is withdrawn. A 0.3
+    /// window cannot carry the expiry horizon, so it is stated without it:
+    /// narrower than the window applied, which 0.3's responder rule 1
+    /// permits.
+    pub fn respond_to_v0_3(&self, query: &wire_v0_3::Payload) -> wire_v0_3::Response {
+        let patterns: Vec<&str> = query.patterns.iter().map(|p| p.as_str()).collect();
+        let supported_types: Vec<wire_v0_3::ResponseSupportedTypesItem> = self
+            .matching(&patterns)
+            .map(|uri| {
+                // Namespaces that don't match the reverse-DNS pattern are
+                // skipped rather than panicking on caller-supplied input; if
+                // none survives, the member is left out (the schema requires
+                // at least one item).
+                let required_ext = self
+                    .required_ext_for(uri)
+                    .map(|namespaces| {
+                        namespaces
+                            .filter_map(|ns| ns.parse().ok())
+                            .collect::<Vec<_>>()
+                    })
+                    .filter(|namespaces| !namespaces.is_empty());
+                let acceptance_window = self
+                    .entry_acceptance_windows
+                    .get(uri)
+                    .map(|window| v0_3_window(*window));
+                if required_ext.is_none() && acceptance_window.is_none() {
+                    wire_v0_3::ResponseSupportedTypesItem::Uri(uri.to_string())
+                } else {
+                    wire_v0_3::ResponseSupportedTypesItem::Object {
+                        type_: uri.to_string(),
+                        required_ext,
+                        acceptance_window,
+                    }
+                }
+            })
+            .collect();
+
+        wire_v0_3::Response {
+            supported_types,
+            framework_version: self
+                .three_part_framework_version()
+                .and_then(|v| v.parse().ok()),
+            acceptance_window: self.acceptance_window.map(v0_3_window),
+        }
+    }
+}
+
+/// A 0.4 window as 0.3 states it: without the horizon.
+fn v0_3_window(window: AcceptanceWindow) -> wire_v0_3::AcceptanceWindow {
+    wire_v0_3::AcceptanceWindow {
+        max_age_seconds: window.max_age_seconds,
+        clock_skew_seconds: window.clock_skew_seconds,
     }
 }
 
