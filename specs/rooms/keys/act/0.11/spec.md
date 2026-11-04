@@ -133,7 +133,7 @@ A member of a data room is a DID — the identifier the room admitted, issued it
 Until this task such a surface had two ways to reach a room's host, and both were wrong:
 
 - ask for a presentation with [`rooms/keys/present`](../../present/0.2/spec.md), which grants the leaf to **the caller**, then sign the request with the caller's own key. The host then records the caller — a key on one laptop — as the actor and, on an `attributed` room, as the author of every record it writes. The room never admitted that identifier, and every other member reads the member's words under it.
-- not reach the host at all, and ask the key holder to do the whole operation. That serves reads ([`rooms/keys/read`](../../read/0.1/spec.md), [`rooms/keys/browse`](../../browse/0.3/spec.md)), and cannot serve writes of files, whose bytes must never pass through the key holder.
+- not reach the host at all, and ask the key holder to do the whole operation. That serves reads ([`rooms/keys/read`](../../read/0.2/spec.md), [`rooms/keys/browse`](../../browse/0.4/spec.md)), and cannot serve writes of files, whose bytes must never pass through the key holder.
 
 This task is the third way. The client builds the room request it means to send, without a presentation or a proof, and hands it to the key holder. The key holder completes it **as the member**: it inserts the member's own authority narrowed to the one action the request needs and granted to the member itself, sets the member as `issuer`, and signs it with a key of the member's DID. The client sends the result to the host unchanged. The host sees the member — as the presenter, as the signer and, on an `attributed` room, as the author — and nothing of the client or of the key holder.
 
@@ -290,14 +290,15 @@ may be.
 
 ## Changes from 0.10
 
-[`rooms/records/put/0.5`](../../../records/put/0.5/spec.md) lets a record on an `open` room say what it is to a reader, what it answers, when it was written and when it was edited — `kind` (a note, a message or a reaction), `inReplyTo`, `writtenAt` and `editedAt` — in `cleartext`; and [`rooms/records/list/0.6`](../../../records/list/0.6/spec.md) serves each open record's `kind` in a listing. `0.10`'s table is closed (Recipient item 1) and names `rooms/records/put` at `0.1` to `0.4` and `rooms/records/list` at `0.1` to `0.5` only, so a key holder conforming to it refuses either new version with `typeNotActable`, and a member whose keys their key holder holds could not write a message or a reply to an open room, nor list one with its kinds.
+[`rooms/records/put/0.5`](../../../records/put/0.5/spec.md) lets a record on an `open` room say what it is to a reader, what it answers, when it was written and when it was edited — `kind` (a note, a message or a reaction), `inReplyTo`, `writtenAt` and `editedAt` — in `cleartext`; [`rooms/records/list/0.6`](../../../records/list/0.6/spec.md) serves each open record's `kind` in a listing, and it and [`rooms/records/get/0.3`](../../../records/get/0.3/spec.md) serve when each record was first stored and by whom. `0.10`'s table is closed (Recipient item 1) and names `rooms/records/put` at `0.1` to `0.4`, `rooms/records/list` at `0.1` to `0.5` and `rooms/records/get` at `0.1` and `0.2` only, so a key holder conforming to it refuses each new version with `typeNotActable`, and a member whose keys their key holder holds could not write a message or a reply to an open room, nor list or read one with what its readers' rules need.
 
-`0.11` adds both to the table, each in the same row as the versions it already lists and on the same terms:
+`0.11` adds all three to the table, each in the same row as the versions it already lists and on the same terms:
 
 - **`rooms/records/put/0.5`** — `write`, presentation inserted.
 - **`rooms/records/list/0.6`** — `read`, presentation inserted.
+- **`rooms/records/get/0.3`** — `read`, presentation inserted.
 
-The recipient completes them exactly as it completes `rooms/records/put/0.4` and `rooms/records/list/0.5`, and signs what the producer built, unaltered (Recipient item 6), as it signs any other `cleartext`: it does not read, check or act on `kind`, `inReplyTo`, `writtenAt` or `editedAt`, nor check the write against the room's `recordMembers` — that is the writer's rule (`rooms/records/put/0.5` Producer item 11). **On the sealed tiers this task signs no record body**: the same members travel inside the sealed body, which this task never opens, and the key holder that signs and seals that body for the member's own client is [`rooms/keys/seal/0.3`](../../seal/0.3/spec.md), the version that accepts them. A client writing a message to a sealed room as the member therefore needs both: `rooms/keys/seal/0.3` to sign and seal the body, then this task to complete the `rooms/records/put` that stores it.
+The recipient completes them exactly as it completes `rooms/records/put/0.4`, `rooms/records/list/0.5` and `rooms/records/get/0.2`, and signs what the producer built, unaltered (Recipient item 6), as it signs any other `cleartext`: it does not read, check or act on `kind`, `inReplyTo`, `writtenAt` or `editedAt`, nor check the write against the room's `recordMembers` — that is the writer's rule (`rooms/records/put/0.5` Producer item 11). **On the sealed tiers this task signs no record body**: the same members travel inside the sealed body, which this task never opens, and the key holder that signs and seals that body for the member's own client is [`rooms/keys/seal/0.3`](../../seal/0.3/spec.md), the version that accepts them. A client writing a message to a sealed room as the member therefore needs both: `rooms/keys/seal/0.3` to sign and seal the body, then this task to complete the `rooms/records/put` that stores it.
 
 The schema's `type` pattern already admits the type. Nothing else changes: the request and response schemas are `0.10`'s, and no error code is added.
 
@@ -328,7 +329,7 @@ The recipient completes a document only when its `type` is one of these host-bou
 | `type` (request) | Action | Presentation inserted |
 |---|---|---|
 | `rooms/records/put/0.1`, `rooms/records/put/0.2`, `rooms/records/put/0.3`, `rooms/records/put/0.4`, `rooms/records/put/0.5` | `write` | yes |
-| `rooms/records/get/0.1`, `rooms/records/get/0.2` | `read` | yes |
+| `rooms/records/get/0.1`, `rooms/records/get/0.2`, `rooms/records/get/0.3` | `read` | yes |
 | `rooms/records/list/0.1`, `rooms/records/list/0.2`, `rooms/records/list/0.3`, `rooms/records/list/0.4`, `rooms/records/list/0.5`, `rooms/records/list/0.6` | `read` | yes |
 | `rooms/records/curate/0.1` | `curate` | yes |
 | `rooms/records/retention/set/0.1` | `admin` | yes |

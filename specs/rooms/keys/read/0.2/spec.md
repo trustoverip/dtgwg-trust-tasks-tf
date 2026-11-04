@@ -1,0 +1,362 @@
+---
+slug: rooms/keys/read
+version: "0.2"
+title: "Rooms Keys — Read"
+summary: "A member asks their own agent to fetch one record, or up to 32, from the room's host, check what the host asserted about each, and open them — each key answered on its own."
+status: draft
+targetFrameworkVersion: "0.5.0"
+category: ai-agents
+keywords:
+  - room
+  - record
+  - read
+  - trace
+  - commitment
+authors:
+  - Glenn Gore (https://github.com/stormer78)
+parties:
+  - role: Member
+    requirement: REQUIRED
+    member: issuer
+    identifierScope: pairwise
+  - role: KeyHolder
+    requirement: REQUIRED
+    member: recipient
+proofRequirement:
+  requirement: REQUIRED
+  rationale: >-
+    The request makes the recipient act outward in its principal's name — presenting their room credentials to a party this request names. One whose origin depended on the transport would let a compromised channel aim a member's credentials at a host of somebody else's choosing.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: >-
+    The response carries a verdict about a host's honesty, and a verdict that cannot be placed in time cannot be compared with a later one — which is the whole mechanism. An undated read is also one a duplicate-suppression window cannot absorb.
+sideEffects:
+  level: mutating
+  rationale: >-
+    Returns one record, and the room is unchanged. The recipient's own key state may not be: before refusing a record it cannot open, it applies the commits and retains the epoch links the host relays (see *Opening, and when it cannot*), exactly as `rooms/keys/commit` and `rooms/keys/backfill` would. It MAY also record what the host asserted.
+exposure:
+  discloses: secret
+  ingests: none
+  actsAsSubject: true
+  rationale: >-
+    `actsAsSubject` is the point: the recipient presents its principal's membership and authority to the named host, as them. `discloses: secret` because the response carries the record's plaintext — on a sealed tier this is material the room withholds from its own host, and the recipient is the only party that can produce it.
+retention:
+  class: transient
+  rationale: >-
+    The record is returned and not kept; the presentation minted for the fetch is single-purpose. What the recipient MAY retain is what the host asserted about the room — see `verification.priorRoots` — which is a few dozen bytes and is not the record.
+errorCodes:
+  - code: rooms/keys/read:notAMember
+    meaning: "The recipient holds no group state for this room, so it has nothing to present and nothing to open with."
+    retryable: false
+  - code: rooms/keys/read:hostUnreachable
+    meaning: "The named host could not be resolved, advertises no transport this recipient speaks, or did not answer."
+    retryable: true
+  - code: rooms/keys/read:hostRefused
+    meaning: "The host answered and declined. Its own code and reason are carried in `details` — commonly that it does not serve this room, or that no record has this key."
+    retryable: false
+  - code: rooms/keys/read:cannotOpen
+    meaning: "The record was fetched and its epoch key is not held, after the recipient tried the repair its reason admits. `details.epoch` names the record's epoch and `details.reason` says why, with the words and members `rooms/keys/open` 0.2 gives `unknownEpoch`: `notDelivered` (`heldEpoch`) — the host relays no commit that reaches it yet; `beyondChain` (`earliestEpoch`) — the host holds no epoch link that reaches back to it; `removed` (`removedAtEpoch`) — the principal was removed from the room's group, and nothing will open it."
+    retryable: false
+  - code: rooms/keys/read:notAttempted
+    meaning: "In a batch read only: the recipient did not read this key in this request — it reached the bound it keeps on one response's size or time before coming to it. Nothing about the key is implied. Ask for it again, alone or in a later batch."
+    retryable: true
+related:
+  - rooms/keys/browse
+  - rooms/keys/open
+  - rooms/keys/present
+  - rooms/records/get
+---
+
+## Abstract
+
+A member asks their **key holder** — the agent that holds their room keys — to read one record from the room's host: mint the presentation, make the request, check what came back, and open it.
+
+Four acts, and today they belong to three parties. The presentation only the agent can mint ([`rooms/keys/present`](../../present/0.2/spec.md)); the request anyone with a channel to the host can make; the checking anyone can do *who has the room's state*; and the opening **only** the agent, because the epoch key never leaves it ([`rooms/keys/open`](../../open/0.2/spec.md)). The fourth decides where the other three go.
+
+It exists for the same reason [`rooms/keys/backfill`](../../backfill/0.2/spec.md) does: the surfaces a person actually uses — a browser extension, a phone — hold a channel to their own agent and to nothing else. The alternative is a member who mints a presentation at their agent, carries it to the host, carries ciphertext back, and hands it to the same agent to open, holding a half-verified record in between.
+
+## Status of this Document
+
+This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). It targets framework version 0.5.0 and may change without a version bump while it remains a draft ([SPEC §5.2](/SPEC.md#52-compatibility-rules)).
+
+### What changed from 0.1
+
+**What the record's rules need.** The response carries `createdAt` and `createdBy` beside what `0.1` returns: when the host stored the record's first version, and — on `open` and `attributed` rooms — who wrote it. A reader needs the first to judge a record's `writtenAt` and the second to tell a rewrite by another member from the original author's own (`SealedRecordBody`, *When it was written*, *The record's original author*). A key holder can pass on only what the host serves, so the recipient reads with [`rooms/records/get/0.3`](../../../records/get/0.3/spec.md), which carries both, where the host serves it, and passes them through exactly as served; where the host serves only an earlier version, they are absent.
+
+**Several records in one request.** A request may name `keys` instead of `key`: up to **32** records of the same room at the same host, each answered on its own in `results` (*Reading several records*). A member's surface that shows a conversation needs the records on one screen, and on a sealed tier opening each is a round trip to the member's agent; on a phone that cost is paid per row.
+
+Both change the shape: the request gains a member, and the response's `key`, `version` and `verification` are no longer required, since a batch answer carries them per key. The payloads are closed, so a `0.1` party refuses either, and `0.2` does not declare `extends: "0.1"`. It is a `MINOR` increment per [SPEC §5.2](/SPEC.md#52-compatibility-rules). A recipient implementing `0.2` **SHOULD** continue to serve `0.1`.
+
+## Conformance
+
+The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY** and **OPTIONAL** in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/info/bcp14) when, and only when, they appear in all capitals.
+
+A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements) in addition to the requirements stated here.
+
+## Authorization
+
+**The entitlement is being the recipient's own principal**, as with every custody task in this family. A key holder holds one member's room keys; this asks it to use them.
+
+It is deliberately *not* gated on a room credential. The recipient already holds everything the room issued to its principal — that is what makes it their key holder — so requiring one here would ask the caller to present, to the party that mints the presentation, a credential it is about to present on their behalf.
+
+A conforming consumer **MUST** accept this only from the party whose keys it holds, and **MUST** refuse it for a room it holds no group state for.
+
+Per [SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements), verifying the VID, `issuer`, `recipient` or `proof` establishes *who sent this* and *that it is unaltered* — never that they were entitled to the outcome.
+
+### What the recipient presents, and to whom
+
+The recipient acts **as its principal**, the member the room's credentials name. It **MUST** present a `read` grant scoped to this room and granted to the principal — the principal's own authority credential narrowed to `read`, or that credential itself where it confers no more — and **MUST** send the `rooms/records/get` document with the principal as its `issuer`, signed with a key of the principal's DID. It **MUST NOT** present a grant conferring more than `read`.
+
+**The recipient's own identifier MUST NOT reach the host**: not as the leaf's subject, not as the document's `issuer`, and not in its `proof`. A key holder is infrastructure, not a member; a host that saw it would record, and on an `attributed` room attribute, an identity the room never admitted — and would learn which agent serves which member, a correlation the member never chose. Where the recipient holds keys for more than one member of the room, it acts as the one its caller acts as, and refuses rather than choose between them.
+
+**Presenter binding is what makes a caller-named host safe.** A presentation is granted to the principal and usable only by a party that can sign as the principal — the recipient, and nobody it is shown to — so a host of the caller's choosing receives something it cannot act with. What such a host gains is **sight** of the presentation — the principal's membership and authority chain — which on a room that discloses its subjects names the principal. The caller is already a member and could have disclosed the same thing directly, so this widens correlation rather than access; a recipient that treats `host` as untrusted input is nonetheless right to, and **SHOULD** bound the outbound request by resolving `host` as a DID and speaking only the transports its document advertises.
+
+## What the recipient checks
+
+The reason this is not a proxy.
+
+1. **The reply is signed by the host that was addressed.** [SPEC §7.3 item 7](/SPEC.md#73-specification-requirements) makes `rooms/records/get`'s response proof REQUIRED, and the recipient **MUST** verify it *and* bind the proven signer to the `host` it named. A proof that verifies against some other party is a reply from somebody else. An unsigned or misattributed reply is `hostRefused` with the reason stated — never a success with a caveat.
+2. **The trace reaches the commitment served beside it.** The recipient **MUST** reassemble the leaf preimage from the response — that payload with its verification members removed, which is exactly `CommittedRecord` — hash it, replay the trace, and compare against the `dataCommitment` **in the same response**. Never one kept from an earlier read.
+3. **The root against what it has seen before, at this `headVersion`.** See `verification.priorRoots`. An agent that keeps no history says `notChecked` rather than omitting the question.
+4. **The room's own witnessed anchor**, where it has published one. See `verification.anchor`. This is the only one of these a **first-time reader** can make: it needs no history, no peer and no gossip channel, because every member resolves the same room DID and reads the same witness-co-signed entry. It is also the only place a **rollback** is visible — a host serving a state older than the room's own published statement is `behind`, and nothing else in this family catches that.
+
+### A verdict is never an error
+
+**None of these findings fails the task.** A member's own agent refusing to hand over a record because the *host* misbehaved punishes the member for somebody else's act, and locks them out of the room holding the records that would show what happened.
+
+The consequence belongs on the **write** path: continuing to hand material to a party you have caught is what compounds the damage, while reading is how a member gathers what they need. A consumer **MUST NOT** treat any value in `verification` as a failed read.
+
+**What that costs is words, and this is the part that decides whether any of it works.** *Serve reads, refuse writes* is a rule nobody would guess. A member shown a bare warning icon dismisses it; a member later refused a write with no explanation concludes their own agent is broken. A detection the member attributes to the wrong party is worse than no detection, so a consumer **MUST** surface an adverse verdict in words that name what was observed — *two different record sets, both claimed as this room at version N* — rather than logging it or reducing it to a status colour.
+
+### Reading several records
+
+A request names exactly one of `key` and `keys`; a recipient **MUST** refuse one naming both or neither with the standard `malformedRequest`. A request naming `key` is answered as `0.1` answers it, with `createdAt` and `createdBy` where the host served them, and never with `results`.
+
+A request naming `keys` is answered with `results` and none of the single-record members: **one entry per key, in the request's order**, each carrying its `key` and either that record — `version`, `verification` and the members a single read returns — or an `error`, never both. Each key is read exactly as a request naming it alone would read it: its own `rooms/records/get` to the same host, under the same `read` grant, its own checks (*What the recipient checks*), its own verdict. **One key's failure never fails another's**, and a key's error carries the code and `details` it would have been refused with alone — `hostRefused` for a record the host does not hold, `cannotOpen` for one that does not open, `hostUnreachable` where the host stopped answering part way. A retracted record is a success, as alone.
+
+What concerns the request as a whole is still answered as one `trust-task-error` and no `results`: `notAMember`, a caller that is not the recipient's principal (`permissionDenied`), a malformed request.
+
+**Why 32.** It is about a screen of a busy conversation, which is the read this exists for, and it bounds the work one request can ask of a recipient: each key is a host request, a trace to check and possibly a repair. Records are not small enough to bound by count alone — a body may run to a mebibyte — so a recipient **MAY** stop before the end of the list when its response would exceed the size or time it allows one response, and answer each key it did not come to with `notAttempted`, which is retryable and says nothing about the key. It **MUST NOT** answer a key it read with `notAttempted`, and **MUST** answer every key it did not.
+
+**Repairs are per batch.** The repairs under *Opening, and when it cannot* are attempted at most once per request, not once per key: a batch whose records sit under one epoch the recipient does not hold fetches the commits once and opens every record with them.
+
+### Opening, and when it cannot
+
+The recipient opens the record with the epoch key for the epoch it was sealed under, which it derives by walking the chain it holds. A key holder misses that key in two ordinary ways, and both are the normal state of a room with more than two members rather than faults: every membership change leaves every other member a commit behind until they apply it, and every member who joins starts at the epoch they joined and holds nothing older.
+
+**The recipient repairs before it refuses.** It is the only party that can: the member's surface reaches their agent and nothing else, and a member shown a record that will not open has no move of their own. So, before answering `cannotOpen`:
+
+1. **The record's epoch is later than any it holds**, and its principal was not removed from the group at or before it: the recipient **SHOULD** fetch, from the same host and as the same principal under the same `read` grant, the commits the host relays above the epoch it holds ([`rooms/epoch/commits`](../../../epoch/commits/0.1/spec.md)), apply them in order under the rules of [`rooms/keys/commit`](../../commit/0.1/spec.md), and open the record again.
+2. **The record's epoch is earlier than its chain reaches**: the recipient **SHOULD** fetch the room's epoch links from the same host, as [`rooms/keys/backfill`](../../backfill/0.2/spec.md) does, retain them, and open the record again.
+3. **Its principal was removed** at or before the record's epoch: the recipient **MUST NOT** fetch anything. No commit and no link will open the record.
+
+A recipient **MUST** attempt each repair at most once per request, and **MUST** open the record only with the key for the epoch it was sealed under, never another epoch's. Repairs for one member of one room **SHOULD** be serialised, so that a surface opening several records at once fetches each commit once rather than once per record. A repair is the same act as reading — the same host, the same principal, the same `read` grant — so it discloses nothing a read did not, and it changes no state but the recipient's own.
+
+Where the record still does not open, the answer is `cannotOpen` with the epoch named and `details.reason` saying which case it is. That is a distinct outcome from a host refusing, and a member told only "could not read" cannot tell the two apart: `notDelivered` means the room's owner has not yet handed the host the commit, `beyondChain` that the history before the member joined was never relayed or was deliberately severed (a repair never restores what lies below the room's epoch floor — [`EpochFloor`](../../../_shared/0.1/room.schema.json)), and `removed` that it never will open. A consumer **MUST** act on `details.reason`, never on the message.
+
+A `retracted` record has no body. That is an answer, not a failure: the tombstone, its version and its verdict are returned, and a consumer **MUST NOT** report it as an error.
+
+## Definitions
+
+**`roomId`** — the room to read from. The recipient **MUST** already hold group state for it.
+
+**`host`** — the host to read from, as a DID. Named by the caller because **nothing maps a room to its host**: a room is portable, so a remembered host goes stale silently, and a room may be registered with more than one — a mirror serving reads while its primary takes writes. A caller who names the wrong host learns so as a refusal from a party that does not serve this room, which is loud and immediate.
+
+**`plaintext`** / **`cleartext`** (response) — exactly one is present. `plaintext` is base64url, from a sealed tier, opened; `cleartext` is the body of an `open` room, where there was nothing to open. Carried differently on purpose: a member ought to be able to tell that this room's host can read what they just read.
+
+**`key`** / **`keys`** — the record to read, or up to 32 of them (*Reading several records*). Exactly one is present.
+
+**`verification`** (response) — REQUIRED with every record returned, on a single read and on each successful entry of `results`. An agent that returns a record without saying what it checked has made the member's decision for them.
+
+**`createdAt`**, **`createdBy`** (response, and on each entry of `results`) — passed through from [`rooms/records/get/0.3`](../../../records/get/0.3/spec.md) exactly as the host served them ([`RecordMetadataV3`](../../../_shared/0.2/room.schema.json)). `createdBy` never appears for a `private` room.
+
+**`results`** (response) — present only when the request named `keys`: one entry per key, in order.
+
+## Request
+
+A **Member** sends this to their **KeyHolder**. The payload is the top-level schema in [`payload.schema.json`](payload.schema.json).
+
+### A member reads one record
+
+```json
+{
+  "id": "urn:uuid:00000000-0000-4000-8000-000000000001",
+  "type": "https://trusttasks.org/spec/rooms/keys/read/0.2#request",
+  "issuer": "did:example:member",
+  "recipient": "did:example:keyholder",
+  "issuedAt": "2026-01-01T00:00:00Z",
+  "threadId": "urn:uuid:00000000-0000-4000-8000-0000000000ff",
+  "payload": {
+    "roomId": "did:webvh:example.com:rooms:northwind",
+    "host": "did:webvh:example.com:northwind-community",
+    "key": "giXFLTGBdnnQJRoIsktuIg"
+  }
+}
+```
+
+### A member reads the records on one screen
+
+```json
+{
+  "id": "urn:uuid:00000000-0000-4000-8000-000000000011",
+  "type": "https://trusttasks.org/spec/rooms/keys/read/0.2#request",
+  "issuer": "did:example:member",
+  "recipient": "did:example:keyholder",
+  "issuedAt": "2026-01-01T00:00:00Z",
+  "threadId": "urn:uuid:00000000-0000-4000-8000-0000000011ff",
+  "payload": {
+    "roomId": "did:webvh:example.com:rooms:northwind",
+    "host": "did:webvh:example.com:northwind-community",
+    "keys": ["giXFLTGBdnnQJRoIsktuIg", "Hc7pY2wQe9tLmB4sVn1KxA", "q1Zr8mVbT0yWl3nK5xHc2A"]
+  }
+}
+```
+
+## Response
+
+The **KeyHolder** responds, using the sub-schema reachable via `$anchor: "response"`. Failures use a `trust-task-error` document rather than a `#response`, per [SPEC §8.1](/SPEC.md#81-the-trust-task-error-specification).
+
+### The record, and a host that checks out
+
+```json
+{
+  "id": "urn:uuid:00000000-0000-4000-8000-000000000002",
+  "type": "https://trusttasks.org/spec/rooms/keys/read/0.2#response",
+  "issuer": "did:example:keyholder",
+  "recipient": "did:example:member",
+  "issuedAt": "2026-01-01T00:00:02Z",
+  "threadId": "urn:uuid:00000000-0000-4000-8000-0000000000ff",
+  "payload": {
+    "roomId": "did:webvh:example.com:rooms:northwind",
+    "key": "giXFLTGBdnnQJRoIsktuIg",
+    "version": 412,
+    "status": "active",
+    "updatedAt": "2026-01-01T00:00:00Z",
+    "plaintext": "eyJ0aXRsZSI6IlByaWNpbmcgaG9sZHMifQ",
+    "verification": {
+      "trace": "verified",
+      "priorRoots": "agree",
+      "head": {
+        "dataCommitment": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+        "recordCount": 118,
+        "headVersion": 412
+      }
+    }
+  }
+}
+```
+
+### The same record, from a host that has been caught
+
+The record is still returned. The verdict is what changed.
+
+```json
+{
+  "id": "urn:uuid:00000000-0000-4000-8000-000000000003",
+  "type": "https://trusttasks.org/spec/rooms/keys/read/0.2#response",
+  "issuer": "did:example:keyholder",
+  "recipient": "did:example:member",
+  "issuedAt": "2026-01-01T00:00:02Z",
+  "threadId": "urn:uuid:00000000-0000-4000-8000-0000000000ff",
+  "payload": {
+    "roomId": "did:webvh:example.com:rooms:northwind",
+    "key": "giXFLTGBdnnQJRoIsktuIg",
+    "version": 412,
+    "status": "active",
+    "updatedAt": "2026-01-01T00:00:00Z",
+    "plaintext": "eyJ0aXRsZSI6IlByaWNpbmcgaG9sZHMifQ",
+    "verification": {
+      "trace": "verified",
+      "priorRoots": "conflict",
+      "head": {
+        "dataCommitment": "zQmXo1sV5aJ7bT2kQdF9wRnPzYcH4uMgLtEjV6NrBqWsDpK",
+        "recordCount": 117,
+        "headVersion": 412
+      }
+    }
+  }
+}
+```
+
+### Several records, each answered on its own
+
+The second key names a record the host does not hold, and the recipient stopped before the third.
+
+```json
+{
+  "id": "urn:uuid:00000000-0000-4000-8000-000000000012",
+  "type": "https://trusttasks.org/spec/rooms/keys/read/0.2#response",
+  "issuer": "did:example:keyholder",
+  "recipient": "did:example:member",
+  "issuedAt": "2026-01-01T00:00:03Z",
+  "threadId": "urn:uuid:00000000-0000-4000-8000-0000000011ff",
+  "payload": {
+    "roomId": "did:webvh:example.com:rooms:northwind",
+    "results": [
+      {
+        "key": "giXFLTGBdnnQJRoIsktuIg",
+        "version": 412,
+        "status": "active",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "createdAt": "2025-12-31T09:14:02Z",
+        "createdBy": "did:webvh:example.com:people:alice",
+        "author": "did:webvh:example.com:people:alice",
+        "plaintext": "eyJ0aXRsZSI6IlByaWNpbmcgaG9sZHMifQ",
+        "verification": {
+          "trace": "verified",
+          "priorRoots": "agree",
+          "head": {
+            "dataCommitment": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+            "recordCount": 118,
+            "headVersion": 412
+          }
+        }
+      },
+      {
+        "key": "Hc7pY2wQe9tLmB4sVn1KxA",
+        "error": {
+          "code": "rooms/keys/read:hostRefused",
+          "message": "The host holds no record with this key.",
+          "retryable": false,
+          "details": { "code": "rooms/records/get:notFound" }
+        }
+      },
+      {
+        "key": "q1Zr8mVbT0yWl3nK5xHc2A",
+        "error": {
+          "code": "rooms/keys/read:notAttempted",
+          "retryable": true
+        }
+      }
+    ]
+  }
+}
+```
+
+`trace: "verified"` beside `priorRoots: "conflict"` is not a contradiction, and reading it as one is the mistake this shape exists to prevent. The trace proves the record sits under *the root the host just asserted*; the conflict says that root is not the one this host asserted for the same state before. **A host serving a private view of a room can build a consistent tree over it and trace every record in it perfectly.**
+
+## Security & Privacy
+
+### Data carried
+
+The request carries a room, a host and one key or up to 32. What crosses the network *because of it* is the more interesting half: the recipient presents its principal's membership and authority to the named host, and receives back a record — ciphertext on the sealed tiers, which it then opens.
+
+The response carries **plaintext**, which on a sealed tier is material the room withholds from its own host. It crosses one boundary, from the member's agent to the member, and a producer **MUST NOT** put record content in `ext`.
+
+### Correlation
+
+To an observer of the recipient's outbound traffic, this is a member of that room contacting that host. To the host, it is a member reading — which is what the presentation already said, and what reading a room requires.
+
+The shape is informative in a way `backfill`'s is not: backfill happens about once, while this happens **whenever a member looks at something**. A recipient that turns this into a poll converts an access pattern into a timeline of what its principal was interested in, held by the host. A consumer **SHOULD NOT** poll, and **SHOULD** prefer one `rooms/keys/browse` and a read of what the member actually opened. A batch read discloses to the host the same reads as the keys read one by one, close together; it **SHOULD** name only records the member's surface is about to show.
+
+### Retention
+
+The record is returned and not kept. The presentation minted for the fetch is single-purpose and **SHOULD NOT** be retained past the request it was made for.
+
+What a recipient **MAY** retain, and what `verification.priorRoots` depends on, is what the host asserted about the room: `(headVersion, dataCommitment)`, a few dozen bytes per observation. That is not the record and does not disclose its content — but it is a record of *when this member read this room*, so a recipient **SHOULD** keep it bounded and **SHOULD NOT** keep it beyond the member's membership.
+
+### Consent/purpose
+
+The record is fetched so that a member's agent can read the room its principal is a member of. It confers nothing the member did not already hold: they hold a `read` grant the room issued, and this exercises it.
+
+This specification describes purpose only. Per [SPEC §7.3 item 13](/SPEC.md#73-specification-requirements) it does **not** declare that consent, approval or a step-up is required.

@@ -92,7 +92,8 @@ This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). I
 
 [`SealedRecordBody`](../../../_shared/0.2/room.schema.json) gained four optional members — `kind`
 (a note, a message or a reaction), `inReplyTo` (the record it answers), `writtenAt` and
-`editedAt` — which a room's writers may use once the room's profile lists them in
+`editedAt` — and `FileManifest` gained three, an image's `width`, `height` and `preview` — which a
+room's writers may use once the room's profile lists them in
 `recordMembers` (`RoomProfile`). Under `signAsPrincipal` a `0.2` key holder decodes the body and
 refuses an unknown member with `bodyInvalid` (Recipient item 3), so a member's own client cannot
 write a message, a reply or a reaction through it — and a reaction, unlike a message, has no
@@ -137,7 +138,7 @@ A conforming **recipient** (the key holder):
 
 1. **MUST** refuse with `notAMember` when it holds no group state for `roomId` for the member the request concerns — the body's `author` under `signAsPrincipal`, otherwise the member its caller acts for.
 2. Under `signAsPrincipal`, **MUST** honour the request only from a caller it accepts as acting **as** its principal, and **MUST** refuse a caller to which the principal has delegated narrower standing with the standard `permissionDenied` ([SPEC §8.3](/SPEC.md#83-standard-error-codes)).
-3. Under `signAsPrincipal`, **MUST** decode `plaintext` and refuse with `bodyInvalid` unless it is a `SealedRecordBody` with no `proof` and no unknown member, and **MUST NOT** refuse it for carrying `kind`, `inReplyTo`, `writtenAt` or `editedAt`, which it does not check against the room's `recordMembers` or act on; **MUST** refuse with `authorNotPrincipal` unless `author` is a member of this room the caller may act as, and with `locationMismatch` unless `roomId`, `key` and `version` equal the payload's.
+3. Under `signAsPrincipal`, **MUST** decode `plaintext` and refuse with `bodyInvalid` unless it is a `SealedRecordBody` with no `proof` and no unknown member, and **MUST NOT** refuse it for carrying `kind`, `inReplyTo`, `writtenAt` or `editedAt`, or a `file` whose manifest carries `width`, `height` or `preview` (`FileManifest`), which it does not check against the room's `recordMembers` or act on; **MUST** refuse with `authorNotPrincipal` unless `author` is a member of this room the caller may act as, and with `locationMismatch` unless `roomId`, `key` and `version` equal the payload's.
 4. Under `signAsPrincipal`, **MUST** sign the body with a W3C Data Integrity proof made with a key of `author`'s DID document listed for `assertionMethod`, with `proofPurpose: assertionMethod`, as `SealedRecordBody` requires, and **MUST** seal the signed body's UTF-8 JSON — never the unsigned one, and never one signed by any other identifier.
 5. **MUST NOT** sign a body without `signAsPrincipal`, and **MUST NOT** alter a body it was not asked to sign: without the flag it seals exactly the bytes it was given, as `0.1` did.
 6. **MUST** seal under its current epoch for the member concerned, with associated data binding `roomId`, `key`, `version` and that epoch, and **MUST** return the epoch it sealed under.

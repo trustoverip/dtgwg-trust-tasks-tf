@@ -387,6 +387,57 @@ extension type const FileManifestPadding(String value) {
   ];
 }
 
+/// The preview's own media type. Raster types only.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const FileManifestPreviewMediaType(String value) {
+  static const FileManifestPreviewMediaType imageJpeg =
+      FileManifestPreviewMediaType('image/jpeg');
+  static const FileManifestPreviewMediaType imagePng =
+      FileManifestPreviewMediaType('image/png');
+  static const FileManifestPreviewMediaType imageWebp =
+      FileManifestPreviewMediaType('image/webp');
+
+  /// Every value this specification's schema permits.
+  static const List<FileManifestPreviewMediaType> values =
+      <FileManifestPreviewMediaType>[imageJpeg, imagePng, imageWebp];
+}
+
+/// A small image standing in for the file until it is fetched: at most 8192 bytes
+/// before encoding, enough for a blurred thumbnail and small enough not to swell the
+/// record every listing reader opens. A reader renders it only as a raster image it
+/// decodes itself — never as SVG or any other type that can carry active content,
+/// never as a link, never fetching anything — and replaces it with the file once
+/// fetched. It is the uploader's rendering of the file, not a digest of it: a reader
+/// MUST NOT present it as the file's contents.
+class FileManifestPreview {
+  const FileManifestPreview({
+    required this.mediaType,
+    required this.data,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory FileManifestPreview.fromJson(Map<String, dynamic> json) =>
+      FileManifestPreview(
+        mediaType: FileManifestPreviewMediaType(json['mediaType'] as String),
+        data: json['data'] as String,
+      );
+
+  /// The preview's own media type. Raster types only.
+  final FileManifestPreviewMediaType mediaType;
+
+  /// The preview's bytes, base64url without padding: at most 8192 bytes decoded.
+  final String data;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'mediaType': mediaType.value,
+        'data': data,
+      };
+}
+
 /// Everything that describes a file. On an `attributed` or `private` room it is the
 /// `file` member of the sealed record body: sealed with the record, signed by the
 /// record's author, and never seen by the host. On an `open` room it is the `file`
@@ -443,6 +494,17 @@ extension type const FileManifestPadding(String value) {
 /// streams **MUST NOT** treat the plaintext as received — save it under its final
 /// name, render it, or hand it to another component — until the digest has verified;
 /// it writes to a temporary destination and discards that destination on a mismatch.
+/// **An image's size and preview.** `width`, `height` and `preview` are OPTIONAL and
+/// advisory: they let a reader lay out an image, and show something, before it fetches
+/// and decrypts the blob. A reader that fetches the file checks them against the bytes
+/// — the decoded image's dimensions, and that the file is an image at all — and on a
+/// mismatch uses the bytes and discards them; it MUST NOT treat any of them as
+/// evidence about the file. On `attributed` and `private` rooms they are inside the
+/// sealed, signed body like the rest of the manifest, so the host learns nothing from
+/// them; on an `open` room they are in the clear, as everything there is, and a writer
+/// carries them only with `rooms/records/put/0.5` or later. A writer uses them only
+/// once the room's profile lists them in `recordMembers` (`RoomProfile`), as with the
+/// other members a reader that predates them refuses.
 class FileManifest {
   const FileManifest({
     required this.fileId,
@@ -455,6 +517,9 @@ class FileManifest {
     this.padding,
     required this.blobRef,
     this.fileKey,
+    this.width,
+    this.height,
+    this.preview,
   });
 
   /// Read this payload from a decoded JSON object.
@@ -471,6 +536,12 @@ class FileManifest {
             : FileManifestPadding(json['padding'] as String),
         blobRef: json['blobRef'] as String,
         fileKey: json['fileKey'] as String?,
+        width: json['width'] as int?,
+        height: json['height'] as int?,
+        preview: json['preview'] == null
+            ? null
+            : FileManifestPreview.fromJson(
+                json['preview'] as Map<String, dynamic>),
       );
 
   /// 32 random bytes, base64url without padding, minted by the uploader for this file
@@ -520,6 +591,23 @@ class FileManifest {
   /// stored.
   final String? fileKey;
 
+  /// The image's width in pixels, as the uploader read it. Advisory; present only with
+  /// `height`. A reader checks it against the decoded image.
+  final int? width;
+
+  /// The image's height in pixels, as the uploader read it. Advisory; present only with
+  /// `width`. A reader checks it against the decoded image.
+  final int? height;
+
+  /// A small image standing in for the file until it is fetched: at most 8192 bytes
+  /// before encoding, enough for a blurred thumbnail and small enough not to swell the
+  /// record every listing reader opens. A reader renders it only as a raster image it
+  /// decodes itself — never as SVG or any other type that can carry active content,
+  /// never as a link, never fetching anything — and replaces it with the file once
+  /// fetched. It is the uploader's rendering of the file, not a digest of it: a reader
+  /// MUST NOT present it as the file's contents.
+  final FileManifestPreview? preview;
+
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
         'fileId': fileId,
@@ -532,6 +620,9 @@ class FileManifest {
         if (padding != null) 'padding': padding!.value,
         'blobRef': blobRef,
         if (fileKey != null) 'fileKey': fileKey!,
+        if (width != null) 'width': width!,
+        if (height != null) 'height': height!,
+        if (preview != null) 'preview': preview!.toJson(),
       };
 }
 

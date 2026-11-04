@@ -1244,6 +1244,7 @@ mod rooms {
             mod v0_1;
             mod v0_2;
             mod v0_3;
+            mod v0_4;
         }
         mod chain {
             mod v0_1;
@@ -1273,6 +1274,7 @@ mod rooms {
         }
         mod read {
             mod v0_1;
+            mod v0_2;
         }
         mod seal {
             mod v0_1;
@@ -1325,6 +1327,7 @@ mod rooms {
     mod records {
         mod get {
             mod v0_2;
+            mod v0_3;
         }
         mod list {
             mod v0_2;

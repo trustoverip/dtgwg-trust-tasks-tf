@@ -316,7 +316,7 @@ A conforming **consumer** (the host) **MUST**:
 15. **MAY**, on an `open` room only, refuse with the standard `permissionDenied` a new version of
     a record whose current version's `cleartext.kind` is `message` or `reaction` when the author
     the host authenticated for the write is not the record's **original author** — the author it
-    recorded for the record's first version — and if it does, **MUST** refuse before changing
+    recorded for the record's first version (item 17) — and if it does, **MUST** refuse before changing
     anything. A host that refuses so still accepts the original author's own rewrites, the empty
     version that withdraws a message or a reaction included, and refuses nothing on a tombstone,
     whose `kind` is gone. This is the one place a host reads `kind`; on an `open` room it reads
@@ -330,7 +330,14 @@ A conforming **consumer** (the host) **MUST**:
     as `createdAt` ([`rooms/records/list/0.6`](../../list/0.6/spec.md), `RecordMetadataV3`), and
     readers measure a record's `writtenAt` against it. A host that holds records stored before it
     kept this time **MUST NOT** supply one for them.
-17. Refuse an unauthorized presentation with the standard `permissionDenied`; an authorization refusal is the framework standard `permissionDenied` ([SPEC §8.3](/SPEC.md#83-standard-error-codes)), which this specification does not shadow with a task-specific code.
+17. On an `open` or `attributed` room, record, when it stores a record's first version, that
+    version's author — the party it authenticated for the write — and keep it unchanged as item
+    16 keeps the time; it serves it as `createdBy`, and readers use it to tell a rewrite by
+    another member from the original author's own (`SealedRecordBody`, *The record's original
+    author*). On a `private` room it records no author and **MUST NOT** serve one. Item 15 uses
+    the same author. A host that holds records stored before it kept the author **MUST NOT**
+    supply one for them.
+18. Refuse an unauthorized presentation with the standard `permissionDenied`; an authorization refusal is the framework standard `permissionDenied` ([SPEC §8.3](/SPEC.md#83-standard-error-codes)), which this specification does not shadow with a task-specific code.
 
 A conforming host **MUST NOT** require a session or account of its own as a condition of
 serving a `private` room. Authorizing by session would record which member acted on every

@@ -274,7 +274,7 @@ export const PAYLOAD_SCHEMA = {
         "version",
         "updatedAt"
       ],
-      "description": "What `rooms/records/list/0.6` returns: `RecordMetadataV2` plus `kind` on an `open` room and `createdAt` on every tier. A separate definition, not a change to `RecordMetadataV2`, so that `rooms/records/list/0.2` to `0.5` keep the exact shape they published. Never the body.",
+      "description": "What `rooms/records/list/0.6` returns, and `rooms/keys/browse/0.4` passes through: `RecordMetadataV2` plus `kind` on an `open` room, `createdAt` on every tier and `createdBy` on `open` and `attributed`. A separate definition, not a change to `RecordMetadataV2`, so that `rooms/records/list/0.2` to `0.5` keep the exact shape they published. Never the body.",
       "properties": {
         "key": {
           "type": "string",
@@ -307,6 +307,12 @@ export const PAYLOAD_SCHEMA = {
           "type": "string",
           "format": "date-time",
           "description": "When the host stored the record's first version: RFC 3339, set by the host, never by a writer. Host metadata, not body, so it is served on every tier. A host MUST set it when it stores a record's first version and MUST keep it unchanged for as long as it holds the record — across every later version, every curation, retraction included, and a member's withdrawal — so that it says when the room received the record, which `updatedAt` cannot once the record has been edited or curated. A host that stored a record before it kept `createdAt` MUST omit it for that record rather than supply a guess such as the earliest `updatedAt` it still holds; a reader then falls back to `updatedAt` (`SealedRecordBody`, *When it was written*). Readers order messages and judge `writtenAt` by it."
+        },
+        "createdBy": {
+          "type": "string",
+          "pattern": "^did:",
+          "maxLength": 2048,
+          "description": "The author of the record's first version, as the host recorded it when it stored that version: the DID it authenticated for the write on an `open` room, and on an `attributed` one the author it records for every write. Set by the host, never by a writer, and kept unchanged for as long as it holds the record — across every later version, every curation and a retraction — like `createdAt`. Served on `open` and `attributed` rooms only: a `private` room's host records no author, and MUST NOT serve this. Omitted for a record stored before the host kept it, rather than guessed. Readers use it to apply the rules about a rewrite by another member to a record they see for the first time (`SealedRecordBody`, *The record's original author*)."
         },
         "title": {
           "type": "string",
@@ -512,7 +518,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "version",
         "updatedAt"
       ],
-      "description": "What `rooms/records/list/0.6` returns: `RecordMetadataV2` plus `kind` on an `open` room and `createdAt` on every tier. A separate definition, not a change to `RecordMetadataV2`, so that `rooms/records/list/0.2` to `0.5` keep the exact shape they published. Never the body.",
+      "description": "What `rooms/records/list/0.6` returns, and `rooms/keys/browse/0.4` passes through: `RecordMetadataV2` plus `kind` on an `open` room, `createdAt` on every tier and `createdBy` on `open` and `attributed`. A separate definition, not a change to `RecordMetadataV2`, so that `rooms/records/list/0.2` to `0.5` keep the exact shape they published. Never the body.",
       "properties": {
         "key": {
           "type": "string",
@@ -545,6 +551,12 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "type": "string",
           "format": "date-time",
           "description": "When the host stored the record's first version: RFC 3339, set by the host, never by a writer. Host metadata, not body, so it is served on every tier. A host MUST set it when it stores a record's first version and MUST keep it unchanged for as long as it holds the record — across every later version, every curation, retraction included, and a member's withdrawal — so that it says when the room received the record, which `updatedAt` cannot once the record has been edited or curated. A host that stored a record before it kept `createdAt` MUST omit it for that record rather than supply a guess such as the earliest `updatedAt` it still holds; a reader then falls back to `updatedAt` (`SealedRecordBody`, *When it was written*). Readers order messages and judge `writtenAt` by it."
+        },
+        "createdBy": {
+          "type": "string",
+          "pattern": "^did:",
+          "maxLength": 2048,
+          "description": "The author of the record's first version, as the host recorded it when it stored that version: the DID it authenticated for the write on an `open` room, and on an `attributed` one the author it records for every write. Set by the host, never by a writer, and kept unchanged for as long as it holds the record — across every later version, every curation and a retraction — like `createdAt`. Served on `open` and `attributed` rooms only: a `private` room's host records no author, and MUST NOT serve this. Omitted for a record stored before the host kept it, rather than guessed. Readers use it to apply the rules about a rewrite by another member to a record they see for the first time (`SealedRecordBody`, *The record's original author*)."
         },
         "title": {
           "type": "string",

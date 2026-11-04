@@ -9599,6 +9599,8 @@ export interface FieldVisibility {
  * - check that the decrypted length equals the padded length, that every padding byte is zero, and, after removing the padding, that the plaintext matches `digest`.
  *
  * A reader **MUST** refuse a file that fails any check, and **MUST NOT** present it with a warning instead. A reader that streams **MUST NOT** treat the plaintext as received — save it under its final name, render it, or hand it to another component — until the digest has verified; it writes to a temporary destination and discards that destination on a mismatch.
+ *
+ * **An image's size and preview.** `width`, `height` and `preview` are OPTIONAL and advisory: they let a reader lay out an image, and show something, before it fetches and decrypts the blob. A reader that fetches the file checks them against the bytes — the decoded image's dimensions, and that the file is an image at all — and on a mismatch uses the bytes and discards them; it MUST NOT treat any of them as evidence about the file. On `attributed` and `private` rooms they are inside the sealed, signed body like the rest of the manifest, so the host learns nothing from them; on an `open` room they are in the clear, as everything there is, and a writer carries them only with `rooms/records/put/0.5` or later. A writer uses them only once the room's profile lists them in `recordMembers` (`RoomProfile`), as with the other members a reader that predates them refuses.
  */
 export interface FileManifest {
   /**
@@ -9638,6 +9640,27 @@ export interface FileManifest {
    * The file key itself, 32 bytes base64url without padding: present on an `open` room only, where there is no storage key to derive it from. Minted by the uploader from a cryptographically secure random source for this one file and never reused. MUST be absent on `attributed` and `private` rooms, where the key is derived and never stored.
    */
   fileKey?: string;
+  /**
+   * The image's width in pixels, as the uploader read it. Advisory; present only with `height`. A reader checks it against the decoded image.
+   */
+  width?: number;
+  /**
+   * The image's height in pixels, as the uploader read it. Advisory; present only with `width`. A reader checks it against the decoded image.
+   */
+  height?: number;
+  /**
+   * A small image standing in for the file until it is fetched: at most 8192 bytes before encoding, enough for a blurred thumbnail and small enough not to swell the record every listing reader opens. A reader renders it only as a raster image it decodes itself — never as SVG or any other type that can carry active content, never as a link, never fetching anything — and replaces it with the file once fetched. It is the uploader's rendering of the file, not a digest of it: a reader MUST NOT present it as the file's contents.
+   */
+  preview?: {
+    /**
+     * The preview's own media type. Raster types only.
+     */
+    mediaType: "image/jpeg" | "image/png" | "image/webp";
+    /**
+     * The preview's bytes, base64url without padding: at most 8192 bytes decoded.
+     */
+    data: string;
+  };
 }
 /**
  * A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.
@@ -12770,7 +12793,7 @@ export interface RecordMetadataV2 {
   blobs?: [BlobRef];
 }
 /**
- * What `rooms/records/list/0.6` returns: `RecordMetadataV2` plus `kind` on an `open` room and `createdAt` on every tier. A separate definition, not a change to `RecordMetadataV2`, so that `rooms/records/list/0.2` to `0.5` keep the exact shape they published. Never the body.
+ * What `rooms/records/list/0.6` returns, and `rooms/keys/browse/0.4` passes through: `RecordMetadataV2` plus `kind` on an `open` room, `createdAt` on every tier and `createdBy` on `open` and `attributed`. A separate definition, not a change to `RecordMetadataV2`, so that `rooms/records/list/0.2` to `0.5` keep the exact shape they published. Never the body.
  */
 export interface RecordMetadataV3 {
   /**
@@ -12794,6 +12817,10 @@ export interface RecordMetadataV3 {
    * When the host stored the record's first version: RFC 3339, set by the host, never by a writer. Host metadata, not body, so it is served on every tier. A host MUST set it when it stores a record's first version and MUST keep it unchanged for as long as it holds the record — across every later version, every curation, retraction included, and a member's withdrawal — so that it says when the room received the record, which `updatedAt` cannot once the record has been edited or curated. A host that stored a record before it kept `createdAt` MUST omit it for that record rather than supply a guess such as the earliest `updatedAt` it still holds; a reader then falls back to `updatedAt` (`SealedRecordBody`, *When it was written*). Readers order messages and judge `writtenAt` by it.
    */
   createdAt?: string;
+  /**
+   * The author of the record's first version, as the host recorded it when it stored that version: the DID it authenticated for the write on an `open` room, and on an `attributed` one the author it records for every write. Set by the host, never by a writer, and kept unchanged for as long as it holds the record — across every later version, every curation and a retraction — like `createdAt`. Served on `open` and `attributed` rooms only: a `private` room's host records no author, and MUST NOT serve this. Omitted for a record stored before the host kept it, rather than guessed. Readers use it to apply the rules about a rewrite by another member to a record they see for the first time (`SealedRecordBody`, *The record's original author*).
+   */
+  createdBy?: string;
   /**
    * Present only on an `open` room; sealed with the body otherwise.
    */
@@ -14022,7 +14049,7 @@ export interface RoomProfile {
    */
   emoji?: string;
   /**
-   * The optional `SealedRecordBody` members — and on an `open` room the `cleartext` members of `rooms/records/put` — that the room's writers may use beyond the base set, as a set: order carries no meaning. Defined values: `kind`, `inReplyTo`, `writtenAt`, `editedAt`. A writer MUST NOT write a member this governs unless the room's current profile lists it; absent means none (`SealedRecordBody`, *When a writer may use these members*). A writer MAY rely on a profile it resolved within the room's current epoch. The base set is every other member of `SealedRecordBody`, which a writer may always use. A value a writer does not know grants it nothing. Set by a member whose authority confers `curate` or `admin` (who may write the profile at all) — with `rooms/keys/profile/write` on a sealed tier, or `rooms/records/put` at `room-profile` on an `open` room — and never by default. Whether the room's readers are ready is the owner's or a curator's decision, made out of band; the order is readers (profile readers included, since a reader that predates this member refuses the profile carrying it), then the owner's key holder, which re-writes the profile after a removal and so MUST accept this member before any profile carries it, then on the sealed tiers the key holders that seal for writers, then the profile (`SealedRecordBody`, *Turning them on*). Listing a member never obliges a writer to use it, and removing one stops writers using it by the room's next epoch at the latest; records already written keep it.
+   * The optional `SealedRecordBody` members — and on an `open` room the `cleartext` members of `rooms/records/put` — that the room's writers may use beyond the base set, as a set: order carries no meaning. Defined values: `kind`, `inReplyTo`, `writtenAt`, `editedAt`, and `width`, `height` and `preview`, which name the `FileManifest` members of those names inside a record's `file`. A writer MUST NOT write a member this governs unless the room's current profile lists it; absent means none (`SealedRecordBody`, *When a writer may use these members*). A writer MAY rely on a profile it resolved within the room's current epoch. The base set is every other member of `SealedRecordBody`, which a writer may always use. A value a writer does not know grants it nothing. Set by a member whose authority confers `curate` or `admin` (who may write the profile at all) — with `rooms/keys/profile/write` on a sealed tier, or `rooms/records/put` at `room-profile` on an `open` room — and never by default. Whether the room's readers are ready is the owner's or a curator's decision, made out of band; the order is readers (profile readers included, since a reader that predates this member refuses the profile carrying it), then the owner's key holder, which re-writes the profile after a removal and so MUST accept this member before any profile carries it, then on the sealed tiers the key holders that seal for writers, then the profile (`SealedRecordBody`, *Turning them on*). Listing a member never obliges a writer to use it, and removing one stops writers using it by the room's next epoch at the latest; records already written keep it.
    *
    * @minItems 1
    * @maxItems 32

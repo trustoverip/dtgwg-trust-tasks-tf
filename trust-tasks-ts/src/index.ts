@@ -1735,6 +1735,9 @@ export import RoomsKeysBrowse_v0_2 = _RoomsKeysBrowse_v0_2;
 import * as _RoomsKeysBrowse_v0_3 from "./rooms/keys/browse/0.3/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomsKeysBrowse_v0_3 = _RoomsKeysBrowse_v0_3;
+import * as _RoomsKeysBrowse_v0_4 from "./rooms/keys/browse/0.4/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import RoomsKeysBrowse_v0_4 = _RoomsKeysBrowse_v0_4;
 import * as _RoomsKeysChain_v0_1 from "./rooms/keys/chain/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomsKeysChain_v0_1 = _RoomsKeysChain_v0_1;
@@ -1786,6 +1789,9 @@ export import RoomsKeysProfileWrite_v0_1 = _RoomsKeysProfileWrite_v0_1;
 import * as _RoomsKeysRead_v0_1 from "./rooms/keys/read/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomsKeysRead_v0_1 = _RoomsKeysRead_v0_1;
+import * as _RoomsKeysRead_v0_2 from "./rooms/keys/read/0.2/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import RoomsKeysRead_v0_2 = _RoomsKeysRead_v0_2;
 import * as _RoomsKeysSeal_v0_1 from "./rooms/keys/seal/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomsKeysSeal_v0_1 = _RoomsKeysSeal_v0_1;
@@ -1867,6 +1873,9 @@ export import RoomsRecordsGet_v0_1 = _RoomsRecordsGet_v0_1;
 import * as _RoomsRecordsGet_v0_2 from "./rooms/records/get/0.2/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomsRecordsGet_v0_2 = _RoomsRecordsGet_v0_2;
+import * as _RoomsRecordsGet_v0_3 from "./rooms/records/get/0.3/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import RoomsRecordsGet_v0_3 = _RoomsRecordsGet_v0_3;
 import * as _RoomsRecordsList_v0_1 from "./rooms/records/list/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomsRecordsList_v0_1 = _RoomsRecordsList_v0_1;

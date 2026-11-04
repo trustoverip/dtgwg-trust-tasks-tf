@@ -141,7 +141,7 @@ A conforming **host** (`recipient`):
 
    A prune that removed nothing takes no version and leaves no mark.
 6. **MUST** return `lastPrune` thereafter wherever a response can carry it
-   ([`rooms/records/list`](../../list/0.6/spec.md) 0.3, [`rooms/keys/browse`](../../../keys/browse/0.3/spec.md)
+   ([`rooms/records/list`](../../list/0.6/spec.md) 0.3, [`rooms/keys/browse`](../../../keys/browse/0.4/spec.md)
    0.2 through it, [`rooms/info`](../../../info/0.3/spec.md) 0.2).
 7. **MUST** keep the audit trail below, and **MUST NOT** keep anything else of a removed
    record.
