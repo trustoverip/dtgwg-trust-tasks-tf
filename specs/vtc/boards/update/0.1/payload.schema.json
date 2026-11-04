@@ -89,6 +89,36 @@
         "board": {
           "$ref": "../../_shared/0.1/board.schema.json#/$defs/Board"
         },
+        "closing": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "closedEarly",
+            "cancelled",
+            "runningToClose"
+          ],
+          "description": "Present when this update closed the board: how its voting was ended (VTI-BRD-006). Counts the requests made; the ballot box answers them after this response.",
+          "properties": {
+            "closedEarly": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Elections open for voting that were closed early; each is counted as it stood, and the count is final."
+            },
+            "cancelled": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Elections not yet open for voting, or not yet registered, that were cancelled; their ideas are not selected."
+            },
+            "runningToClose": {
+              "type": "array",
+              "items": {
+                "$ref": "../../_shared/0.1/board.schema.json#/$defs/IdeaId"
+              },
+              "uniqueItems": true,
+              "description": "Ideas whose election does not allow closing early and closes when its manifest says."
+            }
+          }
+        },
         "ext": {
           "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
         }

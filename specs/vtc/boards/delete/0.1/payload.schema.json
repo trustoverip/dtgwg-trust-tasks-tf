@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/boards/delete/0.1",
+  "title": "VTC Boards — Delete — payload",
+  "description": "A board manager deletes a closed board: its ideas, notes and each election's content are removed, and each election keeps only a tombstone for the community's tombstone retention. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "boardId",
+    "reason"
+  ],
+  "properties": {
+    "boardId": {
+      "$ref": "../../_shared/0.1/board.schema.json#/$defs/BoardId"
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "Why, recorded with the deletion in the community's audit trail."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Boards — Delete — response payload",
+      "description": "The success response to a vtc/boards/delete/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/boards/delete/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "boardId",
+        "ideasRemoved",
+        "notesRemoved",
+        "electionsRemoved",
+        "tombstones"
+      ],
+      "properties": {
+        "boardId": {
+          "$ref": "../../_shared/0.1/board.schema.json#/$defs/BoardId"
+        },
+        "ideasRemoved": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "notesRemoved": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "electionsRemoved": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Elections whose content the community removed. Each keeps a tombstone unless the retention is zero."
+        },
+        "tombstones": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kept"
+          ],
+          "description": "What the community keeps of the board's elections (VTI-BRD-007, VTI-BRD-008).",
+          "properties": {
+            "kept": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Tombstones kept: each an election's identifier, manifest digest and the board heads the community kept. Zero when the retention is zero."
+            },
+            "removeAt": {
+              "type": "string",
+              "format": "date-time",
+              "description": "When they are removed. Absent when the retention is unbounded, or when none was kept."
+            }
+          }
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
