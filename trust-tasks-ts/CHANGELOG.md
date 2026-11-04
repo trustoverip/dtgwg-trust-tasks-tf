@@ -11,6 +11,85 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.28.14 — 2026-11-04
+
+
+### Added
+
+- **trust-task-discovery**: Publish 0.4, a responder advertises the horizon up to which it honours a stated expiresAt (#1030)
+
+SPEC §7.2 (Bounding the record) applies a consumer's maximum age only where a
+  document states no expiresAt, and since trust-tasks-rs 0.37 (#1021)
+  validate_freshness does so, honouring a stated expiry up to the policy's
+  expiry_horizon. discovery 0.3 cannot describe that: its window "governs
+  issuedAt only" and its responder refuses any document past
+  issuedAt + maxAgeSeconds + clockSkewSeconds, whatever expiresAt it states. A
+  responder that honours an expiry could only advertise a narrower window than
+  it applies, and a producer could not learn that stating an expiry keeps a long
+  delivery acceptable.
+
+  - specs/trust-task-discovery/0.4: acceptanceWindow gains an optional
+    expiryHorizonSeconds (whole seconds, at least 1), and the spec defines a
+    document's acceptance end: issuedAt + maxAgeSeconds without an expiresAt;
+    the earlier of expiresAt and issuedAt + expiryHorizonSeconds with one; and,
+    where the window carries no horizon, the earlier of expiresAt and
+    issuedAt + maxAgeSeconds, which is what a 0.3 window says.
+    - Responder: MUST NOT advertise a horizon wider than it applies, nor one at
+      all if it applies its maximum age whatever expiresAt states.
+    - Discoverer: send bounds follow the acceptance end. MAY state an expiresAt
+      within the horizon, no later than it will pursue delivery, instead of
+      issuing a chain of new attempts; a new attempt carries it unchanged.
+      Absent a horizon, it MUST assume the maximum age applies to every
+      document.
+    - AcceptanceWindow is closed in 0.3, so an added optional member is a MINOR
+      increment (§5.2): a new version, not an edit.
+    - Response-side invalid examples: a zero horizon, a duration string, and a
+      fractional entry-level horizon.
+  - trust-tasks-rs: DiscoveryRegistry::respond_to_v0_4 is the current answer.
+    acceptance_window_from reads the policy's expiry_horizon, and
+    expiry_horizon() sets one by hand. respond_to_v0_3 moves to
+    discovery/superseded.rs and states the window without the horizon (narrower
+    than applied, which 0.3 permits).
+  - trust-tasks-https: enable_discovery answers 0.4, and 0.3 beside 0.2 and 0.1.
+  - trust-tasks-dart-https: enableDiscovery answers 0.4. Dart's FreshnessPolicy
+    has no horizon, so its window states none, which says the maximum age
+    applies to every document. 0.3 moves to the superseded block.
+  - Examples and tests that named the 0.3 types use 0.4.
+  - Bindings regenerated (Rust, TS, Go, Dart). 0.3 is superseded.
+
+  Follows from #1021 and trustoverip/dtgwg-vti-spec#96 (VTI-OPS-024,
+  VTI-OPS-028, VTI-TRN-048), whose implementation in
+  OpenVTC/verifiable-trust-infrastructure states delivery deadlines as expiresAt.
+
+
+
+### Specifications
+
+- **process-attestation**: Label WritersProof as the Holder, and check that an implementation's role names a party (#1029)
+
+Follow-up to #994 and #997.
+
+  - process-attestation/0.1 lists WritersProof in the { url, role, name } form
+    #997 added, so the spec page shows which party it plays.
+  - The outcome-evidence rule says "a relying party MUST NOT", not "a consumer":
+    the rule binds whoever relies on the citing artifact, and "consumer" means a
+    document's recipient (SPEC §7.2).
+  - build-registry fails a knownImplementations role that names none of the
+    specification's parties and is not "both". The meta-schema can only bound it
+    as a string, and a typo would put an undefined party on the page.
+
+- **process-attestation**: Declare outcome evidence, bind receipts by digest, add the CPoE profile (#994)
+
+* spec(process-attestation): declare outcome evidence, bind receipts by digest, add the CPoE profile
+
+
+
+### Website
+
+- Show a task's outcome evidence and size bound, and which party an implementation plays (#997)
+
+* site: show a task's outcome evidence and size bound, and which party an implementation plays
+
 ## 0.28.13 — 2026-11-04
 
 
