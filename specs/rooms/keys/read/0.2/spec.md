@@ -81,7 +81,7 @@ This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). I
 
 ### What changed from 0.1
 
-**What the record's rules need.** The response carries `createdAt` and `createdBy` beside what `0.1` returns: when the host stored the record's first version, and — on `open` and `attributed` rooms — who wrote it. A reader needs the first to judge a record's `writtenAt` and the second to tell a rewrite by another member from the original author's own (`SealedRecordBody`, *When it was written*, *The record's original author*). A key holder can pass on only what the host serves, so the recipient reads with [`rooms/records/get/0.3`](../../../records/get/0.3/spec.md), which carries both, where the host serves it, and passes them through exactly as served; where the host serves only an earlier version, they are absent.
+**What the record's rules need.** The response carries `createdAt`, `createdBy` and `bodyStoredAt` beside what `0.1` returns: when the host stored the record's first version, who wrote it (on `open` and `attributed` rooms), and when the host stored the body the current version carries. A reader needs the first to judge a record's `writtenAt`, the third to verify the author's proof against the DID document as it stood when that body was stored (`SealedRecordBody`, *Which DID document*), and the second to tell a rewrite by another member from the original author's own (`SealedRecordBody`, *When it was written*, *The record's original author*). A key holder can pass on only what the host serves, so the recipient reads with [`rooms/records/get/0.3`](../../../records/get/0.3/spec.md), which carries all three, where the host serves it, and passes them through exactly as served; where the host serves only an earlier version, they are absent. A recipient that verifies the author's proof before handing the member a sealed record's plaintext verifies it as *Which DID document* says, against the document as of `bodyStoredAt`.
 
 **Several records in one request.** A request may name `keys` instead of `key`: up to **32** records of the same room at the same host, each answered on its own in `results` (*Reading several records*). A member's surface that shows a conversation needs the records on one screen, and on a sealed tier opening each is a round trip to the member's agent; on a phone that cost is paid per row.
 
@@ -130,7 +130,7 @@ The consequence belongs on the **write** path: continuing to hand material to a 
 
 ### Reading several records
 
-A request names exactly one of `key` and `keys`; a recipient **MUST** refuse one naming both or neither with the standard `malformedRequest`. A request naming `key` is answered as `0.1` answers it, with `createdAt` and `createdBy` where the host served them, and never with `results`.
+A request names exactly one of `key` and `keys`; a recipient **MUST** refuse one naming both or neither with the standard `malformedRequest`. A request naming `key` is answered as `0.1` answers it, with `createdAt`, `createdBy` and `bodyStoredAt` where the host served them, and never with `results`.
 
 A request naming `keys` is answered with `results` and none of the single-record members: **one entry per key, in the request's order**, each carrying its `key` and either that record — `version`, `verification` and the members a single read returns — or an `error`, never both. Each key is read exactly as a request naming it alone would read it: its own `rooms/records/get` to the same host, under the same `read` grant, its own checks (*What the recipient checks*), its own verdict. **One key's failure never fails another's**, and a key's error carries the code and `details` it would have been refused with alone — `hostRefused` for a record the host does not hold, `cannotOpen` for one that does not open, `hostUnreachable` where the host stopped answering part way. A retracted record is a success, as alone.
 
@@ -168,7 +168,7 @@ A `retracted` record has no body. That is an answer, not a failure: the tombston
 
 **`verification`** (response) — REQUIRED with every record returned, on a single read and on each successful entry of `results`. An agent that returns a record without saying what it checked has made the member's decision for them.
 
-**`createdAt`**, **`createdBy`** (response, and on each entry of `results`) — passed through from [`rooms/records/get/0.3`](../../../records/get/0.3/spec.md) exactly as the host served them ([`RecordMetadataV3`](../../../_shared/0.2/room.schema.json)). `createdBy` never appears for a `private` room.
+**`createdAt`**, **`createdBy`**, **`bodyStoredAt`** (response, and on each entry of `results`) — passed through from [`rooms/records/get/0.3`](../../../records/get/0.3/spec.md) exactly as the host served them ([`RecordMetadataV3`](../../../_shared/0.2/room.schema.json)). `createdBy` never appears for a `private` room.
 
 **`results`** (response) — present only when the request named `keys`: one entry per key, in order.
 
@@ -300,6 +300,7 @@ The second key names a record the host does not hold, and the recipient stopped 
         "updatedAt": "2026-01-01T00:00:00Z",
         "createdAt": "2025-12-31T09:14:02Z",
         "createdBy": "did:webvh:example.com:people:alice",
+        "bodyStoredAt": "2025-12-31T09:14:02Z",
         "author": "did:webvh:example.com:people:alice",
         "plaintext": "eyJ0aXRsZSI6IlByaWNpbmcgaG9sZHMifQ",
         "verification": {

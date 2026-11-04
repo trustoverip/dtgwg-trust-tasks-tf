@@ -591,12 +591,14 @@ class FileManifest {
   /// stored.
   final String? fileKey;
 
-  /// The image's width in pixels, as the uploader read it. Advisory; present only with
-  /// `height`. A reader checks it against the decoded image.
+  /// The image's width in pixels, as the uploader read it. Advisory. A writer sets
+  /// `width` and `height` together or neither; a reader ignores one without the other. A
+  /// reader checks it against the decoded image.
   final int? width;
 
-  /// The image's height in pixels, as the uploader read it. Advisory; present only with
-  /// `width`. A reader checks it against the decoded image.
+  /// The image's height in pixels, as the uploader read it. Advisory. A writer sets
+  /// `width` and `height` together or neither; a reader ignores one without the other. A
+  /// reader checks it against the decoded image.
   final int? height;
 
   /// A small image standing in for the file until it is fetched: at most 8192 bytes

@@ -786,12 +786,14 @@ class FileManifest {
   /// stored.
   final String? fileKey;
 
-  /// The image's width in pixels, as the uploader read it. Advisory; present only with
-  /// `height`. A reader checks it against the decoded image.
+  /// The image's width in pixels, as the uploader read it. Advisory. A writer sets
+  /// `width` and `height` together or neither; a reader ignores one without the other. A
+  /// reader checks it against the decoded image.
   final int? width;
 
-  /// The image's height in pixels, as the uploader read it. Advisory; present only with
-  /// `width`. A reader checks it against the decoded image.
+  /// The image's height in pixels, as the uploader read it. Advisory. A writer sets
+  /// `width` and `height` together or neither; a reader ignores one without the other. A
+  /// reader checks it against the decoded image.
   final int? height;
 
   /// A small image standing in for the file until it is fetched: at most 8192 bytes
@@ -1070,13 +1072,30 @@ class RoomProfileStatement {
 /// be used for a hardware-backed signer. **Reading.** After opening a record a reader
 /// MUST, before showing any member of it or trusting its `file`: (1) parse it as this
 /// object and refuse an unknown member; (2) verify `proof` against `author`'s DID
-/// document, for `assertionMethod`; (3) check that `roomId`, `key` and `version` equal
-/// the location the record was sealed at — the record's `roomId` and `key`, and
+/// document, for `assertionMethod`, as that document stood when the host stored this
+/// version's body (*Which DID document*); (3) check that `roomId`, `key` and `version`
+/// equal the location the record was sealed at — the record's `roomId` and `key`, and
 /// `sealed.version` where present, else the record's `version` (`SealedRecord`); (4)
 /// on an `attributed` room, check that `author` equals the `author` the host recorded
 /// for the record. A reader MUST refuse a record that fails any of these, and MUST NOT
-/// show it with a warning instead; the one exception, *An author whose DID does not
-/// resolve*, shows a placeholder and none of the record. **A record curated before
+/// show it with a warning instead; the exceptions, *Which DID document* and *An author
+/// whose DID does not resolve*, show a placeholder and none of the record. **Which DID
+/// document.** Rule (2) verifies the proof of the version the reader reads against
+/// `author`'s DID document **as it stood at the host's `bodyStoredAt`** for that
+/// version (`RecordMetadataV3`) — when the host stored the body that version carries,
+/// which an edit moves and a curation does not. Not at the proof's own `created`,
+/// which the author chose, and not only against the document as it is now. A key the
+/// author rotated away after `bodyStoredAt` still verifies the version; a key rotated
+/// away before it does not. Where the author's DID method keeps its history —
+/// `did:webvh`, resolved with `versionTime` — a reader resolves the document as of
+/// `bodyStoredAt`, and a proof that fails against it is refused like any other. Where
+/// the method keeps no history, a reader can only use the current document, and a
+/// proof that fails against it may be a forgery or may be a key rotated away since the
+/// version was written, which the reader cannot tell apart: it MUST show such a record
+/// as the placeholder below — its author cannot be verified, nothing of it shown — and
+/// MUST NOT drop it silently. Where the reader has no `bodyStoredAt` — a host that
+/// predates it, or a read that does not carry it — it uses the current document, and
+/// treats a proof that fails there the same way. **A record curated before
 /// `sealed.version` existed.** A host that predates `SealedRecord.version` moved such
 /// a record's version without recording the one it was sealed at, so it opens at
 /// neither. Where a record carries no `sealed.version` and does not open at its own
@@ -1336,27 +1355,28 @@ class RoomProfileStatement {
 /// reader MUST tell apart: `author`'s DID does not resolve to a DID document — it no
 /// longer resolves, or its method reports it deactivated — or the proof does not
 /// verify against the document it resolves to. A record whose proof does not verify is
-/// refused, as above. For a record whose author's DID does not resolve, a reader MAY,
-/// instead of refusing it, show a placeholder saying that the record's author cannot
-/// be verified, in the room's conversation, ordered by the host's `createdAt` for it,
-/// else its `updatedAt`, so that replies naming its key still anchor to it. It MUST
-/// NOT show or use any member of the body — not its `body`, `title`, `file`, `kind`,
-/// `inReplyTo` or `writtenAt` — MUST NOT count it as a reaction, and MUST NOT accept
-/// it as the room's profile (`RoomProfileStatement`). A placeholder is not a record
-/// shown with a warning: it shows none of the record. **A file's caption.** On a
-/// record carrying `file`, `body` is the file's caption. A reader that shows the file
-/// SHOULD show its `body` with it. A manifest's `width`, `height` and `preview` let a
-/// reader lay out and show an image before fetching it; they are advisory
-/// (`FileManifest`). **When a writer may use these members.** `kind`, `inReplyTo`,
-/// `writtenAt` and `editedAt`, and the `FileManifest` members `width`, `height` and
-/// `preview` inside `file`, are gated together. A conforming reader that predates them
-/// refuses a body carrying any of them by rule (1), as it refused provenance before it
-/// knew it: a message written with `kind` is invisible to it rather than shown wrong.
-/// **Not every reader conforms.** A reader that ignores the members it does not know
-/// shows a reaction as a post holding its value, and a withdrawn reaction as an empty
-/// post — which is why a room's readers move first, and the room says when its writers
-/// may follow. A writer MUST NOT write `kind`, `inReplyTo`, `writtenAt`, `editedAt`,
-/// `width`, `height` or `preview` into a room unless the room's current profile
+/// refused, as above, except where *Which DID document* requires the placeholder
+/// instead. For a record whose author's DID does not resolve, a reader MAY, instead of
+/// refusing it, show a placeholder saying that the record's author cannot be verified,
+/// in the room's conversation, ordered by the host's `createdAt` for it, else its
+/// `updatedAt`, so that replies naming its key still anchor to it. It MUST NOT show or
+/// use any member of the body — not its `body`, `title`, `file`, `kind`, `inReplyTo`
+/// or `writtenAt` — MUST NOT count it as a reaction, and MUST NOT accept it as the
+/// room's profile (`RoomProfileStatement`). A placeholder is not a record shown with a
+/// warning: it shows none of the record. **A file's caption.** On a record carrying
+/// `file`, `body` is the file's caption. A reader that shows the file SHOULD show its
+/// `body` with it. A manifest's `width`, `height` and `preview` let a reader lay out
+/// and show an image before fetching it; they are advisory (`FileManifest`). **When a
+/// writer may use these members.** `kind`, `inReplyTo`, `writtenAt` and `editedAt`,
+/// and the `FileManifest` members `width`, `height` and `preview` inside `file`, are
+/// gated together. A conforming reader that predates them refuses a body carrying any
+/// of them by rule (1), as it refused provenance before it knew it: a message written
+/// with `kind` is invisible to it rather than shown wrong. **Not every reader
+/// conforms.** A reader that ignores the members it does not know shows a reaction as
+/// a post holding its value, and a withdrawn reaction as an empty post — which is why
+/// a room's readers move first, and the room says when its writers may follow. A
+/// writer MUST NOT write `kind`, `inReplyTo`, `writtenAt`, `editedAt`, `width`,
+/// `height` or `preview` into a room unless the room's current profile
 /// (`RoomProfileStatement`, as a reader resolves it) lists that member in
 /// `recordMembers` (`RoomProfile`). No profile, a profile without `recordMembers`, or
 /// one the writer cannot resolve means none of them may be written — the most
@@ -2805,10 +2825,10 @@ extension type const RecordMetadataV3Status(String value) {
 }
 
 /// What `rooms/records/list/0.6` returns, and `rooms/keys/browse/0.4` passes through:
-/// `RecordMetadataV2` plus `kind` on an `open` room, `createdAt` on every tier and
-/// `createdBy` on `open` and `attributed`. A separate definition, not a change to
-/// `RecordMetadataV2`, so that `rooms/records/list/0.2` to `0.5` keep the exact shape
-/// they published. Never the body.
+/// `RecordMetadataV2` plus `kind` on an `open` room, `createdAt` and `bodyStoredAt` on
+/// every tier and `createdBy` on `open` and `attributed`. A separate definition, not a
+/// change to `RecordMetadataV2`, so that `rooms/records/list/0.2` to `0.5` keep the
+/// exact shape they published. Never the body.
 class RecordMetadataV3 {
   const RecordMetadataV3({
     required this.key,
@@ -2818,6 +2838,7 @@ class RecordMetadataV3 {
     required this.updatedAt,
     this.createdAt,
     this.createdBy,
+    this.bodyStoredAt,
     this.title,
     this.description,
     this.author,
@@ -2837,6 +2858,7 @@ class RecordMetadataV3 {
         updatedAt: json['updatedAt'] as String,
         createdAt: json['createdAt'] as String?,
         createdBy: json['createdBy'] as String?,
+        bodyStoredAt: json['bodyStoredAt'] as String?,
         title: json['title'] as String?,
         description: json['description'] as String?,
         author: json['author'] as String?,
@@ -2887,6 +2909,17 @@ class RecordMetadataV3 {
   /// author*).
   final String? createdBy;
 
+  /// When the host stored the body the record's current version carries: the time of the
+  /// `rooms/records/put` that wrote that body. Set by the host, never by a writer. A
+  /// curation (`rooms/records/curate`), and anything else that moves the version without
+  /// writing a new author-signed body, leaves it unchanged; for the first version it
+  /// equals `createdAt`. The host knows which task wrote each version, so it is served
+  /// on every tier, `private` included, and says nothing about the body. Readers verify
+  /// the current version's proof against the author's DID document as it stood at this
+  /// time (`SealedRecordBody`, *Which DID document*). Omitted for a version stored
+  /// before the host kept it, rather than guessed.
+  final String? bodyStoredAt;
+
   /// Present only on an `open` room; sealed with the body otherwise.
   final String? title;
 
@@ -2920,6 +2953,7 @@ class RecordMetadataV3 {
         'updatedAt': updatedAt,
         if (createdAt != null) 'createdAt': createdAt!,
         if (createdBy != null) 'createdBy': createdBy!,
+        if (bodyStoredAt != null) 'bodyStoredAt': bodyStoredAt!,
         if (title != null) 'title': title!,
         if (description != null) 'description': description!,
         if (author != null) 'author': author!,

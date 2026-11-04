@@ -370,13 +370,13 @@ export const PAYLOAD_SCHEMA = {
           "type": "integer",
           "minimum": 1,
           "maximum": 1048576,
-          "description": "The image's width in pixels, as the uploader read it. Advisory; present only with `height`. A reader checks it against the decoded image."
+          "description": "The image's width in pixels, as the uploader read it. Advisory. A writer sets `width` and `height` together or neither; a reader ignores one without the other. A reader checks it against the decoded image."
         },
         "height": {
           "type": "integer",
           "minimum": 1,
           "maximum": 1048576,
-          "description": "The image's height in pixels, as the uploader read it. Advisory; present only with `width`. A reader checks it against the decoded image."
+          "description": "The image's height in pixels, as the uploader read it. Advisory. A writer sets `width` and `height` together or neither; a reader ignores one without the other. A reader checks it against the decoded image."
         },
         "preview": {
           "type": "object",
@@ -405,14 +405,6 @@ export const PAYLOAD_SCHEMA = {
             }
           }
         }
-      },
-      "dependentRequired": {
-        "width": [
-          "height"
-        ],
-        "height": [
-          "width"
-        ]
       }
     },
     "RecordValidUntil": {
@@ -742,13 +734,13 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "type": "integer",
           "minimum": 1,
           "maximum": 1048576,
-          "description": "The image's width in pixels, as the uploader read it. Advisory; present only with `height`. A reader checks it against the decoded image."
+          "description": "The image's width in pixels, as the uploader read it. Advisory. A writer sets `width` and `height` together or neither; a reader ignores one without the other. A reader checks it against the decoded image."
         },
         "height": {
           "type": "integer",
           "minimum": 1,
           "maximum": 1048576,
-          "description": "The image's height in pixels, as the uploader read it. Advisory; present only with `width`. A reader checks it against the decoded image."
+          "description": "The image's height in pixels, as the uploader read it. Advisory. A writer sets `width` and `height` together or neither; a reader ignores one without the other. A reader checks it against the decoded image."
         },
         "preview": {
           "type": "object",
@@ -777,14 +769,6 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             }
           }
         }
-      },
-      "dependentRequired": {
-        "width": [
-          "height"
-        ],
-        "height": [
-          "width"
-        ]
       }
     },
     "RecordValidUntil": {

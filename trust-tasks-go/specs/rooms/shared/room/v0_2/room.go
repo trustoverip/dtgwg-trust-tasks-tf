@@ -189,28 +189,44 @@ type SealedRecord struct {
 // hardware-backed signer. **Reading.** After opening a record a reader MUST, before
 // showing any member of it or trusting its `file`: (1) parse it as this object and refuse
 // an unknown member; (2) verify `proof` against `author`'s DID document, for
-// `assertionMethod`; (3) check that `roomId`, `key` and `version` equal the location the
-// record was sealed at — the record's `roomId` and `key`, and `sealed.version` where
+// `assertionMethod`, as that document stood when the host stored this version's body
+// (*Which DID document*); (3) check that `roomId`, `key` and `version` equal the location
+// the record was sealed at — the record's `roomId` and `key`, and `sealed.version` where
 // present, else the record's `version` (`SealedRecord`); (4) on an `attributed` room,
 // check that `author` equals the `author` the host recorded for the record. A reader MUST
 // refuse a record that fails any of these, and MUST NOT show it with a warning instead;
-// the one exception, *An author whose DID does not resolve*, shows a placeholder and none
-// of the record. **A record curated before `sealed.version` existed.** A host that
-// predates `SealedRecord.version` moved such a record's version without recording the one
-// it was sealed at, so it opens at neither. Where a record carries no `sealed.version`
-// and does not open at its own `version`, a reader MAY try each earlier version in turn,
-// newest first, and use the first at which it opens; rule (3) then checks the body
-// against that version. It MUST NOT try a version greater than the record's own. The AEAD
-// makes a wrong guess fail rather than mislead, and the author's signature over the
-// location makes the version that opened the one the author wrote — so the search
-// recovers the record without trusting the host for the answer. **Why the location is
-// signed as well as sealed.** The AEAD stops the host relocating ciphertext, but every
-// member can open and re-seal a record. Without `roomId`, `key` and `version` under the
-// author's signature, a member could copy another member's signed body to a new key or a
-// later version, and on a `private` room, where the host records no author, readers would
-// attribute it to the original author. **A profile record.** A body carrying
-// `roomProfile` is the room's own profile (`RoomProfileStatement`) and not one of its
-// records: it MUST carry none of `title`, `description`, `body`, `tags`, `kind`,
+// the exceptions, *Which DID document* and *An author whose DID does not resolve*, show a
+// placeholder and none of the record. **Which DID document.** Rule (2) verifies the proof
+// of the version the reader reads against `author`'s DID document **as it stood at the
+// host's `bodyStoredAt`** for that version (`RecordMetadataV3`) — when the host stored
+// the body that version carries, which an edit moves and a curation does not. Not at the
+// proof's own `created`, which the author chose, and not only against the document as it
+// is now. A key the author rotated away after `bodyStoredAt` still verifies the version;
+// a key rotated away before it does not. Where the author's DID method keeps its history
+// — `did:webvh`, resolved with `versionTime` — a reader resolves the document as of
+// `bodyStoredAt`, and a proof that fails against it is refused like any other. Where the
+// method keeps no history, a reader can only use the current document, and a proof that
+// fails against it may be a forgery or may be a key rotated away since the version was
+// written, which the reader cannot tell apart: it MUST show such a record as the
+// placeholder below — its author cannot be verified, nothing of it shown — and MUST NOT
+// drop it silently. Where the reader has no `bodyStoredAt` — a host that predates it, or
+// a read that does not carry it — it uses the current document, and treats a proof that
+// fails there the same way. **A record curated before `sealed.version` existed.** A host
+// that predates `SealedRecord.version` moved such a record's version without recording
+// the one it was sealed at, so it opens at neither. Where a record carries no
+// `sealed.version` and does not open at its own `version`, a reader MAY try each earlier
+// version in turn, newest first, and use the first at which it opens; rule (3) then
+// checks the body against that version. It MUST NOT try a version greater than the
+// record's own. The AEAD makes a wrong guess fail rather than mislead, and the author's
+// signature over the location makes the version that opened the one the author wrote — so
+// the search recovers the record without trusting the host for the answer. **Why the
+// location is signed as well as sealed.** The AEAD stops the host relocating ciphertext,
+// but every member can open and re-seal a record. Without `roomId`, `key` and `version`
+// under the author's signature, a member could copy another member's signed body to a new
+// key or a later version, and on a `private` room, where the host records no author,
+// readers would attribute it to the original author. **A profile record.** A body
+// carrying `roomProfile` is the room's own profile (`RoomProfileStatement`) and not one
+// of its records: it MUST carry none of `title`, `description`, `body`, `tags`, `kind`,
 // `inReplyTo`, `writtenAt`, `editedAt`, `file`, `basis`, `confidence`, `evidence`,
 // `validFor` and `validUntil`, and the rules for locating, accepting and choosing it are
 // `RoomProfileStatement`'s, applied on top of the four above. A reader that opens one in
@@ -443,15 +459,16 @@ type SealedRecord struct {
 // which a reader MUST tell apart: `author`'s DID does not resolve to a DID document — it
 // no longer resolves, or its method reports it deactivated — or the proof does not verify
 // against the document it resolves to. A record whose proof does not verify is refused,
-// as above. For a record whose author's DID does not resolve, a reader MAY, instead of
-// refusing it, show a placeholder saying that the record's author cannot be verified, in
-// the room's conversation, ordered by the host's `createdAt` for it, else its
-// `updatedAt`, so that replies naming its key still anchor to it. It MUST NOT show or use
-// any member of the body — not its `body`, `title`, `file`, `kind`, `inReplyTo` or
-// `writtenAt` — MUST NOT count it as a reaction, and MUST NOT accept it as the room's
-// profile (`RoomProfileStatement`). A placeholder is not a record shown with a warning:
-// it shows none of the record. **A file's caption.** On a record carrying `file`, `body`
-// is the file's caption. A reader that shows the file SHOULD show its `body` with it. A
+// as above, except where *Which DID document* requires the placeholder instead. For a
+// record whose author's DID does not resolve, a reader MAY, instead of refusing it, show
+// a placeholder saying that the record's author cannot be verified, in the room's
+// conversation, ordered by the host's `createdAt` for it, else its `updatedAt`, so that
+// replies naming its key still anchor to it. It MUST NOT show or use any member of the
+// body — not its `body`, `title`, `file`, `kind`, `inReplyTo` or `writtenAt` — MUST NOT
+// count it as a reaction, and MUST NOT accept it as the room's profile
+// (`RoomProfileStatement`). A placeholder is not a record shown with a warning: it shows
+// none of the record. **A file's caption.** On a record carrying `file`, `body` is the
+// file's caption. A reader that shows the file SHOULD show its `body` with it. A
 // manifest's `width`, `height` and `preview` let a reader lay out and show an image
 // before fetching it; they are advisory (`FileManifest`). **When a writer may use these
 // members.** `kind`, `inReplyTo`, `writtenAt` and `editedAt`, and the `FileManifest`
@@ -1682,10 +1699,10 @@ const (
 )
 
 // RecordMetadataV3 What `rooms/records/list/0.6` returns, and `rooms/keys/browse/0.4`
-// passes through: `RecordMetadataV2` plus `kind` on an `open` room, `createdAt` on every
-// tier and `createdBy` on `open` and `attributed`. A separate definition, not a change to
-// `RecordMetadataV2`, so that `rooms/records/list/0.2` to `0.5` keep the exact shape they
-// published. Never the body.
+// passes through: `RecordMetadataV2` plus `kind` on an `open` room, `createdAt` and
+// `bodyStoredAt` on every tier and `createdBy` on `open` and `attributed`. A separate
+// definition, not a change to `RecordMetadataV2`, so that `rooms/records/list/0.2` to
+// `0.5` keep the exact shape they published. Never the body.
 type RecordMetadataV3 struct {
 	// The record's key within the room. On `attributed` and `private` rooms this MUST be
 	// opaque — a random identifier, never a descriptive slug. A key reading
@@ -1726,6 +1743,17 @@ type RecordMetadataV3 struct {
 	// use it to apply the rules about a rewrite by another member to a record they see for
 	// the first time (`SealedRecordBody`, *The record's original author*).
 	CreatedBy *string `json:"createdBy,omitempty"`
+
+	// When the host stored the body the record's current version carries: the time of the
+	// `rooms/records/put` that wrote that body. Set by the host, never by a writer. A
+	// curation (`rooms/records/curate`), and anything else that moves the version without
+	// writing a new author-signed body, leaves it unchanged; for the first version it equals
+	// `createdAt`. The host knows which task wrote each version, so it is served on every
+	// tier, `private` included, and says nothing about the body. Readers verify the current
+	// version's proof against the author's DID document as it stood at this time
+	// (`SealedRecordBody`, *Which DID document*). Omitted for a version stored before the
+	// host kept it, rather than guessed.
+	BodyStoredAt *string `json:"bodyStoredAt,omitempty"`
 
 	// Present only on an `open` room; sealed with the body otherwise.
 	Title *string `json:"title,omitempty"`
@@ -1937,12 +1965,14 @@ type FileManifest struct {
 	// absent on `attributed` and `private` rooms, where the key is derived and never stored.
 	FileKey *string `json:"fileKey,omitempty"`
 
-	// The image's width in pixels, as the uploader read it. Advisory; present only with
-	// `height`. A reader checks it against the decoded image.
+	// The image's width in pixels, as the uploader read it. Advisory. A writer sets `width`
+	// and `height` together or neither; a reader ignores one without the other. A reader
+	// checks it against the decoded image.
 	Width *int64 `json:"width,omitempty"`
 
-	// The image's height in pixels, as the uploader read it. Advisory; present only with
-	// `width`. A reader checks it against the decoded image.
+	// The image's height in pixels, as the uploader read it. Advisory. A writer sets `width`
+	// and `height` together or neither; a reader ignores one without the other. A reader
+	// checks it against the decoded image.
 	Height *int64 `json:"height,omitempty"`
 
 	// A small image standing in for the file until it is fetched: at most 8192 bytes before

@@ -58,6 +58,10 @@ export interface RoomsKeysReadResponsePayload {
    */
   createdBy?: string;
   /**
+   * When the host stored the body this version carries, passed through from `rooms/records/get/0.3` exactly as served (`RecordMetadataV3.bodyStoredAt`). The recipient verifies the author's proof against the DID document as it stood then. Absent where the host served none.
+   */
+  bodyStoredAt?: string;
+  /**
    * The member who wrote it, where the tier discloses one. Absent on `private`, where authorship is inside the body the recipient just opened.
    */
   author?: string;
@@ -106,6 +110,10 @@ export interface ReadResult {
    * The author of the record's first version as the host recorded it, passed through from `rooms/records/get/0.3` exactly as served — `open` and `attributed` rooms only (`RecordMetadataV3.createdBy`). Absent where the host served none.
    */
   createdBy?: string;
+  /**
+   * When the host stored the body this version carries, passed through from `rooms/records/get/0.3` exactly as served (`RecordMetadataV3.bodyStoredAt`). The recipient verifies the author's proof against the DID document as it stood then. Absent where the host served none.
+   */
+  bodyStoredAt?: string;
   /**
    * The member who wrote it, where the tier discloses one. Absent on `private`, where authorship is inside the body the recipient just opened.
    */
@@ -272,6 +280,11 @@ export const PAYLOAD_SCHEMA = {
           "maxLength": 2048,
           "description": "The author of the record's first version as the host recorded it, passed through from `rooms/records/get/0.3` exactly as served — `open` and `attributed` rooms only (`RecordMetadataV3.createdBy`). Absent where the host served none."
         },
+        "bodyStoredAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the host stored the body this version carries, passed through from `rooms/records/get/0.3` exactly as served (`RecordMetadataV3.bodyStoredAt`). The recipient verifies the author's proof against the DID document as it stood then. Absent where the host served none."
+        },
         "author": {
           "type": "string",
           "description": "The member who wrote it, where the tier discloses one. Absent on `private`, where authorship is inside the body the recipient just opened."
@@ -344,6 +357,11 @@ export const PAYLOAD_SCHEMA = {
           "pattern": "^did:",
           "maxLength": 2048,
           "description": "The author of the record's first version as the host recorded it, passed through from `rooms/records/get/0.3` exactly as served — `open` and `attributed` rooms only (`RecordMetadataV3.createdBy`). Absent where the host served none."
+        },
+        "bodyStoredAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the host stored the body this version carries, passed through from `rooms/records/get/0.3` exactly as served (`RecordMetadataV3.bodyStoredAt`). The recipient verifies the author's proof against the DID document as it stood then. Absent where the host served none."
         },
         "author": {
           "type": "string",
@@ -559,6 +577,11 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "maxLength": 2048,
           "description": "The author of the record's first version as the host recorded it, passed through from `rooms/records/get/0.3` exactly as served — `open` and `attributed` rooms only (`RecordMetadataV3.createdBy`). Absent where the host served none."
         },
+        "bodyStoredAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the host stored the body this version carries, passed through from `rooms/records/get/0.3` exactly as served (`RecordMetadataV3.bodyStoredAt`). The recipient verifies the author's proof against the DID document as it stood then. Absent where the host served none."
+        },
         "author": {
           "type": "string",
           "description": "The member who wrote it, where the tier discloses one. Absent on `private`, where authorship is inside the body the recipient just opened."
@@ -631,6 +654,11 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "pattern": "^did:",
           "maxLength": 2048,
           "description": "The author of the record's first version as the host recorded it, passed through from `rooms/records/get/0.3` exactly as served — `open` and `attributed` rooms only (`RecordMetadataV3.createdBy`). Absent where the host served none."
+        },
+        "bodyStoredAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the host stored the body this version carries, passed through from `rooms/records/get/0.3` exactly as served (`RecordMetadataV3.bodyStoredAt`). The recipient verifies the author's proof against the DID document as it stood then. Absent where the host served none."
         },
         "author": {
           "type": "string",

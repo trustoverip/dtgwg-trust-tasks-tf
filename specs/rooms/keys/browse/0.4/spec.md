@@ -92,10 +92,11 @@ cannot be told to drop what is missing from it.
 
 The rows are [`RecordMetadataV3`](../../../_shared/0.2/room.schema.json), which
 [`rooms/records/list/0.6`](../../../records/list/0.6/spec.md) returns, rather than
-`RecordMetadata`: each row may carry `createdAt` (every tier), `createdBy` (`open` and
-`attributed`) and `kind` (`open` only), as well as `blobs`, which `RecordMetadata` never carried
+`RecordMetadata`: each row may carry `createdAt` and `bodyStoredAt` (every tier), `createdBy`
+(`open` and `attributed`) and `kind` (`open` only), as well as `blobs`, which `RecordMetadata` never carried
 here. A member whose surface reaches the room only through their key holder needs them for the
-same reason a direct reader does — to judge a record's `writtenAt`, to tell a rewrite by another
+same reason a direct reader does — to judge a record's `writtenAt`, to verify a version's proof
+against the author's DID document as it stood when its body was stored, to tell a rewrite by another
 member from the author's own, and on an open room to tell a message from a reaction without
 opening it (`SealedRecordBody`).
 

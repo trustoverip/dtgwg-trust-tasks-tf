@@ -93,6 +93,10 @@ export interface RoomsRecordsGetResponsePayload {
    * The author of the record's first version, as the host recorded it (`RecordMetadataV3.createdBy`). Present on `open` and `attributed` only, never on `private`; absent for a record stored before the host kept it. NOT committed: removed before hashing the leaf, like `createdAt`.
    */
   createdBy?: string;
+  /**
+   * When the host stored the body this version carries, unchanged by curation (`RecordMetadataV3.bodyStoredAt`). Every tier; absent for a version stored before the host kept it. NOT committed: removed before hashing the leaf, like `createdAt`.
+   */
+  bodyStoredAt?: string;
   ext?: Ext;
 }
 
@@ -253,6 +257,11 @@ export const PAYLOAD_SCHEMA = {
           "pattern": "^did:",
           "maxLength": 2048,
           "description": "The author of the record's first version, as the host recorded it (`RecordMetadataV3.createdBy`). Present on `open` and `attributed` only, never on `private`; absent for a record stored before the host kept it. NOT committed: removed before hashing the leaf, like `createdAt`."
+        },
+        "bodyStoredAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the host stored the body this version carries, unchanged by curation (`RecordMetadataV3.bodyStoredAt`). Every tier; absent for a version stored before the host kept it. NOT committed: removed before hashing the leaf, like `createdAt`."
         },
         "ext": {
           "$ref": "#/$defs/Ext"
@@ -492,6 +501,11 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "pattern": "^did:",
           "maxLength": 2048,
           "description": "The author of the record's first version, as the host recorded it (`RecordMetadataV3.createdBy`). Present on `open` and `attributed` only, never on `private`; absent for a record stored before the host kept it. NOT committed: removed before hashing the leaf, like `createdAt`."
+        },
+        "bodyStoredAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the host stored the body this version carries, unchanged by curation (`RecordMetadataV3.bodyStoredAt`). Every tier; absent for a version stored before the host kept it. NOT committed: removed before hashing the leaf, like `createdAt`."
         },
         "ext": {
           "$ref": "#/$defs/Ext"

@@ -90,7 +90,7 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-m
 
 ### What changed from 0.5
 
-Three optional members on each row ([`RecordMetadataV3`](../../../_shared/0.2/room.schema.json)):
+Four optional members on each row ([`RecordMetadataV3`](../../../_shared/0.2/room.schema.json)):
 
 - **`kind`**, the record's [`RecordKind`](../../../_shared/0.2/room.schema.json) as its current
   version's `cleartext` carries it ([`rooms/records/put/0.5`](../../put/0.5/spec.md)), served
@@ -109,20 +109,26 @@ Three optional members on each row ([`RecordMetadataV3`](../../../_shared/0.2/ro
   to compare a rewrite with; `createdBy` lets it apply the rules about a rewrite by another
   member anyway (`SealedRecordBody`, *The record's original author*). A `private` room's host
   records no author, and serves none.
+- **`bodyStoredAt`**, on every tier: when the host stored the body the record's current version
+  carries — the time of the `rooms/records/put` that wrote it, which a curation leaves alone. A
+  reader verifies the author's proof against the DID document as it stood then
+  (`SealedRecordBody`, *Which DID document*), so a key the author rotated away before it cannot
+  sign a version that verifies. The host knows which task wrote each version, so the sealed
+  tiers, `private` included, carry it too, and it says nothing about the body.
 
 `RecordMetadataV2` is `additionalProperties: false`, so a `0.5` reader would refuse a row
-carrying any of them; `0.6` returns `RecordMetadataV3`, `RecordMetadataV2` plus these three. It
+carrying any of them; `0.6` returns `RecordMetadataV3`, `RecordMetadataV2` plus these four. It
 does not declare `extends: "0.5"`: the rows are a differently named generated type, which the
 declaration does not admit, although every `0.5` member keeps its meaning. A new member on a
 closed payload is a `MINOR` increment per [SPEC §5.2](/SPEC.md#52-compatibility-rules). A host
-serving `0.6` **SHOULD** continue to serve `0.5` and earlier, omitting all three.
+serving `0.6` **SHOULD** continue to serve `0.5` and earlier, omitting all four.
 
 The other ways a member reads a record carry the same metadata from these versions on:
 [`rooms/records/get/0.3`](../../get/0.3/spec.md) (one record, from the host),
 [`rooms/keys/browse/0.4`](../../../keys/browse/0.4/spec.md) (this listing, through a member's key
 holder) and [`rooms/keys/read/0.2`](../../../keys/read/0.2/spec.md) (one record or several, opened
 by the key holder). A reader that learns a record only through an earlier version of one of them
-has no `createdAt` or `createdBy`, and falls back as `SealedRecordBody` says.
+has no `createdAt`, `createdBy` or `bodyStoredAt`, and falls back as `SealedRecordBody` says.
 
 ### What changed from 0.2 to 0.3
 
@@ -189,6 +195,11 @@ On `open` and `attributed` rooms a host **MUST** return `createdBy` on each row 
 recorded for the record's first version, kept like `createdAt` (Host item 17 of
 [`rooms/records/put/0.5`](../../put/0.5/spec.md)), and **MUST** omit it for a record stored before
 it kept that author. On a `private` room it **MUST NOT** return `createdBy`.
+
+A host **MUST** return `bodyStoredAt` on each row, on every tier, as the time it stored the body
+the record's current version carries (Host item 16 of
+[`rooms/records/put/0.5`](../../put/0.5/spec.md)), and **MUST** omit it for a version stored
+before it kept that time.
 
 ### After a prune
 

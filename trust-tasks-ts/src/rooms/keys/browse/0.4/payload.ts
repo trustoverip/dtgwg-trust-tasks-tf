@@ -327,7 +327,7 @@ export const PAYLOAD_SCHEMA = {
         "version",
         "updatedAt"
       ],
-      "description": "What `rooms/records/list/0.6` returns, and `rooms/keys/browse/0.4` passes through: `RecordMetadataV2` plus `kind` on an `open` room, `createdAt` on every tier and `createdBy` on `open` and `attributed`. A separate definition, not a change to `RecordMetadataV2`, so that `rooms/records/list/0.2` to `0.5` keep the exact shape they published. Never the body.",
+      "description": "What `rooms/records/list/0.6` returns, and `rooms/keys/browse/0.4` passes through: `RecordMetadataV2` plus `kind` on an `open` room, `createdAt` and `bodyStoredAt` on every tier and `createdBy` on `open` and `attributed`. A separate definition, not a change to `RecordMetadataV2`, so that `rooms/records/list/0.2` to `0.5` keep the exact shape they published. Never the body.",
       "properties": {
         "key": {
           "type": "string",
@@ -366,6 +366,11 @@ export const PAYLOAD_SCHEMA = {
           "pattern": "^did:",
           "maxLength": 2048,
           "description": "The author of the record's first version, as the host recorded it when it stored that version: the DID it authenticated for the write on an `open` room, and on an `attributed` one the author it records for every write. Set by the host, never by a writer, and kept unchanged for as long as it holds the record — across every later version, every curation and a retraction — like `createdAt`. Served on `open` and `attributed` rooms only: a `private` room's host records no author, and MUST NOT serve this. Omitted for a record stored before the host kept it, rather than guessed. Readers use it to apply the rules about a rewrite by another member to a record they see for the first time (`SealedRecordBody`, *The record's original author*)."
+        },
+        "bodyStoredAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the host stored the body the record's current version carries: the time of the `rooms/records/put` that wrote that body. Set by the host, never by a writer. A curation (`rooms/records/curate`), and anything else that moves the version without writing a new author-signed body, leaves it unchanged; for the first version it equals `createdAt`. The host knows which task wrote each version, so it is served on every tier, `private` included, and says nothing about the body. Readers verify the current version's proof against the author's DID document as it stood at this time (`SealedRecordBody`, *Which DID document*). Omitted for a version stored before the host kept it, rather than guessed."
         },
         "title": {
           "type": "string",
@@ -604,7 +609,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "version",
         "updatedAt"
       ],
-      "description": "What `rooms/records/list/0.6` returns, and `rooms/keys/browse/0.4` passes through: `RecordMetadataV2` plus `kind` on an `open` room, `createdAt` on every tier and `createdBy` on `open` and `attributed`. A separate definition, not a change to `RecordMetadataV2`, so that `rooms/records/list/0.2` to `0.5` keep the exact shape they published. Never the body.",
+      "description": "What `rooms/records/list/0.6` returns, and `rooms/keys/browse/0.4` passes through: `RecordMetadataV2` plus `kind` on an `open` room, `createdAt` and `bodyStoredAt` on every tier and `createdBy` on `open` and `attributed`. A separate definition, not a change to `RecordMetadataV2`, so that `rooms/records/list/0.2` to `0.5` keep the exact shape they published. Never the body.",
       "properties": {
         "key": {
           "type": "string",
@@ -643,6 +648,11 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "pattern": "^did:",
           "maxLength": 2048,
           "description": "The author of the record's first version, as the host recorded it when it stored that version: the DID it authenticated for the write on an `open` room, and on an `attributed` one the author it records for every write. Set by the host, never by a writer, and kept unchanged for as long as it holds the record — across every later version, every curation and a retraction — like `createdAt`. Served on `open` and `attributed` rooms only: a `private` room's host records no author, and MUST NOT serve this. Omitted for a record stored before the host kept it, rather than guessed. Readers use it to apply the rules about a rewrite by another member to a record they see for the first time (`SealedRecordBody`, *The record's original author*)."
+        },
+        "bodyStoredAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the host stored the body the record's current version carries: the time of the `rooms/records/put` that wrote that body. Set by the host, never by a writer. A curation (`rooms/records/curate`), and anything else that moves the version without writing a new author-signed body, leaves it unchanged; for the first version it equals `createdAt`. The host knows which task wrote each version, so it is served on every tier, `private` included, and says nothing about the body. Readers verify the current version's proof against the author's DID document as it stood at this time (`SealedRecordBody`, *Which DID document*). Omitted for a version stored before the host kept it, rather than guessed."
         },
         "title": {
           "type": "string",

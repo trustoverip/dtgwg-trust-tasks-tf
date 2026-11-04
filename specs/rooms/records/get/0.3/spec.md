@@ -84,20 +84,22 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-m
 
 ### What changed from 0.2
 
-Two optional response members, the ones [`rooms/records/list/0.6`](../../list/0.6/spec.md) adds
+Three optional response members, the ones [`rooms/records/list/0.6`](../../list/0.6/spec.md) adds
 to its rows: **`createdAt`**, when the host stored the record's first version, on every tier;
-and **`createdBy`**, the author of that first version, on `open` and `attributed` rooms only. A
+**`createdBy`**, the author of that first version, on `open` and `attributed` rooms only; and
+**`bodyStoredAt`**, when the host stored the body the current version carries, on every tier. A
 reader reading one record needs what a listing reader has — `createdAt` to judge the record's
-`writtenAt`, `createdBy` to tell a rewrite by another member from the original author's own
-(`SealedRecordBody`, *When it was written*, *The record's original author*) — and a member's key
+`writtenAt`, `bodyStoredAt` to verify the author's proof against the DID document as it stood
+when the body was stored, `createdBy` to tell a rewrite by another member from the original author's own
+(`SealedRecordBody`, *When it was written*, *Which DID document*, *The record's original author*) — and a member's key
 holder reading on their behalf ([`rooms/keys/read/0.2`](../../../keys/read/0.2/spec.md)) can pass
-on only what the host serves here. Neither is committed: `CommittedRecord` does not include them,
+on only what the host serves here. None is committed: `CommittedRecord` does not include them,
 so a reader removes them before hashing the leaf, as it removes `blobs`.
 
 The response is `additionalProperties: false`, so a `0.2` reader would refuse a response
-carrying either; a new member on a closed payload is a `MINOR` increment per
+carrying any of them; a new member on a closed payload is a `MINOR` increment per
 [SPEC §5.2](/SPEC.md#52-compatibility-rules), and `0.3` declares `extends: "0.2"`. A host serving
-`0.3` **SHOULD** keep serving `0.2` and `0.1`, omitting both.
+`0.3` **SHOULD** keep serving `0.2` and `0.1`, omitting all three.
 
 ### Why 0.2 was a new version
 
@@ -120,7 +122,7 @@ no-dereference rules of
 [`rooms/records/put`](../../put/0.3/spec.md), and **MUST NOT** condition service of a
 `private` room on a session of its own.
 
-A host **MUST** return `createdAt` and `createdBy` as [`rooms/records/list/0.6`](../../list/0.6/spec.md)
+A host **MUST** return `createdAt`, `createdBy` and `bodyStoredAt` as [`rooms/records/list/0.6`](../../list/0.6/spec.md)
 returns them on its rows — the same values for the same record, `createdBy` never on a `private`
 room — and as [`rooms/records/put/0.5`](../../put/0.5/spec.md) Host items 16 and 17 record them.
 
@@ -185,8 +187,8 @@ confusion would be silent.
 
 **The leaf is `SHA-256(0x00 || JCS(record))`, where the record is this response payload
 with its verification members — `dataCommitment`, `recordCount`, `headVersion` and
-`trace` — `ext`, `blobs`, `createdAt` and `createdBy` removed.** `blobs`, `createdAt` and
-`createdBy` are removed because `CommittedRecord` predates them and does not commit to them; a reader hashing a payload that still held `blobs`
+`trace` — `ext`, `blobs`, `createdAt`, `createdBy` and `bodyStoredAt` removed.** `blobs`,
+`createdAt`, `createdBy` and `bodyStoredAt` are removed because `CommittedRecord` predates them and does not commit to them; a reader hashing a payload that still held `blobs`
 would reach a leaf in no tree. What the commitment therefore does not cover, and why a file's
 integrity does not depend on it, is stated in
 [`rooms/records/put/0.3`](../../put/0.3/spec.md) under Security & Privacy. That object is `CommittedRecord` in
@@ -295,7 +297,8 @@ those wants a different host, not a different visibility.
 ### Data carried
 
 Returns one record — sealed or cleartext by visibility — and, when it carries a file, the
-`blobRef` of the stored blob in the clear; when the host stored the record's first version; and,
+`blobRef` of the stored blob in the clear; when the host stored the record's first version and
+its current body; and,
 on `open` and `attributed` rooms, who wrote it. The request names the room and key.
 
 ### Correlation

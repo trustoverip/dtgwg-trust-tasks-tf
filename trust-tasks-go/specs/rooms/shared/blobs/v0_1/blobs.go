@@ -297,12 +297,14 @@ type FileManifest struct {
 	// absent on `attributed` and `private` rooms, where the key is derived and never stored.
 	FileKey *string `json:"fileKey,omitempty"`
 
-	// The image's width in pixels, as the uploader read it. Advisory; present only with
-	// `height`. A reader checks it against the decoded image.
+	// The image's width in pixels, as the uploader read it. Advisory. A writer sets `width`
+	// and `height` together or neither; a reader ignores one without the other. A reader
+	// checks it against the decoded image.
 	Width *int64 `json:"width,omitempty"`
 
-	// The image's height in pixels, as the uploader read it. Advisory; present only with
-	// `width`. A reader checks it against the decoded image.
+	// The image's height in pixels, as the uploader read it. Advisory. A writer sets `width`
+	// and `height` together or neither; a reader ignores one without the other. A reader
+	// checks it against the decoded image.
 	Height *int64 `json:"height,omitempty"`
 
 	// A small image standing in for the file until it is fetched: at most 8192 bytes before

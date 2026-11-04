@@ -328,8 +328,13 @@ A conforming **consumer** (the host) **MUST**:
 16. Record, when it stores a record's first version, the instant it did so, and keep it
     unchanged across every later version and every curation, retraction included; it serves it
     as `createdAt` ([`rooms/records/list/0.6`](../../list/0.6/spec.md), `RecordMetadataV3`), and
-    readers measure a record's `writtenAt` against it. A host that holds records stored before it
-    kept this time **MUST NOT** supply one for them.
+    readers measure a record's `writtenAt` against it. Record also, with every put that stores a
+    body, the instant it did so, and serve it as `bodyStoredAt` for the version carrying that
+    body: a curation, and anything else that moves a record's version without storing a new
+    author-signed body, leaves it unchanged, and for a record's first version it equals
+    `createdAt`. It knows which task wrote each version, so it does this on every tier. Readers
+    verify the author's proof against the DID document as it stood at `bodyStoredAt`. A host that
+    holds records or versions stored before it kept these times **MUST NOT** supply one for them.
 17. On an `open` or `attributed` room, record, when it stores a record's first version, that
     version's author — the party it authenticated for the write — and keep it unchanged as item
     16 keeps the time; it serves it as `createdBy`, and readers use it to tell a rewrite by
@@ -627,6 +632,18 @@ one key break its confidentiality against the storage too.
 withheld, a host that does not require proof that both describe the same subject lets two
 parties combine one's membership with the other's authority and present as a single party
 holding both.
+
+**A rotated-away key cannot sign a version that verifies.** A reader verifies a version's
+proof against the author's DID document as it stood at `bodyStoredAt` (Host item 16), the time
+the host stored that version's body — not at the proof's `created`, which the author sets. A key
+rotated away before `bodyStoredAt` is not in that document, so a version it signs does not
+verify. That is what stops a compromised old key from backdating a record, or editing one, past
+its rotation: the time it is judged at is the host's, not the author's. A host colluding with the
+holder of such a key could stamp a false time; a reader that resolves the author's DID with
+history cannot detect that, but nor can the key's holder achieve it without the host. Where the
+author's DID method keeps no history a reader has only the current document, and shows a
+version that fails against it as a placeholder rather than its content (`SealedRecordBody`,
+*Which DID document*).
 
 **Provenance is a claim, not a credential.** On an `open` room nothing in `cleartext` is
 signed, so a `basis` of `verified` there is the writer's word as stored by the host, and a
