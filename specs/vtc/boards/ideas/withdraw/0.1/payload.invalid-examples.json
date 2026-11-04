@@ -1,0 +1,8 @@
+[
+  {
+    "note": "A malformed idea identifier.",
+    "payload": {
+      "ideaId": "idea-1"
+    }
+  }
+]

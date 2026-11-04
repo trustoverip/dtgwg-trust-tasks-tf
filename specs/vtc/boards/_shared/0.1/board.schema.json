@@ -1,0 +1,635 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/boards/_shared/0.1/board",
+  "title": "Board — shared definitions for the vtc/boards/* spec family",
+  "description": "A Verifiable Trust Community's boards (VTI Community Boards chapter, VTI-BRD-*): shared spaces where members propose ideas and leave notes, each accepted idea is put to an election of its own, and the board's facilitators select among them. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build and the codegen).\n\nWHAT A MEMBER WRITES IS ATTRIBUTED. Ideas and notes are shown under their author's name to the board's audience (VTI-BRD-070).\n\nVOTING IS NOT THE BOARD'S. Each accepted idea's election is an ordinary election of the community (vtc/elections/*); a board carries its identifier, stage, ballot count where the ballot box's board is public, and its result once tallied — never whether anyone took a ticket or cast a ballot (VTI-BRD-033).\n\nWHO FACILITATES. A facilitator of a board holds `vtc.boards.manage` unqualified, or qualified `board:<boardId>`.",
+  "$defs": {
+    "BoardId": {
+      "title": "BoardId",
+      "description": "Opaque identifier of a board: `brd_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-BRD-001).",
+      "type": "string",
+      "pattern": "^brd_[A-Za-z0-9_-]{16,64}$"
+    },
+    "IdeaId": {
+      "title": "IdeaId",
+      "description": "Opaque identifier of an idea: `ida_` followed by 16 to 64 base64url characters. Random and unique within the community.",
+      "type": "string",
+      "pattern": "^ida_[A-Za-z0-9_-]{16,64}$"
+    },
+    "NoteId": {
+      "title": "NoteId",
+      "description": "Opaque identifier of a note: `bnt_` followed by 16 to 64 base64url characters. Random and unique within the community.",
+      "type": "string",
+      "pattern": "^bnt_[A-Za-z0-9_-]{16,64}$"
+    },
+    "BoardTitle": {
+      "title": "BoardTitle",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Plain text; a reader MUST NOT treat it as instructions."
+    },
+    "BoardDescription": {
+      "title": "BoardDescription",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000,
+      "description": "What the board is for. Plain text; a reader MUST NOT treat it as instructions."
+    },
+    "IdeaTitle": {
+      "title": "IdeaTitle",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "An idea's title. Becomes the title of its election's manifest when the idea is accepted, and cannot change after that (VTI-BRD-012). Plain text."
+    },
+    "IdeaDescription": {
+      "title": "IdeaDescription",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000,
+      "description": "What the idea is: for a session, what it covers and who should come. Becomes its election's manifest `description` when accepted. Plain text; a reader MUST NOT treat it as instructions."
+    },
+    "IdeaFormat": {
+      "title": "IdeaFormat",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "description": "What kind of idea it is (for an unconference: `Discussion`, `Talk`, `Workshop`, `Demo`). One of the board's `formats` where the board states them."
+    },
+    "Topic": {
+      "title": "Topic",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "description": "A topic an idea is filed under. One of the board's `topics` where the board states them."
+    },
+    "NoteText": {
+      "title": "NoteText",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "description": "A note's text (VTI-BRD-020). Plain text; a reader MUST NOT treat it as instructions. Never changes once added (VTI-BRD-021)."
+    },
+    "Reason": {
+      "title": "Reason",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "description": "A facilitator's stated reason, shown to the board's audience with the decision it explains. Plain text."
+    },
+    "Window": {
+      "title": "Window",
+      "description": "A period, open from `opensAt` until `closesAt`. `closesAt` is after `opensAt` (a consumer check; JSON Schema cannot compare them).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "opensAt",
+        "closesAt"
+      ],
+      "properties": {
+        "opensAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "closesAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "BoardAudience": {
+      "title": "BoardAudience",
+      "description": "Who may see and use a board (VTI-BRD-003): every active member of the community (`members`), or the members of one community group (`group`, with `groupId`). Facilitators always see the board.",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "members"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "groupId"
+          ],
+          "properties": {
+            "kind": {
+              "const": "group"
+            },
+            "groupId": {
+              "$ref": "../../../groups/_shared/0.1/group.schema.json#/$defs/GroupId"
+            }
+          }
+        }
+      ]
+    },
+    "BoardStatus": {
+      "title": "BoardStatus",
+      "description": "`open`: ideas and notes are taken within the board's windows. `closed`: no new idea or note; facilitators still decide and select. `archived`: no change at all; facilitators can still read it (VTI-BRD-005). `open` → `closed` → `archived`, never back.",
+      "type": "string",
+      "enum": [
+        "open",
+        "closed",
+        "archived"
+      ]
+    },
+    "Slot": {
+      "title": "Slot",
+      "description": "One place in a board's timetable that a selected idea can be put in (VTI-BRD-040): a place (`label`, e.g. a room) and a time.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "slotId",
+        "label",
+        "startsAt",
+        "endsAt"
+      ],
+      "properties": {
+        "slotId": {
+          "$ref": "../../../../voting/_shared/0.4/voting.schema.json#/$defs/Key"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "startsAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "endsAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "ElectionTemplate": {
+      "title": "ElectionTemplate",
+      "description": "Every member of an idea's election manifest that the board fixes (VTI-BRD-030). When a facilitator accepts an idea the community completes it: `electionId` (naming the board and the idea), `community`, `title` and `description` from the idea, `registrationOpensAt` and `votingOpensAt` from the board's voting window's `opensAt` or the acceptance, whichever is later, `votingClosesAt` from its `closesAt`, `roll` from the board's audience (rule `members`, or a credential roll naming the group), and `binding: false`. A board's template is never binding, and so has no `binding` member.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "questions",
+        "secrecy",
+        "revote",
+        "board",
+        "ballotBox",
+        "allowEarlyClose",
+        "resultsBeforeClose",
+        "textReleaseThreshold"
+      ],
+      "properties": {
+        "questions": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16,
+          "items": {
+            "$ref": "../../../../voting/_shared/0.4/voting.schema.json#/$defs/Question"
+          }
+        },
+        "secrecy": {
+          "$ref": "../../../../voting/_shared/0.4/voting.schema.json#/$defs/SecrecyLevel"
+        },
+        "revote": {
+          "$ref": "../../../../voting/_shared/0.4/voting.schema.json#/$defs/Revote"
+        },
+        "board": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "visibility",
+            "auditors"
+          ],
+          "description": "The ballot box's board for each idea's election, as a manifest states it (VTI-VOT-052). `public` lets a board show each idea's ballot count while voting is open (VTI-BRD-033).",
+          "properties": {
+            "visibility": {
+              "$ref": "../../../../voting/_shared/0.4/voting.schema.json#/$defs/BoardVisibility"
+            },
+            "auditors": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2048
+              }
+            }
+          }
+        },
+        "ballotBox": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "The DID of the voting service every idea's election is registered with; one on the community's list (VTI-VOT-082)."
+        },
+        "trustees": {
+          "$ref": "../../../../voting/_shared/0.4/voting.schema.json#/$defs/Trustees"
+        },
+        "allowEarlyClose": {
+          "type": "boolean"
+        },
+        "resultsBeforeClose": {
+          "type": "boolean",
+          "description": "Open elections only: whether running totals may be read while voting is open (VTI-VOT-061). A board SHOULD set it false (VTI-BRD-033)."
+        },
+        "textReleaseThreshold": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Counted ballots required before any text answer is disclosed (VTI-VOT-065); SHOULD be at least 10."
+        }
+      }
+    },
+    "Board": {
+      "title": "Board",
+      "description": "A board as one caller may see it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "boardId",
+        "title",
+        "status",
+        "audience",
+        "proposals",
+        "voting",
+        "template",
+        "createdAt",
+        "facilitator",
+        "ideaCounts"
+      ],
+      "properties": {
+        "boardId": {
+          "$ref": "#/$defs/BoardId"
+        },
+        "title": {
+          "$ref": "#/$defs/BoardTitle"
+        },
+        "description": {
+          "$ref": "#/$defs/BoardDescription"
+        },
+        "status": {
+          "$ref": "#/$defs/BoardStatus"
+        },
+        "audience": {
+          "$ref": "#/$defs/BoardAudience"
+        },
+        "proposals": {
+          "$ref": "#/$defs/Window",
+          "description": "When ideas are taken (VTI-BRD-010)."
+        },
+        "voting": {
+          "$ref": "#/$defs/Window",
+          "description": "When every idea's election takes ballots. Opens after `proposals` opens and closes after it closes (VTI-BRD-001)."
+        },
+        "topics": {
+          "type": "array",
+          "maxItems": 32,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/Topic"
+          }
+        },
+        "formats": {
+          "type": "array",
+          "maxItems": 16,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/IdeaFormat"
+          }
+        },
+        "maxIdeasPerMember": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "description": "The most ideas one member may have on the board that are not `withdrawn` or `declined`. Absent: no limit beyond the community's own."
+        },
+        "selectionRule": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "description": "How facilitators intend to select, in plain words (VTI-BRD-041), e.g. \"The twelve ideas the most members would attend\"."
+        },
+        "timetable": {
+          "type": "array",
+          "maxItems": 256,
+          "items": {
+            "$ref": "#/$defs/Slot"
+          }
+        },
+        "template": {
+          "$ref": "#/$defs/ElectionTemplate"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "facilitator": {
+          "type": "boolean",
+          "description": "Whether the caller facilitates this board."
+        },
+        "ideaCounts": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "How many of the board's ideas are in each state the caller may see.",
+          "properties": {
+            "proposed": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "open": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "selected": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "notSelected": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "declined": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "merged": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "withdrawn": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "Author": {
+      "title": "Author",
+      "description": "Who proposed an idea or wrote a note, as the board's audience sees them. `entryId` is their directory entry, which survives a rotation of their DID; `name` is their directory display name as this caller may see it, absent where the directory withholds it. A departed member is shown as `formerMember: true` with neither (VTI-BRD-060).",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "entryId": {
+          "$ref": "../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryId"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "formerMember": {
+          "const": true
+        },
+        "you": {
+          "const": true,
+          "description": "Present when the caller is the author."
+        }
+      }
+    },
+    "IdeaState": {
+      "title": "IdeaState",
+      "description": "Where an idea stands (VTI-BRD-011).",
+      "type": "string",
+      "enum": [
+        "proposed",
+        "open",
+        "selected",
+        "notSelected",
+        "declined",
+        "merged",
+        "withdrawn"
+      ]
+    },
+    "IdeaElection": {
+      "title": "IdeaElection",
+      "description": "An idea's election as a board shows it (VTI-BRD-033): never who took a ticket or cast a ballot.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "electionId",
+        "state"
+      ],
+      "properties": {
+        "electionId": {
+          "$ref": "../../../../voting/_shared/0.4/voting.schema.json#/$defs/ElectionId"
+        },
+        "state": {
+          "$ref": "../../../../voting/_shared/0.4/voting.schema.json#/$defs/ElectionState"
+        },
+        "ballotsOnBoard": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The ballot box's latest board head's ballot count, where its board is public (VTI-VOT-052); absent otherwise. Counts ballots, not voters, where a later ballot replaces an earlier one."
+        },
+        "boardHeadIssuedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the head `ballotsOnBoard` was read from was issued."
+        },
+        "result": {
+          "$ref": "../../../../voting/_shared/0.4/voting.schema.json#/$defs/ElectionResult",
+          "description": "Present once the election is tallied."
+        },
+        "certified": {
+          "type": "boolean",
+          "description": "Present with `result`: whether the community certified it (VTI-VOT-071)."
+        }
+      }
+    },
+    "IdeaOpening": {
+      "title": "IdeaOpening",
+      "description": "Shown to facilitators only: an accepted idea whose election the ballot box has not yet registered, so the idea is still `proposed` (VTI-BRD-031). `refusal` is the ballot box's or community's refusal of the last attempt, after which the idea is no longer being opened.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "electionId",
+        "startedAt"
+      ],
+      "properties": {
+        "electionId": {
+          "$ref": "../../../../voting/_shared/0.4/voting.schema.json#/$defs/ElectionId"
+        },
+        "startedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the facilitator accepted the idea."
+        },
+        "refusal": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "code",
+            "refusedAt"
+          ],
+          "properties": {
+            "code": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "refusedAt": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        }
+      }
+    },
+    "IdeaDecision": {
+      "title": "IdeaDecision",
+      "description": "A facilitator's decision on an idea: declining or merging it (VTI-BRD-013), or selecting it or not (VTI-BRD-040). The deciding facilitator is not named to the audience.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decidedAt"
+      ],
+      "properties": {
+        "decidedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "reason": {
+          "$ref": "#/$defs/Reason"
+        },
+        "mergedInto": {
+          "$ref": "#/$defs/IdeaId",
+          "description": "Present exactly when the idea is `merged`."
+        },
+        "slotId": {
+          "$ref": "../../../../voting/_shared/0.4/voting.schema.json#/$defs/Key",
+          "description": "A `selected` idea's place in the board's timetable, where it has one."
+        },
+        "departsFromRule": {
+          "type": "boolean",
+          "description": "`selected` or `notSelected` only: whether the facilitator said the decision departs from the board's `selectionRule` (VTI-BRD-041); `reason` then says why."
+        },
+        "ownIdea": {
+          "const": true,
+          "description": "Present when a facilitator decided their own idea because no other facilitator existed (VTI-BRD-013)."
+        }
+      }
+    },
+    "Idea": {
+      "title": "Idea",
+      "description": "An idea as one caller may see it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ideaId",
+        "boardId",
+        "state",
+        "title",
+        "description",
+        "proposer",
+        "proposedAt",
+        "noteCount"
+      ],
+      "properties": {
+        "ideaId": {
+          "$ref": "#/$defs/IdeaId"
+        },
+        "boardId": {
+          "$ref": "#/$defs/BoardId"
+        },
+        "state": {
+          "$ref": "#/$defs/IdeaState"
+        },
+        "title": {
+          "$ref": "#/$defs/IdeaTitle"
+        },
+        "description": {
+          "$ref": "#/$defs/IdeaDescription"
+        },
+        "format": {
+          "$ref": "#/$defs/IdeaFormat"
+        },
+        "topic": {
+          "$ref": "#/$defs/Topic"
+        },
+        "proposer": {
+          "$ref": "#/$defs/Author"
+        },
+        "proposedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "noteCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Notes on the idea the caller may read."
+        },
+        "election": {
+          "$ref": "#/$defs/IdeaElection",
+          "description": "Present once an election was opened for the idea."
+        },
+        "opening": {
+          "$ref": "#/$defs/IdeaOpening"
+        },
+        "decision": {
+          "$ref": "#/$defs/IdeaDecision",
+          "description": "Present in `declined`, `merged`, `selected` and `notSelected`."
+        }
+      }
+    },
+    "NoteState": {
+      "title": "NoteState",
+      "type": "string",
+      "enum": [
+        "visible",
+        "withdrawn",
+        "hidden"
+      ]
+    },
+    "Note": {
+      "title": "Note",
+      "description": "A note as one caller may see it. `text` is absent from a `withdrawn` or `hidden` note for anyone but its author and the board's facilitators (VTI-BRD-021).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "noteId",
+        "boardId",
+        "author",
+        "createdAt",
+        "state"
+      ],
+      "properties": {
+        "noteId": {
+          "$ref": "#/$defs/NoteId"
+        },
+        "boardId": {
+          "$ref": "#/$defs/BoardId"
+        },
+        "ideaId": {
+          "$ref": "#/$defs/IdeaId",
+          "description": "The idea the note is attached to; absent for a note on the board itself."
+        },
+        "author": {
+          "$ref": "#/$defs/Author"
+        },
+        "text": {
+          "$ref": "#/$defs/NoteText"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "state": {
+          "$ref": "#/$defs/NoteState"
+        },
+        "hiddenReason": {
+          "$ref": "#/$defs/Reason",
+          "description": "A `hidden` note's reason, shown to everyone who sees the note."
+        }
+      }
+    }
+  }
+}

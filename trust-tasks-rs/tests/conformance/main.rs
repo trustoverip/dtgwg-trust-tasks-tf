@@ -1633,6 +1633,17 @@ mod vta {
             mod v1_0;
         }
     }
+    mod collection {
+        mod claim {
+            mod v0_1;
+        }
+        mod list {
+            mod v0_1;
+        }
+        mod release {
+            mod v0_1;
+        }
+    }
     mod contexts {
         mod create {
             mod v1_0;
@@ -2168,6 +2179,51 @@ mod vtc {
             mod v0_1;
         }
         mod import {
+            mod v0_1;
+        }
+    }
+    mod boards {
+        mod create {
+            mod v0_1;
+        }
+        mod ideas {
+            mod decide {
+                mod v0_1;
+            }
+            mod propose {
+                mod v0_1;
+            }
+            mod select {
+                mod v0_1;
+            }
+            mod update {
+                mod v0_1;
+            }
+            mod withdraw {
+                mod v0_1;
+            }
+        }
+        mod list {
+            mod v0_1;
+        }
+        mod notes {
+            mod add {
+                mod v0_1;
+            }
+            mod hide {
+                mod v0_1;
+            }
+            mod list {
+                mod v0_1;
+            }
+            mod withdraw {
+                mod v0_1;
+            }
+        }
+        mod show {
+            mod v0_1;
+        }
+        mod update {
             mod v0_1;
         }
     }

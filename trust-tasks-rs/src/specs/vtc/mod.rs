@@ -3,6 +3,7 @@
 pub mod admin;
 pub mod auth;
 pub mod backup;
+pub mod boards;
 pub mod ceremonies;
 pub mod community;
 pub mod config;

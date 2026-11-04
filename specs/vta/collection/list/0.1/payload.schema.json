@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/collection/list/0.1",
+  "title": "VTA Collection — List — payload",
+  "description": "A client with standing in a trust context lists, for every identifier there that its VTA collects for unless a client has claimed it, who collects for it now: the VTA, a claimant — with the claim's end and whether it can be renewed — or nobody, and why (VTI-NTF-091). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contextId"
+  ],
+  "properties": {
+    "contextId": {
+      "$ref": "../../_shared/0.1/collection.schema.json#/$defs/ContextId"
+    },
+    "identifier": {
+      "$ref": "../../_shared/0.1/collection.schema.json#/$defs/Did",
+      "description": "Only this identifier."
+    },
+    "collector": {
+      "$ref": "../../_shared/0.1/collection.schema.json#/$defs/Collector",
+      "description": "Only identifiers with this collector — `none`, for instance, to find the identifiers nobody collects for."
+    },
+    "cursor": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "An opaque cursor from a previous response's `nextCursor`, for the same filters. The VTA refuses one it did not issue."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200,
+      "description": "The most items to return."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Collection — List — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items"
+      ],
+      "description": "One page of the identifiers that match.",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "../../_shared/0.1/collection.schema.json#/$defs/CollectionEntry"
+          }
+        },
+        "nextCursor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "description": "Present when more items remain; absent on the last page."
+        }
+      }
+    }
+  }
+}
