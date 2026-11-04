@@ -76,7 +76,7 @@ A conforming **consumer** (the community) **MUST**:
 
 1. Refuse a caller holding `vtc.boards.manage` unqualified and `vtc.elections.manage` not both with `permissionDenied` (VTI-BRD-002).
 2. Check the schedule (`scheduleInvalid`): each window closes after it opens, voting opens after proposals open, and voting closes after proposals close. Check the timetable (`timetableInvalid`).
-3. Check the template as `vtc/elections/create` checks a manifest, with the members the community fills in per idea (`ElectionTemplate`) set as it would set them for an idea accepted now (`templateInvalid`), and refuse a ballot box not on the community's list (`ballotBoxNotTrusted`).
+3. Check the template as `vtc/elections/create` checks a manifest, with the members the community fills in per idea (`ElectionTemplate`) set as it would set them for an idea accepted now, and refuse a template that does not allow closing early, which closing the board needs (VTI-BRD-006, VTI-BRD-030) (`templateInvalid`); refuse a ballot box not on the community's list (`ballotBoxNotTrusted`).
 4. Refuse an `audience` naming a group the community does not have (`groupNotFound`).
 5. Assign a fresh `boardId`, never reused, store the board with `status` `open`, and answer it as `vtc/boards/show` would answer the caller.
 6. Record an audit event for the creation, naming the board by its identifier (VTI-BRD-080).
@@ -173,7 +173,7 @@ The administrator (`issuer`) sends the community maintainer (`recipient`) a docu
         "auditors": []
       },
       "ballotBox": "did:example:ballot-box",
-      "allowEarlyClose": false,
+      "allowEarlyClose": true,
       "resultsBeforeClose": false,
       "textReleaseThreshold": 10
     }
@@ -269,7 +269,7 @@ On success the community answers with a document of type `https://trusttasks.org
           "auditors": []
         },
         "ballotBox": "did:example:ballot-box",
-        "allowEarlyClose": false,
+        "allowEarlyClose": true,
         "resultsBeforeClose": false,
         "textReleaseThreshold": 10
       },

@@ -3,7 +3,7 @@
  * Source: specs/vtc/boards/update/0.1/payload.schema.json
  */
 
-import type { Board, BoardAudience, BoardDescription, BoardId, BoardStatus, BoardTitle, BoardVisibility, ChoiceQuestion, ElectionTemplate, Ext, GroupId, IdeaFormat, Key_VotingV0_1 as Key, Question, QuestionOption, RankingQuestion, Revote, ScoreQuestion, SecrecyLevel, Slot_VtcBoardsV0_1 as Slot, TextQuestion, Topic_VtcBoardsV0_1 as Topic, Trustees, Window } from "../../../../_shared/components.js";
+import type { Board, BoardAudience, BoardDescription, BoardId, BoardStatus, BoardTitle, BoardVisibility, ChoiceQuestion, ElectionTemplate, Ext, GroupId, IdeaFormat, IdeaId, Key_VotingV0_1 as Key, Question, QuestionOption, RankingQuestion, Revote, ScoreQuestion, SecrecyLevel, Slot_VtcBoardsV0_1 as Slot, TextQuestion, Topic_VtcBoardsV0_1 as Topic, Trustees, Window } from "../../../../_shared/components.js";
 
 
 /**
@@ -157,11 +157,28 @@ export interface VTCBoardsUpdatePayload {
  */
 export interface VTCBoardsUpdateResponsePayload {
   board: Board;
+  /**
+   * Present when this update closed the board: how its voting was ended (VTI-BRD-006). Counts the requests made; the ballot box answers them after this response.
+   */
+  closing?: {
+    /**
+     * Elections open for voting that were closed early; each is counted as it stood, and the count is final.
+     */
+    closedEarly: number;
+    /**
+     * Elections not yet open for voting, or not yet registered, that were cancelled; their ideas are not selected.
+     */
+    cancelled: number;
+    /**
+     * Ideas whose election does not allow closing early and closes when its manifest says.
+     */
+    runningToClose: IdeaId[];
+  };
   ext?: Ext;
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { Board, BoardAudience, BoardDescription, BoardId, BoardStatus, BoardTitle, BoardVisibility, ChoiceQuestion, ElectionTemplate, Ext, GroupId, IdeaFormat, Key, Question, QuestionOption, RankingQuestion, Revote, ScoreQuestion, SecrecyLevel, Slot, TextQuestion, Topic, Trustees, Window };
+export type { Board, BoardAudience, BoardDescription, BoardId, BoardStatus, BoardTitle, BoardVisibility, ChoiceQuestion, ElectionTemplate, Ext, GroupId, IdeaFormat, IdeaId, Key, Question, QuestionOption, RankingQuestion, Revote, ScoreQuestion, SecrecyLevel, Slot, TextQuestion, Topic, Trustees, Window };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/boards/update/0.1" as const;
@@ -291,6 +308,36 @@ export const PAYLOAD_SCHEMA = {
         "board": {
           "$ref": "#/$defs/Board"
         },
+        "closing": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "closedEarly",
+            "cancelled",
+            "runningToClose"
+          ],
+          "description": "Present when this update closed the board: how its voting was ended (VTI-BRD-006). Counts the requests made; the ballot box answers them after this response.",
+          "properties": {
+            "closedEarly": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Elections open for voting that were closed early; each is counted as it stood, and the count is final."
+            },
+            "cancelled": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Elections not yet open for voting, or not yet registered, that were cancelled; their ideas are not selected."
+            },
+            "runningToClose": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/IdeaId"
+              },
+              "uniqueItems": true,
+              "description": "Ideas whose election does not allow closing early and closes when its manifest says."
+            }
+          }
+        },
         "ext": {
           "$ref": "#/$defs/Ext"
         }
@@ -305,6 +352,12 @@ export const PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
+    },
+    "IdeaId": {
+      "title": "IdeaId",
+      "description": "Opaque identifier of an idea: `ida_` followed by 16 to 64 base64url characters. Random and unique within the community.",
+      "type": "string",
+      "pattern": "^ida_[A-Za-z0-9_-]{16,64}$"
     },
     "Board": {
       "title": "Board",
@@ -904,6 +957,36 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "board": {
           "$ref": "#/$defs/Board"
         },
+        "closing": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "closedEarly",
+            "cancelled",
+            "runningToClose"
+          ],
+          "description": "Present when this update closed the board: how its voting was ended (VTI-BRD-006). Counts the requests made; the ballot box answers them after this response.",
+          "properties": {
+            "closedEarly": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Elections open for voting that were closed early; each is counted as it stood, and the count is final."
+            },
+            "cancelled": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Elections not yet open for voting, or not yet registered, that were cancelled; their ideas are not selected."
+            },
+            "runningToClose": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/IdeaId"
+              },
+              "uniqueItems": true,
+              "description": "Ideas whose election does not allow closing early and closes when its manifest says."
+            }
+          }
+        },
         "ext": {
           "$ref": "#/$defs/Ext"
         }
@@ -918,6 +1001,12 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
+    },
+    "IdeaId": {
+      "title": "IdeaId",
+      "description": "Opaque identifier of an idea: `ida_` followed by 16 to 64 base64url characters. Random and unique within the community.",
+      "type": "string",
+      "pattern": "^ida_[A-Za-z0-9_-]{16,64}$"
     },
     "Board": {
       "title": "Board",
