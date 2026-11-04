@@ -137,15 +137,20 @@ The recipient recognises a prior membership by either of two pieces of evidence:
      current, and the recipient **MUST** answer `alreadyJoined`. It **MUST** keep nothing
      the Welcome formed, and **MUST NOT** consume the invitation or the KeyPackage the
      Welcome is sealed to.
-   - Where it is **absent**, the recipient **MUST** first check that the Welcome is for the
-     same MLS group as the state it holds — equal group ids. A Welcome for another group has
-     none of that state's leaves by construction, so its tree is no evidence that the state
-     ended: the recipient **MUST** answer `welcomeInvalid`, keep nothing the Welcome formed,
-     change nothing it holds, and consume neither the invitation nor the KeyPackage.
-   - Where it is absent from a Welcome for the same group, the member was removed by a
-     commit producing some epoch `r`, `h < r ≤ j`, that the recipient has not seen. The
-     state it holds is a prior membership whose removal epoch is **not yet known**, and the
-     recipient **MUST** proceed with the join exactly as under the first piece of evidence.
+   - Where it is **absent** from a Welcome for the same MLS group (*Same group, whatever the
+     evidence*, below), the member was removed by a commit producing some epoch `r`,
+     `h < r ≤ j`, that the recipient has not seen. The state it holds is a prior membership
+     whose removal epoch is **not yet known**, and the recipient **MUST** proceed with the
+     join exactly as under the first piece of evidence. A Welcome for another group has none
+     of that state's leaves by construction, so an absent leaf there is no evidence at all.
+
+**Same group, whatever the evidence.** A re-admission admits the member again to the group its
+state was in. Before the state it holds becomes a prior membership and the group a Welcome
+forms becomes the member's current state — under either piece of evidence — the recipient
+**MUST** check that the Welcome is for the same MLS group as that state: equal group ids. A
+removal from one group is no reason to take a Welcome for another as the room's current group.
+Where the group ids differ the recipient **MUST** answer `welcomeInvalid`, keep nothing the
+Welcome formed, change nothing it holds, and consume neither the invitation nor the KeyPackage.
 
 A recipient **MUST NOT** wait for, or fetch, the removing commit before joining, and a client
 is not required to apply commits before it hands over the Welcome: the Welcome is the
