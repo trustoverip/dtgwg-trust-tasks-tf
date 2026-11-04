@@ -267,43 +267,60 @@ type SealedRecord struct {
 // MAY treat a record with no `kind` and no `title` as a message — it is how a writer that
 // may not yet use `kind` writes one (*When a writer may use these members*) — and a
 // reader that does so shows such records and records of `kind: message` in the same
-// conversation, ordered together. Such a record is otherwise still a note: its `body` is
-// markdown (*What `body` is*). **What `body` is.** On a `message`, `body` is plain text:
-// a reader MUST NOT render it as markup — not as markdown, not as HTML, not as a link it
-// follows — and shows its characters as written. On a `reaction` it is the reaction's
-// value (*A reaction's value*), plain text likewise. On a `note`, and on a record of a
-// kind the reader does not know, which it shows as a note, it is markdown, rendered
-// inert. On a record carrying `file` it is also the file's caption (*A file's caption*),
-// plain text or markdown by the same rule. **When it was written.** `writtenAt` is the
-// instant the author wrote the record (`RecordWrittenAt`), in UTC, signed with the body.
-// It is OPTIONAL on a note; a `message` or a `reaction` SHOULD carry it. **It does not
-// move when the record is edited:** a writer rewriting a record MUST carry the
-// `writtenAt` of the version it rewrites, unchanged; what marks an edit is `editedAt`
-// (*Edits*). A reader orders a room's messages by `writtenAt`, then by `key` where two
-// are equal; a message without one is ordered by the host's `updatedAt` for it
-// (`RecordMetadata`), which stands in for it. **It is the author's claim, not a time
-// anyone attests.** A reader MUST treat as implausible a `writtenAt` later than the
-// host's `updatedAt` for the version it reads, or, where it has no `updatedAt`, later
-// than the instant it read the record — either by more than five minutes, for clock skew
-// — and a rewrite whose `writtenAt` differs from the version it rewrote, where the reader
-// holds that version. A reader orders an implausible record by `updatedAt` (else by the
-// instant it read it), and MUST NOT show the claimed time as when it was written. A
-// `writtenAt` long before `updatedAt` is not by itself implausible — a record may be
-// written offline and sent later — but a reader MAY say how long after writing the room
-// received it. Like every member, it confers nothing. **Replies.** `inReplyTo` names the
-// record this one answers — another record of the same room, by `key`, and OPTIONALLY the
-// `version` the author was answering (`RecordReference`). Any kind may carry it: a
-// message may answer a note, and a note a message. It is signed, so a reader attributes
-// the reply's target to `author` as it attributes the body. A reader resolves it only
-// against records it can already list or read in this room with the authority it holds,
-// and MUST NOT fetch anything else because of it. Where the target cannot be read — never
-// written, withdrawn (*Withdrawing a message*), retracted, pruned, expired, sealed under
-// an epoch the reader cannot open, or failing the reading rules above — the reader MUST
-// still show the reply, marked as answering a record that is not available, and MUST NOT
-// show anything of a target it could not verify. **Whether the target has changed.**
-// Where `version` is present, a reader that shows the target SHOULD say that it has
-// changed since only when the target's **content** differs from its content at that
-// version — never because its `version` moved, which curation also does
+// conversation, ordered together. Where it shows such a record as a message, it renders
+// its `body` as plain text, as it renders a `message`'s; where it shows it as a note, it
+// renders markdown (*What `body` is*). **What `body` is.** On a `message`, `body` is
+// plain text: a reader MUST NOT render it as markup — not as markdown, not as HTML, not
+// as a link it follows — and shows its characters as written. On a `reaction` it is the
+// reaction's value (*A reaction's value*), plain text likewise. On a `note`, and on a
+// record of a kind the reader does not know, which it shows as a note, it is markdown,
+// rendered inert. On a record with no `kind` and no `title` it follows how the reader
+// shows it: plain text where it is shown as a message (*Untitled records*), markdown
+// where it is shown as a note. On a record carrying `file` it is also the file's caption
+// (*A file's caption*), plain text or markdown by the same rule. **When it was written.**
+// `writtenAt` is the instant the author wrote the record (`RecordWrittenAt`), in UTC,
+// signed with the body. It is OPTIONAL on a note; a `message` or a `reaction` SHOULD
+// carry it. **It does not move when the record is edited:** a writer rewriting a record
+// MUST carry the `writtenAt` of the version it rewrites, unchanged; what marks an edit is
+// `editedAt` (*Edits*). A reader orders a room's messages by `writtenAt`, then by `key`
+// where two are equal; a message without one is ordered by the host's `createdAt` for it
+// (`RecordMetadataV3`), which stands in for it, else by its `updatedAt`. **The host's
+// times.** `createdAt` is when the host stored the record's first version, and neither an
+// edit nor a curation moves it; `updatedAt` is when the version the reader reads was
+// stored, and both move it. So `writtenAt`, which is also kept across edits and curation,
+// is compared with `createdAt`: against `updatedAt` an edit made a day later, or a pin,
+// would read as a record claiming to be older than it is. Where the reader has no
+// `createdAt` — a host that predates it, or a listing that does not carry it — it falls
+// back to `updatedAt` as stated below. **It is the author's claim, not a time anyone
+// attests.** A reader MUST treat as implausible a `writtenAt` later than the host's
+// `createdAt` for the record, or, where it has none, later than the `updatedAt` for the
+// version it reads, or, where it has neither, later than the instant it read the record —
+// in each case by more than five minutes, for clock skew — and a rewrite whose
+// `writtenAt` differs from the version it rewrote, where the reader holds that version. A
+// reader orders an implausible record by `createdAt` (else by `updatedAt`, else by the
+// instant it read it), and MUST NOT show the claimed time as when it was written.
+// **Backdating.** A `writtenAt` more than 24 hours before the host's `createdAt` for the
+// record claims to have been written well before the room received it. A reader MUST
+// order such a record by `createdAt`, not by `writtenAt`, and MUST show that it arrived
+// later than it claims — a record may be written offline and sent later, but a member
+// must not be able to place a message silently in the room's past. Within 24 hours a
+// reader MAY say how long after writing the room received it. Where the reader has no
+// `createdAt`, a `writtenAt` long before `updatedAt` is not by itself implausible, since
+// an edit or a curation moves `updatedAt`, and a reader MAY say how long after writing
+// the room received it. Like every member, it confers nothing. **Replies.** `inReplyTo`
+// names the record this one answers — another record of the same room, by `key`, and
+// OPTIONALLY the `version` the author was answering (`RecordReference`). Any kind may
+// carry it: a message may answer a note, and a note a message. It is signed, so a reader
+// attributes the reply's target to `author` as it attributes the body. A reader resolves
+// it only against records it can already list or read in this room with the authority it
+// holds, and MUST NOT fetch anything else because of it. Where the target cannot be read
+// — never written, withdrawn (*Withdrawing a message*), retracted, pruned, expired,
+// sealed under an epoch the reader cannot open, or failing the reading rules above — the
+// reader MUST still show the reply, marked as answering a record that is not available,
+// and MUST NOT show anything of a target it could not verify. **Whether the target has
+// changed.** Where `version` is present, a reader that shows the target SHOULD say that
+// it has changed since only when the target's **content** differs from its content at
+// that version — never because its `version` moved, which curation also does
 // (`rooms/records/curate`). A record's content is every member of its body except
 // `proof`, its location (`roomId`, `key` and `version`) and `editedAt`: on the sealed
 // tiers the signed `SealedRecordBody`, on an `open` room the `cleartext` of
@@ -376,17 +393,19 @@ type SealedRecord struct {
 // member with `write` could rewrite another member's message as a reaction, and every
 // reply to it would disappear (*Nothing answers a reaction*), or move another member's
 // reaction to a record they never reacted to. A reader that has never read an earlier
-// version has nothing to compare, and on the sealed tiers nothing else can tell it
-// (`rooms/records/put`, *Security & Privacy*). **Withdrawing a message.** The author of a
-// `message` withdraws it by writing a new version of it — the same key, keeping its
-// `kind` and any `inReplyTo` — with an empty `body` and no `file`. A reader shows a
-// current version of a message with an empty `body` and no `file` as withdrawn, or not at
-// all, and MUST NOT show any earlier version's content in its place; replies to it stay,
-// as answering a record that is not available (*Replies*). It counts as a withdrawal only
-// when its `author` is the `author` of the version it replaces; one by another member is
-// that member's rewrite (*Edits*), never the author withdrawing their own message.
-// Withdrawing needs only `write`. It is a rewrite, not a retraction: the record keeps its
-// key and its place, and only a member with `curate` retracts it
+// version has nothing to compare. On an `open` room a host MAY refuse a new version of a
+// message or a reaction by anyone but its original author (`rooms/records/put`, Host item
+// 15); on the sealed tiers no host can, since it never sees `kind`, and these reader
+// rules are the only defence (`rooms/records/put`, *Security & Privacy*). **Withdrawing a
+// message.** The author of a `message` withdraws it by writing a new version of it — the
+// same key, keeping its `kind` and any `inReplyTo` — with an empty `body` and no `file`.
+// A reader shows a current version of a message with an empty `body` and no `file` as
+// withdrawn, or not at all, and MUST NOT show any earlier version's content in its place;
+// replies to it stay, as answering a record that is not available (*Replies*). It counts
+// as a withdrawal only when its `author` is the `author` of the version it replaces; one
+// by another member is that member's rewrite (*Edits*), never the author withdrawing
+// their own message. Withdrawing needs only `write`. It is a rewrite, not a retraction:
+// the record keeps its key and its place, and only a member with `curate` retracts it
 // (`rooms/records/curate`). **Tombstones.** A retracted record keeps its key and version
 // and nothing of its body (`rooms/records/curate`). On the sealed tiers `kind`,
 // `inReplyTo`, `writtenAt` and `editedAt` were inside the sealed body and go with it. On
@@ -403,29 +422,30 @@ type SealedRecord struct {
 // resolves to. A record whose proof does not verify is refused, as above. For a record
 // whose author's DID does not resolve, a reader MAY, instead of refusing it, show a
 // placeholder saying that the record's author cannot be verified, in the room's
-// conversation, ordered by the host's `updatedAt` for it, so that replies naming its key
-// still anchor to it. It MUST NOT show or use any member of the body — not its `body`,
-// `title`, `file`, `kind`, `inReplyTo` or `writtenAt` — MUST NOT count it as a reaction,
-// and MUST NOT accept it as the room's profile (`RoomProfileStatement`). A placeholder is
-// not a record shown with a warning: it shows none of the record. **A file's caption.**
-// On a record carrying `file`, `body` is the file's caption. A reader that shows the file
-// SHOULD show its `body` with it. **When a writer may use these members.** `kind`,
-// `inReplyTo`, `writtenAt` and `editedAt` are gated together. A conforming reader that
-// predates them refuses a body carrying any of them by rule (1), as it refused provenance
-// before it knew it: a message written with `kind` is invisible to it rather than shown
-// wrong. **Not every reader conforms.** A reader that ignores the members it does not
-// know shows a reaction as a post holding its value, and a withdrawn reaction as an empty
-// post — which is why a room's readers move first, and the room says when its writers may
-// follow. A writer MUST NOT write `kind`, `inReplyTo`, `writtenAt` or `editedAt` into a
-// room unless the room's current profile (`RoomProfileStatement`, as a reader resolves
-// it) lists that member in `recordMembers` (`RoomProfile`). No profile, a profile without
-// `recordMembers`, or one the writer cannot resolve means none of them may be written —
-// the most restrictive reading. A writer MAY rely on a profile it resolved within the
-// room's current epoch, without resolving it again for each write; once the room's epoch
-// advances, it resolves the profile again before writing any of them. A writer that may
-// not use them MAY write a message as a record with `body` and no `title`, which every
-// reader shows (*Untitled records*). On the sealed tiers a writer whose key holder signs
-// or seals for it needs one that accepts these members: `rooms/keys/seal/0.3` does, which
+// conversation, ordered by the host's `createdAt` for it, else its `updatedAt`, so that
+// replies naming its key still anchor to it. It MUST NOT show or use any member of the
+// body — not its `body`, `title`, `file`, `kind`, `inReplyTo` or `writtenAt` — MUST NOT
+// count it as a reaction, and MUST NOT accept it as the room's profile
+// (`RoomProfileStatement`). A placeholder is not a record shown with a warning: it shows
+// none of the record. **A file's caption.** On a record carrying `file`, `body` is the
+// file's caption. A reader that shows the file SHOULD show its `body` with it. **When a
+// writer may use these members.** `kind`, `inReplyTo`, `writtenAt` and `editedAt` are
+// gated together. A conforming reader that predates them refuses a body carrying any of
+// them by rule (1), as it refused provenance before it knew it: a message written with
+// `kind` is invisible to it rather than shown wrong. **Not every reader conforms.** A
+// reader that ignores the members it does not know shows a reaction as a post holding its
+// value, and a withdrawn reaction as an empty post — which is why a room's readers move
+// first, and the room says when its writers may follow. A writer MUST NOT write `kind`,
+// `inReplyTo`, `writtenAt` or `editedAt` into a room unless the room's current profile
+// (`RoomProfileStatement`, as a reader resolves it) lists that member in `recordMembers`
+// (`RoomProfile`). No profile, a profile without `recordMembers`, or one the writer
+// cannot resolve means none of them may be written — the most restrictive reading. A
+// writer MAY rely on a profile it resolved within the room's current epoch, without
+// resolving it again for each write; once the room's epoch advances, it resolves the
+// profile again before writing any of them. A writer that may not use them MAY write a
+// message as a record with `body` and no `title`, which every reader shows (*Untitled
+// records*). On the sealed tiers a writer whose key holder signs or seals for it needs
+// one that accepts these members: `rooms/keys/seal/0.3` does, which
 // `trust-task-discovery` tells it, and a key holder that predates them refuses them with
 // `bodyInvalid`, as it refuses provenance. **Turning them on.** Whether a room's readers
 // are ready is decided out of band by the room's owner or a curator: nothing in this
@@ -1607,8 +1627,9 @@ type RecordReference struct {
 // RecordWrittenAt The instant the author wrote the record, RFC 3339 in UTC (`Z`). Set by
 // the author and kept unchanged when the record is rewritten; an edit is marked by
 // `editedAt`. OPTIONAL on a note; a `message` or `reaction` SHOULD carry it. The author's
-// claim, not an attested time: a reader orders messages by it and treats an implausible
-// one as `SealedRecordBody` (*When it was written*) says. No host enforces or reads it.
+// claim, not an attested time: a reader orders messages by it, compares it with the
+// host's `createdAt`, and treats an implausible or backdated one as `SealedRecordBody`
+// (*When it was written*) says. No host enforces or reads it.
 type RecordWrittenAt = string
 
 // RecordEditedAt The instant the author made the edit that produced this version, RFC
@@ -1633,8 +1654,9 @@ const (
 )
 
 // RecordMetadataV3 What `rooms/records/list/0.6` returns: `RecordMetadataV2` plus `kind`
-// on an `open` room. A separate definition, not a change to `RecordMetadataV2`, so that
-// `rooms/records/list/0.2` to `0.5` keep the exact shape they published. Never the body.
+// on an `open` room and `createdAt` on every tier. A separate definition, not a change to
+// `RecordMetadataV2`, so that `rooms/records/list/0.2` to `0.5` keep the exact shape they
+// published. Never the body.
 type RecordMetadataV3 struct {
 	// The record's key within the room. On `attributed` and `private` rooms this MUST be
 	// opaque — a random identifier, never a descriptive slug. A key reading
@@ -1652,6 +1674,18 @@ type RecordMetadataV3 struct {
 	// remain so incremental sync converges and the audit chain stays intact.
 	Status    *RecordMetadataV3Status `json:"status,omitempty"`
 	UpdatedAt string                  `json:"updatedAt"`
+
+	// When the host stored the record's first version: RFC 3339, set by the host, never by a
+	// writer. Host metadata, not body, so it is served on every tier. A host MUST set it when
+	// it stores a record's first version and MUST keep it unchanged for as long as it holds
+	// the record — across every later version, every curation, retraction included, and a
+	// member's withdrawal — so that it says when the room received the record, which
+	// `updatedAt` cannot once the record has been edited or curated. A host that stored a
+	// record before it kept `createdAt` MUST omit it for that record rather than supply a
+	// guess such as the earliest `updatedAt` it still holds; a reader then falls back to
+	// `updatedAt` (`SealedRecordBody`, *When it was written*). Readers order messages and
+	// judge `writtenAt` by it.
+	CreatedAt *string `json:"createdAt,omitempty"`
 
 	// Present only on an `open` room; sealed with the body otherwise.
 	Title *string `json:"title,omitempty"`

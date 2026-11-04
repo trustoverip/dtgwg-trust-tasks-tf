@@ -523,7 +523,7 @@ export const PAYLOAD_SCHEMA = {
       "type": "string",
       "format": "date-time",
       "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$",
-      "description": "The instant the author wrote the record, RFC 3339 in UTC (`Z`). Set by the author and kept unchanged when the record is rewritten; an edit is marked by `editedAt`. OPTIONAL on a note; a `message` or `reaction` SHOULD carry it. The author's claim, not an attested time: a reader orders messages by it and treats an implausible one as `SealedRecordBody` (*When it was written*) says. No host enforces or reads it."
+      "description": "The instant the author wrote the record, RFC 3339 in UTC (`Z`). Set by the author and kept unchanged when the record is rewritten; an edit is marked by `editedAt`. OPTIONAL on a note; a `message` or `reaction` SHOULD carry it. The author's claim, not an attested time: a reader orders messages by it, compares it with the host's `createdAt`, and treats an implausible or backdated one as `SealedRecordBody` (*When it was written*) says. No host enforces or reads it."
     },
     "RecordReference": {
       "title": "RecordReference",
@@ -892,7 +892,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "type": "string",
       "format": "date-time",
       "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$",
-      "description": "The instant the author wrote the record, RFC 3339 in UTC (`Z`). Set by the author and kept unchanged when the record is rewritten; an edit is marked by `editedAt`. OPTIONAL on a note; a `message` or `reaction` SHOULD carry it. The author's claim, not an attested time: a reader orders messages by it and treats an implausible one as `SealedRecordBody` (*When it was written*) says. No host enforces or reads it."
+      "description": "The instant the author wrote the record, RFC 3339 in UTC (`Z`). Set by the author and kept unchanged when the record is rewritten; an edit is marked by `editedAt`. OPTIONAL on a note; a `message` or `reaction` SHOULD carry it. The author's claim, not an attested time: a reader orders messages by it, compares it with the host's `createdAt`, and treats an implausible or backdated one as `SealedRecordBody` (*When it was written*) says. No host enforces or reads it."
     },
     "RecordReference": {
       "title": "RecordReference",

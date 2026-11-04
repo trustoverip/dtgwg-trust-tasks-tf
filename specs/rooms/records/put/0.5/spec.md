@@ -308,11 +308,29 @@ A conforming **consumer** (the host) **MUST**:
 14. Store `kind`, `inReplyTo`, `writtenAt` and `editedAt` on an `open` room's record exactly as
     received, serve them back with it, and **MUST NOT** act on them: a host does not refuse,
     order or group a record by its `kind`, `writtenAt` or `editedAt`, does not check that a
-    rewrite keeps `kind` or `inReplyTo` or that an empty `body` comes from the record's author, does not check that `inReplyTo` names a record
+    rewrite keeps `kind` or `inReplyTo` or that an empty `body` comes from the record's author
+    (beyond what item 15 permits), does not check that `inReplyTo` names a record
     it holds or what kind that record is, and does not check a write against the room's
     `recordMembers`. Those are writers' and readers' rules. What
     they mean is a reader's rule (`SealedRecordBody`), on every tier.
-15. Refuse an unauthorized presentation with the standard `permissionDenied`; an authorization refusal is the framework standard `permissionDenied` ([SPEC §8.3](/SPEC.md#83-standard-error-codes)), which this specification does not shadow with a task-specific code.
+15. **MAY**, on an `open` room only, refuse with the standard `permissionDenied` a new version of
+    a record whose current version's `cleartext.kind` is `message` or `reaction` when the author
+    the host authenticated for the write is not the record's **original author** — the author it
+    recorded for the record's first version — and if it does, **MUST** refuse before changing
+    anything. A host that refuses so still accepts the original author's own rewrites, the empty
+    version that withdraws a message or a reaction included, and refuses nothing on a tombstone,
+    whose `kind` is gone. This is the one place a host reads `kind`; on an `open` room it reads
+    the whole body anyway. On an `attributed` or `private` room a host **MUST NOT** attempt it:
+    there `kind` is sealed in the body, which the host cannot read, and a producer must not copy
+    it into the clear (Producer item 10). The defence on those tiers is the readers'
+    (`SealedRecordBody`, *What a new version keeps*, *Counting reactions*, *Withdrawing a
+    message*).
+16. Record, when it stores a record's first version, the instant it did so, and keep it
+    unchanged across every later version and every curation, retraction included; it serves it
+    as `createdAt` ([`rooms/records/list/0.6`](../../list/0.6/spec.md), `RecordMetadataV3`), and
+    readers measure a record's `writtenAt` against it. A host that holds records stored before it
+    kept this time **MUST NOT** supply one for them.
+17. Refuse an unauthorized presentation with the standard `permissionDenied`; an authorization refusal is the framework standard `permissionDenied` ([SPEC §8.3](/SPEC.md#83-standard-error-codes)), which this specification does not shadow with a task-specific code.
 
 A conforming host **MUST NOT** require a session or account of its own as a condition of
 serving a `private` room. Authorizing by session would record which member acted on every
@@ -610,16 +628,20 @@ sealed tier, where the members are inside the author's signature. On every tier 
 authority: they describe the record, they do not authorize anything done with it.
 
 **Any member with `write` can replace another member's record.** A rewrite is a put under the
-same key, and nothing in this task checks that it comes from the author of the version it
-replaces: on `private` a host cannot, and on `attributed` it cannot see the record's `kind` to
-tell a message from a shared note. Readers hold the line where they can. A new version must
+same key, and nothing in this task requires a host to check that it comes from the author of the
+version it replaces. On an `open` room a host MAY refuse another author's new version of a
+message or a reaction (Host item 15), since it reads `kind` there anyway. On `private` a host
+cannot know the author, and on `attributed`, which knows it, the host cannot see the record's
+`kind` to tell a message from a shared note — `kind` is sealed, and copying it into the clear to
+let the host check would disclose the shape of the room's conversation (Producer item 10). Readers hold the line where they can. A new version must
 keep its `kind`, and a reaction its `inReplyTo`; a withdrawal counts only when it comes from the
 author of the version it replaces; and a version whose `author` differs is shown under its new
 author, never as an edit by the earlier one (`SealedRecordBody`, *Edits*, *What a new version
 keeps*, *Counting reactions*, *Withdrawing a message*). Every one of those checks compares the
 new version with an earlier one. **A reader seeing a record for the first time cannot detect
 that another member replaced it** on a tier where the host does not check authorship: it sees
-only the current version, signed by whoever wrote it, and has nothing to compare it with. It
+only the current version, signed by whoever wrote it, and has nothing to compare it with —
+unless an `open` room's host refuses such rewrites, which a reader cannot tell from outside. It
 can show who wrote what it sees — and on the sealed tiers that attribution is exact — but not
 whose record that version replaced.
 

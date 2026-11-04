@@ -2,7 +2,7 @@
 slug: rooms/records/list
 version: "0.6"
 title: Rooms Records — List
-summary: "A member lists record metadata in a data room, with prefix, watermark and cursor — never bodies, which are fetched individually — including which stored blobs each record names, whether the room's records have been pruned, and on an open room what kind of record each is."
+summary: "A member lists record metadata in a data room — never bodies — with prefix, watermark and cursor, including the blobs each record names, when each was first stored, any prune, and on an open room each record's kind."
 status: draft
 targetFrameworkVersion: "0.6.0"
 category: access-control
@@ -93,17 +93,29 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-m
 One optional member on each row, `kind` ([`RecordMetadataV3`](../../../_shared/0.2/room.schema.json)):
 the record's [`RecordKind`](../../../_shared/0.2/room.schema.json), as its current version's
 `cleartext` carries it ([`rooms/records/put/0.5`](../../put/0.5/spec.md)). It is served **on an
-`open` room only**. On `attributed` and `private` rooms `kind` is sealed with the body, the host
+`open` room only**.
+
+And one optional member on every tier, `createdAt`: when the host stored the record's first
+version. `updatedAt` moves with every edit and every curation, so it cannot say when the room
+received a record, and a reader measuring an author's `writtenAt` against it would read every
+message edited or pinned a day later as backdated. `createdAt` does not move, so a reader can
+hold `writtenAt` to it (`SealedRecordBody`, *When it was written*). It is host metadata, not
+body, so the sealed tiers carry it too. On `attributed` and `private` rooms `kind` is sealed with the body, the host
 never sees it, and nothing about it is added here: a reader there still opens a record to learn
 its kind. Reading several sealed records in one request of a member's key holder is a separate
 question, for `rooms/keys/read`.
 
 `RecordMetadataV2` is `additionalProperties: false`, so a `0.5` reader would refuse a row
-carrying `kind`; `0.6` returns `RecordMetadataV3`, `RecordMetadataV2` plus `kind`. It does not declare
+carrying `kind`; `0.6` returns `RecordMetadataV3`, `RecordMetadataV2` plus `kind` and `createdAt`. It does not declare
 `extends: "0.5"`: the rows are a differently named generated type, which the declaration does
 not admit, although every `0.5` member keeps its meaning. A new member on a closed payload is a `MINOR` increment per
 [SPEC §5.2](/SPEC.md#52-compatibility-rules). A host serving `0.6` **SHOULD** continue to serve
-`0.5` and earlier, omitting `kind`.
+`0.5` and earlier, omitting both.
+
+`rooms/records/get/0.2` and `rooms/keys/browse/0.3`, which return a single record's metadata and
+the host's listing passed through, do not carry `createdAt`, and both responses are closed; nor
+does `rooms/keys/read/0.1`. A reader that learns a record only through one of them has no
+`createdAt` and falls back to `updatedAt` until those tasks gain it in later versions.
 
 ### What changed from 0.2 to 0.3
 
@@ -159,6 +171,12 @@ On an `attributed` or `private` room a host **MUST NOT** return `kind`. A reader
 `kind` on a row as it treats every other member of an open room's record — the writer's claim
 as the host stores it — and applies the same rules to it as to the record's own
 (`SealedRecordBody`, *Kind*).
+
+A host **MUST** return `createdAt` on each row, on every tier, as the instant it stored the
+record's first version — unchanged by every later version and every curation, retraction
+included ([`rooms/records/put/0.5`](../../put/0.5/spec.md) Host item 16). For a record stored
+before it kept that time it **MUST** omit `createdAt` rather than supply a guess, and a reader
+then judges `writtenAt` against `updatedAt` as `SealedRecordBody` says.
 
 ### After a prune
 
@@ -342,7 +360,8 @@ those wants a different host, not a different visibility.
 ### Data carried
 
 Metadata only: keys, versions, epochs, timestamps, the BlobRefs of any files the records
-name, and — on `open` rooms — titles, descriptions, authors and kinds. `lastPrune` adds when the
+name, when each record was first stored, and — on `open` rooms — titles, descriptions,
+authors and kinds. `lastPrune` adds when the
 room was last pruned and how many records went, never which. Never bodies, and nothing
 about a file beyond which blob it is.
 

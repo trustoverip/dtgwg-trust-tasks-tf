@@ -1749,7 +1749,7 @@ export type RecordType = "authorization" | "recognition";
  */
 export type RecordValidUntil = string;
 /**
- * The instant the author wrote the record, RFC 3339 in UTC (`Z`). Set by the author and kept unchanged when the record is rewritten; an edit is marked by `editedAt`. OPTIONAL on a note; a `message` or `reaction` SHOULD carry it. The author's claim, not an attested time: a reader orders messages by it and treats an implausible one as `SealedRecordBody` (*When it was written*) says. No host enforces or reads it.
+ * The instant the author wrote the record, RFC 3339 in UTC (`Z`). Set by the author and kept unchanged when the record is rewritten; an edit is marked by `editedAt`. OPTIONAL on a note; a `message` or `reaction` SHOULD carry it. The author's claim, not an attested time: a reader orders messages by it, compares it with the host's `createdAt`, and treats an implausible or backdated one as `SealedRecordBody` (*When it was written*) says. No host enforces or reads it.
  */
 export type RecordWrittenAt = string;
 /**
@@ -12770,7 +12770,7 @@ export interface RecordMetadataV2 {
   blobs?: [BlobRef];
 }
 /**
- * What `rooms/records/list/0.6` returns: `RecordMetadataV2` plus `kind` on an `open` room. A separate definition, not a change to `RecordMetadataV2`, so that `rooms/records/list/0.2` to `0.5` keep the exact shape they published. Never the body.
+ * What `rooms/records/list/0.6` returns: `RecordMetadataV2` plus `kind` on an `open` room and `createdAt` on every tier. A separate definition, not a change to `RecordMetadataV2`, so that `rooms/records/list/0.2` to `0.5` keep the exact shape they published. Never the body.
  */
 export interface RecordMetadataV3 {
   /**
@@ -12790,6 +12790,10 @@ export interface RecordMetadataV3 {
    */
   status?: "active" | "deprecated" | "retracted";
   updatedAt: string;
+  /**
+   * When the host stored the record's first version: RFC 3339, set by the host, never by a writer. Host metadata, not body, so it is served on every tier. A host MUST set it when it stores a record's first version and MUST keep it unchanged for as long as it holds the record — across every later version, every curation, retraction included, and a member's withdrawal — so that it says when the room received the record, which `updatedAt` cannot once the record has been edited or curated. A host that stored a record before it kept `createdAt` MUST omit it for that record rather than supply a guess such as the earliest `updatedAt` it still holds; a reader then falls back to `updatedAt` (`SealedRecordBody`, *When it was written*). Readers order messages and judge `writtenAt` by it.
+   */
+  createdAt?: string;
   /**
    * Present only on an `open` room; sealed with the body otherwise.
    */

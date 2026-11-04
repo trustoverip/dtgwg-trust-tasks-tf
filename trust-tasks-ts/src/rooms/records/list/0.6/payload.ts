@@ -274,7 +274,7 @@ export const PAYLOAD_SCHEMA = {
         "version",
         "updatedAt"
       ],
-      "description": "What `rooms/records/list/0.6` returns: `RecordMetadataV2` plus `kind` on an `open` room. A separate definition, not a change to `RecordMetadataV2`, so that `rooms/records/list/0.2` to `0.5` keep the exact shape they published. Never the body.",
+      "description": "What `rooms/records/list/0.6` returns: `RecordMetadataV2` plus `kind` on an `open` room and `createdAt` on every tier. A separate definition, not a change to `RecordMetadataV2`, so that `rooms/records/list/0.2` to `0.5` keep the exact shape they published. Never the body.",
       "properties": {
         "key": {
           "type": "string",
@@ -302,6 +302,11 @@ export const PAYLOAD_SCHEMA = {
         "updatedAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the host stored the record's first version: RFC 3339, set by the host, never by a writer. Host metadata, not body, so it is served on every tier. A host MUST set it when it stores a record's first version and MUST keep it unchanged for as long as it holds the record — across every later version, every curation, retraction included, and a member's withdrawal — so that it says when the room received the record, which `updatedAt` cannot once the record has been edited or curated. A host that stored a record before it kept `createdAt` MUST omit it for that record rather than supply a guess such as the earliest `updatedAt` it still holds; a reader then falls back to `updatedAt` (`SealedRecordBody`, *When it was written*). Readers order messages and judge `writtenAt` by it."
         },
         "title": {
           "type": "string",
@@ -507,7 +512,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "version",
         "updatedAt"
       ],
-      "description": "What `rooms/records/list/0.6` returns: `RecordMetadataV2` plus `kind` on an `open` room. A separate definition, not a change to `RecordMetadataV2`, so that `rooms/records/list/0.2` to `0.5` keep the exact shape they published. Never the body.",
+      "description": "What `rooms/records/list/0.6` returns: `RecordMetadataV2` plus `kind` on an `open` room and `createdAt` on every tier. A separate definition, not a change to `RecordMetadataV2`, so that `rooms/records/list/0.2` to `0.5` keep the exact shape they published. Never the body.",
       "properties": {
         "key": {
           "type": "string",
@@ -535,6 +540,11 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "updatedAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the host stored the record's first version: RFC 3339, set by the host, never by a writer. Host metadata, not body, so it is served on every tier. A host MUST set it when it stores a record's first version and MUST keep it unchanged for as long as it holds the record — across every later version, every curation, retraction included, and a member's withdrawal — so that it says when the room received the record, which `updatedAt` cannot once the record has been edited or curated. A host that stored a record before it kept `createdAt` MUST omit it for that record rather than supply a guess such as the earliest `updatedAt` it still holds; a reader then falls back to `updatedAt` (`SealedRecordBody`, *When it was written*). Readers order messages and judge `writtenAt` by it."
         },
         "title": {
           "type": "string",
