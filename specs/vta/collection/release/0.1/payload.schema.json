@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/collection/release/0.1",
+  "title": "VTA Collection — Release — payload",
+  "description": "A client with standing in a trust context releases the collection claim for an identifier there. Released by its claimant, which has already stopped collecting, the claim ends at once and the VTA collects for the identifier again. Released by any other party, the claim becomes unrenewable and still ends at its end, because its claimant is still connected until then (VTI-NTF-083, VTI-NTF-084). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contextId",
+    "identifier"
+  ],
+  "properties": {
+    "contextId": {
+      "$ref": "../../_shared/0.1/collection.schema.json#/$defs/ContextId"
+    },
+    "identifier": {
+      "$ref": "../../_shared/0.1/collection.schema.json#/$defs/Did",
+      "description": "The identifier whose claim to release."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Collection — Release — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "identifier"
+      ],
+      "description": "The outcome. `endsAt` is present when a claim was in force: the instant the claim ends — the release itself, for the claimant's own release, and the claim's stated end otherwise. Absent, no claim was in force, and nothing changed.",
+      "properties": {
+        "identifier": {
+          "$ref": "../../_shared/0.1/collection.schema.json#/$defs/Did"
+        },
+        "endsAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the released claim ends. The VTA resumes collecting for the identifier then, plus its clock-skew tolerance where the release was not the claimant's."
+        }
+      }
+    }
+  }
+}

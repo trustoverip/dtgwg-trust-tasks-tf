@@ -607,6 +607,10 @@ export type ChunkSize = number;
  */
 export type ClaimType = string;
 /**
+ * Who collects for an identifier: `vta`, the VTA itself; `client`, the claimant of a collection claim in force; or `none`, nobody, for the reason given in `notCollectedReason`.
+ */
+export type Collector = "vta" | "client" | "none";
+/**
  * The community's hidden-vetting parameters exactly as its join manifest publishes them, under the criterion's `vetting.ext`. The caller copies them in verbatim on every call that needs them, because the community rotates labels and the engine keeps no copy of its own: a stale copy costs the caller a refused proof, never a mistaken one.
  */
 export type CommunityParameters = PublishedConfig;
@@ -626,6 +630,10 @@ export type ConsumerKind_DeviceV0_2 = Companion_DeviceV0_2 | Service_DeviceV0_2;
  * The trust context the notification is held in: the one the addressed DID belongs to.
  */
 export type ContextId = string;
+/**
+ * The trust context the identifier belongs to.
+ */
+export type ContextId_VtaCollectionV0_1 = string;
 /**
  * Opaque identifier of one of the maintainer's contexts, compared by the maintainer's own ancestry predicate. Its grammar is the maintainer's.
  */
@@ -1265,6 +1273,10 @@ export type NamespaceId = string;
  * What a node is.
  */
 export type NodeKind = "network" | "community";
+/**
+ * Why nobody collects for an identifier the VTA would otherwise collect for: `limit`, the VTA is at the bound it states on the number of identifiers it collects for (VTI-NTF-088); `conflict`, another connection for the identifier kept closing the VTA's, and the VTA stopped after the bound it states until the conflict is resolved (VTI-NTF-085). `disabled`, the VTA's operator has not enabled collection by default (VTI-NTF-093), so the VTA collects for no identifier a client has not claimed.
+ */
+export type NotCollectedReason = "limit" | "conflict" | "disabled";
 /**
  * Opaque identifier of one note: `note_` followed by 16 to 64 base64url characters.
  */
@@ -6667,6 +6679,23 @@ export interface ChunkedDescriptor {
   expiresAt: ExpiresAt;
 }
 /**
+ * A collection claim in force for one identifier: the client that is its collector, when the claim ends, and whether the claimant may still renew it. A claim released by a party other than its claimant, or whose claimant's access control entry no longer gives it standing in the context, is not renewable and still ends at `endsAt`, because the claimant is still connected until its own clock tells it to stop (VTI-NTF-084).
+ */
+export interface Claim {
+  /**
+   * The client holding the claim: the subject of the access control entry it was granted to.
+   */
+  claimant: Did_NotificationsV0_1;
+  /**
+   * When the claim ends unless renewed. The claimant stops collecting before this instant less its clock-skew tolerance; the VTA resumes no earlier than this instant plus its own (VTI-NTF-083, VTI-NTF-084).
+   */
+  endsAt: string;
+  /**
+   * Whether the claimant may renew the claim with vta/collection/claim before it ends.
+   */
+  renewable: boolean;
+}
+/**
  * Which claim a `claim` field accepts, from which credentials and issuers.
  */
 export interface ClaimSelector {
@@ -6684,6 +6713,15 @@ export interface ClaimSelector {
    * @maxItems 32
    */
   issuers?: string[];
+}
+/**
+ * The collection state of one identifier. `claim` is present exactly when `collector` is `client`, and `notCollectedReason` exactly when it is `none`.
+ */
+export interface CollectionEntry {
+  identifier: Did_NotificationsV0_1;
+  collector: Collector;
+  claim?: Claim;
+  notCollectedReason?: NotCollectedReason;
 }
 /**
  * OPTIONAL. How the community asks to be shown to a prospective applicant: a name, an accent colour and a logo. Presentation only, self-asserted and unverified — `communityDid` identifies the community, never `branding`. Not part of any criterion, so not covered by a `requirementsDigest`. Every member is optional.
