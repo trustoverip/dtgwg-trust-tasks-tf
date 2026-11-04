@@ -142,6 +142,21 @@ covers it, and the oracle answers `unknownEpoch` with reason `removed` and that 
 as `removedAtEpoch`. A record that does not open under the state `E` chose is `didNotOpen` or
 `unknownEpoch`; the oracle **MUST NOT** retry it under another of the member's states.
 
+A prior membership the oracle recognised from a Welcome rather than from a removal it processed
+([`rooms/keys/welcome`](../../welcome/0.1/spec.md), *Rejoining after a removal*) has a removal
+epoch that is **not yet known**: it held the room at some epoch `h`, and the member was removed
+at an epoch above `h` and at or below the next join epoch. Until the oracle applies the
+removing commit to that state, the membership covers every epoch at or after its join epoch
+and below the next join epoch, and `E` chooses it as above. A record whose `E` is above `h` is
+then a commit not yet delivered to that state: the oracle answers `unknownEpoch` with reason
+`notDelivered` and `heldEpoch` `h` — the epoch that state holds, not the current state's — and
+**MAY** first repair that state by applying the room's commits to it from a host, as it would
+catch up the current state. Applying the removing commit fixes the removal epoch, and from then
+on the membership is answered as one with a known removal: `E` below it opens under that state,
+and `E` at or after it and below the next join epoch is `removed`. An oracle that cannot obtain
+those commits answers what its repair would — `notDelivered` — and **MUST NOT** answer `removed`
+for an epoch above `h` before it has processed the commit that says so.
+
 An oracle that refuses with `unknownEpoch` a record sealed under epoch `E` **MUST** say which
 case holds in `details.reason`:
 
@@ -152,7 +167,8 @@ case holds in `details.reason`:
   that knows of such a removal **MUST NOT** answer `notDelivered` for an `E` in that range.
 - `notDelivered` when `E` is later than any epoch the state `E` chose holds and the removal
   case does not apply (a commit has not been delivered), with `heldEpoch` naming the latest
-  epoch it holds where it can.
+  epoch that state holds where it can — including a prior membership whose removal epoch is
+  not yet known, until the oracle applies the commit that removes it.
 - `beyondChain`, with `earliestEpoch`, when `E` is earlier than the latest epoch the state `E`
   chose holds and that state's retained epoch chain does not reach back to `E`, or when `E` is
   below the epoch the principal first joined at, so that no state of its covers `E`.

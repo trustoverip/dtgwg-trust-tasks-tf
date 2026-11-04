@@ -165,7 +165,12 @@ A conforming **oracle** (`recipient`) **MUST**:
      membership ([`rooms/keys/welcome`](../../welcome/0.1/spec.md), *Rejoining after a
      removal*) whose range covers `E`. Where `E` is earlier than the latest epoch that state
      holds, the oracle reaches `storage_key(E)` through that state's epoch chain. It **MUST
-     NOT** derive under another of the principal's states.
+     NOT** derive under another of the principal's states. A prior membership whose removal
+     epoch is not yet known (recognised from a Welcome, not from a removal the oracle
+     processed) is chosen for every `E` at or after its join epoch and below the next join
+     epoch, as `rooms/keys/open` has it: an `E` above the epoch that state holds is
+     `notDelivered` with that state's `heldEpoch` until the oracle applies the commit that
+     removed its principal, and is then `removed` or derived as for a known removal.
 4. Refuse with `unknownEpoch` an epoch it cannot reach, saying which of the three cases
    holds in `details.reason`:
    - `removed`, with `removedAtEpoch`, when a commit the oracle processed removed its
@@ -176,7 +181,9 @@ A conforming **oracle** (`recipient`) **MUST**:
      a removal **MUST NOT** answer `notDelivered` for an `E` in that range.
    - `notDelivered` when `E` is later than any epoch the state `E` chose holds and the
      removal case does not apply (a commit has not been delivered), with `heldEpoch` naming
-     the latest epoch it holds.
+     the latest epoch that state holds — including a prior membership whose removal epoch is
+     not yet known, until the oracle applies the commit that removes it; it **MUST NOT**
+     answer `removed` for such an `E` before it has processed that commit.
    - `beyondChain` with `earliestEpoch` when the chosen state's chain does not reach back to
      `E` or `E` is below the epoch the principal first joined at, and for any `E` below the
      room's epoch floor once the oracle has learnt one, whatever it still holds

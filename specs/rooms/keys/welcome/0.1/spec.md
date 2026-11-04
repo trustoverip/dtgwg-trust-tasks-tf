@@ -45,7 +45,7 @@ errorCodes:
     meaning: "The recipient holds no valid, unconsumed invitation from this room for this party."
     retryable: false
   - code: rooms/keys/welcome:alreadyJoined
-    meaning: "The recipient already holds current group state for this room for the member the invitation names — state that no commit it has processed since removed the member from. State from which a processed commit removed the member is a prior membership, not a join, and state it holds for another member it serves is not a join by this one."
+    meaning: "The recipient already holds current group state for this room for the member the invitation names — state the member has not been shown to have left: no commit the recipient processed removed the member from it, and the ratchet tree of the Welcome being answered still contains the member's leaf from it. State from which a processed commit removed the member, or whose leaf that ratchet tree no longer contains, is a prior membership, not a join, and state it holds for another member it serves is not a join by this one."
     retryable: false
   - code: rooms/keys/welcome:welcomeInvalid
     meaning: "The Welcome did not process — wrong KeyPackage, malformed, or missing the ratchet tree."
@@ -94,8 +94,9 @@ single-use; a second Welcome under the same invitation is `notInvited`, not a se
 
 A recipient already holding **current** group state for `roomId` for the member the
 invitation names **MUST** answer `alreadyJoined`. Group state is current from the Welcome that
-formed it until the recipient processes a commit that removes the member from the room's
-group. A key holder serving several members — several principals, or several personas of
+formed it until the recipient learns that the member was removed from the room's group — by
+processing the commit that removes it, or from a Welcome that no longer contains the member's
+leaf (*Rejoining after a removal*). A key holder serving several members — several principals, or several personas of
 one — keeps one current group state per member per room; state it holds for another member is
 not a join by this one and **MUST NOT** cause `alreadyJoined`. Two current group states for
 one member in one room is a condition nothing downstream can resolve: both cover the same
@@ -110,9 +111,9 @@ the first one ([`rooms/owner/group/remove`](../../../owner/group/remove/0.4/spec
 *Re-admitting a party*). The fresh invitation is answered by a Welcome like any other, and
 this task is where it arrives.
 
-A removal does not take the member's group state away. Once the recipient processes a commit
-that removes the member, the state it held becomes a **prior membership**: the member's state
-for the epochs at or after the one it joined at and below the epoch of the removal. A prior
+A removal does not take the member's group state away. Once the recipient knows the member
+was removed, the state it held becomes a **prior membership**: the member's state for the
+epochs at or after the one it joined at and below the epoch of the removal. A prior
 membership is not a join and **MUST NOT** cause `alreadyJoined`. A recipient holding only
 prior memberships for `roomId` for the member the invitation names **MUST** process a Welcome
 that arrives under a valid, unconsumed invitation exactly as it would a first join, and the
@@ -120,8 +121,44 @@ group state that Welcome forms is the member's current state. It **MUST** keep e
 membership beside it, unmerged, for records sealed under the epochs that membership covers
 (*Retention*).
 
+The recipient recognises a prior membership by either of two pieces of evidence:
+
+1. **A removal it processed** — it applied the commit that removed the member's leaf, and so
+   knows the removal epoch.
+2. **The Welcome itself.** A member idle when it was removed never applied the removing
+   commit, and cannot fetch it afterwards: a host serves commits under a `read` grant the
+   removal withdrew. It comes to the re-admitting Welcome holding state at some epoch `h`
+   that no processed commit ended. The Welcome carries the room's ratchet tree at the epoch
+   `j` it admits the member at. The recipient **MUST** process that Welcome — without yet
+   keeping the state it forms — and look in its ratchet tree for the member's leaf from the
+   state it holds, identified by that leaf's own signature key or leaf node, **never** by the
+   member's identifier: the re-admitted leaf names the same member under a new key.
+   - Where that leaf is **still in the tree**, the member was never removed, the state is
+     current, and the recipient **MUST** answer `alreadyJoined`. It **MUST** keep nothing
+     the Welcome formed, and **MUST NOT** consume the invitation or the KeyPackage the
+     Welcome is sealed to.
+   - Where it is **absent**, the member was removed by a commit producing some epoch `r`,
+     `h < r ≤ j`, that the recipient has not seen. The state it holds is a prior membership
+     whose removal epoch is **not yet known**, and the recipient **MUST** proceed with the
+     join exactly as under the first piece of evidence.
+
+A recipient **MUST NOT** wait for, or fetch, the removing commit before joining, and a client
+is not required to apply commits before it hands over the Welcome: the Welcome is the
+evidence, and a join that waited on the commit would wait on something the member can no
+longer be given.
+
+A prior membership whose removal epoch is not yet known covers, for certain, the epochs from
+its join epoch through `h`; an epoch above `h` and below `j` may lie on either side of the
+removal. The recipient **MAY** apply the room's commits to that prior membership's state —
+fetched from a host under the member's current grant, as any catch-up is — until it applies
+the one that removes the member, which fixes `r`; from then on the prior membership is one
+with a known removal. Until then an epoch above `h` and below `j` is a commit not yet
+delivered to that state ([`open`](../../open/0.2/spec.md),
+[`file-key`](../../file-key/0.2/spec.md)), never a removal it has not seen.
+
 A member may have several prior memberships, one per removal, each covering the epochs at or
-after its own join epoch and below its own removal epoch. They never overlap one another or
+after its own join epoch and below its own removal epoch — or, while that is not yet known,
+below the next join epoch. They never overlap one another or
 the current state: a member is removed before it is re-admitted, and the commit admitting it
 again comes after the one removing it, so every join epoch is at or after the removal epoch
 before it. For any epoch, therefore, at most one of a member's states covers it, and

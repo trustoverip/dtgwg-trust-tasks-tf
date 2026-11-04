@@ -369,7 +369,7 @@ pub mod error_codes {
     };
     /// `rooms/keys/welcome:alreadyJoined`
     ///
-    /// The recipient already holds current group state for this room for the member the invitation names — state that no commit it has processed since removed the member from. State from which a processed commit removed the member is a prior membership, not a join, and state it holds for another member it serves is not a join by this one.
+    /// The recipient already holds current group state for this room for the member the invitation names — state the member has not been shown to have left: no commit the recipient processed removed the member from it, and the ratchet tree of the Welcome being answered still contains the member's leaf from it. State from which a processed commit removed the member, or whose leaf that ratchet tree no longer contains, is a prior membership, not a join, and state it holds for another member it serves is not a join by this one.
     ///
     /// Declared `retryable: false`.
     pub const ALREADY_JOINED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
