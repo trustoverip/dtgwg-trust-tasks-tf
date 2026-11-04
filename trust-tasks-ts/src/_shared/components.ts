@@ -11513,6 +11513,46 @@ export interface NetworkMembership {
   joinedAt?: string;
   updatedAt: string;
 }
+export interface NetworkMembership_VtcV0_7 {
+  /**
+   * The network's DID.
+   */
+  network: string;
+  /**
+   * Where the network's API is reached: the base its `/.well-known/vtn` profile is served under.
+   */
+  url: string;
+  /**
+   * The network's name, as its profile gives it.
+   */
+  name?: string;
+  /**
+   * `acknowledged`: the community is a member — it signed the acknowledgement of the network's grant. `repudiated`: the community rejected the network's listing of it. `departed`: the community left, by repudiating the grant.
+   */
+  state: "acknowledged" | "repudiated" | "departed";
+  /**
+   * The network's listing credential naming the community, as the community verified it.
+   */
+  listing: {};
+  /**
+   * The network's membership grant (VMC), once the community acknowledged.
+   */
+  grant?: {};
+  /**
+   * The community's acknowledgement (VMC carrying the grant's digest).
+   */
+  acknowledgement?: {};
+  /**
+   * The community's repudiation (VSC) of the listing, or — on departure — of the grant.
+   */
+  repudiation?: {};
+  /**
+   * @maxItems 64
+   */
+  groups: RegisteredGroup_VtcV0_7[];
+  joinedAt?: string;
+  updatedAt: string;
+}
 /**
  * The discoverability a card has when the community creates it, before its member chooses. A new card is never published beyond the community (VTI-DIR-042), so there is no member for that here: `externalCards` says whether the member may turn it on.
  */
@@ -13020,6 +13060,33 @@ export interface RegisteredGroup {
   registration: {};
   /**
    * The network's `groupRegistered` statement (VSC), bound to the registration's digest.
+   */
+  acceptance: {};
+  registeredAt: string;
+}
+export interface RegisteredGroup_VtcV0_7 {
+  /**
+   * A role the network defines, e.g. `admins`: lowercase letters, digits, `-` and `_`.
+   */
+  role: string;
+  /**
+   * The community's identifier for the group.
+   */
+  groupId: string;
+  /**
+   * The group's own DID, which the registration names as its `group`.
+   */
+  groupDid: string;
+  /**
+   * Where the network delivers broadcasts for the group: the community's Trust Task endpoint, at which the network sends them as `vtc/networks/deliver`.
+   */
+  endpoint: string;
+  /**
+   * The registration: the community's signed `vtn/groups/register` request as the network accepted it — a complete Trust Task document, with its proof, naming the network as `recipient` and the group, `role` and `endpoint` in its payload.
+   */
+  registration: {};
+  /**
+   * The network's `groupRegistered/1` statement (VSC) accepting the registration: subject the group, `object.digestMultibase` the registration's digest — SHA-256 over the RFC 8785 (JCS) form of the signed request including its proof.
    */
   acceptance: {};
   registeredAt: string;

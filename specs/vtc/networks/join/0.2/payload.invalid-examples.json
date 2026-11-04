@@ -1,0 +1,38 @@
+[
+  {
+    "note": "Missing `network` — the administrator must say which DID they expect at the URL, so a URL alone cannot point the community at an impostor.",
+    "payload": {
+      "url": "https://whn.example.org"
+    }
+  },
+  {
+    "note": "A role assignment without a group.",
+    "payload": {
+      "url": "https://whn.example.org",
+      "network": "did:example:whn",
+      "groups": [
+        {
+          "role": "admins"
+        }
+      ]
+    }
+  },
+  {
+    "note": "A role name with capitals — roles are lowercase identifiers.",
+    "payload": {
+      "url": "https://whn.example.org",
+      "network": "did:example:whn",
+      "groups": [
+        {
+          "role": "Admins",
+          "groupId": "admins"
+        }
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `membership`.",
+    "payload": {}
+  }
+]

@@ -2704,31 +2704,41 @@ mod vtc {
         }
     }
     mod networks {
+        mod deliver {
+            mod v0_1;
+        }
         mod evidence {
             mod v0_1;
+            mod v0_2;
         }
         mod groups {
             mod register {
                 mod v0_1;
+                mod v0_2;
             }
         }
         mod join {
             mod v0_1;
+            mod v0_2;
         }
         mod leave {
             mod v0_1;
+            mod v0_2;
         }
         mod list {
             mod v0_1;
+            mod v0_2;
         }
         mod notice {
             mod v0_1;
         }
         mod repudiate {
             mod v0_1;
+            mod v0_2;
         }
         mod show {
             mod v0_1;
+            mod v0_2;
         }
     }
     mod notifications {

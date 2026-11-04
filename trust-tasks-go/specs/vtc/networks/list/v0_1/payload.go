@@ -12,6 +12,8 @@ import (
 )
 
 // Response The community's network memberships, by network DID.
+//
+// Deprecated: superseded by vtc/networks/list/0.2
 type Response struct {
 	Items      []NetworkMembership `json:"items"`
 	NextCursor *string             `json:"nextCursor,omitempty"`
@@ -102,6 +104,8 @@ const (
 
 // Payload List the community's network memberships, optionally in one state. The outer
 // document members are owned by the framework — SPEC §6.3.
+//
+// Deprecated: superseded by vtc/networks/list/0.2
 type Payload struct {
 	// Only memberships in this state.
 	State  *PayloadState `json:"state,omitempty"`
@@ -127,7 +131,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by vtc/networks/list/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/networks/list/0.1#response"

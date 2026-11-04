@@ -1,0 +1,12 @@
+[
+  {
+    "note": "Missing `network`.",
+    "payload": {}
+  },
+  {
+    "note": "`network` is not a DID — a network is named by its DID, never its URL.",
+    "payload": {
+      "network": "https://whn.example.org"
+    }
+  }
+]

@@ -48,7 +48,7 @@ related:
 
 ## Abstract
 
-A Verifiable Trust Network can itself be a member of other networks — its **parents** ([VTI specification, *The Verifiable Trust Network*](https://trustoverip.github.io/dtgwg-vti-spec/), VTI-VTN-030). **VTN Memberships — List** answers which parents this network has dealt with: those it is a member of, those whose listing it repudiated, and those it left, each with the credentials that evidence the state and the groups it registered for the parent's roles. It is the mirror of [`vtc/networks/list`](../../../../vtc/networks/list/0.1/spec.md) for a network that is a member.
+A Verifiable Trust Network can itself be a member of other networks — its **parents** ([VTI specification, *The Verifiable Trust Network*](https://trustoverip.github.io/dtgwg-vti-spec/), VTI-VTN-030). **VTN Memberships — List** answers which parents this network has dealt with: those it is a member of, those whose listing it repudiated, and those it left, each with the credentials that evidence the state and the groups it registered for the parent's roles. It is the mirror of [`vtc/networks/list`](../../../../vtc/networks/list/0.2/spec.md) for a network that is a member.
 
 ## Status of this Document
 

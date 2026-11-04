@@ -32,6 +32,7 @@ exposure:
     Out: the network's DID, the role and group, and the network's message — content the network chose to broadcast to every party serving the role. No personal data of the recipient.
 errorCodes: []
 related:
+  - vtc/networks/deliver
   - vtc/networks/groups/register
   - vtc/networks/evidence
   - notifications/notify
@@ -39,7 +40,7 @@ related:
 
 ## Abstract
 
-The **VTC Networks — Notice** Trust Task is the last step of a Verifiable Trust Network's broadcast ([VTI specification, *The Verifiable Trust Network*](https://trustoverip.github.io/dtgwg-vti-spec/) (VTI-VTN-001 – VTI-VTN-063)). A network broadcasts to a role; each member network relays to the groups its own members registered for the role, adding a hop it signs; and a community that registered a group receives the envelope at its relay endpoint for that group. It passes the envelope on, unchanged, to each active member of the group with this task.
+The **VTC Networks — Notice** Trust Task is the last step of a Verifiable Trust Network's broadcast ([VTI specification, *The Verifiable Trust Network*](https://trustoverip.github.io/dtgwg-vti-spec/) (VTI-VTN-001 – VTI-VTN-063)). A network broadcasts to a role; each member network relays to the groups its own members registered for the role, adding a hop it signs; and a community that registered a group receives the envelope at the endpoint it registered for that group — its Trust Task endpoint, where the network delivers it with [`vtc/networks/deliver`](../../deliver/0.1/spec.md). It passes the envelope on, unchanged, to each active member of the group with this task.
 
 The envelope is the network's: the message signed by the network that originated it and one hop signed by each network that relayed it, the last delivering to the community's group. A member verifies the community's proof on this document and, independently, the envelope — so they can tell who said it, who passed it on, and that nobody changed it.
 

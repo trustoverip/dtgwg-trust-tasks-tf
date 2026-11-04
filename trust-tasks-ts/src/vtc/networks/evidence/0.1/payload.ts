@@ -8,6 +8,8 @@ import type { Ext } from "../../../../_shared/components.js";
 
 /**
  * Ask for the credentials linking a group the caller belongs to up to a network. The outer document members are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by vtc/networks/evidence/0.2
  */
 export interface VTCNetworksEvidencePayload {
   /**
@@ -22,6 +24,8 @@ export interface VTCNetworksEvidencePayload {
 }
 /**
  * The chain links the caller may present, one per group and network.
+ *
+ * @deprecated superseded by vtc/networks/evidence/0.2
  */
 export interface VTCNetworksEvidenceResponsePayload {
   /**
@@ -64,15 +68,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by vtc/networks/evidence/0.2";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vtc/networks/evidence/0.2
+ */
 export type Payload = VTCNetworksEvidencePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/networks/evidence/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vtc/networks/evidence/0.2
+ */
 export type Response = VTCNetworksEvidenceResponsePayload;
 
 /**

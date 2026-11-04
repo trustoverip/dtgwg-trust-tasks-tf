@@ -1,0 +1,17 @@
+[
+  {
+    "note": "Missing `groupId`.",
+    "payload": {
+      "network": "did:example:whn",
+      "role": "admins"
+    }
+  },
+  {
+    "note": "A role name with a space.",
+    "payload": {
+      "network": "did:example:whn",
+      "role": "site admins",
+      "groupId": "admins"
+    }
+  }
+]
