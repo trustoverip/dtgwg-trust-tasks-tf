@@ -6,7 +6,7 @@
 import type { Ext, SealedRecord } from "../../../../_shared/components.js";
 
 
-/** @deprecated superseded by rooms/keys/seal/0.2 */
+/** @deprecated superseded by rooms/keys/seal/0.3 */
 export interface RoomsKeysSealPayload {
   /**
    * The room to seal for. The recipient MUST hold group state for it.
@@ -32,7 +32,7 @@ export interface RoomsKeysSealPayload {
 /**
  * Success response to rooms/keys/seal. Type https://trusttasks.org/spec/rooms/keys/seal/0.1#response. The sealed record, ready to hand to a host with rooms/records/put.
  *
- * @deprecated superseded by rooms/keys/seal/0.2
+ * @deprecated superseded by rooms/keys/seal/0.3
  */
 export interface RoomsKeysSealResponsePayload {
   sealed: SealedRecord;
@@ -59,12 +59,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by rooms/keys/seal/0.2";
+export const DEPRECATION: string | null = "superseded by rooms/keys/seal/0.3";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by rooms/keys/seal/0.2
+ * @deprecated superseded by rooms/keys/seal/0.3
  */
 export type Payload = RoomsKeysSealPayload;
 
@@ -74,7 +74,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/rooms/keys/seal/0.
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by rooms/keys/seal/0.2
+ * @deprecated superseded by rooms/keys/seal/0.3
  */
 export type Response = RoomsKeysSealResponsePayload;
 

@@ -3,7 +3,7 @@
  * Source: specs/rooms/records/put/0.5/payload.schema.json
  */
 
-import type { AuthorityPresentation, BlobRef, DigestMultibase, Ext, FileManifest, PermittedUse, RecordBasis, RecordConfidence, RecordEvidence, RecordEvidenceCredential, RecordEvidenceList, RecordEvidenceRecord, RecordKind, RecordReference, RecordValidUntil, RecordWrittenAt, SealedRecord } from "../../../../_shared/components.js";
+import type { AuthorityPresentation, BlobRef, DigestMultibase, Ext, FileManifest, PermittedUse, RecordBasis, RecordConfidence, RecordEditedAt, RecordEvidence, RecordEvidenceCredential, RecordEvidenceList, RecordEvidenceRecord, RecordKind, RecordReference, RecordValidUntil, RecordWrittenAt, SealedRecord } from "../../../../_shared/components.js";
 
 
 /**
@@ -36,6 +36,9 @@ export interface RoomsRecordsPutPayload {
   cleartext?: {
     title?: string;
     description?: string;
+    /**
+     * The record's text: plain text on a `message`, which a reader MUST NOT render as markup; the value on a `reaction`; markdown on a note and on a kind the reader does not know (`SealedRecordBody`, *What `body` is*). An empty `body` on a new version of a `message` or `reaction`, written by its author, withdraws it.
+     */
     body: string;
     /**
      * @maxItems 32
@@ -47,6 +50,7 @@ export interface RoomsRecordsPutPayload {
      */
     inReplyTo?: RecordReference;
     writtenAt?: RecordWrittenAt;
+    editedAt?: RecordEditedAt;
     /**
      * What kind of claim the record is. A writer SHOULD set it; an agent writer that does not know SHOULD write `inferred`. Provenance for display and weighting, never authority.
      */
@@ -95,7 +99,7 @@ export interface RoomsRecordsPutResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { AuthorityPresentation, BlobRef, DigestMultibase, Ext, FileManifest, PermittedUse, RecordBasis, RecordConfidence, RecordEvidence, RecordEvidenceCredential, RecordEvidenceList, RecordEvidenceRecord, RecordKind, RecordReference, RecordValidUntil, RecordWrittenAt, SealedRecord };
+export type { AuthorityPresentation, BlobRef, DigestMultibase, Ext, FileManifest, PermittedUse, RecordBasis, RecordConfidence, RecordEditedAt, RecordEvidence, RecordEvidenceCredential, RecordEvidenceList, RecordEvidenceRecord, RecordKind, RecordReference, RecordValidUntil, RecordWrittenAt, SealedRecord };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/rooms/records/put/0.5" as const;
@@ -187,7 +191,8 @@ export const PAYLOAD_SCHEMA = {
         },
         "body": {
           "type": "string",
-          "maxLength": 1048576
+          "maxLength": 1048576,
+          "description": "The record's text: plain text on a `message`, which a reader MUST NOT render as markup; the value on a `reaction`; markdown on a note and on a kind the reader does not know (`SealedRecordBody`, *What `body` is*). An empty `body` on a new version of a `message` or `reaction`, written by its author, withdraws it."
         },
         "tags": {
           "type": "array",
@@ -206,6 +211,9 @@ export const PAYLOAD_SCHEMA = {
         },
         "writtenAt": {
           "$ref": "#/$defs/RecordWrittenAt"
+        },
+        "editedAt": {
+          "$ref": "#/$defs/RecordEditedAt"
         },
         "basis": {
           "$ref": "#/$defs/RecordBasis",
@@ -503,12 +511,19 @@ export const PAYLOAD_SCHEMA = {
       ],
       "description": "What kind of claim a record is, as its author states it. OPTIONAL wherever it appears; absent means the author did not say, and a reader shows it as unstated rather than assuming any of these.\n\n  - `declared` — the author's own statement: a decision, a preference, an intention, a commitment. True because the author says so, and only as far as the author speaks for it.\n  - `observed` — something the author saw, measured or was told directly, recorded as found.\n  - `verified` — checked against evidence that somebody else can check again, such as a credential or another record. A record that says `verified` SHOULD name that evidence in `evidence`; one that does not is an unsupported claim to have checked, and a reader SHOULD present it so.\n  - `inferred` — derived by reasoning from other information: an agent's conclusion, a summary's generalisation, a model's guess. The value an agent writer uses when it does not know which of the others applies.\n\nThe values are the author's account of their own record, signed with it. They are not checked by anybody, confer nothing, and say nothing about whether the record is right — `inferred` can be correct and `observed` mistaken. Aligned with the provenance vocabulary of personal agent memory, so that a record moved between a member's memory and a room keeps its meaning."
     },
+    "RecordEditedAt": {
+      "title": "RecordEditedAt",
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$",
+      "description": "The instant the author made the edit that produced this version, RFC 3339 in UTC (`Z`). Set by the writer of every version after the first, and absent on the first, so that a reader seeing a record for the first time can tell whether it was ever edited — which `version` cannot say, since curation moves it too. Signed with the body on the sealed tiers. A reader shows a record carrying it as edited, and treats an implausible one as `SealedRecordBody` (*Edits*) says. Governed by `RoomProfile.recordMembers` like `writtenAt`. No host enforces or reads it."
+    },
     "RecordWrittenAt": {
       "title": "RecordWrittenAt",
       "type": "string",
       "format": "date-time",
       "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$",
-      "description": "The instant the author wrote the record, RFC 3339 in UTC (`Z`). Set by the author and kept unchanged when the record is rewritten, so `version` alone marks revisions. OPTIONAL on a note; a `message` or `reaction` SHOULD carry it. The author's claim, not an attested time: a reader orders messages by it and treats an implausible one as `SealedRecordBody` (*When it was written*) says. No host enforces or reads it."
+      "description": "The instant the author wrote the record, RFC 3339 in UTC (`Z`). Set by the author and kept unchanged when the record is rewritten; an edit is marked by `editedAt`. OPTIONAL on a note; a `message` or `reaction` SHOULD carry it. The author's claim, not an attested time: a reader orders messages by it and treats an implausible one as `SealedRecordBody` (*When it was written*) says. No host enforces or reads it."
     },
     "RecordReference": {
       "title": "RecordReference",
@@ -528,7 +543,7 @@ export const PAYLOAD_SCHEMA = {
         "version": {
           "type": "integer",
           "minimum": 1,
-          "description": "The version of the record the author was answering. OPTIONAL; a reader that shows a later version of that record SHOULD say that it has changed since."
+          "description": "The version of the record the author was answering. OPTIONAL. A reader SHOULD say that the target has changed since only when its content has, never because its version moved: curation moves a record's version without touching its content (`SealedRecordBody`, *Whether the target has changed*)."
         }
       }
     },
@@ -538,7 +553,7 @@ export const PAYLOAD_SCHEMA = {
       "minLength": 1,
       "maxLength": 64,
       "pattern": "^[a-z][A-Za-z0-9]*$",
-      "description": "What a reader shows a record as. Defined values: `note` — something kept in the room's library, titled or not; `message` — a turn in the room's conversation, its words in `body`; `reaction` — a short response to another record (`SealedRecordBody`, *Reactions*). An open set, not an enumeration, so a new kind needs no new version of any schema: a reader MUST present a record whose kind it does not know as a note, and MUST NOT refuse a record for its kind. Absent means `note`. lowerCamelCase, at most 64 characters."
+      "description": "What a reader shows a record as. Defined values: `note` — something kept in the room's library, titled or not, its `body` markdown; `message` — a turn in the room's conversation, its words in `body` as plain text; `reaction` — a short response to another record, its value in `body` (`SealedRecordBody`, *Reactions*). An open set, not an enumeration, so a new kind needs no new version of any schema: a reader MUST present a record whose kind it does not know as a note, and MUST NOT refuse a record for its kind. Absent means `note`, though a reader that keeps a conversation apart MAY show an untitled record without a kind as a message (*Untitled records*). A new version of a record MUST keep its kind. lowerCamelCase, at most 64 characters."
     },
     "SealedRecord": {
       "title": "SealedRecord",
@@ -865,12 +880,19 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       ],
       "description": "What kind of claim a record is, as its author states it. OPTIONAL wherever it appears; absent means the author did not say, and a reader shows it as unstated rather than assuming any of these.\n\n  - `declared` — the author's own statement: a decision, a preference, an intention, a commitment. True because the author says so, and only as far as the author speaks for it.\n  - `observed` — something the author saw, measured or was told directly, recorded as found.\n  - `verified` — checked against evidence that somebody else can check again, such as a credential or another record. A record that says `verified` SHOULD name that evidence in `evidence`; one that does not is an unsupported claim to have checked, and a reader SHOULD present it so.\n  - `inferred` — derived by reasoning from other information: an agent's conclusion, a summary's generalisation, a model's guess. The value an agent writer uses when it does not know which of the others applies.\n\nThe values are the author's account of their own record, signed with it. They are not checked by anybody, confer nothing, and say nothing about whether the record is right — `inferred` can be correct and `observed` mistaken. Aligned with the provenance vocabulary of personal agent memory, so that a record moved between a member's memory and a room keeps its meaning."
     },
+    "RecordEditedAt": {
+      "title": "RecordEditedAt",
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$",
+      "description": "The instant the author made the edit that produced this version, RFC 3339 in UTC (`Z`). Set by the writer of every version after the first, and absent on the first, so that a reader seeing a record for the first time can tell whether it was ever edited — which `version` cannot say, since curation moves it too. Signed with the body on the sealed tiers. A reader shows a record carrying it as edited, and treats an implausible one as `SealedRecordBody` (*Edits*) says. Governed by `RoomProfile.recordMembers` like `writtenAt`. No host enforces or reads it."
+    },
     "RecordWrittenAt": {
       "title": "RecordWrittenAt",
       "type": "string",
       "format": "date-time",
       "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$",
-      "description": "The instant the author wrote the record, RFC 3339 in UTC (`Z`). Set by the author and kept unchanged when the record is rewritten, so `version` alone marks revisions. OPTIONAL on a note; a `message` or `reaction` SHOULD carry it. The author's claim, not an attested time: a reader orders messages by it and treats an implausible one as `SealedRecordBody` (*When it was written*) says. No host enforces or reads it."
+      "description": "The instant the author wrote the record, RFC 3339 in UTC (`Z`). Set by the author and kept unchanged when the record is rewritten; an edit is marked by `editedAt`. OPTIONAL on a note; a `message` or `reaction` SHOULD carry it. The author's claim, not an attested time: a reader orders messages by it and treats an implausible one as `SealedRecordBody` (*When it was written*) says. No host enforces or reads it."
     },
     "RecordReference": {
       "title": "RecordReference",
@@ -890,7 +912,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "version": {
           "type": "integer",
           "minimum": 1,
-          "description": "The version of the record the author was answering. OPTIONAL; a reader that shows a later version of that record SHOULD say that it has changed since."
+          "description": "The version of the record the author was answering. OPTIONAL. A reader SHOULD say that the target has changed since only when its content has, never because its version moved: curation moves a record's version without touching its content (`SealedRecordBody`, *Whether the target has changed*)."
         }
       }
     },
@@ -900,7 +922,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "minLength": 1,
       "maxLength": 64,
       "pattern": "^[a-z][A-Za-z0-9]*$",
-      "description": "What a reader shows a record as. Defined values: `note` — something kept in the room's library, titled or not; `message` — a turn in the room's conversation, its words in `body`; `reaction` — a short response to another record (`SealedRecordBody`, *Reactions*). An open set, not an enumeration, so a new kind needs no new version of any schema: a reader MUST present a record whose kind it does not know as a note, and MUST NOT refuse a record for its kind. Absent means `note`. lowerCamelCase, at most 64 characters."
+      "description": "What a reader shows a record as. Defined values: `note` — something kept in the room's library, titled or not, its `body` markdown; `message` — a turn in the room's conversation, its words in `body` as plain text; `reaction` — a short response to another record, its value in `body` (`SealedRecordBody`, *Reactions*). An open set, not an enumeration, so a new kind needs no new version of any schema: a reader MUST present a record whose kind it does not know as a note, and MUST NOT refuse a record for its kind. Absent means `note`, though a reader that keeps a conversation apart MAY show an untitled record without a kind as a message (*Untitled records*). A new version of a record MUST keep its kind. lowerCamelCase, at most 64 characters."
     },
     "SealedRecord": {
       "title": "SealedRecord",

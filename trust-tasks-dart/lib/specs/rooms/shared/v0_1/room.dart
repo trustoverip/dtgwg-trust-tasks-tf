@@ -265,12 +265,15 @@ class SealedRecord {
 }
 
 /// What a reader shows a record as. Defined values: `note` — something kept in the
-/// room's library, titled or not; `message` — a turn in the room's conversation, its
-/// words in `body`; `reaction` — a short response to another record
-/// (`SealedRecordBody`, *Reactions*). An open set, not an enumeration, so a new kind
-/// needs no new version of any schema: a reader MUST present a record whose kind it
-/// does not know as a note, and MUST NOT refuse a record for its kind. Absent means
-/// `note`. lowerCamelCase, at most 64 characters.
+/// room's library, titled or not, its `body` markdown; `message` — a turn in the
+/// room's conversation, its words in `body` as plain text; `reaction` — a short
+/// response to another record, its value in `body` (`SealedRecordBody`, *Reactions*).
+/// An open set, not an enumeration, so a new kind needs no new version of any schema:
+/// a reader MUST present a record whose kind it does not know as a note, and MUST NOT
+/// refuse a record for its kind. Absent means `note`, though a reader that keeps a
+/// conversation apart MAY show an untitled record without a kind as a message
+/// (*Untitled records*). A new version of a record MUST keep its kind. lowerCamelCase,
+/// at most 64 characters.
 typedef RecordKind = String;
 
 /// Names another record of the same room: the record a reply answers or a reaction
@@ -295,8 +298,10 @@ class RecordReference {
   /// key there.
   final String key;
 
-  /// The version of the record the author was answering. OPTIONAL; a reader that shows a
-  /// later version of that record SHOULD say that it has changed since.
+  /// The version of the record the author was answering. OPTIONAL. A reader SHOULD say
+  /// that the target has changed since only when its content has, never because its
+  /// version moved: curation moves a record's version without touching its content
+  /// (`SealedRecordBody`, *Whether the target has changed*).
   final int? version;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
@@ -307,12 +312,20 @@ class RecordReference {
 }
 
 /// The instant the author wrote the record, RFC 3339 in UTC (`Z`). Set by the author
-/// and kept unchanged when the record is rewritten, so `version` alone marks
-/// revisions. OPTIONAL on a note; a `message` or `reaction` SHOULD carry it. The
-/// author's claim, not an attested time: a reader orders messages by it and treats an
-/// implausible one as `SealedRecordBody` (*When it was written*) says. No host
-/// enforces or reads it.
+/// and kept unchanged when the record is rewritten; an edit is marked by `editedAt`.
+/// OPTIONAL on a note; a `message` or `reaction` SHOULD carry it. The author's claim,
+/// not an attested time: a reader orders messages by it and treats an implausible one
+/// as `SealedRecordBody` (*When it was written*) says. No host enforces or reads it.
 typedef RecordWrittenAt = String;
+
+/// The instant the author made the edit that produced this version, RFC 3339 in UTC
+/// (`Z`). Set by the writer of every version after the first, and absent on the first,
+/// so that a reader seeing a record for the first time can tell whether it was ever
+/// edited — which `version` cannot say, since curation moves it too. Signed with the
+/// body on the sealed tiers. A reader shows a record carrying it as edited, and treats
+/// an implausible one as `SealedRecordBody` (*Edits*) says. Governed by
+/// `RoomProfile.recordMembers` like `writtenAt`. No host enforces or reads it.
+typedef RecordEditedAt = String;
 
 /// What kind of claim a record is, as its author states it. OPTIONAL wherever it
 /// appears; absent means the author did not say, and a reader shows it as unstated
@@ -791,16 +804,22 @@ class RoomProfile {
   /// The optional `SealedRecordBody` members — and on an `open` room the `cleartext`
   /// members of `rooms/records/put` — that the room's writers may use beyond the base
   /// set, as a set: order carries no meaning. Defined values: `kind`, `inReplyTo`,
-  /// `writtenAt`. A writer MUST NOT write a member this governs unless the room's
-  /// current profile lists it; absent means none (`SealedRecordBody`, *When a writer may
-  /// use `kind`, `inReplyTo` and `writtenAt`*). The base set is every other member of
-  /// `SealedRecordBody`, which a writer may always use. A value a writer does not know
-  /// grants it nothing. Set by a member whose authority confers `curate` or `admin` (who
-  /// may write the profile at all), once the readers the room's members use — profile
-  /// readers included, since a reader that predates this member refuses the profile
-  /// carrying it — are known to accept what it lists. Listing a member never obliges a
-  /// writer to use it, and removing one stops writers using it from then on; records
-  /// already written keep it.
+  /// `writtenAt`, `editedAt`. A writer MUST NOT write a member this governs unless the
+  /// room's current profile lists it; absent means none (`SealedRecordBody`, *When a
+  /// writer may use these members*). A writer MAY rely on a profile it resolved within
+  /// the room's current epoch. The base set is every other member of `SealedRecordBody`,
+  /// which a writer may always use. A value a writer does not know grants it nothing.
+  /// Set by a member whose authority confers `curate` or `admin` (who may write the
+  /// profile at all) — with `rooms/keys/profile/write` on a sealed tier, or
+  /// `rooms/records/put` at `room-profile` on an `open` room — and never by default.
+  /// Whether the room's readers are ready is the owner's or a curator's decision, made
+  /// out of band; the order is readers (profile readers included, since a reader that
+  /// predates this member refuses the profile carrying it), then the owner's key holder,
+  /// which re-writes the profile after a removal and so MUST accept this member before
+  /// any profile carries it, then on the sealed tiers the key holders that seal for
+  /// writers, then the profile (`SealedRecordBody`, *Turning them on*). Listing a member
+  /// never obliges a writer to use it, and removing one stops writers using it by the
+  /// room's next epoch at the latest; records already written keep it.
   final List<String>? recordMembers;
 
   /// Ecosystem-defined extension members per SPEC.md §4.5.1. A reader ignores what it
@@ -962,34 +981,35 @@ class RoomProfileStatement {
 /// `sealed.version` where present, else the record's `version` (`SealedRecord`); (4)
 /// on an `attributed` room, check that `author` equals the `author` the host recorded
 /// for the record. A reader MUST refuse a record that fails any of these, and MUST NOT
-/// show it with a warning instead. **A record curated before `sealed.version`
-/// existed.** A host that predates `SealedRecord.version` moved such a record's
-/// version without recording the one it was sealed at, so it opens at neither. Where a
-/// record carries no `sealed.version` and does not open at its own `version`, a reader
-/// MAY try each earlier version in turn, newest first, and use the first at which it
-/// opens; rule (3) then checks the body against that version. It MUST NOT try a
-/// version greater than the record's own. The AEAD makes a wrong guess fail rather
-/// than mislead, and the author's signature over the location makes the version that
-/// opened the one the author wrote — so the search recovers the record without
-/// trusting the host for the answer. **Why the location is signed as well as sealed.**
-/// The AEAD stops the host relocating ciphertext, but every member can open and
-/// re-seal a record. Without `roomId`, `key` and `version` under the author's
+/// show it with a warning instead; the one exception, *An author whose DID does not
+/// resolve*, shows a placeholder and none of the record. **A record curated before
+/// `sealed.version` existed.** A host that predates `SealedRecord.version` moved such
+/// a record's version without recording the one it was sealed at, so it opens at
+/// neither. Where a record carries no `sealed.version` and does not open at its own
+/// `version`, a reader MAY try each earlier version in turn, newest first, and use the
+/// first at which it opens; rule (3) then checks the body against that version. It
+/// MUST NOT try a version greater than the record's own. The AEAD makes a wrong guess
+/// fail rather than mislead, and the author's signature over the location makes the
+/// version that opened the one the author wrote — so the search recovers the record
+/// without trusting the host for the answer. **Why the location is signed as well as
+/// sealed.** The AEAD stops the host relocating ciphertext, but every member can open
+/// and re-seal a record. Without `roomId`, `key` and `version` under the author's
 /// signature, a member could copy another member's signed body to a new key or a later
 /// version, and on a `private` room, where the host records no author, readers would
 /// attribute it to the original author. **A profile record.** A body carrying
 /// `roomProfile` is the room's own profile (`RoomProfileStatement`) and not one of its
 /// records: it MUST carry none of `title`, `description`, `body`, `tags`, `kind`,
-/// `inReplyTo`, `writtenAt`, `file`, `basis`, `confidence`, `evidence`, `validFor` and
-/// `validUntil`, and the rules for locating, accepting and choosing it are
-/// `RoomProfileStatement`'s, applied on top of the four above. A reader that opens one
-/// in the course of reading or listing the room's records SHOULD NOT present it as a
-/// record — it is how the room describes itself, not something a member wrote into it.
-/// A reader that predates `roomProfile` refuses it by rule (1), which shows nothing
-/// rather than something wrong. **Provenance: what kind of claim a record is.**
-/// `basis`, `confidence`, `evidence` and `validFor` say what the author is asserting
-/// and on what footing — an observed fact, a statement of the author's own, something
-/// checked against a credential, or an agent's inference. They are inside the
-/// signature like every other member, so a reader can attribute them to `author`
+/// `inReplyTo`, `writtenAt`, `editedAt`, `file`, `basis`, `confidence`, `evidence`,
+/// `validFor` and `validUntil`, and the rules for locating, accepting and choosing it
+/// are `RoomProfileStatement`'s, applied on top of the four above. A reader that opens
+/// one in the course of reading or listing the room's records SHOULD NOT present it as
+/// a record — it is how the room describes itself, not something a member wrote into
+/// it. A reader that predates `roomProfile` refuses it by rule (1), which shows
+/// nothing rather than something wrong. **Provenance: what kind of claim a record
+/// is.** `basis`, `confidence`, `evidence` and `validFor` say what the author is
+/// asserting and on what footing — an observed fact, a statement of the author's own,
+/// something checked against a credential, or an agent's inference. They are inside
+/// the signature like every other member, so a reader can attribute them to `author`
 /// exactly as it attributes the body, and a change to any of them after signing fails
 /// rule (2). All four are OPTIONAL, and a record that carries none of them — every
 /// record written before they existed — verifies and reads exactly as before: absent
@@ -1033,12 +1053,24 @@ class RoomProfileStatement {
 /// `message` carries its words in `body` and SHOULD carry no `title`. A reader that
 /// keeps a conversation apart from a library SHOULD show messages in the first and
 /// notes in the second, and MAY show both together. A reader MUST NOT treat `kind` as
-/// authority: it describes the record and confers nothing. **When it was written.**
+/// authority: it describes the record and confers nothing. **Untitled records.** A
+/// reader that keeps a conversation apart from a library MAY treat a record with no
+/// `kind` and no `title` as a message — it is how a writer that may not yet use `kind`
+/// writes one (*When a writer may use these members*) — and a reader that does so
+/// shows such records and records of `kind: message` in the same conversation, ordered
+/// together. Such a record is otherwise still a note: its `body` is markdown (*What
+/// `body` is*). **What `body` is.** On a `message`, `body` is plain text: a reader
+/// MUST NOT render it as markup — not as markdown, not as HTML, not as a link it
+/// follows — and shows its characters as written. On a `reaction` it is the reaction's
+/// value (*A reaction's value*), plain text likewise. On a `note`, and on a record of
+/// a kind the reader does not know, which it shows as a note, it is markdown, rendered
+/// inert. On a record carrying `file` it is also the file's caption (*A file's
+/// caption*), plain text or markdown by the same rule. **When it was written.**
 /// `writtenAt` is the instant the author wrote the record (`RecordWrittenAt`), in UTC,
 /// signed with the body. It is OPTIONAL on a note; a `message` or a `reaction` SHOULD
 /// carry it. **It does not move when the record is edited:** a writer rewriting a
-/// record MUST carry the `writtenAt` of the version it rewrites, unchanged, so that
-/// `version` alone marks revisions. A reader orders a room's messages by `writtenAt`,
+/// record MUST carry the `writtenAt` of the version it rewrites, unchanged; what marks
+/// an edit is `editedAt` (*Edits*). A reader orders a room's messages by `writtenAt`,
 /// then by `key` where two are equal; a message without one is ordered by the host's
 /// `updatedAt` for it (`RecordMetadata`), which stands in for it. **It is the author's
 /// claim, not a time anyone attests.** A reader MUST treat as implausible a
@@ -1057,51 +1089,161 @@ class RoomProfileStatement {
 /// to `author` as it attributes the body. A reader resolves it only against records it
 /// can already list or read in this room with the authority it holds, and MUST NOT
 /// fetch anything else because of it. Where the target cannot be read — never written,
-/// retracted, pruned, expired, sealed under an epoch the reader cannot open, or
-/// failing the reading rules above — the reader MUST still show the reply, marked as
-/// answering a record that is not available, and MUST NOT show anything of a target it
-/// could not verify. Where `version` is present and the reader shows a later version
-/// of the target, it SHOULD say that the target has changed since. **Nothing answers a
-/// reaction.** A writer MUST NOT name a record of kind `reaction` in `inReplyTo`,
-/// whatever the kind of the record it writes: a reaction is not answered or reacted
-/// to. A reader that reads the target of an `inReplyTo` and finds a `reaction` MUST
-/// ignore the record naming it — show it nowhere, count it as no reaction — and
-/// refuses that record alone, never the room's others. This is a reader's rule. No
-/// host enforces it, and on the sealed tiers none could: a host never sees `kind`.
-/// **Reactions.** A record of kind `reaction` is a short response to another record:
-/// its target in `inReplyTo`, which it MUST carry, and its value in `body` — an emoji
-/// or a few words, at most 64 characters on one line. It SHOULD carry no `title`,
-/// `description`, `tags` or `file`. A reader MUST NOT show a reaction as a note or a
-/// message; it SHOULD show the values beside the target. **One reaction per author,
-/// value and target:** of the reactions whose `inReplyTo.key` names the same record,
-/// those with the same `author` and the same value count once, however many records
-/// carry them; one author's different values are different reactions. A reaction is
-/// withdrawn by its author writing a new version of the same reaction record — the
-/// same key — with an empty `body`, and a reader counts nothing for a current version
-/// whose `body` is empty. A reader shows no reaction whose target is not available,
-/// and MUST NOT show a reaction that lacks `inReplyTo` or whose value is longer than
-/// 64 characters or holds a line break; it refuses that record alone, never the room's
-/// others. Like every record on a sealed tier, a reaction's key is opaque: a writer
-/// MUST NOT encode its target, its value or its `kind` in the key. **Edits.** A record
-/// is rewritten by writing a new version under the same key (`rooms/records/put`), and
-/// that is how a message or a note is edited: nothing here adds to it beyond keeping
-/// `writtenAt` (above). The new version is a whole body, signed by whoever wrote it. A
-/// reader showing a version whose `author` differs from the version it last showed for
-/// that key MUST show the new author, and MUST NOT present it as an edit by the
-/// earlier one. **A file's caption.** On a record carrying `file`, `body` is the
-/// file's caption. A reader that shows the file SHOULD show its `body` with it. **When
-/// a writer may use `kind`, `inReplyTo` and `writtenAt`.** A reader that predates them
-/// refuses a body carrying any of them by rule (1), as it refused provenance before it
-/// knew it: a message written with `kind` is invisible to it rather than shown wrong.
-/// So the room says when its writers may use them. A writer MUST NOT write `kind`,
-/// `inReplyTo` or `writtenAt` into a room unless the room's current profile
+/// withdrawn (*Withdrawing a message*), retracted, pruned, expired, sealed under an
+/// epoch the reader cannot open, or failing the reading rules above — the reader MUST
+/// still show the reply, marked as answering a record that is not available, and MUST
+/// NOT show anything of a target it could not verify. **Whether the target has
+/// changed.** Where `version` is present, a reader that shows the target SHOULD say
+/// that it has changed since only when the target's **content** differs from its
+/// content at that version — never because its `version` moved, which curation also
+/// does (`rooms/records/curate`). A record's content is every member of its body
+/// except `proof`, its location (`roomId`, `key` and `version`) and `editedAt`: on the
+/// sealed tiers the signed `SealedRecordBody`, on an `open` room the `cleartext` of
+/// `rooms/records/put`. Curation sets only a record's standing — its `status` and
+/// pinning, which are outside the body on every tier — so it never changes content. On
+/// a sealed tier a target whose body was written at the version the reply names — the
+/// body's own `version`, served as `sealed.version` once the record is curated — is
+/// unchanged, however far the record's own version has moved. Where the body was
+/// written at a later version, the reader compares the two contents if it holds the
+/// named version; if it does not, it MAY say the target was edited when the target
+/// carries an `editedAt` later than the reply's `writtenAt`, and otherwise says
+/// nothing. **Nothing answers a reaction.** A writer MUST NOT name a record of kind
+/// `reaction` in `inReplyTo`, whatever the kind of the record it writes: a reaction is
+/// not answered or reacted to. A reader that reads the target of an `inReplyTo` and
+/// finds a `reaction` MUST ignore the record naming it — show it nowhere, count it as
+/// no reaction — and refuses that record alone, never the room's others. This is a
+/// reader's rule. No host enforces it, and on the sealed tiers none could: a host
+/// never sees `kind`. **Reactions.** A record of kind `reaction` is a short response
+/// to another record: its target in `inReplyTo`, which it MUST carry, and its value in
+/// `body` — an emoji or a few words (*A reaction's value*). It SHOULD carry no
+/// `title`, `description`, `tags` or `file`. A reader MUST NOT show a reaction as a
+/// note or a message; it SHOULD show the values beside the target. A reader shows no
+/// reaction whose target is not available, and MUST NOT show a reaction that lacks
+/// `inReplyTo` or whose value is longer than 64 code points or holds a line
+/// terminator; it refuses that record alone, never the room's others. Like every
+/// record on a sealed tier, a reaction's key is opaque: a writer MUST NOT encode its
+/// target, its value or its `kind` in the key. **A reaction's value.** A reaction's
+/// value is its `body` normalised to Unicode Normalization Form C (NFC) with every
+/// U+FE0E and U+FE0F (variation selectors 15 and 16) then removed, so that `❤` and
+/// `❤️` are one value. A reader and a writer apply that normalisation before both the
+/// length check and any comparison. The value is at most 64 Unicode code points,
+/// counted after normalisation, and is one line: it holds no line terminator (U+000A,
+/// U+000B, U+000C, U+000D, U+0085, U+2028 or U+2029). A value that is empty, or holds
+/// only White_Space characters, is empty, and a version whose value is empty withdraws
+/// the reaction. Two values are the same when their normalised forms are equal code
+/// point for code point. **Counting reactions.** One reaction per author, value and
+/// target: of the reactions whose `inReplyTo.key` names the same record, those with
+/// the same `author` and the same value count once, however many records carry them;
+/// one author's different values are different reactions. A writer reacting with a
+/// value it already holds a reaction record for, on the same target, SHOULD write a
+/// new version of that record — the same key — rather than a new one, so that a retry
+/// after a lost response leaves one record and not two. A reaction is withdrawn by its
+/// author writing a new version of the same reaction record with an empty value, and a
+/// reader counts nothing for a current version whose value is empty. **Only the
+/// reaction's author withdraws it:** an empty version counts as a withdrawal only when
+/// its `author` is the `author` of the version it replaces; a reader that holds an
+/// earlier version by another author MUST NOT count the empty one as withdrawing that
+/// author's reaction, and goes on counting the earlier version. Since every record
+/// carrying the same author, value and target counts, a writer withdrawing a reaction
+/// MUST withdraw every reaction record its author holds with that value and target.
+/// **Removed members.** A reaction counts for as long as its record is current,
+/// whether or not its author is still a member: a removed member's reactions keep
+/// counting until a member with `curate` retracts them (`rooms/records/curate`). A
+/// member who returns under a new DID is a different author, and their reactions count
+/// beside the ones their earlier DID left, not as the same person's. **Edits.** A
+/// record is rewritten by writing a new version under the same key
+/// (`rooms/records/put`), and that is how a message or a note is edited. The writer
+/// keeps `writtenAt` (*When it was written*) and, where the room's profile lists it,
+/// sets `editedAt` (`RecordEditedAt`) to the instant it made the edit; the first
+/// version of a record MUST NOT carry `editedAt`. A reader shows a record as edited
+/// when the version it shows carries `editedAt`, and MUST NOT infer an edit from
+/// `version`, which curation also moves. `editedAt` is the author's claim, as
+/// `writtenAt` is: a reader treats one earlier than the record's `writtenAt`, or later
+/// than the host's `updatedAt` for the version by more than five minutes, as
+/// implausible, and then shows that the record was edited but not when. The new
+/// version is a whole body, signed by whoever wrote it. A reader showing a version
+/// whose `author` differs from the version it last showed for that key MUST show the
+/// new author, and MUST NOT present it as an edit by the earlier one. **What a new
+/// version keeps.** A new version MUST keep the `kind` of the version it rewrites,
+/// absent included, and a new version of a reaction MUST keep its `inReplyTo`. A
+/// reader that holds an earlier version of a record and reads a later one that changes
+/// either MUST refuse that version: it MUST NOT show it as the record, nor count it as
+/// a reaction, and it refuses that version alone, never the room's others. Without
+/// this a member with `write` could rewrite another member's message as a reaction,
+/// and every reply to it would disappear (*Nothing answers a reaction*), or move
+/// another member's reaction to a record they never reacted to. A reader that has
+/// never read an earlier version has nothing to compare, and on the sealed tiers
+/// nothing else can tell it (`rooms/records/put`, *Security & Privacy*). **Withdrawing
+/// a message.** The author of a `message` withdraws it by writing a new version of it
+/// — the same key, keeping its `kind` and any `inReplyTo` — with an empty `body` and
+/// no `file`. A reader shows a current version of a message with an empty `body` and
+/// no `file` as withdrawn, or not at all, and MUST NOT show any earlier version's
+/// content in its place; replies to it stay, as answering a record that is not
+/// available (*Replies*). It counts as a withdrawal only when its `author` is the
+/// `author` of the version it replaces; one by another member is that member's rewrite
+/// (*Edits*), never the author withdrawing their own message. Withdrawing needs only
+/// `write`. It is a rewrite, not a retraction: the record keeps its key and its place,
+/// and only a member with `curate` retracts it (`rooms/records/curate`).
+/// **Tombstones.** A retracted record keeps its key and version and nothing of its
+/// body (`rooms/records/curate`). On the sealed tiers `kind`, `inReplyTo`, `writtenAt`
+/// and `editedAt` were inside the sealed body and go with it. On an `open` room they
+/// were in `cleartext`, which is the body there, so an open room's tombstone keeps
+/// none of them either (`rooms/records/put`, *Retention*). A reader that held an
+/// earlier version of a retracted record uses the `kind` and the place in the
+/// conversation that version gave it — a retracted message shown as retracted where
+/// the message was, a retracted reaction counted as no reaction. A reader that held
+/// none shows the tombstone in no conversation and in no reaction count. Replies to a
+/// retracted record stay, as answering a record that is not available (*Replies*).
+/// **An author whose DID does not resolve.** Rule (2) fails in two ways, which a
+/// reader MUST tell apart: `author`'s DID does not resolve to a DID document — it no
+/// longer resolves, or its method reports it deactivated — or the proof does not
+/// verify against the document it resolves to. A record whose proof does not verify is
+/// refused, as above. For a record whose author's DID does not resolve, a reader MAY,
+/// instead of refusing it, show a placeholder saying that the record's author cannot
+/// be verified, in the room's conversation, ordered by the host's `updatedAt` for it,
+/// so that replies naming its key still anchor to it. It MUST NOT show or use any
+/// member of the body — not its `body`, `title`, `file`, `kind`, `inReplyTo` or
+/// `writtenAt` — MUST NOT count it as a reaction, and MUST NOT accept it as the room's
+/// profile (`RoomProfileStatement`). A placeholder is not a record shown with a
+/// warning: it shows none of the record. **A file's caption.** On a record carrying
+/// `file`, `body` is the file's caption. A reader that shows the file SHOULD show its
+/// `body` with it. **When a writer may use these members.** `kind`, `inReplyTo`,
+/// `writtenAt` and `editedAt` are gated together. A conforming reader that predates
+/// them refuses a body carrying any of them by rule (1), as it refused provenance
+/// before it knew it: a message written with `kind` is invisible to it rather than
+/// shown wrong. **Not every reader conforms.** A reader that ignores the members it
+/// does not know shows a reaction as a post holding its value, and a withdrawn
+/// reaction as an empty post — which is why a room's readers move first, and the room
+/// says when its writers may follow. A writer MUST NOT write `kind`, `inReplyTo`,
+/// `writtenAt` or `editedAt` into a room unless the room's current profile
 /// (`RoomProfileStatement`, as a reader resolves it) lists that member in
 /// `recordMembers` (`RoomProfile`). No profile, a profile without `recordMembers`, or
 /// one the writer cannot resolve means none of them may be written — the most
-/// restrictive reading. A writer that may not use them MAY write a message as a record
-/// with `body` and no `title`, which every reader shows. A key holder sealing on a
-/// writer's behalf (`rooms/keys/seal`) that predates these members refuses them with
-/// `bodyInvalid`, as it refuses provenance.
+/// restrictive reading. A writer MAY rely on a profile it resolved within the room's
+/// current epoch, without resolving it again for each write; once the room's epoch
+/// advances, it resolves the profile again before writing any of them. A writer that
+/// may not use them MAY write a message as a record with `body` and no `title`, which
+/// every reader shows (*Untitled records*). On the sealed tiers a writer whose key
+/// holder signs or seals for it needs one that accepts these members:
+/// `rooms/keys/seal/0.3` does, which `trust-task-discovery` tells it, and a key holder
+/// that predates them refuses them with `bodyInvalid`, as it refuses provenance.
+/// **Turning them on.** Whether a room's readers are ready is decided out of band by
+/// the room's owner or a curator: nothing in this family tells them which readers the
+/// room's members use. They list a member in `recordMembers` only once every reader
+/// they expect in the room accepts it — non-conforming readers included, which show
+/// the new records wrong rather than not at all — and in this order: (1) the readers,
+/// including every reader of the room's profile, since a reader that predates
+/// `recordMembers` refuses the profile carrying it; (2) the owner's key holder, which
+/// re-writes the profile under each new epoch after a removal (`RoomProfileStatement`,
+/// `rooms/keys/profile/write`) and MUST accept a profile carrying `recordMembers`
+/// before any profile carries it — one that refused it would re-write an older
+/// profile, or none, and the next removal would silently turn the members off; (3) on
+/// the sealed tiers, the key holders that seal for the room's writers
+/// (`rooms/keys/seal/0.3`); (4) then the profile. No room lists them by default. A
+/// room's profile lists them when its owner or a curator writes it with them — with
+/// `rooms/keys/profile/write` on an `attributed` or `private` room, or by writing the
+/// record at `room-profile` with `rooms/records/put` on an `open` one — both of which
+/// need `curate` or `admin`.
 class SealedRecordBody {
   const SealedRecordBody({
     required this.roomId,
@@ -1115,6 +1257,7 @@ class SealedRecordBody {
     this.kind,
     this.inReplyTo,
     this.writtenAt,
+    this.editedAt,
     this.basis,
     this.confidence,
     this.evidence,
@@ -1144,6 +1287,7 @@ class SealedRecordBody {
             : RecordReference.fromJson(
                 json['inReplyTo'] as Map<String, dynamic>),
         writtenAt: json['writtenAt'] as String?,
+        editedAt: json['editedAt'] as String?,
         basis:
             json['basis'] == null ? null : RecordBasis(json['basis'] as String),
         confidence: json['confidence'] == null
@@ -1185,8 +1329,9 @@ class SealedRecordBody {
   final String? title;
   final String? description;
 
-  /// The record's text, markdown. Human-readable, never a model-optimised blob, and
-  /// rendered inert.
+  /// The record's text: plain text on a `message`, the value on a `reaction`, markdown
+  /// on a note and on a kind the reader does not know (*What `body` is*).
+  /// Human-readable, never a model-optimised blob, and rendered inert.
   final String? body;
   final List<String>? tags;
   final RecordKind? kind;
@@ -1195,6 +1340,7 @@ class SealedRecordBody {
   /// *Reactions*.
   final RecordReference? inReplyTo;
   final RecordWrittenAt? writtenAt;
+  final RecordEditedAt? editedAt;
   final RecordBasis? basis;
   final RecordConfidence? confidence;
   final RecordEvidenceList? evidence;
@@ -1225,6 +1371,7 @@ class SealedRecordBody {
         if (kind != null) 'kind': kind!,
         if (inReplyTo != null) 'inReplyTo': inReplyTo!.toJson(),
         if (writtenAt != null) 'writtenAt': writtenAt!,
+        if (editedAt != null) 'editedAt': editedAt!,
         if (basis != null) 'basis': basis!.value,
         if (confidence != null) 'confidence': confidence!,
         if (evidence != null) 'evidence': evidence!,
@@ -2492,5 +2639,119 @@ class RevocationHead {
   Map<String, dynamic> toJson() => <String, dynamic>{
         'sequence': sequence,
         'digest': digest,
+      };
+}
+
+/// Curation state. `retracted` is a tombstone: the body is gone, the key and version
+/// remain so incremental sync converges and the audit chain stays intact.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const RecordMetadataV3Status(String value) {
+  static const RecordMetadataV3Status active = RecordMetadataV3Status('active');
+  static const RecordMetadataV3Status deprecated =
+      RecordMetadataV3Status('deprecated');
+  static const RecordMetadataV3Status retracted =
+      RecordMetadataV3Status('retracted');
+
+  /// Every value this specification's schema permits.
+  static const List<RecordMetadataV3Status> values = <RecordMetadataV3Status>[
+    active,
+    deprecated,
+    retracted
+  ];
+}
+
+/// What `rooms/records/list/0.6` returns: `RecordMetadataV2` plus `kind` on an `open`
+/// room. A separate definition, not a change to `RecordMetadataV2`, so that
+/// `rooms/records/list/0.2` to `0.5` keep the exact shape they published. Never the
+/// body.
+class RecordMetadataV3 {
+  const RecordMetadataV3({
+    required this.key,
+    required this.version,
+    this.epoch,
+    this.status,
+    required this.updatedAt,
+    this.title,
+    this.description,
+    this.author,
+    this.blobs,
+    this.kind,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory RecordMetadataV3.fromJson(Map<String, dynamic> json) =>
+      RecordMetadataV3(
+        key: json['key'] as String,
+        version: json['version'] as int,
+        epoch: json['epoch'] as int?,
+        status: json['status'] == null
+            ? null
+            : RecordMetadataV3Status(json['status'] as String),
+        updatedAt: json['updatedAt'] as String,
+        title: json['title'] as String?,
+        description: json['description'] as String?,
+        author: json['author'] as String?,
+        blobs: json['blobs'] == null
+            ? null
+            : (json['blobs'] as List<dynamic>).map((e) => e as String).toList(),
+        kind: json['kind'] as String?,
+      );
+
+  /// The record's key within the room. On `attributed` and `private` rooms this MUST be
+  /// opaque — a random identifier, never a descriptive slug. A key reading
+  /// `decision/acquire-northwind` defeats the encryption sitting beside it; structured
+  /// naming belongs inside the sealed body.
+  final String key;
+
+  /// Server-assigned, monotonic per room.
+  final int version;
+
+  /// The epoch the record was sealed under. Absent on an `open` room.
+  final int? epoch;
+
+  /// Curation state. `retracted` is a tombstone: the body is gone, the key and version
+  /// remain so incremental sync converges and the audit chain stays intact.
+  final RecordMetadataV3Status? status;
+  final String updatedAt;
+
+  /// Present only on an `open` room; sealed with the body otherwise.
+  final String? title;
+
+  /// Present only on an `open` room; sealed with the body otherwise.
+  final String? description;
+
+  /// The member who wrote it. Present on `open` and `attributed`; on `private` the
+  /// author is inside the sealed body, where only members can read it.
+  final String? author;
+
+  /// The stored blobs this record names, as rooms/records/put/0.2 wrote them. Absent
+  /// when it names none, when it is retracted, and on records written by put 0.1.
+  /// Cleartext on every tier, as on the write, so a listing discloses which records
+  /// carry files, never anything about the files beyond the blobs' sizes.
+  final List<BlobRef>? blobs;
+
+  /// The record's `kind` as its current version's `cleartext` carries it. Present only
+  /// on an `open` room, where the host reads the body anyway; on `attributed` and
+  /// `private` rooms `kind` is sealed with the body and a host MUST NOT serve it, nor
+  /// anything from which it could be inferred. Absent on a record that carries none —
+  /// which a reader reads as `note` — and on a tombstone, which keeps nothing of its
+  /// body.
+  final RecordKind? kind;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'key': key,
+        'version': version,
+        if (epoch != null) 'epoch': epoch!,
+        if (status != null) 'status': status!.value,
+        'updatedAt': updatedAt,
+        if (title != null) 'title': title!,
+        if (description != null) 'description': description!,
+        if (author != null) 'author': author!,
+        if (blobs != null) 'blobs': blobs!,
+        if (kind != null) 'kind': kind!,
       };
 }

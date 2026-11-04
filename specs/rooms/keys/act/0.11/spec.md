@@ -290,13 +290,14 @@ may be.
 
 ## Changes from 0.10
 
-[`rooms/records/put/0.5`](../../../records/put/0.5/spec.md) lets a record on an `open` room say what it is to a reader, what it answers and when it was written — `kind` (a note, a message or a reaction), `inReplyTo` and `writtenAt` — in `cleartext`. `0.10`'s table is closed (Recipient item 1) and names `rooms/records/put` at `0.1` to `0.4` only, so a key holder conforming to it refuses `0.5` with `typeNotActable`, and a member whose keys their key holder holds could not write a message or a reply to an open room.
+[`rooms/records/put/0.5`](../../../records/put/0.5/spec.md) lets a record on an `open` room say what it is to a reader, what it answers, when it was written and when it was edited — `kind` (a note, a message or a reaction), `inReplyTo`, `writtenAt` and `editedAt` — in `cleartext`; and [`rooms/records/list/0.6`](../../../records/list/0.6/spec.md) serves each open record's `kind` in a listing. `0.10`'s table is closed (Recipient item 1) and names `rooms/records/put` at `0.1` to `0.4` and `rooms/records/list` at `0.1` to `0.5` only, so a key holder conforming to it refuses either new version with `typeNotActable`, and a member whose keys their key holder holds could not write a message or a reply to an open room, nor list one with its kinds.
 
-`0.11` adds it to the table, in the same row as the versions it already lists and on the same terms:
+`0.11` adds both to the table, each in the same row as the versions it already lists and on the same terms:
 
 - **`rooms/records/put/0.5`** — `write`, presentation inserted.
+- **`rooms/records/list/0.6`** — `read`, presentation inserted.
 
-The recipient completes it exactly as it completes `0.4`, and signs what the producer built, unaltered (Recipient item 6), as it signs any other `cleartext`: it does not read, check or act on `kind`, `inReplyTo` or `writtenAt`, nor check the write against the room's `recordMembers` — that is the writer's rule (`rooms/records/put/0.5` Producer item 11). On the sealed tiers nothing changes here — the same members travel inside the sealed body, which this task never opens.
+The recipient completes them exactly as it completes `rooms/records/put/0.4` and `rooms/records/list/0.5`, and signs what the producer built, unaltered (Recipient item 6), as it signs any other `cleartext`: it does not read, check or act on `kind`, `inReplyTo`, `writtenAt` or `editedAt`, nor check the write against the room's `recordMembers` — that is the writer's rule (`rooms/records/put/0.5` Producer item 11). **On the sealed tiers this task signs no record body**: the same members travel inside the sealed body, which this task never opens, and the key holder that signs and seals that body for the member's own client is [`rooms/keys/seal/0.3`](../../seal/0.3/spec.md), the version that accepts them. A client writing a message to a sealed room as the member therefore needs both: `rooms/keys/seal/0.3` to sign and seal the body, then this task to complete the `rooms/records/put` that stores it.
 
 The schema's `type` pattern already admits the type. Nothing else changes: the request and response schemas are `0.10`'s, and no error code is added.
 
@@ -328,7 +329,7 @@ The recipient completes a document only when its `type` is one of these host-bou
 |---|---|---|
 | `rooms/records/put/0.1`, `rooms/records/put/0.2`, `rooms/records/put/0.3`, `rooms/records/put/0.4`, `rooms/records/put/0.5` | `write` | yes |
 | `rooms/records/get/0.1`, `rooms/records/get/0.2` | `read` | yes |
-| `rooms/records/list/0.1`, `rooms/records/list/0.2`, `rooms/records/list/0.3`, `rooms/records/list/0.4`, `rooms/records/list/0.5` | `read` | yes |
+| `rooms/records/list/0.1`, `rooms/records/list/0.2`, `rooms/records/list/0.3`, `rooms/records/list/0.4`, `rooms/records/list/0.5`, `rooms/records/list/0.6` | `read` | yes |
 | `rooms/records/curate/0.1` | `curate` | yes |
 | `rooms/records/retention/set/0.1` | `admin` | yes |
 | `rooms/records/prune/0.1`, `rooms/records/prune/0.2` | `admin` | yes |
@@ -446,7 +447,7 @@ A **Member**'s client sends this to the member's **KeyHolder**. The payload is t
 
 ### Writing a sealed record, as the member
 
-The record was sealed with [`rooms/keys/seal/0.2`](../../seal/0.2/spec.md) under `signAsPrincipal`, so its body is already the member's. This completes the request that stores it.
+The record was sealed with [`rooms/keys/seal/0.3`](../../seal/0.3/spec.md) under `signAsPrincipal`, so its body is already the member's. This completes the request that stores it.
 
 ```json
 {

@@ -1679,6 +1679,10 @@ export type RecordConfidence = number;
  */
 export type RecordCount = number;
 /**
+ * The instant the author made the edit that produced this version, RFC 3339 in UTC (`Z`). Set by the writer of every version after the first, and absent on the first, so that a reader seeing a record for the first time can tell whether it was ever edited — which `version` cannot say, since curation moves it too. Signed with the body on the sealed tiers. A reader shows a record carrying it as edited, and treats an implausible one as `SealedRecordBody` (*Edits*) says. Governed by `RoomProfile.recordMembers` like `writtenAt`. No host enforces or reads it.
+ */
+export type RecordEditedAt = string;
+/**
  * One thing a record cites in its support, discriminated by `kind`.
  *
  *   - `record` names a record of a room by its key, and optionally the version cited and the room. Absent `roomId` means the record's own room.
@@ -1703,7 +1707,7 @@ export type RecordId = string;
  */
 export type RecordId_VtcNotificationsV0_1 = string;
 /**
- * What a reader shows a record as. Defined values: `note` — something kept in the room's library, titled or not; `message` — a turn in the room's conversation, its words in `body`; `reaction` — a short response to another record (`SealedRecordBody`, *Reactions*). An open set, not an enumeration, so a new kind needs no new version of any schema: a reader MUST present a record whose kind it does not know as a note, and MUST NOT refuse a record for its kind. Absent means `note`. lowerCamelCase, at most 64 characters.
+ * What a reader shows a record as. Defined values: `note` — something kept in the room's library, titled or not, its `body` markdown; `message` — a turn in the room's conversation, its words in `body` as plain text; `reaction` — a short response to another record, its value in `body` (`SealedRecordBody`, *Reactions*). An open set, not an enumeration, so a new kind needs no new version of any schema: a reader MUST present a record whose kind it does not know as a note, and MUST NOT refuse a record for its kind. Absent means `note`, though a reader that keeps a conversation apart MAY show an untitled record without a kind as a message (*Untitled records*). A new version of a record MUST keep its kind. lowerCamelCase, at most 64 characters.
  */
 export type RecordKind = string;
 /**
@@ -1745,7 +1749,7 @@ export type RecordType = "authorization" | "recognition";
  */
 export type RecordValidUntil = string;
 /**
- * The instant the author wrote the record, RFC 3339 in UTC (`Z`). Set by the author and kept unchanged when the record is rewritten, so `version` alone marks revisions. OPTIONAL on a note; a `message` or `reaction` SHOULD carry it. The author's claim, not an attested time: a reader orders messages by it and treats an implausible one as `SealedRecordBody` (*When it was written*) says. No host enforces or reads it.
+ * The instant the author wrote the record, RFC 3339 in UTC (`Z`). Set by the author and kept unchanged when the record is rewritten; an edit is marked by `editedAt`. OPTIONAL on a note; a `message` or `reaction` SHOULD carry it. The author's claim, not an attested time: a reader orders messages by it and treats an implausible one as `SealedRecordBody` (*When it was written*) says. No host enforces or reads it.
  */
 export type RecordWrittenAt = string;
 /**
@@ -12766,6 +12770,51 @@ export interface RecordMetadataV2 {
   blobs?: [BlobRef];
 }
 /**
+ * What `rooms/records/list/0.6` returns: `RecordMetadataV2` plus `kind` on an `open` room. A separate definition, not a change to `RecordMetadataV2`, so that `rooms/records/list/0.2` to `0.5` keep the exact shape they published. Never the body.
+ */
+export interface RecordMetadataV3 {
+  /**
+   * The record's key within the room. On `attributed` and `private` rooms this MUST be opaque — a random identifier, never a descriptive slug. A key reading `decision/acquire-northwind` defeats the encryption sitting beside it; structured naming belongs inside the sealed body.
+   */
+  key: string;
+  /**
+   * Server-assigned, monotonic per room.
+   */
+  version: number;
+  /**
+   * The epoch the record was sealed under. Absent on an `open` room.
+   */
+  epoch?: number;
+  /**
+   * Curation state. `retracted` is a tombstone: the body is gone, the key and version remain so incremental sync converges and the audit chain stays intact.
+   */
+  status?: "active" | "deprecated" | "retracted";
+  updatedAt: string;
+  /**
+   * Present only on an `open` room; sealed with the body otherwise.
+   */
+  title?: string;
+  /**
+   * Present only on an `open` room; sealed with the body otherwise.
+   */
+  description?: string;
+  /**
+   * The member who wrote it. Present on `open` and `attributed`; on `private` the author is inside the sealed body, where only members can read it.
+   */
+  author?: string;
+  /**
+   * The stored blobs this record names, as rooms/records/put/0.2 wrote them. Absent when it names none, when it is retracted, and on records written by put 0.1. Cleartext on every tier, as on the write, so a listing discloses which records carry files, never anything about the files beyond the blobs' sizes.
+   *
+   * @minItems 1
+   * @maxItems 1
+   */
+  blobs?: [BlobRef];
+  /**
+   * The record's `kind` as its current version's `cleartext` carries it. Present only on an `open` room, where the host reads the body anyway; on `attributed` and `private` rooms `kind` is sealed with the body and a host MUST NOT serve it, nor anything from which it could be inferred. Absent on a record that carries none — which a reader reads as `note` — and on a tombstone, which keeps nothing of its body.
+   */
+  kind?: RecordKind;
+}
+/**
  * The mark a prune leaves: **that** records were removed, when, and how many — never which, and never anything they said.
  *
  * A prune removes records outright, tombstones included, so the room's record tree loses leaves and an incremental reader has nothing left to learn the removal from. This is what it learns from instead. A host keeps the latest one per room and serves it with every listing that can carry it (`rooms/records/list` 0.3, as `lastPrune`); a reader whose own copy of the room was synchronised to a version below `version` MUST rebuild that copy from a full listing — no `sinceVersion` — and drop every record the full listing no longer holds. Without that, a record the room removed lives on in every cache that synchronised before the prune, and a record retracted while the reader was away comes back as current.
@@ -12816,7 +12865,7 @@ export interface RecordReference {
    */
   key: string;
   /**
-   * The version of the record the author was answering. OPTIONAL; a reader that shows a later version of that record SHOULD say that it has changed since.
+   * The version of the record the author was answering. OPTIONAL. A reader SHOULD say that the target has changed since only when its content has, never because its version moved: curation moves a record's version without touching its content (`SealedRecordBody`, *Whether the target has changed*).
    */
   version?: number;
 }
@@ -13969,7 +14018,7 @@ export interface RoomProfile {
    */
   emoji?: string;
   /**
-   * The optional `SealedRecordBody` members — and on an `open` room the `cleartext` members of `rooms/records/put` — that the room's writers may use beyond the base set, as a set: order carries no meaning. Defined values: `kind`, `inReplyTo`, `writtenAt`. A writer MUST NOT write a member this governs unless the room's current profile lists it; absent means none (`SealedRecordBody`, *When a writer may use `kind`, `inReplyTo` and `writtenAt`*). The base set is every other member of `SealedRecordBody`, which a writer may always use. A value a writer does not know grants it nothing. Set by a member whose authority confers `curate` or `admin` (who may write the profile at all), once the readers the room's members use — profile readers included, since a reader that predates this member refuses the profile carrying it — are known to accept what it lists. Listing a member never obliges a writer to use it, and removing one stops writers using it from then on; records already written keep it.
+   * The optional `SealedRecordBody` members — and on an `open` room the `cleartext` members of `rooms/records/put` — that the room's writers may use beyond the base set, as a set: order carries no meaning. Defined values: `kind`, `inReplyTo`, `writtenAt`, `editedAt`. A writer MUST NOT write a member this governs unless the room's current profile lists it; absent means none (`SealedRecordBody`, *When a writer may use these members*). A writer MAY rely on a profile it resolved within the room's current epoch. The base set is every other member of `SealedRecordBody`, which a writer may always use. A value a writer does not know grants it nothing. Set by a member whose authority confers `curate` or `admin` (who may write the profile at all) — with `rooms/keys/profile/write` on a sealed tier, or `rooms/records/put` at `room-profile` on an `open` room — and never by default. Whether the room's readers are ready is the owner's or a curator's decision, made out of band; the order is readers (profile readers included, since a reader that predates this member refuses the profile carrying it), then the owner's key holder, which re-writes the profile after a removal and so MUST accept this member before any profile carries it, then on the sealed tiers the key holders that seal for writers, then the profile (`SealedRecordBody`, *Turning them on*). Listing a member never obliges a writer to use it, and removing one stops writers using it by the room's next epoch at the latest; records already written keep it.
    *
    * @minItems 1
    * @maxItems 32

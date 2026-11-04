@@ -51,7 +51,8 @@
         },
         "body": {
           "type": "string",
-          "maxLength": 1048576
+          "maxLength": 1048576,
+          "description": "The record's text: plain text on a `message`, which a reader MUST NOT render as markup; the value on a `reaction`; markdown on a note and on a kind the reader does not know (`SealedRecordBody`, *What `body` is*). An empty `body` on a new version of a `message` or `reaction`, written by its author, withdraws it."
         },
         "tags": {
           "type": "array",
@@ -70,6 +71,9 @@
         },
         "writtenAt": {
           "$ref": "../../../_shared/0.1/room.schema.json#/$defs/RecordWrittenAt"
+        },
+        "editedAt": {
+          "$ref": "../../../_shared/0.1/room.schema.json#/$defs/RecordEditedAt"
         },
         "basis": {
           "$ref": "../../../_shared/0.1/room.schema.json#/$defs/RecordBasis",

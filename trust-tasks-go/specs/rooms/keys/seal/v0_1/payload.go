@@ -15,7 +15,7 @@ import (
 // https://trusttasks.org/spec/rooms/keys/seal/0.1#response. The sealed record, ready to
 // hand to a host with rooms/records/put.
 //
-// Deprecated: superseded by rooms/keys/seal/0.2
+// Deprecated: superseded by rooms/keys/seal/0.3
 type Response struct {
 	Sealed SealedRecord `json:"sealed"`
 	Ext    *Ext         `json:"ext,omitempty"`
@@ -70,7 +70,7 @@ type SealedRecord struct {
 
 // Payload Rooms Keys Seal — payload
 //
-// Deprecated: superseded by rooms/keys/seal/0.2
+// Deprecated: superseded by rooms/keys/seal/0.3
 type Payload struct {
 	// The room to seal for. The recipient MUST hold group state for it.
 	RoomID string `json:"roomId"`
@@ -112,7 +112,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = "superseded by rooms/keys/seal/0.2"
+const Deprecation = "superseded by rooms/keys/seal/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/rooms/keys/seal/0.1#response"

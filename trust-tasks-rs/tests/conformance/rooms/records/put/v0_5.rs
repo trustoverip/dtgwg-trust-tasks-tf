@@ -133,6 +133,10 @@ fn rejects_invalid_examples() {
             "An `inReplyTo` naming no key. A reply's target is a record of the same room, named by its key; a version alone names nothing.",
             "{\n  \"cleartext\": {\n    \"body\": \"Agreed.\",\n    \"inReplyTo\": {\n      \"version\": 41\n    },\n    \"kind\": \"message\"\n  },\n  \"key\": \"q1Zr8mVbT0yWl3nK5xHc2A\",\n  \"presentation\": {\n    \"authority\": [\n      \"a\"\n    ],\n    \"membership\": \"m\"\n  },\n  \"roomId\": \"did:webvh:QmOpen:rooms.northwind.example:account-notes\"\n}",
         ),
+        (
+            "An `editedAt` with a local offset rather than UTC. Edit times, like `writtenAt`, are UTC (`Z`) so that every reader compares and shows them the same way.",
+            "{\n  \"cleartext\": {\n    \"body\": \"Agreed, with one change.\",\n    \"editedAt\": \"2026-11-04T11:20:00+01:00\",\n    \"kind\": \"message\",\n    \"writtenAt\": \"2026-11-04T10:14:52Z\"\n  },\n  \"key\": \"q1Zr8mVbT0yWl3nK5xHc2A\",\n  \"presentation\": {\n    \"authority\": [\n      \"a\"\n    ],\n    \"membership\": \"m\"\n  },\n  \"roomId\": \"did:webvh:QmOpen:rooms.northwind.example:account-notes\"\n}",
+        ),
     ];
     for (i, (note, raw)) in fixtures.iter().enumerate() {
         let value: serde_json::Value = match serde_json::from_str(raw) {

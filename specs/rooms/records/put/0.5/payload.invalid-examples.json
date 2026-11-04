@@ -370,5 +370,24 @@
         }
       }
     }
+  },
+  {
+    "note": "An `editedAt` with a local offset rather than UTC. Edit times, like `writtenAt`, are UTC (`Z`) so that every reader compares and shows them the same way.",
+    "payload": {
+      "roomId": "did:webvh:QmOpen:rooms.northwind.example:account-notes",
+      "key": "q1Zr8mVbT0yWl3nK5xHc2A",
+      "presentation": {
+        "membership": "m",
+        "authority": [
+          "a"
+        ]
+      },
+      "cleartext": {
+        "kind": "message",
+        "body": "Agreed, with one change.",
+        "writtenAt": "2026-11-04T10:14:52Z",
+        "editedAt": "2026-11-04T11:20:00+01:00"
+      }
+    }
   }
 ]

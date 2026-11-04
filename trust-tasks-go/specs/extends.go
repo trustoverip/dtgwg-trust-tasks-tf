@@ -13,6 +13,7 @@ var extendsIndex = map[string]string{
 	"https://trusttasks.org/spec/rooms/keys/act/0.10":             "0.9",
 	"https://trusttasks.org/spec/rooms/keys/act/0.11":             "0.10",
 	"https://trusttasks.org/spec/rooms/keys/act/0.9":              "0.8",
+	"https://trusttasks.org/spec/rooms/keys/seal/0.3":             "0.2",
 	"https://trusttasks.org/spec/rooms/records/put/0.4":           "0.3",
 	"https://trusttasks.org/spec/rooms/records/put/0.5":           "0.4",
 	"https://trusttasks.org/spec/vta/did-templates/create/3.2":    "3.1",

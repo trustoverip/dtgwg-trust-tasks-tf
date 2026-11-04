@@ -128,12 +128,12 @@ key from, so an open room could hold notes and nothing else. Now the description
 (`FileManifest.fileKey`). The blob is sealed exactly as on the other tiers, so there is one
 blob format and one reader.
 
-Version 0.5 lets a record on an **`open`** room say what it is to a reader and what it
-answers and when it was written: `kind` (a `note`, a `message` or a `reaction`), `inReplyTo`
-(another record of the room) and `writtenAt`, in `cleartext`. On `attributed` and `private` rooms the same members are carried
+Version 0.5 lets a record on an **`open`** room say what it is to a reader, what it
+answers, when it was written and when it was last edited: `kind` (a `note`, a `message` or a
+`reaction`), `inReplyTo` (another record of the room), `writtenAt` and `editedAt`, in `cleartext`. On `attributed` and `private` rooms the same members are carried
 inside the sealed, signed [`SealedRecordBody`](../../../_shared/0.1/room.schema.json), which
 defines what they mean on every tier — replies, reactions, ordering, and how a rewrite is an
-edit — and a room's profile says when its writers may start using them (`RoomProfile`,
+edit or a withdrawal — and a room's profile says when its writers may start using them (`RoomProfile`,
 `recordMembers`).
 
 ## Status of this Document
@@ -142,15 +142,17 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-m
 
 ### What changed from 0.4
 
-`cleartext` gains three optional members, `kind`, `inReplyTo` and `writtenAt`, defined once in
-[`rooms/_shared/0.1/room.schema.json`](../../../_shared/0.1/room.schema.json) (`RecordKind`,
-`RecordReference`, `RecordWrittenAt`) and shared with `SealedRecordBody`, so that a message, a reply and a
+`cleartext` gains four optional members, `kind`, `inReplyTo`, `writtenAt` and `editedAt`,
+defined once in [`rooms/_shared/0.1/room.schema.json`](../../../_shared/0.1/room.schema.json)
+(`RecordKind`, `RecordReference`, `RecordWrittenAt`, `RecordEditedAt`) and shared with `SealedRecordBody`, so that a message, a reply and a
 reaction mean the same thing on every tier. `cleartext` is a closed object in 0.4, so a 0.4
 host refuses a record carrying any of them rather than storing it; a writer must know the host
 will keep them, and the type URI is how it knows. That is a new member on a closed payload,
 a `MINOR` increment, and 0.5 keeps everything of 0.4 (`extends: "0.4"`). The `sealed` path
 is unchanged: the same members reach the sealed tiers without a new host version — only
-readers and key holders need to know them. On every tier a writer uses them only once the
+readers and key holders need to know them, and a key holder that signs or seals a body
+carrying them for a writer is [`rooms/keys/seal/0.3`](../../../keys/seal/0.3/spec.md), whose
+type URI tells a writer, through `trust-task-discovery`, that it will. On every tier a writer uses them only once the
 room's profile lists them in `recordMembers` (`RoomProfile`).
 
 A host that implements 0.5 **SHOULD** continue to accept 0.4, 0.3, 0.2 and 0.1.
@@ -229,16 +231,24 @@ A conforming **producer** (the member, or an agent acting under an attenuated cr
 9. **SHOULD** set `basis` (in `cleartext` on an `open` room, in the sealed body otherwise).
    A producer that is an agent writing on its own account and does not know which value
    applies **SHOULD** write `inferred`.
-10. Carry a record's `kind`, `inReplyTo` and `writtenAt` in `cleartext` on an `open` room and
+10. Carry a record's `kind`, `inReplyTo`, `writtenAt` and `editedAt` in `cleartext` on an `open` room and
     inside the sealed body otherwise, and on an `attributed` or `private` room **MUST NOT**
     copy any of them into a cleartext member of the write — `key` included. A host that can tell messages from
     notes, or which record answers which, learns the shape of the room's conversation, which
     is metadata sealing exists to withhold. A reaction's `key`, like every key on those tiers,
     is random.
-11. **MUST NOT** write `kind`, `inReplyTo` or `writtenAt`, on any tier, unless the room's
-    current profile lists that member in `recordMembers` (`RoomProfile`); absent means none.
-    **MUST NOT** name a record of kind `reaction` in `inReplyTo`, and when rewriting a record
-    **MUST** keep the `writtenAt` of the version it rewrites (`SealedRecordBody`).
+11. **MUST NOT** write `kind`, `inReplyTo`, `writtenAt` or `editedAt`, on any tier, unless the
+    room's current profile lists that member in `recordMembers` (`RoomProfile`); absent means
+    none. A producer **MAY** rely on a profile it resolved within the room's current epoch.
+    **MUST NOT** name a record of kind `reaction` in `inReplyTo`. When rewriting a record it
+    **MUST** keep the `kind` and the `writtenAt` of the version it rewrites, and on a reaction
+    its `inReplyTo`, and, where the profile lists it, **MUST** set `editedAt`, which the first version of a record never
+    carries (`SealedRecordBody`, *Edits*).
+12. To withdraw its own `message`, write a new version of it with an empty `body` and no
+    `file`; to withdraw its own reaction, write a new version with an empty value of every
+    reaction record it holds with that value and target. Reacting again with a value it already holds on the
+    same target, it **SHOULD** rewrite that record rather than write a second
+    (`SealedRecordBody`, *Counting reactions*).
 
 A conforming **consumer** (the host) **MUST**:
 
@@ -295,9 +305,10 @@ A conforming **consumer** (the host) **MUST**:
 13. Store an open room's `cleartext.file` exactly as received and serve it back with the
     record. A host that decides by policy that a room takes no files refuses the upload
     ([`rooms/blobs/upload/begin`](../../../blobs/upload/begin/0.2/spec.md)), not the record.
-14. Store `kind`, `inReplyTo` and `writtenAt` on an `open` room's record exactly as received,
-    serve them back with it, and **MUST NOT** act on them: a host does not refuse, order or
-    group a record by its `kind` or `writtenAt`, does not check that `inReplyTo` names a record
+14. Store `kind`, `inReplyTo`, `writtenAt` and `editedAt` on an `open` room's record exactly as
+    received, serve them back with it, and **MUST NOT** act on them: a host does not refuse,
+    order or group a record by its `kind`, `writtenAt` or `editedAt`, does not check that a
+    rewrite keeps `kind` or `inReplyTo` or that an empty `body` comes from the record's author, does not check that `inReplyTo` names a record
     it holds or what kind that record is, and does not check a write against the room's
     `recordMembers`. Those are writers' and readers' rules. What
     they mean is a reader's rule (`SealedRecordBody`), on every tier.
@@ -598,6 +609,20 @@ host could alter it. A room that needs provenance a reader can attribute to its 
 sealed tier, where the members are inside the author's signature. On every tier they confer no
 authority: they describe the record, they do not authorize anything done with it.
 
+**Any member with `write` can replace another member's record.** A rewrite is a put under the
+same key, and nothing in this task checks that it comes from the author of the version it
+replaces: on `private` a host cannot, and on `attributed` it cannot see the record's `kind` to
+tell a message from a shared note. Readers hold the line where they can. A new version must
+keep its `kind`, and a reaction its `inReplyTo`; a withdrawal counts only when it comes from the
+author of the version it replaces; and a version whose `author` differs is shown under its new
+author, never as an edit by the earlier one (`SealedRecordBody`, *Edits*, *What a new version
+keeps*, *Counting reactions*, *Withdrawing a message*). Every one of those checks compares the
+new version with an earlier one. **A reader seeing a record for the first time cannot detect
+that another member replaced it** on a tier where the host does not check authorship: it sees
+only the current version, signed by whoever wrote it, and has nothing to compare it with. It
+can show who wrote what it sees — and on the sealed tiers that attribution is exact — but not
+whose record that version replaced.
+
 ### Data carried
 
 On an `open` room, the record itself in the clear — including its provenance and expiry,
@@ -626,7 +651,11 @@ Records are durable by design and persist until overwritten or retracted. `valid
 not change that: an expired record is hidden by readers and still stored, until a member with
 `curate` retracts it. A retraction is a
 tombstone: the body goes, the key and version stay, and every blob the record named is
-released. A released blob stops counting against usage at once and is deleted from storage
+released. On an `open` room the body is `cleartext`, so a tombstone keeps none of it — `kind`,
+`inReplyTo`, `writtenAt` and `editedAt` included — exactly as on the sealed tiers; a reader
+places a tombstone by the version of the record it held before, if any (`SealedRecordBody`,
+*Tombstones*). A member's withdrawal of their own message or reaction is a rewrite, not a
+retraction: the record keeps its key and its place. A released blob stops counting against usage at once and is deleted from storage
 after the host's grace window. On a store that publishes ciphertext, deletion frees the
 storage but cannot recall copies already made; there the only erasure is cryptographic —
 pruning the epoch chain so nobody can derive the file key.
