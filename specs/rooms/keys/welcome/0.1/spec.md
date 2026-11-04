@@ -48,7 +48,7 @@ errorCodes:
     meaning: "The recipient already holds current group state for this room for the member the invitation names — state the member has not been shown to have left: no commit the recipient processed removed the member from it, and the ratchet tree of the Welcome being answered still contains the member's leaf from it. State from which a processed commit removed the member, or whose leaf that ratchet tree no longer contains, is a prior membership, not a join, and state it holds for another member it serves is not a join by this one."
     retryable: false
   - code: rooms/keys/welcome:welcomeInvalid
-    meaning: "The Welcome did not process — wrong KeyPackage, malformed, or missing the ratchet tree."
+    meaning: "The Welcome did not process — wrong KeyPackage, malformed, or missing the ratchet tree — or it is for an MLS group other than the one whose state the recipient holds for this member, so its ratchet tree says nothing about whether that state ended."
     retryable: false
 related:
   - rooms/keys/key-package
@@ -137,10 +137,15 @@ The recipient recognises a prior membership by either of two pieces of evidence:
      current, and the recipient **MUST** answer `alreadyJoined`. It **MUST** keep nothing
      the Welcome formed, and **MUST NOT** consume the invitation or the KeyPackage the
      Welcome is sealed to.
-   - Where it is **absent**, the member was removed by a commit producing some epoch `r`,
-     `h < r ≤ j`, that the recipient has not seen. The state it holds is a prior membership
-     whose removal epoch is **not yet known**, and the recipient **MUST** proceed with the
-     join exactly as under the first piece of evidence.
+   - Where it is **absent**, the recipient **MUST** first check that the Welcome is for the
+     same MLS group as the state it holds — equal group ids. A Welcome for another group has
+     none of that state's leaves by construction, so its tree is no evidence that the state
+     ended: the recipient **MUST** answer `welcomeInvalid`, keep nothing the Welcome formed,
+     change nothing it holds, and consume neither the invitation nor the KeyPackage.
+   - Where it is absent from a Welcome for the same group, the member was removed by a
+     commit producing some epoch `r`, `h < r ≤ j`, that the recipient has not seen. The
+     state it holds is a prior membership whose removal epoch is **not yet known**, and the
+     recipient **MUST** proceed with the join exactly as under the first piece of evidence.
 
 A recipient **MUST NOT** wait for, or fetch, the removing commit before joining, and a client
 is not required to apply commits before it hands over the Welcome: the Welcome is the

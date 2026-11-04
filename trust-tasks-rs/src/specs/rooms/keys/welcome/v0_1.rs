@@ -379,7 +379,7 @@ pub mod error_codes {
     };
     /// `rooms/keys/welcome:welcomeInvalid`
     ///
-    /// The Welcome did not process — wrong KeyPackage, malformed, or missing the ratchet tree.
+    /// The Welcome did not process — wrong KeyPackage, malformed, or missing the ratchet tree — or it is for an MLS group other than the one whose state the recipient holds for this member, so its ratchet tree says nothing about whether that state ended.
     ///
     /// Declared `retryable: false`.
     pub const WELCOME_INVALID: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
