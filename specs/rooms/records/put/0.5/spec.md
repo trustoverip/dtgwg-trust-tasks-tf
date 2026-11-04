@@ -129,10 +129,12 @@ key from, so an open room could hold notes and nothing else. Now the description
 blob format and one reader.
 
 Version 0.5 lets a record on an **`open`** room say what it is to a reader and what it
-answers: `kind` (a `note`, a `message` or a `reaction`) and `inReplyTo` (another record of
-the room), in `cleartext`. On `attributed` and `private` rooms the same members are carried
+answers and when it was written: `kind` (a `note`, a `message` or a `reaction`), `inReplyTo`
+(another record of the room) and `writtenAt`, in `cleartext`. On `attributed` and `private` rooms the same members are carried
 inside the sealed, signed [`SealedRecordBody`](../../../_shared/0.1/room.schema.json), which
-defines what they mean on every tier — replies, reactions, and how a rewrite is an edit.
+defines what they mean on every tier — replies, reactions, ordering, and how a rewrite is an
+edit — and a room's profile says when its writers may start using them (`RoomProfile`,
+`recordMembers`).
 
 ## Status of this Document
 
@@ -140,16 +142,16 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-m
 
 ### What changed from 0.4
 
-`cleartext` gains two optional members, `kind` and `inReplyTo`, defined once in
+`cleartext` gains three optional members, `kind`, `inReplyTo` and `writtenAt`, defined once in
 [`rooms/_shared/0.1/room.schema.json`](../../../_shared/0.1/room.schema.json) (`RecordKind`,
-`RecordReference`) and shared with `SealedRecordBody`, so that a message, a reply and a
+`RecordReference`, `RecordWrittenAt`) and shared with `SealedRecordBody`, so that a message, a reply and a
 reaction mean the same thing on every tier. `cleartext` is a closed object in 0.4, so a 0.4
-host refuses a record carrying either rather than storing it; a writer must know the host
+host refuses a record carrying any of them rather than storing it; a writer must know the host
 will keep them, and the type URI is how it knows. That is a new member on a closed payload,
 a `MINOR` increment, and 0.5 keeps everything of 0.4 (`extends: "0.4"`). The `sealed` path
 is unchanged: the same members reach the sealed tiers without a new host version — only
-readers and key holders need to know them, and `SealedRecordBody` says when a writer may
-start writing them (*Readers that predate `kind` and `inReplyTo`*).
+readers and key holders need to know them. On every tier a writer uses them only once the
+room's profile lists them in `recordMembers` (`RoomProfile`).
 
 A host that implements 0.5 **SHOULD** continue to accept 0.4, 0.3, 0.2 and 0.1.
 
@@ -227,12 +229,16 @@ A conforming **producer** (the member, or an agent acting under an attenuated cr
 9. **SHOULD** set `basis` (in `cleartext` on an `open` room, in the sealed body otherwise).
    A producer that is an agent writing on its own account and does not know which value
    applies **SHOULD** write `inferred`.
-10. Carry a record's `kind` and `inReplyTo` in `cleartext` on an `open` room and inside the
-    sealed body otherwise, and on an `attributed` or `private` room **MUST NOT** copy either
-    into a cleartext member of the write — `key` included. A host that can tell messages from
+10. Carry a record's `kind`, `inReplyTo` and `writtenAt` in `cleartext` on an `open` room and
+    inside the sealed body otherwise, and on an `attributed` or `private` room **MUST NOT**
+    copy any of them into a cleartext member of the write — `key` included. A host that can tell messages from
     notes, or which record answers which, learns the shape of the room's conversation, which
     is metadata sealing exists to withhold. A reaction's `key`, like every key on those tiers,
     is random.
+11. **MUST NOT** write `kind`, `inReplyTo` or `writtenAt`, on any tier, unless the room's
+    current profile lists that member in `recordMembers` (`RoomProfile`); absent means none.
+    **MUST NOT** name a record of kind `reaction` in `inReplyTo`, and when rewriting a record
+    **MUST** keep the `writtenAt` of the version it rewrites (`SealedRecordBody`).
 
 A conforming **consumer** (the host) **MUST**:
 
@@ -289,9 +295,11 @@ A conforming **consumer** (the host) **MUST**:
 13. Store an open room's `cleartext.file` exactly as received and serve it back with the
     record. A host that decides by policy that a room takes no files refuses the upload
     ([`rooms/blobs/upload/begin`](../../../blobs/upload/begin/0.2/spec.md)), not the record.
-14. Store `kind` and `inReplyTo` on an `open` room's record exactly as received, serve them
-    back with it, and **MUST NOT** act on them: a host does not refuse, order or group a
-    record by its `kind`, and does not check that `inReplyTo` names a record it holds. What
+14. Store `kind`, `inReplyTo` and `writtenAt` on an `open` room's record exactly as received,
+    serve them back with it, and **MUST NOT** act on them: a host does not refuse, order or
+    group a record by its `kind` or `writtenAt`, does not check that `inReplyTo` names a record
+    it holds or what kind that record is, and does not check a write against the room's
+    `recordMembers`. Those are writers' and readers' rules. What
     they mean is a reader's rule (`SealedRecordBody`), on every tier.
 15. Refuse an unauthorized presentation with the standard `permissionDenied`; an authorization refusal is the framework standard `permissionDenied` ([SPEC §8.3](/SPEC.md#83-standard-error-codes)), which this specification does not shadow with a task-specific code.
 
@@ -419,7 +427,8 @@ ciphertext.
 ### An open room's message, answering another
 
 A member answers a message in the room's conversation. The answer is a `message` with its
-words in `body` and no `title`; `inReplyTo` names the message it answers. A reaction is the
+words in `body` and no `title`; `inReplyTo` names the message it answers, and `writtenAt`
+is when its author wrote it. The room's profile lists all three in `recordMembers`. A reaction is the
 same shape with `kind: "reaction"` and a short value in `body`.
 
 ```json
@@ -444,6 +453,7 @@ same shape with `kind: "reaction"` and a short value in `body`.
       "kind": "message",
       "body": "Agreed — let's hold the discount until they sign.",
       "inReplyTo": { "key": "Hc7pY2wQe9tLmB4sVn1KxA", "version": 41 },
+      "writtenAt": "2026-11-04T10:14:52Z",
       "basis": "declared"
     }
   }

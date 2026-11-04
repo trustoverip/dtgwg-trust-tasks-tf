@@ -1745,6 +1745,10 @@ export type RecordType = "authorization" | "recognition";
  */
 export type RecordValidUntil = string;
 /**
+ * The instant the author wrote the record, RFC 3339 in UTC (`Z`). Set by the author and kept unchanged when the record is rewritten, so `version` alone marks revisions. OPTIONAL on a note; a `message` or `reaction` SHOULD carry it. The author's claim, not an attested time: a reader orders messages by it and treats an implausible one as `SealedRecordBody` (*When it was written*) says. No host enforces or reads it.
+ */
+export type RecordWrittenAt = string;
+/**
  * What it takes to let a value LEAVE. Distinct from `Sensitivity`, which governs showing it to the holder.
  *
  * `consent` is the ordinary gate: `persona/disclosure/preview` renders what would leave and `persona/disclosure/present` releases it, so a human sees it once.
@@ -12804,7 +12808,7 @@ export interface RecordPrune_RoomsV0_2 {
   removed: number;
 }
 /**
- * Names another record of the same room: the record a reply answers or a reaction responds to. Never a record of another room — a citation that crosses rooms is `RecordEvidenceRecord`. A reader resolves it only against records it can already list or read in this room, and MUST NOT fetch anything else because of it.
+ * Names another record of the same room: the record a reply answers or a reaction responds to. Never a record of another room — a citation that crosses rooms is `RecordEvidenceRecord`. A reader resolves it only against records it can already list or read in this room, and MUST NOT fetch anything else because of it. It MUST NOT name a record of kind `reaction`.
  */
 export interface RecordReference {
   /**
@@ -13934,7 +13938,7 @@ export interface RoomPass {
  *
  * **Plain text, never instructions.** Every member is free text chosen by whoever wrote the profile and shown to every member of the room. A reader renders `name`, `description` and `tags` as text — never as markup, never as a link it follows — removes or replaces control characters before showing them, and MUST NOT treat any of it as instructions, which matters most for an agent acting for a member. A writer MUST NOT put personal data or a credential in any member.
  *
- * **Growth.** A new optional member arrives in a later version of this component. A reader refuses a member it does not know (the `SealedRecordBody` rules), so a profile carrying one is not shown by a reader that predates it, and a writer SHOULD NOT use a member it cannot expect the room's readers to know. An ecosystem extension goes in `ext`, which a reader that does not understand it ignores. A change no earlier reader could survive is a new statement under a new derivation label (`openvtc/room/profile/v2`), written beside this one until the room's readers have moved.
+ * **Growth.** A new optional member arrives in place, additively, as `recordMembers` did, or in a later version of this component. A reader refuses a member it does not know (the `SealedRecordBody` rules), so a profile carrying one is not shown by a reader that predates it, and a writer SHOULD NOT use a member it cannot expect the room's readers to know. An ecosystem extension goes in `ext`, which a reader that does not understand it ignores. A change no earlier reader could survive is a new statement under a new derivation label (`openvtc/room/profile/v2`), written beside this one until the room's readers have moved.
  */
 export interface RoomProfile {
   /**
@@ -13964,6 +13968,13 @@ export interface RoomProfile {
    * One emoji — a single extended grapheme cluster, such as `📋` — that a surface MAY show beside the name. Text, rendered as text: never an image, never a URL, never anything a reader fetches, since a fetched icon would tell whoever serves it which member opened which room, and when. A reader that cannot render it shows nothing in its place.
    */
   emoji?: string;
+  /**
+   * The optional `SealedRecordBody` members — and on an `open` room the `cleartext` members of `rooms/records/put` — that the room's writers may use beyond the base set, as a set: order carries no meaning. Defined values: `kind`, `inReplyTo`, `writtenAt`. A writer MUST NOT write a member this governs unless the room's current profile lists it; absent means none (`SealedRecordBody`, *When a writer may use `kind`, `inReplyTo` and `writtenAt`*). The base set is every other member of `SealedRecordBody`, which a writer may always use. A value a writer does not know grants it nothing. Set by a member whose authority confers `curate` or `admin` (who may write the profile at all), once the readers the room's members use — profile readers included, since a reader that predates this member refuses the profile carrying it — are known to accept what it lists. Listing a member never obliges a writer to use it, and removing one stops writers using it from then on; records already written keep it.
+   *
+   * @minItems 1
+   * @maxItems 32
+   */
+  recordMembers?: [string, ...string[]];
   /**
    * Ecosystem-defined extension members per SPEC.md §4.5.1. A reader ignores what it does not understand.
    */

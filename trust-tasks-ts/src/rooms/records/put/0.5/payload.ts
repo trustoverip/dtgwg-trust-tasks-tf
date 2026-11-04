@@ -3,11 +3,11 @@
  * Source: specs/rooms/records/put/0.5/payload.schema.json
  */
 
-import type { AuthorityPresentation, BlobRef, DigestMultibase, Ext, FileManifest, PermittedUse, RecordBasis, RecordConfidence, RecordEvidence, RecordEvidenceCredential, RecordEvidenceList, RecordEvidenceRecord, RecordKind, RecordReference, RecordValidUntil, SealedRecord } from "../../../../_shared/components.js";
+import type { AuthorityPresentation, BlobRef, DigestMultibase, Ext, FileManifest, PermittedUse, RecordBasis, RecordConfidence, RecordEvidence, RecordEvidenceCredential, RecordEvidenceList, RecordEvidenceRecord, RecordKind, RecordReference, RecordValidUntil, RecordWrittenAt, SealedRecord } from "../../../../_shared/components.js";
 
 
 /**
- * A member writes a record to a data room, authorized by an authority chain the room itself issued. 0.2 added `blobs`: a record can carry a file, whose ciphertext the host stores outside the record and whose description is sealed inside it. 0.3 lets an `open` room's `cleartext` carry the record's provenance — `basis`, `confidence`, `evidence`, `validFor` — and its `validUntil`, which the sealed tiers carry inside the signed `SealedRecordBody`. 0.4 lets an `open` room's record carry a file: its `FileManifest`, with the file key it was sealed under, in `cleartext.file`. 0.5 lets an `open` room's `cleartext` say what the record is to a reader and what it answers — `kind` and `inReplyTo` — which the sealed tiers carry inside the signed `SealedRecordBody`.
+ * A member writes a record to a data room, authorized by an authority chain the room itself issued. 0.2 added `blobs`: a record can carry a file, whose ciphertext the host stores outside the record and whose description is sealed inside it. 0.3 lets an `open` room's `cleartext` carry the record's provenance — `basis`, `confidence`, `evidence`, `validFor` — and its `validUntil`, which the sealed tiers carry inside the signed `SealedRecordBody`. 0.4 lets an `open` room's record carry a file: its `FileManifest`, with the file key it was sealed under, in `cleartext.file`. 0.5 lets an `open` room's `cleartext` say what the record is to a reader and what it answers and when it was written — `kind`, `inReplyTo` and `writtenAt` — which the sealed tiers carry inside the signed `SealedRecordBody`.
  */
 export interface RoomsRecordsPutPayload {
   /**
@@ -46,6 +46,7 @@ export interface RoomsRecordsPutPayload {
      * The record this one answers or, on a `reaction`, responds to. Stored and served as received; the host does not check that it names a record it holds.
      */
     inReplyTo?: RecordReference;
+    writtenAt?: RecordWrittenAt;
     /**
      * What kind of claim the record is. A writer SHOULD set it; an agent writer that does not know SHOULD write `inferred`. Provenance for display and weighting, never authority.
      */
@@ -94,7 +95,7 @@ export interface RoomsRecordsPutResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { AuthorityPresentation, BlobRef, DigestMultibase, Ext, FileManifest, PermittedUse, RecordBasis, RecordConfidence, RecordEvidence, RecordEvidenceCredential, RecordEvidenceList, RecordEvidenceRecord, RecordKind, RecordReference, RecordValidUntil, SealedRecord };
+export type { AuthorityPresentation, BlobRef, DigestMultibase, Ext, FileManifest, PermittedUse, RecordBasis, RecordConfidence, RecordEvidence, RecordEvidenceCredential, RecordEvidenceList, RecordEvidenceRecord, RecordKind, RecordReference, RecordValidUntil, RecordWrittenAt, SealedRecord };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/rooms/records/put/0.5" as const;
@@ -137,7 +138,7 @@ export const PAYLOAD_SCHEMA = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/rooms/records/put/0.5",
   "title": "Rooms Records Put — payload",
-  "description": "A member writes a record to a data room, authorized by an authority chain the room itself issued. 0.2 added `blobs`: a record can carry a file, whose ciphertext the host stores outside the record and whose description is sealed inside it. 0.3 lets an `open` room's `cleartext` carry the record's provenance — `basis`, `confidence`, `evidence`, `validFor` — and its `validUntil`, which the sealed tiers carry inside the signed `SealedRecordBody`. 0.4 lets an `open` room's record carry a file: its `FileManifest`, with the file key it was sealed under, in `cleartext.file`. 0.5 lets an `open` room's `cleartext` say what the record is to a reader and what it answers — `kind` and `inReplyTo` — which the sealed tiers carry inside the signed `SealedRecordBody`.",
+  "description": "A member writes a record to a data room, authorized by an authority chain the room itself issued. 0.2 added `blobs`: a record can carry a file, whose ciphertext the host stores outside the record and whose description is sealed inside it. 0.3 lets an `open` room's `cleartext` carry the record's provenance — `basis`, `confidence`, `evidence`, `validFor` — and its `validUntil`, which the sealed tiers carry inside the signed `SealedRecordBody`. 0.4 lets an `open` room's record carry a file: its `FileManifest`, with the file key it was sealed under, in `cleartext.file`. 0.5 lets an `open` room's `cleartext` say what the record is to a reader and what it answers and when it was written — `kind`, `inReplyTo` and `writtenAt` — which the sealed tiers carry inside the signed `SealedRecordBody`.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -202,6 +203,9 @@ export const PAYLOAD_SCHEMA = {
         "inReplyTo": {
           "$ref": "#/$defs/RecordReference",
           "description": "The record this one answers or, on a `reaction`, responds to. Stored and served as received; the host does not check that it names a record it holds."
+        },
+        "writtenAt": {
+          "$ref": "#/$defs/RecordWrittenAt"
         },
         "basis": {
           "$ref": "#/$defs/RecordBasis",
@@ -499,6 +503,13 @@ export const PAYLOAD_SCHEMA = {
       ],
       "description": "What kind of claim a record is, as its author states it. OPTIONAL wherever it appears; absent means the author did not say, and a reader shows it as unstated rather than assuming any of these.\n\n  - `declared` — the author's own statement: a decision, a preference, an intention, a commitment. True because the author says so, and only as far as the author speaks for it.\n  - `observed` — something the author saw, measured or was told directly, recorded as found.\n  - `verified` — checked against evidence that somebody else can check again, such as a credential or another record. A record that says `verified` SHOULD name that evidence in `evidence`; one that does not is an unsupported claim to have checked, and a reader SHOULD present it so.\n  - `inferred` — derived by reasoning from other information: an agent's conclusion, a summary's generalisation, a model's guess. The value an agent writer uses when it does not know which of the others applies.\n\nThe values are the author's account of their own record, signed with it. They are not checked by anybody, confer nothing, and say nothing about whether the record is right — `inferred` can be correct and `observed` mistaken. Aligned with the provenance vocabulary of personal agent memory, so that a record moved between a member's memory and a room keeps its meaning."
     },
+    "RecordWrittenAt": {
+      "title": "RecordWrittenAt",
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$",
+      "description": "The instant the author wrote the record, RFC 3339 in UTC (`Z`). Set by the author and kept unchanged when the record is rewritten, so `version` alone marks revisions. OPTIONAL on a note; a `message` or `reaction` SHOULD carry it. The author's claim, not an attested time: a reader orders messages by it and treats an implausible one as `SealedRecordBody` (*When it was written*) says. No host enforces or reads it."
+    },
     "RecordReference": {
       "title": "RecordReference",
       "type": "object",
@@ -506,7 +517,7 @@ export const PAYLOAD_SCHEMA = {
       "required": [
         "key"
       ],
-      "description": "Names another record of the same room: the record a reply answers or a reaction responds to. Never a record of another room — a citation that crosses rooms is `RecordEvidenceRecord`. A reader resolves it only against records it can already list or read in this room, and MUST NOT fetch anything else because of it.",
+      "description": "Names another record of the same room: the record a reply answers or a reaction responds to. Never a record of another room — a citation that crosses rooms is `RecordEvidenceRecord`. A reader resolves it only against records it can already list or read in this room, and MUST NOT fetch anything else because of it. It MUST NOT name a record of kind `reaction`.",
       "properties": {
         "key": {
           "type": "string",
@@ -854,6 +865,13 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       ],
       "description": "What kind of claim a record is, as its author states it. OPTIONAL wherever it appears; absent means the author did not say, and a reader shows it as unstated rather than assuming any of these.\n\n  - `declared` — the author's own statement: a decision, a preference, an intention, a commitment. True because the author says so, and only as far as the author speaks for it.\n  - `observed` — something the author saw, measured or was told directly, recorded as found.\n  - `verified` — checked against evidence that somebody else can check again, such as a credential or another record. A record that says `verified` SHOULD name that evidence in `evidence`; one that does not is an unsupported claim to have checked, and a reader SHOULD present it so.\n  - `inferred` — derived by reasoning from other information: an agent's conclusion, a summary's generalisation, a model's guess. The value an agent writer uses when it does not know which of the others applies.\n\nThe values are the author's account of their own record, signed with it. They are not checked by anybody, confer nothing, and say nothing about whether the record is right — `inferred` can be correct and `observed` mistaken. Aligned with the provenance vocabulary of personal agent memory, so that a record moved between a member's memory and a room keeps its meaning."
     },
+    "RecordWrittenAt": {
+      "title": "RecordWrittenAt",
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$",
+      "description": "The instant the author wrote the record, RFC 3339 in UTC (`Z`). Set by the author and kept unchanged when the record is rewritten, so `version` alone marks revisions. OPTIONAL on a note; a `message` or `reaction` SHOULD carry it. The author's claim, not an attested time: a reader orders messages by it and treats an implausible one as `SealedRecordBody` (*When it was written*) says. No host enforces or reads it."
+    },
     "RecordReference": {
       "title": "RecordReference",
       "type": "object",
@@ -861,7 +879,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "required": [
         "key"
       ],
-      "description": "Names another record of the same room: the record a reply answers or a reaction responds to. Never a record of another room — a citation that crosses rooms is `RecordEvidenceRecord`. A reader resolves it only against records it can already list or read in this room, and MUST NOT fetch anything else because of it.",
+      "description": "Names another record of the same room: the record a reply answers or a reaction responds to. Never a record of another room — a citation that crosses rooms is `RecordEvidenceRecord`. A reader resolves it only against records it can already list or read in this room, and MUST NOT fetch anything else because of it. It MUST NOT name a record of kind `reaction`.",
       "properties": {
         "key": {
           "type": "string",

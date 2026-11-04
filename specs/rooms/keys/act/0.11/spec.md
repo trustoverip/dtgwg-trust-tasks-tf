@@ -290,13 +290,13 @@ may be.
 
 ## Changes from 0.10
 
-[`rooms/records/put/0.5`](../../../records/put/0.5/spec.md) lets a record on an `open` room say what it is to a reader and what it answers — `kind` (a note, a message or a reaction) and `inReplyTo` — in `cleartext`. `0.10`'s table is closed (Recipient item 1) and names `rooms/records/put` at `0.1` to `0.4` only, so a key holder conforming to it refuses `0.5` with `typeNotActable`, and a member whose keys their key holder holds could not write a message or a reply to an open room.
+[`rooms/records/put/0.5`](../../../records/put/0.5/spec.md) lets a record on an `open` room say what it is to a reader, what it answers and when it was written — `kind` (a note, a message or a reaction), `inReplyTo` and `writtenAt` — in `cleartext`. `0.10`'s table is closed (Recipient item 1) and names `rooms/records/put` at `0.1` to `0.4` only, so a key holder conforming to it refuses `0.5` with `typeNotActable`, and a member whose keys their key holder holds could not write a message or a reply to an open room.
 
 `0.11` adds it to the table, in the same row as the versions it already lists and on the same terms:
 
 - **`rooms/records/put/0.5`** — `write`, presentation inserted.
 
-The recipient completes it exactly as it completes `0.4`, and signs what the producer built, unaltered (Recipient item 6), as it signs any other `cleartext`: it does not read, check or act on `kind` or `inReplyTo`. On the sealed tiers nothing changes here — the same members travel inside the sealed body, which this task never opens.
+The recipient completes it exactly as it completes `0.4`, and signs what the producer built, unaltered (Recipient item 6), as it signs any other `cleartext`: it does not read, check or act on `kind`, `inReplyTo` or `writtenAt`, nor check the write against the room's `recordMembers` — that is the writer's rule (`rooms/records/put/0.5` Producer item 11). On the sealed tiers nothing changes here — the same members travel inside the sealed body, which this task never opens.
 
 The schema's `type` pattern already admits the type. Nothing else changes: the request and response schemas are `0.10`'s, and no error code is added.
 

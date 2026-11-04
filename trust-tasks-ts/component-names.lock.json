@@ -382,6 +382,7 @@
   "rooms/_shared/0.1/room.schema.json#/$defs/RecordRetention": "RecordRetention",
   "rooms/_shared/0.1/room.schema.json#/$defs/RecordTrace": "RecordTrace",
   "rooms/_shared/0.1/room.schema.json#/$defs/RecordValidUntil": "RecordValidUntil",
+  "rooms/_shared/0.1/room.schema.json#/$defs/RecordWrittenAt": "RecordWrittenAt",
   "rooms/_shared/0.1/room.schema.json#/$defs/RetentionPolicy": "RetentionPolicy",
   "rooms/_shared/0.1/room.schema.json#/$defs/RevocationEntry": "RevocationEntry",
   "rooms/_shared/0.1/room.schema.json#/$defs/RevocationHead": "RevocationHead",
