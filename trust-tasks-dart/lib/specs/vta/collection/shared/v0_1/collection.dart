@@ -71,7 +71,8 @@ extension type const Collector(String value) {
 /// the VTA is at the bound it states on the number of identifiers it collects for
 /// (VTI-NTF-088); `conflict`, another connection for the identifier kept closing the
 /// VTA's, and the VTA stopped after the bound it states until the conflict is resolved
-/// (VTI-NTF-085).
+/// (VTI-NTF-085). `disabled`, the VTA's operator has not enabled collection by default
+/// (VTI-NTF-093), so the VTA collects for no identifier a client has not claimed.
 ///
 /// An extension type rather than an enum: a value from a newer MINOR of this
 /// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
@@ -79,11 +80,13 @@ extension type const Collector(String value) {
 extension type const NotCollectedReason(String value) {
   static const NotCollectedReason limit = NotCollectedReason('limit');
   static const NotCollectedReason conflict = NotCollectedReason('conflict');
+  static const NotCollectedReason disabled = NotCollectedReason('disabled');
 
   /// Every value this specification's schema permits.
   static const List<NotCollectedReason> values = <NotCollectedReason>[
     limit,
-    conflict
+    conflict,
+    disabled
   ];
 }
 

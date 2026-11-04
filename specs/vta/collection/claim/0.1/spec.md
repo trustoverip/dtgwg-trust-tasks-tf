@@ -5,7 +5,7 @@ title: "VTA Collection — Claim"
 summary: "A client asks its VTA to make it, until a stated end, the one collector of the messages queued at the mediator for a persona DID whose keys the VTA holds — or renews a claim it holds — so that the client and the VTA never both hold that DID's one mediator connection."
 status: draft
 targetFrameworkVersion: "0.6.0"
-category: messaging
+category: notifications
 keywords:
   - collection
   - mediator
@@ -52,7 +52,8 @@ retention:
 errorCodes:
   - code: vta/collection/claim:notCollectable
     meaning: >-
-      `identifier` is not one the VTA collects for in `contextId`: the VTA does not hold its
+      `identifier` is not one the VTA would collect for in `contextId`, whether or not collection
+      by default is enabled (VTI-NTF-093): the VTA does not hold its
       messaging keys there, its DID document advertises no transport through a mediator, or it is
       the VTA's own durable identity, another node's or host service's, or an identity the VTA
       provisioned for another party, each of which its own holder collects for (VTI-NTF-080).
@@ -112,8 +113,9 @@ A conforming **producer** (the client) **MUST**:
    connection is one.
 2. Stop collecting for the identifier, and close every such connection, before `endsAt` less its
    clock-skew tolerance as its own clock reads, unless it has renewed the claim by then. It
-   **SHOULD** renew well before `endsAt` — at half the granted duration, for instance — so that a
-   failed renewal leaves time to retry before it must close.
+   **SHOULD** ask for `durationSeconds` `86400` (twenty-four hours), and **SHOULD** renew once
+   half of the period granted has passed, so that a failed renewal leaves time to retry before it
+   must close (VTI-NTF-083).
 3. On `vta/collection/claim:claimHeld` or `vta/collection/claim:notCollectable`, not collect for
    the identifier; and on `vta/collection/claim:claimNotRenewable`, stop collecting before the end
    it was last granted.
@@ -125,8 +127,8 @@ A conforming **consumer** (the VTA) **MUST**:
 
 1. Validate the document per [SPEC §7.2](/SPEC.md#72-consumer-requirements), and refuse with
    `permissionDenied` a caller without standing under [Authorization](#authorization).
-2. Refuse with `vta/collection/claim:notCollectable` an `identifier` VTI-NTF-080 does not require
-   it to collect for in `contextId`, comparing identifiers as VTI-KEY-160 – VTI-KEY-169 require for
+2. Refuse with `vta/collection/claim:notCollectable` an `identifier` VTI-NTF-080 does not name in
+   `contextId`, comparing identifiers as VTI-KEY-160 – VTI-KEY-169 require for
    the form they take.
 3. Refuse with `vta/collection/claim:claimHeld` a claim while another client's claim for the
    identifier is in force, and with `vta/collection/claim:claimNotRenewable` a renewal of a claim
@@ -134,7 +136,8 @@ A conforming **consumer** (the VTA) **MUST**:
 4. Before it answers a grant, stop collecting for the identifier and close every connection it
    holds for it (VTI-NTF-082). It **MUST NOT** answer a grant while a connection of its own for the
    identifier remains open.
-5. Set the claim's end no later than the maximum period it states, and no later than the requested
+5. Set the claim's end no later than the maximum period it states, which **SHOULD NOT** exceed
+   thirty days (VTI-NTF-082), and no later than the requested
    `durationSeconds` from the grant where one is given; answer with that end; and, for a renewal by
    the claimant, move the end and answer `renewed: true`.
 6. Not collect for the identifier until the claim has ended and, unless its claimant released it,
@@ -147,6 +150,11 @@ a renewal.
 
 **A repeated request** sets a state: a claim by the client that already holds the claim succeeds,
 as a renewal.
+
+Claims are served whether or not the VTA's operator has enabled collection by default
+(VTI-NTF-093). While it is disabled the VTA collects for no unclaimed identifier, so a grant changes
+only the record; a client claims all the same, so that its claim is in place when collection is
+enabled.
 
 ## Authorization
 
