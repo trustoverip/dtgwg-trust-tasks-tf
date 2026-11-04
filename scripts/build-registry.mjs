@@ -929,6 +929,27 @@ function checkFreeTextBounds(meta, schema, rel) {
   );
 }
 
+/*
+ * A `knownImplementations` entry's `role` (the `{ url, role, name }` form) is
+ * shown beside its link on the spec page, so a reader can tell a Holder from a
+ * Verifier. The meta-schema can only bound it as a string; whether it names one
+ * of this specification's `parties` needs the front matter. A typo would put a
+ * party on the page that the specification does not define, so it fails.
+ */
+function checkKnownImplementationRoles(meta, rel) {
+  const roles = new Set((meta.parties || []).map((p) => p?.role).filter(Boolean));
+  for (const entry of meta.knownImplementations || []) {
+    if (!entry || typeof entry !== 'object' || entry.role === undefined) continue;
+    if (entry.role === 'both' || roles.has(entry.role)) continue;
+    fail(
+      `${rel}/spec.md`,
+      `knownImplementations entry ${entry.url} has role '${entry.role}', which names none of ` +
+        `this specification's parties (${[...roles].map((r) => `'${r}'`).join(', ') || 'none declared'}) ` +
+        `and is not 'both'. Use a party's \`role\` exactly as \`parties\` spells it.`
+    );
+  }
+}
+
 function checkErrorCodeNamespaces(meta, rel) {
   const slug = meta.slug;
   if (typeof slug !== 'string') return;
@@ -2114,6 +2135,7 @@ function main() {
     checkErrorCodeNamespaces(meta, rel);
     errorCodeCasing.check(meta, rel);
     checkIdentifierScopeJustification(meta, body, rel);
+    checkKnownImplementationRoles(meta, rel);
     const idKey = `${meta.slug}@${meta.version}`;
     if (seen.has(idKey)) {
       fail(rel, `duplicate slug+version ${idKey}`);
