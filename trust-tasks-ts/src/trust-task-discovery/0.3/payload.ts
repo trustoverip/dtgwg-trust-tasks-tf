@@ -5,6 +5,8 @@
 
 /**
  * Request payload for the framework-defined trust-task-discovery exchange. Carries zero or more slug-glob patterns the discoverer wants the responder to filter against. The response payload schema is reachable via $anchor: 'response'.
+ *
+ * @deprecated superseded by trust-task-discovery/0.4
  */
 export interface TrustTaskDiscoveryPayload {
   /**
@@ -66,6 +68,8 @@ export interface TrustTaskDiscoveryPayload {
 }
 /**
  * List of bare Type URIs the responding party supports. Carried in a Trust Task document whose type is https://trusttasks.org/spec/trust-task-discovery/0.3#response. A response-level `acceptanceWindow` is the window the responder applies to every listed Type URI whose entry carries none of its own. Where neither is present for an entry, the discoverer has learnt nothing about that entry's window and MUST NOT read the absence as the absence of a window.
+ *
+ * @deprecated superseded by trust-task-discovery/0.4
  */
 export interface TrustTaskDiscoveryResponsePayload {
   /**
@@ -124,15 +128,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by trust-task-discovery/0.4";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by trust-task-discovery/0.4
+ */
 export type Payload = TrustTaskDiscoveryPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/trust-task-discovery/0.3#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by trust-task-discovery/0.4
+ */
 export type Response = TrustTaskDiscoveryResponsePayload;
 
 /**

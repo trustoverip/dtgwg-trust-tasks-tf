@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/boards/notes/add/0.1",
+  "title": "VTC Boards — Notes — Add — payload",
+  "description": "A member attaches a short note, under their own name, to a board or to one idea on it. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "boardId",
+    "text"
+  ],
+  "properties": {
+    "boardId": {
+      "$ref": "../../../_shared/0.1/board.schema.json#/$defs/BoardId"
+    },
+    "ideaId": {
+      "$ref": "../../../_shared/0.1/board.schema.json#/$defs/IdeaId"
+    },
+    "text": {
+      "$ref": "../../../_shared/0.1/board.schema.json#/$defs/NoteText"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Boards — Notes — Add — response payload",
+      "description": "The success response to a vtc/boards/notes/add/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/boards/notes/add/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "note"
+      ],
+      "properties": {
+        "note": {
+          "$ref": "../../../_shared/0.1/board.schema.json#/$defs/Note"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

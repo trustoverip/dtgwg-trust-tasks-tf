@@ -1,0 +1,271 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtn/_shared/0.1/directory.schema.json",
+  "title": "VTN — Directory",
+  "description": "The searchable view of a network's published set, and of its member networks' sets when searched federated (VTI-VTN-032, VTI-VTN-033).",
+  "$defs": {
+    "DirectoryEntry": {
+      "description": "One directory result.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "did",
+        "kind",
+        "state",
+        "acknowledged"
+      ],
+      "properties": {
+        "did": {
+          "$ref": "entry.schema.json#/$defs/Did"
+        },
+        "kind": {
+          "$ref": "entry.schema.json#/$defs/EntryKind"
+        },
+        "state": {
+          "$ref": "entry.schema.json#/$defs/EntryState"
+        },
+        "acknowledged": {
+          "type": "boolean",
+          "description": "Whether the party is a member. Every result states it (VTI-VTN-013)."
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 200,
+          "description": "The name shown."
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 2000,
+          "description": "What the party is."
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 2048,
+          "description": "The party's public address."
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "description": "Tags.",
+          "maxItems": 32
+        },
+        "listingId": {
+          "type": "string",
+          "maxLength": 2048,
+          "description": "The listing credential's `id`, to fetch it."
+        },
+        "grantId": {
+          "type": "string",
+          "maxLength": 2048,
+          "description": "The grant's `id`, once acknowledged."
+        }
+      }
+    },
+    "DirectorySummary": {
+      "description": "Counts over the published set.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "communities",
+        "networks",
+        "acknowledged",
+        "unacknowledged"
+      ],
+      "properties": {
+        "communities": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Published community entries."
+        },
+        "networks": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Published network entries."
+        },
+        "acknowledged": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Of those, members."
+        },
+        "unacknowledged": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Of those, listed but not members."
+        }
+      }
+    },
+    "PathHop": {
+      "description": "One step on the path from the searched network to the network that lists a result. Each hop states its own entry state: membership does not chain (VTI-VTN-033).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "network",
+        "state",
+        "acknowledged"
+      ],
+      "properties": {
+        "network": {
+          "$ref": "entry.schema.json#/$defs/Did",
+          "description": "A network on the path."
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 200,
+          "description": "Its name."
+        },
+        "state": {
+          "$ref": "entry.schema.json#/$defs/EntryState",
+          "description": "Its own entry's state at the network before it on the path."
+        },
+        "acknowledged": {
+          "type": "boolean",
+          "description": "Whether that entry is a membership."
+        }
+      }
+    },
+    "FederatedEntry": {
+      "description": "A result from a member network's set, with the network that lists it and the path to that network.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "did",
+        "kind",
+        "state",
+        "acknowledged",
+        "listedBy",
+        "path"
+      ],
+      "properties": {
+        "did": {
+          "$ref": "entry.schema.json#/$defs/Did"
+        },
+        "kind": {
+          "$ref": "entry.schema.json#/$defs/EntryKind"
+        },
+        "state": {
+          "$ref": "entry.schema.json#/$defs/EntryState"
+        },
+        "acknowledged": {
+          "type": "boolean",
+          "description": "Whether the party is a member. Every result states it (VTI-VTN-013)."
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 200,
+          "description": "The name shown."
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 2000,
+          "description": "What the party is."
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 2048,
+          "description": "The party's public address."
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "description": "Tags.",
+          "maxItems": 32
+        },
+        "listingId": {
+          "type": "string",
+          "maxLength": 2048,
+          "description": "The listing credential's `id`, to fetch it."
+        },
+        "grantId": {
+          "type": "string",
+          "maxLength": 2048,
+          "description": "The grant's `id`, once acknowledged."
+        },
+        "listedBy": {
+          "$ref": "entry.schema.json#/$defs/Did",
+          "description": "The network whose set the result is in."
+        },
+        "path": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PathHop"
+          },
+          "description": "From the searched network to `listedBy`, one hop per nesting."
+        }
+      }
+    },
+    "Unreachable": {
+      "description": "A member network whose set could not be read: its results are indeterminate, not absent (VTI-REG-012).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "network",
+        "path",
+        "reason"
+      ],
+      "properties": {
+        "network": {
+          "$ref": "entry.schema.json#/$defs/Did",
+          "description": "The member network that could not be searched."
+        },
+        "path": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PathHop"
+          },
+          "description": "How it was reached."
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 1000,
+          "description": "Why."
+        }
+      }
+    },
+    "DirectoryQuery": {
+      "description": "What a directory search asks for: shared by vtn/directory/search and vtn/directory/federated.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {
+        "q": {
+          "$ref": "#/$defs/SearchText"
+        },
+        "kind": {
+          "$ref": "entry.schema.json#/$defs/EntryKind",
+          "description": "Only entries of this kind."
+        },
+        "state": {
+          "$ref": "entry.schema.json#/$defs/EntryState",
+          "description": "Only entries in this state."
+        },
+        "membersOnly": {
+          "$ref": "#/$defs/MembersOnly"
+        },
+        "membership": {
+          "$ref": "entry.schema.json#/$defs/Membership",
+          "description": "A person's membership credential from a member community, holder-bound to the signer; admits the person to a `members` directory."
+        }
+      }
+    },
+    "SearchText": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "Free text. Every whitespace-separated term must match, case-insensitively, the entry's DID, label, description or a tag."
+    },
+    "MembersOnly": {
+      "type": "boolean",
+      "description": "Only members (`acknowledged: true`). Absent means false."
+    }
+  }
+}

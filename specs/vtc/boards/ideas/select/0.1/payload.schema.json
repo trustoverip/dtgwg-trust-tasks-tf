@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/boards/ideas/select/0.1",
+  "title": "VTC Boards — Ideas — Select — payload",
+  "description": "After an idea's election is tallied, a facilitator records whether it is selected, optionally placing it in a timetable slot, with the result the decision was made with. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "ideaId",
+    "decision"
+  ],
+  "properties": {
+    "ideaId": {
+      "$ref": "../../../_shared/0.1/board.schema.json#/$defs/IdeaId"
+    },
+    "decision": {
+      "type": "string",
+      "enum": [
+        "selected",
+        "notSelected"
+      ]
+    },
+    "slotId": {
+      "$ref": "../../../../../voting/_shared/0.4/voting.schema.json#/$defs/Key",
+      "description": "`selected` only: the timetable slot."
+    },
+    "departsFromRule": {
+      "type": "boolean"
+    },
+    "reason": {
+      "$ref": "../../../_shared/0.1/board.schema.json#/$defs/Reason"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Boards — Ideas — Select — response payload",
+      "description": "The success response to a vtc/boards/ideas/select/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/boards/ideas/select/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "idea"
+      ],
+      "properties": {
+        "idea": {
+          "$ref": "../../../_shared/0.1/board.schema.json#/$defs/Idea"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

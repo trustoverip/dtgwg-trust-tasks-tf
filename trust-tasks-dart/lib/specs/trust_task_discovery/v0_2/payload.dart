@@ -7,7 +7,7 @@ import 'package:trust_tasks/trust_tasks.dart';
 /// List of bare Type URIs the responding party supports. Carried in a Trust Task
 /// document whose type is
 /// https://trusttasks.org/spec/trust-task-discovery/0.2#response.
-@Deprecated('superseded by trust-task-discovery/0.3')
+@Deprecated('superseded by trust-task-discovery/0.4')
 class Response {
   const Response({
     required this.supportedTypes,
@@ -45,7 +45,7 @@ class Response {
 /// Request payload for the framework-defined trust-task-discovery exchange. Carries
 /// zero or more slug-glob patterns the discoverer wants the responder to filter
 /// against. The response payload schema is reachable via $anchor: 'response'.
-@Deprecated('superseded by trust-task-discovery/0.3')
+@Deprecated('superseded by trust-task-discovery/0.4')
 class Payload {
   const Payload({
     this.patterns,
@@ -81,7 +81,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by trust-task-discovery/0.3';
+const String? deprecation = 'superseded by trust-task-discovery/0.4';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/trust-task-discovery/0.2';

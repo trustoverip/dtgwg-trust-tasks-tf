@@ -1,0 +1,34 @@
+[
+  {
+    "note": "`includeExited` given as a string.",
+    "payload": {
+      "includeExited": "true"
+    }
+  },
+  {
+    "note": "An unknown member.",
+    "payload": {
+      "depth": 2
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `graph`.",
+    "payload": {}
+  },
+  {
+    "variant": "response",
+    "note": "A graph without edges.",
+    "payload": {
+      "graph": {
+        "nodes": [
+          {
+            "id": "did:example:whn",
+            "kind": "network",
+            "root": true
+          }
+        ]
+      }
+    }
+  }
+]

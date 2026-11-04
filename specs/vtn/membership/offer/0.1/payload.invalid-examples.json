@@ -1,0 +1,20 @@
+[
+  {
+    "note": "The request names a DID: a party may ask only for its own offer, which `issuer` already names.",
+    "payload": {
+      "did": "did:example:community"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `offer`.",
+    "payload": {}
+  },
+  {
+    "variant": "response",
+    "note": "An offer that is not a credential object.",
+    "payload": {
+      "offer": "urn:uuid:00000000-0000-4000-8000-0000000c0012"
+    }
+  }
+]

@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtn/_shared/0.1/graph.schema.json",
+  "title": "VTN — Trust graph",
+  "description": "A network's DTG graph: its parties as nodes and every credential between them as an edge, so the picture is the evidence (VTI-VTN-033).",
+  "$defs": {
+    "NodeKind": {
+      "type": "string",
+      "enum": [
+        "network",
+        "community"
+      ],
+      "description": "What a node is."
+    },
+    "EdgeRole": {
+      "type": "string",
+      "enum": [
+        "listing",
+        "grant",
+        "acknowledgement",
+        "repudiation"
+      ],
+      "description": "Which credential an edge is."
+    },
+    "EdgeStatus": {
+      "type": "string",
+      "enum": [
+        "valid",
+        "suspended",
+        "revoked",
+        "unchecked"
+      ],
+      "description": "The credential's status as far as this network can determine it. `unchecked` is a credential whose status list this network does not hold."
+    },
+    "Node": {
+      "description": "A party.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "root"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "entry.schema.json#/$defs/Did",
+          "description": "The party's DID."
+        },
+        "kind": {
+          "$ref": "#/$defs/NodeKind"
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 200,
+          "description": "Its name."
+        },
+        "state": {
+          "$ref": "entry.schema.json#/$defs/EntryState",
+          "description": "Its entry's state; absent for the root."
+        },
+        "root": {
+          "type": "boolean",
+          "description": "Whether this is the network whose graph it is."
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 2048,
+          "description": "Where a member network is reached, so a viewer can expand it."
+        }
+      }
+    },
+    "Edge": {
+      "description": "One credential, from issuer to subject. A membership is two edges: the grant and the acknowledgement.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "source",
+        "target",
+        "role",
+        "credType",
+        "status",
+        "credential"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 2048,
+          "description": "The credential's `id`."
+        },
+        "source": {
+          "$ref": "entry.schema.json#/$defs/Did",
+          "description": "The issuer."
+        },
+        "target": {
+          "$ref": "entry.schema.json#/$defs/Did",
+          "description": "The subject."
+        },
+        "role": {
+          "$ref": "#/$defs/EdgeRole"
+        },
+        "credType": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "The credential's DTG type, e.g. `MembershipCredential`."
+        },
+        "status": {
+          "$ref": "#/$defs/EdgeStatus"
+        },
+        "credential": {
+          "$ref": "entry.schema.json#/$defs/Credential",
+          "description": "The credential itself."
+        }
+      }
+    },
+    "Graph": {
+      "description": "The graph.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "nodes",
+        "edges"
+      ],
+      "properties": {
+        "nodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Node"
+          },
+          "description": "The parties."
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Edge"
+          },
+          "description": "The credentials."
+        }
+      }
+    }
+  }
+}

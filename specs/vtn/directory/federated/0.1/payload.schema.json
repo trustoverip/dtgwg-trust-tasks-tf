@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtn/directory/federated/0.1",
+  "title": "VTN Directory — Federated Search — payload",
+  "description": "A search of the network's published set and, through their signed indexes, its member networks' sets. The same query as vtn/directory/search; every member is optional. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [],
+  "properties": {
+    "q": {
+      "$ref": "../../../_shared/0.1/directory.schema.json#/$defs/SearchText"
+    },
+    "kind": {
+      "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/EntryKind",
+      "description": "Only entries of this kind."
+    },
+    "state": {
+      "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/EntryState",
+      "description": "Only entries in this state."
+    },
+    "membersOnly": {
+      "$ref": "../../../_shared/0.1/directory.schema.json#/$defs/MembersOnly"
+    },
+    "membership": {
+      "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/Membership",
+      "description": "A person's membership credential from a member community, holder-bound to the signer; admits the person to a `members` directory."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTN Directory — Federated Search — response payload",
+      "description": "The matches, each with the network that lists it and its path, and the member networks that could not be searched.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "determinedAt",
+        "results",
+        "unreachable"
+      ],
+      "properties": {
+        "determinedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the network assembled the answer."
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "../../../_shared/0.1/directory.schema.json#/$defs/FederatedEntry"
+          },
+          "description": "The matches, this network's own first (empty `path`), each stating its own state and whether it is a member of `listedBy`."
+        },
+        "unreachable": {
+          "type": "array",
+          "items": {
+            "$ref": "../../../_shared/0.1/directory.schema.json#/$defs/Unreachable"
+          },
+          "description": "Member networks whose sets could not be searched: indeterminate, not absent (VTI-REG-012)."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

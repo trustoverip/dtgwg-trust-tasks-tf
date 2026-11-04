@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/networks/deliver/0.1",
+  "title": "VTC Networks — Deliver — payload",
+  "description": "A network's delivery of a broadcast envelope to the community's group registered for one of the network's roles. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "role",
+    "envelope"
+  ],
+  "properties": {
+    "role": {
+      "type": "string",
+      "pattern": "^[a-z0-9_-]{1,64}$",
+      "description": "The network's role whose registered community group the delivery addresses."
+    },
+    "envelope": {
+      "$ref": "../../../../vtn/_shared/0.1/relay.schema.json#/$defs/Envelope"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Networks — Deliver — response payload",
+      "description": "Whether the community passed the message on. Deliberately carries no count of the group's members, so the network does not learn the group's size.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "delivered",
+            "duplicate"
+          ],
+          "description": "`delivered`: accepted and passed on to the group's members. `duplicate`: the community had delivered this message before; nothing was sent."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

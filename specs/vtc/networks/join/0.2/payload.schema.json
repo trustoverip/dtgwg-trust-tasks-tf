@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/networks/join/0.2",
+  "title": "VTC Networks — Join — payload",
+  "description": "Accept a network's listing of the community: register groups for the network's roles, then acknowledge its membership offer. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "url",
+    "network"
+  ],
+  "properties": {
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "maxLength": 2048,
+      "description": "The network's API base, as the network's administrators gave it."
+    },
+    "network": {
+      "type": "string",
+      "pattern": "^did:[a-z0-9]+:.+$",
+      "maxLength": 2048,
+      "description": "The network's DID. For a request naming a `url`, the community refuses if the network found there answers as another DID."
+    },
+    "groups": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "$ref": "../../../_shared/0.7/network-membership.schema.json#/$defs/RoleAssignment"
+      },
+      "description": "The community's groups to serve the network's roles. Every role the network requires must be assigned."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Networks — Join — response payload",
+      "description": "The membership as it now stands.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "membership"
+      ],
+      "properties": {
+        "membership": {
+          "$ref": "../../../_shared/0.7/network-membership.schema.json#/$defs/NetworkMembership"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

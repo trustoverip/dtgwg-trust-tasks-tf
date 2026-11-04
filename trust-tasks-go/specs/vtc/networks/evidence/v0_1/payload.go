@@ -26,6 +26,8 @@ type ResponseLinksItem struct {
 }
 
 // Response The chain links the caller may present, one per group and network.
+//
+// Deprecated: superseded by vtc/networks/evidence/0.2
 type Response struct {
 	Links []ResponseLinksItem `json:"links"`
 	Ext   *Ext                `json:"ext,omitempty"`
@@ -37,6 +39,8 @@ type Ext = map[string]json.RawMessage
 
 // Payload Ask for the credentials linking a group the caller belongs to up to a network.
 // The outer document members are owned by the framework — SPEC §6.3.
+//
+// Deprecated: superseded by vtc/networks/evidence/0.2
 type Payload struct {
 	// Only links for this group. Absent: every group the caller is an active member of.
 	GroupID *string `json:"groupId,omitempty"`
@@ -61,7 +65,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by vtc/networks/evidence/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/networks/evidence/0.1#response"

@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtn/broadcasts/send/0.1",
+  "title": "VTN Broadcasts — Send — payload",
+  "description": "An administrator's message for every group registered for a role. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "role",
+    "subject",
+    "body"
+  ],
+  "properties": {
+    "role": {
+      "$ref": "../../../_shared/0.1/groups.schema.json#/$defs/RoleName",
+      "description": "The role to address: delivered to every current member's group registered for it."
+    },
+    "class": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{0,62}$",
+      "description": "What kind of message it is, for the receiving group to sort on: `notice` (the default), `request-for-action`, `room-invite`, or another the network's framework names."
+    },
+    "subject": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "A one-line subject."
+    },
+    "body": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 20000,
+      "description": "The message text."
+    },
+    "replyTo": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "description": "Where replies go, such as a URL or DID for a network data room, so that a broadcast never becomes reply-all."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTN Broadcasts — Send — response payload",
+      "description": "The broadcast as recorded, with each group's receipt as it stands when the network answers. Queued deliveries are retried from the outbox and update the record later.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "broadcast"
+      ],
+      "properties": {
+        "broadcast": {
+          "$ref": "../../../_shared/0.1/relay.schema.json#/$defs/BroadcastRecord"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

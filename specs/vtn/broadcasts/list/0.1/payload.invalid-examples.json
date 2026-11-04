@@ -1,0 +1,19 @@
+[
+  {
+    "note": "A `limit` of zero.",
+    "payload": {
+      "limit": 0
+    }
+  },
+  {
+    "note": "A filter this task does not define.",
+    "payload": {
+      "role": "admins"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `broadcasts`.",
+    "payload": {}
+  }
+]

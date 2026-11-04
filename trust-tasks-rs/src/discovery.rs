@@ -1,14 +1,16 @@
 //! Helpers for the `trust-task-discovery` exchange.
 //!
 //! This module is the framework crate's companion to the registry specs at
-//! `specs/trust-task-discovery/`. **0.3** is the current version and the one
-//! [`DiscoveryRegistry::respond_to_v0_3`] answers: its response may carry the
-//! acceptance window the responder applies to `issuedAt` (SPEC §7.2 item 13),
-//! at the top level and per entry. A responder answers each version in the
-//! version it was asked, so the superseded 0.1 and 0.2 are still answered too
-//! — `DiscoveryRegistry::respond_to` and `DiscoveryRegistry::respond_to_v0_2`
-//! — until they are withdrawn; that support lives on its own in
-//! `discovery/superseded.rs`. The module supplies:
+//! `specs/trust-task-discovery/`. **0.4** is the current version and the one
+//! [`DiscoveryRegistry::respond_to_v0_4`] answers: its response may carry the
+//! acceptance window the responder applies (SPEC §7.2 items 4 and 13), at the
+//! top level and per entry — a maximum age over `issuedAt` for a document
+//! stating no `expiresAt`, and the horizon up to which it honours one that
+//! does. A responder answers each version in the version it was asked, so the
+//! superseded 0.1, 0.2 and 0.3 are still answered too —
+//! `DiscoveryRegistry::respond_to`, `DiscoveryRegistry::respond_to_v0_2` and
+//! `DiscoveryRegistry::respond_to_v0_3` — until they are withdrawn; that
+//! support lives on its own in `discovery/superseded.rs`. The module supplies:
 //!
 //! * [`match_slug`] / [`query_matches`] — the slug-glob matcher in
 //!   primitive form, useful when integrating discovery into an existing
@@ -20,7 +22,7 @@
 //! ```rust,ignore
 //! use trust_tasks_rs::{
 //!     discovery::DiscoveryRegistry,
-//!     specs::{acl::grant, acl::revoke, trust_task_discovery::v0_3 as discovery},
+//!     specs::{acl::grant, acl::revoke, trust_task_discovery::v0_4 as discovery},
 //!     FreshnessPolicy,
 //! };
 //!
@@ -28,7 +30,8 @@
 //! let registry = DiscoveryRegistry::new()
 //!     .with::<grant::v0_2::Payload>()
 //!     .with::<revoke::v0_2::Payload>()
-//!     // Advertise the window this responder enforces (300 s, 60 s skew).
+//!     // Advertise the window this responder enforces (300 s, 60 s skew, and
+//!     // a stated `expiresAt` honoured up to 30 days).
 //!     .acceptance_window_from(&policy);
 //!
 //! // Query received off the wire. Generated payload types are
@@ -37,7 +40,7 @@
 //!     .patterns(vec!["acl/*".parse::<discovery::PayloadPatternsItem>()?])
 //!     .try_into()?;
 //!
-//! let response = registry.respond_to_v0_3(&query);
+//! let response = registry.respond_to_v0_4(&query);
 //! // response.supported_types now lists the bare Type URIs of every
 //! // registered Payload whose slug matches one of the query patterns.
 //! ```
@@ -48,15 +51,15 @@ use std::num::NonZeroU64;
 
 use crate::freshness::FreshnessPolicy;
 use crate::payload::Payload;
-use crate::specs::trust_task_discovery::v0_3 as wire_v0_3;
+use crate::specs::trust_task_discovery::v0_4 as wire_v0_4;
 use crate::type_uri::TypeUri;
 
-// --- trust-task-discovery 0.1 / 0.2 (superseded) ----------------------------
-// The superseded versions 0.1 and 0.2, answered until they are withdrawn. The
+// --- trust-task-discovery 0.1 / 0.2 / 0.3 (superseded) ----------------------
+// The superseded versions 0.1, 0.2 and 0.3, answered until they are withdrawn. The
 // withdrawal batch deletes this block and `discovery/superseded.rs`, nothing
 // else in this file.
 mod superseded;
-// --- end trust-task-discovery 0.1 / 0.2 (superseded) ------------------------
+// --- end trust-task-discovery 0.1 / 0.2 / 0.3 (superseded) ------------------
 
 /// Framework release this registry advertises in its discovery responses by
 /// default: the newest one whose envelope this crate's generated types
@@ -118,31 +121,41 @@ pub fn query_matches<S: AsRef<str>>(patterns: &[S], slug: &str) -> bool {
     patterns.iter().any(|p| match_slug(p.as_ref(), slug))
 }
 
-/// The acceptance window a responder applies to `issuedAt`, in whole
-/// seconds — `trust-task-discovery/0.3`'s `acceptanceWindow`.
+/// The acceptance window a responder applies, in whole seconds —
+/// `trust-task-discovery/0.4`'s `acceptanceWindow`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct AcceptanceWindow {
     max_age_seconds: NonZeroU64,
     clock_skew_seconds: u64,
+    /// How far after `issuedAt` a stated `expiresAt` is honoured in place of
+    /// the maximum age. `None`: the maximum age applies to every document.
+    expiry_horizon_seconds: Option<NonZeroU64>,
 }
 
 impl AcceptanceWindow {
     /// The window `policy` enforces, rounded **down** to whole seconds so the
-    /// advertised window is never wider than the applied one (0.3 responder
-    /// rule 1). `None` when the policy bounds no age, or bounds it below one
-    /// second, which the wire form cannot state.
+    /// advertised window is never wider than the applied one (responder rule
+    /// 1). `None` when the policy bounds no age, or bounds it below one
+    /// second, which the wire form cannot state. The policy's
+    /// `expiry_horizon`, where it sets one, is the horizon: `validate_freshness`
+    /// honours a stated `expiresAt` up to it in place of the maximum age.
     fn of_policy(policy: &FreshnessPolicy) -> Option<Self> {
         let max_age_seconds = u64::try_from(policy.max_age?.num_seconds()).ok()?;
         Some(Self {
             max_age_seconds: NonZeroU64::new(max_age_seconds)?,
             clock_skew_seconds: u64::try_from(policy.skew.num_seconds()).unwrap_or(0),
+            expiry_horizon_seconds: policy
+                .expiry_horizon
+                .and_then(|h| u64::try_from(h.num_seconds()).ok())
+                .and_then(NonZeroU64::new),
         })
     }
 
-    fn to_wire(self) -> wire_v0_3::AcceptanceWindow {
-        wire_v0_3::AcceptanceWindow {
+    fn to_wire(self) -> wire_v0_4::AcceptanceWindow {
+        wire_v0_4::AcceptanceWindow {
             max_age_seconds: self.max_age_seconds,
             clock_skew_seconds: self.clock_skew_seconds,
+            expiry_horizon_seconds: self.expiry_horizon_seconds,
         }
     }
 }
@@ -173,10 +186,10 @@ pub struct DiscoveryRegistry {
     /// out). Defaults to the crate's target. Accepted two- or three-part; a
     /// two-part `M.N` is the release `M.N.0` (SPEC §5.1.1).
     framework_version: Option<String>,
-    /// The response-level `acceptanceWindow` of a 0.3 response. `None` (the
+    /// The response-level `acceptanceWindow` of a 0.4 (or 0.3) response. `None` (the
     /// default) states nothing.
     acceptance_window: Option<AcceptanceWindow>,
-    /// Per-URI `acceptanceWindow`s of a 0.3 response, each taking precedence
+    /// Per-URI `acceptanceWindow`s of a 0.4 (or 0.3) response, each taking precedence
     /// over the response-level one for its entry. URIs in this map MUST also
     /// appear in `type_uris`.
     entry_acceptance_windows: BTreeMap<String, AcceptanceWindow>,
@@ -211,14 +224,16 @@ impl DiscoveryRegistry {
         self
     }
 
-    /// Advertise, in a `trust-task-discovery/0.3` response, the acceptance
-    /// window this responder applies to the `issuedAt` of every listed Type
-    /// URI that carries no window of its own: it refuses a document when
-    /// `now > issuedAt + max_age_seconds + clock_skew_seconds`, and when
-    /// `issuedAt > now + clock_skew_seconds`.
+    /// Advertise, in a `trust-task-discovery/0.4` (or 0.3) response, the
+    /// acceptance window this responder applies to every listed Type URI that
+    /// carries no window of its own: it refuses a document stating no
+    /// `expiresAt` when `now > issuedAt + max_age_seconds + clock_skew_seconds`,
+    /// and any document when `issuedAt > now + clock_skew_seconds`. The window
+    /// states no expiry horizon, so it says the maximum age applies to every
+    /// document; [`Self::expiry_horizon`] adds one.
     ///
-    /// The window MUST be no wider than the one actually enforced (0.3
-    /// responder rule 1) — a wider claim makes producers deliver documents
+    /// The window MUST be no wider than the one actually enforced (responder
+    /// rule 1) — a wider claim makes producers deliver documents
     /// that are then refused. [`Self::acceptance_window_from`] derives it
     /// from the [`FreshnessPolicy`] the consumer applies, which keeps the two
     /// from drifting. Not stated by default; 0.1 and 0.2 responses never
@@ -231,13 +246,34 @@ impl DiscoveryRegistry {
         self.acceptance_window = Some(AcceptanceWindow {
             max_age_seconds,
             clock_skew_seconds,
+            expiry_horizon_seconds: None,
         });
         self
     }
 
+    /// Advertise, on the response-level window of a `trust-task-discovery/0.4`
+    /// response, the horizon up to which this responder honours a stated
+    /// `expiresAt` in place of the maximum age: a document stating one is
+    /// accepted until the earlier of it and `issuedAt + horizon_seconds`.
+    /// [`Self::acceptance_window_from`] reads it off a [`FreshnessPolicy`]'s
+    /// `expiry_horizon`.
+    ///
+    /// The same no-wider-than-enforced rule applies: a responder that applies
+    /// its maximum age whatever `expiresAt` a document states must not set
+    /// one. No effect without a response-level window. A 0.3 response cannot
+    /// carry it and states the window without it, narrower than the one
+    /// applied, which 0.3 permits.
+    pub fn expiry_horizon(mut self, horizon_seconds: NonZeroU64) -> Self {
+        if let Some(window) = self.acceptance_window.as_mut() {
+            window.expiry_horizon_seconds = Some(horizon_seconds);
+        }
+        self
+    }
+
     /// [`Self::acceptance_window`] read off the [`FreshnessPolicy`] this
-    /// responder enforces: `max_age` and `skew`, each rounded down to whole
-    /// seconds so the claim is never wider than the policy.
+    /// responder enforces: `max_age`, `skew` and `expiry_horizon`, each
+    /// rounded down to whole seconds so the claim is never wider than the
+    /// policy.
     ///
     /// A policy that bounds no age (`max_age: None`), or bounds it below one
     /// second, has no window the wire form can state, and leaves the registry
@@ -256,7 +292,8 @@ impl DiscoveryRegistry {
         self
     }
 
-    /// Advertise, on `uri`'s entry of a `trust-task-discovery/0.3` response,
+    /// Advertise, on `uri`'s entry of a `trust-task-discovery/0.4` (or 0.3)
+    /// response,
     /// an acceptance window that applies to documents of that Type URI in
     /// place of the response-level one — for a task the responder holds to a
     /// tighter window than the rest. The same no-wider-than-enforced rule as
@@ -278,6 +315,7 @@ impl DiscoveryRegistry {
             AcceptanceWindow {
                 max_age_seconds,
                 clock_skew_seconds,
+                expiry_horizon_seconds: None,
             },
         );
         self
@@ -366,22 +404,22 @@ impl DiscoveryRegistry {
         self.type_uris.iter().map(String::as_str).collect()
     }
 
-    /// Build a response to a `trust-task-discovery/0.3` `query`, listing
+    /// Build a response to a `trust-task-discovery/0.4` `query`, listing
     /// every registered Type URI whose slug matches at least one of the
     /// query's patterns. Absent or empty patterns produce the full list.
     ///
     /// A URI with no annotation is emitted in shorthand form
-    /// ([`wire_v0_3::ResponseSupportedTypesItem::Uri`]). One with a
+    /// ([`wire_v0_4::ResponseSupportedTypesItem::Uri`]). One with a
     /// `requiredExt` policy ([`Self::with_required_ext`]) or a window of its
     /// own ([`Self::with_acceptance_window_for`]) is emitted in expanded form
-    /// ([`wire_v0_3::ResponseSupportedTypesItem::Object`]) carrying them.
+    /// ([`wire_v0_4::ResponseSupportedTypesItem::Object`]) carrying them.
     /// `frameworkVersion` is the full three-part release (SPEC §5.1.1), and
     /// the response-level `acceptanceWindow` is present when one was
     /// configured ([`Self::acceptance_window`],
     /// [`Self::acceptance_window_from`]).
-    pub fn respond_to_v0_3(&self, query: &wire_v0_3::Payload) -> wire_v0_3::Response {
+    pub fn respond_to_v0_4(&self, query: &wire_v0_4::Payload) -> wire_v0_4::Response {
         let patterns: Vec<&str> = query.patterns.iter().map(|p| p.as_str()).collect();
-        let supported_types: Vec<wire_v0_3::ResponseSupportedTypesItem> = self
+        let supported_types: Vec<wire_v0_4::ResponseSupportedTypesItem> = self
             .matching(&patterns)
             .map(|uri| {
                 // Namespaces that don't match the reverse-DNS pattern are
@@ -401,9 +439,9 @@ impl DiscoveryRegistry {
                     .get(uri)
                     .map(|window| window.to_wire());
                 if required_ext.is_none() && acceptance_window.is_none() {
-                    wire_v0_3::ResponseSupportedTypesItem::Uri(uri.to_string())
+                    wire_v0_4::ResponseSupportedTypesItem::Uri(uri.to_string())
                 } else {
-                    wire_v0_3::ResponseSupportedTypesItem::Object {
+                    wire_v0_4::ResponseSupportedTypesItem::Object {
                         type_: uri.to_string(),
                         required_ext,
                         acceptance_window,
@@ -412,7 +450,7 @@ impl DiscoveryRegistry {
             })
             .collect();
 
-        wire_v0_3::Response {
+        wire_v0_4::Response {
             supported_types,
             framework_version: self
                 .three_part_framework_version()
@@ -488,18 +526,18 @@ mod tests {
         NonZeroU64::new(n).unwrap()
     }
 
-    fn everything() -> wire_v0_3::Payload {
-        wire_v0_3::Payload { patterns: vec![] }
+    fn everything() -> wire_v0_4::Payload {
+        wire_v0_4::Payload { patterns: vec![] }
     }
 
-    fn uri_of(entry: &wire_v0_3::ResponseSupportedTypesItem) -> &str {
+    fn uri_of(entry: &wire_v0_4::ResponseSupportedTypesItem) -> &str {
         match entry {
-            wire_v0_3::ResponseSupportedTypesItem::Uri(s) => s.as_str(),
-            wire_v0_3::ResponseSupportedTypesItem::Object { type_, .. } => type_.as_str(),
+            wire_v0_4::ResponseSupportedTypesItem::Uri(s) => s.as_str(),
+            wire_v0_4::ResponseSupportedTypesItem::Object { type_, .. } => type_.as_str(),
         }
     }
 
-    fn uris_in(response: &wire_v0_3::Response) -> Vec<&str> {
+    fn uris_in(response: &wire_v0_4::Response) -> Vec<&str> {
         response.supported_types.iter().map(uri_of).collect()
     }
 
@@ -584,39 +622,39 @@ mod tests {
             .with::<show::v0_2::Payload>()
             .with::<list::v0_3::Payload>()
             .with::<change_role::v0_2::Payload>()
-            .with::<wire_v0_3::Payload>();
+            .with::<wire_v0_4::Payload>();
 
         // ACL family — all 5 listed, discovery itself not.
-        let acl_only = wire_v0_3::Payload {
+        let acl_only = wire_v0_4::Payload {
             patterns: vec!["acl/*".parse().unwrap()],
         };
-        let response = registry.respond_to_v0_3(&acl_only);
+        let response = registry.respond_to_v0_4(&acl_only);
         assert_eq!(response.supported_types.len(), 5);
 
         // Exact match — only one.
-        let only_grant = wire_v0_3::Payload {
+        let only_grant = wire_v0_4::Payload {
             patterns: vec!["acl/grant".parse().unwrap()],
         };
-        let response = registry.respond_to_v0_3(&only_grant);
+        let response = registry.respond_to_v0_4(&only_grant);
         assert_eq!(
             uris_in(&response),
             vec!["https://trusttasks.org/spec/acl/grant/0.2"]
         );
 
         // Empty patterns → everything.
-        let response = registry.respond_to_v0_3(&everything());
+        let response = registry.respond_to_v0_4(&everything());
         assert_eq!(response.supported_types.len(), 6);
 
         // No match.
-        let nothing = wire_v0_3::Payload {
+        let nothing = wire_v0_4::Payload {
             patterns: vec!["does-not-exist/*".parse().unwrap()],
         };
-        let response = registry.respond_to_v0_3(&nothing);
+        let response = registry.respond_to_v0_4(&nothing);
         assert!(response.supported_types.is_empty());
 
         // frameworkVersion defaults to the framework release this crate
         // targets, three-part; no acceptance window unless configured.
-        let response = registry.respond_to_v0_3(&everything());
+        let response = registry.respond_to_v0_4(&everything());
         assert_eq!(
             response.framework_version.as_ref().map(|v| v.to_string()),
             Some("0.6.0".to_string())
@@ -627,14 +665,14 @@ mod tests {
     #[test]
     fn no_framework_version_suppresses_field() {
         let registry = DiscoveryRegistry::new().no_framework_version();
-        let response = registry.respond_to_v0_3(&everything());
+        let response = registry.respond_to_v0_4(&everything());
         assert!(response.framework_version.is_none());
     }
 
     #[test]
     fn a_patch_release_is_written_verbatim() {
         let registry = DiscoveryRegistry::new().framework_version("0.6.1");
-        let response = registry.respond_to_v0_3(&everything());
+        let response = registry.respond_to_v0_4(&everything());
         assert_eq!(
             response.framework_version.map(|v| v.to_string()),
             Some("0.6.1".into())
@@ -645,7 +683,7 @@ mod tests {
     fn a_two_part_override_is_written_as_its_dot_zero() {
         // SPEC §5.1.1: a two-part M.N is the release M.N.0.
         let registry = DiscoveryRegistry::new().framework_version("0.5");
-        let response = registry.respond_to_v0_3(&everything());
+        let response = registry.respond_to_v0_4(&everything());
         assert_eq!(
             response.framework_version.map(|v| v.to_string()),
             Some("0.5.0".into())
@@ -658,7 +696,7 @@ mod tests {
         // when the response is built (M6); the field is simply omitted.
         let registry = DiscoveryRegistry::new().framework_version("not-a-version");
         assert!(registry
-            .respond_to_v0_3(&everything())
+            .respond_to_v0_4(&everything())
             .framework_version
             .is_none());
     }
@@ -670,10 +708,10 @@ mod tests {
             .with_type_uri(TypeUri::canonical("acl/revoke", 0, 2).unwrap())
             .with_required_ext(grant_uri, ["vnd.affinidi.webvh"]);
 
-        let response = registry.respond_to_v0_3(&everything());
+        let response = registry.respond_to_v0_4(&everything());
 
         match &response.supported_types[0] {
-            wire_v0_3::ResponseSupportedTypesItem::Object {
+            wire_v0_4::ResponseSupportedTypesItem::Object {
                 type_,
                 required_ext,
                 acceptance_window,
@@ -693,7 +731,7 @@ mod tests {
         // acl/revoke had no annotation → shorthand string form.
         assert!(matches!(
             &response.supported_types[1],
-            wire_v0_3::ResponseSupportedTypesItem::Uri(uri)
+            wire_v0_4::ResponseSupportedTypesItem::Uri(uri)
                 if uri == "https://trusttasks.org/spec/acl/revoke/0.2"
         ));
     }
@@ -706,10 +744,10 @@ mod tests {
             TypeUri::canonical("acl/grant", 0, 2).unwrap(),
             ["Not A Namespace"],
         );
-        let response = registry.respond_to_v0_3(&everything());
+        let response = registry.respond_to_v0_4(&everything());
         assert!(matches!(
             &response.supported_types[0],
-            wire_v0_3::ResponseSupportedTypesItem::Uri(_)
+            wire_v0_4::ResponseSupportedTypesItem::Uri(_)
         ));
     }
 
@@ -718,19 +756,19 @@ mod tests {
         let registry = DiscoveryRegistry::new()
             .with_type_uri(TypeUri::canonical("acl/list", 0, 3).unwrap())
             .acceptance_window(nz(600), 60);
-        let response = registry.respond_to_v0_3(&everything());
+        let response = registry.respond_to_v0_4(&everything());
         let window = response.acceptance_window.expect("window stated");
         assert_eq!(window.max_age_seconds.get(), 600);
         assert_eq!(window.clock_skew_seconds, 60);
         // An entry with no window of its own stays shorthand.
         assert!(matches!(
             &response.supported_types[0],
-            wire_v0_3::ResponseSupportedTypesItem::Uri(_)
+            wire_v0_4::ResponseSupportedTypesItem::Uri(_)
         ));
 
         let cleared = registry.no_acceptance_window();
         assert!(cleared
-            .respond_to_v0_3(&everything())
+            .respond_to_v0_4(&everything())
             .acceptance_window
             .is_none());
     }
@@ -747,7 +785,7 @@ mod tests {
                 nz(120),
                 30,
             );
-        let response = registry.respond_to_v0_3(&everything());
+        let response = registry.respond_to_v0_4(&everything());
 
         let window = response.acceptance_window.as_ref().unwrap();
         assert_eq!(
@@ -755,7 +793,7 @@ mod tests {
             (600, 60)
         );
         match &response.supported_types[0] {
-            wire_v0_3::ResponseSupportedTypesItem::Object {
+            wire_v0_4::ResponseSupportedTypesItem::Object {
                 type_,
                 acceptance_window: Some(window),
                 required_ext: None,
@@ -783,7 +821,7 @@ mod tests {
         let registry =
             DiscoveryRegistry::new().acceptance_window_from(&FreshnessPolicy::consequential());
         let window = registry
-            .respond_to_v0_3(&everything())
+            .respond_to_v0_4(&everything())
             .acceptance_window
             .expect("a bounded policy has a window");
         assert_eq!(
@@ -797,7 +835,7 @@ mod tests {
             .with_skew(chrono::TimeDelta::milliseconds(1_999));
         let window = DiscoveryRegistry::new()
             .acceptance_window_from(&policy)
-            .respond_to_v0_3(&everything())
+            .respond_to_v0_4(&everything())
             .acceptance_window
             .unwrap();
         assert_eq!(
@@ -806,13 +844,66 @@ mod tests {
         );
     }
 
+    /// 0.4: a policy that honours a stated `expiresAt` up to a horizon
+    /// (`consequential()` sets thirty days) advertises it, so a producer can
+    /// keep a long delivery acceptable by stating an expiry instead of issuing
+    /// a chain of new attempts. A window set by hand states none until
+    /// [`DiscoveryRegistry::expiry_horizon`] adds it.
+    #[test]
+    fn the_expiry_horizon_is_advertised_from_the_policy() {
+        let window = DiscoveryRegistry::new()
+            .acceptance_window_from(&FreshnessPolicy::consequential())
+            .respond_to_v0_4(&everything())
+            .acceptance_window
+            .expect("a bounded policy has a window");
+        assert_eq!(
+            window.expiry_horizon_seconds.map(NonZeroU64::get),
+            Some(30 * 24 * 3600)
+        );
+
+        let by_hand = DiscoveryRegistry::new().acceptance_window(nz(600), 60);
+        assert!(by_hand
+            .respond_to_v0_4(&everything())
+            .acceptance_window
+            .expect("window")
+            .expiry_horizon_seconds
+            .is_none());
+        let with = by_hand.expiry_horizon(nz(86_400));
+        assert_eq!(
+            with.respond_to_v0_4(&everything())
+                .acceptance_window
+                .expect("window")
+                .expiry_horizon_seconds,
+            Some(nz(86_400))
+        );
+    }
+
+    /// A 0.3 response cannot carry the horizon, so it states the window
+    /// without it — narrower than the one applied, which 0.3 permits — and the
+    /// rest of the window unchanged.
+    #[test]
+    fn a_0_3_response_states_the_window_without_the_horizon() {
+        use crate::specs::trust_task_discovery::v0_3 as wire_v0_3;
+        let window = DiscoveryRegistry::new()
+            .acceptance_window_from(&FreshnessPolicy::consequential())
+            .respond_to_v0_3(&wire_v0_3::Payload { patterns: vec![] })
+            .acceptance_window
+            .expect("a bounded policy has a window");
+        assert_eq!(
+            (window.max_age_seconds.get(), window.clock_skew_seconds),
+            (300, 60)
+        );
+        let json = serde_json::to_value(&window).unwrap();
+        assert!(json.get("expiryHorizonSeconds").is_none());
+    }
+
     #[test]
     fn a_policy_with_no_age_bound_states_no_window() {
         // `FreshnessPolicy::default()` bounds no age: there is no window to
         // state, and absence is what tells a discoverer so.
         let registry = DiscoveryRegistry::new().acceptance_window_from(&FreshnessPolicy::default());
         assert!(registry
-            .respond_to_v0_3(&everything())
+            .respond_to_v0_4(&everything())
             .acceptance_window
             .is_none());
 
@@ -820,16 +911,16 @@ mod tests {
         let policy = FreshnessPolicy::default().with_max_age(chrono::TimeDelta::milliseconds(500));
         assert!(DiscoveryRegistry::new()
             .acceptance_window_from(&policy)
-            .respond_to_v0_3(&everything())
+            .respond_to_v0_4(&everything())
             .acceptance_window
             .is_none());
     }
 
     /// Every response shape the registry can build validates against the
-    /// `$anchor: "response"` schema of `trust-task-discovery/0.3`.
+    /// `$anchor: "response"` schema of `trust-task-discovery/0.4`.
     #[cfg(feature = "validate")]
     #[test]
-    fn every_0_3_response_shape_validates_against_the_schema() {
+    fn every_0_4_response_shape_validates_against_the_schema() {
         use crate::validate::ValidatedPayload;
         let registries = [
             DiscoveryRegistry::new(),
@@ -848,9 +939,9 @@ mod tests {
                 ),
         ];
         for registry in registries {
-            let response = registry.respond_to_v0_3(&everything());
+            let response = registry.respond_to_v0_4(&everything());
             let value = serde_json::to_value(&response).unwrap();
-            wire_v0_3::Response::validate_value(&value)
+            wire_v0_4::Response::validate_value(&value)
                 .unwrap_or_else(|e| panic!("{value} does not validate: {:?}", e.messages()));
         }
     }

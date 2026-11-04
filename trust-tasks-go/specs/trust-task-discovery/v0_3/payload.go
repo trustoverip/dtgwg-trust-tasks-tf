@@ -30,6 +30,8 @@ type AcceptanceWindow struct {
 // Type URI whose entry carries none of its own. Where neither is present for an entry,
 // the discoverer has learnt nothing about that entry's window and MUST NOT read the
 // absence as the absence of a window.
+//
+// Deprecated: superseded by trust-task-discovery/0.4
 type Response struct {
 	// Each entry's Type URI MUST match at least one of the request's patterns (if any were
 	// supplied). Order is not significant. Duplicates by Type URI are not permitted,
@@ -50,6 +52,8 @@ type Response struct {
 // Payload Request payload for the framework-defined trust-task-discovery exchange.
 // Carries zero or more slug-glob patterns the discoverer wants the responder to filter
 // against. The response payload schema is reachable via $anchor: 'response'.
+//
+// Deprecated: superseded by trust-task-discovery/0.4
 type Payload struct {
 	// Patterns are ORed: a slug matches the query if at least one pattern matches it. If the
 	// array is omitted or empty, the responder MUST treat the query as ['*'] — return every
@@ -75,7 +79,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by trust-task-discovery/0.4"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/trust-task-discovery/0.3#response"

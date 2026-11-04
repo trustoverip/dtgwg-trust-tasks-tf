@@ -11,6 +11,230 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.10.13 — 2026-11-04
+
+
+### Added
+
+- **trust-task-discovery**: Publish 0.4, a responder advertises the horizon up to which it honours a stated expiresAt (#1030)
+
+SPEC §7.2 (Bounding the record) applies a consumer's maximum age only where a
+  document states no expiresAt, and since trust-tasks-rs 0.37 (#1021)
+  validate_freshness does so, honouring a stated expiry up to the policy's
+  expiry_horizon. discovery 0.3 cannot describe that: its window "governs
+  issuedAt only" and its responder refuses any document past
+  issuedAt + maxAgeSeconds + clockSkewSeconds, whatever expiresAt it states. A
+  responder that honours an expiry could only advertise a narrower window than
+  it applies, and a producer could not learn that stating an expiry keeps a long
+  delivery acceptable.
+
+  - specs/trust-task-discovery/0.4: acceptanceWindow gains an optional
+    expiryHorizonSeconds (whole seconds, at least 1), and the spec defines a
+    document's acceptance end: issuedAt + maxAgeSeconds without an expiresAt;
+    the earlier of expiresAt and issuedAt + expiryHorizonSeconds with one; and,
+    where the window carries no horizon, the earlier of expiresAt and
+    issuedAt + maxAgeSeconds, which is what a 0.3 window says.
+    - Responder: MUST NOT advertise a horizon wider than it applies, nor one at
+      all if it applies its maximum age whatever expiresAt states.
+    - Discoverer: send bounds follow the acceptance end. MAY state an expiresAt
+      within the horizon, no later than it will pursue delivery, instead of
+      issuing a chain of new attempts; a new attempt carries it unchanged.
+      Absent a horizon, it MUST assume the maximum age applies to every
+      document.
+    - AcceptanceWindow is closed in 0.3, so an added optional member is a MINOR
+      increment (§5.2): a new version, not an edit.
+    - Response-side invalid examples: a zero horizon, a duration string, and a
+      fractional entry-level horizon.
+  - trust-tasks-rs: DiscoveryRegistry::respond_to_v0_4 is the current answer.
+    acceptance_window_from reads the policy's expiry_horizon, and
+    expiry_horizon() sets one by hand. respond_to_v0_3 moves to
+    discovery/superseded.rs and states the window without the horizon (narrower
+    than applied, which 0.3 permits).
+  - trust-tasks-https: enable_discovery answers 0.4, and 0.3 beside 0.2 and 0.1.
+  - trust-tasks-dart-https: enableDiscovery answers 0.4. Dart's FreshnessPolicy
+    has no horizon, so its window states none, which says the maximum age
+    applies to every document. 0.3 moves to the superseded block.
+  - Examples and tests that named the 0.3 types use 0.4.
+  - Bindings regenerated (Rust, TS, Go, Dart). 0.3 is superseded.
+
+  Follows from #1021 and trustoverip/dtgwg-vti-spec#96 (VTI-OPS-024,
+  VTI-OPS-028, VTI-TRN-048), whose implementation in
+  OpenVTC/verifiable-trust-infrastructure states delivery deadlines as expiresAt.
+
+
+
+### Specifications
+
+- **process-attestation**: Label WritersProof as the Holder, and check that an implementation's role names a party (#1029)
+
+Follow-up to #994 and #997.
+
+  - process-attestation/0.1 lists WritersProof in the { url, role, name } form
+    #997 added, so the spec page shows which party it plays.
+  - The outcome-evidence rule says "a relying party MUST NOT", not "a consumer":
+    the rule binds whoever relies on the citing artifact, and "consumer" means a
+    document's recipient (SPEC §7.2).
+  - build-registry fails a knownImplementations role that names none of the
+    specification's parties and is not "both". The meta-schema can only bound it
+    as a string, and a typo would put an undefined party on the page.
+
+- **process-attestation**: Declare outcome evidence, bind receipts by digest, add the CPoE profile (#994)
+
+* spec(process-attestation): declare outcome evidence, bind receipts by digest, add the CPoE profile
+
+
+
+### Website
+
+- Show a task's outcome evidence and size bound, and which party an implementation plays (#997)
+
+* site: show a task's outcome evidence and size bound, and which party an implementation plays
+
+## 0.10.12 — 2026-11-04
+
+
+### Added
+
+- **vtc/boards**: Community boards — propose ideas, leave notes, vote on each accepted idea through its own election (vtc/boards/*/0.1) (#1025)
+
+Thirteen tasks implementing the VTI Community Boards chapter (VTI-BRD-001 – VTI-BRD-080): create, update, list and show a board; propose, update, withdraw, decide (accept opens an election from the board's template) and select ideas; add, list, withdraw and hide notes. A board never reports tickets or ballots (VTI-BRD-033); the shared ElectionTemplate is a manifest less the members the community fills in per idea, and is never binding.
+
+## 0.10.11 — 2026-11-04
+
+
+### Added
+
+- **vta/collection**: Claim, release and list who collects a persona DID's messages at the mediator (#1023)
+
+Implements dtgwg-vti-spec's collection for the principal's identifiers
+  (VTI-NTF-080 – VTI-NTF-092).
+
+  A VTA collects, at the mediator each DID document advertises, the messages
+  for every identifier whose messaging keys it holds in one of the principal's
+  trust contexts — its personas — unless a client has claimed it. The mediator
+  permits one connection per DID, so at most one party collects at a time.
+
+  New tasks (family vta/collection, category messaging):
+
+  - vta/collection/claim/0.1 — a client becomes an identifier's one collector
+    until a stated end (a lease, at most thirty days), or renews its claim. The
+    VTA stops collecting and closes its connection before it grants; the client
+    connects only after the grant and closes before the end unless renewed.
+    notCollectable, claimHeld, claimNotRenewable. Retry class 2.
+  - vta/collection/release/0.1 — the claimant ends its claim at once, having
+    stopped collecting; any other party with standing makes it unrenewable,
+    and it still ends at its end. notCollectable. Retry class 2.
+  - vta/collection/list/0.1 — who collects for each identifier of a context:
+    the VTA, a claimant (with the end and whether renewable), or nobody, with
+    the reason (limit, conflict).
+
+
+
+### Specifications
+
+- **vta/collection**: Category notifications, a disabled reason, and the 24-hour lease (#1024)
+
+Follows dtgwg-vti-spec#97's VTI-NTF-093 and lease recommendation.
+
+  - Category messaging -> notifications for claim, release and list.
+  - NotCollectedReason gains `disabled` (appended): the operator has not
+    enabled collection by default (VTI-NTF-093). Claims are still granted,
+    renewed, released and listed while it is off; notCollectable and list
+    scope now refer to the identifiers VTI-NTF-080 names whether or not it is
+    enabled, and a claimant's release resumes collection only where enabled.
+  - Claim: a producer SHOULD request 86400 seconds and renew at half the
+    period granted; the VTA's stated maximum SHOULD NOT exceed thirty days.
+
+  Rust, TS, Go and Dart bindings regenerated.
+
+## 0.10.10 — 2026-11-03
+
+
+### Added
+
+- **vtn**: The Verifiable Trust Network's own Trust Tasks (vtn/*/0.1) (#1020)
+
+A Verifiable Trust Network curates communities and networks into a
+  nestable published set (VTI-VTN-001 - 063). Its API was interim REST;
+  these are its Trust Tasks:
+
+  - a listed party toward the network: entries/show, membership/{offer,
+    acknowledge,repudiate}, groups/register, relay/deliver, roles/list,
+    rooms/{list,pass}
+  - reading the published set: directory/{search,federated,summary},
+    graph/{show,member}
+  - administration: listings/{create,update,suspend,reinstate,remove,list,
+    show}, audit/list, groups/list, broadcasts/{send,list,show},
+    outbox/{list,retry}
+  - the network as a member of a parent: memberships/{list,join,repudiate,
+    leave,groups/add}
+  - vtn/_shared/0.1: entry, directory, graph, groups, relay, membership and
+    rooms shapes
+
+  Trust Tasks are the API; DTG credentials remain the evidence: lists/1,
+  the VMC pair, repudiates/1, and a revocable groupRegistered acceptance
+  binding the signed vtn/groups/register request by digest. Browser
+  sign-in reuses auth/oob/* and auth/signing-key/*. Short lifetimes for
+  anything not revocable: room passes at most 24 hours, broadcasts at
+  most 7 days.
+
+- **vetting**: Recover or reset a hidden-vetting key (vtc/vetting/vetters/pcs-binding/{show,reset}/0.1, vta/pcs/vetter/recover/0.1) (#1018)
+
+* feat(vtc,vta): recover or reset a hidden-vetting key — vtc/vetting/vetters/pcs-binding/{show,reset}/0.1 and vta/pcs/vetter/recover/0.1
+
+  A community binds each vetter to one PCS identifier for good, so a vetter
+  whose VTA engine lost track of its key was locked out of hidden vetting
+  for as long as they stayed a member; revoking and re-granting the vetter
+  role does not touch the binding.
+
+  - vtc/vetting/vetters/pcs-binding/show/0.1: a member reads their own
+    binding, and the state of any reset.
+  - vta/pcs/vetter/recover/0.1: the VTA searches the keys it can derive for
+    the context and restores the bound one, while the engine's current key
+    holds nothing a community issued.
+  - vtc/vetting/vetters/pcs-binding/reset/0.1: an administrator resets the
+    binding when the key is gone. A new identifier is bound only once no
+    label the old one enrolled under is live, and a retired label never
+    comes back, so the member is never counted twice.
+
+  pcs-root/0.1 and the vta/pcs conventions point at the new tasks.
+
+- **notifications**: Deposit to the VTA, the community's received notifications, and four fixes (#1017)
+
+Follow-up to #1012, implementing dtgwg-vti-spec's Notifications follow-up
+  (VTI-NTF-006, 025, 034, 047, 054 – 056, 070 – 074).
+
+  New tasks:
+
+  - vta/notifications/deposit/0.1 — a client that receives a notify or relay
+    for a DID whose keys its VTA holds (a persona DID whose mediator socket the
+    client holds) hands the document to the VTA exactly as received. The VTA
+    verifies it exactly as a direct delivery, counts for acceptance the party
+    that delivered the document and never the depositing client, keeps one
+    record per originator and notificationId, and answers with the same
+    receipt whatever it did. Gated by standing in the context; retry class 2;
+    notAddressedHere, documentInvalid.
+  - vtc/notifications/list/0.1, show/0.1 — a community's administrators read
+    the notifications addressed to the community (vtc.notifications.read).
+  - vtc/notifications/relay/0.1 — an administrator's decision to relay one to
+    all members, one group's or one role's (vtc.notifications.relay, qualified
+    by group), refused until the disclosure is acknowledged; never to the
+    community itself, the originator or any earlier relayer; later revisions
+    follow without a further decision. destructive; retry class 2.
+
+  Fixes to notifications/notify/0.1 and notifications/relay/0.1, prose only
+  (no schema, error code or proof requirement changes):
+
+  - relay producer item 2 now agrees with consumer item 2: a relayer may relay
+    only where its relay makes at most four relays in all.
+  - notification and relay proofs carry proofPurpose authentication with the
+    operational key (VTI-KEY-081/082); examples updated from assertionMethod.
+    VTI-KEY-107 applies to the relay received, not to forwarded layers.
+  - a withdrawal keeps the period of the revision it replaces.
+  - the originator re-checks VTI-NTF-005 for every revision it issues, except
+    a withdrawal; election withdrawal covers an early close.
+  - a relayer never relays to the originator or an earlier relayer.
+
 ## 0.10.9 — 2026-11-03
 
 

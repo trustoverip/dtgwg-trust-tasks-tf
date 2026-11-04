@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/boards/update/0.1",
+  "title": "VTC Boards — Update — payload",
+  "description": "A facilitator changes a board's title, description, topics, formats, timetable or selection rule, closes or archives it, or — before voting opens — its schedule; changing its election template takes an elections manager. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "boardId"
+  ],
+  "properties": {
+    "boardId": {
+      "$ref": "../../_shared/0.1/board.schema.json#/$defs/BoardId"
+    },
+    "title": {
+      "$ref": "../../_shared/0.1/board.schema.json#/$defs/BoardTitle"
+    },
+    "description": {
+      "$ref": "../../_shared/0.1/board.schema.json#/$defs/BoardDescription"
+    },
+    "audience": {
+      "$ref": "../../_shared/0.1/board.schema.json#/$defs/BoardAudience"
+    },
+    "proposals": {
+      "$ref": "../../_shared/0.1/board.schema.json#/$defs/Window"
+    },
+    "voting": {
+      "$ref": "../../_shared/0.1/board.schema.json#/$defs/Window"
+    },
+    "topics": {
+      "type": "array",
+      "maxItems": 32,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "../../_shared/0.1/board.schema.json#/$defs/Topic"
+      }
+    },
+    "formats": {
+      "type": "array",
+      "maxItems": 16,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "../../_shared/0.1/board.schema.json#/$defs/IdeaFormat"
+      }
+    },
+    "maxIdeasPerMember": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "selectionRule": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "timetable": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "$ref": "../../_shared/0.1/board.schema.json#/$defs/Slot"
+      }
+    },
+    "template": {
+      "$ref": "../../_shared/0.1/board.schema.json#/$defs/ElectionTemplate"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "closed",
+        "archived"
+      ],
+      "description": "Move the board forward; it never moves back."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Boards — Update — response payload",
+      "description": "The success response to a vtc/boards/update/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/boards/update/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "board"
+      ],
+      "properties": {
+        "board": {
+          "$ref": "../../_shared/0.1/board.schema.json#/$defs/Board"
+        },
+        "closing": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "closedEarly",
+            "cancelled",
+            "runningToClose"
+          ],
+          "description": "Present when this update closed the board: how its voting was ended (VTI-BRD-006). Counts the requests made; the ballot box answers them after this response.",
+          "properties": {
+            "closedEarly": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Elections open for voting that were closed early; each is counted as it stood, and the count is final."
+            },
+            "cancelled": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Elections not yet open for voting, or not yet registered, that were cancelled; their ideas are not selected."
+            },
+            "runningToClose": {
+              "type": "array",
+              "items": {
+                "$ref": "../../_shared/0.1/board.schema.json#/$defs/IdeaId"
+              },
+              "uniqueItems": true,
+              "description": "Ideas whose election does not allow closing early and closes when its manifest says."
+            }
+          }
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

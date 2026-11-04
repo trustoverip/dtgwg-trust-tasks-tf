@@ -199,6 +199,21 @@ if (gComponents.size === 0) fail("_shared/components.ts: not generated, or decla
 // generated name → prebuilt name, for the historical names (see the header).
 const renames = new Map();
 const renameReasons = [];
+// A renamed definition may name another renamed one (`NetworkMembership_VtcV0_6`
+// holds `RegisteredGroup_VtcV0_6[]`), so the candidates are found first and each
+// declaration is compared with every candidate's name restored, not only its own.
+const candidates = new Map();
+for (const [gName] of gComponents) {
+  if (pComponents.has(gName)) continue;
+  const m = /^(.+?)_([A-Z][A-Za-z0-9]*V\d+_\d+)$/.exec(gName);
+  const bare = m?.[1];
+  if (bare && pComponents.has(bare) && !gComponents.has(bare) && lockedNames.has(bare)) candidates.set(gName, bare);
+}
+const restoreCandidates = (text) => {
+  let t = text;
+  for (const [gName, pName] of candidates) t = t.replace(new RegExp(`\\b${gName}\\b`, "g"), pName);
+  return t;
+};
 for (const [gName, gBlock] of gComponents) {
   if (pComponents.has(gName)) continue;
   const m = /^(.+?)_([A-Z][A-Za-z0-9]*V\d+_\d+)$/.exec(gName);
@@ -206,11 +221,9 @@ for (const [gName, gBlock] of gComponents) {
   const qualifiedSiblings = bare ? [...lockedNames].filter((n) => n.startsWith(`${bare}_`)) : [];
   if (
     bare &&
-    pComponents.has(bare) &&
-    !gComponents.has(bare) &&
-    lockedNames.has(bare) &&
+    candidates.get(gName) === bare &&
     qualifiedSiblings.length > 0 &&
-    pComponents.get(bare) === gBlock.replace(new RegExp(`\\b${gName}\\b`, "g"), bare)
+    pComponents.get(bare) === restoreCandidates(gBlock)
   ) {
     renames.set(gName, bare);
     renameReasons.push(`${gName} is the prebuilt ${bare}: locked bare in component-names.lock.json, beside ${qualifiedSiblings.join(", ")}`);

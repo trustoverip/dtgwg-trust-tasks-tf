@@ -161,6 +161,31 @@ const (
 	FileManifestPaddingPadme FileManifestPadding = "padme"
 )
 
+// FileManifestPreviewMediaType The preview's own media type. Raster types only.
+type FileManifestPreviewMediaType string
+
+// Values FileManifestPreviewMediaType may take, per this specification's schema.
+const (
+	FileManifestPreviewMediaTypeImageJpeg FileManifestPreviewMediaType = "image/jpeg"
+	FileManifestPreviewMediaTypeImagePng  FileManifestPreviewMediaType = "image/png"
+	FileManifestPreviewMediaTypeImageWebp FileManifestPreviewMediaType = "image/webp"
+)
+
+// FileManifestPreview A small image standing in for the file until it is fetched: at most
+// 8192 bytes before encoding, enough for a blurred thumbnail and small enough not to
+// swell the record every listing reader opens. A reader renders it only as a raster image
+// it decodes itself — never as SVG or any other type that can carry active content, never
+// as a link, never fetching anything — and replaces it with the file once fetched. It is
+// the uploader's rendering of the file, not a digest of it: a reader MUST NOT present it
+// as the file's contents.
+type FileManifestPreview struct {
+	// The preview's own media type. Raster types only.
+	MediaType FileManifestPreviewMediaType `json:"mediaType"`
+
+	// The preview's bytes, base64url without padding: at most 8192 bytes decoded.
+	Data string `json:"data"`
+}
+
 // FileManifest Everything that describes a file. On an `attributed` or `private` room it
 // is the `file` member of the sealed record body: sealed with the record, signed by the
 // record's author, and never seen by the host. On an `open` room it is the `file` member
@@ -214,7 +239,17 @@ const (
 // present it with a warning instead. A reader that streams **MUST NOT** treat the
 // plaintext as received — save it under its final name, render it, or hand it to another
 // component — until the digest has verified; it writes to a temporary destination and
-// discards that destination on a mismatch.
+// discards that destination on a mismatch. **An image's size and preview.** `width`,
+// `height` and `preview` are OPTIONAL and advisory: they let a reader lay out an image,
+// and show something, before it fetches and decrypts the blob. A reader that fetches the
+// file checks them against the bytes — the decoded image's dimensions, and that the file
+// is an image at all — and on a mismatch uses the bytes and discards them; it MUST NOT
+// treat any of them as evidence about the file. On `attributed` and `private` rooms they
+// are inside the sealed, signed body like the rest of the manifest, so the host learns
+// nothing from them; on an `open` room they are in the clear, as everything there is, and
+// a writer carries them only with `rooms/records/put/0.5` or later. A writer uses them
+// only once the room's profile lists them in `recordMembers` (`RoomProfile`), as with the
+// other members a reader that predates them refuses.
 type FileManifest struct {
 	// 32 random bytes, base64url without padding, minted by the uploader for this file and
 	// never reused. The salt of the file key.
@@ -261,6 +296,25 @@ type FileManifest struct {
 	// cryptographically secure random source for this one file and never reused. MUST be
 	// absent on `attributed` and `private` rooms, where the key is derived and never stored.
 	FileKey *string `json:"fileKey,omitempty"`
+
+	// The image's width in pixels, as the uploader read it. Advisory. A writer sets `width`
+	// and `height` together or neither; a reader ignores one without the other. A reader
+	// checks it against the decoded image.
+	Width *int64 `json:"width,omitempty"`
+
+	// The image's height in pixels, as the uploader read it. Advisory. A writer sets `width`
+	// and `height` together or neither; a reader ignores one without the other. A reader
+	// checks it against the decoded image.
+	Height *int64 `json:"height,omitempty"`
+
+	// A small image standing in for the file until it is fetched: at most 8192 bytes before
+	// encoding, enough for a blurred thumbnail and small enough not to swell the record every
+	// listing reader opens. A reader renders it only as a raster image it decodes itself —
+	// never as SVG or any other type that can carry active content, never as a link, never
+	// fetching anything — and replaces it with the file once fetched. It is the uploader's
+	// rendering of the file, not a digest of it: a reader MUST NOT present it as the file's
+	// contents.
+	Preview *FileManifestPreview `json:"preview,omitempty"`
 }
 
 // TransferMode How a blob's bytes move. `proxied`: through the host, as chunk documents

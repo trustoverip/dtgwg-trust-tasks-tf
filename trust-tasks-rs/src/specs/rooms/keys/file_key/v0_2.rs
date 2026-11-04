@@ -548,7 +548,7 @@ pub const ERROR_CODES: &[crate::DeclaredErrorCode] =
 pub mod error_codes {
     /// `rooms/keys/file-key:noGroup`
     ///
-    /// The oracle holds no group for this room: its principal is not a member, has not yet processed a welcome, or has left. The framework defines no standard not-found code, so this one is declared.
+    /// The oracle holds no group for this room: its principal is not a member, has not yet processed a welcome, or has left. An oracle whose principal was removed and not admitted again holds only prior memberships, and has no group to seal under: it answers `seal` with this code, and `open` by the requested epoch, as `unknownEpoch` describes. The framework defines no standard not-found code, so this one is declared.
     ///
     /// Declared `retryable: false`.
     pub const NO_GROUP: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
@@ -558,7 +558,7 @@ pub mod error_codes {
     };
     /// `rooms/keys/file-key:unknownEpoch`
     ///
-    /// The oracle cannot derive a key for the requested epoch. `details.reason` says why: `notDelivered` — the room has moved to an epoch whose commit has not reached the oracle yet, so retrying after it arrives may succeed, and `details.heldEpoch`, when present, is the latest epoch the oracle holds; `beyondChain` — the oracle's epoch chain reaches back only to `details.earliestEpoch`, and the file was sealed before the principal could read it, or before the room pruned its chain; `removed` — a commit the oracle processed removed its principal from the room's group at `details.removedAtEpoch`, and the requested epoch is at or after it, so no later commit will make the key derivable and catching up will not help.
+    /// The oracle cannot derive a key for the requested epoch. `details.reason` says why: `notDelivered` — the room has moved to an epoch whose commit has not reached the oracle yet, so retrying after it arrives may succeed, and `details.heldEpoch`, when present, is the latest epoch the oracle holds; `beyondChain` — the oracle's epoch chain reaches back only to `details.earliestEpoch`, and the file was sealed before the principal could read it, or before the room pruned its chain; `removed` — a commit the oracle processed removed its principal from the room's group at `details.removedAtEpoch`, and the requested epoch is at or after it and below the epoch the principal next joined at, if it has, so no later commit will make the key derivable and catching up will not help.
     ///
     /// Declared `retryable: false`.
     /// Declares a `detailsSchema` for the error's `details` member.

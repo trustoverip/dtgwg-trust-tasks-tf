@@ -76,7 +76,7 @@ A room's DID says nothing about it. A member holding keys to a dozen rooms is sh
 
 A room's **profile** is that something: a name, and optionally a description, a few tags and an emoji ([`RoomProfile`](../../../../_shared/0.1/room.schema.json)), written **inside the room** as one of its records by somebody holding `curate` or `admin`, sealed like every other record. **Rooms Keys — Profile — Read** asks the member's own key holder to find it and return it.
 
-Finding it is the key holder's work because only the key holder can. On a sealed tier the profile is stored at a key derived from the room's **storage key** for the epoch it was written under ([`RoomProfileStatement`](../../../../_shared/0.1/room.schema.json)), so that the host sees one more opaque record and cannot tell which record names the room. The storage key never leaves the key holder, so neither does the ability to compute where the profile is. Opening the record, and checking that whoever wrote it held the standing to, are the key holder's for the same reasons [`rooms/keys/read`](../../../read/0.1/spec.md) gives.
+Finding it is the key holder's work because only the key holder can. On a sealed tier the profile is stored at a key derived from the room's **storage key** for the epoch it was written under ([`RoomProfileStatement`](../../../../_shared/0.1/room.schema.json)), so that the host sees one more opaque record and cannot tell which record names the room. The storage key never leaves the key holder, so neither does the ability to compute where the profile is. Opening the record, and checking that whoever wrote it held the standing to, are the key holder's for the same reasons [`rooms/keys/read`](../../../read/0.2/spec.md) gives.
 
 ## Status of this Document
 
@@ -92,7 +92,7 @@ A conforming **recipient** (the key holder):
 
 1. **MUST** refuse with `notAMember` a room it holds no membership of for its principal.
 2. On an `attributed` or `private` room, **MUST** look for the profile at `profile_key(E)` for each epoch `E` from the epoch it is at downwards, to the earliest epoch it can derive a storage key for, and **MUST** stop at the first location that holds a record it accepts or a retracted record. It **MAY** stop sooner after a bound of its own choosing, and **MUST** then report in `searched` where it stopped. On an `open` room it **MUST** look at the one location, the record key `room-profile`.
-3. **MUST** fetch each location with [`rooms/records/get`](../../../../records/get/0.2/spec.md) as its principal, presenting as [`rooms/keys/read`](../../../read/0.1/spec.md) presents — a `read` grant and nothing wider, its own identifier reaching the host nowhere — and **MUST** verify the host's reply as `rooms/keys/read` verifies it. A host answering that no record has the key is an empty location, not a refusal.
+3. **MUST** fetch each location with [`rooms/records/get`](../../../../records/get/0.2/spec.md) as its principal, presenting as [`rooms/keys/read`](../../../read/0.2/spec.md) presents — a `read` grant and nothing wider, its own identifier reaching the host nowhere — and **MUST** verify the host's reply as `rooms/keys/read` verifies it. A host answering that no record has the key is an empty location, not a refusal.
 4. **MUST** accept a record only if it passes every check `RoomProfileStatement` sets, and **MUST** ignore one that fails, continuing the walk; it **MUST** list each one it ignored in `rejected`, up to eight, newest first.
 5. **MUST** answer `found` with the first record it accepted, `cleared` when the walk stopped at a retracted record, and `absent` otherwise. It **MUST NOT** return a profile older than one it accepted, and **MUST** set `stale` when the profile returned was found below the epoch it is at.
 6. **MUST NOT** treat a verdict in `verification` as a failed read, for the reasons `rooms/keys/read` gives.
@@ -112,7 +112,7 @@ Per [SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements), verifying the VID, 
 
 ## Definitions
 
-**`roomId`**, **`host`** — as in [`rooms/keys/read`](../../../read/0.1/spec.md).
+**`roomId`**, **`host`** — as in [`rooms/keys/read`](../../../read/0.2/spec.md).
 
 **Profile location** — `profile_key(E)` for an epoch `E` on a sealed tier, the key `room-profile` on an `open` room. See `RoomProfileStatement`.
 

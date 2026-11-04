@@ -1,0 +1,29 @@
+[
+  {
+    "note": "Missing `url` — the listing is read from the parent before anything is signed.",
+    "payload": {
+      "network": "did:example:whn"
+    }
+  },
+  {
+    "note": "Unknown member — a repudiation registers no roles.",
+    "payload": {
+      "url": "https://whn.example.org",
+      "network": "did:example:whn",
+      "roles": []
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A membership without the `listing` it repudiates.",
+    "payload": {
+      "membership": {
+        "network": "did:example:whn",
+        "url": "https://whn.example.org",
+        "state": "repudiated",
+        "groups": [],
+        "updatedAt": "2026-11-03T10:00:00Z"
+      }
+    }
+  }
+]

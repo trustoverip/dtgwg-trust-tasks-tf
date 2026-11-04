@@ -1226,6 +1226,7 @@ mod rooms {
         mod act {
             mod v0_1;
             mod v0_10;
+            mod v0_11;
             mod v0_2;
             mod v0_3;
             mod v0_4;
@@ -1243,6 +1244,7 @@ mod rooms {
             mod v0_1;
             mod v0_2;
             mod v0_3;
+            mod v0_4;
         }
         mod chain {
             mod v0_1;
@@ -1272,10 +1274,12 @@ mod rooms {
         }
         mod read {
             mod v0_1;
+            mod v0_2;
         }
         mod seal {
             mod v0_1;
             mod v0_2;
+            mod v0_3;
         }
     }
     mod owner {
@@ -1323,12 +1327,14 @@ mod rooms {
     mod records {
         mod get {
             mod v0_2;
+            mod v0_3;
         }
         mod list {
             mod v0_2;
             mod v0_3;
             mod v0_4;
             mod v0_5;
+            mod v0_6;
         }
         mod prune {
             mod v0_1;
@@ -1338,6 +1344,7 @@ mod rooms {
             mod v0_2;
             mod v0_3;
             mod v0_4;
+            mod v0_5;
         }
         mod retention {
             mod set {
@@ -1384,6 +1391,7 @@ mod trust_task_discovery {
     mod v0_1;
     mod v0_2;
     mod v0_3;
+    mod v0_4;
 }
 mod trust_task_next_step {
     mod v0_1;
@@ -1645,6 +1653,17 @@ mod vta {
             mod v1_0;
         }
     }
+    mod collection {
+        mod claim {
+            mod v0_1;
+        }
+        mod list {
+            mod v0_1;
+        }
+        mod release {
+            mod v0_1;
+        }
+    }
     mod contexts {
         mod create {
             mod v1_0;
@@ -1900,6 +1919,9 @@ mod vta {
             mod v0_1;
         }
         mod vetter {
+            mod recover {
+                mod v0_1;
+            }
             mod show {
                 mod v0_1;
             }
@@ -2177,6 +2199,54 @@ mod vtc {
             mod v0_1;
         }
         mod import {
+            mod v0_1;
+        }
+    }
+    mod boards {
+        mod create {
+            mod v0_1;
+        }
+        mod delete {
+            mod v0_1;
+        }
+        mod ideas {
+            mod decide {
+                mod v0_1;
+            }
+            mod propose {
+                mod v0_1;
+            }
+            mod select {
+                mod v0_1;
+            }
+            mod update {
+                mod v0_1;
+            }
+            mod withdraw {
+                mod v0_1;
+            }
+        }
+        mod list {
+            mod v0_1;
+        }
+        mod notes {
+            mod add {
+                mod v0_1;
+            }
+            mod hide {
+                mod v0_1;
+            }
+            mod list {
+                mod v0_1;
+            }
+            mod withdraw {
+                mod v0_1;
+            }
+        }
+        mod show {
+            mod v0_1;
+        }
+        mod update {
             mod v0_1;
         }
     }
@@ -2646,31 +2716,41 @@ mod vtc {
         }
     }
     mod networks {
+        mod deliver {
+            mod v0_1;
+        }
         mod evidence {
             mod v0_1;
+            mod v0_2;
         }
         mod groups {
             mod register {
                 mod v0_1;
+                mod v0_2;
             }
         }
         mod join {
             mod v0_1;
+            mod v0_2;
         }
         mod leave {
             mod v0_1;
+            mod v0_2;
         }
         mod list {
             mod v0_1;
+            mod v0_2;
         }
         mod notice {
             mod v0_1;
         }
         mod repudiate {
             mod v0_1;
+            mod v0_2;
         }
         mod show {
             mod v0_1;
+            mod v0_2;
         }
     }
     mod notifications {
@@ -2990,6 +3070,14 @@ mod vtc {
             mod list {
                 mod v0_1;
             }
+            mod pcs_binding {
+                mod reset {
+                    mod v0_1;
+                }
+                mod show {
+                    mod v0_1;
+                }
+            }
             mod pcs_root {
                 mod v0_1;
             }
@@ -3046,6 +3134,136 @@ mod vtc {
             mod commit {
                 mod v0_1;
             }
+        }
+    }
+}
+#[cfg(feature = "vtn")]
+mod vtn {
+    mod audit {
+        mod list {
+            mod v0_1;
+        }
+    }
+    mod broadcasts {
+        mod list {
+            mod v0_1;
+        }
+        mod send {
+            mod v0_1;
+        }
+        mod show {
+            mod v0_1;
+        }
+    }
+    mod directory {
+        mod federated {
+            mod v0_1;
+        }
+        mod search {
+            mod v0_1;
+        }
+        mod summary {
+            mod v0_1;
+        }
+    }
+    mod entries {
+        mod show {
+            mod v0_1;
+        }
+    }
+    mod graph {
+        mod member {
+            mod v0_1;
+        }
+        mod show {
+            mod v0_1;
+        }
+    }
+    mod groups {
+        mod list {
+            mod v0_1;
+        }
+        mod register {
+            mod v0_1;
+        }
+    }
+    mod listings {
+        mod create {
+            mod v0_1;
+        }
+        mod list {
+            mod v0_1;
+        }
+        mod reinstate {
+            mod v0_1;
+        }
+        mod remove {
+            mod v0_1;
+        }
+        mod show {
+            mod v0_1;
+        }
+        mod suspend {
+            mod v0_1;
+        }
+        mod update {
+            mod v0_1;
+        }
+    }
+    mod membership {
+        mod acknowledge {
+            mod v0_1;
+        }
+        mod offer {
+            mod v0_1;
+        }
+        mod repudiate {
+            mod v0_1;
+        }
+    }
+    mod memberships {
+        mod groups {
+            mod add {
+                mod v0_1;
+            }
+        }
+        mod join {
+            mod v0_1;
+        }
+        mod leave {
+            mod v0_1;
+        }
+        mod list {
+            mod v0_1;
+        }
+        mod repudiate {
+            mod v0_1;
+        }
+    }
+    mod outbox {
+        mod list {
+            mod v0_1;
+        }
+        mod retry {
+            mod v0_1;
+        }
+    }
+    mod relay {
+        mod deliver {
+            mod v0_1;
+        }
+    }
+    mod roles {
+        mod list {
+            mod v0_1;
+        }
+    }
+    mod rooms {
+        mod list {
+            mod v0_1;
+        }
+        mod pass {
+            mod v0_1;
         }
     }
 }

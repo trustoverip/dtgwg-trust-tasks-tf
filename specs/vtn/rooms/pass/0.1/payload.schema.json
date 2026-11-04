@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtn/rooms/pass/0.1",
+  "title": "VTN Rooms — Pass — payload",
+  "description": "A person's request for a room pass, with the evidence that they are eligible. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "room",
+    "membership",
+    "chain"
+  ],
+  "properties": {
+    "room": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{0,62}$",
+      "description": "The id of the room."
+    },
+    "membership": {
+      "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/Membership",
+      "description": "The person's membership credential from their group, naming the requester's identity."
+    },
+    "chain": {
+      "type": "array",
+      "items": {
+        "$ref": "../../../_shared/0.1/groups.schema.json#/$defs/ChainLink"
+      },
+      "maxItems": 8,
+      "description": "The registrations from the person's group up to a group registered with this network, nearest first. Empty when the group is registered here directly."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTN Rooms — Pass — response payload",
+      "description": "The room pass.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pass"
+      ],
+      "properties": {
+        "pass": {
+          "$ref": "../../../_shared/0.1/rooms.schema.json#/$defs/RoomPass"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

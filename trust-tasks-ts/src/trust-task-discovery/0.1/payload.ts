@@ -6,7 +6,7 @@
 /**
  * Request payload for the framework-defined trust-task-discovery exchange. Carries zero or more slug-glob patterns the discoverer wants the responder to filter against. The response payload schema is reachable via $anchor: 'response'.
  *
- * @deprecated superseded by trust-task-discovery/0.3
+ * @deprecated superseded by trust-task-discovery/0.4
  */
 export interface TrustTaskDiscoveryPayload {
   /**
@@ -69,7 +69,7 @@ export interface TrustTaskDiscoveryPayload {
 /**
  * List of bare Type URIs the responding party supports. Carried in a Trust Task document whose type is https://trusttasks.org/spec/trust-task-discovery/0.1#response.
  *
- * @deprecated superseded by trust-task-discovery/0.3
+ * @deprecated superseded by trust-task-discovery/0.4
  */
 export interface TrustTaskDiscoveryResponsePayload {
   /**
@@ -113,12 +113,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by trust-task-discovery/0.3";
+export const DEPRECATION: string | null = "superseded by trust-task-discovery/0.4";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by trust-task-discovery/0.3
+ * @deprecated superseded by trust-task-discovery/0.4
  */
 export type Payload = TrustTaskDiscoveryPayload;
 
@@ -128,7 +128,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/trust-task-discove
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by trust-task-discovery/0.3
+ * @deprecated superseded by trust-task-discovery/0.4
  */
 export type Response = TrustTaskDiscoveryResponsePayload;
 

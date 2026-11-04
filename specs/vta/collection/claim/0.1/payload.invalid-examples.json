@@ -1,0 +1,32 @@
+[
+  {
+    "note": "No `identifier`: a claim is for one identifier, because the mediator holds one connection per identifier and exclusion is agreed per identifier (VTI-NTF-081).",
+    "payload": {
+      "contextId": "personal"
+    }
+  },
+  {
+    "note": "A duration under a minute would have the client's connection closing as it opened, and a renewal cycle shorter than the round trip that renews it.",
+    "payload": {
+      "contextId": "personal",
+      "identifier": "did:webvh:QmPersona:persona.example",
+      "durationSeconds": 30
+    }
+  },
+  {
+    "note": "A duration beyond thirty days is never granted: a claim is a lease so that an identifier whose claimant disappeared returns to the VTA (VTI-NTF-084).",
+    "payload": {
+      "contextId": "personal",
+      "identifier": "did:webvh:QmPersona:persona.example",
+      "durationSeconds": 31536000
+    }
+  },
+  {
+    "note": "Unknown member — a client naming another client to hand the identifier to — is refused: a claim is always the caller's own.",
+    "payload": {
+      "contextId": "personal",
+      "identifier": "did:webvh:QmPersona:persona.example",
+      "claimant": "did:key:z6MkOtherClient"
+    }
+  }
+]

@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtn/membership/acknowledge/0.1",
+  "title": "VTN Membership — Acknowledge — payload",
+  "description": "A listed party's acknowledgement of a network's membership offer. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "acknowledgement"
+  ],
+  "properties": {
+    "acknowledgement": {
+      "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/Credential",
+      "description": "The party's membership credential, issued by the requester to the network, carrying the `digestMultibase` of the offer it acknowledges."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTN Membership — Acknowledge — response payload",
+      "description": "The party's entry as now published, with the network's signed grant and the party's acknowledgement.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entry"
+      ],
+      "properties": {
+        "entry": {
+          "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/IndexEntry"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

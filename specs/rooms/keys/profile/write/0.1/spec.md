@@ -93,7 +93,7 @@ This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). I
 
 ## Why a task, and not a reserved record key
 
-The obvious design is a record at a well-known key — `profile` — written with [`rooms/records/put`](../../../../records/put/0.3/spec.md) and read with [`rooms/keys/read`](../../../read/0.1/spec.md), no new task at all. It is rejected on three counts.
+The obvious design is a record at a well-known key — `profile` — written with [`rooms/records/put`](../../../../records/put/0.3/spec.md) and read with [`rooms/keys/read`](../../../read/0.2/spec.md), no new task at all. It is rejected on three counts.
 
 - **It tells the host which record names the room.** The family requires a sealed room's keys to be opaque ([`RecordMetadata.key`](../../../../_shared/0.1/room.schema.json)) because a descriptive key leaks what the ciphertext beside it protects. A fixed key leaks less than a slug, but exactly what matters here: which record is the room's name, when it changes, who changed it on an `attributed` room, and roughly how long it is — and it makes withholding or rolling back the room's name a one-line policy for a host.
 - **A member's surface cannot compute anything better.** A key hidden from the host must be derived from something the host does not hold, and on a sealed tier that is the epoch's storage key — which never leaves the member's key holder. So the key holder has to be in the loop for a sealed room either way; a task makes that one round trip instead of a key-disclosure call followed by a read.
@@ -115,7 +115,7 @@ A conforming **recipient** (the key holder):
 2. **MUST** refuse with `noAuthority`, before contacting the host, when the authority its principal holds for the room confers no `write`, or neither `curate` nor `admin` — or, for `clear`, no `curate`.
 3. To write, on an `attributed` or `private` room, **MUST** use the epoch `E` it is at, store the profile at `profile_key(E)`, and build a [`SealedRecordBody`](../../../../_shared/0.1/room.schema.json) whose `author` is its principal and whose `roomProfile` is a `RoomProfileStatement` carrying `profile`, the current time as `issuedAt`, and its principal's authority chain conferring `curate` or `admin`, leaf first, as the credentials themselves. It **SHOULD** carry the shortest such chain it holds and **MAY** attenuate it to `curate` alone. It **MUST** sign the body as its principal as [`rooms/keys/seal`](../../../seal/0.2/spec.md) signs under `signAsPrincipal`, **SHOULD** pad it as `RoomProfileStatement` describes, and **MUST** seal it under `E` with associated data binding `roomId`, the key, the version and `E`.
 4. To write on an `open` room, **MUST** build the same signed body for the key `room-profile` and store its UTF-8 JSON as `cleartext.body`, with `cleartext.title` the profile's `name`.
-5. **MUST** store the record with [`rooms/records/put`](../../../../records/put/0.3/spec.md) as its principal, presenting a `write` grant and nothing wider, with the principal as the document's `issuer` and signer, and its own identifier reaching the host nowhere — as [`rooms/keys/read`](../../../read/0.1/spec.md) requires of a read.
+5. **MUST** store the record with [`rooms/records/put`](../../../../records/put/0.3/spec.md) as its principal, presenting a `write` grant and nothing wider, with the principal as the document's `issuer` and signer, and its own identifier reaching the host nowhere — as [`rooms/keys/read`](../../../read/0.2/spec.md) requires of a read.
 6. **MUST** compare the version the host assigned with the version it sealed for. On a mismatch the record does not open: it **MUST** build, sign, seal and store the profile again for the next version it predicts, and after attempts of its own bounding **MUST** answer `contended` rather than success. It **MUST NOT** answer `written` for a record that does not open.
 7. To clear, **MUST** retract the record at the current epoch's profile location with [`rooms/records/curate`](../../../../records/curate/0.1/spec.md), presenting a `curate` grant and nothing wider. Where that location holds no record, it **MUST** first store one — a profile is required to retract — and **MAY** do so by writing the current profile there.
 8. **MUST NOT** retain the profile, the signed body, the ciphertext or the presentation beyond the request.
@@ -144,7 +144,7 @@ Per [SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements), verifying the VID, 
 
 ## Definitions
 
-**`roomId`**, **`host`** — as in [`rooms/keys/read`](../../../read/0.1/spec.md).
+**`roomId`**, **`host`** — as in [`rooms/keys/read`](../../../read/0.2/spec.md).
 
 **`profile`** — a [`RoomProfile`](../../../../_shared/0.1/room.schema.json). It replaces the whole of the room's profile.
 

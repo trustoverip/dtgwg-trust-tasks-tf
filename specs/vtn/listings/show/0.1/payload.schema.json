@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtn/listings/show/0.1",
+  "title": "VTN Listings — Show — payload",
+  "description": "An administrator's request for one entry. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "did"
+  ],
+  "properties": {
+    "did": {
+      "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/Did",
+      "description": "The listed party whose entry to read."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTN Listings — Show — response payload",
+      "description": "The entry, in the administrators' view.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entry"
+      ],
+      "properties": {
+        "entry": {
+          "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/Entry"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

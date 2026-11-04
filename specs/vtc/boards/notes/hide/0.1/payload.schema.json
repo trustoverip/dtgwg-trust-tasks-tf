@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/boards/notes/hide/0.1",
+  "title": "VTC Boards — Notes — Hide — payload",
+  "description": "A facilitator hides a note on their board, with a reason the board's audience sees in its place. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "noteId",
+    "action"
+  ],
+  "properties": {
+    "noteId": {
+      "$ref": "../../../_shared/0.1/board.schema.json#/$defs/NoteId"
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "hide",
+        "unhide"
+      ]
+    },
+    "reason": {
+      "$ref": "../../../_shared/0.1/board.schema.json#/$defs/Reason"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Boards — Notes — Hide — response payload",
+      "description": "The success response to a vtc/boards/notes/hide/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/boards/notes/hide/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "note"
+      ],
+      "properties": {
+        "note": {
+          "$ref": "../../../_shared/0.1/board.schema.json#/$defs/Note"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtn/listings/reinstate/0.1",
+  "title": "VTN Listings — Reinstate — payload",
+  "description": "An administrator's instruction to lift a member's suspension. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "did"
+  ],
+  "properties": {
+    "did": {
+      "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/Did",
+      "description": "The DID of the entry."
+    },
+    "reason": {
+      "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/Reason",
+      "description": "Why, recorded in the entry's history and the audit trail."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTN Listings — Reinstate — response payload",
+      "description": "The entry as the network's administrators now see it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entry"
+      ],
+      "properties": {
+        "entry": {
+          "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/Entry"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

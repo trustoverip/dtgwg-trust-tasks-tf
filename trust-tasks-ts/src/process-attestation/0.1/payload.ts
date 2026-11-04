@@ -3,7 +3,7 @@
  * Source: specs/process-attestation/0.1/payload.schema.json
  */
 
-import type { Ext } from "../../_shared/components.js";
+import type { DigestMultibase, Ext } from "../../_shared/components.js";
 
 
 /**
@@ -22,6 +22,10 @@ export type ReceiptReference =
       type: "uri";
       uri: string;
       mediaType?: string;
+      /**
+       * Digest of the exact receipt bytes the URI serves. The response's proof covers the URI and not what it serves, so this is what lets a retained response show which receipt it referred to; a Verifier that dereferences the URI compares before relying on the bytes (Verifier rule 6).
+       */
+      digestMultibase?: DigestMultibase;
     }
   | {
       type: "inline";
@@ -102,13 +106,19 @@ export interface Disclosed {
     endedAt?: string;
     checkpointCount?: number;
   };
+  /**
+   * The Holder's own report of its receipt's state. It is not verification: a Verifier relies on its own verification of the receipt (Verifier rules 4 and 7).
+   */
   integrity?: {
     chainValid?: boolean;
     signatureValid?: boolean;
     keyCustody?: "software" | "tpm" | "secureEnclave";
   };
   anchors?: {
-    kind: "rfc3161" | "opentimestamps" | "roughtime";
+    /**
+     * The anchoring mechanism. `rfc3161` is a timestamp-authority response, `opentimestamps` an OpenTimestamps proof, `roughtime` a Roughtime sample, `blockchain` a direct chain anchor. Appended values are additive; a reader passes an unrecognised one through.
+     */
+    kind: "rfc3161" | "opentimestamps" | "roughtime" | "blockchain";
     anchoredAt?: string;
   }[];
 }
@@ -123,7 +133,7 @@ export interface Unavailable {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { Ext };
+export type { DigestMultibase, Ext };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/process-attestation/0.1" as const;
@@ -350,6 +360,10 @@ export const PAYLOAD_SCHEMA = {
             "mediaType": {
               "type": "string",
               "maxLength": 255
+            },
+            "digestMultibase": {
+              "$ref": "#/$defs/DigestMultibase",
+              "description": "Digest of the exact receipt bytes the URI serves. The response's proof covers the URI and not what it serves, so this is what lets a retained response show which receipt it referred to; a Verifier that dereferences the URI compares before relying on the bytes (Verifier rule 6)."
             }
           }
         },
@@ -440,7 +454,8 @@ export const PAYLOAD_SCHEMA = {
                 "secureEnclave"
               ]
             }
-          }
+          },
+          "description": "The Holder's own report of its receipt's state. It is not verification: a Verifier relies on its own verification of the receipt (Verifier rules 4 and 7)."
         },
         "anchors": {
           "type": "array",
@@ -456,8 +471,10 @@ export const PAYLOAD_SCHEMA = {
                 "enum": [
                   "rfc3161",
                   "opentimestamps",
-                  "roughtime"
-                ]
+                  "roughtime",
+                  "blockchain"
+                ],
+                "description": "The anchoring mechanism. `rfc3161` is a timestamp-authority response, `opentimestamps` an OpenTimestamps proof, `roughtime` a Roughtime sample, `blockchain` a direct chain anchor. Appended values are additive; a reader passes an unrecognised one through."
               },
               "anchoredAt": {
                 "type": "string",
@@ -467,6 +484,16 @@ export const PAYLOAD_SCHEMA = {
           }
         }
       }
+    },
+    "DigestMultibase": {
+      "title": "DigestMultibase",
+      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
+      "type": "string",
+      "minLength": 16,
+      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
+      "examples": [
+        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+      ]
     },
     "Ext": {
       "title": "Ext",
@@ -640,6 +667,10 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "mediaType": {
               "type": "string",
               "maxLength": 255
+            },
+            "digestMultibase": {
+              "$ref": "#/$defs/DigestMultibase",
+              "description": "Digest of the exact receipt bytes the URI serves. The response's proof covers the URI and not what it serves, so this is what lets a retained response show which receipt it referred to; a Verifier that dereferences the URI compares before relying on the bytes (Verifier rule 6)."
             }
           }
         },
@@ -730,7 +761,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
                 "secureEnclave"
               ]
             }
-          }
+          },
+          "description": "The Holder's own report of its receipt's state. It is not verification: a Verifier relies on its own verification of the receipt (Verifier rules 4 and 7)."
         },
         "anchors": {
           "type": "array",
@@ -746,8 +778,10 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
                 "enum": [
                   "rfc3161",
                   "opentimestamps",
-                  "roughtime"
-                ]
+                  "roughtime",
+                  "blockchain"
+                ],
+                "description": "The anchoring mechanism. `rfc3161` is a timestamp-authority response, `opentimestamps` an OpenTimestamps proof, `roughtime` a Roughtime sample, `blockchain` a direct chain anchor. Appended values are additive; a reader passes an unrecognised one through."
               },
               "anchoredAt": {
                 "type": "string",
@@ -757,6 +791,16 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           }
         }
       }
+    },
+    "DigestMultibase": {
+      "title": "DigestMultibase",
+      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
+      "type": "string",
+      "minLength": 16,
+      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
+      "examples": [
+        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
+      ]
     },
     "Ext": {
       "title": "Ext",

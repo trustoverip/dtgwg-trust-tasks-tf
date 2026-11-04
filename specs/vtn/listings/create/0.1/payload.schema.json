@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtn/listings/create/0.1",
+  "title": "VTN Listings — Create — payload",
+  "description": "An administrator's instruction to list a community or network. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "did",
+    "kind"
+  ],
+  "properties": {
+    "did": {
+      "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/Did",
+      "description": "The DID of the community or network to list. Never the network's own."
+    },
+    "kind": {
+      "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/EntryKind",
+      "description": "What is listed; carried in the listing credential as `nodeType` `VTC` or `VTN` (VTI-VTN-031)."
+    },
+    "label": {
+      "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/Label"
+    },
+    "description": {
+      "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/Description"
+    },
+    "url": {
+      "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/Url"
+    },
+    "tags": {
+      "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/Tags"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTN Listings — Create — response payload",
+      "description": "The new entry as the network's administrators see it: state `listed`, with the signed listing credential and the unsigned membership offer.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entry"
+      ],
+      "properties": {
+        "entry": {
+          "$ref": "../../../_shared/0.1/entry.schema.json#/$defs/Entry"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

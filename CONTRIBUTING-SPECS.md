@@ -574,9 +574,19 @@ knownImplementations:
   - https://github.com/example-org/example-server
 ```
 
+An entry may instead be an object, so a reader can tell which party an implementation plays. `url` is required; `role` names one of the specification's `parties` by its role name (or `both`), and `name` labels the link in place of the URL:
+
+```yaml
+knownImplementations:
+  - https://github.com/example-org/example-server
+  - url: https://example.com/verifier
+    role: Verifier
+    name: Example Verifier
+```
+
 Its purpose is to let registry readers tell **adoption from aspiration**: a `draft` with implementations behind it is a different proposition from a `draft` that exists only as a proposal, and the registry otherwise gives no way to tell them apart. The list is informative, not exhaustive — omitting it claims nothing either way — but keeping it current is cheap evidence toward the `draft` → `candidate` transition below.
 
-The field is rendered as the **Implementations** row of the spec page's Metadata grid (and carried in `registry.json`), showing `Not declared` when the list is absent.
+The field is rendered as the **Implementations** row of the spec page's Metadata grid (and carried in `registry.json`), with an object entry's `role` shown beside its link, and `Not declared` when the list is absent.
 
 ## Promoting maturity
 

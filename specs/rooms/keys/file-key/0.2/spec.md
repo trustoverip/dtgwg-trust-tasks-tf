@@ -41,10 +41,10 @@ retention:
   rationale: "The oracle derives the key on demand and keeps nothing but an audit line. The caller holds it for the duration of one encryption or decryption and discards it."
 errorCodes:
   - code: rooms/keys/file-key:noGroup
-    meaning: "The oracle holds no group for this room: its principal is not a member, has not yet processed a welcome, or has left. The framework defines no standard not-found code, so this one is declared."
+    meaning: "The oracle holds no group for this room: its principal is not a member, has not yet processed a welcome, or has left. An oracle whose principal was removed and not admitted again holds only prior memberships, and has no group to seal under: it answers `seal` with this code, and `open` by the requested epoch, as `unknownEpoch` describes. The framework defines no standard not-found code, so this one is declared."
     retryable: false
   - code: rooms/keys/file-key:unknownEpoch
-    meaning: "The oracle cannot derive a key for the requested epoch. `details.reason` says why: `notDelivered` — the room has moved to an epoch whose commit has not reached the oracle yet, so retrying after it arrives may succeed, and `details.heldEpoch`, when present, is the latest epoch the oracle holds; `beyondChain` — the oracle's epoch chain reaches back only to `details.earliestEpoch`, and the file was sealed before the principal could read it, or before the room pruned its chain; `removed` — a commit the oracle processed removed its principal from the room's group at `details.removedAtEpoch`, and the requested epoch is at or after it, so no later commit will make the key derivable and catching up will not help."
+    meaning: "The oracle cannot derive a key for the requested epoch. `details.reason` says why: `notDelivered` — the room has moved to an epoch whose commit has not reached the oracle yet, so retrying after it arrives may succeed, and `details.heldEpoch`, when present, is the latest epoch the oracle holds; `beyondChain` — the oracle's epoch chain reaches back only to `details.earliestEpoch`, and the file was sealed before the principal could read it, or before the room pruned its chain; `removed` — a commit the oracle processed removed its principal from the room's group at `details.removedAtEpoch`, and the requested epoch is at or after it and below the epoch the principal next joined at, if it has, so no later commit will make the key derivable and catching up will not help."
     retryable: false
     detailsSchema:
       type: object
@@ -156,24 +156,38 @@ A conforming **oracle** (`recipient`) **MUST**:
    where `fileId` is the decoded 32 bytes, `roomId` the identifier's UTF-8 bytes, and
    `storage_key(E)` the room's storage key for epoch `E` — the one records sealed under `E`
    use.
-   - For `seal`, `E` is the room's **current** epoch as the oracle knows it, and the
-     response names it.
-   - For `open`, `E` is the requested epoch. Where `E` is earlier than the oracle's current
-     epoch, the oracle reaches `storage_key(E)` through the room's epoch chain, exactly as
-     `rooms/keys/open` does for a record sealed under `E`.
+   - For `seal`, `E` is the room's **current** epoch as the oracle knows it, under its
+     principal's current group state, and the response names it. An oracle holding only prior
+     memberships for the room has no current state to seal under, and answers `noGroup`.
+   - For `open`, `E` is the requested epoch, and `E` chooses the group state exactly as
+     [`rooms/keys/open`](../../open/0.2/spec.md) has it for a record sealed under `E`: the
+     current state when `E` is at or after the epoch it joined at, otherwise the prior
+     membership ([`rooms/keys/welcome`](../../welcome/0.1/spec.md), *Rejoining after a
+     removal*) whose range covers `E`. Where `E` is earlier than the latest epoch that state
+     holds, the oracle reaches `storage_key(E)` through that state's epoch chain. It **MUST
+     NOT** derive under another of the principal's states. A prior membership whose removal
+     epoch is not yet known (recognised from a Welcome, not from a removal the oracle
+     processed) is chosen for every `E` at or after its join epoch and below the next join
+     epoch, as `rooms/keys/open` has it: an `E` above the epoch that state holds is
+     `notDelivered` with that state's `heldEpoch` until the oracle applies the commit that
+     removed its principal, and is then `removed` or derived as for a known removal.
 4. Refuse with `unknownEpoch` an epoch it cannot reach, saying which of the three cases
    holds in `details.reason`:
    - `removed`, with `removedAtEpoch`, when a commit the oracle processed removed its
-     principal from the room's group at `removedAtEpoch` and `E` is at or after it — no
-     later commit will make `E` derivable, so the caller **MUST NOT** be told to catch up.
-     This case takes precedence over `notDelivered`: an oracle that knows of such a removal
-     **MUST NOT** answer `notDelivered` for an `E` at or after `removedAtEpoch`.
-   - `notDelivered` when `E` is later than any epoch it holds and the removal case does not
-     apply (a commit has not been delivered), with `heldEpoch` naming the latest epoch it
-     holds.
-   - `beyondChain` with `earliestEpoch` when the chain does not reach back to `E` — which
-     includes an `E` below the room's epoch floor once the oracle has learnt one, whatever it
-     still holds ([`EpochFloor`](../../../_shared/0.1/room.schema.json)).
+     principal from the room's group at `removedAtEpoch` and `E` is at or after it and below
+     the epoch the principal next joined at, if it has — no state of the principal covers
+     `E`, no later commit will make `E` derivable, and the caller **MUST NOT** be told to
+     catch up. This case takes precedence over `notDelivered`: an oracle that knows of such
+     a removal **MUST NOT** answer `notDelivered` for an `E` in that range.
+   - `notDelivered` when `E` is later than any epoch the state `E` chose holds and the
+     removal case does not apply (a commit has not been delivered), with `heldEpoch` naming
+     the latest epoch that state holds — including a prior membership whose removal epoch is
+     not yet known, until the oracle applies the commit that removes it; it **MUST NOT**
+     answer `removed` for such an `E` before it has processed that commit.
+   - `beyondChain` with `earliestEpoch` when the chosen state's chain does not reach back to
+     `E` or `E` is below the epoch the principal first joined at, and for any `E` below the
+     room's epoch floor once the oracle has learnt one, whatever it still holds
+     ([`EpochFloor`](../../../_shared/0.1/room.schema.json)).
 
    It **MUST NOT** derive under a different epoch and return that.
 5. Return only the derived key and its epoch. It **MUST NOT** return `storage_key(E)`, an
@@ -343,7 +357,8 @@ cryptography; a page gets plaintext, never a key.
 
 **Removal is forward-only, as for records.** A member removed from the room cannot obtain
 keys for files sealed after their removal, because later epochs derive from storage keys
-they cannot reach. A file key they obtained before removal still opens that file; on a store
+they cannot reach — until it is admitted again, from the epoch it rejoins at, and never for
+the epochs between. A file key they obtained before removal still opens that file; on a store
 where the ciphertext remains available, so does the file. The only erasure for such a file
 is cryptographic — pruning the room's epoch chain so that nobody can derive its key again.
 An oracle that has processed the removing commit says so — `unknownEpoch` with reason

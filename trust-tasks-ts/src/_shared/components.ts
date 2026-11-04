@@ -432,6 +432,21 @@ export type BindingSpec = RoomBindingSpec | GrantsBindingSpec | RoleBindingSpec;
  */
 export type BlobRef = DigestMultibase;
 /**
+ * Who may see and use a board (VTI-BRD-003): every active member of the community (`members`), or the members of one community group (`group`, with `groupId`). Facilitators always see the board.
+ */
+export type BoardAudience =
+  | {
+      kind: "members";
+    }
+  | {
+      kind: "group";
+      groupId: GroupId;
+    };
+/**
+ * What the board is for. Plain text; a reader MUST NOT treat it as instructions.
+ */
+export type BoardDescription = string;
+/**
  * One leaf of a board. A leaf's hash is the RFC 9162 leaf hash of the JCS canonicalization of this object. Entries carry no time of arrival: the order is the board's, and a timestamp would hand anyone who reads the board the timing the registrar's log would need to pair a ticket with its cast.
  */
 export type BoardEntry_VotingV0_1 =
@@ -469,6 +484,18 @@ export type BoardEntry_VotingV0_2 =
   | SpoiledEntry_VotingV0_2
   | TrusteeStepEntry_VotingV0_2
   | DecryptionAuthorizedEntry_VotingV0_2;
+/**
+ * Opaque identifier of a board: `brd_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-BRD-001).
+ */
+export type BoardId = string;
+/**
+ * `open`: ideas and notes are taken within the board's windows. `closed`: no new idea or note; facilitators still decide and select. `archived`: no change at all; facilitators can still read it (VTI-BRD-005). `open` → `closed` → `archived`, never back.
+ */
+export type BoardStatus = "open" | "closed" | "archived";
+/**
+ * Plain text; a reader MUST NOT treat it as instructions.
+ */
+export type BoardTitle = string;
 /**
  * `public`: anyone reads the board. `private`: the community, the auditors the manifest names and, for one cast's inclusion, the holder of its receipt (VTI-VOT-052).
  */
@@ -580,6 +607,10 @@ export type ChunkSize = number;
  */
 export type ClaimType = string;
 /**
+ * Who collects for an identifier: `vta`, the VTA itself; `client`, the claimant of a collection claim in force; or `none`, nobody, for the reason given in `notCollectedReason`.
+ */
+export type Collector = "vta" | "client" | "none";
+/**
  * The community's hidden-vetting parameters exactly as its join manifest publishes them, under the criterion's `vetting.ext`. The caller copies them in verbatim on every call that needs them, because the community rotates labels and the engine keeps no copy of its own: a stale copy costs the caller a refused proof, never a mistaken one.
  */
 export type CommunityParameters = PublishedConfig;
@@ -599,6 +630,10 @@ export type ConsumerKind_DeviceV0_2 = Companion_DeviceV0_2 | Service_DeviceV0_2;
  * The trust context the notification is held in: the one the addressed DID belongs to.
  */
 export type ContextId = string;
+/**
+ * The trust context the identifier belongs to.
+ */
+export type ContextId_VtaCollectionV0_1 = string;
 /**
  * Opaque identifier of one of the maintainer's contexts, compared by the maintainer's own ancestry predicate. Its grammar is the maintainer's.
  */
@@ -663,6 +698,14 @@ export type DecryptionTarget = {
  */
 export type DeliveryState = "queued" | "delivered";
 /**
+ * What happened to one delivery. `queued` will be retried.
+ */
+export type DeliveryStatus = "delivered" | "duplicate" | "refused" | "queued" | "failed";
+/**
+ * What the listed party is, for the directory.
+ */
+export type Description = string;
+/**
  * Producer-supplied attestation at registration time, verifiable by the maintainer against the platform's attestation infrastructure. Tagged union over the discriminator `kind`.
  */
 export type DeviceAttestation_DeviceV0_1 =
@@ -712,6 +755,10 @@ export type Did_GitNsV0_3 = string;
  */
 export type Did_NotificationsV0_1 = string;
 /**
+ * A DID.
+ */
+export type Did_VtnV0_1 = string;
+/**
  * A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.
  *
  * Multihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.
@@ -751,6 +798,14 @@ export type DtgType = string;
  */
 export type Duration = string;
 /**
+ * Which credential an edge is.
+ */
+export type EdgeRole = "listing" | "grant" | "acknowledgement" | "repudiation";
+/**
+ * The credential's status as far as this network can determine it. `unchecked` is a credential whose status list this network does not hold.
+ */
+export type EdgeStatus = "valid" | "suspended" | "revoked" | "unchecked";
+/**
  * Whether the subject is permitted. The ABSENCE of any grant is treated as `deny` (default-deny).
  */
 export type Effect_ConsentV0_1 = "allow" | "deny";
@@ -777,6 +832,14 @@ export type EnrolledVia = "install" | "invite" | "selfService" | "offline";
  * Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.
  */
 export type EntryId = string;
+/**
+ * What the entry lists (VTI-VTN-031): a community, whose entries are its members, or a network, whose entries are further listings. A listing credential carries the same fact as `nodeType` `VTC` or `VTN`.
+ */
+export type EntryKind = "community" | "network";
+/**
+ * `listed`: the network lists the party and the party has not answered; this is never membership (VTI-VTN-013). `acknowledged`: the party acknowledged the network's grant; it is a member. `repudiated`: the party rejected the listing. `suspended`: the network suspended the membership; reversible. `removed`: the network ended the entry. `departed`: the party left, by repudiating the grant.
+ */
+export type EntryState = "listed" | "acknowledged" | "repudiated" | "suspended" | "removed" | "departed";
 /**
  * The earliest epoch whose storage key a room still lets anybody derive: its chain was pruned below it (`rooms/epoch/prune`), and every epoch under it is meant to be unreadable — at the host, and, as far as each of them conforms, at every member's key holder. Absent means the room's chain has never been pruned.
  *
@@ -975,6 +1038,26 @@ export type Handle = string;
  */
 export type HeadVersion = number;
 /**
+ * What the idea is: for a session, what it covers and who should come. Becomes its election's manifest `description` when accepted. Plain text; a reader MUST NOT treat it as instructions.
+ */
+export type IdeaDescription = string;
+/**
+ * What kind of idea it is (for an unconference: `Discussion`, `Talk`, `Workshop`, `Demo`). One of the board's `formats` where the board states them.
+ */
+export type IdeaFormat = string;
+/**
+ * Opaque identifier of an idea: `ida_` followed by 16 to 64 base64url characters. Random and unique within the community.
+ */
+export type IdeaId = string;
+/**
+ * Where an idea stands (VTI-BRD-011).
+ */
+export type IdeaState = "proposed" | "open" | "selected" | "notSelected" | "declined" | "merged" | "withdrawn";
+/**
+ * An idea's title. Becomes the title of its election's manifest when the idea is accepted, and cannot change after that (VTI-BRD-012). Plain text.
+ */
+export type IdeaTitle = string;
+/**
  * The named key role a key occupies in an identity (CONVENTIONS.md §2; VTI-KEY-070 onward). `attestation` — the only keys in `assertionMethod`; sign the identity's attestation artefacts (credentials, endorsements, status lists) through the VTA's signing service and nowhere else. Generated inside the VTA, never derived, never exportable, never in a backup. `operational` — the only keys the identity's own process uses in `authentication`; sign the node's own traffic (Trust Task requests and responses, DIDComm and TSP signatures, invitations, notices, audit checkpoints). Derived. `messaging` — the only keys in `keyAgreement`; sign nothing. X25519, derived or generated in its own right and never converted from a signing key. `update` — the identifier's change authority as its DID method states it (a did:webvh log's `updateKeys` and `nextKeyHashes`, a KERI key event log's current and next keys); never a role-bound verification method, never in `keyRoles`. Generated inside the VTA, never derived, never exportable, never in a backup, and always accompanied by a committed recovery key held outside the VTA's protection boundary. `authenticator` — a key held on a person's own authenticator (a WebAuthn passkey), listed in `authentication` of that person's identity only; used only to verify the person's WebAuthn assertions (sign-in and step-up evidence) and never to accept a Data Integrity proof. The VTA never holds its private half, so it is enrolled by the passkey ceremony and never generated, added or rotated by these tasks. Never permitted on the durable identity of a VTA, a VTC or a VTN. No role permits `capabilityInvocation` or `capabilityDelegation` (VTI-KEY-075). The set is an extensible registry: a consumer that meets a role it does not implement MUST rely on the key for nothing, and MUST NOT map it onto a role it does know (VTI-KEY-074).
  */
 export type IdentityKeyRole = "attestation" | "operational" | "messaging" | "update" | "authenticator";
@@ -1075,6 +1158,10 @@ export type Kind = "dm" | "group" | "channel";
  */
 export type Kind_NotificationsV0_1 = string;
 /**
+ * The name the directory shows.
+ */
+export type Label = string;
+/**
  * A BCP 47 language tag, e.g. `en`, `de-AT`. Compared case-insensitively.
  */
 export type LanguageTag = string;
@@ -1137,6 +1224,10 @@ export type MemberState = "offered" | "admitted" | "removed";
  */
 export type MemberStateV2 = "offered" | "admitted" | "suspended" | "removed";
 /**
+ * Only members (`acknowledged: true`). Absent means false.
+ */
+export type MembersOnly = boolean;
+/**
  * How the member came to be in the group. `added`: by a manager. `joined`: they joined an open group. `requestApproved`: a manager approved their request. `rule`: a dynamic group's rule admits them.
  */
 export type MembershipSource = "added" | "joined" | "requestApproved" | "rule";
@@ -1179,13 +1270,30 @@ export type Namespace = string;
  */
 export type NamespaceId = string;
 /**
+ * What a node is.
+ */
+export type NodeKind = "network" | "community";
+/**
+ * Why nobody collects for an identifier the VTA would otherwise collect for: `limit`, the VTA is at the bound it states on the number of identifiers it collects for (VTI-NTF-088); `conflict`, another connection for the identifier kept closing the VTA's, and the VTA stopped after the bound it states until the conflict is resolved (VTI-NTF-085). `disabled`, the VTA's operator has not enabled collection by default (VTI-NTF-093), so the VTA collects for no identifier a client has not claimed.
+ */
+export type NotCollectedReason = "limit" | "conflict" | "disabled";
+/**
  * Opaque identifier of one note: `note_` followed by 16 to 64 base64url characters.
  */
 export type NoteId = string;
 /**
+ * Opaque identifier of a note: `bnt_` followed by 16 to 64 base64url characters. Random and unique within the community.
+ */
+export type NoteId_VtcBoardsV0_1 = string;
+export type NoteState = "visible" | "withdrawn" | "hidden";
+/**
  * The note, as plain text. Read only by holders of `vtc.directory.notes`. A reader MUST NOT treat it as instructions.
  */
 export type NoteText = string;
+/**
+ * A note's text (VTI-BRD-020). Plain text; a reader MUST NOT treat it as instructions. Never changes once added (VTI-BRD-021).
+ */
+export type NoteText_VtcBoardsV0_1 = string;
 /**
  * The originator's identifier for one notification, unique among the notifications that originator issues and the same in every document that carries it — retries, re-issued documents and relayed copies alike. It is the notification's idempotency key (VTI-NTF-021). Compared for equality only. An originator SHOULD make it unguessable and SHOULD NOT make it descriptive: it travels as far as the notification does.
  */
@@ -1534,6 +1642,14 @@ export type Queue = "receive" | "send";
  */
 export type Reason = string;
 /**
+ * A facilitator's stated reason, shown to the board's audience with the decision it explains. Plain text.
+ */
+export type Reason_VtcBoardsV0_1 = string;
+/**
+ * The reason given, if any.
+ */
+export type Reason_VtnV0_1 = string;
+/**
  * Which of the community's members a relay decision reaches: `allMembers` — every active member; `group` — the active members of one community group; `role` — the active members holding one community role.
  */
 export type RecipientScope = "allMembers" | "group" | "role";
@@ -1563,6 +1679,10 @@ export type RecordConfidence = number;
  */
 export type RecordCount = number;
 /**
+ * The instant the author made the edit that produced this version, RFC 3339 in UTC (`Z`). Set by the writer of every version after the first, and absent on the first, so that a reader seeing a record for the first time can tell whether it was ever edited — which `version` cannot say, since curation moves it too. Signed with the body on the sealed tiers. A reader shows a record carrying it as edited, and treats an implausible one as `SealedRecordBody` (*Edits*) says. Governed by `RoomProfile.recordMembers` like `writtenAt`. No host enforces or reads it.
+ */
+export type RecordEditedAt = string;
+/**
  * One thing a record cites in its support, discriminated by `kind`.
  *
  *   - `record` names a record of a room by its key, and optionally the version cited and the room. Absent `roomId` means the record's own room.
@@ -1586,6 +1706,10 @@ export type RecordId = string;
  * The community's own identifier for one received notification, stable across the revisions that replace it. Opaque and compared for equality only; unguessable, because a read by a caller without the capability is refused and an enumerable identifier would turn the refusal into an oracle.
  */
 export type RecordId_VtcNotificationsV0_1 = string;
+/**
+ * What a reader shows a record as. Defined values: `note` — something kept in the room's library, titled or not, its `body` markdown; `message` — a turn in the room's conversation, its words in `body` as plain text; `reaction` — a short response to another record, its value in `body` (`SealedRecordBody`, *Reactions*). An open set, not an enumeration, so a new kind needs no new version of any schema: a reader MUST present a record whose kind it does not know as a note, and MUST NOT refuse a record for its kind. Absent means `note`, though a reader that keeps a conversation apart MAY show an untitled record without a kind as a message (*Untitled records*). A new version of a record MUST keep its kind. lowerCamelCase, at most 64 characters.
+ */
+export type RecordKind = string;
 /**
  * The path from one record's leaf to the room's `DataCommitment` — a Merkle inclusion proof, in the vocabulary this work already uses for it.
  *
@@ -1624,6 +1748,10 @@ export type RecordType = "authorization" | "recognition";
  * The instant after which the record's author no longer stands behind it as current. OPTIONAL; absent means the record does not expire. A reader hides a record whose `validUntil` has passed from default listings, search and recall, and shows it only on explicit request (`SealedRecordBody`, **Expiry**). No host enforces it.
  */
 export type RecordValidUntil = string;
+/**
+ * The instant the author wrote the record, RFC 3339 in UTC (`Z`). Set by the author and kept unchanged when the record is rewritten; an edit is marked by `editedAt`. OPTIONAL on a note; a `message` or `reaction` SHOULD carry it. The author's claim, not an attested time: a reader orders messages by it, compares it with the host's `createdAt`, and treats an implausible or backdated one as `SealedRecordBody` (*When it was written*) says. No host enforces or reads it.
+ */
+export type RecordWrittenAt = string;
 /**
  * What it takes to let a value LEAVE. Distinct from `Sensitivity`, which governs showing it to the holder.
  *
@@ -1708,6 +1836,10 @@ export type RoleKeyState = "pending" | "staged" | "active" | "retiring" | "retir
  * A role identifier: lowercase, hyphen-separated, at most 64 characters. Compared by exact string equality. It is the value an AclEntry 0.2 carries in `role`.
  */
 export type RoleName = string;
+/**
+ * A role's name: 1–64 lowercase letters, digits, `-` or `_`.
+ */
+export type RoleName_VtnV0_1 = string;
 /**
  * What the room is for, in a sentence or a short paragraph, written by an administrator: shown to administrators holding `vtc.rooms.manage` and to the members the room is offered to. Plain text — a consumer renders it as text, never as markup. Like `RoomLabel`, it is the community's own record as the room's owner: not part of the room's identity and never in anything a room's host can read. From `vtc/rooms/community/create` 0.3 and `vtc/rooms/community/update` 0.2 the community also writes it, through its own VTA, as the `description` of the room's own profile (`RoomProfile` in rooms/_shared), sealed inside the room for its members; earlier versions keep it out of the room altogether. It MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.
  */
@@ -1834,6 +1966,10 @@ export type SealedStorageCredential =
  * A sealed-transfer bundle: OpenPGP-style ASCII armor around an HPKE-sealed `SealedPayloadV1` (base mode, X25519-HKDF-SHA256 KEM, HKDF-SHA256 KDF, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`), with a producer assertion and Bundle-Id, Chunk and Digest-Algo headers bound into the associated data. Each task states the key it is sealed to: a single-use wrapping key from keys/import-wrapping-key for external/accounts/secret/set, and the caller's key-agreement key for external/credentials/issue. Its cleartext is an ExternalSecretPayload, an ExternalCredentialPayload or, from external/credentials/issue 0.2 for `s3-static-presign`, a PresignedRequestSet. The only form in which secret material crosses the wire in this family, in either direction: the seal is what keeps a terminating proxy, a relay, a request log or a debug dump of "the response" from ever holding a usable secret, whatever transport carried the document.
  */
 export type SealedTransferBundle = string;
+/**
+ * Free text. Every whitespace-separated term must match, case-insensitively, the entry's DID, label, description or a tag.
+ */
+export type SearchText = string;
 /**
  * `open`: ballots are recorded on the board as cast. `sealed`: ballots are encrypted to a jointly generated election key and decrypted after voting closes. `talliedEncrypted`: ballots are encrypted and only the totals are ever decrypted (VTI-VOT-060). The encrypted levels are cast with `voting/ballot/cast-encrypted/0.1`, under an election key the trustees generate with `voting/trustees/*` (CONVENTIONS §9).
  */
@@ -2036,6 +2172,12 @@ export type SyncEvent_SyncV0_2 =
   | AclChangedEvent_SyncV0_2
   | PolicyChangedEvent_SyncV0_2;
 /**
+ * Free-text tags the directory searches.
+ *
+ * @maxItems 32
+ */
+export type Tags = string[];
+/**
  * A family of Trust Tasks, named by a slug prefix of whole segments (SPEC §6.1 grammar): `vtc/directory` names every task whose slug is `vtc/directory` or begins `vtc/directory/`, at any version. A prefix matches on segment boundaries only, so `vtc/dir` names nothing under `vtc/directory`.
  */
 export type TaskFamily = string;
@@ -2092,6 +2234,10 @@ export type Topic_VtcAdminEventsV0_4 =
   | "groups"
   | "communityRooms";
 /**
+ * A topic an idea is filed under. One of the board's `topics` where the board states them.
+ */
+export type Topic_VtcBoardsV0_1 = string;
+/**
  * How the traffic reached or left the mediator. `peerMediator` is mediator-to-mediator forwarding.
  */
 export type TrafficChannel = "websocket" | "rest" | "peerMediator" | "internal";
@@ -2146,6 +2292,10 @@ export type UpdateKeyClass = "routine" | "recovery";
  * Handle for one upload across begin, chunk, commit and abort, and — for a bundle — deploy. Recipient-generated and unguessable, which is what lets a reference to somebody else's upload be answered as not-found without confirming it exists. Opaque: a producer quotes what it was given.
  */
 export type UploadId = string;
+/**
+ * The party's public address.
+ */
+export type Url = string;
 /**
  * The JSON shape of `value`, declared so that a consumer can render and compare without guessing. The maintainer validates that `value` agrees with this member and does nothing further: it does NOT validate a phone number against a phone-number grammar. That is a producer's affordance, and a store that grows opinions about the contents of its records eventually blocks its consumer's release.
  */
@@ -5635,6 +5785,35 @@ export interface AuditEnvelope {
   ext?: Ext;
 }
 /**
+ * One change to the published set, as the audit trail records it.
+ */
+export interface AuditEvent {
+  /**
+   * When it happened.
+   */
+  occurredAt: string;
+  /**
+   * The entry it happened to.
+   */
+  did: Did_VtnV0_1;
+  /**
+   * What happened.
+   */
+  event: "list" | "acknowledge" | "repudiate" | "suspend" | "reinstate" | "remove" | "depart" | "update";
+  /**
+   * The entry's state afterwards.
+   */
+  to: EntryState;
+  /**
+   * Who did it: an administrator, or the listed party.
+   */
+  actor: Did_VtnV0_1;
+  /**
+   * The reason given, if any.
+   */
+  reason?: string;
+}
+/**
  * The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.
  */
 export interface AuthenticatorAssertionResponseLogin {
@@ -5664,6 +5843,18 @@ export interface AuthenticatorAttestationResponseRegistration {
   };
   authenticatorAttachment?: "platform" | "cross-platform";
   clientExtensionResults?: {};
+}
+/**
+ * Who proposed an idea or wrote a note, as the board's audience sees them. `entryId` is their directory entry, which survives a rotation of their DID; `name` is their directory display name as this caller may see it, absent where the directory withholds it. A departed member is shown as `formerMember: true` with neither (VTI-BRD-060).
+ */
+export interface Author {
+  entryId?: EntryId;
+  name?: string;
+  formerMember?: true;
+  /**
+   * Present when the caller is the author.
+   */
+  you?: true;
 }
 /**
  * What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier. A host MUST bind the presenter to the chain's leaf. A chain that verifies is evidence that authority was conferred on somebody; it is not evidence that the party presenting it is that somebody. The leaf's subject MUST equal the party the host authenticated for this request — an identity the transport established or a document `proof` proved, never one named in a payload. A host that omits this check authorizes every captured presentation, and the omission is silent, because the chain still verifies.
@@ -5818,6 +6009,177 @@ export interface BlobManifest {
    * Digest of the whole ciphertext, over its bytes. Checked after reassembly, so a correct set of chunks in the wrong order is still caught.
    */
   digest: DigestMultibase;
+}
+/**
+ * A board as one caller may see it.
+ */
+export interface Board {
+  boardId: BoardId;
+  title: BoardTitle;
+  description?: BoardDescription;
+  status: BoardStatus;
+  audience: BoardAudience;
+  /**
+   * When ideas are taken (VTI-BRD-010).
+   */
+  proposals: Window;
+  /**
+   * When every idea's election takes ballots. Opens after `proposals` opens and closes after it closes (VTI-BRD-001).
+   */
+  voting: Window;
+  /**
+   * @maxItems 32
+   */
+  topics?: Topic_VtcBoardsV0_1[];
+  /**
+   * @maxItems 16
+   */
+  formats?:
+    | []
+    | [IdeaFormat]
+    | [IdeaFormat, IdeaFormat]
+    | [IdeaFormat, IdeaFormat, IdeaFormat]
+    | [IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat]
+    | [IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat]
+    | [IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat]
+    | [IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat]
+    | [IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat]
+    | [IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat, IdeaFormat]
+    | [
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat
+      ]
+    | [
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat
+      ]
+    | [
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat
+      ]
+    | [
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat
+      ]
+    | [
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat
+      ]
+    | [
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat
+      ]
+    | [
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat,
+        IdeaFormat
+      ];
+  /**
+   * The most ideas one member may have on the board that are not `withdrawn` or `declined`. Absent: no limit beyond the community's own.
+   */
+  maxIdeasPerMember?: number;
+  /**
+   * How facilitators intend to select, in plain words (VTI-BRD-041), e.g. "The twelve ideas the most members would attend".
+   */
+  selectionRule?: string;
+  /**
+   * @maxItems 256
+   */
+  timetable?: Slot_VtcBoardsV0_1[];
+  template: ElectionTemplate;
+  createdAt: string;
+  /**
+   * Whether the caller facilitates this board.
+   */
+  facilitator: boolean;
+  /**
+   * How many of the board's ideas are in each state the caller may see.
+   */
+  ideaCounts: {
+    proposed?: number;
+    open?: number;
+    selected?: number;
+    notSelected?: number;
+    declined?: number;
+    merged?: number;
+    withdrawn?: number;
+  };
 }
 export interface CastEntry_VotingV0_1 {
   kind: "cast";
@@ -6107,6 +6469,47 @@ export interface BreakGlass_GitNsV0_6 {
   ratifiedAt?: string;
 }
 /**
+ * A broadcast as this network sent or relayed it.
+ */
+export interface BroadcastRecord {
+  /**
+   * The message id.
+   */
+  id: string;
+  /**
+   * Whether this network sent it or received it to relay.
+   */
+  direction: "sent" | "received";
+  /**
+   * The role it was addressed to.
+   */
+  role: RoleName_VtnV0_1;
+  /**
+   * The signed message.
+   */
+  message: Credential;
+  /**
+   * For a received message, the network that delivered it.
+   */
+  from?: Did_VtnV0_1;
+  /**
+   * For a sent message, the administrator that sent it.
+   */
+  actor?: Did_VtnV0_1;
+  /**
+   * When.
+   */
+  recordedAt: string;
+  /**
+   * Per group.
+   */
+  receipts: Receipt[];
+  /**
+   * Groups delivered to, counting relays.
+   */
+  reached: number;
+}
+/**
  * A capability held by an entry, optionally qualified by a resource, optionally marked additive. A qualified grant confers nothing without a live entry for the same subject, and is bounded as delegated authority is.
  */
 export interface CapabilityGrant {
@@ -6274,6 +6677,19 @@ export interface Cast {
   attestation: Multibase_VotingV0_1;
 }
 /**
+ * One registration on the path from a person's community up to the network a room belongs to: the member's signed request and the accepting network's groupRegistered credential.
+ */
+export interface ChainLink {
+  /**
+   * A member's signed vtn/groups/register request.
+   */
+  registration: SignedTask;
+  /**
+   * The network's groupRegistered credential: a statement (`https://openvtc.org/vtn/vsc/groupRegistered/1`) issued by the accepting network, subject the group, `object.digestMultibase` the digest of `registration`, with a `credentialStatus` on the network's revocation list.
+   */
+  acceptance: Credential;
+}
+/**
  * The terms of a `chunkedTrustTask` transfer, committed before any chunk moves. On export the recipient states them in the descriptor; on import the producer pre-commits them in the request and the recipient echoes them. Either way the manifest arrives in a document whose proof is REQUIRED, so the per-chunk digests are authenticated by the party that computed them and each chunk can be verified — and a single bad chunk re-fetched or refused — on arrival rather than only after reassembly.
  *
  * Consistency rules JSON Schema cannot state: `chunkCount` MUST equal ceil(expectedSizeBytes / chunkSize) for the bundle the manifest describes, and `chunkDigests` MUST have exactly `chunkCount` items. A party receiving a manifest violating either MUST refuse it.
@@ -6304,6 +6720,23 @@ export interface ChunkedDescriptor {
   expiresAt: ExpiresAt;
 }
 /**
+ * A collection claim in force for one identifier: the client that is its collector, when the claim ends, and whether the claimant may still renew it. A claim released by a party other than its claimant, or whose claimant's access control entry no longer gives it standing in the context, is not renewable and still ends at `endsAt`, because the claimant is still connected until its own clock tells it to stop (VTI-NTF-084).
+ */
+export interface Claim {
+  /**
+   * The client holding the claim: the subject of the access control entry it was granted to.
+   */
+  claimant: Did_NotificationsV0_1;
+  /**
+   * When the claim ends unless renewed. The claimant stops collecting before this instant less its clock-skew tolerance; the VTA resumes no earlier than this instant plus its own (VTI-NTF-083, VTI-NTF-084).
+   */
+  endsAt: string;
+  /**
+   * Whether the claimant may renew the claim with vta/collection/claim before it ends.
+   */
+  renewable: boolean;
+}
+/**
  * Which claim a `claim` field accepts, from which credentials and issuers.
  */
 export interface ClaimSelector {
@@ -6321,6 +6754,15 @@ export interface ClaimSelector {
    * @maxItems 32
    */
   issuers?: string[];
+}
+/**
+ * The collection state of one identifier. `claim` is present exactly when `collector` is `client`, and `notCollectedReason` exactly when it is `none`.
+ */
+export interface CollectionEntry {
+  identifier: Did_NotificationsV0_1;
+  collector: Collector;
+  claim?: Claim;
+  notCollectedReason?: NotCollectedReason;
 }
 /**
  * OPTIONAL. How the community asks to be shown to a prospective applicant: a name, an accent colour and a logo. Presentation only, self-asserted and unverified — `communityDid` identifies the community, never `branding`. Not part of any criterion, so not covered by a `requirementsDigest`. Every member is optional.
@@ -6847,6 +7289,10 @@ export interface ContextRecord {
   updatedAt: string;
   ext?: Ext;
 }
+/**
+ * A DTG credential (W3C VC 2.0, JSON) exactly as signed. Verified by the party relying on it, never by its shape here: it is an open object so a binding cannot narrow away a member the proof covers.
+ */
+export interface Credential {}
 /**
  * A pointer to an issued credential, without the credential itself.
  *
@@ -7840,6 +8286,44 @@ export interface DirectoryEntry {
   sharedGroups?: string[];
 }
 /**
+ * One directory result.
+ */
+export interface DirectoryEntry_VtnV0_1 {
+  did: Did_VtnV0_1;
+  kind: EntryKind;
+  state: EntryState;
+  /**
+   * Whether the party is a member. Every result states it (VTI-VTN-013).
+   */
+  acknowledged: boolean;
+  /**
+   * The name shown.
+   */
+  label?: string;
+  /**
+   * What the party is.
+   */
+  description?: string;
+  /**
+   * The party's public address.
+   */
+  url?: string;
+  /**
+   * Tags.
+   *
+   * @maxItems 32
+   */
+  tags?: string[];
+  /**
+   * The listing credential's `id`, to fetch it.
+   */
+  listingId?: string;
+  /**
+   * The grant's `id`, once acknowledged.
+   */
+  grantId?: string;
+}
+/**
  * Links a contact to the entry in a community's member directory it corresponds to, so the holder's own client can join that community's directory with the holder's address book — showing a star or a petname beside an entry — without either side telling the other. The community never learns the link exists; the contact never learns it either. A contact has at most one.
  */
 export interface DirectoryRef {
@@ -7851,6 +8335,27 @@ export interface DirectoryRef {
    * The entry, as that community's directory identifies it.
    */
   entryId: DirectoryEntryId;
+}
+/**
+ * Counts over the published set.
+ */
+export interface DirectorySummary {
+  /**
+   * Published community entries.
+   */
+  communities: number;
+  /**
+   * Published network entries.
+   */
+  networks: number;
+  /**
+   * Of those, members.
+   */
+  acknowledged: number;
+  /**
+   * Of those, listed but not members.
+   */
+  unacknowledged: number;
 }
 /**
  * One active field of the community's directory, as an applicant needs to see it: what it is, who writes its value, the widest audience it may ever reach and the audience a new card gives it. Disabled and retired fields are not listed: no projection shows them.
@@ -8213,6 +8718,33 @@ export interface DynamicRule {
       ];
 }
 /**
+ * One credential, from issuer to subject. A membership is two edges: the grant and the acknowledgement.
+ */
+export interface Edge {
+  /**
+   * The credential's `id`.
+   */
+  id: string;
+  /**
+   * The issuer.
+   */
+  source: Did_VtnV0_1;
+  /**
+   * The subject.
+   */
+  target: Did_VtnV0_1;
+  role: EdgeRole;
+  /**
+   * The credential's DTG type, e.g. `MembershipCredential`.
+   */
+  credType: string;
+  status: EdgeStatus;
+  /**
+   * The credential itself.
+   */
+  credential: Credential;
+}
+/**
  * One consequence of executing the pending task, authored by the executor that is about to run it. An effect is produced by dry-running the real handler against the executor's own prior state — never by the requester, and never by re-implementing the handler's semantics elsewhere. A consent surface renders ONLY effects it received under the executor's signature.
  */
 export interface Effect_TaskConsentV0_1 {
@@ -8325,6 +8857,130 @@ export interface ElectionSummary {
   head: BoardHead;
 }
 /**
+ * Every member of an idea's election manifest that the board fixes (VTI-BRD-030). When a facilitator accepts an idea the community completes it: `electionId` (naming the board and the idea), `community`, `title` and `description` from the idea, `registrationOpensAt` and `votingOpensAt` from the board's voting window's `opensAt` or the acceptance, whichever is later, `votingClosesAt` from its `closesAt`, `roll` from the board's audience (rule `members`, or a credential roll naming the group), and `binding: false`. A board's template is never binding, and so has no `binding` member.
+ */
+export interface ElectionTemplate {
+  /**
+   * @minItems 1
+   * @maxItems 16
+   */
+  questions:
+    | [Question]
+    | [Question, Question]
+    | [Question, Question, Question]
+    | [Question, Question, Question, Question]
+    | [Question, Question, Question, Question, Question]
+    | [Question, Question, Question, Question, Question, Question]
+    | [Question, Question, Question, Question, Question, Question, Question]
+    | [Question, Question, Question, Question, Question, Question, Question, Question]
+    | [Question, Question, Question, Question, Question, Question, Question, Question, Question]
+    | [Question, Question, Question, Question, Question, Question, Question, Question, Question, Question]
+    | [Question, Question, Question, Question, Question, Question, Question, Question, Question, Question, Question]
+    | [
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question
+      ]
+    | [
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question
+      ]
+    | [
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question
+      ]
+    | [
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question
+      ]
+    | [
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question,
+        Question
+      ];
+  secrecy: SecrecyLevel;
+  revote: Revote;
+  /**
+   * The ballot box's board for each idea's election, as a manifest states it (VTI-VOT-052). `public` lets a board show each idea's ballot count while voting is open (VTI-BRD-033).
+   */
+  board: {
+    visibility: BoardVisibility;
+    auditors: string[];
+  };
+  /**
+   * The DID of the voting service every idea's election is registered with; one on the community's list (VTI-VOT-082).
+   */
+  ballotBox: string;
+  trustees?: Trustees;
+  allowEarlyClose: boolean;
+  /**
+   * Open elections only: whether running totals may be read while voting is open (VTI-VOT-061). A board SHOULD set it false (VTI-BRD-033).
+   */
+  resultsBeforeClose: boolean;
+  /**
+   * Counted ballots required before any text answer is disclosed (VTI-VOT-065); SHOULD be at least 10.
+   */
+  textReleaseThreshold: number;
+}
+/**
  * A tallied-encrypted ballot: one EncryptedQuestion per manifest question, in the manifest's order. Never decrypted (VTI-VOT-064).
  */
 export interface EncryptedBallot {
@@ -8409,10 +9065,63 @@ export interface EndorsementType {
   createdByDid?: string;
 }
 /**
+ * An entry as its network's administrators see it.
+ */
+export interface Entry {
+  /**
+   * The listed party's DID.
+   */
+  did: Did_VtnV0_1;
+  kind: EntryKind;
+  label?: Label;
+  profile: EntryProfile;
+  state: EntryState;
+  /**
+   * When the party was first listed.
+   */
+  createdAt: string;
+  /**
+   * When the entry last changed.
+   */
+  updatedAt: string;
+  /**
+   * The listing credential (`lists/1`).
+   */
+  listing: Issued;
+  /**
+   * The unsigned membership grant offered to the party, before it acknowledged.
+   */
+  offer?: Issued;
+  /**
+   * The signed membership grant (VMC), once the party acknowledged.
+   */
+  grant?: Issued;
+  /**
+   * The party's acknowledgement (VMC carrying the grant's digest).
+   */
+  ack?: Credential;
+  /**
+   * The party's repudiation (`repudiates/1`) of the listing or the grant.
+   */
+  repudiation?: Credential;
+  /**
+   * Every transition, oldest first.
+   */
+  history: StateChange[];
+}
+/**
  * The fields of one entry that a particular viewer may see, keyed by field: the intersection of the member's visibility, the community's ceiling and policy, plus any derived fields that intersection admits. A withheld field is ABSENT, never null.
  */
 export interface EntryFields {
   [k: string]: FieldValue | undefined;
+}
+/**
+ * What the directory shows about an entry, set by the network's administrators.
+ */
+export interface EntryProfile {
+  description?: Description;
+  url?: Url;
+  tags?: Tags;
 }
 export interface EnumOption {
   /**
@@ -8423,6 +9132,136 @@ export interface EnumOption {
    * What a reader is shown for it.
    */
   label: string;
+}
+/**
+ * A broadcast in transit.
+ */
+export interface Envelope {
+  /**
+   * The message, signed by the origin network.
+   */
+  message: Credential;
+  /**
+   * One signed hop per relay step, each by the network that owns the previous hop's group.
+   *
+   * @maxItems 16
+   */
+  hops:
+    | []
+    | [Credential]
+    | [Credential, Credential]
+    | [Credential, Credential, Credential]
+    | [Credential, Credential, Credential, Credential]
+    | [Credential, Credential, Credential, Credential, Credential]
+    | [Credential, Credential, Credential, Credential, Credential, Credential]
+    | [Credential, Credential, Credential, Credential, Credential, Credential, Credential]
+    | [Credential, Credential, Credential, Credential, Credential, Credential, Credential, Credential]
+    | [Credential, Credential, Credential, Credential, Credential, Credential, Credential, Credential, Credential]
+    | [
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential
+      ]
+    | [
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential
+      ]
+    | [
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential
+      ]
+    | [
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential
+      ]
+    | [
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential
+      ]
+    | [
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential
+      ]
+    | [
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential,
+        Credential
+      ];
 }
 /**
  * What a room writes into its own witnessed log, so that a host serving a stale, forked or partial view of it becomes **evident rather than merely possible**.
@@ -8604,6 +9443,52 @@ export interface ExternalCard {
   publishedAt?: string;
 }
 /**
+ * A result from a member network's set, with the network that lists it and the path to that network.
+ */
+export interface FederatedEntry {
+  did: Did_VtnV0_1;
+  kind: EntryKind;
+  state: EntryState;
+  /**
+   * Whether the party is a member. Every result states it (VTI-VTN-013).
+   */
+  acknowledged: boolean;
+  /**
+   * The name shown.
+   */
+  label?: string;
+  /**
+   * What the party is.
+   */
+  description?: string;
+  /**
+   * The party's public address.
+   */
+  url?: string;
+  /**
+   * Tags.
+   *
+   * @maxItems 32
+   */
+  tags?: string[];
+  /**
+   * The listing credential's `id`, to fetch it.
+   */
+  listingId?: string;
+  /**
+   * The grant's `id`, once acknowledged.
+   */
+  grantId?: string;
+  /**
+   * The network whose set the result is in.
+   */
+  listedBy: Did_VtnV0_1;
+  /**
+   * From the searched network to `listedBy`, one hop per nesting.
+   */
+  path: PathHop[];
+}
+/**
  * One displayed value, with where it comes from and how to render it.
  */
 export interface Field {
@@ -8743,6 +9628,8 @@ export interface FieldVisibility {
  * - check that the decrypted length equals the padded length, that every padding byte is zero, and, after removing the padding, that the plaintext matches `digest`.
  *
  * A reader **MUST** refuse a file that fails any check, and **MUST NOT** present it with a warning instead. A reader that streams **MUST NOT** treat the plaintext as received — save it under its final name, render it, or hand it to another component — until the digest has verified; it writes to a temporary destination and discards that destination on a mismatch.
+ *
+ * **An image's size and preview.** `width`, `height` and `preview` are OPTIONAL and advisory: they let a reader lay out an image, and show something, before it fetches and decrypts the blob. A reader that fetches the file checks them against the bytes — the decoded image's dimensions, and that the file is an image at all — and on a mismatch uses the bytes and discards them; it MUST NOT treat any of them as evidence about the file. On `attributed` and `private` rooms they are inside the sealed, signed body like the rest of the manifest, so the host learns nothing from them; on an `open` room they are in the clear, as everything there is, and a writer carries them only with `rooms/records/put/0.5` or later. A writer uses them only once the room's profile lists them in `recordMembers` (`RoomProfile`), as with the other members a reader that predates them refuses.
  */
 export interface FileManifest {
   /**
@@ -8782,6 +9669,27 @@ export interface FileManifest {
    * The file key itself, 32 bytes base64url without padding: present on an `open` room only, where there is no storage key to derive it from. Minted by the uploader from a cryptographically secure random source for this one file and never reused. MUST be absent on `attributed` and `private` rooms, where the key is derived and never stored.
    */
   fileKey?: string;
+  /**
+   * The image's width in pixels, as the uploader read it. Advisory. A writer sets `width` and `height` together or neither; a reader ignores one without the other. A reader checks it against the decoded image.
+   */
+  width?: number;
+  /**
+   * The image's height in pixels, as the uploader read it. Advisory. A writer sets `width` and `height` together or neither; a reader ignores one without the other. A reader checks it against the decoded image.
+   */
+  height?: number;
+  /**
+   * A small image standing in for the file until it is fetched: at most 8192 bytes before encoding, enough for a blurred thumbnail and small enough not to swell the record every listing reader opens. A reader renders it only as a raster image it decodes itself — never as SVG or any other type that can carry active content, never as a link, never fetching anything — and replaces it with the file once fetched. It is the uploader's rendering of the file, not a digest of it: a reader MUST NOT present it as the file's contents.
+   */
+  preview?: {
+    /**
+     * The preview's own media type. Raster types only.
+     */
+    mediaType: "image/jpeg" | "image/png" | "image/webp";
+    /**
+     * The preview's bytes, base64url without padding: at most 8192 bytes decoded.
+     */
+    data: string;
+  };
 }
 /**
  * A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.
@@ -8869,6 +9777,19 @@ export interface GrantsBindingSpec {
    * @maxItems 32
    */
   grants: [CapabilityRef, ...CapabilityRef[]];
+}
+/**
+ * The graph.
+ */
+export interface Graph {
+  /**
+   * The parties.
+   */
+  nodes: Node[];
+  /**
+   * The credentials.
+   */
+  edges: Edge[];
 }
 /**
  * A community group, as a caller who may see it sees it. Members a caller may not see are absent: `memberCount` only to those who may see the group's members, `managers` and `credentialAuthorityValidUntil` only to its managers.
@@ -9167,6 +10088,93 @@ export interface HpkeArmoredEnvelope_VaultV0_2 {
    */
   producerAssertion?: "didSigned" | "attested" | "pinnedOnly";
 }
+/**
+ * An idea as one caller may see it.
+ */
+export interface Idea {
+  ideaId: IdeaId;
+  boardId: BoardId;
+  state: IdeaState;
+  title: IdeaTitle;
+  description: IdeaDescription;
+  format?: IdeaFormat;
+  topic?: Topic_VtcBoardsV0_1;
+  proposer: Author;
+  proposedAt: string;
+  /**
+   * Notes on the idea the caller may read.
+   */
+  noteCount: number;
+  /**
+   * Present once an election was opened for the idea.
+   */
+  election?: IdeaElection;
+  opening?: IdeaOpening;
+  /**
+   * Present in `declined`, `merged`, `selected` and `notSelected`.
+   */
+  decision?: IdeaDecision;
+}
+/**
+ * A facilitator's decision on an idea: declining or merging it (VTI-BRD-013), or selecting it or not (VTI-BRD-040). The deciding facilitator is not named to the audience.
+ */
+export interface IdeaDecision {
+  decidedAt: string;
+  reason?: Reason_VtcBoardsV0_1;
+  /**
+   * Present exactly when the idea is `merged`.
+   */
+  mergedInto?: IdeaId;
+  /**
+   * A `selected` idea's place in the board's timetable, where it has one.
+   */
+  slotId?: Key_VotingV0_1;
+  /**
+   * `selected` or `notSelected` only: whether the facilitator said the decision departs from the board's `selectionRule` (VTI-BRD-041); `reason` then says why.
+   */
+  departsFromRule?: boolean;
+  /**
+   * Present when a facilitator decided their own idea because no other facilitator existed (VTI-BRD-013).
+   */
+  ownIdea?: true;
+}
+/**
+ * An idea's election as a board shows it (VTI-BRD-033): never who took a ticket or cast a ballot.
+ */
+export interface IdeaElection {
+  electionId: ElectionId;
+  state: ElectionState;
+  /**
+   * The ballot box's latest board head's ballot count, where its board is public (VTI-VOT-052); absent otherwise. Counts ballots, not voters, where a later ballot replaces an earlier one.
+   */
+  ballotsOnBoard?: number;
+  /**
+   * When the head `ballotsOnBoard` was read from was issued.
+   */
+  boardHeadIssuedAt?: string;
+  /**
+   * Present once the election is tallied.
+   */
+  result?: ElectionResult;
+  /**
+   * Present with `result`: whether the community certified it (VTI-VOT-071).
+   */
+  certified?: boolean;
+}
+/**
+ * Shown to facilitators only: an accepted idea whose election the ballot box has not yet registered, so the idea is still `proposed` (VTI-BRD-031). `refusal` is the ballot box's or community's refusal of the last attempt, after which the idea is no longer being opened.
+ */
+export interface IdeaOpening {
+  electionId: ElectionId;
+  /**
+   * When the facilitator accepted the idea.
+   */
+  startedAt: string;
+  refusal?: {
+    code: string;
+    refusedAt: string;
+  };
+}
 export interface IdentityChange {
   /**
    * `addKey` — a verification method joins its role's relationship and `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves its relationship and `keyRoles`, and stays in `verificationMethod` with `revoked` set to the compromise time (CONVENTIONS.md §9.1). `rotateUpdateKey` — the identifier's update authority moves to a committed routine successor. `commitUpdateKey` — a new routine successor is committed. `replaceRecoveryCommitment` — the recovery commitment changes. `useRecoveryKey` — the change is authorized by the recovery key, which the identifier then reveals.
@@ -9368,6 +10376,42 @@ export interface InForce_VtcV0_4 {
   reason?: string;
 }
 /**
+ * An entry as the network publishes it, with the credentials a verifier needs.
+ */
+export interface IndexEntry {
+  /**
+   * The listed party's DID.
+   */
+  did: Did_VtnV0_1;
+  kind: EntryKind;
+  state: EntryState;
+  /**
+   * Whether the party acknowledged: true only for a member. Every published entry states it (VTI-VTN-013).
+   */
+  acknowledged: boolean;
+  /**
+   * The name the directory shows.
+   */
+  label?: string;
+  profile: EntryProfile;
+  /**
+   * The listing credential.
+   */
+  listing: Credential;
+  /**
+   * The membership grant, once acknowledged.
+   */
+  grant?: Credential;
+  /**
+   * The party's acknowledgement.
+   */
+  acknowledgement?: Credential;
+  /**
+   * The party's repudiation.
+   */
+  repudiation?: Credential;
+}
+/**
  * Registry view of one issued Invitation Credential. Carries no credential material — the VIC itself is returned only once, by `issue`.
  */
 export interface InvitationSummary {
@@ -9468,6 +10512,19 @@ export interface InviteSummary_VtcV0_2 {
    * When the invite was redeemed, if it was.
    */
   consumedAt?: string;
+}
+/**
+ * A credential the network issued, with where its status is kept.
+ */
+export interface Issued {
+  /**
+   * The credential as issued.
+   */
+  credential: Credential;
+  /**
+   * The credential's index in the network's status lists.
+   */
+  statusIndex: number;
 }
 /**
  * The members of an issuance receipt, deliberately left **open** so a consuming specification can `$ref` it under `allOf` and add its own, then close the result with `unevaluatedProperties: false`.
@@ -10116,6 +11173,10 @@ export interface MemberResponse {
   extensions: {};
 }
 /**
+ * A person's membership credential (VMC) from a community that is a member of this network, holder-bound to the requester's identity. Open for the same reason as `Credential`.
+ */
+export interface Membership {}
+/**
  * Metadata of one stored message. Never carries the message body.
  */
 export interface MessageMeta {
@@ -10481,6 +11542,46 @@ export interface NetworkMembership {
   joinedAt?: string;
   updatedAt: string;
 }
+export interface NetworkMembership_VtcV0_7 {
+  /**
+   * The network's DID.
+   */
+  network: string;
+  /**
+   * Where the network's API is reached: the base its `/.well-known/vtn` profile is served under.
+   */
+  url: string;
+  /**
+   * The network's name, as its profile gives it.
+   */
+  name?: string;
+  /**
+   * `acknowledged`: the community is a member — it signed the acknowledgement of the network's grant. `repudiated`: the community rejected the network's listing of it. `departed`: the community left, by repudiating the grant.
+   */
+  state: "acknowledged" | "repudiated" | "departed";
+  /**
+   * The network's listing credential naming the community, as the community verified it.
+   */
+  listing: {};
+  /**
+   * The network's membership grant (VMC), once the community acknowledged.
+   */
+  grant?: {};
+  /**
+   * The community's acknowledgement (VMC carrying the grant's digest).
+   */
+  acknowledgement?: {};
+  /**
+   * The community's repudiation (VSC) of the listing, or — on departure — of the grant.
+   */
+  repudiation?: {};
+  /**
+   * @maxItems 64
+   */
+  groups: RegisteredGroup_VtcV0_7[];
+  joinedAt?: string;
+  updatedAt: string;
+}
 /**
  * The discoverability a card has when the community creates it, before its member chooses. A new card is never published beyond the community (VTI-DIR-042), so there is no member for that here: `externalCards` says whether the member may turn it on.
  */
@@ -10497,6 +11598,51 @@ export interface NewCardDefaults {
    * From whom a new card accepts introductions. Absent where the community does not deliver introductions.
    */
   introductions?: Introductions;
+}
+/**
+ * A party.
+ */
+export interface Node {
+  /**
+   * The party's DID.
+   */
+  id: Did_VtnV0_1;
+  kind: NodeKind;
+  /**
+   * Its name.
+   */
+  label?: string;
+  /**
+   * Its entry's state; absent for the root.
+   */
+  state?: EntryState;
+  /**
+   * Whether this is the network whose graph it is.
+   */
+  root: boolean;
+  /**
+   * Where a member network is reached, so a viewer can expand it.
+   */
+  url?: string;
+}
+/**
+ * A note as one caller may see it. `text` is absent from a `withdrawn` or `hidden` note for anyone but its author and the board's facilitators (VTI-BRD-021).
+ */
+export interface Note {
+  noteId: NoteId_VtcBoardsV0_1;
+  boardId: BoardId;
+  /**
+   * The idea the note is attached to; absent for a note on the board itself.
+   */
+  ideaId?: IdeaId;
+  author: Author;
+  text?: NoteText_VtcBoardsV0_1;
+  createdAt: string;
+  state: NoteState;
+  /**
+   * A `hidden` note's reason, shown to everyone who sees the note.
+   */
+  hiddenReason?: Reason_VtcBoardsV0_1;
 }
 /**
  * The members of one notification, as notifications/notify carries them and as a recipient's agent records them. The originator is the `issuer` of the notifications/notify document and the addressee its `recipient`; neither is repeated here, because the originator's proof covers both.
@@ -10589,6 +11735,44 @@ export interface OfferV2 {
   credentials: OfferCredentials;
 }
 /**
+ * A delivery waiting to be retried.
+ */
+export interface OutboxItem {
+  /**
+   * The message id.
+   */
+  messageId: string;
+  /**
+   * The group.
+   */
+  group: string;
+  /**
+   * Its member.
+   */
+  member: Did_VtnV0_1;
+  /**
+   * Where it is being delivered.
+   */
+  endpoint: string;
+  envelope: Envelope;
+  /**
+   * Attempts so far.
+   */
+  attempts: number;
+  /**
+   * When it is next tried.
+   */
+  nextAttemptAt: string;
+  /**
+   * When it is given up.
+   */
+  expiresAt: string;
+  /**
+   * The last failure.
+   */
+  lastError: string;
+}
+/**
  * One witnessing session's outcome evidence. `session` is the initiating witness/session document; `outcome` is the terminal witness/session/submit #response that the initiating document's own specification declares as its outcome evidence, under the witness's proof, delivering the VWC and its vwcDigestMultibase. A consumer pairs them with a presented VWC by SPEC §4.9.4's four checks and the witnessing checks of witness/session/submit (This response is the outcome evidence).
  */
 export interface OutcomeEvidence {
@@ -10657,6 +11841,27 @@ export interface PasskeyVerificationMethod {
    * Optional operator-supplied human-readable label (e.g. "MacBook Touch ID"). Informational; not authoritative and not a security input.
    */
   label?: string;
+}
+/**
+ * One step on the path from the searched network to the network that lists a result. Each hop states its own entry state: membership does not chain (VTI-VTN-033).
+ */
+export interface PathHop {
+  /**
+   * A network on the path.
+   */
+  network: Did_VtnV0_1;
+  /**
+   * Its name.
+   */
+  name?: string;
+  /**
+   * Its own entry's state at the network before it on the path.
+   */
+  state: EntryState;
+  /**
+   * Whether that entry is a membership.
+   */
+  acknowledged: boolean;
 }
 /**
  * The share of one queue attributable to one counterparty: in a send queue, the recipient; in a receive queue, the sender.
@@ -11469,6 +12674,32 @@ export interface ReadVerification {
   };
 }
 /**
+ * The outcome of one delivery.
+ */
+export interface Receipt {
+  /**
+   * The group delivered to.
+   */
+  group: string;
+  /**
+   * The member that owns it.
+   */
+  member: Did_VtnV0_1;
+  status: DeliveryStatus;
+  /**
+   * Why, for anything but `delivered`.
+   */
+  detail?: string;
+  /**
+   * Whether the group is a network group, which relays further.
+   */
+  network?: boolean;
+  /**
+   * The receipts the network group's own relay returned.
+   */
+  relayed?: Receipt[];
+}
+/**
  * One notification the community holds, as an administrator with `vtc.notifications.read` sees it. `originator`, `deliveredBy` and every entry of `relayedBy` were verified by the community when it accepted the notification (VTI-NTF-042); an administrator that does not take the community's word for them reads the document with vtc/notifications/show and verifies it.
  */
 export interface ReceivedNotification {
@@ -11631,6 +12862,63 @@ export interface RecordMetadataV2 {
   blobs?: [BlobRef];
 }
 /**
+ * What `rooms/records/list/0.6` returns, and `rooms/keys/browse/0.4` passes through: `RecordMetadataV2` plus `kind` on an `open` room, `createdAt` and `bodyStoredAt` on every tier and `createdBy` on `open` and `attributed`. A separate definition, not a change to `RecordMetadataV2`, so that `rooms/records/list/0.2` to `0.5` keep the exact shape they published. Never the body.
+ */
+export interface RecordMetadataV3 {
+  /**
+   * The record's key within the room. On `attributed` and `private` rooms this MUST be opaque — a random identifier, never a descriptive slug. A key reading `decision/acquire-northwind` defeats the encryption sitting beside it; structured naming belongs inside the sealed body.
+   */
+  key: string;
+  /**
+   * Server-assigned, monotonic per room.
+   */
+  version: number;
+  /**
+   * The epoch the record was sealed under. Absent on an `open` room.
+   */
+  epoch?: number;
+  /**
+   * Curation state. `retracted` is a tombstone: the body is gone, the key and version remain so incremental sync converges and the audit chain stays intact.
+   */
+  status?: "active" | "deprecated" | "retracted";
+  updatedAt: string;
+  /**
+   * When the host stored the record's first version: RFC 3339, set by the host, never by a writer. Host metadata, not body, so it is served on every tier. A host MUST set it when it stores a record's first version and MUST keep it unchanged for as long as it holds the record — across every later version, every curation, retraction included, and a member's withdrawal — so that it says when the room received the record, which `updatedAt` cannot once the record has been edited or curated. A host that stored a record before it kept `createdAt` MUST omit it for that record rather than supply a guess such as the earliest `updatedAt` it still holds; a reader then falls back to `updatedAt` (`SealedRecordBody`, *When it was written*). Readers order messages and judge `writtenAt` by it.
+   */
+  createdAt?: string;
+  /**
+   * The author of the record's first version, as the host recorded it when it stored that version: the DID it authenticated for the write on an `open` room, and on an `attributed` one the author it records for every write. Set by the host, never by a writer, and kept unchanged for as long as it holds the record — across every later version, every curation and a retraction — like `createdAt`. Served on `open` and `attributed` rooms only: a `private` room's host records no author, and MUST NOT serve this. Omitted for a record stored before the host kept it, rather than guessed. Readers use it to apply the rules about a rewrite by another member to a record they see for the first time (`SealedRecordBody`, *The record's original author*).
+   */
+  createdBy?: string;
+  /**
+   * When the host stored the body the record's current version carries: the time of the `rooms/records/put` that wrote that body. Set by the host, never by a writer. A curation (`rooms/records/curate`), and anything else that moves the version without writing a new author-signed body, leaves it unchanged; for the first version it equals `createdAt`. The host knows which task wrote each version, so it is served on every tier, `private` included, and says nothing about the body. Readers verify the current version's proof against the author's DID document as it stood at this time (`SealedRecordBody`, *Which DID document*). Omitted for a version stored before the host kept it, rather than guessed.
+   */
+  bodyStoredAt?: string;
+  /**
+   * Present only on an `open` room; sealed with the body otherwise.
+   */
+  title?: string;
+  /**
+   * Present only on an `open` room; sealed with the body otherwise.
+   */
+  description?: string;
+  /**
+   * The member who wrote it. Present on `open` and `attributed`; on `private` the author is inside the sealed body, where only members can read it.
+   */
+  author?: string;
+  /**
+   * The stored blobs this record names, as rooms/records/put/0.2 wrote them. Absent when it names none, when it is retracted, and on records written by put 0.1. Cleartext on every tier, as on the write, so a listing discloses which records carry files, never anything about the files beyond the blobs' sizes.
+   *
+   * @minItems 1
+   * @maxItems 1
+   */
+  blobs?: [BlobRef];
+  /**
+   * The record's `kind` as its current version's `cleartext` carries it. Present only on an `open` room, where the host reads the body anyway; on `attributed` and `private` rooms `kind` is sealed with the body and a host MUST NOT serve it, nor anything from which it could be inferred. Absent on a record that carries none — which a reader reads as `note` — and on a tombstone, which keeps nothing of its body.
+   */
+  kind?: RecordKind;
+}
+/**
  * The mark a prune leaves: **that** records were removed, when, and how many — never which, and never anything they said.
  *
  * A prune removes records outright, tombstones included, so the room's record tree loses leaves and an incremental reader has nothing left to learn the removal from. This is what it learns from instead. A host keeps the latest one per room and serves it with every listing that can carry it (`rooms/records/list` 0.3, as `lastPrune`); a reader whose own copy of the room was synchronised to a version below `version` MUST rebuild that copy from a full listing — no `sinceVersion` — and drop every record the full listing no longer holds. Without that, a record the room removed lives on in every cache that synchronised before the prune, and a record retracted while the reader was away comes back as current.
@@ -11671,6 +12959,19 @@ export interface RecordPrune_RoomsV0_2 {
    * How many records were removed, tombstones included. A prune that removed nothing leaves no mark.
    */
   removed: number;
+}
+/**
+ * Names another record of the same room: the record a reply answers or a reaction responds to. Never a record of another room — a citation that crosses rooms is `RecordEvidenceRecord`. A reader resolves it only against records it can already list or read in this room, and MUST NOT fetch anything else because of it. It MUST NOT name a record of kind `reaction`.
+ */
+export interface RecordReference {
+  /**
+   * The record's key, as in `rooms/records/put`. Opaque on the sealed tiers, like every key there.
+   */
+  key: string;
+  /**
+   * The version of the record the author was answering. OPTIONAL. A reader SHOULD say that the target has changed since only when its content has, never because its version moved: curation moves a record's version without touching its content (`SealedRecordBody`, *Whether the target has changed*).
+   */
+  version?: number;
 }
 /**
  * How long a room keeps its records, by age: the room's **record retention**. Records older than it states become **eligible** to be removed by `rooms/records/prune`; nothing is removed until a holder of `admin` asks for a prune, and nothing a prune removes can be brought back.
@@ -11811,6 +13112,63 @@ export interface RegisteredGroup {
    * The network's `groupRegistered` statement (VSC), bound to the registration's digest.
    */
   acceptance: {};
+  registeredAt: string;
+}
+export interface RegisteredGroup_VtcV0_7 {
+  /**
+   * A role the network defines, e.g. `admins`: lowercase letters, digits, `-` and `_`.
+   */
+  role: string;
+  /**
+   * The community's identifier for the group.
+   */
+  groupId: string;
+  /**
+   * The group's own DID, which the registration names as its `group`.
+   */
+  groupDid: string;
+  /**
+   * Where the network delivers broadcasts for the group: the community's Trust Task endpoint, at which the network sends them as `vtc/networks/deliver`.
+   */
+  endpoint: string;
+  /**
+   * The registration: the community's signed `vtn/groups/register` request as the network accepted it — a complete Trust Task document, with its proof, naming the network as `recipient` and the group, `role` and `endpoint` in its payload.
+   */
+  registration: {};
+  /**
+   * The network's `groupRegistered/1` statement (VSC) accepting the registration: subject the group, `object.digestMultibase` the registration's digest — SHA-256 over the RFC 8785 (JCS) form of the signed request including its proof.
+   */
+  acceptance: {};
+  registeredAt: string;
+}
+/**
+ * A group serving a role: the member's signed registration and the network's groupRegistered credential accepting it.
+ */
+export interface RegisteredGroup_VtnV0_1 {
+  /**
+   * The member that registered the group.
+   */
+  member: Did_VtnV0_1;
+  role: RoleName_VtnV0_1;
+  /**
+   * The group: a DID, or for a network group a DID URL on the network's DID (`<did>#role-<name>`).
+   */
+  group: string;
+  /**
+   * Where the network delivers broadcasts for the group.
+   */
+  endpoint: string;
+  /**
+   * The member's signed vtn/groups/register request.
+   */
+  registration: SignedTask;
+  /**
+   * The network's groupRegistered credential: a statement (`https://openvtc.org/vtn/vsc/groupRegistered/1`) issued by the accepting network, subject the group, `object.digestMultibase` the digest of `registration`, with a `credentialStatus` on the network's revocation list.
+   */
+  acceptance: Credential;
+  /**
+   * When the network accepted the registration.
+   */
   registeredAt: string;
 }
 /**
@@ -12288,6 +13646,20 @@ export interface RoleBindingSpec {
   role: RoleName;
 }
 /**
+ * A role the network defines.
+ */
+export interface RoleDef {
+  name: RoleName_VtnV0_1;
+  /**
+   * What the role is for.
+   */
+  description?: string;
+  /**
+   * Whether a party must register a group for it before its acknowledgement is accepted.
+   */
+  required: boolean;
+}
+/**
  * One administrative role of a VTC: a name, the CEILING of capabilities an entry holding the role may hold, and the approve ceiling of capabilities it may approve.
  *
  * A ROLE IS A CEILING, NOT A GRANT. It states the most an entry with this role could be allowed; the entry's own `capabilities` say what it does hold, and may be narrower. An entry's effective capabilities are this whole `ceiling` where the entry states `capabilities: {scope: ceiling}`, nothing where it states `none`, and this `ceiling` ∩ its listed grants (plus any additive grant) where it states `listed`. Holding the role confers nothing an entry has not been granted. Likewise `approveScope` bounds what an entry may approve: the entry's `approveCapabilities` select from it (`ceiling` = all of it, `listed` = an intersection, absent or `none` = nothing), and the entry's `approve` scope must not be none for any of it to apply.
@@ -12430,6 +13802,19 @@ export interface RoleLayout {
    */
   algorithms: [KeyType, ...KeyType[]];
 }
+/**
+ * Which of this network's roles serves a parent's role.
+ */
+export interface RoleMapping {
+  /**
+   * The parent's role.
+   */
+  parentRole: RoleName_VtnV0_1;
+  /**
+   * This network's role whose network group serves it.
+   */
+  localRole: RoleName_VtnV0_1;
+}
 export interface RoleSummary {
   role: KeyRole;
   /**
@@ -12566,6 +13951,35 @@ export interface RoomBindingSpec {
    * How long each admission's authority runs, as an ISO 8601 duration in whole days (`P365D`). The community renews it while the member stays in the group.
    */
   validFor: string;
+}
+/**
+ * A room.
+ */
+export interface RoomDef {
+  /**
+   * The room's id.
+   */
+  id: string;
+  /**
+   * Its name.
+   */
+  name: string;
+  /**
+   * The role whose groups' members may enter.
+   */
+  role: RoleName_VtnV0_1;
+  /**
+   * What it is for.
+   */
+  description?: string;
+  /**
+   * Where the room is.
+   */
+  url?: string;
+  /**
+   * How long a pass lasts, in minutes: at most 1440 (24 hours). A pass is short-lived because it is not revoked; eligibility is re-proved for the next one.
+   */
+  passMinutes: number;
 }
 /**
  * How much a host is willing to store for one room, at the room and per member. A hosting decision, set by the host and never by anything in the room's credentials. An upload must fit every scope at once: the object against the smallest `maxFileBytes` that applies, and the member and the room with the file added.
@@ -12705,13 +14119,27 @@ export interface RoomMembershipV2 {
   purgeAt?: string;
 }
 /**
+ * A room pass.
+ */
+export interface RoomPass {
+  room: RoomDef;
+  /**
+   * The pass: a credential the network signs for the person, valid for `passMinutes`.
+   */
+  pass: Credential;
+  /**
+   * The networks the person's eligibility ran through, from the one nearest their community up to this network.
+   */
+  via: Did_VtnV0_1[];
+}
+/**
  * What a room says about itself to its own members: a name and, optionally, a description, short tags and an emoji, so that a member's wallet, portal or CLI can show what each room is rather than a DID.
  *
  * **It lives in the room, and only there.** A profile is carried in a record of the room (`RoomProfileStatement`), sealed on `attributed` and `private` rooms like every other record, so the room's host stores ciphertext and learns neither the name nor anything else here. It is never put in a credential — credentials are presented to hosts — nor in a host's record of the room, in `rooms/create` or `rooms/owner/register`, or in any member a host can read. On an `open` room it is cleartext, as everything in an open room is.
  *
  * **Plain text, never instructions.** Every member is free text chosen by whoever wrote the profile and shown to every member of the room. A reader renders `name`, `description` and `tags` as text — never as markup, never as a link it follows — removes or replaces control characters before showing them, and MUST NOT treat any of it as instructions, which matters most for an agent acting for a member. A writer MUST NOT put personal data or a credential in any member.
  *
- * **Growth.** A new optional member arrives in a later version of this component. A reader refuses a member it does not know (the `SealedRecordBody` rules), so a profile carrying one is not shown by a reader that predates it, and a writer SHOULD NOT use a member it cannot expect the room's readers to know. An ecosystem extension goes in `ext`, which a reader that does not understand it ignores. A change no earlier reader could survive is a new statement under a new derivation label (`openvtc/room/profile/v2`), written beside this one until the room's readers have moved.
+ * **Growth.** A new optional member arrives in place, additively, as `recordMembers` did, or in a later version of this component. A reader refuses a member it does not know (the `SealedRecordBody` rules), so a profile carrying one is not shown by a reader that predates it, and a writer SHOULD NOT use a member it cannot expect the room's readers to know. An ecosystem extension goes in `ext`, which a reader that does not understand it ignores. A change no earlier reader could survive is a new statement under a new derivation label (`openvtc/room/profile/v2`), written beside this one until the room's readers have moved.
  */
 export interface RoomProfile {
   /**
@@ -12741,6 +14169,13 @@ export interface RoomProfile {
    * One emoji — a single extended grapheme cluster, such as `📋` — that a surface MAY show beside the name. Text, rendered as text: never an image, never a URL, never anything a reader fetches, since a fetched icon would tell whoever serves it which member opened which room, and when. A reader that cannot render it shows nothing in its place.
    */
   emoji?: string;
+  /**
+   * The optional `SealedRecordBody` members — and on an `open` room the `cleartext` members of `rooms/records/put` — that the room's writers may use beyond the base set, as a set: order carries no meaning. Defined values: `kind`, `inReplyTo`, `writtenAt`, `editedAt`, and `width`, `height` and `preview`, which name the `FileManifest` members of those names inside a record's `file`. A writer MUST NOT write a member this governs unless the room's current profile lists it; absent means none (`SealedRecordBody`, *When a writer may use these members*). A writer MAY rely on a profile it resolved within the room's current epoch. The base set is every other member of `SealedRecordBody`, which a writer may always use. A value a writer does not know grants it nothing. Set by a member whose authority confers `curate` or `admin` (who may write the profile at all) — with `rooms/keys/profile/write` on a sealed tier, or `rooms/records/put` at `room-profile` on an `open` room — and never by default. Whether the room's readers are ready is the owner's or a curator's decision, made out of band; the order is readers (profile readers included, since a reader that predates this member refuses the profile carrying it), then the owner's key holder, which re-writes the profile after a removal and so MUST accept this member before any profile carries it, then on the sealed tiers the key holders that seal for writers, then the profile (`SealedRecordBody`, *Turning them on*). Listing a member never obliges a writer to use it, and removing one stops writers using it by the room's next epoch at the latest; records already written keep it.
+   *
+   * @minItems 1
+   * @maxItems 32
+   */
+  recordMembers?: [string, ...string[]];
   /**
    * Ecosystem-defined extension members per SPEC.md §4.5.1. A reader ignores what it does not understand.
    */
@@ -13372,6 +14807,10 @@ export interface SigmaProof {
  */
 export interface SignedRequest {}
 /**
+ * A complete Trust Task document, with its proof, exactly as signed and received. Verified as a document in its own right; open so its proof still covers every member, and so its digest can be recomputed.
+ */
+export interface SignedTask {}
+/**
  * One signing-key delegation, as its holder sees it. A delegation confers nothing of its own: it names an identity that already holds whatever standing it holds, and a document signed by the key is authorized by that identity's standing read at execution time.
  */
 export interface SigningKey {
@@ -13478,6 +14917,30 @@ export interface AndroidApp_VaultV0_2 {
    * @minItems 1
    */
   sha256CertFingerprints: [string, ...string[]];
+}
+/**
+ * One place in a board's timetable that a selected idea can be put in (VTI-BRD-040): a place (`label`, e.g. a room) and a time.
+ */
+export interface Slot_VtcBoardsV0_1 {
+  slotId: Key_VotingV0_1;
+  label: string;
+  startsAt: string;
+  endsAt: string;
+}
+/**
+ * One transition in an entry's lifecycle.
+ */
+export interface StateChange {
+  /**
+   * When the state changed.
+   */
+  changedAt: string;
+  /**
+   * The state before; absent for the first listing.
+   */
+  from?: EntryState;
+  to: EntryState;
+  reason?: Reason_VtnV0_1;
 }
 /**
  * The prior state the effects were computed against. A human in the loop makes the approval window minutes wide, so the state can move underneath a pending approval. The executor asserts this pin still holds at execution and refuses otherwise — without it, a lost update silently executes against state the approver never saw.
@@ -14086,12 +15549,93 @@ export interface TspMessageEnvelope_VaultV0_2 {
   message: string;
 }
 /**
+ * A member network whose set could not be read: its results are indeterminate, not absent (VTI-REG-012).
+ */
+export interface Unreachable {
+  /**
+   * The member network that could not be searched.
+   */
+  network: Did_VtnV0_1;
+  /**
+   * How it was reached.
+   */
+  path: PathHop[];
+  /**
+   * Why.
+   */
+  reason: string;
+}
+/**
  * What the uploaded bytes are for, committed before any byte moves. `file`: one file at `path`, written into the site when the upload commits — the single-file write. `bundle`: a gzip-compressed tar of the whole site, staged when the upload commits and published by vtc/website/deploy. `path` is required for a `file` target and forbidden for a `bundle`, and `ifMatch` is allowed only for a `file` — rules over two members that this schema does not express; a community refuses a violation with `malformedRequest`. `ifMatch` is optimistic concurrency: the write commits only if the file's current content hash is this value.
  */
 export interface UploadTarget {
   kind: "file" | "bundle";
   path?: WebsitePath;
   ifMatch?: WebsiteEtag;
+}
+/**
+ * A group this network registered at its parent.
+ */
+export interface UpstreamGroup {
+  parentRole: RoleName_VtnV0_1;
+  localRole: RoleName_VtnV0_1;
+  /**
+   * This network's network group (`<did>#role-<localRole>`).
+   */
+  group: string;
+  /**
+   * This network's signed vtn/groups/register request to the parent.
+   */
+  registration: SignedTask;
+  /**
+   * The parent's groupRegistered credential accepting the registration: issued by the parent, subject this network's network group, `object.digestMultibase` the digest of `registration`, revocable on the parent's status list.
+   */
+  acceptance: Credential;
+}
+/**
+ * This network's membership of a parent.
+ */
+export interface UpstreamMembership {
+  /**
+   * The parent network.
+   */
+  network: Did_VtnV0_1;
+  /**
+   * Where the parent is reached.
+   */
+  url: string;
+  /**
+   * The parent's name.
+   */
+  name?: string;
+  /**
+   * `acknowledged`: this network is a member. `repudiated`: it rejected the parent's listing. `departed`: it left.
+   */
+  state: "acknowledged" | "repudiated" | "departed";
+  /**
+   * The parent's listing of this network, as verified.
+   */
+  listing: Credential;
+  /**
+   * The parent's grant.
+   */
+  grant?: Credential;
+  /**
+   * This network's acknowledgement.
+   */
+  acknowledgement?: Credential;
+  /**
+   * This network's repudiation of the listing or grant.
+   */
+  repudiation?: Credential;
+  /**
+   * Groups registered at the parent.
+   */
+  groups: UpstreamGroup[];
+  /**
+   * When it last changed.
+   */
+  updatedAt: string;
 }
 /**
  * What one scope holds now. Ciphertext bytes throughout.
@@ -14812,6 +16356,13 @@ export interface WebvhServerRecord {
   createdAt: string;
   updatedAt: string;
   ext?: Ext;
+}
+/**
+ * A period, open from `opensAt` until `closesAt`. `closesAt` is after `opensAt` (a consumer check; JSON Schema cannot compare them).
+ */
+export interface Window {
+  opensAt: string;
+  closesAt: string;
 }
 export interface WitnessKey {
   /**
