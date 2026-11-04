@@ -1,0 +1,16 @@
+[
+  {
+    "note": "Missing `url`.",
+    "payload": {
+      "network": "did:example:whn"
+    }
+  },
+  {
+    "note": "Unknown member — a repudiation names no groups.",
+    "payload": {
+      "url": "https://whn.example.org",
+      "network": "did:example:whn",
+      "groups": []
+    }
+  }
+]

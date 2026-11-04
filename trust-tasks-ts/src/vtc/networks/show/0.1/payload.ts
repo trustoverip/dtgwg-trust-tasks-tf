@@ -8,6 +8,8 @@ import type { Ext, NetworkMembership, RegisteredGroup } from "../../../../_share
 
 /**
  * One network membership, by the network's DID. The outer document members are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by vtc/networks/show/0.2
  */
 export interface VTCNetworksShowPayload {
   /**
@@ -18,6 +20,8 @@ export interface VTCNetworksShowPayload {
 }
 /**
  * The membership.
+ *
+ * @deprecated superseded by vtc/networks/show/0.2
  */
 export interface VTCNetworksShowResponsePayload {
   membership: NetworkMembership;
@@ -44,15 +48,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by vtc/networks/show/0.2";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vtc/networks/show/0.2
+ */
 export type Payload = VTCNetworksShowPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/networks/show/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vtc/networks/show/0.2
+ */
 export type Response = VTCNetworksShowResponsePayload;
 
 /**

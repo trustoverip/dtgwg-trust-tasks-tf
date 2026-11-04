@@ -1,0 +1,37 @@
+[
+  {
+    "note": "Missing `role` — the community cannot tell which of its registered groups is addressed.",
+    "payload": {
+      "envelope": { "message": {}, "hops": [] }
+    }
+  },
+  {
+    "note": "An envelope without its hops.",
+    "payload": {
+      "role": "admins",
+      "envelope": { "message": {} }
+    }
+  },
+  {
+    "note": "A role name with capitals — roles are lowercase identifiers.",
+    "payload": {
+      "role": "Admins",
+      "envelope": { "message": {}, "hops": [{}] }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A member count — the response deliberately says nothing about the group's size.",
+    "payload": {
+      "status": "delivered",
+      "delivered": 12
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A refusal is an error, not a status.",
+    "payload": {
+      "status": "refused"
+    }
+  }
+]

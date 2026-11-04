@@ -62,7 +62,7 @@ related:
 
 ## Abstract
 
-This network's membership of a parent is its acknowledgement of the parent's grant (VTI-VTN-013). **VTN Memberships — Leave** withdraws it: the network signs, as itself, a repudiation of the grant and sends it to the parent through [`vtn/membership/repudiate`](../../../membership/repudiate/0.1/spec.md); the parent then records the departure and revokes what it issued for this network ([VTI specification, *The Verifiable Trust Network*](https://trustoverip.github.io/dtgwg-vti-spec/), VTI-VTN-053). It is the mirror of [`vtc/networks/leave`](../../../../vtc/networks/leave/0.1/spec.md). Leaving changes nothing about this network's own members, which were never members of the parent (VTI-VTN-033, VTI-VTN-063).
+This network's membership of a parent is its acknowledgement of the parent's grant (VTI-VTN-013). **VTN Memberships — Leave** withdraws it: the network signs, as itself, a repudiation of the grant and sends it to the parent through [`vtn/membership/repudiate`](../../../membership/repudiate/0.1/spec.md); the parent then records the departure and revokes what it issued for this network ([VTI specification, *The Verifiable Trust Network*](https://trustoverip.github.io/dtgwg-vti-spec/), VTI-VTN-053). It is the mirror of [`vtc/networks/leave`](../../../../vtc/networks/leave/0.2/spec.md). Leaving changes nothing about this network's own members, which were never members of the parent (VTI-VTN-033, VTI-VTN-063).
 
 ## Status of this Document
 

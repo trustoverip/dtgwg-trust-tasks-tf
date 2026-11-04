@@ -1,0 +1,23 @@
+[
+  {
+    "note": "`network` is not a DID.",
+    "payload": {
+      "network": "whn"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A link without the network's acceptance — the registration alone is the community's claim, not the network's.",
+    "payload": {
+      "links": [
+        {
+          "groupId": "admins",
+          "groupDid": "did:example:g",
+          "network": "did:example:whn",
+          "role": "admins",
+          "registration": {}
+        }
+      ]
+    }
+  }
+]

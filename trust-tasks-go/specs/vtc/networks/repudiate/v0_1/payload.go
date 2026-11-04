@@ -12,6 +12,8 @@ import (
 )
 
 // Response The membership record, in state `repudiated`.
+//
+// Deprecated: superseded by vtc/networks/repudiate/0.2
 type Response struct {
 	Membership NetworkMembership `json:"membership"`
 	Ext        *Ext              `json:"ext,omitempty"`
@@ -91,6 +93,8 @@ type RegisteredGroup struct {
 
 // Payload Reject a network's listing of the community. The outer document members are
 // owned by the framework — SPEC §6.3.
+//
+// Deprecated: superseded by vtc/networks/repudiate/0.2
 type Payload struct {
 	// The network's API base, as the network's administrators gave it.
 	URL string `json:"url"`
@@ -119,7 +123,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by vtc/networks/repudiate/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/networks/repudiate/0.1#response"

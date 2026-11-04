@@ -65,7 +65,7 @@ related:
 
 ## Abstract
 
-A parent network may list this network without asking (VTI-VTN-010), and a listing establishes nothing (VTI-VTN-020). **VTN Memberships — Repudiate** is how this network says publicly that it does not accept such a listing: it signs, as itself, a repudiation naming the listing by its digest and sends it to the parent through [`vtn/membership/repudiate`](../../../membership/repudiate/0.1/spec.md), and the parent must publish it beside the entry ([VTI specification, *The Verifiable Trust Network*](https://trustoverip.github.io/dtgwg-vti-spec/), VTI-VTN-012). It is the mirror of [`vtc/networks/repudiate`](../../../../vtc/networks/repudiate/0.1/spec.md) for a network that is listed.
+A parent network may list this network without asking (VTI-VTN-010), and a listing establishes nothing (VTI-VTN-020). **VTN Memberships — Repudiate** is how this network says publicly that it does not accept such a listing: it signs, as itself, a repudiation naming the listing by its digest and sends it to the parent through [`vtn/membership/repudiate`](../../../membership/repudiate/0.1/spec.md), and the parent must publish it beside the entry ([VTI specification, *The Verifiable Trust Network*](https://trustoverip.github.io/dtgwg-vti-spec/), VTI-VTN-012). It is the mirror of [`vtc/networks/repudiate`](../../../../vtc/networks/repudiate/0.2/spec.md) for a network that is listed.
 
 ## Status of this Document
 

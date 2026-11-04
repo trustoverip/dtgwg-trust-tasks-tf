@@ -1,0 +1,19 @@
+[
+  {
+    "note": "An unknown state — a membership is acknowledged, repudiated or departed; a network merely listing the community is not a membership.",
+    "payload": {
+      "state": "listed"
+    }
+  },
+  {
+    "note": "`limit` above the page bound.",
+    "payload": {
+      "limit": 1000
+    }
+  },
+  {
+    "variant": "response",
+    "note": "Response without `items`.",
+    "payload": {}
+  }
+]
