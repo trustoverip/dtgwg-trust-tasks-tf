@@ -1491,6 +1491,10 @@ function buildTask(entry, meta, schema, uses) {
     // aspiration, and `wireCompatibleWith` exists to tell an implementer it can
     // dual-accept a predecessor version. Both have to reach the page to work.
     knownImplementations: meta.knownImplementations || [],
+    // SPEC §7.3 items 20 and 21: declared (checked above) but, until now, shown
+    // to nobody. Null when absent, which the page reports as such.
+    outcomeEvidence: meta.outcomeEvidence || null,
+    maxDocumentBytes: meta.maxDocumentBytes || null,
     wireCompatibleWith: meta.wireCompatibleWith || null,
     extends: meta.extends || null,
     // SPEC §9.4 Carried Protocols, §7.3 item 23: the external protocol and
