@@ -42,7 +42,7 @@ retention:
   rationale: "The task returns a result and stores nothing; an oracle that cached plaintext would create a second copy of the room outside the room."
 errorCodes:
   - code: rooms/keys/open:unknownEpoch
-    meaning: "The oracle holds no key for the epoch this record was sealed under. `details.reason` says why, exactly as `rooms/keys/file-key` 0.2 says it: `notDelivered` — the room has moved to an epoch whose commit has not reached the oracle yet, so retrying after it arrives may succeed, and `details.heldEpoch`, when present, is the latest epoch the oracle holds; `beyondChain` — the oracle's epoch chain reaches back only to `details.earliestEpoch`; `removed` — a commit the oracle processed removed its principal from the room's group at `details.removedAtEpoch`, and the record's epoch is at or after it, so no later commit will make it openable and catching up will not help."
+    meaning: "The oracle holds no key for the epoch this record was sealed under. `details.reason` says why, exactly as `rooms/keys/file-key` 0.2 says it: `notDelivered` — the room has moved to an epoch whose commit has not reached the oracle yet, so retrying after it arrives may succeed, and `details.heldEpoch`, when present, is the latest epoch the oracle holds; `beyondChain` — the oracle's epoch chain reaches back only to `details.earliestEpoch`; `removed` — a commit the oracle processed removed its principal from the room's group at `details.removedAtEpoch`, and the record's epoch is at or after it and below the epoch the principal next joined at, if it has, so no later commit will make it openable and catching up will not help."
     retryable: false
     detailsSchema:
       type: object
@@ -120,24 +120,58 @@ rather than an in-place edit to `0.1` — a `MINOR` increment, as a narrowing ch
 A caller who is not authorized to open records for the room is refused with the framework's standard `permissionDenied` ([SPEC §8.3](/SPEC.md#83-standard-error-codes)). This specification declares no task-specific code for it.
 
 A key holder serving several members — several principals, or several personas of one — keeps
-one group state per member per room, and **MUST** open with the group state of the member its
-caller acts as. State it holds for another member **MUST NOT** be used to open a record for this
+one current group state per member per room, and **MUST** open with the group state of the
+member its caller acts as. State it holds for another member **MUST NOT** be used to open a record for this
 one, and a record that does not open under the caller's member's state is `didNotOpen` or
 `unknownEpoch`, never a retry under another member's.
+
+A member removed from the room's group and admitted again also has **prior memberships**
+([`rooms/keys/welcome`](../../welcome/0.1/spec.md), *Rejoining after a removal*): one per
+removal, each covering the epochs at or after the epoch it joined at and below the epoch of its
+removal. The record's epoch `E` chooses which of the member's states opens it, and no two of
+them cover the same epoch, so there is never a choice between states for one record. The oracle
+**MUST** use:
+
+- the member's current group state when `E` is at or after the epoch that state joined at;
+- otherwise, the prior membership whose range covers `E`, when `E` is below that membership's
+  removal epoch and at or after its join epoch.
+
+When `E` is at or after a removal epoch and below the join epoch of the member's next state —
+or at or after its last removal epoch, when it holds no current state — no state of the member
+covers it, and the oracle answers `unknownEpoch` with reason `removed` and that removal's epoch
+as `removedAtEpoch`. A record that does not open under the state `E` chose is `didNotOpen` or
+`unknownEpoch`; the oracle **MUST NOT** retry it under another of the member's states.
+
+A prior membership the oracle recognised from a Welcome rather than from a removal it processed
+([`rooms/keys/welcome`](../../welcome/0.1/spec.md), *Rejoining after a removal*) has a removal
+epoch that is **not yet known**: it held the room at some epoch `h`, and the member was removed
+at an epoch above `h` and at or below the next join epoch. Until the oracle applies the
+removing commit to that state, the membership covers every epoch at or after its join epoch
+and below the next join epoch, and `E` chooses it as above. A record whose `E` is above `h` is
+then a commit not yet delivered to that state: the oracle answers `unknownEpoch` with reason
+`notDelivered` and `heldEpoch` `h` — the epoch that state holds, not the current state's — and
+**MAY** first repair that state by applying the room's commits to it from a host, as it would
+catch up the current state. Applying the removing commit fixes the removal epoch, and from then
+on the membership is answered as one with a known removal: `E` below it opens under that state,
+and `E` at or after it and below the next join epoch is `removed`. An oracle that cannot obtain
+those commits answers what its repair would — `notDelivered` — and **MUST NOT** answer `removed`
+for an epoch above `h` before it has processed the commit that says so.
 
 An oracle that refuses with `unknownEpoch` a record sealed under epoch `E` **MUST** say which
 case holds in `details.reason`:
 
 - `removed`, with `removedAtEpoch`, when a commit the oracle processed removed its principal
-  from the room's group at `removedAtEpoch` and `E` is at or after it — no later commit will
-  make `E` openable, so the caller **MUST NOT** be told to catch up. This case takes
-  precedence over `notDelivered`: an oracle that knows of such a removal **MUST NOT** answer
-  `notDelivered` for an `E` at or after `removedAtEpoch`.
-- `notDelivered` when `E` is later than any epoch it holds and the removal case does not
-  apply (a commit has not been delivered), with `heldEpoch` naming the latest epoch it holds
-  where it can.
-- `beyondChain`, with `earliestEpoch`, when `E` is earlier than its current epoch and its
-  retained epoch chain does not reach back to `E`.
+  from the room's group at `removedAtEpoch` and `E` is at or after it and below the epoch the
+  principal next joined at, if it has — no later commit will make `E` openable, so the caller
+  **MUST NOT** be told to catch up. This case takes precedence over `notDelivered`: an oracle
+  that knows of such a removal **MUST NOT** answer `notDelivered` for an `E` in that range.
+- `notDelivered` when `E` is later than any epoch the state `E` chose holds and the removal
+  case does not apply (a commit has not been delivered), with `heldEpoch` naming the latest
+  epoch that state holds where it can — including a prior membership whose removal epoch is
+  not yet known, until the oracle applies the commit that removes it.
+- `beyondChain`, with `earliestEpoch`, when `E` is earlier than the latest epoch the state `E`
+  chose holds and that state's retained epoch chain does not reach back to `E`, or when `E` is
+  below the epoch the principal first joined at, so that no state of its covers `E`.
 
 An epoch below the room's epoch floor, once the oracle has learnt one, is answered as
 `beyondChain` with `earliestEpoch` at or above the floor, whatever the oracle still holds — see

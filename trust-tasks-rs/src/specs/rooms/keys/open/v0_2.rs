@@ -488,7 +488,7 @@ pub const ERROR_CODES: &[crate::DeclaredErrorCode] =
 pub mod error_codes {
     /// `rooms/keys/open:unknownEpoch`
     ///
-    /// The oracle holds no key for the epoch this record was sealed under. `details.reason` says why, exactly as `rooms/keys/file-key` 0.2 says it: `notDelivered` — the room has moved to an epoch whose commit has not reached the oracle yet, so retrying after it arrives may succeed, and `details.heldEpoch`, when present, is the latest epoch the oracle holds; `beyondChain` — the oracle's epoch chain reaches back only to `details.earliestEpoch`; `removed` — a commit the oracle processed removed its principal from the room's group at `details.removedAtEpoch`, and the record's epoch is at or after it, so no later commit will make it openable and catching up will not help.
+    /// The oracle holds no key for the epoch this record was sealed under. `details.reason` says why, exactly as `rooms/keys/file-key` 0.2 says it: `notDelivered` — the room has moved to an epoch whose commit has not reached the oracle yet, so retrying after it arrives may succeed, and `details.heldEpoch`, when present, is the latest epoch the oracle holds; `beyondChain` — the oracle's epoch chain reaches back only to `details.earliestEpoch`; `removed` — a commit the oracle processed removed its principal from the room's group at `details.removedAtEpoch`, and the record's epoch is at or after it and below the epoch the principal next joined at, if it has, so no later commit will make it openable and catching up will not help.
     ///
     /// Declared `retryable: false`.
     /// Declares a `detailsSchema` for the error's `details` member.
