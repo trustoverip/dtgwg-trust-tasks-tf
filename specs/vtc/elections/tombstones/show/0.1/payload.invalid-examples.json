@@ -1,0 +1,13 @@
+[
+  {
+    "note": "`electionId` is REQUIRED.",
+    "payload": {}
+  },
+  {
+    "note": "No other member is defined.",
+    "payload": {
+      "electionId": "board.brd_Uc7N2qLm4Rt8Vx1Z.ida_Pk3Wq9Ls2Dn6Hy4B",
+      "title": "Not carried"
+    }
+  }
+]

@@ -2434,6 +2434,11 @@ mod vtc {
                 mod v0_3;
             }
         }
+        mod tombstones {
+            mod show {
+                mod v0_1;
+            }
+        }
     }
     mod endorsement_types {
         mod delete {
