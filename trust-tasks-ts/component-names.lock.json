@@ -692,6 +692,7 @@
   "vta/_shared/0.9/did-template.schema.json#/$defs/Scope": "Scope_VtaV0_1",
   "vta/collection/_shared/0.1/collection.schema.json#/$defs/Claim": "Claim",
   "vta/collection/_shared/0.1/collection.schema.json#/$defs/CollectionEntry": "CollectionEntry",
+  "vta/collection/_shared/0.1/collection.schema.json#/$defs/CollectionSetting": "CollectionSetting",
   "vta/collection/_shared/0.1/collection.schema.json#/$defs/Collector": "Collector",
   "vta/collection/_shared/0.1/collection.schema.json#/$defs/ContextId": "ContextId_VtaCollectionV0_1",
   "vta/collection/_shared/0.1/collection.schema.json#/$defs/Did": "Did_NotificationsV0_1",

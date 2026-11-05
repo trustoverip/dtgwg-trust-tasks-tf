@@ -1667,6 +1667,14 @@ mod vta {
         mod release {
             mod v0_1;
         }
+        mod settings {
+            mod set {
+                mod v0_1;
+            }
+            mod show {
+                mod v0_1;
+            }
+        }
     }
     mod contexts {
         mod create {

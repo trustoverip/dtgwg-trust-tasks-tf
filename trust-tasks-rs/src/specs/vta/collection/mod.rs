@@ -3,3 +3,4 @@
 pub mod claim;
 pub mod list;
 pub mod release;
+pub mod settings;

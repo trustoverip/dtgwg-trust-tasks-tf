@@ -53,7 +53,7 @@ errorCodes:
   - code: vta/collection/claim:notCollectable
     meaning: >-
       `identifier` is not one the VTA would collect for in `contextId`, whether or not collection
-      by default is enabled (VTI-NTF-093): the VTA does not hold its
+      by default is enabled for `contextId` (VTI-NTF-094): the VTA does not hold its
       messaging keys there, its DID document advertises no transport through a mediator, or it is
       the VTA's own durable identity, another node's or host service's, or an identity the VTA
       provisioned for another party, each of which its own holder collects for (VTI-NTF-080).
@@ -151,9 +151,11 @@ a renewal.
 **A repeated request** sets a state: a claim by the client that already holds the claim succeeds,
 as a renewal.
 
-Claims are served whether or not the VTA's operator has enabled collection by default
-(VTI-NTF-093). While it is disabled the VTA collects for no unclaimed identifier, so a grant changes
-only the record; a client claims all the same, so that its claim is in place when collection is
+Claims are served whether or not collection by default is enabled for `contextId` (VTI-NTF-097):
+a context administrator disables it with
+[`vta/collection/settings/set`](../../settings/set/0.1/spec.md), and the VTA's operator may suspend
+it for every context (VTI-NTF-098). While it is disabled the VTA collects for no unclaimed
+identifier there, so a grant changes only the record; a client claims all the same, so that its claim is in place when collection is
 enabled.
 
 ## Authorization
