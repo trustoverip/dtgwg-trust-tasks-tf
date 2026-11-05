@@ -31,6 +31,31 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.37.4](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.37.3...trust-tasks-rs-v0.37.4) — 2026-11-05
+
+
+### Added
+
+- **vta/pcs/voter**: Check a receipt after close — receipts/list 0.1, read 0.7 signs a tombstone read ([#1045](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1045))
+
+vta/pcs/voter/receipts/list/0.1 returns the receipts a VTA keeps for one
+  election, whole and exactly as received, with the ballot box recorded at
+  registration — so after voting closes a client can fetch each cast's
+  voting/board/inclusion proof from the ballot box over its own connection and
+  hand it, with the head the community kept at close, to vta/pcs/voter/receipt
+  (VTI-VOT-053). The client need keep nothing between the cast and the check.
+
+  vta/pcs/voter/read/0.7 adds read: tombstone, signing a
+  vtc/elections/tombstones/show/0.1 request as the member: once a community
+  deletes the board an election was opened on, the heads it kept are in the
+  tombstone, which it shows only to an active member (VTI-BRD-009). Only a show
+  still carries a presentation. Two text references to read/0.6 move to 0.7.
+
+  Rust, TypeScript, Go and Dart bindings regenerated; check-bindings agrees.
+
+- **vtc/boards**: Appoint, remove and list a board's facilitators ([#1044](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1044))
+
+
 ## [0.37.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.37.2...trust-tasks-rs-v0.37.3) — 2026-11-05
 
 
