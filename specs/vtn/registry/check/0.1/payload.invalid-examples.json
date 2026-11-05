@@ -1,0 +1,16 @@
+[
+  { "note": "Missing `did` — there is no party to ask about.", "payload": {} },
+  { "note": "`did` that is not a DID.", "payload": { "did": "msf" } },
+  {
+    "variant": "response",
+    "note": "An answer that does not say whether the registry was reached.",
+    "payload": {
+      "registry": "did:example:registry",
+      "authority": "did:example:whn",
+      "resource": "vtn",
+      "actions": { "member": "member", "listed": "lists" },
+      "did": "did:example:msf",
+      "member": true
+    }
+  }
+]
