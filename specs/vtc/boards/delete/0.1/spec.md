@@ -74,9 +74,10 @@ A conforming **consumer** (the community) **MUST**:
 2. Require a step-up of the requester's bound to this one document (VTI-BRD-007).
 3. Refuse a board that is `open` (`notClosed`), and one with an idea whose election has not closed or been cancelled (`electionsRunning`).
 4. Remove the board, its ideas and its notes, and, for each election opened on it, everything the community keeps of it but its identifier, its manifest's digest and the board heads it kept. Keep those as the election's tombstone for the tombstone retention in force now (VTI-BRD-008), or keep none where it is zero. **MUST NOT** keep a tombstone's election title, description or roll, or any record of the tickets it issued.
-5. Never assign the board's identifier, or any of its elections' identifiers, again.
-6. Record an audit event for the deletion, naming the board by its identifier and carrying the `reason`, the counts removed and the retention applied, and a further event when the tombstones are removed (VTI-BRD-080). An audit record **MUST NOT** carry any idea's or note's text.
-7. Answer with the counts and `tombstones`.
+5. Withdraw every appointment to facilitate the board — each resource grant of `vtc.boards.manage` qualified `board:<boardId>` (VTI-BRD-092, [`vtc/boards/facilitators/add`](../../facilitators/add/0.1/spec.md)).
+6. Never assign the board's identifier, or any of its elections' identifiers, again.
+7. Record an audit event for the deletion, naming the board by its identifier and carrying the `reason`, the counts removed and the retention applied, and a further event when the tombstones are removed (VTI-BRD-080). An audit record **MUST NOT** carry any idea's or note's text.
+8. Answer with the counts and `tombstones`.
 
 ## Authorization
 

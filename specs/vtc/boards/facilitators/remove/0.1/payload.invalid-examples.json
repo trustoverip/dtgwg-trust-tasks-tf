@@ -1,0 +1,15 @@
+[
+  {
+    "note": "Facilitators are named by EntryId, never by DID.",
+    "payload": {
+      "boardId": "brd_W5k2N8xRb3Qz7TpLq4Ve",
+      "entryId": "did:example:carol"
+    }
+  },
+  {
+    "note": "A removal names the facilitator.",
+    "payload": {
+      "boardId": "brd_W5k2N8xRb3Qz7TpLq4Ve"
+    }
+  }
+]

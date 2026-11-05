@@ -3192,6 +3192,15 @@ export import VtcBoardsCreate_v0_1 = _VtcBoardsCreate_v0_1;
 import * as _VtcBoardsDelete_v0_1 from "./vtc/boards/delete/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtcBoardsDelete_v0_1 = _VtcBoardsDelete_v0_1;
+import * as _VtcBoardsFacilitatorsAdd_v0_1 from "./vtc/boards/facilitators/add/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcBoardsFacilitatorsAdd_v0_1 = _VtcBoardsFacilitatorsAdd_v0_1;
+import * as _VtcBoardsFacilitatorsList_v0_1 from "./vtc/boards/facilitators/list/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcBoardsFacilitatorsList_v0_1 = _VtcBoardsFacilitatorsList_v0_1;
+import * as _VtcBoardsFacilitatorsRemove_v0_1 from "./vtc/boards/facilitators/remove/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcBoardsFacilitatorsRemove_v0_1 = _VtcBoardsFacilitatorsRemove_v0_1;
 import * as _VtcBoardsIdeasDecide_v0_1 from "./vtc/boards/ideas/decide/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtcBoardsIdeasDecide_v0_1 = _VtcBoardsIdeasDecide_v0_1;

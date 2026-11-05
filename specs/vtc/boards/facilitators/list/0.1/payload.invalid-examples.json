@@ -1,0 +1,12 @@
+[
+  {
+    "note": "The board is named by its BoardId.",
+    "payload": {
+      "boardId": "board-1"
+    }
+  },
+  {
+    "note": "A list names the board.",
+    "payload": {}
+  }
+]
