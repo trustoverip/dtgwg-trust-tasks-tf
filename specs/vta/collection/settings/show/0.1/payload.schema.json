@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/collection/settings/show/0.1",
+  "title": "VTA Collection — Settings — Show — payload",
+  "description": "A client with standing in a trust context reads whether its VTA collects by default for that context's identifiers no client has claimed, who last changed that and when, and whether the VTA's operator has suspended collection by default for every context (VTI-NTF-096). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contextId"
+  ],
+  "properties": {
+    "contextId": {
+      "$ref": "../../../_shared/0.1/collection.schema.json#/$defs/ContextId",
+      "description": "The trust context whose setting to read."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Collection — Settings — Show — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "setting"
+      ],
+      "description": "The context's setting as the VTA holds and applies it.",
+      "properties": {
+        "setting": {
+          "$ref": "../../../_shared/0.1/collection.schema.json#/$defs/CollectionSetting"
+        }
+      }
+    }
+  }
+}

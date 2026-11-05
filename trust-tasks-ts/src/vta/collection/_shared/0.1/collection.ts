@@ -4,7 +4,7 @@
  */
 
 /**
- * Shared shapes for the collection of messages for a principal's identifiers. A VTA collects, from the mediator each identifier's DID document advertises, the messages queued for every identifier whose messaging keys it holds in one of the principal's trust contexts — its personas — unless a client of the principal holds a collection claim for it: a lease, granted by vta/collection/claim and ended by vta/collection/release or at its end, under which that client is the identifier's one collector. The mediator permits one connection per identifier, so at most one party collects for an identifier at a time (VTI-NTF-080 – VTI-NTF-092).
+ * Shared shapes for the collection of messages for a principal's identifiers. A VTA collects, from the mediator each identifier's DID document advertises, the messages queued for every identifier whose messaging keys it holds in one of the principal's trust contexts — its personas — unless a client of the principal holds a collection claim for it: a lease, granted by vta/collection/claim and ended by vta/collection/release or at its end, under which that client is the identifier's one collector. The mediator permits one connection per identifier, so at most one party collects for an identifier at a time (VTI-NTF-080 – VTI-NTF-092). Whether the VTA collects by default for the unclaimed identifiers of a trust context is that context's own setting, enabled unless a context administrator disables it with vta/collection/settings/set (VTI-NTF-094 – VTI-NTF-098).
  */
 export interface VTACollectionSharedDefinitions {
   [k: string]: unknown | undefined;
@@ -14,4 +14,4 @@ export interface VTACollectionSharedDefinitions {
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../../../_shared/components.js".
  */
-export type { Claim, CollectionEntry, Collector, ContextId_VtaCollectionV0_1 as ContextId, Did_NotificationsV0_1 as Did, NotCollectedReason } from "../../../../_shared/components.js";
+export type { Claim, CollectionEntry, CollectionSetting, Collector, ContextId_VtaCollectionV0_1 as ContextId, Did_NotificationsV0_1 as Did, NotCollectedReason } from "../../../../_shared/components.js";

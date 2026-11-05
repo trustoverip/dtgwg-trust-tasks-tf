@@ -43,6 +43,7 @@ errorCodes: []
 related:
   - vta/collection/claim
   - vta/collection/release
+  - vta/collection/settings/show
 ---
 
 ## Abstract
@@ -53,7 +54,9 @@ for every such DID no client has claimed (VTI-NTF-080); a client holding a claim
 [`vta/collection/claim`](../../claim/0.1/spec.md), with the claim's end and whether it can still be
 renewed; or nobody, because the VTA is at the bound it states on the identifiers it collects for, or
 because another connection kept evicting its own and it stopped (VTI-NTF-085, VTI-NTF-088), or
-because its operator has not enabled collection by default (VTI-NTF-093). The last
+because collection by default is disabled for the context — by its own setting, or by the VTA's
+operator suspending it for every context (VTI-NTF-097, VTI-NTF-098), which
+[`vta/collection/settings/show`](../../settings/show/0.1/spec.md) tells apart. The last
 is the one a principal needs to see: a persona nobody collects for is one whose notifications never
 arrive, and nothing else reports it.
 
@@ -77,7 +80,7 @@ A conforming **consumer** (the VTA) **MUST**:
 2. Refuse with `permissionDenied` a caller without standing under [Authorization](#authorization),
    and answer nothing about any other context (VTI-NTF-091).
 3. Return every identifier of `contextId` that VTI-NTF-080 names, whether or not collection by
-   default is enabled (VTI-NTF-093), matching
+   default is enabled for it (VTI-NTF-094), matching
    every filter given: `identifier` only, where given; of `collector` only, where given.
 4. For each, state its `collector`: `client` with its `claim` while a claim is in force, including
    one that is no longer renewable; `vta` while the VTA collects for it; and `none` with its

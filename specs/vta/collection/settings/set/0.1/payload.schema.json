@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/collection/settings/set/0.1",
+  "title": "VTA Collection — Settings — Set — payload",
+  "description": "A client with administrative authority over a trust context enables or disables collection by default there: whether its VTA collects for the context's identifiers that no client has claimed (VTI-NTF-094, VTI-NTF-095). The VTA stores the setting, applies it before it answers — disabling it stops collection and closes the VTA's connections for those identifiers — and records the change in its audit trail (VTI-NTF-096). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contextId",
+    "collectByDefault"
+  ],
+  "properties": {
+    "contextId": {
+      "$ref": "../../../_shared/0.1/collection.schema.json#/$defs/ContextId",
+      "description": "The trust context whose setting to change. The change applies to that context's identifiers alone, not to its ancestors' or descendants' (VTI-NTF-094)."
+    },
+    "collectByDefault": {
+      "type": "boolean",
+      "description": "true to enable collection by default for the context, false to disable it."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Collection — Settings — Set — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "setting",
+        "changed"
+      ],
+      "description": "The context's setting once the change has taken effect.",
+      "properties": {
+        "setting": {
+          "$ref": "../../../_shared/0.1/collection.schema.json#/$defs/CollectionSetting"
+        },
+        "changed": {
+          "type": "boolean",
+          "description": "Whether this request changed the setting. False when the context already held the value asked for, in which case nothing changed but the record of the request (VTI-NTF-095)."
+        }
+      }
+    }
+  }
+}
