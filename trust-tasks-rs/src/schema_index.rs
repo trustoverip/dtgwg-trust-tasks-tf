@@ -7548,6 +7548,18 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vtn/outbox/retry/0.1#response" => <crate::specs::vtn::outbox::retry::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtn")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/registry/check/0.1" => <crate::specs::vtn::registry::check::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/registry/check/0.1#response" => <crate::specs::vtn::registry::check::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/registry/status/0.1" => <crate::specs::vtn::registry::status::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/registry/status/0.1#response" => <crate::specs::vtn::registry::status::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vtn/relay/deliver/0.1" => <crate::specs::vtn::relay::deliver::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtn")]
         #[cfg(not(test))]
@@ -15044,6 +15056,16 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "vtn")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/registry/check/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtn::registry::check::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/registry/status/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtn::registry::status::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vtn/relay/deliver/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::vtn::relay::deliver::v0_1::Payload,
         >()),
@@ -21541,6 +21563,16 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vtn/outbox/retry/0.1" => {
             Some(crate::specs::vtn::outbox::retry::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/registry/check/0.1" => {
+            Some(crate::specs::vtn::registry::check::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtn")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtn/registry/status/0.1" => {
+            Some(crate::specs::vtn::registry::status::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "vtn")]
         #[cfg(not(test))]

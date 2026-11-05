@@ -10,6 +10,7 @@ pub mod listings;
 pub mod membership;
 pub mod memberships;
 pub mod outbox;
+pub mod registry;
 pub mod relay;
 pub mod roles;
 pub mod rooms;

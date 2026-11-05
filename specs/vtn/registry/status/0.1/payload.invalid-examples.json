@@ -1,0 +1,18 @@
+[
+  { "note": "An unknown member: the request carries nothing but `ext`.", "payload": { "did": "did:example:msf" } },
+  {
+    "variant": "response",
+    "note": "A record row with a result the task does not define.",
+    "payload": {
+      "registry": "did:example:registry",
+      "authority": "did:example:whn",
+      "resource": "vtn",
+      "actions": { "member": "member", "listed": "lists" },
+      "publishes": "members",
+      "writer": "none",
+      "connected": false,
+      "reachable": true,
+      "records": [{ "did": "did:example:msf", "result": "unknown" }]
+    }
+  }
+]

@@ -3285,6 +3285,14 @@ mod vtn {
             mod v0_1;
         }
     }
+    mod registry {
+        mod check {
+            mod v0_1;
+        }
+        mod status {
+            mod v0_1;
+        }
+    }
     mod relay {
         mod deliver {
             mod v0_1;

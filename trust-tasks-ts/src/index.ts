@@ -4323,6 +4323,12 @@ export import VtnOutboxList_v0_1 = _VtnOutboxList_v0_1;
 import * as _VtnOutboxRetry_v0_1 from "./vtn/outbox/retry/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtnOutboxRetry_v0_1 = _VtnOutboxRetry_v0_1;
+import * as _VtnRegistryCheck_v0_1 from "./vtn/registry/check/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtnRegistryCheck_v0_1 = _VtnRegistryCheck_v0_1;
+import * as _VtnRegistryStatus_v0_1 from "./vtn/registry/status/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtnRegistryStatus_v0_1 = _VtnRegistryStatus_v0_1;
 import * as _VtnRelayDeliver_v0_1 from "./vtn/relay/deliver/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtnRelayDeliver_v0_1 = _VtnRelayDeliver_v0_1;
