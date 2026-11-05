@@ -11,6 +11,49 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.10.14 — 2026-11-05
+
+
+### Added
+
+- **rooms/keys**: Rooms/keys/watch and rooms/keys/changed — a key holder watches rooms for its member's wallet; act 0.12 lists rooms/watch (#1040)
+
+A wallet whose member keys are held by its key holder cannot present as
+  the member and has no address a host can reach, so it could not use
+  rooms/watch (#1036).
+
+- **did-management/stats/set-resolution**: Choose a slot's statistics resolution (#1041)
+
+An owner can keep less statistical detail over time for their own DID (coarse, or totals only), or return it to the service's own choice; an administrator can set any level for any slot, including always keeping the finest series. Bindings regenerated.
+
+
+
+### Specifications
+
+- **vtc/elections**: A deleted group's DID is never a member party (VTI-VOT-029) (#1039)
+
+vtc/elections/show/0.6, vtc/elections/list/0.5 and
+  vtc/elections/tickets/issue/0.3 defined a member party as a
+  `roll.memberOf` that is "neither the community's own DID nor one of its
+  groups". Once a group is deleted its DID is no longer one of the
+  community's groups, so read literally the definition let the election
+  fall onto the member-party presentation path, where a holder of an
+  unexpired credential the deleted group issued could read it.
+  VTI-VOT-029 forbids exactly that: such an election is shown, and
+  confirmed to exist, only to a holder of `vtc.elections.manage`, and
+  the deleted group's identifier is never treated as a party outside
+  the community.
+
+  The member-party test is now decided by what `roll.memberOf` was when
+  the election was created; show item 1 and list item 1 say a deleted
+  group's election is seen only by a manager; show item 8.3 says a
+  presentation of the group's credential shows it to nobody. The
+  payload descriptions of show and list say the same.
+
+  Description and prose only: every schema is otherwise unchanged, as
+  CONTRIBUTING-SPECS "Version rules" allows in place for a released
+  draft version.
+
 ## 0.10.13 — 2026-11-04
 
 

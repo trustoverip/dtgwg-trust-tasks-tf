@@ -151,6 +151,8 @@ VTA  ── (a) queue approve-request via mediator (DIDComm)
                                                                          │ wakes, drains mediator queue (as above)
 ```
 
+**A signal that a data room changed** follows the mediator-triggered flow and needs nothing of its own. The intended shape for a mobile wallet whose member keys are at its agent is that the phone names no address to a room's host: it asks its agent to watch ([`rooms/keys/watch`](../../../specs/rooms/keys/watch/0.1/spec.md)), the agent receives the host's [`rooms/changed`](../../../specs/rooms/changed/0.1/spec.md) at an address of its own, and passes it on to the phone as [`rooms/keys/changed`](../../../specs/rooms/keys/changed/0.1/spec.md) — a document the phone's mediator queues and wakes it for like any other. The agent does not also send a wake of its own for it. (Informative.)
+
 A conforming **consumer** (push receiver) **MUST**:
 
 1. On receiving a wake push, connect to the `mediator` named in the payload (or, if absent, every mediator it is enrolled with that it has reason to poll) and authenticate.

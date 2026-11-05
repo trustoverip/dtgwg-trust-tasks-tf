@@ -9,6 +9,7 @@
 export const EXTENDS_BY_TYPE_URI: Readonly<Record<string, string>> = Object.freeze({
   "https://trusttasks.org/spec/rooms/keys/act/0.10": "0.9",
   "https://trusttasks.org/spec/rooms/keys/act/0.11": "0.10",
+  "https://trusttasks.org/spec/rooms/keys/act/0.12": "0.11",
   "https://trusttasks.org/spec/rooms/keys/act/0.9": "0.8",
   "https://trusttasks.org/spec/rooms/keys/seal/0.3": "0.2",
   "https://trusttasks.org/spec/rooms/records/get/0.3": "0.2",

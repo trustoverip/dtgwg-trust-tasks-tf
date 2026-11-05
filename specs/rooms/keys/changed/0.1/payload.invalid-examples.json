@@ -1,0 +1,30 @@
+[
+  {
+    "note": "No member. A key holder may hold two members of one room, and the client must read as the one it armed for.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "host": "did:web:rooms.northwind.example",
+      "latestVersion": 415
+    }
+  },
+  {
+    "note": "Something about what changed. The signal is one shape whatever moved the room; what changed, the client learns by reading.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "member": "did:webvh:QmAlice:personas.example:northwind",
+      "host": "did:web:rooms.northwind.example",
+      "latestVersion": 415,
+      "kind": "message"
+    }
+  },
+  {
+    "note": "The address the watch was armed with. The key holder keeps it; the client has no use for it, and holding it would let a client hand it on.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "member": "did:webvh:QmAlice:personas.example:northwind",
+      "host": "did:web:rooms.northwind.example",
+      "latestVersion": 415,
+      "address": "did:peer:2.Ez6LSexample.Vz6Mkexample"
+    }
+  }
+]
