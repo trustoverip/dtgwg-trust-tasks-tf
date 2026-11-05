@@ -1,0 +1,19 @@
+[
+  { "note": "Missing everything: a slot and a resolution are both required.", "payload": {} },
+  { "note": "Missing resolution: the task is a set, never a read.", "payload": { "mnemonic": "alice" } },
+  { "note": "Missing mnemonic: the server-wide series is not settable by this task.", "payload": { "resolution": "fine" } },
+  { "note": "Resolution outside the enum (a bucket width is the service's choice, not the caller's).", "payload": { "mnemonic": "alice", "resolution": "5m" } },
+  { "note": "Resolution in the wrong case: enumerated values are lowerCamelCase.", "payload": { "mnemonic": "alice", "resolution": "Fine" } },
+  { "note": "Empty mnemonic.", "payload": { "mnemonic": "", "resolution": "off" } },
+  { "note": "Unknown member: additionalProperties is false.", "payload": { "mnemonic": "alice", "resolution": "off", "bucketSeconds": 300 } },
+  {
+    "note": "Response without tierReason: a caller cannot tell an override from the service's own choice.",
+    "variant": "response",
+    "payload": { "mnemonic": "alice", "resolution": "auto", "previousResolution": "off", "changed": true, "tier": "coarse" }
+  },
+  {
+    "note": "Response tier `auto`: auto is a resolution, never a tier the service keeps.",
+    "variant": "response",
+    "payload": { "mnemonic": "alice", "resolution": "auto", "previousResolution": "auto", "changed": false, "tier": "auto", "tierReason": "traffic" }
+  }
+]

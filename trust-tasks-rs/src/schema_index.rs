@@ -1130,6 +1130,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/did-management/stats/get/0.1#response" => <crate::specs::did_management::stats::get::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "did-management")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/stats/set-resolution/0.1" => <crate::specs::did_management::stats::set_resolution::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/stats/set-resolution/0.1#response" => <crate::specs::did_management::stats::set_resolution::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/did-management/stats/timeseries/0.1" => <crate::specs::did_management::stats::timeseries::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "did-management")]
         #[cfg(not(test))]
@@ -8775,6 +8781,13 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         }
         #[cfg(feature = "did-management")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/stats/set-resolution/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::did_management::stats::set_resolution::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/did-management/stats/timeseries/0.1" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::did_management::stats::timeseries::v0_1::Payload,
@@ -15974,6 +15987,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/did-management/stats/get/0.1" => {
             Some(crate::specs::did_management::stats::get::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "did-management")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/did-management/stats/set-resolution/0.1" => {
+            Some(crate::specs::did_management::stats::set_resolution::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "did-management")]
         #[cfg(not(test))]
