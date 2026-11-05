@@ -2770,6 +2770,9 @@ mod vtc {
         mod notice {
             mod v0_1;
         }
+        mod preview {
+            mod v0_1;
+        }
         mod repudiate {
             mod v0_1;
             mod v0_2;
