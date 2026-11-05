@@ -31,6 +31,44 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.37.6](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.37.5...trust-tasks-rs-v0.37.6) — 2026-11-05
+
+
+### Added
+
+- **vtn/registry**: Check a party against the network's trust registry through the network, and the registry status for administrators ([#1050](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1050))
+
+vtn/registry/check/0.1 lets anyone ask a network to ask its trust registry whether a party is published as its member, returning the registry's own signed answer verbatim, so a verifier with no DIDComm or TSP session (a browser, or a registry that serves no HTTPS) can still check the registry rather than take the network's word for it. Unreachable is indeterminate, never not a member.
+
+  vtn/registry/status/0.1 lets an administrator read the registry, the writer and whether it is connected, the last reconcile, and every record compared with what the entries project (ok, missing, stale, wrong).
+
+- **vta/collection**: Settings/show and settings/set — collection by default per trust context, stored and changed at run time ([#1049](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1049))
+
+Collection by default was one operator setting, off unless enabled
+  (VTI-NTF-093). The VTI specification withdraws that in favour of a setting of
+  each trust context, enabled unless disabled there (VTI-NTF-094 – VTI-NTF-098):
+
+  - vta/collection/settings/show/0.1: a party with standing in a context reads
+    its setting, who last changed it and when, and whether the VTA's operator
+    has suspended collection by default everywhere (VTI-NTF-096).
+  - vta/collection/settings/set/0.1: a party with administrative authority over
+    the context (VTI-ACL-022) enables or disables it; stored, audited, applied
+    before the answer — disabling closes the VTA's connections first
+    (VTI-NTF-095). Answers the setting and whether it changed.
+  - _shared/0.1 gains a CollectionSetting definition (new $defs entry), and the
+    `disabled` reason is re-described: the context's own setting, or the
+    operator's suspension (VTI-NTF-097, VTI-NTF-098). No enum value changes.
+  - claim/list/release 0.1 prose and an error-code meaning now cite the
+    per-context setting instead of VTI-NTF-093 (description edits only).
+
+  The setting is not folded into list's response: it belongs to the context,
+  not an identifier, and an added member in that released response would be
+  refused by every existing client's additionalProperties: false.
+
+  Bindings regenerated (Rust, TS, Go, Dart).
+
+
+
 ## [0.37.5](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.37.4...trust-tasks-rs-v0.37.5) — 2026-11-05
 
 
