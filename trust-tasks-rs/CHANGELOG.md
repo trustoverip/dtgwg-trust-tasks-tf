@@ -31,6 +31,175 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.37.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.37.2...trust-tasks-rs-v0.37.3) — 2026-11-05
+
+
+### Added
+
+- **rooms/keys**: Rooms/keys/watch and rooms/keys/changed — a key holder watches rooms for its member's wallet; act 0.12 lists rooms/watch ([#1040](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1040))
+
+A wallet whose member keys are held by its key holder cannot present as
+  the member and has no address a host can reach, so it could not use
+  rooms/watch ([#1036](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1036)).
+
+- **did-management/stats/set-resolution**: Choose a slot's statistics resolution ([#1041](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1041))
+
+An owner can keep less statistical detail over time for their own DID (coarse, or totals only), or return it to the service's own choice; an administrator can set any level for any slot, including always keeping the finest series. Bindings regenerated.
+
+- **vtc/elections**: Read a deleted board's election tombstone ([#1037](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1037))
+
+vtc/elections/tombstones/show/0.1 (new): an active member or a holder of vtc.elections.manage reads the tombstone the community keeps of an election on a deleted board (VTI-BRD-009) — identifier, manifest digest, ballot box, and each kept board head with the ballot box's signed voting/board/head document as received — so a voter's agent can still check a receipt against the community's record (VTI-VOT-053). No tombstone and an unreadable one are both electionUnknown. Rust, TypeScript, Go and Dart bindings regenerated.
+
+- **rooms**: Rooms/watch and rooms/changed — a content-free signal that a room has moved ([#1036](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1036))
+
+A member who wants to know a room has new records polls
+  rooms/records/list with sinceVersion. rooms/watch/0.1 lets it instead
+  name an address DID and the version it has read to; the host sends one
+  rooms/changed/0.1 to that address the first time the room moves past
+  it, then disarms until the member re-arms after reading.
+
+  The signal carries the room and its latest version only, the same
+  whatever changed, and is one-way. It reaches a sleeping device through
+  the address's mediator queue and the existing push/wake doorbell, so the
+  mediator, push gateway and platform push service learn that something
+  arrived and nothing of the room. One signal per arming bounds the queue
+  and the wake count however busy the room is.
+
+  On the sealed tiers the host never sees a record's kind, so a reaction
+  fires a watch as a message does. rooms/changed states how a reader
+  decides unread after listing: new message keys, not its own, current;
+  reactions, edits, curations and notes are never unread messages, and an
+  alert is raised only on what was found.
+
+  A watch is host state that grants nothing and does not move with the
+  room. On a private room the address must be used for nothing else.
+
+- **vtc/networks**: 0.2 on vtn/* tasks, and vtc/networks/deliver/0.1 ([#1033](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1033))
+
+vtc/networks/{join,leave,list,show,repudiate,evidence,groups/register} 0.2 reach the network only through vtn/* Trust Tasks signed as the community; a group's registration is the community's signed vtn/groups/register request (servesRole retired) and its endpoint the community's Trust Task endpoint (vtc/_shared/0.7). New vtc/networks/deliver/0.1: a network delivers a broadcast envelope to the community's registered group. 0.1 remains published.
+
+- **vtc/boards**: Delete a closed board, and end its voting when it closes ([#1032](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1032))
+
+- vtc/boards/delete/0.1 (new): a board manager (vtc.boards.manage
+    unqualified, with a bound step-up) deletes a closed or archived board
+    whose elections have all closed or been cancelled (`notClosed`,
+    `electionsRunning`). Removes the board, ideas, notes and each
+    election's content; each election keeps a tombstone — identifier,
+    manifest digest, kept board heads — for the community's tombstone
+    retention (default twelve months, may be unbounded, zero keeps none).
+    Answers counts and when the tombstones go (VTI-BRD-007, VTI-BRD-008).
+  - vtc/boards/update/0.1: closing a board ends its voting (VTI-BRD-006):
+    elections open for voting are closed early, so the count is final;
+    those not yet open are cancelled; those that cannot close early run
+    on. The response gains an optional `closing` summary. A template
+    that does not allow closing early is `templateInvalid` (VTI-BRD-030).
+  - vtc/boards/create/0.1: the same template rule; examples in create,
+    show, list and update now allow closing early.
+  - Rust, TypeScript, Go and Dart bindings regenerated.
+
+
+
+### Specifications
+
+- **vtc/elections**: A deleted group's DID is never a member party (VTI-VOT-029) ([#1039](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1039))
+
+vtc/elections/show/0.6, vtc/elections/list/0.5 and
+  vtc/elections/tickets/issue/0.3 defined a member party as a
+  `roll.memberOf` that is "neither the community's own DID nor one of its
+  groups". Once a group is deleted its DID is no longer one of the
+  community's groups, so read literally the definition let the election
+  fall onto the member-party presentation path, where a holder of an
+  unexpired credential the deleted group issued could read it.
+  VTI-VOT-029 forbids exactly that: such an election is shown, and
+  confirmed to exist, only to a holder of `vtc.elections.manage`, and
+  the deleted group's identifier is never treated as a party outside
+  the community.
+
+  The member-party test is now decided by what `roll.memberOf` was when
+  the election was created; show item 1 and list item 1 say a deleted
+  group's election is seen only by a manager; show item 8.3 says a
+  presentation of the group's credential shows it to nobody. The
+  payload descriptions of show and list say the same.
+
+  Description and prose only: every schema is otherwise unchanged, as
+  CONTRIBUTING-SPECS "Version rules" allows in place for a released
+  draft version.
+
+- **rooms**: A record's kind, replies and reactions — notes, messages and reactions on every tier ([#1027](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1027))
+
+* spec(rooms): a record's kind, replies and reactions — notes, messages and reactions on every tier
+
+  A room had one kind of record, so a chat-style client's messages read as
+  untitled notes in every other client, and nothing let two clients agree
+  on a reply or a reaction (Keyring, berkmancenter/keyring-wallet
+  docs/upstream/2026-11-rooms-findings.md, finding 2).
+
+  SealedRecordBody (rooms/_shared 0.1 and 0.2, identically) gains two
+  optional members, in place and additively, as provenance did:
+
+  - `kind` (RecordKind): an open, lowerCamelCase set — `note`, `message`,
+    `reaction` defined. Absent means note; a reader shows a kind it does
+    not know as a note and never refuses a record for its kind.
+  - `inReplyTo` (RecordReference): another record of the same room, by
+    key and optionally the version answered. A reader resolves it only
+    against records it can already read, shows a reply whose target is
+    unavailable as such, and fetches nothing because of it.
+
+  Reactions are records of kind `reaction` carrying their target in
+  `inReplyTo` and a value of at most 64 characters on one line in `body`;
+  one per author, value and target; withdrawn by rewriting the same key
+  with an empty body. Edits are what they already were: a new version
+  under the same key — nothing is added, and a version by another author
+  is never shown as the earlier author's edit. A file record's `body` is
+  its caption, which a reader SHOULD show.
+
+  Readers that predate the members refuse them by rule (1), so a writer
+  SHOULD NOT write them until its room's readers accept them — and the
+  spec says plainly a writer cannot check that: a sealed body carries no
+  schema version and members publish no reader capabilities.
+
+  rooms/records/put/0.5 (extends 0.4) adds `kind` and `inReplyTo` to an
+  open room's closed `cleartext`; the host stores and serves them and
+  never acts on them. rooms/keys/act/0.11 (extends 0.10) adds put/0.5 to
+  its table. Libraries regenerated.
+
+- **rooms**: A removed member can rejoin — prior group state is a prior membership, not a join, corrected in place ([#1031](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1031))
+
+* spec(rooms): a removed member can rejoin — prior group state is a prior membership, not a join, corrected in place
+
+  rooms/keys/welcome 0.1 required a recipient holding group state for
+  `roomId` for the member to answer `alreadyJoined`, and in the same
+  paragraph said rejoining is "a removal followed by a fresh invitation".
+  A member removed by a commit keeps its group state — rooms/keys/open 0.2
+  and rooms/keys/file-key 0.2 answer `unknownEpoch` with reason `removed`
+  from it — so the MUST refused the very Welcome the paragraph said
+  rejoining uses, and a removed member could never be admitted again.
+  rooms/owner/group/remove 0.4 and rooms/owner/revoke 0.1 both describe
+  re-admission as fresh credentials plus a new leaf. Welcome's Retention
+  section also said to discard the state on removal, contradicting the
+  `removed` reason and file-key's "removal is forward-only".
+
+  - welcome 0.1: state from which a processed commit removed the member is
+    a prior membership. A recipient holding only prior memberships MUST
+    process a Welcome under a valid, unconsumed invitation and MUST keep
+    each prior membership, unmerged, for records sealed under the epochs
+    it covers (subject to the epoch floor). `alreadyJoined` is for current
+    state only. Prior memberships cover [join epoch, removal epoch) and
+    never overlap.
+  - open 0.2: the record's epoch chooses the state — current when E is at
+    or after its join epoch, else the prior membership covering E; E in a
+    gap between a removal and the next join is `unknownEpoch` / `removed`
+    with that `removedAtEpoch`. Never a retry under another state.
+  - file-key 0.2: the same selection for `open`; a principal holding only
+    prior memberships answers `seal` with `noGroup`.
+  - group/remove 0.4: re-admission points at welcome's rule.
+
+  No wire change: no member, code or reason added or removed. All four
+  specifications are `draft`, so the prose correction is made in place
+  (SPEC §5.2). Regenerated bindings change only error-code doc text.
+
+
+
 ## [0.37.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.37.1...trust-tasks-rs-v0.37.2) — 2026-11-04
 
 
