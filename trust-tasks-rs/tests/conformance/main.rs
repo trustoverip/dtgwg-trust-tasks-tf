@@ -1230,6 +1230,7 @@ mod rooms {
             mod v0_1;
             mod v0_10;
             mod v0_11;
+            mod v0_12;
             mod v0_2;
             mod v0_3;
             mod v0_4;
@@ -1252,6 +1253,9 @@ mod rooms {
         mod chain {
             mod v0_1;
             mod v0_2;
+        }
+        mod changed {
+            mod v0_1;
         }
         mod file_key {
             mod v0_1;
@@ -1283,6 +1287,9 @@ mod rooms {
             mod v0_1;
             mod v0_2;
             mod v0_3;
+        }
+        mod watch {
+            mod v0_1;
         }
     }
     mod owner {
