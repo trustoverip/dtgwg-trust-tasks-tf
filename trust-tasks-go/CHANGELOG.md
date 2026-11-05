@@ -11,6 +11,13 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.10.16 — 2026-11-05
+
+
+### Added
+
+- **vtc/networks/preview**: Read a network before joining it — its profile, required roles, and whether it lists the community (#1047)
+
 ## 0.10.15 — 2026-11-05
 
 

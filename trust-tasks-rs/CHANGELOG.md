@@ -31,6 +31,14 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.37.5](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.37.4...trust-tasks-rs-v0.37.5) — 2026-11-05
+
+
+### Added
+
+- **vtc/networks/preview**: Read a network before joining it — its profile, required roles, and whether it lists the community ([#1047](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1047))
+
+
 ## [0.37.4](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.37.3...trust-tasks-rs-v0.37.4) — 2026-11-05
 
 
