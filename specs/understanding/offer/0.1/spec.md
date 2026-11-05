@@ -114,7 +114,8 @@ in addition to the requirements stated here.
   requirements — the terms a MyTerms-style (IEEE 7012-2025) negotiation would proceed from, a
   governance framework, or any other host-defined policy document. Its `{ uri, version,
   digestMultibase }` shape is the governance-framework reference the companion Verifiable Trust
-  Infrastructure specification places in a DID document (VTI-KEY-052), and `digestMultibase` is
+  Infrastructure specification proposes placing in a DID document (VTI-KEY-052, as proposed in
+  [dtgwg-vti-spec#78](https://github.com/trustoverip/dtgwg-vti-spec/issues/78)), and `digestMultibase` is
   the multibase-encoded multihash of the document's bytes. This task carries the pointer, never
   the document's content.
 
@@ -182,7 +183,8 @@ exchange is bound to the exact terms version this response named.
 Where the host's DID document carries a governance-framework reference — a service of type
 `GovernanceFramework` whose `serviceEndpoint` is the framework's primary document URI, with
 `version` and `digestMultibase` members, as the companion Verifiable Trust Infrastructure
-specification defines it (VTI-KEY-052) — the response's `termsRef` **MUST** name the same
+specification proposes it (VTI-KEY-052, as proposed in
+[dtgwg-vti-spec#78](https://github.com/trustoverip/dtgwg-vti-spec/issues/78)) — the response's `termsRef` **MUST** name the same
 document: its `uri` equals that `serviceEndpoint`, and its `version` and `digestMultibase` equal
 the service's members of the same names. A host does not name one set of terms in its DID
 document and another in its offer. A joining party that resolved the host's DID document before
