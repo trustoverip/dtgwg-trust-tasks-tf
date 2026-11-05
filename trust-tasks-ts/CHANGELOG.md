@@ -11,6 +11,13 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.28.17 — 2026-11-05
+
+
+### Added
+
+- **vtc/networks/preview**: Read a network before joining it — its profile, required roles, and whether it lists the community (#1047)
+
 ## 0.28.16 — 2026-11-05
 
 
