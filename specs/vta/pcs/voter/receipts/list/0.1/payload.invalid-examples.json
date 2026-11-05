@@ -1,0 +1,22 @@
+[
+  {
+    "note": "Empty payload omits required members: contextId, community, electionId.",
+    "payload": {}
+  },
+  {
+    "note": "No election named. The engine answers for one election's record, never for every election the voter took part in: a list across elections would pair them in one answer.",
+    "payload": {
+      "contextId": "personal/communities",
+      "community": "did:webvh:QmCommunity:vtc.example.org"
+    }
+  },
+  {
+    "note": "An unknown member. The request names the election's record and nothing else.",
+    "payload": {
+      "contextId": "personal/communities",
+      "community": "did:webvh:QmCommunity:vtc.example.org",
+      "electionId": "board-2026",
+      "leafIndex": 41
+    }
+  }
+]

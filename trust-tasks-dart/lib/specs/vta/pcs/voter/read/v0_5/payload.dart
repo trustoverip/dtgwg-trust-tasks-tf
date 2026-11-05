@@ -90,7 +90,7 @@ class ReadDocument {
 typedef Ext = Map<String, dynamic>;
 
 /// The signed read, to send to the community.
-@Deprecated('superseded by vta/pcs/voter/read/0.6')
+@Deprecated('superseded by vta/pcs/voter/read/0.7')
 class Response {
   const Response({
     required this.document,
@@ -133,7 +133,7 @@ extension type const PayloadRead(String value) {
 /// an election put to the members of a party that is itself a member of the community,
 /// the VTA can present the member's credential for that party from its vault, bound to
 /// the read it signs.
-@Deprecated('superseded by vta/pcs/voter/read/0.6')
+@Deprecated('superseded by vta/pcs/voter/read/0.7')
 class Payload {
   const Payload({
     required this.contextId,
@@ -200,7 +200,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by vta/pcs/voter/read/0.6';
+const String? deprecation = 'superseded by vta/pcs/voter/read/0.7';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/vta/pcs/voter/read/0.5';
