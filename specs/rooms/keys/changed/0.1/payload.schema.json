@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/keys/changed/0.1",
+  "title": "Rooms Keys — Changed — payload",
+  "description": "One-way signal from a member's key holder to the client that asked it to watch a room with rooms/keys/watch: the room's host signalled (rooms/changed) that the room has moved past the version the client had read to. The room, the member and host the watch was armed for, and the room's latest version — nothing about what changed. There is no #response form. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["roomId", "member", "host", "latestVersion"],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "description": "The room, exactly as the host's signal named it — which is as the client named it in rooms/keys/watch."
+    },
+    "member": {
+      "type": "string",
+      "pattern": "^did:",
+      "maxLength": 2048,
+      "description": "The member the watch was armed as, as the client named it: the persona to read the room as."
+    },
+    "host": {
+      "type": "string",
+      "pattern": "^did:",
+      "maxLength": 2048,
+      "description": "The host the watch was armed at, and that signalled: where to read the room."
+    },
+    "latestVersion": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "The host signal's latestVersion, unaltered. A hint for the reader, who learns what changed only by reading."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1. A key holder MUST NOT put anything here about what changed."
+    }
+  }
+}
