@@ -5,6 +5,8 @@ package versions over its own API. Below 1.0 a breaking change bumps the leading
 non-zero component. Publishing is triggered by the
 `trust-tasks-ts-gen-v<version>` tag; see `RELEASING.md`.
 
+## 0.1.3 — 2026-11-05
+
 ## 0.1.2 — 2026-10-28
 
 

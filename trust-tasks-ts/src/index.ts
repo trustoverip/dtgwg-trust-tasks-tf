@@ -1705,6 +1705,9 @@ export import RoomsKeysAct_v0_10 = _RoomsKeysAct_v0_10;
 import * as _RoomsKeysAct_v0_11 from "./rooms/keys/act/0.11/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomsKeysAct_v0_11 = _RoomsKeysAct_v0_11;
+import * as _RoomsKeysAct_v0_12 from "./rooms/keys/act/0.12/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import RoomsKeysAct_v0_12 = _RoomsKeysAct_v0_12;
 import * as _RoomsKeysAct_v0_2 from "./rooms/keys/act/0.2/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomsKeysAct_v0_2 = _RoomsKeysAct_v0_2;
@@ -1753,6 +1756,9 @@ export import RoomsKeysChain_v0_1 = _RoomsKeysChain_v0_1;
 import * as _RoomsKeysChain_v0_2 from "./rooms/keys/chain/0.2/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomsKeysChain_v0_2 = _RoomsKeysChain_v0_2;
+import * as _RoomsKeysChanged_v0_1 from "./rooms/keys/changed/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import RoomsKeysChanged_v0_1 = _RoomsKeysChanged_v0_1;
 import * as _RoomsKeysCommit_v0_1 from "./rooms/keys/commit/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomsKeysCommit_v0_1 = _RoomsKeysCommit_v0_1;
@@ -1810,6 +1816,9 @@ export import RoomsKeysSeal_v0_2 = _RoomsKeysSeal_v0_2;
 import * as _RoomsKeysSeal_v0_3 from "./rooms/keys/seal/0.3/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomsKeysSeal_v0_3 = _RoomsKeysSeal_v0_3;
+import * as _RoomsKeysWatch_v0_1 from "./rooms/keys/watch/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import RoomsKeysWatch_v0_1 = _RoomsKeysWatch_v0_1;
 import * as _RoomsKeysWelcome_v0_1 from "./rooms/keys/welcome/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomsKeysWelcome_v0_1 = _RoomsKeysWelcome_v0_1;
@@ -3198,6 +3207,15 @@ export import VtcBoardsCreate_v0_1 = _VtcBoardsCreate_v0_1;
 import * as _VtcBoardsDelete_v0_1 from "./vtc/boards/delete/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtcBoardsDelete_v0_1 = _VtcBoardsDelete_v0_1;
+import * as _VtcBoardsFacilitatorsAdd_v0_1 from "./vtc/boards/facilitators/add/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcBoardsFacilitatorsAdd_v0_1 = _VtcBoardsFacilitatorsAdd_v0_1;
+import * as _VtcBoardsFacilitatorsList_v0_1 from "./vtc/boards/facilitators/list/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcBoardsFacilitatorsList_v0_1 = _VtcBoardsFacilitatorsList_v0_1;
+import * as _VtcBoardsFacilitatorsRemove_v0_1 from "./vtc/boards/facilitators/remove/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcBoardsFacilitatorsRemove_v0_1 = _VtcBoardsFacilitatorsRemove_v0_1;
 import * as _VtcBoardsIdeasDecide_v0_1 from "./vtc/boards/ideas/decide/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtcBoardsIdeasDecide_v0_1 = _VtcBoardsIdeasDecide_v0_1;

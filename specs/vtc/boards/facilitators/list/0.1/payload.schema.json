@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/boards/facilitators/list/0.1",
+  "title": "VTC Boards — Facilitators — List — payload",
+  "description": "A facilitator of a board reads who is appointed to facilitate it (VTI-BRD-093). The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "boardId"
+  ],
+  "properties": {
+    "boardId": {
+      "$ref": "../../../_shared/0.1/board.schema.json#/$defs/BoardId"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Boards — Facilitators — List — response payload",
+      "description": "The success response to a vtc/boards/facilitators/list/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/boards/facilitators/list/0.1#response. The board's appointed facilitators.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "boardId",
+        "facilitators"
+      ],
+      "properties": {
+        "boardId": {
+          "$ref": "../../../_shared/0.1/board.schema.json#/$defs/BoardId"
+        },
+        "facilitators": {
+          "type": "array",
+          "maxItems": 256,
+          "items": {
+            "$ref": "#/$defs/Appointment"
+          },
+          "description": "The board's appointments, by entry, oldest first. Holders of `vtc.boards.manage` unqualified or through a role are not listed: they facilitate every board."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    },
+    "Appointment": {
+      "title": "Appointment",
+      "description": "One member's appointment to facilitate the board: a resource grant of `vtc.boards.manage` qualified to it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entryId",
+        "appointedAt"
+      ],
+      "properties": {
+        "entryId": {
+          "$ref": "../../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryId",
+          "description": "The appointed facilitator."
+        },
+        "appointedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the grant was written, or last re-affirmed under a new granter."
+        },
+        "appointedBy": {
+          "$ref": "../../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryId",
+          "description": "The granter, by entry. Absent when the granter holds no directory entry — an administrator who is not a member, or one who has departed."
+        },
+        "reviewEndsAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Present while the appointment is under review because its granter departed or no longer facilitates the board: it is withdrawn at this time unless an administrator who facilitates the board re-affirms it (VTI-BRD-092)."
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,23 @@
+[
+  {
+    "note": "Facilitators are named by EntryId, never by DID.",
+    "payload": {
+      "boardId": "brd_W5k2N8xRb3Qz7TpLq4Ve",
+      "entryId": "did:example:carol"
+    }
+  },
+  {
+    "note": "An appointment names the board.",
+    "payload": {
+      "entryId": "dir_Q7m2K9xVb4Tz8LpR"
+    }
+  },
+  {
+    "note": "A reason is never empty.",
+    "payload": {
+      "boardId": "brd_W5k2N8xRb3Qz7TpLq4Ve",
+      "entryId": "dir_Q7m2K9xVb4Tz8LpR",
+      "reason": ""
+    }
+  }
+]
