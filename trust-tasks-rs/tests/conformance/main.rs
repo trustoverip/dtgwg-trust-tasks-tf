@@ -1947,9 +1947,15 @@ mod vta {
                 mod v0_4;
                 mod v0_5;
                 mod v0_6;
+                mod v0_7;
             }
             mod receipt {
                 mod v0_1;
+            }
+            mod receipts {
+                mod list {
+                    mod v0_1;
+                }
             }
             mod register {
                 mod v0_1;

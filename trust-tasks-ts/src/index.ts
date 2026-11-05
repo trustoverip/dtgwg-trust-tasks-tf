@@ -2760,9 +2760,15 @@ export import VtaPcsVoterRead_v0_5 = _VtaPcsVoterRead_v0_5;
 import * as _VtaPcsVoterRead_v0_6 from "./vta/pcs/voter/read/0.6/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtaPcsVoterRead_v0_6 = _VtaPcsVoterRead_v0_6;
+import * as _VtaPcsVoterRead_v0_7 from "./vta/pcs/voter/read/0.7/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtaPcsVoterRead_v0_7 = _VtaPcsVoterRead_v0_7;
 import * as _VtaPcsVoterReceipt_v0_1 from "./vta/pcs/voter/receipt/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtaPcsVoterReceipt_v0_1 = _VtaPcsVoterReceipt_v0_1;
+import * as _VtaPcsVoterReceiptsList_v0_1 from "./vta/pcs/voter/receipts/list/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtaPcsVoterReceiptsList_v0_1 = _VtaPcsVoterReceiptsList_v0_1;
 import * as _VtaPcsVoterRegister_v0_1 from "./vta/pcs/voter/register/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtaPcsVoterRegister_v0_1 = _VtaPcsVoterRegister_v0_1;
