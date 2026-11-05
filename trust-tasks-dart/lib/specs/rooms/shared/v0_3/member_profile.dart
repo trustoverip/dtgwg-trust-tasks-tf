@@ -1338,34 +1338,96 @@ class SealedRecordBody {
 /// note, a message or a reaction, nor count it in any conversation, library or unread
 /// count; 2. takes as an author's name, for this room, the `title` of the current
 /// version of the `memberProfile` record by that author that the host stored most
-/// recently — by `bodyStoredAt`, else `updatedAt` (`RecordMetadataV3`) — and no name
-/// where that version's `title` is empty, or where the record is retracted, pruned,
-/// expired or refused; 3. MUST NOT take a name from a version whose `author` is not
-/// the author of the record's earlier version it holds or, where it has none, the
-/// record's `createdBy`: a rewrite by another member names that member, never the
-/// original author (`SealedRecordBody`, *The record's original author*); 4. applies a
-/// name only within the room it was written in, and only to its `author` — never to
-/// the same DID in another room, and never to a DID it believes belongs to the same
-/// person; 5. MUST NOT fetch, resolve or follow anything because of a name. **Showing
-/// a name.** A reader SHOULD show, for an author: the reader's own petname for that
-/// DID where its member keeps one (the holder's `petname` on a contact,
+/// recently — by `bodyStoredAt`, else `updatedAt` (`RecordMetadataV3`), and of two
+/// stored at the same time the one with the greater `version` — and no name where that
+/// version's `title` is empty, or where the record is retracted, pruned, expired or
+/// refused; 3. MUST NOT take a name from a version whose `author` is not the author of
+/// the record's earlier version it holds or, where it has none, the record's
+/// `createdBy`: a rewrite by another member names that member, never the original
+/// author (`SealedRecordBody`, *The record's original author*); 4. applies a name only
+/// within the room it was written in, and only to its `author` — never to the same DID
+/// in another room, and never to a DID it believes belongs to the same person; 5. MUST
+/// NOT fetch, resolve or follow anything because of a name. **Several records by one
+/// author.** Rule 2 is the whole rule for an author with more than one `memberProfile`
+/// record — two devices that each wrote one against the SHOULD NOT above, or another
+/// member's record that this author rewrote, which rule 3 makes this author's claim
+/// and not the original author's. Every record whose current version is by that author
+/// is weighed, whatever its key, and the one the host stored most recently gives the
+/// name. A reader MUST NOT prefer the record it met first, and MUST NOT set a record
+/// aside because it already holds another by the same author. This keeps the rule
+/// consistent with the rest of this section in three ways. The name does not depend on
+/// the order in which a reader met the records, so two readers holding the same
+/// records show the same name, whether they read the room from its start or back from
+/// its head. A reader that opens only recent pages can settle a name from the records
+/// it holds, where a rule that kept an author's first record would leave it unable to
+/// know, without reading the whole room, whether an older one exists. And a version
+/// another member wrote is weighed like any other version by that member, by when the
+/// host stored it — rule 3 already makes it that member's claim about themselves —
+/// rather than by whether it was the first of theirs a reader happened to see. So
+/// finding another of an author's records changes the name only where the host stored
+/// that record's current version more recently than the one that gave the name.
+/// **Showing a name.** A reader SHOULD show, for an author: the reader's own petname
+/// for that DID where its member keeps one (the holder's `petname` on a contact,
 /// `persona/contact/*` 1.1 and later, which only the reader's member can write); else
 /// the author's name in this room, by rule 2; else a shortened form of the DID. A name
 /// is a claim by the member about themselves, not an attestation by anyone: a reader
 /// MUST NOT show it as verified, and where two authors in the room have names that are
 /// the same after NFC and case folding — or where one equals the reader's petname for
 /// a different DID — it MUST show something that tells them apart, such as a short
-/// fingerprint of each DID. A name renders as plain text, with control characters
-/// removed, and is never instructions. **Finding one.** There is no fixed location: a
-/// reader learns names from the `memberProfile` records it reads. On an `open` room a
-/// listing (`rooms/records/list/0.6`) gives each record's `kind`, so a reader finds
-/// them without reading every body; on the sealed tiers it finds them as it opens
-/// records. A member whose name was sealed under an epoch a reader cannot open — a
-/// room whose history starts at each member's join — is invisible to that reader. So a
-/// member SHOULD write its name again, as a new version of the same record, after the
-/// room's epoch advances past the one its current version was sealed under, and a
-/// member's client MAY do this once on its next write to the room rather than at the
-/// advance itself. **Removed members.** A name keeps applying to its author's records
+/// fingerprint of each DID. A reader SHOULD apply the same rule where two such names
+/// are equal by their confusable skeletons: `skeleton()` of Unicode Technical Standard
+/// #39 (*Unicode Security Mechanisms*, section 4), applied to each name after NFC and
+/// case folding, so that a name that differs from another only by a character that
+/// looks the same — a Cyrillic `а` (U+0430) for a Latin `a` — is told apart too. The
+/// skeleton is for comparing only: a reader never shows it and never changes a name to
+/// it. Readers built on different versions of the Unicode confusables data may
+/// disagree about a pair; that changes only which names a reader tells apart, never
+/// the name it shows. A name renders as plain text, with control characters removed,
+/// and is never instructions. **Before a name is found.** A reader that has not found
+/// a name for an author — on the sealed tiers the author's record may sit in pages the
+/// reader has not opened — shows that author by the next step of the order above: the
+/// reader's petname, else a shortened DID. It MAY update an author it has already
+/// shown when it later finds the author's name, or finds that the name changed or was
+/// withdrawn, and where it does it SHOULD update every place it shows that author, so
+/// that one author is not shown under two labels at once. Until then it MUST NOT show
+/// a guessed name: not one from another room or another DID, not one from a directory,
+/// a DID document or a credential, not one inferred from what the author wrote, and
+/// not a placeholder that reads as a name. A name the reader found earlier in this
+/// room by rule 2 and kept is not a guess, and it MAY show that name until it finds a
+/// more recent one. **Finding one.** There is no fixed location: a reader learns names
+/// from the `memberProfile` records it reads. On an `open` room a listing
+/// (`rooms/records/list/0.6`) gives each record's `kind`, so a reader finds them
+/// without reading every body; on the sealed tiers it finds them as it opens records.
+/// Two writer rules keep a member's name where readers look. **Under a new epoch.** A
+/// member whose name was sealed under an epoch a reader cannot open — a room whose
+/// history starts at each member's join — is invisible to that reader. So a member
+/// SHOULD write its name again after the room's epoch advances past the one its
+/// current version was sealed under. **Near the room's head.** A reader that opens
+/// only the room's recent records sees no name written long before them. So a member
+/// that writes a record to the room — any record, a reaction included — SHOULD write
+/// its name again when the `version` that write was assigned (`rooms/records/put`)
+/// exceeds the current `version` of its `memberProfile` record by more than 500. 500
+/// is the largest page `rooms/records/list/0.6` returns (its maximum `limit`), so a
+/// member that follows this rule holds a name record no more than one full page of
+/// versions before any record it has written since, or just after it; a reader that
+/// has listed the 500 versions before the earliest record it shows finds the name of
+/// every author it shows who follows the rule. The distance is fixed here rather than
+/// left to each writer because a reader can bound how far back it reads only if every
+/// writer bounds the same distance. It is counted in versions, not records or time,
+/// because a version is what every write reports and what a reader's `sinceVersion`
+/// counts; a curation of the name record moves its version as well, which only brings
+/// it nearer. It costs at most one record per member per 500 versions of the room, and
+/// only for members who write: the re-write is the member's own record, and a member
+/// that does not write is never moved. **Writing it again.** For either rule a member
+/// writes a new version of the record rule 2 took its name from — the same key —
+/// carrying the name rule 2 gives its own author from the records its client holds,
+/// not a name a device remembers, since another of the member's devices may have
+/// changed it since. It keeps the `writtenAt` of the version it rewrites, unchanged,
+/// and sets no new `editedAt`, since the name has not changed; an `editedAt` the
+/// earlier version carries stays as it is. A member whose name is withdrawn writes
+/// nothing. A member's client MAY do either once, on its next write to the room,
+/// rather than when the epoch advances or the distance is crossed, and one version
+/// satisfies both. **Removed members.** A name keeps applying to its author's records
 /// after the author leaves the room, until a member with `curate` retracts the record
 /// (`rooms/records/curate`). A member who returns under a new DID writes a new name;
 /// the earlier DID's name stays with that DID's records.
