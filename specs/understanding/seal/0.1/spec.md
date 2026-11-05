@@ -82,7 +82,9 @@ errorCodes:
     meaning: >-
       The request carried `exchangeDigestMultibase`, and it does not equal the task digest of the
       understanding/exchange response named by `exchangeId`, as the recipient recomputes it from
-      its own record. Never returned for a request that omits the member.
+      its own record, or names a hash algorithm the recipient does not implement (`details` says
+      so; the digest is then unverified and is never replaced by an `exchangeId` comparison).
+      Never returned for a request that omits the member.
     retryable: false
   - code: understanding/seal:understandingInsufficient
     meaning: The exchange named by `exchangeId` recorded outcome "insufficient". A seal cannot be grounded in a failed exchange.
@@ -269,10 +271,16 @@ resolved with that outcome, per `understanding/seal:understandingInsufficient`, 
 issuer matches, refusing any other issuer with `understanding/seal:issuerMismatch` — which, once
 the exchange resolves, takes precedence over `understanding/seal:exchangeNotFound`; that code is
 reserved for an `exchangeId` that names no live exchange response at all. A request that carries
-`exchangeDigestMultibase` adds a further check: the recipient **MUST** recompute the task digest
+`exchangeDigestMultibase` adds a further check, made after the issuer check and before the proposal
+is evaluated: the recipient **MUST** recompute the task digest
 of the exchange response it holds under `exchangeId` and refuse a mismatch with
-`understanding/seal:exchangeDigestMismatch`; a request that omits the member is not refused for
-that. The binding
+`understanding/seal:exchangeDigestMismatch`. A recipient that does not implement the hash
+algorithm named by the digest's multihash prefix cannot verify it, **MUST NOT** recompute under
+another algorithm or fall back to `exchangeId` alone (SPEC §4.9.3), and so refuses with the same
+code, stating in `details` that the algorithm is unsupported. A request that omits the member is
+not refused for that. A joining party **SHOULD** carry `exchangeDigestMultibase`: a seal is
+cited by parties outside the exchange (its declared `outcomeEvidence`, relationship credentials,
+VACs, disputes), and SPEC §4.9.3 asks such citations to carry a task digest. The binding
 is not optional: `threadId`, `parentThreadId` and a document's `id` are correlation handles, not
 secrets, so without it a third party that learned an `exchangeId` could propose against someone
 else's passed exchange, and the host's acceptance — the record this family exists to produce —
@@ -354,7 +362,12 @@ assurance the parties separately agreed to rely on.
 * **Exchange reference.** `exchangeId` — the `id` of the `understanding/exchange` response this
   seal is grounded in, verified by the host against its own record of that exchange (Authorization,
   above). `exchangeDigestMultibase`, where present, is the task digest (SPEC §4.9.3) of that
-  response, pairing the id with the exact document. The host verifying either is the same party
+  response, pairing the id with the exact document. The digest covers the *response* because
+  `exchangeId` already names it: the seal then commits to the host's actual determination
+  (`outcome: understood`), and that response in turn carries the digest of the request it decides.
+  This is the family's own convention; SPEC §4.9.1 names an exchange by its initiating document.
+  The recipient can verify only because it retains the exchange response it issued, as issued
+  (Retention, below). The host verifying either is the same party
   that issued the cited response, so this is a first-party check; a party that is *not* the host
   verifies the exchange's outcome through `understanding/exchange`'s own `outcomeEvidence`
   declaration, whose response carries the digest of the exchange request it decides.
@@ -403,7 +416,7 @@ request on a given `exchangeId` after the first is refused with
   "parentThreadId": "urn:uuid:1a2b3c4d-0003-4000-8000-000000000001",
   "payload": {
     "exchangeId": "urn:uuid:1a2b3c4d-0003-4000-8000-000000000002",
-    "exchangeDigestMultibase": "zQmY2kNd8TvB5xRc3JhW7sPf4aG9mL6eD1uQ8zCpH3kV",
+    "exchangeDigestMultibase": "zQmPAaYfiZ3ag3CUHvk6rGvk3u4Hz5B3XShWR8hrYGQDjkm",
     "agreement": {
       "name": "Data retention (12 months)",
       "rosterItems": ["data-retention-12mo", "no-third-party-sharing"],
@@ -465,7 +478,7 @@ one-round rule — is answered with `trust-task-error` and one of the codes in t
   "payload": {
     "decision": "accepted",
     "taskContext": "urn:uuid:1a2b3c4d-0004-4000-8000-000000000001",
-    "taskDigestMultibase": "zQmT6nR3sVwXeJhK4d8f2gY1pQ9mN7bC5aE3wD6rL8sU2v"
+    "taskDigestMultibase": "zQmP5zaRpCwYVSgS2rCdphU7PMhEJWygdsCkLQzrJg29MPV"
   },
   "proof": {
     "type": "DataIntegrityProof",
@@ -494,7 +507,7 @@ A counter is a `#response` like an acceptance, with the alternative in `counterA
   "payload": {
     "decision": "countered",
     "taskContext": "urn:uuid:1a2b3c4d-0004-4000-8000-000000000001",
-    "taskDigestMultibase": "zQmT6nR3sVwXeJhK4d8f2gY1pQ9mN7bC5aE3wD6rL8sU2v",
+    "taskDigestMultibase": "zQmP5zaRpCwYVSgS2rCdphU7PMhEJWygdsCkLQzrJg29MPV",
     "counterAgreement": {
       "name": "Data retention (6 months)",
       "rosterItems": ["data-retention-6mo", "no-third-party-sharing"],

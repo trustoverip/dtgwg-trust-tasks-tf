@@ -33,7 +33,16 @@ sideEffects:
   rationale: >-
     Answering an offer does not add, remove, or alter anything durable — no account, no
     membership, no ACL entry, no grant. It resolves a reference. A host MAY log the inquiry
-    for its own purposes, but nothing in this task requires it to.
+    for its own purposes, but nothing in this task requires it to log the request. It does need
+    to keep the response it issued while that response can be cited (see `retention`).
+retention:
+  class: exchange
+  rationale: >-
+    The response is cited by `understanding/exchange` as `offerId`, optionally with
+    `offerDigestMultibase`, and the host answers `understanding/exchange:offerNotFound` and
+    `understanding/exchange:offerDigestMismatch` against its own copy, which it can only
+    recompute from the response as issued. The copy is needed for the life of the engagement
+    and not beyond it, and the request is not retained for these purposes at all.
 exposure:
   discloses: metadata
   ingests: metadata
@@ -236,8 +245,12 @@ that correlation is the point of the family, not an incidental leak.
 
 ### Retention
 
-A host has no obligation under this task to retain a request or response beyond answering it.
-Where a host does retain a record — for its own audit or rate-limiting purposes — it retains
+A host has no obligation under this task to retain a request beyond answering it. It does retain
+the response document it issued, unchanged and with every member, for as long as the engagement
+it opened can still cite it as `offerId` (that is, until the exchange and any seal that follow
+have concluded or lapsed): `understanding/exchange` answers `offerNotFound` and, when the request
+carries `offerDigestMultibase`, `offerDigestMismatch` against that copy, and a reconstruction of the
+response would not reproduce its task digest. Where a host does retain a further record — for its own audit or rate-limiting purposes — it retains
 only what it needs to answer `understanding/offer:notAccepting` or
 `understanding/offer:purposeNotSupported` consistently.
 

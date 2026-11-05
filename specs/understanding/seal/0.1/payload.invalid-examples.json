@@ -72,7 +72,7 @@
     "variant": "response",
     "payload": {
       "taskContext": "urn:uuid:1a2b3c4d-0004-4000-8000-000000000001",
-      "taskDigestMultibase": "zQmT6nR3sVwXeJhK4d8f2gY1pQ9mN7bC5aE3wD6rL8sU2v"
+      "taskDigestMultibase": "zQmP5zaRpCwYVSgS2rCdphU7PMhEJWygdsCkLQzrJg29MPV"
     }
   },
   {
@@ -81,7 +81,7 @@
     "payload": {
       "decision": "negotiating",
       "taskContext": "urn:uuid:1a2b3c4d-0004-4000-8000-000000000001",
-      "taskDigestMultibase": "zQmT6nR3sVwXeJhK4d8f2gY1pQ9mN7bC5aE3wD6rL8sU2v"
+      "taskDigestMultibase": "zQmP5zaRpCwYVSgS2rCdphU7PMhEJWygdsCkLQzrJg29MPV"
     }
   },
   {
@@ -90,7 +90,7 @@
     "payload": {
       "decision": "accepted",
       "taskContext": "urn:uuid:1a2b3c4d-0004-4000-8000-000000000001",
-      "taskDigestMultibase": "zQmT6nR3sVwXeJhK4d8f2gY1pQ9mN7bC5aE3wD6rL8sU2v",
+      "taskDigestMultibase": "zQmP5zaRpCwYVSgS2rCdphU7PMhEJWygdsCkLQzrJg29MPV",
       "counterAgreement": {
         "name": "Data retention (6 months)",
         "rosterItems": ["data-retention-6mo"],
@@ -104,7 +104,7 @@
     "payload": {
       "decision": "countered",
       "taskContext": "urn:uuid:1a2b3c4d-0004-4000-8000-000000000001",
-      "taskDigestMultibase": "zQmT6nR3sVwXeJhK4d8f2gY1pQ9mN7bC5aE3wD6rL8sU2v"
+      "taskDigestMultibase": "zQmP5zaRpCwYVSgS2rCdphU7PMhEJWygdsCkLQzrJg29MPV"
     }
   },
   {

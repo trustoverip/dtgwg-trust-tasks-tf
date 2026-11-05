@@ -78,7 +78,9 @@ errorCodes:
     meaning: >-
       The request carried `offerDigestMultibase`, and it does not equal the task digest of the
       understanding/offer response named by `offerId`, as the host recomputes it from its own
-      record. Never returned for a request that omits the member.
+      record, or names a hash algorithm the host does not implement (`details` says so; the digest
+      is then unverified and is never replaced by an `offerId` comparison). Never returned for a
+      request that omits the member.
     retryable: false
   - code: understanding/exchange:termsStale
     meaning: The terms version named by `offerId` is no longer current; the joining party must open a new understanding/offer.
@@ -113,12 +115,20 @@ gates entry to `understanding/seal`'s 7012-style handshake with an explicit chec
 This specification declares `outcomeEvidence` ([SPEC §7.3 item 20](/SPEC.md#73-specification-requirements)):
 its `#response`, bound to the decided request by `taskContext` and `taskDigestMultibase`, so a
 party outside the exchange — a relationship credential, a VAC, a dispute — can cite the
-comprehension check as evidence that understanding was tested. The chain is digest-bound end to
+comprehension check as evidence that understanding was tested. The chain can be digest-bound end to
 end: this exchange's request MAY carry the task digest of the offer response it answers
 (`offerDigestMultibase`), the response carries the digest of this request, and
-`understanding/seal` MAY carry the digest of this response (`exchangeDigestMultibase`). Both
-request-side digests are optional, so a host and joining party that do not need third-party
-verification can omit them; a recipient that is handed one **MUST** verify it.
+`understanding/seal` SHOULD carry the digest of this response (`exchangeDigestMultibase`), because
+a seal is cited by parties outside the exchange (SPEC §4.9.3). Both request-side digests are
+optional in the schema, so a chain is digest-bound only where both are present; a recipient that
+is handed one **MUST** verify it.
+
+The digests name *responses*: `offerId` and `exchangeId` already name the previous response, and
+a digest covers the whole document its id names, so the seal request commits to the host's actual
+determination (`outcome: understood`) rather than to the request that elicited it. SPEC §4.9.1
+names an exchange by its initiating document; here the citing request names the document it is
+answering instead, which is why this is a statement of the family's own convention and not a
+case SPEC §4.9.4's first check covers directly.
 
 ## Status of this Document
 
@@ -156,8 +166,15 @@ recipient **MUST** make both before evaluating the answers:
 A request that carries `offerDigestMultibase` adds a third check: the host **MUST** recompute the
 task digest of the offer response it holds under `offerId` and refuse a request whose value does
 not match, decoded multihash bytes against decoded multihash bytes (SPEC §4.9.3), with
-`understanding/exchange:offerDigestMismatch`. A request that omits the member is not refused for
-that.
+`understanding/exchange:offerDigestMismatch`. The check is made after the issuer binding and
+before the answers are evaluated. A host that does not
+implement the hash algorithm named by the digest's multihash prefix cannot verify it: it **MUST
+NOT** recompute under another algorithm or fall back to comparing `offerId` alone (SPEC §4.9.3),
+and so **MUST** refuse the request with `understanding/exchange:offerDigestMismatch`, stating in
+`details` that the algorithm is unsupported. A request that omits the member is not refused for
+that. The host can make this check only because it retains the offer response it issued, unchanged
+and with every member, while that response can still be cited (see Retention, below, and
+`understanding/offer`).
 
 The second check is what makes the first worth anything. `threadId` and a document's `id` are
 correlation handles, not secrets: the offer response's `id` passes through whatever transport
@@ -217,7 +234,7 @@ host, with `parentThreadId` set to the `understanding/offer` request's `threadId
   "parentThreadId": "urn:uuid:1a2b3c4d-0001-4000-8000-000000000001",
   "payload": {
     "offerId": "urn:uuid:1a2b3c4d-0001-4000-8000-000000000002",
-    "offerDigestMultibase": "zQmW9tJc3RnX6vKd2LhY8sPf5aG1mB7eD4uQ3zCpH6kN",
+    "offerDigestMultibase": "zQmZCvu1dvEMXUZntSPAsU2hL7K1cR8CSWukJRJuCAXrvrR",
     "answers": [
       { "questionId": "retention-period", "answer": "12-months" },
       { "questionId": "third-party-sharing", "answer": "none" }
@@ -244,7 +261,7 @@ The response payload is `{ outcome, taskContext, taskDigestMultibase, score? }`.
 **MUST** be the `id` of the request this response determines, and the host **MUST** compute
 `taskDigestMultibase` over that request in full, exactly as received, with only its top-level
 `proof` removed (SPEC §4.9.3). A joining party proceeding to `understanding/seal` **MUST** carry
-this document's `id` forward as `exchangeId`, and **MAY** carry its task digest as
+this document's `id` forward as `exchangeId`, and **SHOULD** carry its task digest as
 `exchangeDigestMultibase`.
 
 Failures use `trust-task-error` ([SPEC.md §8](/SPEC.md#8-error-responses)), not the `#response`
@@ -266,7 +283,7 @@ determination that the answers did not demonstrate understanding, and it is carr
   "payload": {
     "outcome": "understood",
     "taskContext": "urn:uuid:1a2b3c4d-0003-4000-8000-000000000001",
-    "taskDigestMultibase": "zQmP4wKe7LhN2cBxV9dR5tY3sGf8mJ6aD1uQ7zXpH4kC"
+    "taskDigestMultibase": "zQmWXHxmPagncUzvJvmnMTiLKhe7SUPVXzmKa8Ht39msn5g"
   },
   "proof": {
     "type": "DataIntegrityProof",
@@ -299,7 +316,7 @@ does not by itself identify anyone.
 
 ### Retention
 
-A host retains the request and response for at least as long as it may need to answer a
+A host retains the request and response, each as issued and unchanged, for at least as long as it may need to answer a
 dispute over whether an `understanding/seal` was properly grounded in a passed exchange —
 this is the record `understanding/seal:exchangeNotFound` and similar checks are answered
 against. It has no obligation to retain the record indefinitely once the engagement it
