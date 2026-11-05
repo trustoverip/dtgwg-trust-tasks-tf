@@ -20,7 +20,7 @@ export type RegistrarState =
   | "registrationRefused";
 
 /**
- * A member or an administrator pages through the community's elections that the caller may see. A list never carries a presentation, and never shows an election whose credential roll names a member party to a caller who would need one to read it (vtc/elections/show). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ * A member or an administrator pages through the community's elections that the caller may see. A list never carries a presentation, and never shows an election whose credential roll names a member party to a caller who would need one to read it (vtc/elections/show), nor one whose credential roll names a group the community has deleted to any caller but an administrator (VTI-VOT-029). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
  */
 export interface VTCElectionsListPayload {
   state?: RegistrarState;
@@ -114,7 +114,7 @@ export const PAYLOAD_SCHEMA = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vtc/elections/list/0.5",
   "title": "VTC Elections — List — payload",
-  "description": "A member or an administrator pages through the community's elections that the caller may see. A list never carries a presentation, and never shows an election whose credential roll names a member party to a caller who would need one to read it (vtc/elections/show). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "description": "A member or an administrator pages through the community's elections that the caller may see. A list never carries a presentation, and never shows an election whose credential roll names a member party to a caller who would need one to read it (vtc/elections/show), nor one whose credential roll names a group the community has deleted to any caller but an administrator (VTI-VOT-029). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
   "type": "object",
   "additionalProperties": false,
   "properties": {

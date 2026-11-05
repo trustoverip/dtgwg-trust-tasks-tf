@@ -682,6 +682,9 @@ export import DidManagementServerStatsSync_v0_1 = _DidManagementServerStatsSync_
 import * as _DidManagementStatsGet_v0_1 from "./did-management/stats/get/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import DidManagementStatsGet_v0_1 = _DidManagementStatsGet_v0_1;
+import * as _DidManagementStatsSetResolution_v0_1 from "./did-management/stats/set-resolution/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import DidManagementStatsSetResolution_v0_1 = _DidManagementStatsSetResolution_v0_1;
 import * as _DidManagementStatsTimeseries_v0_1 from "./did-management/stats/timeseries/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import DidManagementStatsTimeseries_v0_1 = _DidManagementStatsTimeseries_v0_1;
