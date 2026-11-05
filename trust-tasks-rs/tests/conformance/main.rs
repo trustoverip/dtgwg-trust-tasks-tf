@@ -555,6 +555,9 @@ mod did_management {
         mod get {
             mod v0_1;
         }
+        mod set_resolution {
+            mod v0_1;
+        }
         mod timeseries {
             mod v0_1;
             mod v0_2;
