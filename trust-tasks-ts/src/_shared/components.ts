@@ -1274,7 +1274,7 @@ export type NamespaceId = string;
  */
 export type NodeKind = "network" | "community";
 /**
- * Why nobody collects for an identifier the VTA would otherwise collect for: `limit`, the VTA is at the bound it states on the number of identifiers it collects for (VTI-NTF-088); `conflict`, another connection for the identifier kept closing the VTA's, and the VTA stopped after the bound it states until the conflict is resolved (VTI-NTF-085). `disabled`, the VTA's operator has not enabled collection by default (VTI-NTF-093), so the VTA collects for no identifier a client has not claimed.
+ * Why nobody collects for an identifier the VTA would otherwise collect for: `limit`, the VTA is at the bound it states on the number of identifiers it collects for (VTI-NTF-088); `conflict`, another connection for the identifier kept closing the VTA's, and the VTA stopped after the bound it states until the conflict is resolved (VTI-NTF-085). `disabled`, collection by default is disabled for the identifier's trust context — by the context's own setting, or because the VTA's operator has suspended it for every context — so the VTA collects for no identifier there that a client has not claimed (VTI-NTF-097, VTI-NTF-098); vta/collection/settings/show says which.
  */
 export type NotCollectedReason = "limit" | "conflict" | "disabled";
 /**
@@ -6734,6 +6734,31 @@ export interface CollectionEntry {
   collector: Collector;
   claim?: Claim;
   notCollectedReason?: NotCollectedReason;
+}
+/**
+ * Whether the VTA collects by default for the identifiers of one trust context that no client has claimed (VTI-NTF-094 – VTI-NTF-098), and who last changed that. The VTA collects for them exactly when `collectByDefault` is true and `suspendedByOperator` is false. `changedBy` and `changedAt` are present together, and both absent while the setting has never been changed.
+ */
+export interface CollectionSetting {
+  /**
+   * The trust context the setting belongs to. It applies to that context's identifiers alone, not to its ancestors' or descendants' (VTI-NTF-094).
+   */
+  contextId: ContextId_VtaCollectionV0_1;
+  /**
+   * The context's own setting: true unless a party with administrative authority over the context has disabled it (VTI-NTF-094, VTI-NTF-095). The VTA keeps it across restarts.
+   */
+  collectByDefault: boolean;
+  /**
+   * Whether the VTA's operator has suspended collection by default for every context (VTI-NTF-098). While true, the VTA collects for no unclaimed identifier here whatever `collectByDefault` says, and does not change it; once lifted, `collectByDefault` applies again. Always false at a VTA that offers its operator no suspension.
+   */
+  suspendedByOperator: boolean;
+  /**
+   * The subject of the access control entry that last changed `collectByDefault` (VTI-NTF-096).
+   */
+  changedBy?: Did_NotificationsV0_1;
+  /**
+   * When `collectByDefault` was last changed.
+   */
+  changedAt?: string;
 }
 /**
  * OPTIONAL. How the community asks to be shown to a prospective applicant: a name, an accent colour and a logo. Presentation only, self-asserted and unverified — `communityDid` identifies the community, never `branding`. Not part of any criterion, so not covered by a `requirementsDigest`. Every member is optional.

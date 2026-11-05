@@ -1,0 +1,36 @@
+[
+  {
+    "note": "No `collectByDefault`: a change states the value it sets, so that a repeat sets the same state rather than toggling it.",
+    "payload": {
+      "contextId": "personal"
+    }
+  },
+  {
+    "note": "`collectByDefault` as a string: the setting is a boolean, and a string `\"false\"` read as truthy would enable what was meant to be disabled.",
+    "payload": {
+      "contextId": "personal",
+      "collectByDefault": "false"
+    }
+  },
+  {
+    "note": "Unknown member — applying the change to the context's descendants too — is refused: a setting applies to the context it names alone (VTI-NTF-094).",
+    "payload": {
+      "contextId": "personal",
+      "collectByDefault": false,
+      "includeDescendants": true
+    }
+  },
+  {
+    "variant": "response",
+    "note": "No `changed`: the caller learns whether its request changed the setting or found it already held.",
+    "payload": {
+      "setting": {
+        "contextId": "personal",
+        "collectByDefault": false,
+        "suspendedByOperator": false,
+        "changedBy": "did:key:z6MkWalletClient",
+        "changedAt": "2027-03-01T09:00:01Z"
+      }
+    }
+  }
+]

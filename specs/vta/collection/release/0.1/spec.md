@@ -87,7 +87,7 @@ A conforming **consumer** (the VTA) **MUST**:
 2. Refuse with `vta/collection/release:notCollectable` an `identifier` VTI-NTF-080 does not name in
    `contextId`.
 3. Where the caller is the claim's claimant, end the claim at once, resume collecting for the
-   identifier where collection by default is enabled (VTI-NTF-093), and answer with the instant it
+   identifier where collection by default is enabled for `contextId` (VTI-NTF-094), and answer with the instant it
    ended.
 4. Where the caller is not the claimant, make the claim unrenewable, leave its end unchanged, and
    answer with that end; it **MUST NOT** resume collecting before that end plus its own clock-skew

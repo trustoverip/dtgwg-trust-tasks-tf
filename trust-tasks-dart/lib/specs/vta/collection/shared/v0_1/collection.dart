@@ -71,8 +71,11 @@ extension type const Collector(String value) {
 /// the VTA is at the bound it states on the number of identifiers it collects for
 /// (VTI-NTF-088); `conflict`, another connection for the identifier kept closing the
 /// VTA's, and the VTA stopped after the bound it states until the conflict is resolved
-/// (VTI-NTF-085). `disabled`, the VTA's operator has not enabled collection by default
-/// (VTI-NTF-093), so the VTA collects for no identifier a client has not claimed.
+/// (VTI-NTF-085). `disabled`, collection by default is disabled for the identifier's
+/// trust context — by the context's own setting, or because the VTA's operator has
+/// suspended it for every context — so the VTA collects for no identifier there that a
+/// client has not claimed (VTI-NTF-097, VTI-NTF-098); vta/collection/settings/show
+/// says which.
 ///
 /// An extension type rather than an enum: a value from a newer MINOR of this
 /// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
@@ -125,5 +128,62 @@ class CollectionEntry {
         if (claim != null) 'claim': claim!.toJson(),
         if (notCollectedReason != null)
           'notCollectedReason': notCollectedReason!.value,
+      };
+}
+
+/// Whether the VTA collects by default for the identifiers of one trust context that
+/// no client has claimed (VTI-NTF-094 – VTI-NTF-098), and who last changed that. The
+/// VTA collects for them exactly when `collectByDefault` is true and
+/// `suspendedByOperator` is false. `changedBy` and `changedAt` are present together,
+/// and both absent while the setting has never been changed.
+class CollectionSetting {
+  const CollectionSetting({
+    required this.contextId,
+    required this.collectByDefault,
+    required this.suspendedByOperator,
+    this.changedBy,
+    this.changedAt,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory CollectionSetting.fromJson(Map<String, dynamic> json) =>
+      CollectionSetting(
+        contextId: json['contextId'] as String,
+        collectByDefault: json['collectByDefault'] as bool,
+        suspendedByOperator: json['suspendedByOperator'] as bool,
+        changedBy: json['changedBy'] as String?,
+        changedAt: json['changedAt'] as String?,
+      );
+
+  /// The trust context the setting belongs to. It applies to that context's identifiers
+  /// alone, not to its ancestors' or descendants' (VTI-NTF-094).
+  final ContextId contextId;
+
+  /// The context's own setting: true unless a party with administrative authority over
+  /// the context has disabled it (VTI-NTF-094, VTI-NTF-095). The VTA keeps it across
+  /// restarts.
+  final bool collectByDefault;
+
+  /// Whether the VTA's operator has suspended collection by default for every context
+  /// (VTI-NTF-098). While true, the VTA collects for no unclaimed identifier here
+  /// whatever `collectByDefault` says, and does not change it; once lifted,
+  /// `collectByDefault` applies again. Always false at a VTA that offers its operator no
+  /// suspension.
+  final bool suspendedByOperator;
+
+  /// The subject of the access control entry that last changed `collectByDefault`
+  /// (VTI-NTF-096).
+  final Did? changedBy;
+
+  /// When `collectByDefault` was last changed.
+  final String? changedAt;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'contextId': contextId,
+        'collectByDefault': collectByDefault,
+        'suspendedByOperator': suspendedByOperator,
+        if (changedBy != null) 'changedBy': changedBy!,
+        if (changedAt != null) 'changedAt': changedAt!,
       };
 }

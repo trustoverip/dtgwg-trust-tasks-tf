@@ -47,8 +47,11 @@ const (
 // collect for: `limit`, the VTA is at the bound it states on the number of identifiers it
 // collects for (VTI-NTF-088); `conflict`, another connection for the identifier kept
 // closing the VTA's, and the VTA stopped after the bound it states until the conflict is
-// resolved (VTI-NTF-085). `disabled`, the VTA's operator has not enabled collection by
-// default (VTI-NTF-093), so the VTA collects for no identifier a client has not claimed.
+// resolved (VTI-NTF-085). `disabled`, collection by default is disabled for the
+// identifier's trust context — by the context's own setting, or because the VTA's
+// operator has suspended it for every context — so the VTA collects for no identifier
+// there that a client has not claimed (VTI-NTF-097, VTI-NTF-098);
+// vta/collection/settings/show says which.
 type NotCollectedReason string
 
 // Values NotCollectedReason may take, per this specification's schema.
@@ -65,4 +68,32 @@ type CollectionEntry struct {
 	Collector          Collector           `json:"collector"`
 	Claim              *Claim              `json:"claim,omitempty"`
 	NotCollectedReason *NotCollectedReason `json:"notCollectedReason,omitempty"`
+}
+
+// CollectionSetting Whether the VTA collects by default for the identifiers of one trust
+// context that no client has claimed (VTI-NTF-094 – VTI-NTF-098), and who last changed
+// that. The VTA collects for them exactly when `collectByDefault` is true and
+// `suspendedByOperator` is false. `changedBy` and `changedAt` are present together, and
+// both absent while the setting has never been changed.
+type CollectionSetting struct {
+	// The trust context the setting belongs to. It applies to that context's identifiers
+	// alone, not to its ancestors' or descendants' (VTI-NTF-094).
+	ContextID ContextID `json:"contextId"`
+
+	// The context's own setting: true unless a party with administrative authority over the
+	// context has disabled it (VTI-NTF-094, VTI-NTF-095). The VTA keeps it across restarts.
+	CollectByDefault bool `json:"collectByDefault"`
+
+	// Whether the VTA's operator has suspended collection by default for every context
+	// (VTI-NTF-098). While true, the VTA collects for no unclaimed identifier here whatever
+	// `collectByDefault` says, and does not change it; once lifted, `collectByDefault`
+	// applies again. Always false at a VTA that offers its operator no suspension.
+	SuspendedByOperator bool `json:"suspendedByOperator"`
+
+	// The subject of the access control entry that last changed `collectByDefault`
+	// (VTI-NTF-096).
+	ChangedBy *DID `json:"changedBy,omitempty"`
+
+	// When `collectByDefault` was last changed.
+	ChangedAt *string `json:"changedAt,omitempty"`
 }
