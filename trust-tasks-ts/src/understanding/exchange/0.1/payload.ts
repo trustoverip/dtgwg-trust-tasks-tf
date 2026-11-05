@@ -15,7 +15,7 @@ export interface UnderstandingExchangePayload {
    */
   offerId: string;
   /**
-   * OPTIONAL. The task digest of the understanding/offer response named by `offerId`, computed per SPEC §4.9.3 as multibase(multihash(H(JCS(document ∖ proof)))) over that response in full. Pairs the id with the exact document the joining party answered against, so the offer -> exchange -> seal chain is digest-bound end to end. When present, the host MUST recompute it from its own record of the offer response and refuse a mismatch with understanding/exchange:offerDigestMismatch.
+   * OPTIONAL. The task digest of the understanding/offer response named by `offerId`, computed per SPEC §4.9.3 as multibase(multihash(H(JCS(document ∖ proof)))) over that response in full. Pairs the id with the exact document the joining party answered against, so the offer -> exchange -> seal chain can be digest-bound end to end where each link carries its digest. When present, the host MUST recompute it from its own record of the offer response as issued and refuse a mismatch, or an unsupported hash algorithm, with understanding/exchange:offerDigestMismatch.
    */
   offerDigestMultibase?: DigestMultibase;
   /**
@@ -126,7 +126,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "offerDigestMultibase": {
       "$ref": "#/$defs/DigestMultibase",
-      "description": "OPTIONAL. The task digest of the understanding/offer response named by `offerId`, computed per SPEC §4.9.3 as multibase(multihash(H(JCS(document ∖ proof)))) over that response in full. Pairs the id with the exact document the joining party answered against, so the offer -> exchange -> seal chain is digest-bound end to end. When present, the host MUST recompute it from its own record of the offer response and refuse a mismatch with understanding/exchange:offerDigestMismatch."
+      "description": "OPTIONAL. The task digest of the understanding/offer response named by `offerId`, computed per SPEC §4.9.3 as multibase(multihash(H(JCS(document ∖ proof)))) over that response in full. Pairs the id with the exact document the joining party answered against, so the offer -> exchange -> seal chain can be digest-bound end to end where each link carries its digest. When present, the host MUST recompute it from its own record of the offer response as issued and refuse a mismatch, or an unsupported hash algorithm, with understanding/exchange:offerDigestMismatch."
     },
     "answers": {
       "type": "array",

@@ -26,7 +26,7 @@ export interface UnderstandingSealPayload {
    */
   exchangeId: string;
   /**
-   * OPTIONAL. The task digest of the understanding/exchange response named by `exchangeId`, computed per SPEC §4.9.3 as multibase(multihash(H(JCS(document ∖ proof)))) over that response in full — which itself carries the digest of the exchange request it decides. When present, the host MUST recompute it from its own record of the exchange response and refuse a mismatch with understanding/seal:exchangeDigestMismatch.
+   * OPTIONAL in the schema, but a joining party SHOULD carry it (SPEC §4.9.3: a seal is cited outside the exchange). The task digest of the understanding/exchange response named by `exchangeId`, computed per SPEC §4.9.3 as multibase(multihash(H(JCS(document ∖ proof)))) over that response in full — which itself carries the digest of the exchange request it decides. When present, the host MUST recompute it from its own record of the exchange response as issued and refuse a mismatch, or an unsupported hash algorithm, with understanding/seal:exchangeDigestMismatch.
    */
   exchangeDigestMultibase?: DigestMultibase;
   agreement: Agreement;
@@ -100,7 +100,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "exchangeDigestMultibase": {
       "$ref": "#/$defs/DigestMultibase",
-      "description": "OPTIONAL. The task digest of the understanding/exchange response named by `exchangeId`, computed per SPEC §4.9.3 as multibase(multihash(H(JCS(document ∖ proof)))) over that response in full — which itself carries the digest of the exchange request it decides. When present, the host MUST recompute it from its own record of the exchange response and refuse a mismatch with understanding/seal:exchangeDigestMismatch."
+      "description": "OPTIONAL in the schema, but a joining party SHOULD carry it (SPEC §4.9.3: a seal is cited outside the exchange). The task digest of the understanding/exchange response named by `exchangeId`, computed per SPEC §4.9.3 as multibase(multihash(H(JCS(document ∖ proof)))) over that response in full — which itself carries the digest of the exchange request it decides. When present, the host MUST recompute it from its own record of the exchange response as issued and refuse a mismatch, or an unsupported hash algorithm, with understanding/seal:exchangeDigestMismatch."
     },
     "agreement": {
       "$ref": "#/$defs/Agreement"
