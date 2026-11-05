@@ -13042,7 +13042,7 @@ export interface RecoverySigningRequest {
   expiresAt?: string;
 }
 /**
- * A resolvable, version-identified, hash-pinned pointer to one document: the host's terms (understanding/offer's termsRef) or one register of an agreement. The same `{ uri, version, digestMultibase }` shape as understanding/offer's termsRef and as the governance-framework reference the companion Verifiable Trust Infrastructure specification places in a DID document (VTI-KEY-052: a `GovernanceFramework` service whose `serviceEndpoint` is the `uri`, with `version` and `digestMultibase` members).
+ * A resolvable, version-identified, hash-pinned pointer to one document: the host's terms (understanding/offer's termsRef) or one register of an agreement. The same `{ uri, version, digestMultibase }` shape as understanding/offer's termsRef and as the governance-framework reference the companion Verifiable Trust Infrastructure specification proposes placing in a DID document (VTI-KEY-052, as proposed in dtgwg-vti-spec#78: a `GovernanceFramework` service whose `serviceEndpoint` is the `uri`, with `version` and `digestMultibase` members).
  */
 export interface RegisterRef {
   /**
