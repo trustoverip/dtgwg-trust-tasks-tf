@@ -21,6 +21,29 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  # pub.dev refuses an upload whose CHANGELOG.md exceeds 262144 bytes, and it
+  # says so only at publish time, after the Release PR has merged. From 0.9.11
+  # to 0.9.23 every trust_tasks publish failed that way, and the failed publish
+  # held back the Release PR for every language. Fail here first, with room to
+  # spare for the next Release PR's section.
+  changelog-size:
+    name: Dart CHANGELOG.md under pub.dev's limit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Check sizes
+        run: |
+          limit=230000
+          status=0
+          for f in trust-tasks-dart*/CHANGELOG.md; do
+            size=$(wc -c <"$f")
+            if [ "$size" -gt "$limit" ]; then
+              echo "::error file=$f::$f is $size bytes; pub.dev refuses more than 262144. Move the oldest entries to CHANGELOG-archive.md beside it (listed in that package's .pubignore), as trust-tasks-dart does."
+              status=1
+            fi
+          done
+          exit $status
+
   # The Dart mirror of codegen.yml's `codegen-drift` and the `bindings-drift`
   # jobs in ts.yml and go.yml: regenerate and fail if the committed output
   # differs. A spec change that regenerated only three of the four libraries is
