@@ -7,5 +7,6 @@ pub mod join;
 pub mod leave;
 pub mod list;
 pub mod notice;
+pub mod preview;
 pub mod repudiate;
 pub mod show;
