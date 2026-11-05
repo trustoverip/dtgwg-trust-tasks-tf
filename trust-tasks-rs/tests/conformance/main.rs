@@ -2213,6 +2213,17 @@ mod vtc {
         mod delete {
             mod v0_1;
         }
+        mod facilitators {
+            mod add {
+                mod v0_1;
+            }
+            mod list {
+                mod v0_1;
+            }
+            mod remove {
+                mod v0_1;
+            }
+        }
         mod ideas {
             mod decide {
                 mod v0_1;
