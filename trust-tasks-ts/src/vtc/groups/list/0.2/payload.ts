@@ -3,7 +3,7 @@
  * Source: specs/vtc/groups/list/0.2/payload.schema.json
  */
 
-import type { DynamicRule, EntryId, Ext, FieldKey, Group, GroupAudience, GroupDescription, GroupId, GroupKind, GroupName, JoinPolicy, RuleCondition } from "../../../../_shared/components.js";
+import type { BadgeId, DynamicRule, EntryId, Ext, FieldKey, Group, GroupAudience, GroupDescription, GroupId, GroupKind, GroupName, JoinPolicy, RuleCondition } from "../../../../_shared/components.js";
 
 
 /**
@@ -50,7 +50,7 @@ export interface VTCGroupsListResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { DynamicRule, EntryId, Ext, FieldKey, Group, GroupAudience, GroupDescription, GroupId, GroupKind, GroupName, JoinPolicy, RuleCondition };
+export type { BadgeId, DynamicRule, EntryId, Ext, FieldKey, Group, GroupAudience, GroupDescription, GroupId, GroupKind, GroupName, JoinPolicy, RuleCondition };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/groups/list/0.2" as const;
@@ -239,6 +239,10 @@ export const PAYLOAD_SCHEMA = {
           "type": "boolean",
           "description": "`true` while the group has a `grants` or `role` binding. Such a group is `static` and `closed` for as long as it does."
         },
+        "badgeId": {
+          "$ref": "#/$defs/BadgeId",
+          "description": "Present exactly when the group backs a community badge (vtc/badges/*): its managers are the badge's owners, its members the badge's holders, and its DID issues the badge credential in place of a membership credential. A badge group never carries authority, is not counted among the groups two members share, and is listed among the community's groups only to a caller who asks for badge groups (VTI-BDG-010 – VTI-BDG-012)."
+        },
         "memberCount": {
           "type": "integer",
           "minimum": 0,
@@ -413,6 +417,12 @@ export const PAYLOAD_SCHEMA = {
       "description": "Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.",
       "type": "string",
       "pattern": "^dir_[A-Za-z0-9_-]{16,64}$"
+    },
+    "BadgeId": {
+      "title": "BadgeId",
+      "description": "Opaque identifier of a badge: `bdg_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-BDG-001).",
+      "type": "string",
+      "pattern": "^bdg_[A-Za-z0-9_-]{16,64}$"
     }
   }
 } as const;
@@ -539,6 +549,10 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "type": "boolean",
           "description": "`true` while the group has a `grants` or `role` binding. Such a group is `static` and `closed` for as long as it does."
         },
+        "badgeId": {
+          "$ref": "#/$defs/BadgeId",
+          "description": "Present exactly when the group backs a community badge (vtc/badges/*): its managers are the badge's owners, its members the badge's holders, and its DID issues the badge credential in place of a membership credential. A badge group never carries authority, is not counted among the groups two members share, and is listed among the community's groups only to a caller who asks for badge groups (VTI-BDG-010 – VTI-BDG-012)."
+        },
         "memberCount": {
           "type": "integer",
           "minimum": 0,
@@ -713,6 +727,12 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.",
       "type": "string",
       "pattern": "^dir_[A-Za-z0-9_-]{16,64}$"
+    },
+    "BadgeId": {
+      "title": "BadgeId",
+      "description": "Opaque identifier of a badge: `bdg_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-BDG-001).",
+      "type": "string",
+      "pattern": "^bdg_[A-Za-z0-9_-]{16,64}$"
     }
   }
 } as const;

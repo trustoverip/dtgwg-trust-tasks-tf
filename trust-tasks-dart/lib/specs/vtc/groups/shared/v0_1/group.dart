@@ -198,6 +198,10 @@ class DynamicRule {
       };
 }
 
+/// Opaque identifier of a badge: `bdg_` followed by 16 to 64 base64url characters.
+/// Random, community-scoped, never reused (VTI-BDG-001).
+typedef BadgeId = String;
+
 /// Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url
 /// characters. Random, scoped to one community, and stable for the life of the
 /// membership — it survives a rotation of the member's DID, which is why groups, notes
@@ -226,6 +230,7 @@ class Group {
     required this.showMembers,
     required this.issuesCredentials,
     required this.carriesAuthority,
+    this.badgeId,
     this.memberCount,
     this.managers,
     this.credentialAuthorityValidUntil,
@@ -252,6 +257,7 @@ class Group {
         showMembers: GroupAudience(json['showMembers'] as String),
         issuesCredentials: json['issuesCredentials'] as bool,
         carriesAuthority: json['carriesAuthority'] as bool,
+        badgeId: json['badgeId'] as String?,
         memberCount: json['memberCount'] as int?,
         managers: json['managers'] == null
             ? null
@@ -296,6 +302,14 @@ class Group {
   /// and `closed` for as long as it does.
   final bool carriesAuthority;
 
+  /// Present exactly when the group backs a community badge (vtc/badges/*): its managers
+  /// are the badge's owners, its members the badge's holders, and its DID issues the
+  /// badge credential in place of a membership credential. A badge group never carries
+  /// authority, is not counted among the groups two members share, and is listed among
+  /// the community's groups only to a caller who asks for badge groups (VTI-BDG-010 –
+  /// VTI-BDG-012).
+  final BadgeId? badgeId;
+
   /// Active members. Only to callers who may see the member list.
   final int? memberCount;
 
@@ -330,6 +344,7 @@ class Group {
         'showMembers': showMembers.value,
         'issuesCredentials': issuesCredentials,
         'carriesAuthority': carriesAuthority,
+        if (badgeId != null) 'badgeId': badgeId!,
         if (memberCount != null) 'memberCount': memberCount!,
         if (managers != null) 'managers': managers!,
         if (credentialAuthorityValidUntil != null)

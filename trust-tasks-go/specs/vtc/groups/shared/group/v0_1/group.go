@@ -144,6 +144,13 @@ type Group struct {
 	// `closed` for as long as it does.
 	CarriesAuthority bool `json:"carriesAuthority"`
 
+	// Present exactly when the group backs a community badge (vtc/badges/*): its managers are
+	// the badge's owners, its members the badge's holders, and its DID issues the badge
+	// credential in place of a membership credential. A badge group never carries authority,
+	// is not counted among the groups two members share, and is listed among the community's
+	// groups only to a caller who asks for badge groups (VTI-BDG-010 – VTI-BDG-012).
+	BadgeID *BadgeID `json:"badgeId,omitempty"`
+
 	// Active members. Only to callers who may see the member list.
 	MemberCount *int64 `json:"memberCount,omitempty"`
 
@@ -452,3 +459,7 @@ type FieldKey = string
 // Ext Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a
 // reverse-DNS namespace; structure under each namespace is opaque to the framework.
 type Ext = map[string]json.RawMessage
+
+// BadgeID Opaque identifier of a badge: `bdg_` followed by 16 to 64 base64url characters.
+// Random, community-scoped, never reused (VTI-BDG-001).
+type BadgeID = string
