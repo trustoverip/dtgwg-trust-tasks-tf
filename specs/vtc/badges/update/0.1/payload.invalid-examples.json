@@ -1,0 +1,56 @@
+[
+  {
+    "note": "`badgeId` is REQUIRED.",
+    "payload": {
+      "name": "Workshop host",
+      "reason": "x"
+    }
+  },
+  {
+    "note": "`reason` is REQUIRED.",
+    "payload": {
+      "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+      "listed": false
+    }
+  },
+  {
+    "note": "`kind` is fixed at creation; the schema admits no change of it, so a kudos badge becomes a community badge only by vtc/badges/promote.",
+    "payload": {
+      "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+      "kind": "community",
+      "reason": "x"
+    }
+  },
+  {
+    "note": "`shareableOutside` fixes the credential regime of every award already accepted and is not changed; retire the badge and make it again.",
+    "payload": {
+      "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+      "shareableOutside": true,
+      "reason": "x"
+    }
+  },
+  {
+    "note": "`image` names an upload by its digest only; the picture's bytes travel in vtc/badges/images/upload, never here.",
+    "payload": {
+      "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+      "image": { "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08", "data": "iVBORw0KGgo" },
+      "reason": "x"
+    }
+  },
+  {
+    "note": "`holdersVisibleTo` is a GroupAudience: `admins`, `groupMembers` or `members` — never the world; a badge's holders are never public (VTI-BDG-071).",
+    "payload": {
+      "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+      "holdersVisibleTo": "public",
+      "reason": "x"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+      "reason": "x",
+      "ext": { "bare": true }
+    }
+  }
+]

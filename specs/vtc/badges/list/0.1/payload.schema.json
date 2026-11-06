@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/badges/list/0.1",
+  "title": "VTC Badges — List — payload",
+  "description": "List the badges the caller may see — every listed active badge and the ones they hold, own or are offered; every badge for an administrator — with how many of each they hold and where they stand with it. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "kind": {
+      "$ref": "../../_shared/0.1/badge.schema.json#/$defs/BadgeKind",
+      "description": "Only badges of this kind."
+    },
+    "mine": {
+      "type": "boolean",
+      "description": "Only badges the caller holds — at least one accepted award."
+    },
+    "includeUnlisted": {
+      "type": "boolean",
+      "description": "Administrators only (`vtc.badges.admin`): also the badges that are not `listed`. A member sees the unlisted badges they hold, own or are offered without it."
+    },
+    "includeRetired": {
+      "type": "boolean",
+      "description": "Administrators only (`vtc.badges.admin`): also the retired badges. A holder's retired badges are in vtc/badges/mine/list."
+    },
+    "cursor": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "An opaque continuation token from a previous response's `nextCursor`, bound to the caller and the filters; a responder MUST NOT accept a cursor it did not issue."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200,
+      "description": "The most items to return, at most 200; the responder chooses a default (50) and MAY return fewer."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "MyState": {
+      "title": "MyState",
+      "description": "Where the caller stands with a badge. `holder`: at least one accepted award. `offered`: an open offer names them. `requested`: an undecided request to join its badge group. `none`: nothing.",
+      "type": "string",
+      "enum": [
+        "holder",
+        "offered",
+        "requested",
+        "none"
+      ]
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Badges — List — response payload",
+      "description": "The success response to a vtc/badges/list/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/badges/list/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "maxItems": 200,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "badge",
+              "myCount",
+              "myState"
+            ],
+            "properties": {
+              "badge": {
+                "$ref": "../../_shared/0.1/badge.schema.json#/$defs/Badge"
+              },
+              "myCount": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Accepted awards of this badge the caller holds; 0 where none."
+              },
+              "myState": {
+                "$ref": "#/$defs/MyState"
+              }
+            }
+          },
+          "description": "In order of `name`, then `badgeId`."
+        },
+        "nextCursor": {
+          "type": "string",
+          "maxLength": 1024,
+          "description": "Continuation token for the next page; pass it back as `cursor`. Absent on the last page — never `null`."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

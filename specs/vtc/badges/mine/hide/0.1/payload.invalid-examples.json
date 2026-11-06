@@ -1,0 +1,49 @@
+[
+  {
+    "note": "`badgeId` is REQUIRED: a hide names one badge.",
+    "payload": {}
+  },
+  {
+    "note": "A badge is hidden as a whole; a single award cannot be hidden on its own.",
+    "payload": {
+      "awardId": "awd_H7q2Lm9Xc4Vt1Bz8"
+    }
+  },
+  {
+    "note": "`badgeId` has the `bdg_` prefix; an award identifier is not a badge.",
+    "payload": {
+      "badgeId": "awd_H7q2Lm9Xc4Vt1Bz8"
+    }
+  },
+  {
+    "note": "There is no `entryId`: a member hides only their own badge, never another holder's.",
+    "payload": {
+      "badgeId": "bdg_Kd0sCl4mpWh1sp3r",
+      "entryId": "dir_Pr1yaN4t7Rj2Qw8K"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "badgeId": "bdg_Kd0sCl4mpWh1sp3r",
+      "ext": { "bare": true }
+    }
+  },
+  {
+    "note": "Response variant: the answer is the badge as a `MyBadge`, which carries `hidden`; a bare `Badge` does not.",
+    "variant": "response",
+    "payload": {
+      "badge": {
+        "badgeId": "bdg_Kd0sCl4mpWh1sp3r",
+        "kind": "kudos",
+        "name": "Clamp whisperer",
+        "description": "Found the good clamps when nobody else could.",
+        "image": { "sha256": "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae" },
+        "repeatable": true,
+        "listed": true,
+        "state": "active",
+        "createdAt": "2026-10-02T09:05:00Z"
+      }
+    }
+  }
+]

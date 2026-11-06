@@ -1,0 +1,32 @@
+[
+  {
+    "note": "Unknown top-level payload member — additionalProperties: false catches `badgeId`; the settings are the community's one record and take no selector.",
+    "payload": {
+      "badgeId": "bdg_W5k2N8xRb3Qz7TpL"
+    }
+  },
+  {
+    "note": "The settings are never sent to be read; a request carrying `settings` is an update mistaken for a read.",
+    "payload": {
+      "settings": { "enabled": true }
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "ext": { "bare": true }
+    }
+  },
+  {
+    "note": "The response carries the whole settings record: `settings` is REQUIRED.",
+    "variant": "response",
+    "payload": {}
+  },
+  {
+    "note": "`settings` is the shared BadgeSettings shape, every required switch present; a record missing `kudosMakers` cannot tell a portal whether its member may make a kudos badge.",
+    "variant": "response",
+    "payload": {
+      "settings": { "enabled": true, "showKudosTotals": true, "automaticBadges": true, "membersMayRequest": true }
+    }
+  }
+]

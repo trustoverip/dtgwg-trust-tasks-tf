@@ -1,0 +1,33 @@
+[
+  {
+    "note": "`awardId` is REQUIRED.",
+    "payload": {}
+  },
+  {
+    "note": "An award is named by its own identifier, never by the badge: a member may have several offers of a repeatable badge open.",
+    "payload": {
+      "awardId": "bdg_W5k2N8xRb3Qz7TpL"
+    }
+  },
+  {
+    "note": "The signer accepts for themselves only; there is no recipient member.",
+    "payload": {
+      "awardId": "awd_Qz7TpLW5k2N8xRb3",
+      "entryId": "dir_NoorElSayed00000"
+    }
+  },
+  {
+    "note": "Hiding is a separate act (vtc/badges/mine/hide); accept carries no display choice.",
+    "payload": {
+      "awardId": "awd_Qz7TpLW5k2N8xRb3",
+      "hidden": true
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "awardId": "awd_Qz7TpLW5k2N8xRb3",
+      "ext": { "bare": true }
+    }
+  }
+]

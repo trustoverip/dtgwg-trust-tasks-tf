@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/badges/mine/arrange/0.1",
+  "title": "VTC Badges — Mine — Arrange — payload",
+  "description": "Arrange the signer's wall: the order of their badges, which of them are pinned beside their name, and who may see the wall. Each member absent from the request is unchanged. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "anyOf": [
+    { "required": ["order"] },
+    { "required": ["pinned"] },
+    { "required": ["visibility"] }
+  ],
+  "properties": {
+    "order": {
+      "type": "array",
+      "maxItems": 1000,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "../../../_shared/0.1/badge.schema.json#/$defs/BadgeId"
+      },
+      "description": "The signer's wall order, first to last. Every identifier is a badge the signer holds. Badges held but omitted follow the listed ones in their previous relative order."
+    },
+    "pinned": {
+      "type": "array",
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "../../../_shared/0.1/badge.schema.json#/$defs/BadgeId"
+      },
+      "description": "The badges to pin beside the signer's name, replacing the pinned set: at most the community's `limits.maxPinned` (default 2; never more than 8), each a badge the signer holds and has not hidden. An empty list unpins every badge."
+    },
+    "visibility": {
+      "$ref": "../../../_shared/0.1/badge.schema.json#/$defs/WallVisibility",
+      "description": "Who may see the signer's wall."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Badges — Mine — Arrange — response payload",
+      "description": "The success response to a vtc/badges/mine/arrange/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/badges/mine/arrange/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "badges",
+        "visibility"
+      ],
+      "properties": {
+        "badges": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "$ref": "../../../_shared/0.1/badge.schema.json#/$defs/MyBadge"
+          },
+          "description": "Every badge the signer holds, hidden ones included, in the new order, lowest `position` first, with the new `pinned` marks — as vtc/badges/mine/list answers them."
+        },
+        "visibility": {
+          "$ref": "../../../_shared/0.1/badge.schema.json#/$defs/WallVisibility",
+          "description": "Who may see the signer's wall, as it now stands."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

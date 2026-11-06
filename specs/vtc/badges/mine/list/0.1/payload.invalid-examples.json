@@ -1,0 +1,69 @@
+[
+  {
+    "note": "There is no `entryId`: a member reads only their own badges, never another's.",
+    "payload": {
+      "entryId": "dir_Pr1yaN4t7Rj2Qw8K"
+    }
+  },
+  {
+    "note": "The signer's badges are not filtered here; `hidden` is a mark on each entry of the response, not a request member.",
+    "payload": {
+      "hidden": true
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "ext": { "bare": true }
+    }
+  },
+  {
+    "note": "Response variant: `visibility` is REQUIRED; a wall always has a setting (`members` by default).",
+    "variant": "response",
+    "payload": {
+      "badges": [],
+      "offers": []
+    }
+  },
+  {
+    "note": "Response variant: `kudosTotal` is a count over accepted, unhidden awards and is never negative.",
+    "variant": "response",
+    "payload": {
+      "badges": [],
+      "offers": [],
+      "visibility": "members",
+      "kudosTotal": -1
+    }
+  },
+  {
+    "note": "Response variant: an offer carries the giver as projected directory fields (`givenBy`), never the giver's DID.",
+    "variant": "response",
+    "payload": {
+      "badges": [],
+      "offers": [
+        {
+          "award": {
+            "awardId": "awd_H7q2Lm9Xc4Vt1Bz8",
+            "badgeId": "bdg_Yr1Ab0ardTn2Qx7V",
+            "entryId": "dir_Tm4sV3g4K9xQ2bLp",
+            "state": "offered",
+            "offeredAt": "2026-11-05T20:00:00Z"
+          },
+          "badge": {
+            "badgeId": "bdg_Yr1Ab0ardTn2Qx7V",
+            "kind": "community",
+            "name": "One year aboard",
+            "description": "A year in the community.",
+            "image": { "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" },
+            "repeatable": false,
+            "listed": true,
+            "state": "active",
+            "createdAt": "2026-09-01T09:10:00Z"
+          },
+          "giverDid": "did:example:ben"
+        }
+      ],
+      "visibility": "members"
+    }
+  }
+]

@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/badges/mine/decline/0.1",
+  "title": "VTC Badges — Mine — Decline — payload",
+  "description": "Decline a badge offered to the signer: the offer is closed, nothing is recorded in any group and nothing is issued. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "awardId"
+  ],
+  "properties": {
+    "awardId": {
+      "$ref": "../../../_shared/0.1/badge.schema.json#/$defs/AwardId",
+      "description": "The offer to decline: an award in state `offered` whose recipient is the signer."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Badges — Mine — Decline — response payload",
+      "description": "The success response to a vtc/badges/mine/decline/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/badges/mine/decline/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "award"
+      ],
+      "properties": {
+        "award": {
+          "$ref": "../../../_shared/0.1/badge.schema.json#/$defs/Award",
+          "description": "The award, now `declined`, with `decidedAt`."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

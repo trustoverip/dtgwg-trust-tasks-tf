@@ -1,0 +1,61 @@
+[
+  {
+    "note": "No badge: the owners' view is of one badge, never of every award in the community.",
+    "payload": {
+      "state": "offered"
+    }
+  },
+  {
+    "note": "A state that is not an AwardState: `hidden` is a holder's choice shown on each item, never an award state.",
+    "payload": {
+      "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+      "state": "hidden"
+    }
+  },
+  {
+    "note": "A recipient filter by DID: members are named by their community-scoped entry, never by DID.",
+    "payload": {
+      "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+      "entryId": "did:example:sam"
+    }
+  },
+  {
+    "note": "A limit above the page ceiling of 200.",
+    "payload": {
+      "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+      "limit": 500
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+      "ext": { "bare": true }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An item without `hidden`: the owners' view always says whether the recipient hid the badge, so a hidden holder is never mistaken for one who shows it.",
+    "payload": {
+      "items": [
+        {
+          "award": {
+            "awardId": "awd_K3mT9pQx2Lw8Rv5N",
+            "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+            "entryId": "dir_SamNguyen0000000",
+            "state": "accepted",
+            "offeredAt": "2026-11-05T18:00:00Z"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "`nextCursor` is absent on the last page, never null.",
+    "payload": {
+      "items": [],
+      "nextCursor": null
+    }
+  }
+]

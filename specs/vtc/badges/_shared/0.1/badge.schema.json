@@ -1,0 +1,446 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/badges/_shared/0.1/badge",
+  "title": "Badge — shared definitions for the vtc/badges/* spec family",
+  "description": "A Verifiable Trust Community's badges (VTI Community Badges chapter, VTI-BDG-*): pictures with a name that a member earns, holds and shows on their directory card. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build and the codegen).\n\nA COMMUNITY BADGE IS A BADGE GROUP. A badge of kind `community` is backed by exactly one community group (vtc/groups/*), referenced by `groupId` here and by `badgeId` on the group: its owners are the group's managers, its holders the group's members, and the group's own DID issues its holders the badge credential (VTI-BDG-010, VTI-BDG-011, VTI-BDG-060). A badge group never carries authority (VTI-BDG-012). A badge of kind `kudos` has no group and no credential (VTI-BDG-041).\n\nAN AWARD IS AN OFFER UNTIL ACCEPTED. Giving a badge records an award in state `offered`; nothing is admitted, issued or shown until the recipient accepts (VTI-BDG-020, VTI-BDG-021). Each giving of a repeatable or kudos badge is an award of its own (VTI-BDG-022, VTI-BDG-041).\n\nBADGES CONFER NOTHING. The community never reads a badge, an award or a badge credential in an authorization decision (VTI-BDG-002).",
+  "$defs": {
+    "BadgeId": {
+      "title": "BadgeId",
+      "description": "Opaque identifier of a badge: `bdg_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-BDG-001).",
+      "type": "string",
+      "pattern": "^bdg_[A-Za-z0-9_-]{16,64}$"
+    },
+    "AwardId": {
+      "title": "AwardId",
+      "description": "Opaque identifier of one giving of a badge to one member: `awd_` followed by 16 to 64 base64url characters. Random and unique within the community.",
+      "type": "string",
+      "pattern": "^awd_[A-Za-z0-9_-]{16,64}$"
+    },
+    "BadgeKind": {
+      "title": "BadgeKind",
+      "description": "`community`: defined by holders of `vtc.badges.admin`, given by its owners (its badge group's managers), may carry a credential. `kudos`: made by a member the community's badge settings admit, given by any active member to any other, never a credential. Fixed for the badge's life; a kudos badge becomes a community badge only by promotion (vtc/badges/promote).",
+      "type": "string",
+      "enum": [
+        "community",
+        "kudos"
+      ]
+    },
+    "BadgeName": {
+      "title": "BadgeName",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "description": "The badge's name, shown on the wall and written into the credential's Achievement. Plain text; a reader MUST NOT treat it as instructions."
+    },
+    "BadgeDescription": {
+      "title": "BadgeDescription",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "description": "What the badge is for. Plain text; a reader MUST NOT treat it as instructions."
+    },
+    "BadgeCriteria": {
+      "title": "BadgeCriteria",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "description": "How the badge is earned, shown to members and written into the credential's Achievement as its criteria narrative. Plain text."
+    },
+    "BadgeState": {
+      "title": "BadgeState",
+      "description": "`active`: may be given and shown. `retired`: kept for its holders' own history, never given, never shown to members who do not hold it (VTI-BDG-005).",
+      "type": "string",
+      "enum": [
+        "active",
+        "retired"
+      ]
+    },
+    "AwardNote": {
+      "title": "AwardNote",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "description": "What the award is for, from the giver, shown to the recipient and written as the award's evidence narrative where the badge carries a credential. Plain text; erased with its author (VTI-BDG-090)."
+    },
+    "AwardState": {
+      "title": "AwardState",
+      "description": "`offered`: waiting for the recipient. `accepted`: the recipient took it; for a community badge the credential was issued and the membership recorded. `declined`: the recipient declined; nothing was recorded in the group and nothing issued. `withdrawn`: the giver withdrew the offer before a decision. `expired`: the offer lapsed unanswered. `revoked`: taken back after acceptance (VTI-BDG-023).",
+      "type": "string",
+      "enum": [
+        "offered",
+        "accepted",
+        "declined",
+        "withdrawn",
+        "expired",
+        "revoked"
+      ]
+    },
+    "Badge": {
+      "title": "Badge",
+      "description": "A badge as a caller who may see it sees it. `groupId` is present exactly when `kind` is `community`. `holderCount` only to callers who may see the badge's holders, counted over holders who have not hidden it (VTI-BDG-030, VTI-BDG-033). `createdBy` is the directory entry of the administrator or member who made it, where they have one.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "badgeId",
+        "kind",
+        "name",
+        "description",
+        "image",
+        "repeatable",
+        "listed",
+        "state",
+        "createdAt"
+      ],
+      "properties": {
+        "badgeId": {
+          "$ref": "#/$defs/BadgeId"
+        },
+        "kind": {
+          "$ref": "#/$defs/BadgeKind"
+        },
+        "name": {
+          "$ref": "#/$defs/BadgeName"
+        },
+        "description": {
+          "$ref": "#/$defs/BadgeDescription"
+        },
+        "criteria": {
+          "$ref": "#/$defs/BadgeCriteria"
+        },
+        "image": {
+          "$ref": "../../../directory/_shared/0.1/directory-card.schema.json#/$defs/CardBlobRef",
+          "description": "The badge's picture, re-encoded and stored by the community (vtc/badges/images/upload), read with vtc/badges/images/get. `url` and `urlExpiresAt` MAY appear in a projection as for a card picture; for a badge whose holders may show it outside, `url` MAY be the picture's stable public location."
+        },
+        "repeatable": {
+          "type": "boolean",
+          "description": "Whether one member may hold the badge more than once, each giving an award of its own (VTI-BDG-022). Always true for a kudos badge."
+        },
+        "requestable": {
+          "type": "boolean",
+          "description": "Community badges only. Whether a member may ask for it: a request to join its badge group, decided by its owners (VTI-BDG-014). Absent reads as false."
+        },
+        "listed": {
+          "type": "boolean",
+          "description": "Whether members who do not hold the badge see it in the community's badge list. An unlisted badge is seen by its holders, its owners and administrators."
+        },
+        "shareableOutside": {
+          "type": "boolean",
+          "description": "Community badges only. Whether its holders may show it outside the community, which decides the credential's regime: short-lived and renewed with no status when false, long-lived with a status in the community's own status set when true (VTI-BDG-061, VTI-BDG-062). Absent reads as false."
+        },
+        "groupId": {
+          "$ref": "../../../groups/_shared/0.1/group.schema.json#/$defs/GroupId",
+          "description": "The badge group that backs a community badge: its managers are the badge's owners, its members the holders, its DID the credential's issuer."
+        },
+        "state": {
+          "$ref": "#/$defs/BadgeState"
+        },
+        "holderCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Holders who show the badge. Only to callers who may see the holders."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "createdBy": {
+          "$ref": "../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryId"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "retiredAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT carry authority."
+        }
+      }
+    },
+    "Award": {
+      "title": "Award",
+      "description": "One giving of a badge to one member. `givenBy` is the giver's directory entry, absent for an award a dynamic badge group's rule made. `note` is shown to the recipient, the giver, the badge's owners and administrators, never to other members. `credentialId` is present on an accepted award of a community badge: the badge credential that evidences it, renewed or re-issued as the badge's regime requires.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "awardId",
+        "badgeId",
+        "entryId",
+        "state",
+        "offeredAt"
+      ],
+      "properties": {
+        "awardId": {
+          "$ref": "#/$defs/AwardId"
+        },
+        "badgeId": {
+          "$ref": "#/$defs/BadgeId"
+        },
+        "entryId": {
+          "$ref": "../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryId",
+          "description": "The recipient."
+        },
+        "givenBy": {
+          "$ref": "../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryId"
+        },
+        "note": {
+          "$ref": "#/$defs/AwardNote"
+        },
+        "state": {
+          "$ref": "#/$defs/AwardState"
+        },
+        "offeredAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "decidedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the recipient accepted or declined, the giver withdrew, the offer expired, or the award was revoked."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When an unanswered offer lapses, where the community expires offers."
+        },
+        "credentialId": {
+          "$ref": "../../../groups/_shared/0.1/group.schema.json#/$defs/GroupCredentialId"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    },
+    "WallVisibility": {
+      "title": "WallVisibility",
+      "description": "Who sees a member's badges, the member's own setting (VTI-BDG-031). `members`: every active member the directory shows their card to. `nobody`: no one but the member. Never wider than the directory shows the card.",
+      "type": "string",
+      "enum": [
+        "members",
+        "nobody"
+      ]
+    },
+    "WallEntry": {
+      "title": "WallEntry",
+      "description": "One badge on a member's wall as a viewer sees it: the badge, how many times the member holds it, since when, and whether the member pinned it. Hidden badges are never wall entries (VTI-BDG-030).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "badge",
+        "count",
+        "since",
+        "pinned"
+      ],
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Accepted awards of this badge the member holds."
+        },
+        "since": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the member first accepted this badge."
+        },
+        "latestAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the member last accepted an award of this badge."
+        },
+        "pinned": {
+          "type": "boolean"
+        }
+      }
+    },
+    "MyBadge": {
+      "title": "MyBadge",
+      "description": "A badge as its holder sees it in their own list: the wall entry plus what only the holder knows — whether they hid it, their position for it, and the credential that evidences it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "badge",
+        "count",
+        "since",
+        "pinned",
+        "hidden"
+      ],
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "since": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "latestAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "pinned": {
+          "type": "boolean"
+        },
+        "hidden": {
+          "type": "boolean",
+          "description": "The holder hid it: off their wall, out of the badge's holder list for members, out of its count; the awards, the membership and the credential stand (VTI-BDG-030)."
+        },
+        "position": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The holder's order on their wall, lowest first."
+        },
+        "credentialId": {
+          "$ref": "../../../groups/_shared/0.1/group.schema.json#/$defs/GroupCredentialId"
+        },
+        "credentialValidUntil": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "KudosMakers": {
+      "title": "KudosMakers",
+      "description": "Who may make a kudos badge (VTI-BDG-004). `nobody`: no kudos badges. `roles`: holders of any of `roles`, or members of any of `groups`. `members`: every active member.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policy"
+      ],
+      "properties": {
+        "policy": {
+          "type": "string",
+          "enum": [
+            "nobody",
+            "roles",
+            "members"
+          ]
+        },
+        "roles": {
+          "type": "array",
+          "maxItems": 32,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "description": "Community role names. Read exactly when `policy` is `roles`."
+        },
+        "groups": {
+          "type": "array",
+          "maxItems": 32,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "../../../groups/_shared/0.1/group.schema.json#/$defs/GroupId"
+          },
+          "description": "Read exactly when `policy` is `roles`."
+        }
+      }
+    },
+    "BadgeLimits": {
+      "title": "BadgeLimits",
+      "description": "The community's bounds (VTI-BDG-032, VTI-BDG-040). Each has a default a community that states none applies.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kudosPerGiverPerDay": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000,
+          "description": "Kudos one member may give in a day. Default 10."
+        },
+        "sameGiverSameMember": {
+          "type": "string",
+          "enum": [
+            "day",
+            "week",
+            "unbounded"
+          ],
+          "description": "How often the same member may give a kudos badge to the same member: at most once a day, once a week, or without bound. Default `day`."
+        },
+        "minTenureDays": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3650,
+          "description": "Days of membership before a member may give kudos or make a kudos badge. Default 7."
+        },
+        "kudosBadgesPerMakerPerMonth": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000,
+          "description": "Kudos badges one member may make in a calendar month. Default 5."
+        },
+        "maxPinned": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 8,
+          "description": "Badges a member may pin beside their name. Default 2."
+        },
+        "offerExpiresAfterDays": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 365,
+          "description": "Days an unanswered offer stands before it expires. Absent: offers do not expire."
+        }
+      }
+    },
+    "BadgeSettings": {
+      "title": "BadgeSettings",
+      "description": "The community's badge settings (VTI-BDG-004). `enabled` false hides every badge surface and keeps every record; nothing is given or issued while it is false.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "enabled",
+        "kudosMakers",
+        "showKudosTotals",
+        "automaticBadges",
+        "membersMayRequest"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "kudosMakers": {
+          "$ref": "#/$defs/KudosMakers"
+        },
+        "limits": {
+          "$ref": "#/$defs/BadgeLimits"
+        },
+        "showKudosTotals": {
+          "type": "boolean",
+          "description": "Whether a member's kudos total is shown on their card (VTI-BDG-043)."
+        },
+        "automaticBadges": {
+          "type": "boolean",
+          "description": "Whether dynamic badge groups are computed (VTI-BDG-013). False: a community badge may not be created on a dynamic group, and existing ones are not recomputed."
+        },
+        "membersMayRequest": {
+          "type": "boolean",
+          "description": "Whether any community badge may be marked `requestable`. False: every badge group is closed."
+        },
+        "credentialValidDays": {
+          "type": "integer",
+          "minimum": 30,
+          "maximum": 3650,
+          "description": "Validity of a badge credential its holders may show outside (VTI-BDG-062). Default 730."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

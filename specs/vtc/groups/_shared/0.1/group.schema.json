@@ -187,6 +187,10 @@
           "type": "boolean",
           "description": "`true` while the group has a `grants` or `role` binding. Such a group is `static` and `closed` for as long as it does."
         },
+        "badgeId": {
+          "$ref": "../../../badges/_shared/0.1/badge.schema.json#/$defs/BadgeId",
+          "description": "Present exactly when the group backs a community badge (vtc/badges/*): its managers are the badge's owners, its members the badge's holders, and its DID issues the badge credential in place of a membership credential. A badge group never carries authority, is not counted among the groups two members share, and is listed among the community's groups only to a caller who asks for badge groups (VTI-BDG-010 – VTI-BDG-012)."
+        },
         "memberCount": {
           "type": "integer",
           "minimum": 0,

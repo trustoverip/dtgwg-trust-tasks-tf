@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/badges/mine/list/0.1",
+  "title": "VTC Badges — Mine — List — payload",
+  "description": "A member's own badges: every badge they hold, hidden ones included, in their own order, with the offers waiting for their decision, their wall visibility and their kudos total. The signer is the subject; the payload names nothing. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Offer": {
+      "title": "Offer",
+      "description": "An award waiting for the signer's decision, with the badge it offers and its giver as the directory projects them to the signer.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "award",
+        "badge"
+      ],
+      "properties": {
+        "award": {
+          "$ref": "../../../_shared/0.1/badge.schema.json#/$defs/Award",
+          "description": "In state `offered`; `note` is returned, it is written for the recipient."
+        },
+        "badge": {
+          "$ref": "../../../_shared/0.1/badge.schema.json#/$defs/Badge"
+        },
+        "givenBy": {
+          "$ref": "../../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryFields",
+          "description": "The giver's directory fields the signer may see, projected exactly as vtc/directory/entries/show would project them. Absent when the signer may see none, or when a rule made the award."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Badges — Mine — List — response payload",
+      "description": "The success response to a vtc/badges/mine/list/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/badges/mine/list/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "badges",
+        "offers",
+        "visibility"
+      ],
+      "properties": {
+        "badges": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "$ref": "../../../_shared/0.1/badge.schema.json#/$defs/MyBadge"
+          },
+          "description": "Every badge the signer holds, hidden ones included (`hidden: true`), in the signer's own order, lowest `position` first."
+        },
+        "offers": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "$ref": "#/$defs/Offer"
+          },
+          "description": "Every award in state `offered` to the signer, newest first."
+        },
+        "visibility": {
+          "$ref": "../../../_shared/0.1/badge.schema.json#/$defs/WallVisibility",
+          "description": "Who sees the signer's wall, as the signer set it; `members` where they never did."
+        },
+        "kudosTotal": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Kudos awards the signer accepted and did not hide. Present only where the community's badge settings show kudos totals (VTI-BDG-043)."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

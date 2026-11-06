@@ -2220,6 +2220,94 @@ mod vtc {
             mod v0_1;
         }
     }
+    mod badges {
+        mod awards {
+            mod list {
+                mod v0_1;
+            }
+            mod offer {
+                mod v0_1;
+            }
+            mod revoke {
+                mod v0_1;
+            }
+            mod withdraw {
+                mod v0_1;
+            }
+        }
+        mod create {
+            mod v0_1;
+        }
+        mod holders {
+            mod list {
+                mod v0_1;
+            }
+        }
+        mod images {
+            mod get {
+                mod v0_1;
+            }
+            mod upload {
+                mod v0_1;
+            }
+        }
+        mod kudos {
+            mod give {
+                mod v0_1;
+            }
+            mod list {
+                mod v0_1;
+            }
+        }
+        mod list {
+            mod v0_1;
+        }
+        mod mine {
+            mod accept {
+                mod v0_1;
+            }
+            mod arrange {
+                mod v0_1;
+            }
+            mod decline {
+                mod v0_1;
+            }
+            mod hide {
+                mod v0_1;
+            }
+            mod list {
+                mod v0_1;
+            }
+            mod show {
+                mod v0_1;
+            }
+        }
+        mod promote {
+            mod v0_1;
+        }
+        mod retire {
+            mod v0_1;
+        }
+        mod settings {
+            mod show {
+                mod v0_1;
+            }
+            mod update {
+                mod v0_1;
+            }
+        }
+        mod show {
+            mod v0_1;
+        }
+        mod update {
+            mod v0_1;
+        }
+        mod wall {
+            mod show {
+                mod v0_1;
+            }
+        }
+    }
     mod boards {
         mod create {
             mod v0_1;
