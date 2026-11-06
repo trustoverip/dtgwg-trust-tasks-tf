@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/badges/wall/show/0.1",
+  "title": "VTC Badges — Wall — Show — payload",
+  "description": "A member's badge wall as a viewer sees it, answered only where the directory shows the viewer that member's card and the member shows their badges. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "entryId"
+  ],
+  "properties": {
+    "entryId": {
+      "$ref": "../../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryId",
+      "description": "The member whose wall to read. The caller's own entry reads their own wall."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Badges — Wall — Show — response payload",
+      "description": "The success response to a vtc/badges/wall/show/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/badges/wall/show/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entries",
+        "visibility"
+      ],
+      "properties": {
+        "entries": {
+          "type": "array",
+          "maxItems": 500,
+          "description": "The badges the member holds and shows: pinned first, then in the member's own order (VTI-BDG-032). Hidden badges are never here (VTI-BDG-030).",
+          "items": {
+            "$ref": "../../../_shared/0.1/badge.schema.json#/$defs/WallEntry"
+          }
+        },
+        "visibility": {
+          "$ref": "../../../_shared/0.1/badge.schema.json#/$defs/WallVisibility",
+          "description": "The member's own setting (VTI-BDG-031). A viewer who is not the member only ever sees `members`."
+        },
+        "kudosTotal": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The member's kudos total: accepted, not hidden kudos awards (VTI-BDG-043). Present exactly when the community's badge settings have `showKudosTotals` true; absent otherwise, never zero in its place."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

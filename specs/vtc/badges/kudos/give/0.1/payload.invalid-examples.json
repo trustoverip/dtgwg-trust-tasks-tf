@@ -1,0 +1,53 @@
+[
+  {
+    "note": "`to` is REQUIRED: a kudos badge is given to one member.",
+    "payload": {
+      "badgeId": "bdg_Kd0sCl4mpWh1sp3r",
+      "note": "Thanks!"
+    }
+  },
+  {
+    "note": "`badgeId` is REQUIRED: a giving names which kudos badge.",
+    "payload": {
+      "to": "dir_B3nOk4f0rRq9Wz2X"
+    }
+  },
+  {
+    "note": "The recipient is named by their directory `entryId`, never by DID.",
+    "payload": {
+      "badgeId": "bdg_Kd0sCl4mpWh1sp3r",
+      "to": "did:example:ben"
+    }
+  },
+  {
+    "note": "A note longer than 500 characters exceeds `AwardNote`.",
+    "payload": {
+      "badgeId": "bdg_Kd0sCl4mpWh1sp3r",
+      "to": "dir_B3nOk4f0rRq9Wz2X",
+      "note": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  },
+  {
+    "note": "One giving, one recipient: a kudos badge is not broadcast to a list.",
+    "payload": {
+      "badgeId": "bdg_Kd0sCl4mpWh1sp3r",
+      "to": ["dir_B3nOk4f0rRq9Wz2X", "dir_Pr1yaN4t7Rj2Qw8K"]
+    }
+  },
+  {
+    "note": "The giver is the signer; `givenBy` is never supplied.",
+    "payload": {
+      "badgeId": "bdg_Kd0sCl4mpWh1sp3r",
+      "to": "dir_B3nOk4f0rRq9Wz2X",
+      "givenBy": "dir_Pr1yaN4t7Rj2Qw8K"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "badgeId": "bdg_Kd0sCl4mpWh1sp3r",
+      "to": "dir_B3nOk4f0rRq9Wz2X",
+      "ext": { "bare": true }
+    }
+  }
+]

@@ -1,0 +1,46 @@
+[
+  {
+    "note": "`reason` is REQUIRED: a withdraw is recorded with why.",
+    "payload": {
+      "awardId": "awd_K3mT9pQx2Lw8Rv5N"
+    }
+  },
+  {
+    "note": "No award: a withdraw names one giving, never a badge or a member.",
+    "payload": {
+      "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+      "entryId": "dir_SamNguyen0000000",
+      "reason": "x"
+    }
+  },
+  {
+    "note": "An award identifier that is not one: a badge identifier does not name an award.",
+    "payload": {
+      "awardId": "bdg_W5k2N8xRb3Qz7TpL",
+      "reason": "x"
+    }
+  },
+  {
+    "note": "The new state is the task's, never the signer's: an offer withdrawn is `withdrawn`, and a request cannot name any other.",
+    "payload": {
+      "awardId": "awd_K3mT9pQx2Lw8Rv5N",
+      "state": "declined",
+      "reason": "x"
+    }
+  },
+  {
+    "note": "An empty reason.",
+    "payload": {
+      "awardId": "awd_K3mT9pQx2Lw8Rv5N",
+      "reason": ""
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "awardId": "awd_K3mT9pQx2Lw8Rv5N",
+      "reason": "x",
+      "ext": { "bare": true }
+    }
+  }
+]

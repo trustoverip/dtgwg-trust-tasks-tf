@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/badges/create/0.1",
+  "title": "VTC Badges — Create — payload",
+  "description": "Define a badge: a community badge, which creates the badge group that backs it, or a kudos badge a member makes. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "kind",
+    "name",
+    "description",
+    "image",
+    "reason"
+  ],
+  "properties": {
+    "kind": {
+      "$ref": "../../_shared/0.1/badge.schema.json#/$defs/BadgeKind"
+    },
+    "name": {
+      "$ref": "../../_shared/0.1/badge.schema.json#/$defs/BadgeName"
+    },
+    "description": {
+      "$ref": "../../_shared/0.1/badge.schema.json#/$defs/BadgeDescription"
+    },
+    "criteria": {
+      "$ref": "../../_shared/0.1/badge.schema.json#/$defs/BadgeCriteria"
+    },
+    "image": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sha256"
+      ],
+      "properties": {
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "The digest vtc/badges/images/upload answered to this signer."
+        }
+      },
+      "description": "The picture, as the signer uploaded it with vtc/badges/images/upload."
+    },
+    "repeatable": {
+      "type": "boolean",
+      "description": "Whether one member may hold the badge more than once. Absent: false for a community badge; a kudos badge is always repeatable and refuses `false`."
+    },
+    "requestable": {
+      "type": "boolean",
+      "description": "Community badges only. Whether members may ask for it (a request to join the badge group). Absent: false."
+    },
+    "listed": {
+      "type": "boolean",
+      "description": "Whether members who do not hold it see it in the badge list. Absent: true."
+    },
+    "shareableOutside": {
+      "type": "boolean",
+      "description": "Community badges only. Whether holders may show it outside the community, which fixes the credential's regime. Absent: false."
+    },
+    "holdersVisibleTo": {
+      "$ref": "../../../groups/_shared/0.1/group.schema.json#/$defs/GroupAudience",
+      "description": "Community badges only. Who may see the badge's holders: the badge group's `showMembers`. Absent: `members`."
+    },
+    "automatic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rule"
+      ],
+      "properties": {
+        "rule": {
+          "$ref": "../../../groups/_shared/0.1/group.schema.json#/$defs/DynamicRule"
+        }
+      },
+      "description": "Community badges only. Present: the badge is automatic, backed by a dynamic badge group computed from `rule`; nobody gives it by hand and `requestable` is refused."
+    },
+    "owners": {
+      "type": "array",
+      "maxItems": 32,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryId"
+      },
+      "description": "Community badges only. Members to appoint as the badge's owners — the badge group's managers — as vtc/groups/managers/add appoints them, bounded by the signer's own holding."
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "Why, recorded with the change."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Badges — Create — response payload",
+      "description": "The success response to a vtc/badges/create/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/badges/create/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "badge"
+      ],
+      "properties": {
+        "badge": {
+          "$ref": "../../_shared/0.1/badge.schema.json#/$defs/Badge"
+        },
+        "group": {
+          "$ref": "../../../groups/_shared/0.1/group.schema.json#/$defs/Group",
+          "description": "The badge group, as vtc/groups/create answers it. Present exactly for a community badge."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,38 @@
+[
+  {
+    "note": "`badgeId` is REQUIRED: a show names one badge.",
+    "payload": {}
+  },
+  {
+    "note": "A badge is shown as a whole; a single award cannot be shown on its own.",
+    "payload": {
+      "awardId": "awd_H7q2Lm9Xc4Vt1Bz8"
+    }
+  },
+  {
+    "note": "Showing does not pin: `pinned` is set with vtc/badges/mine/arrange, not here.",
+    "payload": {
+      "badgeId": "bdg_Kd0sCl4mpWh1sp3r",
+      "pinned": true
+    }
+  },
+  {
+    "note": "There is no `entryId`: a member shows only their own badge, never another holder's.",
+    "payload": {
+      "badgeId": "bdg_Kd0sCl4mpWh1sp3r",
+      "entryId": "dir_Pr1yaN4t7Rj2Qw8K"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "badgeId": "bdg_Kd0sCl4mpWh1sp3r",
+      "ext": { "bare": true }
+    }
+  },
+  {
+    "note": "Response variant: `badge` is REQUIRED; the answer is the badge as the signer holds it, never empty.",
+    "variant": "response",
+    "payload": {}
+  }
+]

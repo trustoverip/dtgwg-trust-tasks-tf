@@ -1,0 +1,61 @@
+[
+  {
+    "note": "`kind` is one of `community` and `kudos`; a badge is never a group kind.",
+    "payload": {
+      "kind": "dynamic"
+    }
+  },
+  {
+    "note": "`limit` is at most 200; a larger page is refused, not clamped silently.",
+    "payload": {
+      "limit": 1000
+    }
+  },
+  {
+    "note": "`cursor` is an opaque continuation token, never an offset.",
+    "payload": {
+      "cursor": 50
+    }
+  },
+  {
+    "note": "Unknown top-level payload member — additionalProperties: false catches `entryId`; another member's badges are vtc/badges/wall/show, never a filter here.",
+    "payload": {
+      "entryId": "dir_Pr1yaNatarajan00"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "ext": { "bare": true }
+    }
+  },
+  {
+    "note": "Every item carries `myCount` and `myState`: the caller's own standing is what distinguishes this listing from a catalogue.",
+    "variant": "response",
+    "payload": {
+      "items": [
+        {
+          "badge": {
+            "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+            "kind": "community",
+            "name": "Workshop host",
+            "description": "Ran a workshop for the community.",
+            "image": { "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08" },
+            "repeatable": true,
+            "listed": true,
+            "state": "active",
+            "createdAt": "2026-11-06T09:00:02Z"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "note": "`nextCursor` is absent on the last page, never `null`.",
+    "variant": "response",
+    "payload": {
+      "items": [],
+      "nextCursor": null
+    }
+  }
+]

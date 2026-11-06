@@ -1,0 +1,74 @@
+[
+  {
+    "note": "`reason` is REQUIRED.",
+    "payload": {
+      "kind": "community",
+      "name": "Workshop host",
+      "description": "Ran a workshop for the community.",
+      "image": { "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08" }
+    }
+  },
+  {
+    "note": "`kind` is one of `community` and `kudos`; a badge is never a group kind.",
+    "payload": {
+      "kind": "static",
+      "name": "Workshop host",
+      "description": "Ran a workshop for the community.",
+      "image": { "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08" },
+      "reason": "x"
+    }
+  },
+  {
+    "note": "`image` names an upload by its digest only; the picture's bytes travel in vtc/badges/images/upload, never here.",
+    "payload": {
+      "kind": "kudos",
+      "name": "Clamp whisperer",
+      "description": "Found the good clamps when nobody else could.",
+      "image": { "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08", "data": "iVBORw0KGgo" },
+      "reason": "x"
+    }
+  },
+  {
+    "note": "`badgeId` and `groupId` are minted by the community, never supplied.",
+    "payload": {
+      "kind": "community",
+      "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+      "name": "Workshop host",
+      "description": "Ran a workshop for the community.",
+      "image": { "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08" },
+      "reason": "x"
+    }
+  },
+  {
+    "note": "An automatic badge's rule reads a known fact.",
+    "payload": {
+      "kind": "community",
+      "name": "One year aboard",
+      "description": "A year in the community.",
+      "image": { "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08" },
+      "automatic": { "rule": { "all": [ { "fact": "bio", "op": "exists" } ] } },
+      "reason": "x"
+    }
+  },
+  {
+    "note": "A name longer than 64 characters does not fit on a badge.",
+    "payload": {
+      "kind": "kudos",
+      "name": "A name that goes on and on and on and on and on and on and on and on past the limit",
+      "description": "x",
+      "image": { "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08" },
+      "reason": "x"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "kind": "kudos",
+      "name": "Clamp whisperer",
+      "description": "x",
+      "image": { "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08" },
+      "reason": "x",
+      "ext": { "bare": true }
+    }
+  }
+]

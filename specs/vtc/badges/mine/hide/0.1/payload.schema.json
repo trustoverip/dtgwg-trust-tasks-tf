@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/badges/mine/hide/0.1",
+  "title": "VTC Badges — Mine — Hide — payload",
+  "description": "Hide a badge the signer holds: off their wall, out of the badge's holder list and its count, out of their kudos total, while every award, the badge-group membership and the credential stand unchanged. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "badgeId"
+  ],
+  "properties": {
+    "badgeId": {
+      "$ref": "../../../_shared/0.1/badge.schema.json#/$defs/BadgeId",
+      "description": "A badge the signer holds: at least one accepted award of it. Hidden as a whole, every award at once."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Badges — Mine — Hide — response payload",
+      "description": "The success response to a vtc/badges/mine/hide/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/badges/mine/hide/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "badge"
+      ],
+      "properties": {
+        "badge": {
+          "$ref": "../../../_shared/0.1/badge.schema.json#/$defs/MyBadge",
+          "description": "The badge as the signer now holds it: `hidden` true, `pinned` false."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

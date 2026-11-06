@@ -1,0 +1,53 @@
+[
+  {
+    "note": "`badgeId` is REQUIRED.",
+    "payload": {
+      "to": ["dir_Pr1yaNatarajan00"]
+    }
+  },
+  {
+    "note": "Exactly one of `to` and `group` names the recipients; neither is not an offer.",
+    "payload": {
+      "badgeId": "bdg_W5k2N8xRb3Qz7TpL"
+    }
+  },
+  {
+    "note": "Exactly one of `to` and `group`; both at once is ambiguous.",
+    "payload": {
+      "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+      "to": ["dir_Pr1yaNatarajan00"],
+      "group": "grp_Hs7Qm2Lk9Tn4Bv1X"
+    }
+  },
+  {
+    "note": "Recipients are directory entries, never DIDs.",
+    "payload": {
+      "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+      "to": ["did:example:priya"]
+    }
+  },
+  {
+    "note": "An award's state is the community's to set; an offer never arrives `accepted`.",
+    "payload": {
+      "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+      "to": ["dir_Pr1yaNatarajan00"],
+      "state": "accepted"
+    }
+  },
+  {
+    "note": "`note` is bounded at 500 characters (§7.3 item 19).",
+    "payload": {
+      "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+      "to": ["dir_Pr1yaNatarajan00"],
+      "note": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+      "to": ["dir_Pr1yaNatarajan00"],
+      "ext": { "bare": true }
+    }
+  }
+]

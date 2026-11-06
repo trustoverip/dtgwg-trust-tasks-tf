@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/badges/kudos/give/0.1",
+  "title": "VTC Badges — Kudos — Give — payload",
+  "description": "Give a kudos badge to another member: records an award offered to them, with the giver and a note, within the community's limits. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "badgeId",
+    "to"
+  ],
+  "properties": {
+    "badgeId": {
+      "$ref": "../../../_shared/0.1/badge.schema.json#/$defs/BadgeId",
+      "description": "An active kudos badge the signer may see. A community badge is refused: its owners give it with vtc/badges/awards/offer."
+    },
+    "to": {
+      "$ref": "../../../../directory/_shared/0.1/directory-card.schema.json#/$defs/EntryId",
+      "description": "The recipient: an active member whose card the directory shows the signer, never the signer themselves."
+    },
+    "note": {
+      "$ref": "../../../_shared/0.1/badge.schema.json#/$defs/AwardNote",
+      "description": "What it is for. Shown to the recipient, the giver and badge administrators; never audited."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Badges — Kudos — Give — response payload",
+      "description": "The success response to a vtc/badges/kudos/give/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/badges/kudos/give/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "award"
+      ],
+      "properties": {
+        "award": {
+          "$ref": "../../../_shared/0.1/badge.schema.json#/$defs/Award",
+          "description": "The giving, in state `offered`, with `givenBy` the signer and `expiresAt` where the community expires offers. Never a `credentialId`: a kudos badge carries no credential."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

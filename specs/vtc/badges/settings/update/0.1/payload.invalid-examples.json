@@ -1,0 +1,89 @@
+[
+  {
+    "note": "`reason` is REQUIRED.",
+    "payload": {
+      "settings": {
+        "enabled": true,
+        "kudosMakers": { "policy": "members" },
+        "showKudosTotals": true,
+        "automaticBadges": true,
+        "membersMayRequest": true
+      }
+    }
+  },
+  {
+    "note": "The settings are replaced whole: every required switch is present, so a partial record cannot silently leave a switch where it was.",
+    "payload": {
+      "settings": { "enabled": false },
+      "reason": "x"
+    }
+  },
+  {
+    "note": "`updatedAt` is set by the community, never sent.",
+    "payload": {
+      "settings": {
+        "enabled": true,
+        "kudosMakers": { "policy": "members" },
+        "showKudosTotals": true,
+        "automaticBadges": true,
+        "membersMayRequest": true,
+        "updatedAt": "2026-11-06T09:10:00Z"
+      },
+      "reason": "x"
+    }
+  },
+  {
+    "note": "`kudosMakers.policy` is one of `nobody`, `roles` and `members`; `admins` is not a policy, administrators make community badges.",
+    "payload": {
+      "settings": {
+        "enabled": true,
+        "kudosMakers": { "policy": "admins" },
+        "showKudosTotals": true,
+        "automaticBadges": true,
+        "membersMayRequest": true
+      },
+      "reason": "x"
+    }
+  },
+  {
+    "note": "`limits.maxPinned` is bounded at 8 — a card has room beside a name for a few, not a wall.",
+    "payload": {
+      "settings": {
+        "enabled": true,
+        "kudosMakers": { "policy": "members" },
+        "limits": { "maxPinned": 50 },
+        "showKudosTotals": true,
+        "automaticBadges": true,
+        "membersMayRequest": true
+      },
+      "reason": "x"
+    }
+  },
+  {
+    "note": "`kudosMakers.groups` names groups by GroupId, never by DID.",
+    "payload": {
+      "settings": {
+        "enabled": true,
+        "kudosMakers": { "policy": "roles", "groups": ["did:webvh:QmGroupScid:community.example:group-dids:grp_Hs7Qm2Lk9Tn4Bv1X"] },
+        "showKudosTotals": true,
+        "automaticBadges": true,
+        "membersMayRequest": true
+      },
+      "reason": "x"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "settings": {
+        "enabled": true,
+        "kudosMakers": { "policy": "members" },
+        "showKudosTotals": true,
+        "automaticBadges": true,
+        "membersMayRequest": true
+      },
+      "reason": "x",
+      "ext": { "bare": true }
+    }
+  }
+]

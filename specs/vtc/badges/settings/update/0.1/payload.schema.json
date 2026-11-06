@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/badges/settings/update/0.1",
+  "title": "VTC Badges — Settings — Update — payload",
+  "description": "An administrator replaces the community's badge settings. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "settings",
+    "reason"
+  ],
+  "properties": {
+    "settings": {
+      "allOf": [
+        {
+          "$ref": "../../../_shared/0.1/badge.schema.json#/$defs/BadgeSettings"
+        },
+        {
+          "properties": {
+            "updatedAt": false
+          }
+        }
+      ],
+      "description": "The settings to put in force, whole: BadgeSettings without `updatedAt`, which the community sets. An absent optional member takes the shared schema's default."
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "Why, recorded with the change."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Badges — Settings — Update — response payload",
+      "description": "The success response to a vtc/badges/settings/update/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/badges/settings/update/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "settings"
+      ],
+      "properties": {
+        "settings": {
+          "$ref": "../../../_shared/0.1/badge.schema.json#/$defs/BadgeSettings",
+          "description": "The settings now in force, with `updatedAt`."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

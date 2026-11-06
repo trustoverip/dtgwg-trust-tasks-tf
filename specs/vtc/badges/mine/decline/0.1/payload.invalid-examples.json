@@ -1,0 +1,39 @@
+[
+  {
+    "note": "`awardId` is REQUIRED: a decline names one offer.",
+    "payload": {}
+  },
+  {
+    "note": "An award is named by its `awd_` identifier, never by the badge: a member may hold several open offers of one repeatable or kudos badge.",
+    "payload": {
+      "badgeId": "bdg_Yr1Ab0ardTn2Qx7V"
+    }
+  },
+  {
+    "note": "`awardId` has the `awd_` prefix; a badge identifier is not an award.",
+    "payload": {
+      "awardId": "bdg_Yr1Ab0ardTn2Qx7V"
+    }
+  },
+  {
+    "note": "A decline carries no note: nothing of the signer's is recorded or shown to the giver beyond the closed state.",
+    "payload": {
+      "awardId": "awd_H7q2Lm9Xc4Vt1Bz8",
+      "note": "No thanks."
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "awardId": "awd_H7q2Lm9Xc4Vt1Bz8",
+      "ext": { "bare": true }
+    }
+  },
+  {
+    "note": "Response variant: the answer is the closed `award`, not a bare state.",
+    "variant": "response",
+    "payload": {
+      "state": "declined"
+    }
+  }
+]
