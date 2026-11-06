@@ -11,6 +11,38 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.10.18 — 2026-11-06
+
+
+### Added
+
+- **vtc/badges**: Member badges — community badges backed by groups, awards accepted by the member, kudos, Open Badges credentials (vtc/badges/*/0.1) (#1052)
+
+* feat(vtc/badges): member badges — community badges backed by groups, awards accepted by the member, kudos, Open Badges credentials (vtc/badges/*/0.1)
+
+  A new family for the VTI Community Badges chapter (VTI-BDG-001 – 095): pictures
+  with a name a member earns, holds and shows on their directory card.
+
+  - A community badge is backed by a community group: `create` creates the group
+    as vtc/groups/create does, its managers are the badge's owners, its members
+    the holders; requests reuse vtc/groups/join and requests/decide, owners reuse
+    managers/add and remove. The shared Group record gains an optional `badgeId`
+    (additive).
+  - An award is an offer until its recipient accepts (awards/offer → mine/accept
+    or mine/decline); mine/accept issues the badge credential as the group's DID
+    first and records the membership after. mine/accept states the credential
+    profile: an Open Badges 3.0 OpenBadgeCredential with the community as the
+    Achievement's creator and endorser, one evidence entry per award; short-lived
+    with no status inside the community, long-lived with a slot in the community's
+    own status set where holders may show it outside.
+  - Hidden is portal-only (mine/hide, mine/show): walls, holders/list and counts
+    leave a hidden holder out; awards/list shows owners the hidden mark.
+  - Kudos badges (kudos/give, kudos/list): given by any member to any other within
+    per-giver limits, each giving an award of its own; promote turns one into a
+    community badge.
+  - settings/show and settings/update hold the community's switches and limits.
+  - images/upload and images/get mirror the directory's picture pipeline.
+
 ## 0.10.17 — 2026-11-05
 
 
