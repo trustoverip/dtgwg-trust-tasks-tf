@@ -915,6 +915,7 @@
   "vtc/badges/_shared/0.1/badge.schema.json#/$defs/Award": "Award",
   "vtc/badges/_shared/0.1/badge.schema.json#/$defs/AwardId": "AwardId",
   "vtc/badges/_shared/0.1/badge.schema.json#/$defs/AwardNote": "AwardNote",
+  "vtc/badges/_shared/0.1/badge.schema.json#/$defs/AwardShare": "AwardShare",
   "vtc/badges/_shared/0.1/badge.schema.json#/$defs/AwardState": "AwardState",
   "vtc/badges/_shared/0.1/badge.schema.json#/$defs/Badge": "Badge",
   "vtc/badges/_shared/0.1/badge.schema.json#/$defs/BadgeCriteria": "BadgeCriteria",

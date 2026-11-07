@@ -297,6 +297,42 @@ class Badge {
       };
 }
 
+/// Where an accepted award is shown outside the community, by its holder's choice
+/// (VTI-BDG-070): the public location that answers a verification of exactly what the
+/// credential says, the baked image where the community serves one, and since when.
+/// Present only while the holder shares the award; absent once they stop, the award is
+/// taken back, the badge is retired or the holder departs. The locations are
+/// unguessable and name no other holder (VTI-BDG-071).
+class AwardShare {
+  const AwardShare({
+    required this.verificationUrl,
+    this.bakedImageUrl,
+    required this.since,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory AwardShare.fromJson(Map<String, dynamic> json) => AwardShare(
+        verificationUrl: json['verificationUrl'] as String,
+        bakedImageUrl: json['bakedImageUrl'] as String?,
+        since: json['since'] as String,
+      );
+
+  /// The public location that answers the credential and a verification of it.
+  final String verificationUrl;
+
+  /// The badge's picture with the credential baked into it, for a website or an email
+  /// signature. Absent where the community serves no baked image.
+  final String? bakedImageUrl;
+  final String since;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'verificationUrl': verificationUrl,
+        if (bakedImageUrl != null) 'bakedImageUrl': bakedImageUrl!,
+        'since': since,
+      };
+}
+
 /// Identifier (`id`) of a group membership credential issued to a member. Each renewal
 /// issues a new credential with a new identifier. Validity is the community's setting;
 /// a community SHOULD default to 30 days, renewed when 10 days remain.
@@ -307,7 +343,8 @@ typedef GroupCredentialId = String;
 /// recipient, the giver, the badge's owners and administrators, never to other
 /// members. `credentialId` is present on an accepted award of a community badge: the
 /// badge credential that evidences it, renewed or re-issued as the badge's regime
-/// requires.
+/// requires. `shared` is present on an accepted award of a badge its holders may show
+/// outside while its holder shares it (vtc/badges/awards/share).
 class Award {
   const Award({
     required this.awardId,
@@ -320,6 +357,7 @@ class Award {
     this.decidedAt,
     this.expiresAt,
     this.credentialId,
+    this.shared,
     this.ext,
   });
 
@@ -335,6 +373,9 @@ class Award {
         decidedAt: json['decidedAt'] as String?,
         expiresAt: json['expiresAt'] as String?,
         credentialId: json['credentialId'] as String?,
+        shared: json['shared'] == null
+            ? null
+            : AwardShare.fromJson(json['shared'] as Map<String, dynamic>),
         ext: json['ext'] as Map<String, dynamic>?,
       );
 
@@ -355,6 +396,7 @@ class Award {
   /// When an unanswered offer lapses, where the community expires offers.
   final String? expiresAt;
   final GroupCredentialId? credentialId;
+  final AwardShare? shared;
   final Ext? ext;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
@@ -369,6 +411,7 @@ class Award {
         if (decidedAt != null) 'decidedAt': decidedAt!,
         if (expiresAt != null) 'expiresAt': expiresAt!,
         if (credentialId != null) 'credentialId': credentialId!,
+        if (shared != null) 'shared': shared!.toJson(),
         if (ext != null) 'ext': ext!,
       };
 }

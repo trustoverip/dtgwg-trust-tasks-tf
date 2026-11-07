@@ -1,0 +1,33 @@
+[
+  {
+    "note": "`awardId` is REQUIRED: a share names one award, the holder's choice is per award (VTI-BDG-070).",
+    "payload": {}
+  },
+  {
+    "note": "A badge identifier does not name an award: the holder shares a giving, never a badge as a whole.",
+    "payload": {
+      "awardId": "bdg_W5k2N8xRb3Qz7TpL"
+    }
+  },
+  {
+    "note": "The public locations are the community's to choose and answer, never the signer's to name.",
+    "payload": {
+      "awardId": "awd_K3mT9pQx2Lw8Rv5N",
+      "verificationUrl": "https://example.org/mine"
+    }
+  },
+  {
+    "note": "No reason: sharing is the holder's own choice about their own award, recorded as such.",
+    "payload": {
+      "awardId": "awd_K3mT9pQx2Lw8Rv5N",
+      "reason": "x"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "awardId": "awd_K3mT9pQx2Lw8Rv5N",
+      "ext": { "bare": true }
+    }
+  }
+]

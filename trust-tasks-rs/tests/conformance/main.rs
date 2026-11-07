@@ -2231,6 +2231,12 @@ mod vtc {
             mod revoke {
                 mod v0_1;
             }
+            mod share {
+                mod v0_1;
+            }
+            mod unshare {
+                mod v0_1;
+            }
             mod withdraw {
                 mod v0_1;
             }
