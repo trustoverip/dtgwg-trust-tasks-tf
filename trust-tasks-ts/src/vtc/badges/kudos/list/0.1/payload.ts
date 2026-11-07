@@ -3,7 +3,7 @@
  * Source: specs/vtc/badges/kudos/list/0.1/payload.schema.json
  */
 
-import type { Award, AwardId, AwardNote, AwardState, Badge, BadgeCriteria, BadgeDescription, BadgeId, BadgeKind, BadgeName, BadgeState, CardBlobRef, EntryFields, EntryId, Ext, FieldValue, GroupCredentialId, GroupId, VerifiedValue } from "../../../../../_shared/components.js";
+import type { Award, AwardId, AwardNote, AwardShare, AwardState, Badge, BadgeCriteria, BadgeDescription, BadgeId, BadgeKind, BadgeName, BadgeState, CardBlobRef, EntryFields, EntryId, Ext, FieldValue, GroupCredentialId, GroupId, VerifiedValue } from "../../../../../_shared/components.js";
 
 
 /**
@@ -73,7 +73,7 @@ export interface KudosItem {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { Award, AwardId, AwardNote, AwardState, Badge, BadgeCriteria, BadgeDescription, BadgeId, BadgeKind, BadgeName, BadgeState, CardBlobRef, EntryFields, EntryId, Ext, FieldValue, GroupCredentialId, GroupId, VerifiedValue };
+export type { Award, AwardId, AwardNote, AwardShare, AwardState, Badge, BadgeCriteria, BadgeDescription, BadgeId, BadgeKind, BadgeName, BadgeState, CardBlobRef, EntryFields, EntryId, Ext, FieldValue, GroupCredentialId, GroupId, VerifiedValue };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/badges/kudos/list/0.1" as const;
@@ -516,7 +516,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "Award": {
       "title": "Award",
-      "description": "One giving of a badge to one member. `givenBy` is the giver's directory entry, absent for an award a dynamic badge group's rule made. `note` is shown to the recipient, the giver, the badge's owners and administrators, never to other members. `credentialId` is present on an accepted award of a community badge: the badge credential that evidences it, renewed or re-issued as the badge's regime requires.",
+      "description": "One giving of a badge to one member. `givenBy` is the giver's directory entry, absent for an award a dynamic badge group's rule made. `note` is shown to the recipient, the giver, the badge's owners and administrators, never to other members. `credentialId` is present on an accepted award of a community badge: the badge credential that evidences it, renewed or re-issued as the badge's regime requires. `shared` is present on an accepted award of a badge its holders may show outside while its holder shares it (vtc/badges/awards/share).",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -563,8 +563,39 @@ export const PAYLOAD_SCHEMA = {
         "credentialId": {
           "$ref": "#/$defs/GroupCredentialId"
         },
+        "shared": {
+          "$ref": "#/$defs/AwardShare"
+        },
         "ext": {
           "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "AwardShare": {
+      "title": "AwardShare",
+      "description": "Where an accepted award is shown outside the community, by its holder's choice (VTI-BDG-070): the public location that answers a verification of exactly what the credential says, the baked image where the community serves one, and since when. Present only while the holder shares the award; absent once they stop, the award is taken back, the badge is retired or the holder departs. The locations are unguessable and name no other holder (VTI-BDG-071).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "verificationUrl",
+        "since"
+      ],
+      "properties": {
+        "verificationUrl": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 2048,
+          "description": "The public location that answers the credential and a verification of it."
+        },
+        "bakedImageUrl": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 2048,
+          "description": "The badge's picture with the credential baked into it, for a website or an email signature. Absent where the community serves no baked image."
+        },
+        "since": {
+          "type": "string",
+          "format": "date-time"
         }
       }
     },
@@ -962,7 +993,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
     },
     "Award": {
       "title": "Award",
-      "description": "One giving of a badge to one member. `givenBy` is the giver's directory entry, absent for an award a dynamic badge group's rule made. `note` is shown to the recipient, the giver, the badge's owners and administrators, never to other members. `credentialId` is present on an accepted award of a community badge: the badge credential that evidences it, renewed or re-issued as the badge's regime requires.",
+      "description": "One giving of a badge to one member. `givenBy` is the giver's directory entry, absent for an award a dynamic badge group's rule made. `note` is shown to the recipient, the giver, the badge's owners and administrators, never to other members. `credentialId` is present on an accepted award of a community badge: the badge credential that evidences it, renewed or re-issued as the badge's regime requires. `shared` is present on an accepted award of a badge its holders may show outside while its holder shares it (vtc/badges/awards/share).",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -1009,8 +1040,39 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "credentialId": {
           "$ref": "#/$defs/GroupCredentialId"
         },
+        "shared": {
+          "$ref": "#/$defs/AwardShare"
+        },
         "ext": {
           "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "AwardShare": {
+      "title": "AwardShare",
+      "description": "Where an accepted award is shown outside the community, by its holder's choice (VTI-BDG-070): the public location that answers a verification of exactly what the credential says, the baked image where the community serves one, and since when. Present only while the holder shares the award; absent once they stop, the award is taken back, the badge is retired or the holder departs. The locations are unguessable and name no other holder (VTI-BDG-071).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "verificationUrl",
+        "since"
+      ],
+      "properties": {
+        "verificationUrl": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 2048,
+          "description": "The public location that answers the credential and a verification of it."
+        },
+        "bakedImageUrl": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 2048,
+          "description": "The badge's picture with the credential baked into it, for a website or an email signature. Absent where the community serves no baked image."
+        },
+        "since": {
+          "type": "string",
+          "format": "date-time"
         }
       }
     },
