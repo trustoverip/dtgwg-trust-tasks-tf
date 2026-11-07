@@ -328,6 +328,9 @@ export import AuthStepUpPolicy_v0_1 = _AuthStepUpPolicy_v0_1;
 import * as _AuthStepUpPolicy_v0_2 from "./auth/step-up/policy/0.2/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import AuthStepUpPolicy_v0_2 = _AuthStepUpPolicy_v0_2;
+import * as _AuthStepUpRequestsShow_v0_1 from "./auth/step-up/requests/show/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import AuthStepUpRequestsShow_v0_1 = _AuthStepUpRequestsShow_v0_1;
 import * as _AuthStepUpStart_v0_1 from "./auth/step-up/start/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import AuthStepUpStart_v0_1 = _AuthStepUpStart_v0_1;
