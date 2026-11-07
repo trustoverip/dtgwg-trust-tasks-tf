@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/badges/awards/unshare/0.1",
+  "title": "VTC Badges — Awards — Unshare — payload",
+  "description": "Stop showing an award outside the community: its public locations answer nothing from now on. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "awardId"
+  ],
+  "properties": {
+    "awardId": {
+      "$ref": "../../../_shared/0.1/badge.schema.json#/$defs/AwardId",
+      "description": "An award of the signer's. One not shared is answered as it is."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Badges — Awards — Unshare — response payload",
+      "description": "The success response to a vtc/badges/awards/unshare/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/badges/awards/unshare/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "award"
+      ],
+      "properties": {
+        "award": {
+          "$ref": "../../../_shared/0.1/badge.schema.json#/$defs/Award",
+          "description": "The award as it now stands, without `shared`."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -3,4 +3,6 @@
 pub mod list;
 pub mod offer;
 pub mod revoke;
+pub mod share;
+pub mod unshare;
 pub mod withdraw;

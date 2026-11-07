@@ -32,7 +32,7 @@ pub mod error {
         }
     }
 }
-///One giving of a badge to one member. `givenBy` is the giver's directory entry, absent for an award a dynamic badge group's rule made. `note` is shown to the recipient, the giver, the badge's owners and administrators, never to other members. `credentialId` is present on an accepted award of a community badge: the badge credential that evidences it, renewed or re-issued as the badge's regime requires.
+///One giving of a badge to one member. `givenBy` is the giver's directory entry, absent for an award a dynamic badge group's rule made. `note` is shown to the recipient, the giver, the badge's owners and administrators, never to other members. `credentialId` is present on an accepted award of a community badge: the badge credential that evidences it, renewed or re-issued as the badge's regime requires. `shared` is present on an accepted award of a badge its holders may show outside while its holder shares it (vtc/badges/awards/share).
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
@@ -77,6 +77,8 @@ pub struct Award {
     pub note: ::std::option::Option<AwardNote>,
     #[serde(rename = "offeredAt")]
     pub offered_at: ::chrono::DateTime<::chrono::offset::Utc>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub shared: ::std::option::Option<AwardShare>,
     pub state: AwardState,
 }
 impl Award {
@@ -207,6 +209,29 @@ impl<'de> ::serde::Deserialize<'de> for AwardNote {
             .map_err(|e: self::error::ConversionError| {
                 <D::Error as ::serde::de::Error>::custom(e.to_string())
             })
+    }
+}
+///Where an accepted award is shown outside the community, by its holder's choice (VTI-BDG-070): the public location that answers a verification of exactly what the credential says, the baked image where the community serves one, and since when. Present only while the holder shares the award; absent once they stop, the award is taken back, the badge is retired or the holder departs. The locations are unguessable and name no other holder (VTI-BDG-071).
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct AwardShare {
+    ///The badge's picture with the credential baked into it, for a website or an email signature. Absent where the community serves no baked image.
+    #[serde(
+        rename = "bakedImageUrl",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub baked_image_url: ::std::option::Option<::std::string::String>,
+    pub since: ::chrono::DateTime<::chrono::offset::Utc>,
+    ///The public location that answers the credential and a verification of it.
+    #[serde(rename = "verificationUrl")]
+    pub verification_url: ::std::string::String,
+}
+impl AwardShare {
+    pub fn builder() -> builder::AwardShare {
+        Default::default()
     }
 }
 ///`offered`: waiting for the recipient. `accepted`: the recipient took it; for a community badge the credential was issued and the membership recorded. `declined`: the recipient declined; nothing was recorded in the group and nothing issued. `withdrawn`: the giver withdrew the offer before a decision. `expired`: the offer lapsed unanswered. `revoked`: taken back after acceptance (VTI-BDG-023).
@@ -778,6 +803,8 @@ pub mod builder {
         note: ::std::result::Result<::std::option::Option<super::AwardNote>, ::std::string::String>,
         offered_at:
             ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        shared:
+            ::std::result::Result<::std::option::Option<super::AwardShare>, ::std::string::String>,
         state: ::std::result::Result<super::AwardState, ::std::string::String>,
     }
     impl ::std::default::Default for Award {
@@ -793,6 +820,7 @@ pub mod builder {
                 given_by: Ok(Default::default()),
                 note: Ok(Default::default()),
                 offered_at: Err("no value supplied for offered_at".to_string()),
+                shared: Ok(Default::default()),
                 state: Err("no value supplied for state".to_string()),
             }
         }
@@ -902,6 +930,16 @@ pub mod builder {
                 .map_err(|e| format!("error converting supplied value for offered_at: {e}"));
             self
         }
+        pub fn shared<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::AwardShare>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.shared = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for shared: {e}"));
+            self
+        }
         pub fn state<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<super::AwardState>,
@@ -927,6 +965,7 @@ pub mod builder {
                 given_by: value.given_by?,
                 note: value.note?,
                 offered_at: value.offered_at?,
+                shared: value.shared?,
                 state: value.state?,
             })
         }
@@ -944,7 +983,80 @@ pub mod builder {
                 given_by: Ok(value.given_by),
                 note: Ok(value.note),
                 offered_at: Ok(value.offered_at),
+                shared: Ok(value.shared),
                 state: Ok(value.state),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct AwardShare {
+        baked_image_url: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        since:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        verification_url: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for AwardShare {
+        fn default() -> Self {
+            Self {
+                baked_image_url: Ok(Default::default()),
+                since: Err("no value supplied for since".to_string()),
+                verification_url: Err("no value supplied for verification_url".to_string()),
+            }
+        }
+    }
+    impl AwardShare {
+        pub fn baked_image_url<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.baked_image_url = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for baked_image_url: {e}"));
+            self
+        }
+        pub fn since<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.since = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for since: {e}"));
+            self
+        }
+        pub fn verification_url<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.verification_url = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for verification_url: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<AwardShare> for super::AwardShare {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: AwardShare,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                baked_image_url: value.baked_image_url?,
+                since: value.since?,
+                verification_url: value.verification_url?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::AwardShare> for AwardShare {
+        fn from(value: super::AwardShare) -> Self {
+            Self {
+                baked_image_url: Ok(value.baked_image_url),
+                since: Ok(value.since),
+                verification_url: Ok(value.verification_url),
             }
         }
     }
@@ -1078,7 +1190,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"Award\":{\"additionalProperties\":false,\"description\":\"One giving of a badge to one member. `givenBy` is the giver's directory entry, absent for an award a dynamic badge group's rule made. `note` is shown to the recipient, the giver, the badge's owners and administrators, never to other members. `credentialId` is present on an accepted award of a community badge: the badge credential that evidences it, renewed or re-issued as the badge's regime requires.\",\"properties\":{\"awardId\":{\"$ref\":\"#/$defs/AwardId\"},\"badgeId\":{\"$ref\":\"#/$defs/BadgeId\"},\"credentialId\":{\"$ref\":\"#/$defs/GroupCredentialId\"},\"decidedAt\":{\"description\":\"When the recipient accepted or declined, the giver withdrew, the offer expired, or the award was revoked.\",\"format\":\"date-time\",\"type\":\"string\"},\"entryId\":{\"$ref\":\"#/$defs/EntryId\",\"description\":\"The recipient.\"},\"expiresAt\":{\"description\":\"When an unanswered offer lapses, where the community expires offers.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"givenBy\":{\"$ref\":\"#/$defs/EntryId\"},\"note\":{\"$ref\":\"#/$defs/AwardNote\"},\"offeredAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"state\":{\"$ref\":\"#/$defs/AwardState\"}},\"required\":[\"awardId\",\"badgeId\",\"entryId\",\"state\",\"offeredAt\"],\"title\":\"Award\",\"type\":\"object\"},\"AwardId\":{\"description\":\"Opaque identifier of one giving of a badge to one member: `awd_` followed by 16 to 64 base64url characters. Random and unique within the community.\",\"pattern\":\"^awd_[A-Za-z0-9_-]{16,64}$\",\"title\":\"AwardId\",\"type\":\"string\"},\"AwardNote\":{\"description\":\"What the award is for, from the giver, shown to the recipient and written as the award's evidence narrative where the badge carries a credential. Plain text; erased with its author (VTI-BDG-090).\",\"maxLength\":500,\"minLength\":1,\"title\":\"AwardNote\",\"type\":\"string\"},\"AwardState\":{\"description\":\"`offered`: waiting for the recipient. `accepted`: the recipient took it; for a community badge the credential was issued and the membership recorded. `declined`: the recipient declined; nothing was recorded in the group and nothing issued. `withdrawn`: the giver withdrew the offer before a decision. `expired`: the offer lapsed unanswered. `revoked`: taken back after acceptance (VTI-BDG-023).\",\"enum\":[\"offered\",\"accepted\",\"declined\",\"withdrawn\",\"expired\",\"revoked\"],\"title\":\"AwardState\",\"type\":\"string\"},\"BadgeId\":{\"description\":\"Opaque identifier of a badge: `bdg_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-BDG-001).\",\"pattern\":\"^bdg_[A-Za-z0-9_-]{16,64}$\",\"title\":\"BadgeId\",\"type\":\"string\"},\"EntryId\":{\"description\":\"Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.\",\"pattern\":\"^dir_[A-Za-z0-9_-]{16,64}$\",\"title\":\"EntryId\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"GroupCredentialId\":{\"description\":\"Identifier (`id`) of a group membership credential issued to a member. Each renewal issues a new credential with a new identifier. Validity is the community's setting; a community SHOULD default to 30 days, renewed when 10 days remain.\",\"maxLength\":512,\"minLength\":1,\"title\":\"GroupCredentialId\",\"type\":\"string\"},\"GroupId\":{\"description\":\"Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.\",\"pattern\":\"^grp_[A-Za-z0-9_-]{16,64}$\",\"title\":\"GroupId\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vtc/badges/awards/offer/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/badges/awards/offer/0.1#response.\",\"properties\":{\"awards\":{\"description\":\"The offers recorded, each in state `offered`.\",\"items\":{\"$ref\":\"#/$defs/Award\"},\"maxItems\":2000,\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"skipped\":{\"description\":\"Members the badge was not offered to, and why. Never an error: the rest of the offers stand.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"entryId\":{\"$ref\":\"#/$defs/EntryId\"},\"reason\":{\"description\":\"`notActiveMember`: not an active member, or not one the signer may see. `alreadyOffered`: an open offer of this badge already names them. `alreadyHolder`: they hold the badge and it is not repeatable. `requestPending`: they have asked for the badge; the owners decide the request instead.\",\"enum\":[\"notActiveMember\",\"alreadyOffered\",\"alreadyHolder\",\"requestPending\"],\"type\":\"string\"}},\"required\":[\"entryId\",\"reason\"],\"type\":\"object\"},\"maxItems\":2000,\"type\":\"array\"}},\"required\":[\"awards\",\"skipped\"],\"title\":\"VTC Badges — Awards — Offer — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/badges/awards/offer/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A badge's owner offers a community badge to one or more members, or to every member of a group. Each offer is an award in state `offered` that the member accepts or declines; nothing is admitted or issued until they accept. The outer document members are owned by the framework — SPEC §6.3.\",\"oneOf\":[{\"not\":{\"required\":[\"group\"]},\"required\":[\"to\"]},{\"not\":{\"required\":[\"to\"]},\"required\":[\"group\"]}],\"properties\":{\"badgeId\":{\"$ref\":\"#/$defs/BadgeId\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"group\":{\"$ref\":\"#/$defs/GroupId\",\"description\":\"Offer the badge to every active member of this group whose member list the signer may see. Exactly one of `to` and `group` is present.\"},\"note\":{\"$ref\":\"#/$defs/AwardNote\",\"description\":\"What the award is for. Shown to each recipient and written as the award's evidence narrative on acceptance.\"},\"to\":{\"description\":\"The members to offer the badge to. Exactly one of `to` and `group` is present.\",\"items\":{\"$ref\":\"#/$defs/EntryId\"},\"maxItems\":200,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"badgeId\"],\"title\":\"VTC Badges — Awards — Offer — payload\",\"type\":\"object\"}\n",
+        "{\"$defs\":{\"Award\":{\"additionalProperties\":false,\"description\":\"One giving of a badge to one member. `givenBy` is the giver's directory entry, absent for an award a dynamic badge group's rule made. `note` is shown to the recipient, the giver, the badge's owners and administrators, never to other members. `credentialId` is present on an accepted award of a community badge: the badge credential that evidences it, renewed or re-issued as the badge's regime requires. `shared` is present on an accepted award of a badge its holders may show outside while its holder shares it (vtc/badges/awards/share).\",\"properties\":{\"awardId\":{\"$ref\":\"#/$defs/AwardId\"},\"badgeId\":{\"$ref\":\"#/$defs/BadgeId\"},\"credentialId\":{\"$ref\":\"#/$defs/GroupCredentialId\"},\"decidedAt\":{\"description\":\"When the recipient accepted or declined, the giver withdrew, the offer expired, or the award was revoked.\",\"format\":\"date-time\",\"type\":\"string\"},\"entryId\":{\"$ref\":\"#/$defs/EntryId\",\"description\":\"The recipient.\"},\"expiresAt\":{\"description\":\"When an unanswered offer lapses, where the community expires offers.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"givenBy\":{\"$ref\":\"#/$defs/EntryId\"},\"note\":{\"$ref\":\"#/$defs/AwardNote\"},\"offeredAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"shared\":{\"$ref\":\"#/$defs/AwardShare\"},\"state\":{\"$ref\":\"#/$defs/AwardState\"}},\"required\":[\"awardId\",\"badgeId\",\"entryId\",\"state\",\"offeredAt\"],\"title\":\"Award\",\"type\":\"object\"},\"AwardId\":{\"description\":\"Opaque identifier of one giving of a badge to one member: `awd_` followed by 16 to 64 base64url characters. Random and unique within the community.\",\"pattern\":\"^awd_[A-Za-z0-9_-]{16,64}$\",\"title\":\"AwardId\",\"type\":\"string\"},\"AwardNote\":{\"description\":\"What the award is for, from the giver, shown to the recipient and written as the award's evidence narrative where the badge carries a credential. Plain text; erased with its author (VTI-BDG-090).\",\"maxLength\":500,\"minLength\":1,\"title\":\"AwardNote\",\"type\":\"string\"},\"AwardShare\":{\"additionalProperties\":false,\"description\":\"Where an accepted award is shown outside the community, by its holder's choice (VTI-BDG-070): the public location that answers a verification of exactly what the credential says, the baked image where the community serves one, and since when. Present only while the holder shares the award; absent once they stop, the award is taken back, the badge is retired or the holder departs. The locations are unguessable and name no other holder (VTI-BDG-071).\",\"properties\":{\"bakedImageUrl\":{\"description\":\"The badge's picture with the credential baked into it, for a website or an email signature. Absent where the community serves no baked image.\",\"format\":\"uri\",\"maxLength\":2048,\"type\":\"string\"},\"since\":{\"format\":\"date-time\",\"type\":\"string\"},\"verificationUrl\":{\"description\":\"The public location that answers the credential and a verification of it.\",\"format\":\"uri\",\"maxLength\":2048,\"type\":\"string\"}},\"required\":[\"verificationUrl\",\"since\"],\"title\":\"AwardShare\",\"type\":\"object\"},\"AwardState\":{\"description\":\"`offered`: waiting for the recipient. `accepted`: the recipient took it; for a community badge the credential was issued and the membership recorded. `declined`: the recipient declined; nothing was recorded in the group and nothing issued. `withdrawn`: the giver withdrew the offer before a decision. `expired`: the offer lapsed unanswered. `revoked`: taken back after acceptance (VTI-BDG-023).\",\"enum\":[\"offered\",\"accepted\",\"declined\",\"withdrawn\",\"expired\",\"revoked\"],\"title\":\"AwardState\",\"type\":\"string\"},\"BadgeId\":{\"description\":\"Opaque identifier of a badge: `bdg_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-BDG-001).\",\"pattern\":\"^bdg_[A-Za-z0-9_-]{16,64}$\",\"title\":\"BadgeId\",\"type\":\"string\"},\"EntryId\":{\"description\":\"Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.\",\"pattern\":\"^dir_[A-Za-z0-9_-]{16,64}$\",\"title\":\"EntryId\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"GroupCredentialId\":{\"description\":\"Identifier (`id`) of a group membership credential issued to a member. Each renewal issues a new credential with a new identifier. Validity is the community's setting; a community SHOULD default to 30 days, renewed when 10 days remain.\",\"maxLength\":512,\"minLength\":1,\"title\":\"GroupCredentialId\",\"type\":\"string\"},\"GroupId\":{\"description\":\"Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.\",\"pattern\":\"^grp_[A-Za-z0-9_-]{16,64}$\",\"title\":\"GroupId\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vtc/badges/awards/offer/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/badges/awards/offer/0.1#response.\",\"properties\":{\"awards\":{\"description\":\"The offers recorded, each in state `offered`.\",\"items\":{\"$ref\":\"#/$defs/Award\"},\"maxItems\":2000,\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"skipped\":{\"description\":\"Members the badge was not offered to, and why. Never an error: the rest of the offers stand.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"entryId\":{\"$ref\":\"#/$defs/EntryId\"},\"reason\":{\"description\":\"`notActiveMember`: not an active member, or not one the signer may see. `alreadyOffered`: an open offer of this badge already names them. `alreadyHolder`: they hold the badge and it is not repeatable. `requestPending`: they have asked for the badge; the owners decide the request instead.\",\"enum\":[\"notActiveMember\",\"alreadyOffered\",\"alreadyHolder\",\"requestPending\"],\"type\":\"string\"}},\"required\":[\"entryId\",\"reason\"],\"type\":\"object\"},\"maxItems\":2000,\"type\":\"array\"}},\"required\":[\"awards\",\"skipped\"],\"title\":\"VTC Badges — Awards — Offer — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/badges/awards/offer/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A badge's owner offers a community badge to one or more members, or to every member of a group. Each offer is an award in state `offered` that the member accepts or declines; nothing is admitted or issued until they accept. The outer document members are owned by the framework — SPEC §6.3.\",\"oneOf\":[{\"not\":{\"required\":[\"group\"]},\"required\":[\"to\"]},{\"not\":{\"required\":[\"to\"]},\"required\":[\"group\"]}],\"properties\":{\"badgeId\":{\"$ref\":\"#/$defs/BadgeId\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"group\":{\"$ref\":\"#/$defs/GroupId\",\"description\":\"Offer the badge to every active member of this group whose member list the signer may see. Exactly one of `to` and `group` is present.\"},\"note\":{\"$ref\":\"#/$defs/AwardNote\",\"description\":\"What the award is for. Shown to each recipient and written as the award's evidence narrative on acceptance.\"},\"to\":{\"description\":\"The members to offer the badge to. Exactly one of `to` and `group` is present.\",\"items\":{\"$ref\":\"#/$defs/EntryId\"},\"maxItems\":200,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"badgeId\"],\"title\":\"VTC Badges — Awards — Offer — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1088,7 +1200,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"Award\":{\"additionalProperties\":false,\"description\":\"One giving of a badge to one member. `givenBy` is the giver's directory entry, absent for an award a dynamic badge group's rule made. `note` is shown to the recipient, the giver, the badge's owners and administrators, never to other members. `credentialId` is present on an accepted award of a community badge: the badge credential that evidences it, renewed or re-issued as the badge's regime requires.\",\"properties\":{\"awardId\":{\"$ref\":\"#/$defs/AwardId\"},\"badgeId\":{\"$ref\":\"#/$defs/BadgeId\"},\"credentialId\":{\"$ref\":\"#/$defs/GroupCredentialId\"},\"decidedAt\":{\"description\":\"When the recipient accepted or declined, the giver withdrew, the offer expired, or the award was revoked.\",\"format\":\"date-time\",\"type\":\"string\"},\"entryId\":{\"$ref\":\"#/$defs/EntryId\",\"description\":\"The recipient.\"},\"expiresAt\":{\"description\":\"When an unanswered offer lapses, where the community expires offers.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"givenBy\":{\"$ref\":\"#/$defs/EntryId\"},\"note\":{\"$ref\":\"#/$defs/AwardNote\"},\"offeredAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"state\":{\"$ref\":\"#/$defs/AwardState\"}},\"required\":[\"awardId\",\"badgeId\",\"entryId\",\"state\",\"offeredAt\"],\"title\":\"Award\",\"type\":\"object\"},\"AwardId\":{\"description\":\"Opaque identifier of one giving of a badge to one member: `awd_` followed by 16 to 64 base64url characters. Random and unique within the community.\",\"pattern\":\"^awd_[A-Za-z0-9_-]{16,64}$\",\"title\":\"AwardId\",\"type\":\"string\"},\"AwardNote\":{\"description\":\"What the award is for, from the giver, shown to the recipient and written as the award's evidence narrative where the badge carries a credential. Plain text; erased with its author (VTI-BDG-090).\",\"maxLength\":500,\"minLength\":1,\"title\":\"AwardNote\",\"type\":\"string\"},\"AwardState\":{\"description\":\"`offered`: waiting for the recipient. `accepted`: the recipient took it; for a community badge the credential was issued and the membership recorded. `declined`: the recipient declined; nothing was recorded in the group and nothing issued. `withdrawn`: the giver withdrew the offer before a decision. `expired`: the offer lapsed unanswered. `revoked`: taken back after acceptance (VTI-BDG-023).\",\"enum\":[\"offered\",\"accepted\",\"declined\",\"withdrawn\",\"expired\",\"revoked\"],\"title\":\"AwardState\",\"type\":\"string\"},\"BadgeId\":{\"description\":\"Opaque identifier of a badge: `bdg_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-BDG-001).\",\"pattern\":\"^bdg_[A-Za-z0-9_-]{16,64}$\",\"title\":\"BadgeId\",\"type\":\"string\"},\"EntryId\":{\"description\":\"Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.\",\"pattern\":\"^dir_[A-Za-z0-9_-]{16,64}$\",\"title\":\"EntryId\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"GroupCredentialId\":{\"description\":\"Identifier (`id`) of a group membership credential issued to a member. Each renewal issues a new credential with a new identifier. Validity is the community's setting; a community SHOULD default to 30 days, renewed when 10 days remain.\",\"maxLength\":512,\"minLength\":1,\"title\":\"GroupCredentialId\",\"type\":\"string\"},\"GroupId\":{\"description\":\"Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.\",\"pattern\":\"^grp_[A-Za-z0-9_-]{16,64}$\",\"title\":\"GroupId\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vtc/badges/awards/offer/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/badges/awards/offer/0.1#response.\",\"properties\":{\"awards\":{\"description\":\"The offers recorded, each in state `offered`.\",\"items\":{\"$ref\":\"#/$defs/Award\"},\"maxItems\":2000,\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"skipped\":{\"description\":\"Members the badge was not offered to, and why. Never an error: the rest of the offers stand.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"entryId\":{\"$ref\":\"#/$defs/EntryId\"},\"reason\":{\"description\":\"`notActiveMember`: not an active member, or not one the signer may see. `alreadyOffered`: an open offer of this badge already names them. `alreadyHolder`: they hold the badge and it is not repeatable. `requestPending`: they have asked for the badge; the owners decide the request instead.\",\"enum\":[\"notActiveMember\",\"alreadyOffered\",\"alreadyHolder\",\"requestPending\"],\"type\":\"string\"}},\"required\":[\"entryId\",\"reason\"],\"type\":\"object\"},\"maxItems\":2000,\"type\":\"array\"}},\"required\":[\"awards\",\"skipped\"],\"title\":\"VTC Badges — Awards — Offer — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
+        "{\"$defs\":{\"Award\":{\"additionalProperties\":false,\"description\":\"One giving of a badge to one member. `givenBy` is the giver's directory entry, absent for an award a dynamic badge group's rule made. `note` is shown to the recipient, the giver, the badge's owners and administrators, never to other members. `credentialId` is present on an accepted award of a community badge: the badge credential that evidences it, renewed or re-issued as the badge's regime requires. `shared` is present on an accepted award of a badge its holders may show outside while its holder shares it (vtc/badges/awards/share).\",\"properties\":{\"awardId\":{\"$ref\":\"#/$defs/AwardId\"},\"badgeId\":{\"$ref\":\"#/$defs/BadgeId\"},\"credentialId\":{\"$ref\":\"#/$defs/GroupCredentialId\"},\"decidedAt\":{\"description\":\"When the recipient accepted or declined, the giver withdrew, the offer expired, or the award was revoked.\",\"format\":\"date-time\",\"type\":\"string\"},\"entryId\":{\"$ref\":\"#/$defs/EntryId\",\"description\":\"The recipient.\"},\"expiresAt\":{\"description\":\"When an unanswered offer lapses, where the community expires offers.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"givenBy\":{\"$ref\":\"#/$defs/EntryId\"},\"note\":{\"$ref\":\"#/$defs/AwardNote\"},\"offeredAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"shared\":{\"$ref\":\"#/$defs/AwardShare\"},\"state\":{\"$ref\":\"#/$defs/AwardState\"}},\"required\":[\"awardId\",\"badgeId\",\"entryId\",\"state\",\"offeredAt\"],\"title\":\"Award\",\"type\":\"object\"},\"AwardId\":{\"description\":\"Opaque identifier of one giving of a badge to one member: `awd_` followed by 16 to 64 base64url characters. Random and unique within the community.\",\"pattern\":\"^awd_[A-Za-z0-9_-]{16,64}$\",\"title\":\"AwardId\",\"type\":\"string\"},\"AwardNote\":{\"description\":\"What the award is for, from the giver, shown to the recipient and written as the award's evidence narrative where the badge carries a credential. Plain text; erased with its author (VTI-BDG-090).\",\"maxLength\":500,\"minLength\":1,\"title\":\"AwardNote\",\"type\":\"string\"},\"AwardShare\":{\"additionalProperties\":false,\"description\":\"Where an accepted award is shown outside the community, by its holder's choice (VTI-BDG-070): the public location that answers a verification of exactly what the credential says, the baked image where the community serves one, and since when. Present only while the holder shares the award; absent once they stop, the award is taken back, the badge is retired or the holder departs. The locations are unguessable and name no other holder (VTI-BDG-071).\",\"properties\":{\"bakedImageUrl\":{\"description\":\"The badge's picture with the credential baked into it, for a website or an email signature. Absent where the community serves no baked image.\",\"format\":\"uri\",\"maxLength\":2048,\"type\":\"string\"},\"since\":{\"format\":\"date-time\",\"type\":\"string\"},\"verificationUrl\":{\"description\":\"The public location that answers the credential and a verification of it.\",\"format\":\"uri\",\"maxLength\":2048,\"type\":\"string\"}},\"required\":[\"verificationUrl\",\"since\"],\"title\":\"AwardShare\",\"type\":\"object\"},\"AwardState\":{\"description\":\"`offered`: waiting for the recipient. `accepted`: the recipient took it; for a community badge the credential was issued and the membership recorded. `declined`: the recipient declined; nothing was recorded in the group and nothing issued. `withdrawn`: the giver withdrew the offer before a decision. `expired`: the offer lapsed unanswered. `revoked`: taken back after acceptance (VTI-BDG-023).\",\"enum\":[\"offered\",\"accepted\",\"declined\",\"withdrawn\",\"expired\",\"revoked\"],\"title\":\"AwardState\",\"type\":\"string\"},\"BadgeId\":{\"description\":\"Opaque identifier of a badge: `bdg_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-BDG-001).\",\"pattern\":\"^bdg_[A-Za-z0-9_-]{16,64}$\",\"title\":\"BadgeId\",\"type\":\"string\"},\"EntryId\":{\"description\":\"Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.\",\"pattern\":\"^dir_[A-Za-z0-9_-]{16,64}$\",\"title\":\"EntryId\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"GroupCredentialId\":{\"description\":\"Identifier (`id`) of a group membership credential issued to a member. Each renewal issues a new credential with a new identifier. Validity is the community's setting; a community SHOULD default to 30 days, renewed when 10 days remain.\",\"maxLength\":512,\"minLength\":1,\"title\":\"GroupCredentialId\",\"type\":\"string\"},\"GroupId\":{\"description\":\"Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.\",\"pattern\":\"^grp_[A-Za-z0-9_-]{16,64}$\",\"title\":\"GroupId\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vtc/badges/awards/offer/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/badges/awards/offer/0.1#response.\",\"properties\":{\"awards\":{\"description\":\"The offers recorded, each in state `offered`.\",\"items\":{\"$ref\":\"#/$defs/Award\"},\"maxItems\":2000,\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"skipped\":{\"description\":\"Members the badge was not offered to, and why. Never an error: the rest of the offers stand.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"entryId\":{\"$ref\":\"#/$defs/EntryId\"},\"reason\":{\"description\":\"`notActiveMember`: not an active member, or not one the signer may see. `alreadyOffered`: an open offer of this badge already names them. `alreadyHolder`: they hold the badge and it is not repeatable. `requestPending`: they have asked for the badge; the owners decide the request instead.\",\"enum\":[\"notActiveMember\",\"alreadyOffered\",\"alreadyHolder\",\"requestPending\"],\"type\":\"string\"}},\"required\":[\"entryId\",\"reason\"],\"type\":\"object\"},\"maxItems\":2000,\"type\":\"array\"}},\"required\":[\"awards\",\"skipped\"],\"title\":\"VTC Badges — Awards — Offer — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

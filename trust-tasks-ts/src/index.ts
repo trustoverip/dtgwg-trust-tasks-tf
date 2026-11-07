@@ -3216,6 +3216,12 @@ export import VtcBadgesAwardsOffer_v0_1 = _VtcBadgesAwardsOffer_v0_1;
 import * as _VtcBadgesAwardsRevoke_v0_1 from "./vtc/badges/awards/revoke/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtcBadgesAwardsRevoke_v0_1 = _VtcBadgesAwardsRevoke_v0_1;
+import * as _VtcBadgesAwardsShare_v0_1 from "./vtc/badges/awards/share/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcBadgesAwardsShare_v0_1 = _VtcBadgesAwardsShare_v0_1;
+import * as _VtcBadgesAwardsUnshare_v0_1 from "./vtc/badges/awards/unshare/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcBadgesAwardsUnshare_v0_1 = _VtcBadgesAwardsUnshare_v0_1;
 import * as _VtcBadgesAwardsWithdraw_v0_1 from "./vtc/badges/awards/withdraw/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtcBadgesAwardsWithdraw_v0_1 = _VtcBadgesAwardsWithdraw_v0_1;

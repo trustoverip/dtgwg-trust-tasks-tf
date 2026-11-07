@@ -125,11 +125,29 @@ type Badge struct {
 	Ext *Ext `json:"ext,omitempty"`
 }
 
+// AwardShare Where an accepted award is shown outside the community, by its holder's
+// choice (VTI-BDG-070): the public location that answers a verification of exactly what
+// the credential says, the baked image where the community serves one, and since when.
+// Present only while the holder shares the award; absent once they stop, the award is
+// taken back, the badge is retired or the holder departs. The locations are unguessable
+// and name no other holder (VTI-BDG-071).
+type AwardShare struct {
+	// The public location that answers the credential and a verification of it.
+	VerificationURL string `json:"verificationUrl"`
+
+	// The badge's picture with the credential baked into it, for a website or an email
+	// signature. Absent where the community serves no baked image.
+	BakedImageURL *string `json:"bakedImageUrl,omitempty"`
+	Since         string  `json:"since"`
+}
+
 // Award One giving of a badge to one member. `givenBy` is the giver's directory entry,
 // absent for an award a dynamic badge group's rule made. `note` is shown to the
 // recipient, the giver, the badge's owners and administrators, never to other members.
 // `credentialId` is present on an accepted award of a community badge: the badge
 // credential that evidences it, renewed or re-issued as the badge's regime requires.
+// `shared` is present on an accepted award of a badge its holders may show outside while
+// its holder shares it (vtc/badges/awards/share).
 type Award struct {
 	AwardID AwardID `json:"awardId"`
 	BadgeID BadgeID `json:"badgeId"`
@@ -148,6 +166,7 @@ type Award struct {
 	// When an unanswered offer lapses, where the community expires offers.
 	ExpiresAt    *string            `json:"expiresAt,omitempty"`
 	CredentialID *GroupCredentialID `json:"credentialId,omitempty"`
+	Shared       *AwardShare        `json:"shared,omitempty"`
 	Ext          *Ext               `json:"ext,omitempty"`
 }
 
