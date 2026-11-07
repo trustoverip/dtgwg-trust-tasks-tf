@@ -1,0 +1,26 @@
+[
+  {
+    "note": "`awardId` is REQUIRED: a stop names one award, as the share did.",
+    "payload": {}
+  },
+  {
+    "note": "A badge identifier does not name an award.",
+    "payload": {
+      "awardId": "bdg_W5k2N8xRb3Qz7TpL"
+    }
+  },
+  {
+    "note": "No reason: stopping is the holder's own choice about their own award.",
+    "payload": {
+      "awardId": "awd_K3mT9pQx2Lw8Rv5N",
+      "reason": "x"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "awardId": "awd_K3mT9pQx2Lw8Rv5N",
+      "ext": { "bare": true }
+    }
+  }
+]
