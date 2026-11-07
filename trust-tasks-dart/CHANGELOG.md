@@ -14,6 +14,37 @@ pub.dev only accepts an automated publish from a tag-triggered workflow. See
 Entries before 0.9.0 are in [`CHANGELOG-archive.md`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/trust-tasks-dart/CHANGELOG-archive.md),
 kept out of the package: pub.dev refuses a `CHANGELOG.md` over 256 KiB.
 
+## 0.9.29 — 2026-11-07
+
+
+### Added
+
+- **vtc/badges**: Awards/share and awards/unshare — a holder shows an award outside the community (vtc/badges/awards/{share,unshare}/0.1) (#1054)
+
+* feat(vtc/badges): awards/share and awards/unshare — a holder shows an award outside the community (vtc/badges/awards/{share,unshare}/0.1)
+
+  The two tasks the VTC badges design note lists for showing a badge outside
+  the community (VTI-BDG-070 – 072), completing the vtc/badges/* 0.1 family.
+
+  - `vtc/badges/awards/share/0.1`: the holder of an accepted award of a badge
+    the community marked `shareableOutside` asks, and the community answers the
+    public locations it serves the award at — a verification location that
+    answers the credential exactly as issued with its status, and a baked image
+    where it serves one. Locations are the community's, unguessable (≥ 128
+    bits, never derived from the award), idempotent on a repeat, and disclose
+    no other holder nor a count (VTI-BDG-071). They stop serving on unshare,
+    take-back, retire and departure. Codes: badgesOff, notFound (unknown,
+    another member's, not accepted — alike), notShareable (insideOnly | kudos
+    | retired), publicLocationUnavailable.
+  - `vtc/badges/awards/unshare/0.1`: stops it; the locations answer as ones
+    that never existed; idempotent; not a revocation. Codes: badgesOff,
+    notFound.
+  - `_shared/0.1/badge.schema.json`: `AwardShare` and the optional
+    `Award.shared` (verificationUrl, bakedImageUrl?, since) — additive.
+
+  Both are acts of the member: a portal key the member authorized for
+  `vtc/badges` under auth/oob/grant/0.3 may sign them (VTI-BDG-095).
+
 ## 0.9.28 — 2026-11-06
 
 
