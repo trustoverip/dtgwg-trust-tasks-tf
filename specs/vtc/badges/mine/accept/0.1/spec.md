@@ -71,6 +71,8 @@ errorCodes:
       message:
         type: string
         maxLength: 500
+knownImplementations:
+  - https://github.com/OpenVTC/verifiable-trust-infrastructure
 related:
 - vtc/badges/awards/offer
 - vtc/badges/mine/decline

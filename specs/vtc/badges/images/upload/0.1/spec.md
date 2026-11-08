@@ -56,6 +56,8 @@ errorCodes:
 - code: vtc/badges/images/upload:rateLimited
   meaning: The signer has uploaded as many images as the community allows in its current window. Nothing was stored.
   retryable: true
+knownImplementations:
+  - https://github.com/OpenVTC/verifiable-trust-infrastructure
 related:
 - vtc/badges/images/get
 - vtc/badges/create

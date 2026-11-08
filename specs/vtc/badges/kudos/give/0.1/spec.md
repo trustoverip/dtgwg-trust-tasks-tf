@@ -74,6 +74,8 @@ errorCodes:
       until:
         type: string
         format: date-time
+knownImplementations:
+  - https://github.com/OpenVTC/verifiable-trust-infrastructure
 related:
 - vtc/badges/kudos/list
 - vtc/badges/mine/accept

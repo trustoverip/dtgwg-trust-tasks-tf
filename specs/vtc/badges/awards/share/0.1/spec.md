@@ -61,6 +61,8 @@ errorCodes:
 - code: vtc/badges/awards/share:publicLocationUnavailable
   meaning: The community serves no public location for badges — it has no public origin configured — so nothing can be shared outside it yet. Try again once the community does.
   retryable: true
+knownImplementations:
+  - https://github.com/OpenVTC/verifiable-trust-infrastructure
 related:
 - vtc/badges/awards/unshare
 - vtc/badges/mine/list

@@ -44,6 +44,8 @@ errorCodes:
 - code: vtc/badges/images/get:notFound
   meaning: No badge the caller may see has this identifier — or its picture is not the one `sha256` names. Conflates an unknown badge, one the caller may not see, badges being off, a caller who is not an active member, and a picture since replaced.
   retryable: false
+knownImplementations:
+  - https://github.com/OpenVTC/verifiable-trust-infrastructure
 related:
 - vtc/badges/images/upload
 - vtc/badges/show

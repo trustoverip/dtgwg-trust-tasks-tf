@@ -60,6 +60,8 @@ errorCodes:
       reason:
         type: string
         maxLength: 500
+knownImplementations:
+  - https://github.com/OpenVTC/verifiable-trust-infrastructure
 related:
 - vtc/badges/show
 - vtc/badges/create

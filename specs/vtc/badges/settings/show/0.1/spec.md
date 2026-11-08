@@ -35,6 +35,8 @@ retention:
   class: transient
   rationale: A read.
 errorCodes: []
+knownImplementations:
+  - https://github.com/OpenVTC/verifiable-trust-infrastructure
 related:
 - vtc/badges/settings/update
 - vtc/badges/create

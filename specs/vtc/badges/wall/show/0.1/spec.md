@@ -42,6 +42,8 @@ errorCodes:
 - code: vtc/badges/wall/show:notFound
   meaning: No wall the caller may see is at this entry. Conflates an unknown entry, an entry whose card the directory does not show the caller, a member whose wall visibility is `nobody`, badges being off, and a caller who is not an active member — the same answer the directory gives for the card.
   retryable: false
+knownImplementations:
+  - https://github.com/OpenVTC/verifiable-trust-infrastructure
 related:
 - vtc/badges/holders/list
 - vtc/badges/mine/list

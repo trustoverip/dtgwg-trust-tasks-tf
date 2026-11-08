@@ -45,6 +45,8 @@ errorCodes:
 - code: vtc/badges/awards/unshare:notFound
   meaning: No award of the signer's has this identifier. Conflates an unknown award and another member's award.
   retryable: false
+knownImplementations:
+  - https://github.com/OpenVTC/verifiable-trust-infrastructure
 related:
 - vtc/badges/awards/share
 - vtc/badges/mine/list

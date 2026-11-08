@@ -38,6 +38,8 @@ errorCodes:
 - code: vtc/badges/list:cursorInvalid
   meaning: '`cursor` was not issued for this caller and these filters.'
   retryable: false
+knownImplementations:
+  - https://github.com/OpenVTC/verifiable-trust-infrastructure
 related:
 - vtc/badges/show
 - vtc/badges/mine/list

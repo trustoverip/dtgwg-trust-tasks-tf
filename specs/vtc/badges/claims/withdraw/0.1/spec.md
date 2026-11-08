@@ -44,6 +44,8 @@ errorCodes:
 - code: vtc/badges/claims/withdraw:notFound
   meaning: No claim code of a badge the signer owns or administers has this identifier.
   retryable: false
+knownImplementations:
+  - https://github.com/OpenVTC/verifiable-trust-infrastructure
 related:
 - vtc/badges/claims/create
 - vtc/badges/claims/list

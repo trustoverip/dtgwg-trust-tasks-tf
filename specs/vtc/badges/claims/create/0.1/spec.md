@@ -59,6 +59,8 @@ errorCodes:
 - code: vtc/badges/claims/create:settingsInvalid
   meaning: '`validUntil` is not in the future or is more than 90 days ahead. Nothing was recorded.'
   retryable: false
+knownImplementations:
+  - https://github.com/OpenVTC/verifiable-trust-infrastructure
 related:
 - vtc/badges/claims/list
 - vtc/badges/claims/withdraw

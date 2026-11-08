@@ -44,6 +44,8 @@ errorCodes:
 - code: vtc/badges/awards/list:cursorInvalid
   meaning: '`cursor` was not issued for this caller, badge and filters.'
   retryable: false
+knownImplementations:
+  - https://github.com/OpenVTC/verifiable-trust-infrastructure
 related:
 - vtc/badges/awards/offer
 - vtc/badges/awards/withdraw

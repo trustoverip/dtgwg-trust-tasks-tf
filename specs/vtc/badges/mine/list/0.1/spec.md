@@ -37,6 +37,8 @@ exposure:
 retention:
   class: transient
   rationale: A read.
+knownImplementations:
+  - https://github.com/OpenVTC/verifiable-trust-infrastructure
 related:
 - vtc/badges/mine/accept
 - vtc/badges/mine/decline
