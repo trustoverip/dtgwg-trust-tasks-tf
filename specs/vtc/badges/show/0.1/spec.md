@@ -63,7 +63,7 @@ A conforming **consumer** (the community) **MUST**:
 1. Refuse a caller who is neither an active member nor an administrator with `permissionDenied`.
 2. Answer `notFound` while its badge settings have `enabled` false, as if no badge existed (VTI-BDG-004).
 3. Answer `notFound` alike for a badge that does not exist and one the caller may not see: a member sees an active badge that is `listed`, or that they hold, own or have an open offer of; a holder sees a retired badge they hold; a holder of `vtc.badges.admin` sees every badge (VTI-BDG-005).
-4. Set `myCount` to the caller's accepted awards of the badge, 0 where none, and `myState` as [`vtc/badges/list`](../../list/0.1/spec.md) item 5 sets it.
+4. Set `myCount` to the caller's accepted awards of the badge, 0 where none, and `myState` as [`vtc/badges/list`](../../list/0.1/spec.md) item 5 sets it. Where the caller holds any, answer them in `myAwards`, newest first, each with its `shared` where the caller shows it outside the community ([`vtc/badges/awards/share`](../../awards/share/0.1/spec.md)) — the caller's own awards only, never another member's.
 5. Return `holderCount` on the badge only where its badge group's `showMembers`, or for a kudos badge the community's active membership, admits the caller, counted over holders who have not hidden it (VTI-BDG-030, VTI-BDG-033).
 6. For a community badge, return `owners` — the entry identifiers of its badge group's managers — to every caller who may see the badge, so a member knows whom a request goes to (VTI-BDG-014); for a kudos badge, return `maker` — its `createdBy` — and no `owners`.
 7. Derive `credentialRegime` from the badge alone: `none` for a kudos badge, `outside` for a community badge with `shareableOutside` true, `inside` otherwise.

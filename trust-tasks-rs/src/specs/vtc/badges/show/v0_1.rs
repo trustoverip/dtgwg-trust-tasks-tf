@@ -32,6 +32,285 @@ pub mod error {
         }
     }
 }
+///One giving of a badge to one member. `givenBy` is the giver's directory entry, absent for an award a dynamic badge group's rule made. `note` is shown to the recipient, the giver, the badge's owners and administrators, never to other members. `credentialId` is present on an accepted award of a community badge: the badge credential that evidences it, renewed or re-issued as the badge's regime requires. `shared` is present on an accepted award of a badge its holders may show outside while its holder shares it (vtc/badges/awards/share).
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct Award {
+    #[serde(rename = "awardId")]
+    pub award_id: AwardId,
+    #[serde(rename = "badgeId")]
+    pub badge_id: BadgeId,
+    #[serde(
+        rename = "credentialId",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub credential_id: ::std::option::Option<GroupCredentialId>,
+    ///When the recipient accepted or declined, the giver withdrew, the offer expired, or the award was revoked.
+    #[serde(
+        rename = "decidedAt",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub decided_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    ///The recipient.
+    #[serde(rename = "entryId")]
+    pub entry_id: EntryId,
+    ///When an unanswered offer lapses, where the community expires offers.
+    #[serde(
+        rename = "expiresAt",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub expires_at: ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub ext: ::std::option::Option<Ext>,
+    #[serde(
+        rename = "givenBy",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub given_by: ::std::option::Option<EntryId>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub note: ::std::option::Option<AwardNote>,
+    #[serde(rename = "offeredAt")]
+    pub offered_at: ::chrono::DateTime<::chrono::offset::Utc>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub shared: ::std::option::Option<AwardShare>,
+    pub state: AwardState,
+}
+impl Award {
+    pub fn builder() -> builder::Award {
+        Default::default()
+    }
+}
+///Opaque identifier of one giving of a badge to one member: `awd_` followed by 16 to 64 base64url characters. Random and unique within the community.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct AwardId(::std::string::String);
+impl ::std::ops::Deref for AwardId {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<AwardId> for ::std::string::String {
+    fn from(value: AwardId) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for AwardId {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
+            ::std::sync::LazyLock::new(|| {
+                ::regress::Regex::new("^awd_[A-Za-z0-9_-]{16,64}$").unwrap()
+            });
+        if PATTERN.find(value).is_none() {
+            return Err("doesn't match pattern \"^awd_[A-Za-z0-9_-]{16,64}$\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for AwardId {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for AwardId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for AwardId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for AwardId {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///What the award is for, from the giver, shown to the recipient and written as the award's evidence narrative where the badge carries a credential. Plain text; erased with its author (VTI-BDG-090).
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct AwardNote(::std::string::String);
+impl ::std::ops::Deref for AwardNote {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<AwardNote> for ::std::string::String {
+    fn from(value: AwardNote) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for AwardNote {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 500usize {
+            return Err("longer than 500 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for AwardNote {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for AwardNote {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for AwardNote {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for AwardNote {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///Where an accepted award is shown outside the community, by its holder's choice (VTI-BDG-070): the public location that answers a verification of exactly what the credential says, the baked image where the community serves one, and since when. Present only while the holder shares the award; absent once they stop, the award is taken back, the badge is retired or the holder departs. The locations are unguessable and name no other holder (VTI-BDG-071).
+///
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[non_exhaustive]
+pub struct AwardShare {
+    ///The badge's picture with the credential baked into it, for a website or an email signature. Absent where the community serves no baked image.
+    #[serde(
+        rename = "bakedImageUrl",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub baked_image_url: ::std::option::Option<::std::string::String>,
+    pub since: ::chrono::DateTime<::chrono::offset::Utc>,
+    ///The public location that answers the credential and a verification of it.
+    #[serde(rename = "verificationUrl")]
+    pub verification_url: ::std::string::String,
+}
+impl AwardShare {
+    pub fn builder() -> builder::AwardShare {
+        Default::default()
+    }
+}
+///`offered`: waiting for the recipient. `accepted`: the recipient took it; for a community badge the credential was issued and the membership recorded. `declined`: the recipient declined; nothing was recorded in the group and nothing issued. `withdrawn`: the giver withdrew the offer before a decision. `expired`: the offer lapsed unanswered. `revoked`: taken back after acceptance (VTI-BDG-023).
+///
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+#[non_exhaustive]
+pub enum AwardState {
+    #[serde(rename = "offered")]
+    Offered,
+    #[serde(rename = "accepted")]
+    Accepted,
+    #[serde(rename = "declined")]
+    Declined,
+    #[serde(rename = "withdrawn")]
+    Withdrawn,
+    #[serde(rename = "expired")]
+    Expired,
+    #[serde(rename = "revoked")]
+    Revoked,
+}
+impl ::std::fmt::Display for AwardState {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Offered => f.write_str("offered"),
+            Self::Accepted => f.write_str("accepted"),
+            Self::Declined => f.write_str("declined"),
+            Self::Withdrawn => f.write_str("withdrawn"),
+            Self::Expired => f.write_str("expired"),
+            Self::Revoked => f.write_str("revoked"),
+        }
+    }
+}
+impl ::std::str::FromStr for AwardState {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "offered" => Ok(Self::Offered),
+            "accepted" => Ok(Self::Accepted),
+            "declined" => Ok(Self::Declined),
+            "withdrawn" => Ok(Self::Withdrawn),
+            "expired" => Ok(Self::Expired),
+            "revoked" => Ok(Self::Revoked),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for AwardState {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for AwardState {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for AwardState {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
 ///A badge as a caller who may see it sees it. `groupId` is present exactly when `kind` is `community`. `holderCount` only to callers who may see the badge's holders, counted over holders who have not hidden it (VTI-BDG-030, VTI-BDG-033). `createdBy` is the directory entry of the administrator or member who made it, where they have one.
 ///
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
@@ -848,6 +1127,68 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
             })
     }
 }
+///Identifier (`id`) of a group membership credential issued to a member. Each renewal issues a new credential with a new identifier. Validity is the community's setting; a community SHOULD default to 30 days, renewed when 10 days remain.
+///
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct GroupCredentialId(::std::string::String);
+impl ::std::ops::Deref for GroupCredentialId {
+    type Target = ::std::string::String;
+    fn deref(&self) -> &::std::string::String {
+        &self.0
+    }
+}
+impl ::std::convert::From<GroupCredentialId> for ::std::string::String {
+    fn from(value: GroupCredentialId) -> Self {
+        value.0
+    }
+}
+impl ::std::str::FromStr for GroupCredentialId {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        if value.chars().count() > 512usize {
+            return Err("longer than 512 characters".into());
+        }
+        if value.chars().count() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for GroupCredentialId {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for GroupCredentialId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for GroupCredentialId {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for GroupCredentialId {
+    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        ::std::string::String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
 ///Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.
 ///
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -1011,6 +1352,13 @@ pub struct Response {
     ///Kudos badges only: the member who made it.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub maker: ::std::option::Option<EntryId>,
+    ///The caller's own accepted awards of this badge, newest first, each with `shared` where they show it outside the community — what `vtc/badges/awards/share` and `unshare` name. Absent where the caller holds none. Never another member's award.
+    #[serde(
+        rename = "myAwards",
+        default,
+        skip_serializing_if = "::std::vec::Vec::is_empty"
+    )]
+    pub my_awards: ::std::vec::Vec<Award>,
     ///Accepted awards of this badge the caller holds; 0 where none.
     #[serde(rename = "myCount")]
     pub my_count: u64,
@@ -1027,6 +1375,286 @@ impl Response {
 }
 /// Types for composing complex structures.
 pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Award {
+        award_id: ::std::result::Result<super::AwardId, ::std::string::String>,
+        badge_id: ::std::result::Result<super::BadgeId, ::std::string::String>,
+        credential_id: ::std::result::Result<
+            ::std::option::Option<super::GroupCredentialId>,
+            ::std::string::String,
+        >,
+        decided_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        entry_id: ::std::result::Result<super::EntryId, ::std::string::String>,
+        expires_at: ::std::result::Result<
+            ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        given_by:
+            ::std::result::Result<::std::option::Option<super::EntryId>, ::std::string::String>,
+        note: ::std::result::Result<::std::option::Option<super::AwardNote>, ::std::string::String>,
+        offered_at:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        shared:
+            ::std::result::Result<::std::option::Option<super::AwardShare>, ::std::string::String>,
+        state: ::std::result::Result<super::AwardState, ::std::string::String>,
+    }
+    impl ::std::default::Default for Award {
+        fn default() -> Self {
+            Self {
+                award_id: Err("no value supplied for award_id".to_string()),
+                badge_id: Err("no value supplied for badge_id".to_string()),
+                credential_id: Ok(Default::default()),
+                decided_at: Ok(Default::default()),
+                entry_id: Err("no value supplied for entry_id".to_string()),
+                expires_at: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                given_by: Ok(Default::default()),
+                note: Ok(Default::default()),
+                offered_at: Err("no value supplied for offered_at".to_string()),
+                shared: Ok(Default::default()),
+                state: Err("no value supplied for state".to_string()),
+            }
+        }
+    }
+    impl Award {
+        pub fn award_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::AwardId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.award_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for award_id: {e}"));
+            self
+        }
+        pub fn badge_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::BadgeId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.badge_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for badge_id: {e}"));
+            self
+        }
+        pub fn credential_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::GroupCredentialId>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.credential_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for credential_id: {e}"));
+            self
+        }
+        pub fn decided_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.decided_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for decided_at: {e}"));
+            self
+        }
+        pub fn entry_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::EntryId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.entry_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for entry_id: {e}"));
+            self
+        }
+        pub fn expires_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<
+                ::std::option::Option<::chrono::DateTime<::chrono::offset::Utc>>,
+            >,
+            T::Error: ::std::fmt::Display,
+        {
+            self.expires_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for expires_at: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn given_by<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::EntryId>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.given_by = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for given_by: {e}"));
+            self
+        }
+        pub fn note<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::AwardNote>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.note = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for note: {e}"));
+            self
+        }
+        pub fn offered_at<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.offered_at = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for offered_at: {e}"));
+            self
+        }
+        pub fn shared<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::AwardShare>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.shared = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for shared: {e}"));
+            self
+        }
+        pub fn state<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::AwardState>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.state = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for state: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Award> for super::Award {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Award) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                award_id: value.award_id?,
+                badge_id: value.badge_id?,
+                credential_id: value.credential_id?,
+                decided_at: value.decided_at?,
+                entry_id: value.entry_id?,
+                expires_at: value.expires_at?,
+                ext: value.ext?,
+                given_by: value.given_by?,
+                note: value.note?,
+                offered_at: value.offered_at?,
+                shared: value.shared?,
+                state: value.state?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Award> for Award {
+        fn from(value: super::Award) -> Self {
+            Self {
+                award_id: Ok(value.award_id),
+                badge_id: Ok(value.badge_id),
+                credential_id: Ok(value.credential_id),
+                decided_at: Ok(value.decided_at),
+                entry_id: Ok(value.entry_id),
+                expires_at: Ok(value.expires_at),
+                ext: Ok(value.ext),
+                given_by: Ok(value.given_by),
+                note: Ok(value.note),
+                offered_at: Ok(value.offered_at),
+                shared: Ok(value.shared),
+                state: Ok(value.state),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct AwardShare {
+        baked_image_url: ::std::result::Result<
+            ::std::option::Option<::std::string::String>,
+            ::std::string::String,
+        >,
+        since:
+            ::std::result::Result<::chrono::DateTime<::chrono::offset::Utc>, ::std::string::String>,
+        verification_url: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for AwardShare {
+        fn default() -> Self {
+            Self {
+                baked_image_url: Ok(Default::default()),
+                since: Err("no value supplied for since".to_string()),
+                verification_url: Err("no value supplied for verification_url".to_string()),
+            }
+        }
+    }
+    impl AwardShare {
+        pub fn baked_image_url<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::string::String>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.baked_image_url = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for baked_image_url: {e}"));
+            self
+        }
+        pub fn since<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::chrono::DateTime<::chrono::offset::Utc>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.since = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for since: {e}"));
+            self
+        }
+        pub fn verification_url<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.verification_url = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for verification_url: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<AwardShare> for super::AwardShare {
+        type Error = super::error::ConversionError;
+        fn try_from(
+            value: AwardShare,
+        ) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                baked_image_url: value.baked_image_url?,
+                since: value.since?,
+                verification_url: value.verification_url?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::AwardShare> for AwardShare {
+        fn from(value: super::AwardShare) -> Self {
+            Self {
+                baked_image_url: Ok(value.baked_image_url),
+                since: Ok(value.since),
+                verification_url: Ok(value.verification_url),
+            }
+        }
+    }
     #[derive(Clone, Debug)]
     pub struct Badge {
         badge_id: ::std::result::Result<super::BadgeId, ::std::string::String>,
@@ -1485,6 +2113,7 @@ pub mod builder {
         credential_regime: ::std::result::Result<super::CredentialRegime, ::std::string::String>,
         ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
         maker: ::std::result::Result<::std::option::Option<super::EntryId>, ::std::string::String>,
+        my_awards: ::std::result::Result<::std::vec::Vec<super::Award>, ::std::string::String>,
         my_count: ::std::result::Result<u64, ::std::string::String>,
         my_state: ::std::result::Result<super::MyState, ::std::string::String>,
         owners: ::std::result::Result<
@@ -1499,6 +2128,7 @@ pub mod builder {
                 credential_regime: Err("no value supplied for credential_regime".to_string()),
                 ext: Ok(Default::default()),
                 maker: Ok(Default::default()),
+                my_awards: Ok(Default::default()),
                 my_count: Err("no value supplied for my_count".to_string()),
                 my_state: Err("no value supplied for my_state".to_string()),
                 owners: Ok(Default::default()),
@@ -1546,6 +2176,16 @@ pub mod builder {
                 .map_err(|e| format!("error converting supplied value for maker: {e}"));
             self
         }
+        pub fn my_awards<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::Award>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.my_awards = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for my_awards: {e}"));
+            self
+        }
         pub fn my_count<T>(mut self, value: T) -> Self
         where
             T: ::std::convert::TryInto<u64>,
@@ -1585,6 +2225,7 @@ pub mod builder {
                 credential_regime: value.credential_regime?,
                 ext: value.ext?,
                 maker: value.maker?,
+                my_awards: value.my_awards?,
                 my_count: value.my_count?,
                 my_state: value.my_state?,
                 owners: value.owners?,
@@ -1598,6 +2239,7 @@ pub mod builder {
                 credential_regime: Ok(value.credential_regime),
                 ext: Ok(value.ext),
                 maker: Ok(value.maker),
+                my_awards: Ok(value.my_awards),
                 my_count: Ok(value.my_count),
                 my_state: Ok(value.my_state),
                 owners: Ok(value.owners),
@@ -1610,7 +2252,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"Badge\":{\"additionalProperties\":false,\"description\":\"A badge as a caller who may see it sees it. `groupId` is present exactly when `kind` is `community`. `holderCount` only to callers who may see the badge's holders, counted over holders who have not hidden it (VTI-BDG-030, VTI-BDG-033). `createdBy` is the directory entry of the administrator or member who made it, where they have one.\",\"properties\":{\"badgeId\":{\"$ref\":\"#/$defs/BadgeId\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"createdBy\":{\"$ref\":\"#/$defs/EntryId\"},\"criteria\":{\"$ref\":\"#/$defs/BadgeCriteria\"},\"description\":{\"$ref\":\"#/$defs/BadgeDescription\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT carry authority.\"},\"groupId\":{\"$ref\":\"#/$defs/GroupId\",\"description\":\"The badge group that backs a community badge: its managers are the badge's owners, its members the holders, its DID the credential's issuer.\"},\"holderCount\":{\"description\":\"Holders who show the badge. Only to callers who may see the holders.\",\"minimum\":0,\"type\":\"integer\"},\"image\":{\"$ref\":\"#/$defs/CardBlobRef\",\"description\":\"The badge's picture, re-encoded and stored by the community (vtc/badges/images/upload), read with vtc/badges/images/get. `url` and `urlExpiresAt` MAY appear in a projection as for a card picture; for a badge whose holders may show it outside, `url` MAY be the picture's stable public location.\"},\"kind\":{\"$ref\":\"#/$defs/BadgeKind\"},\"listed\":{\"description\":\"Whether members who do not hold the badge see it in the community's badge list. An unlisted badge is seen by its holders, its owners and administrators.\",\"type\":\"boolean\"},\"name\":{\"$ref\":\"#/$defs/BadgeName\"},\"repeatable\":{\"description\":\"Whether one member may hold the badge more than once, each giving an award of its own (VTI-BDG-022). Always true for a kudos badge.\",\"type\":\"boolean\"},\"requestable\":{\"description\":\"Community badges only. Whether a member may ask for it: a request to join its badge group, decided by its owners (VTI-BDG-014). Absent reads as false.\",\"type\":\"boolean\"},\"retiredAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"shareableOutside\":{\"description\":\"Community badges only. Whether its holders may show it outside the community, which decides the credential's regime: short-lived and renewed with no status when false, long-lived with a status in the community's own status set when true (VTI-BDG-061, VTI-BDG-062). Absent reads as false.\",\"type\":\"boolean\"},\"state\":{\"$ref\":\"#/$defs/BadgeState\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"badgeId\",\"kind\",\"name\",\"description\",\"image\",\"repeatable\",\"listed\",\"state\",\"createdAt\"],\"title\":\"Badge\",\"type\":\"object\"},\"BadgeCriteria\":{\"description\":\"How the badge is earned, shown to members and written into the credential's Achievement as its criteria narrative. Plain text.\",\"maxLength\":1000,\"minLength\":1,\"title\":\"BadgeCriteria\",\"type\":\"string\"},\"BadgeDescription\":{\"description\":\"What the badge is for. Plain text; a reader MUST NOT treat it as instructions.\",\"maxLength\":1000,\"minLength\":1,\"title\":\"BadgeDescription\",\"type\":\"string\"},\"BadgeId\":{\"description\":\"Opaque identifier of a badge: `bdg_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-BDG-001).\",\"pattern\":\"^bdg_[A-Za-z0-9_-]{16,64}$\",\"title\":\"BadgeId\",\"type\":\"string\"},\"BadgeKind\":{\"description\":\"`community`: defined by holders of `vtc.badges.admin`, given by its owners (its badge group's managers), may carry a credential. `kudos`: made by a member the community's badge settings admit, given by any active member to any other, never a credential. Fixed for the badge's life; a kudos badge becomes a community badge only by promotion (vtc/badges/promote).\",\"enum\":[\"community\",\"kudos\"],\"title\":\"BadgeKind\",\"type\":\"string\"},\"BadgeName\":{\"description\":\"The badge's name, shown on the wall and written into the credential's Achievement. Plain text; a reader MUST NOT treat it as instructions.\",\"maxLength\":64,\"minLength\":1,\"title\":\"BadgeName\",\"type\":\"string\"},\"BadgeState\":{\"description\":\"`active`: may be given and shown. `retired`: kept for its holders' own history, never given, never shown to members who do not hold it (VTI-BDG-005).\",\"enum\":[\"active\",\"retired\"],\"title\":\"BadgeState\",\"type\":\"string\"},\"CardBlobRef\":{\"additionalProperties\":false,\"description\":\"A content-addressed image held in the community's blob store — an avatar or an `image` field. At most 256 KiB, images only, re-encoded by the community on upload (vtc/directory/images/upload: metadata stripped, dimensions capped) so its digest does not link the member across communities. A viewer reads the bytes with vtc/directory/images/get, which answers only where the same projection shows the value. `url` and `urlExpiresAt` MAY appear in a projection: a short-lived URL the community checks against the same projection, so a member-only image is never a public URL. A community that does not offer one leaves both out.\",\"properties\":{\"mediaType\":{\"description\":\"Media type of the stored bytes.\",\"enum\":[\"image/png\",\"image/jpeg\",\"image/webp\",\"image/avif\"],\"type\":\"string\"},\"sha256\":{\"description\":\"Lowercase hex SHA-256 of the stored, re-encoded bytes.\",\"pattern\":\"^[0-9a-f]{64}$\",\"type\":\"string\"},\"size\":{\"description\":\"Size in bytes of the stored bytes.\",\"maximum\":262144,\"minimum\":1,\"type\":\"integer\"},\"url\":{\"description\":\"Projection only: a URL the viewer can fetch the image from until `urlExpiresAt`.\",\"format\":\"uri\",\"maxLength\":2048,\"type\":\"string\"},\"urlExpiresAt\":{\"description\":\"Projection only: when `url` stops working.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"sha256\",\"mediaType\"],\"title\":\"CardBlobRef\",\"type\":\"object\"},\"CredentialRegime\":{\"description\":\"What a holder of the badge is issued, derived from its kind and `shareableOutside`. `none`: a kudos badge, no credential (VTI-BDG-041). `inside`: a community badge shown only within the community — short-lived, renewed, no status (VTI-BDG-061). `outside`: a community badge its holders may show outside — long-lived, with a status in the community's own status set (VTI-BDG-062).\",\"enum\":[\"none\",\"inside\",\"outside\"],\"title\":\"CredentialRegime\",\"type\":\"string\"},\"EntryId\":{\"description\":\"Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.\",\"pattern\":\"^dir_[A-Za-z0-9_-]{16,64}$\",\"title\":\"EntryId\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"GroupId\":{\"description\":\"Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.\",\"pattern\":\"^grp_[A-Za-z0-9_-]{16,64}$\",\"title\":\"GroupId\",\"type\":\"string\"},\"MyState\":{\"description\":\"Where the caller stands with the badge, as vtc/badges/list states it. `holder`: at least one accepted award. `offered`: an open offer names them. `requested`: an undecided request to join its badge group. `none`: nothing.\",\"enum\":[\"holder\",\"offered\",\"requested\",\"none\"],\"title\":\"MyState\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vtc/badges/show/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/badges/show/0.1#response.\",\"properties\":{\"badge\":{\"$ref\":\"#/$defs/Badge\",\"description\":\"The badge as the caller sees it; `holderCount` only where the caller may see the holders.\"},\"credentialRegime\":{\"$ref\":\"#/$defs/CredentialRegime\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"maker\":{\"$ref\":\"#/$defs/EntryId\",\"description\":\"Kudos badges only: the member who made it.\"},\"myCount\":{\"description\":\"Accepted awards of this badge the caller holds; 0 where none.\",\"minimum\":0,\"type\":\"integer\"},\"myState\":{\"$ref\":\"#/$defs/MyState\"},\"owners\":{\"description\":\"Community badges only: the badge group's managers, whom a request for the badge goes to. Shown to every caller who may see the badge.\",\"items\":{\"$ref\":\"#/$defs/EntryId\"},\"maxItems\":64,\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"badge\",\"myCount\",\"myState\",\"credentialRegime\"],\"title\":\"VTC Badges — Show — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/badges/show/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Read one badge the caller may see: the badge, how many of it the caller holds and where they stand with it, its owners or its maker, and the credential regime it carries. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"badgeId\":{\"$ref\":\"#/$defs/BadgeId\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"badgeId\"],\"title\":\"VTC Badges — Show — payload\",\"type\":\"object\"}\n",
+        "{\"$defs\":{\"Award\":{\"additionalProperties\":false,\"description\":\"One giving of a badge to one member. `givenBy` is the giver's directory entry, absent for an award a dynamic badge group's rule made. `note` is shown to the recipient, the giver, the badge's owners and administrators, never to other members. `credentialId` is present on an accepted award of a community badge: the badge credential that evidences it, renewed or re-issued as the badge's regime requires. `shared` is present on an accepted award of a badge its holders may show outside while its holder shares it (vtc/badges/awards/share).\",\"properties\":{\"awardId\":{\"$ref\":\"#/$defs/AwardId\"},\"badgeId\":{\"$ref\":\"#/$defs/BadgeId\"},\"credentialId\":{\"$ref\":\"#/$defs/GroupCredentialId\"},\"decidedAt\":{\"description\":\"When the recipient accepted or declined, the giver withdrew, the offer expired, or the award was revoked.\",\"format\":\"date-time\",\"type\":\"string\"},\"entryId\":{\"$ref\":\"#/$defs/EntryId\",\"description\":\"The recipient.\"},\"expiresAt\":{\"description\":\"When an unanswered offer lapses, where the community expires offers.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"givenBy\":{\"$ref\":\"#/$defs/EntryId\"},\"note\":{\"$ref\":\"#/$defs/AwardNote\"},\"offeredAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"shared\":{\"$ref\":\"#/$defs/AwardShare\"},\"state\":{\"$ref\":\"#/$defs/AwardState\"}},\"required\":[\"awardId\",\"badgeId\",\"entryId\",\"state\",\"offeredAt\"],\"title\":\"Award\",\"type\":\"object\"},\"AwardId\":{\"description\":\"Opaque identifier of one giving of a badge to one member: `awd_` followed by 16 to 64 base64url characters. Random and unique within the community.\",\"pattern\":\"^awd_[A-Za-z0-9_-]{16,64}$\",\"title\":\"AwardId\",\"type\":\"string\"},\"AwardNote\":{\"description\":\"What the award is for, from the giver, shown to the recipient and written as the award's evidence narrative where the badge carries a credential. Plain text; erased with its author (VTI-BDG-090).\",\"maxLength\":500,\"minLength\":1,\"title\":\"AwardNote\",\"type\":\"string\"},\"AwardShare\":{\"additionalProperties\":false,\"description\":\"Where an accepted award is shown outside the community, by its holder's choice (VTI-BDG-070): the public location that answers a verification of exactly what the credential says, the baked image where the community serves one, and since when. Present only while the holder shares the award; absent once they stop, the award is taken back, the badge is retired or the holder departs. The locations are unguessable and name no other holder (VTI-BDG-071).\",\"properties\":{\"bakedImageUrl\":{\"description\":\"The badge's picture with the credential baked into it, for a website or an email signature. Absent where the community serves no baked image.\",\"format\":\"uri\",\"maxLength\":2048,\"type\":\"string\"},\"since\":{\"format\":\"date-time\",\"type\":\"string\"},\"verificationUrl\":{\"description\":\"The public location that answers the credential and a verification of it.\",\"format\":\"uri\",\"maxLength\":2048,\"type\":\"string\"}},\"required\":[\"verificationUrl\",\"since\"],\"title\":\"AwardShare\",\"type\":\"object\"},\"AwardState\":{\"description\":\"`offered`: waiting for the recipient. `accepted`: the recipient took it; for a community badge the credential was issued and the membership recorded. `declined`: the recipient declined; nothing was recorded in the group and nothing issued. `withdrawn`: the giver withdrew the offer before a decision. `expired`: the offer lapsed unanswered. `revoked`: taken back after acceptance (VTI-BDG-023).\",\"enum\":[\"offered\",\"accepted\",\"declined\",\"withdrawn\",\"expired\",\"revoked\"],\"title\":\"AwardState\",\"type\":\"string\"},\"Badge\":{\"additionalProperties\":false,\"description\":\"A badge as a caller who may see it sees it. `groupId` is present exactly when `kind` is `community`. `holderCount` only to callers who may see the badge's holders, counted over holders who have not hidden it (VTI-BDG-030, VTI-BDG-033). `createdBy` is the directory entry of the administrator or member who made it, where they have one.\",\"properties\":{\"badgeId\":{\"$ref\":\"#/$defs/BadgeId\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"createdBy\":{\"$ref\":\"#/$defs/EntryId\"},\"criteria\":{\"$ref\":\"#/$defs/BadgeCriteria\"},\"description\":{\"$ref\":\"#/$defs/BadgeDescription\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT carry authority.\"},\"groupId\":{\"$ref\":\"#/$defs/GroupId\",\"description\":\"The badge group that backs a community badge: its managers are the badge's owners, its members the holders, its DID the credential's issuer.\"},\"holderCount\":{\"description\":\"Holders who show the badge. Only to callers who may see the holders.\",\"minimum\":0,\"type\":\"integer\"},\"image\":{\"$ref\":\"#/$defs/CardBlobRef\",\"description\":\"The badge's picture, re-encoded and stored by the community (vtc/badges/images/upload), read with vtc/badges/images/get. `url` and `urlExpiresAt` MAY appear in a projection as for a card picture; for a badge whose holders may show it outside, `url` MAY be the picture's stable public location.\"},\"kind\":{\"$ref\":\"#/$defs/BadgeKind\"},\"listed\":{\"description\":\"Whether members who do not hold the badge see it in the community's badge list. An unlisted badge is seen by its holders, its owners and administrators.\",\"type\":\"boolean\"},\"name\":{\"$ref\":\"#/$defs/BadgeName\"},\"repeatable\":{\"description\":\"Whether one member may hold the badge more than once, each giving an award of its own (VTI-BDG-022). Always true for a kudos badge.\",\"type\":\"boolean\"},\"requestable\":{\"description\":\"Community badges only. Whether a member may ask for it: a request to join its badge group, decided by its owners (VTI-BDG-014). Absent reads as false.\",\"type\":\"boolean\"},\"retiredAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"shareableOutside\":{\"description\":\"Community badges only. Whether its holders may show it outside the community, which decides the credential's regime: short-lived and renewed with no status when false, long-lived with a status in the community's own status set when true (VTI-BDG-061, VTI-BDG-062). Absent reads as false.\",\"type\":\"boolean\"},\"state\":{\"$ref\":\"#/$defs/BadgeState\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"badgeId\",\"kind\",\"name\",\"description\",\"image\",\"repeatable\",\"listed\",\"state\",\"createdAt\"],\"title\":\"Badge\",\"type\":\"object\"},\"BadgeCriteria\":{\"description\":\"How the badge is earned, shown to members and written into the credential's Achievement as its criteria narrative. Plain text.\",\"maxLength\":1000,\"minLength\":1,\"title\":\"BadgeCriteria\",\"type\":\"string\"},\"BadgeDescription\":{\"description\":\"What the badge is for. Plain text; a reader MUST NOT treat it as instructions.\",\"maxLength\":1000,\"minLength\":1,\"title\":\"BadgeDescription\",\"type\":\"string\"},\"BadgeId\":{\"description\":\"Opaque identifier of a badge: `bdg_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-BDG-001).\",\"pattern\":\"^bdg_[A-Za-z0-9_-]{16,64}$\",\"title\":\"BadgeId\",\"type\":\"string\"},\"BadgeKind\":{\"description\":\"`community`: defined by holders of `vtc.badges.admin`, given by its owners (its badge group's managers), may carry a credential. `kudos`: made by a member the community's badge settings admit, given by any active member to any other, never a credential. Fixed for the badge's life; a kudos badge becomes a community badge only by promotion (vtc/badges/promote).\",\"enum\":[\"community\",\"kudos\"],\"title\":\"BadgeKind\",\"type\":\"string\"},\"BadgeName\":{\"description\":\"The badge's name, shown on the wall and written into the credential's Achievement. Plain text; a reader MUST NOT treat it as instructions.\",\"maxLength\":64,\"minLength\":1,\"title\":\"BadgeName\",\"type\":\"string\"},\"BadgeState\":{\"description\":\"`active`: may be given and shown. `retired`: kept for its holders' own history, never given, never shown to members who do not hold it (VTI-BDG-005).\",\"enum\":[\"active\",\"retired\"],\"title\":\"BadgeState\",\"type\":\"string\"},\"CardBlobRef\":{\"additionalProperties\":false,\"description\":\"A content-addressed image held in the community's blob store — an avatar or an `image` field. At most 256 KiB, images only, re-encoded by the community on upload (vtc/directory/images/upload: metadata stripped, dimensions capped) so its digest does not link the member across communities. A viewer reads the bytes with vtc/directory/images/get, which answers only where the same projection shows the value. `url` and `urlExpiresAt` MAY appear in a projection: a short-lived URL the community checks against the same projection, so a member-only image is never a public URL. A community that does not offer one leaves both out.\",\"properties\":{\"mediaType\":{\"description\":\"Media type of the stored bytes.\",\"enum\":[\"image/png\",\"image/jpeg\",\"image/webp\",\"image/avif\"],\"type\":\"string\"},\"sha256\":{\"description\":\"Lowercase hex SHA-256 of the stored, re-encoded bytes.\",\"pattern\":\"^[0-9a-f]{64}$\",\"type\":\"string\"},\"size\":{\"description\":\"Size in bytes of the stored bytes.\",\"maximum\":262144,\"minimum\":1,\"type\":\"integer\"},\"url\":{\"description\":\"Projection only: a URL the viewer can fetch the image from until `urlExpiresAt`.\",\"format\":\"uri\",\"maxLength\":2048,\"type\":\"string\"},\"urlExpiresAt\":{\"description\":\"Projection only: when `url` stops working.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"sha256\",\"mediaType\"],\"title\":\"CardBlobRef\",\"type\":\"object\"},\"CredentialRegime\":{\"description\":\"What a holder of the badge is issued, derived from its kind and `shareableOutside`. `none`: a kudos badge, no credential (VTI-BDG-041). `inside`: a community badge shown only within the community — short-lived, renewed, no status (VTI-BDG-061). `outside`: a community badge its holders may show outside — long-lived, with a status in the community's own status set (VTI-BDG-062).\",\"enum\":[\"none\",\"inside\",\"outside\"],\"title\":\"CredentialRegime\",\"type\":\"string\"},\"EntryId\":{\"description\":\"Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.\",\"pattern\":\"^dir_[A-Za-z0-9_-]{16,64}$\",\"title\":\"EntryId\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"GroupCredentialId\":{\"description\":\"Identifier (`id`) of a group membership credential issued to a member. Each renewal issues a new credential with a new identifier. Validity is the community's setting; a community SHOULD default to 30 days, renewed when 10 days remain.\",\"maxLength\":512,\"minLength\":1,\"title\":\"GroupCredentialId\",\"type\":\"string\"},\"GroupId\":{\"description\":\"Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.\",\"pattern\":\"^grp_[A-Za-z0-9_-]{16,64}$\",\"title\":\"GroupId\",\"type\":\"string\"},\"MyState\":{\"description\":\"Where the caller stands with the badge, as vtc/badges/list states it. `holder`: at least one accepted award. `offered`: an open offer names them. `requested`: an undecided request to join its badge group. `none`: nothing.\",\"enum\":[\"holder\",\"offered\",\"requested\",\"none\"],\"title\":\"MyState\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vtc/badges/show/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/badges/show/0.1#response.\",\"properties\":{\"badge\":{\"$ref\":\"#/$defs/Badge\",\"description\":\"The badge as the caller sees it; `holderCount` only where the caller may see the holders.\"},\"credentialRegime\":{\"$ref\":\"#/$defs/CredentialRegime\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"maker\":{\"$ref\":\"#/$defs/EntryId\",\"description\":\"Kudos badges only: the member who made it.\"},\"myAwards\":{\"description\":\"The caller's own accepted awards of this badge, newest first, each with `shared` where they show it outside the community — what `vtc/badges/awards/share` and `unshare` name. Absent where the caller holds none. Never another member's award.\",\"items\":{\"$ref\":\"#/$defs/Award\"},\"maxItems\":1000,\"type\":\"array\"},\"myCount\":{\"description\":\"Accepted awards of this badge the caller holds; 0 where none.\",\"minimum\":0,\"type\":\"integer\"},\"myState\":{\"$ref\":\"#/$defs/MyState\"},\"owners\":{\"description\":\"Community badges only: the badge group's managers, whom a request for the badge goes to. Shown to every caller who may see the badge.\",\"items\":{\"$ref\":\"#/$defs/EntryId\"},\"maxItems\":64,\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"badge\",\"myCount\",\"myState\",\"credentialRegime\"],\"title\":\"VTC Badges — Show — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/badges/show/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Read one badge the caller may see: the badge, how many of it the caller holds and where they stand with it, its owners or its maker, and the credential regime it carries. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"badgeId\":{\"$ref\":\"#/$defs/BadgeId\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"badgeId\"],\"title\":\"VTC Badges — Show — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1618,7 +2260,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"Badge\":{\"additionalProperties\":false,\"description\":\"A badge as a caller who may see it sees it. `groupId` is present exactly when `kind` is `community`. `holderCount` only to callers who may see the badge's holders, counted over holders who have not hidden it (VTI-BDG-030, VTI-BDG-033). `createdBy` is the directory entry of the administrator or member who made it, where they have one.\",\"properties\":{\"badgeId\":{\"$ref\":\"#/$defs/BadgeId\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"createdBy\":{\"$ref\":\"#/$defs/EntryId\"},\"criteria\":{\"$ref\":\"#/$defs/BadgeCriteria\"},\"description\":{\"$ref\":\"#/$defs/BadgeDescription\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT carry authority.\"},\"groupId\":{\"$ref\":\"#/$defs/GroupId\",\"description\":\"The badge group that backs a community badge: its managers are the badge's owners, its members the holders, its DID the credential's issuer.\"},\"holderCount\":{\"description\":\"Holders who show the badge. Only to callers who may see the holders.\",\"minimum\":0,\"type\":\"integer\"},\"image\":{\"$ref\":\"#/$defs/CardBlobRef\",\"description\":\"The badge's picture, re-encoded and stored by the community (vtc/badges/images/upload), read with vtc/badges/images/get. `url` and `urlExpiresAt` MAY appear in a projection as for a card picture; for a badge whose holders may show it outside, `url` MAY be the picture's stable public location.\"},\"kind\":{\"$ref\":\"#/$defs/BadgeKind\"},\"listed\":{\"description\":\"Whether members who do not hold the badge see it in the community's badge list. An unlisted badge is seen by its holders, its owners and administrators.\",\"type\":\"boolean\"},\"name\":{\"$ref\":\"#/$defs/BadgeName\"},\"repeatable\":{\"description\":\"Whether one member may hold the badge more than once, each giving an award of its own (VTI-BDG-022). Always true for a kudos badge.\",\"type\":\"boolean\"},\"requestable\":{\"description\":\"Community badges only. Whether a member may ask for it: a request to join its badge group, decided by its owners (VTI-BDG-014). Absent reads as false.\",\"type\":\"boolean\"},\"retiredAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"shareableOutside\":{\"description\":\"Community badges only. Whether its holders may show it outside the community, which decides the credential's regime: short-lived and renewed with no status when false, long-lived with a status in the community's own status set when true (VTI-BDG-061, VTI-BDG-062). Absent reads as false.\",\"type\":\"boolean\"},\"state\":{\"$ref\":\"#/$defs/BadgeState\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"badgeId\",\"kind\",\"name\",\"description\",\"image\",\"repeatable\",\"listed\",\"state\",\"createdAt\"],\"title\":\"Badge\",\"type\":\"object\"},\"BadgeCriteria\":{\"description\":\"How the badge is earned, shown to members and written into the credential's Achievement as its criteria narrative. Plain text.\",\"maxLength\":1000,\"minLength\":1,\"title\":\"BadgeCriteria\",\"type\":\"string\"},\"BadgeDescription\":{\"description\":\"What the badge is for. Plain text; a reader MUST NOT treat it as instructions.\",\"maxLength\":1000,\"minLength\":1,\"title\":\"BadgeDescription\",\"type\":\"string\"},\"BadgeId\":{\"description\":\"Opaque identifier of a badge: `bdg_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-BDG-001).\",\"pattern\":\"^bdg_[A-Za-z0-9_-]{16,64}$\",\"title\":\"BadgeId\",\"type\":\"string\"},\"BadgeKind\":{\"description\":\"`community`: defined by holders of `vtc.badges.admin`, given by its owners (its badge group's managers), may carry a credential. `kudos`: made by a member the community's badge settings admit, given by any active member to any other, never a credential. Fixed for the badge's life; a kudos badge becomes a community badge only by promotion (vtc/badges/promote).\",\"enum\":[\"community\",\"kudos\"],\"title\":\"BadgeKind\",\"type\":\"string\"},\"BadgeName\":{\"description\":\"The badge's name, shown on the wall and written into the credential's Achievement. Plain text; a reader MUST NOT treat it as instructions.\",\"maxLength\":64,\"minLength\":1,\"title\":\"BadgeName\",\"type\":\"string\"},\"BadgeState\":{\"description\":\"`active`: may be given and shown. `retired`: kept for its holders' own history, never given, never shown to members who do not hold it (VTI-BDG-005).\",\"enum\":[\"active\",\"retired\"],\"title\":\"BadgeState\",\"type\":\"string\"},\"CardBlobRef\":{\"additionalProperties\":false,\"description\":\"A content-addressed image held in the community's blob store — an avatar or an `image` field. At most 256 KiB, images only, re-encoded by the community on upload (vtc/directory/images/upload: metadata stripped, dimensions capped) so its digest does not link the member across communities. A viewer reads the bytes with vtc/directory/images/get, which answers only where the same projection shows the value. `url` and `urlExpiresAt` MAY appear in a projection: a short-lived URL the community checks against the same projection, so a member-only image is never a public URL. A community that does not offer one leaves both out.\",\"properties\":{\"mediaType\":{\"description\":\"Media type of the stored bytes.\",\"enum\":[\"image/png\",\"image/jpeg\",\"image/webp\",\"image/avif\"],\"type\":\"string\"},\"sha256\":{\"description\":\"Lowercase hex SHA-256 of the stored, re-encoded bytes.\",\"pattern\":\"^[0-9a-f]{64}$\",\"type\":\"string\"},\"size\":{\"description\":\"Size in bytes of the stored bytes.\",\"maximum\":262144,\"minimum\":1,\"type\":\"integer\"},\"url\":{\"description\":\"Projection only: a URL the viewer can fetch the image from until `urlExpiresAt`.\",\"format\":\"uri\",\"maxLength\":2048,\"type\":\"string\"},\"urlExpiresAt\":{\"description\":\"Projection only: when `url` stops working.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"sha256\",\"mediaType\"],\"title\":\"CardBlobRef\",\"type\":\"object\"},\"CredentialRegime\":{\"description\":\"What a holder of the badge is issued, derived from its kind and `shareableOutside`. `none`: a kudos badge, no credential (VTI-BDG-041). `inside`: a community badge shown only within the community — short-lived, renewed, no status (VTI-BDG-061). `outside`: a community badge its holders may show outside — long-lived, with a status in the community's own status set (VTI-BDG-062).\",\"enum\":[\"none\",\"inside\",\"outside\"],\"title\":\"CredentialRegime\",\"type\":\"string\"},\"EntryId\":{\"description\":\"Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.\",\"pattern\":\"^dir_[A-Za-z0-9_-]{16,64}$\",\"title\":\"EntryId\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"GroupId\":{\"description\":\"Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.\",\"pattern\":\"^grp_[A-Za-z0-9_-]{16,64}$\",\"title\":\"GroupId\",\"type\":\"string\"},\"MyState\":{\"description\":\"Where the caller stands with the badge, as vtc/badges/list states it. `holder`: at least one accepted award. `offered`: an open offer names them. `requested`: an undecided request to join its badge group. `none`: nothing.\",\"enum\":[\"holder\",\"offered\",\"requested\",\"none\"],\"title\":\"MyState\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vtc/badges/show/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/badges/show/0.1#response.\",\"properties\":{\"badge\":{\"$ref\":\"#/$defs/Badge\",\"description\":\"The badge as the caller sees it; `holderCount` only where the caller may see the holders.\"},\"credentialRegime\":{\"$ref\":\"#/$defs/CredentialRegime\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"maker\":{\"$ref\":\"#/$defs/EntryId\",\"description\":\"Kudos badges only: the member who made it.\"},\"myCount\":{\"description\":\"Accepted awards of this badge the caller holds; 0 where none.\",\"minimum\":0,\"type\":\"integer\"},\"myState\":{\"$ref\":\"#/$defs/MyState\"},\"owners\":{\"description\":\"Community badges only: the badge group's managers, whom a request for the badge goes to. Shown to every caller who may see the badge.\",\"items\":{\"$ref\":\"#/$defs/EntryId\"},\"maxItems\":64,\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"badge\",\"myCount\",\"myState\",\"credentialRegime\"],\"title\":\"VTC Badges — Show — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
+        "{\"$defs\":{\"Award\":{\"additionalProperties\":false,\"description\":\"One giving of a badge to one member. `givenBy` is the giver's directory entry, absent for an award a dynamic badge group's rule made. `note` is shown to the recipient, the giver, the badge's owners and administrators, never to other members. `credentialId` is present on an accepted award of a community badge: the badge credential that evidences it, renewed or re-issued as the badge's regime requires. `shared` is present on an accepted award of a badge its holders may show outside while its holder shares it (vtc/badges/awards/share).\",\"properties\":{\"awardId\":{\"$ref\":\"#/$defs/AwardId\"},\"badgeId\":{\"$ref\":\"#/$defs/BadgeId\"},\"credentialId\":{\"$ref\":\"#/$defs/GroupCredentialId\"},\"decidedAt\":{\"description\":\"When the recipient accepted or declined, the giver withdrew, the offer expired, or the award was revoked.\",\"format\":\"date-time\",\"type\":\"string\"},\"entryId\":{\"$ref\":\"#/$defs/EntryId\",\"description\":\"The recipient.\"},\"expiresAt\":{\"description\":\"When an unanswered offer lapses, where the community expires offers.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"givenBy\":{\"$ref\":\"#/$defs/EntryId\"},\"note\":{\"$ref\":\"#/$defs/AwardNote\"},\"offeredAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"shared\":{\"$ref\":\"#/$defs/AwardShare\"},\"state\":{\"$ref\":\"#/$defs/AwardState\"}},\"required\":[\"awardId\",\"badgeId\",\"entryId\",\"state\",\"offeredAt\"],\"title\":\"Award\",\"type\":\"object\"},\"AwardId\":{\"description\":\"Opaque identifier of one giving of a badge to one member: `awd_` followed by 16 to 64 base64url characters. Random and unique within the community.\",\"pattern\":\"^awd_[A-Za-z0-9_-]{16,64}$\",\"title\":\"AwardId\",\"type\":\"string\"},\"AwardNote\":{\"description\":\"What the award is for, from the giver, shown to the recipient and written as the award's evidence narrative where the badge carries a credential. Plain text; erased with its author (VTI-BDG-090).\",\"maxLength\":500,\"minLength\":1,\"title\":\"AwardNote\",\"type\":\"string\"},\"AwardShare\":{\"additionalProperties\":false,\"description\":\"Where an accepted award is shown outside the community, by its holder's choice (VTI-BDG-070): the public location that answers a verification of exactly what the credential says, the baked image where the community serves one, and since when. Present only while the holder shares the award; absent once they stop, the award is taken back, the badge is retired or the holder departs. The locations are unguessable and name no other holder (VTI-BDG-071).\",\"properties\":{\"bakedImageUrl\":{\"description\":\"The badge's picture with the credential baked into it, for a website or an email signature. Absent where the community serves no baked image.\",\"format\":\"uri\",\"maxLength\":2048,\"type\":\"string\"},\"since\":{\"format\":\"date-time\",\"type\":\"string\"},\"verificationUrl\":{\"description\":\"The public location that answers the credential and a verification of it.\",\"format\":\"uri\",\"maxLength\":2048,\"type\":\"string\"}},\"required\":[\"verificationUrl\",\"since\"],\"title\":\"AwardShare\",\"type\":\"object\"},\"AwardState\":{\"description\":\"`offered`: waiting for the recipient. `accepted`: the recipient took it; for a community badge the credential was issued and the membership recorded. `declined`: the recipient declined; nothing was recorded in the group and nothing issued. `withdrawn`: the giver withdrew the offer before a decision. `expired`: the offer lapsed unanswered. `revoked`: taken back after acceptance (VTI-BDG-023).\",\"enum\":[\"offered\",\"accepted\",\"declined\",\"withdrawn\",\"expired\",\"revoked\"],\"title\":\"AwardState\",\"type\":\"string\"},\"Badge\":{\"additionalProperties\":false,\"description\":\"A badge as a caller who may see it sees it. `groupId` is present exactly when `kind` is `community`. `holderCount` only to callers who may see the badge's holders, counted over holders who have not hidden it (VTI-BDG-030, VTI-BDG-033). `createdBy` is the directory entry of the administrator or member who made it, where they have one.\",\"properties\":{\"badgeId\":{\"$ref\":\"#/$defs/BadgeId\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"createdBy\":{\"$ref\":\"#/$defs/EntryId\"},\"criteria\":{\"$ref\":\"#/$defs/BadgeCriteria\"},\"description\":{\"$ref\":\"#/$defs/BadgeDescription\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT carry authority.\"},\"groupId\":{\"$ref\":\"#/$defs/GroupId\",\"description\":\"The badge group that backs a community badge: its managers are the badge's owners, its members the holders, its DID the credential's issuer.\"},\"holderCount\":{\"description\":\"Holders who show the badge. Only to callers who may see the holders.\",\"minimum\":0,\"type\":\"integer\"},\"image\":{\"$ref\":\"#/$defs/CardBlobRef\",\"description\":\"The badge's picture, re-encoded and stored by the community (vtc/badges/images/upload), read with vtc/badges/images/get. `url` and `urlExpiresAt` MAY appear in a projection as for a card picture; for a badge whose holders may show it outside, `url` MAY be the picture's stable public location.\"},\"kind\":{\"$ref\":\"#/$defs/BadgeKind\"},\"listed\":{\"description\":\"Whether members who do not hold the badge see it in the community's badge list. An unlisted badge is seen by its holders, its owners and administrators.\",\"type\":\"boolean\"},\"name\":{\"$ref\":\"#/$defs/BadgeName\"},\"repeatable\":{\"description\":\"Whether one member may hold the badge more than once, each giving an award of its own (VTI-BDG-022). Always true for a kudos badge.\",\"type\":\"boolean\"},\"requestable\":{\"description\":\"Community badges only. Whether a member may ask for it: a request to join its badge group, decided by its owners (VTI-BDG-014). Absent reads as false.\",\"type\":\"boolean\"},\"retiredAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"shareableOutside\":{\"description\":\"Community badges only. Whether its holders may show it outside the community, which decides the credential's regime: short-lived and renewed with no status when false, long-lived with a status in the community's own status set when true (VTI-BDG-061, VTI-BDG-062). Absent reads as false.\",\"type\":\"boolean\"},\"state\":{\"$ref\":\"#/$defs/BadgeState\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"badgeId\",\"kind\",\"name\",\"description\",\"image\",\"repeatable\",\"listed\",\"state\",\"createdAt\"],\"title\":\"Badge\",\"type\":\"object\"},\"BadgeCriteria\":{\"description\":\"How the badge is earned, shown to members and written into the credential's Achievement as its criteria narrative. Plain text.\",\"maxLength\":1000,\"minLength\":1,\"title\":\"BadgeCriteria\",\"type\":\"string\"},\"BadgeDescription\":{\"description\":\"What the badge is for. Plain text; a reader MUST NOT treat it as instructions.\",\"maxLength\":1000,\"minLength\":1,\"title\":\"BadgeDescription\",\"type\":\"string\"},\"BadgeId\":{\"description\":\"Opaque identifier of a badge: `bdg_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-BDG-001).\",\"pattern\":\"^bdg_[A-Za-z0-9_-]{16,64}$\",\"title\":\"BadgeId\",\"type\":\"string\"},\"BadgeKind\":{\"description\":\"`community`: defined by holders of `vtc.badges.admin`, given by its owners (its badge group's managers), may carry a credential. `kudos`: made by a member the community's badge settings admit, given by any active member to any other, never a credential. Fixed for the badge's life; a kudos badge becomes a community badge only by promotion (vtc/badges/promote).\",\"enum\":[\"community\",\"kudos\"],\"title\":\"BadgeKind\",\"type\":\"string\"},\"BadgeName\":{\"description\":\"The badge's name, shown on the wall and written into the credential's Achievement. Plain text; a reader MUST NOT treat it as instructions.\",\"maxLength\":64,\"minLength\":1,\"title\":\"BadgeName\",\"type\":\"string\"},\"BadgeState\":{\"description\":\"`active`: may be given and shown. `retired`: kept for its holders' own history, never given, never shown to members who do not hold it (VTI-BDG-005).\",\"enum\":[\"active\",\"retired\"],\"title\":\"BadgeState\",\"type\":\"string\"},\"CardBlobRef\":{\"additionalProperties\":false,\"description\":\"A content-addressed image held in the community's blob store — an avatar or an `image` field. At most 256 KiB, images only, re-encoded by the community on upload (vtc/directory/images/upload: metadata stripped, dimensions capped) so its digest does not link the member across communities. A viewer reads the bytes with vtc/directory/images/get, which answers only where the same projection shows the value. `url` and `urlExpiresAt` MAY appear in a projection: a short-lived URL the community checks against the same projection, so a member-only image is never a public URL. A community that does not offer one leaves both out.\",\"properties\":{\"mediaType\":{\"description\":\"Media type of the stored bytes.\",\"enum\":[\"image/png\",\"image/jpeg\",\"image/webp\",\"image/avif\"],\"type\":\"string\"},\"sha256\":{\"description\":\"Lowercase hex SHA-256 of the stored, re-encoded bytes.\",\"pattern\":\"^[0-9a-f]{64}$\",\"type\":\"string\"},\"size\":{\"description\":\"Size in bytes of the stored bytes.\",\"maximum\":262144,\"minimum\":1,\"type\":\"integer\"},\"url\":{\"description\":\"Projection only: a URL the viewer can fetch the image from until `urlExpiresAt`.\",\"format\":\"uri\",\"maxLength\":2048,\"type\":\"string\"},\"urlExpiresAt\":{\"description\":\"Projection only: when `url` stops working.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"sha256\",\"mediaType\"],\"title\":\"CardBlobRef\",\"type\":\"object\"},\"CredentialRegime\":{\"description\":\"What a holder of the badge is issued, derived from its kind and `shareableOutside`. `none`: a kudos badge, no credential (VTI-BDG-041). `inside`: a community badge shown only within the community — short-lived, renewed, no status (VTI-BDG-061). `outside`: a community badge its holders may show outside — long-lived, with a status in the community's own status set (VTI-BDG-062).\",\"enum\":[\"none\",\"inside\",\"outside\"],\"title\":\"CredentialRegime\",\"type\":\"string\"},\"EntryId\":{\"description\":\"Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.\",\"pattern\":\"^dir_[A-Za-z0-9_-]{16,64}$\",\"title\":\"EntryId\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"GroupCredentialId\":{\"description\":\"Identifier (`id`) of a group membership credential issued to a member. Each renewal issues a new credential with a new identifier. Validity is the community's setting; a community SHOULD default to 30 days, renewed when 10 days remain.\",\"maxLength\":512,\"minLength\":1,\"title\":\"GroupCredentialId\",\"type\":\"string\"},\"GroupId\":{\"description\":\"Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.\",\"pattern\":\"^grp_[A-Za-z0-9_-]{16,64}$\",\"title\":\"GroupId\",\"type\":\"string\"},\"MyState\":{\"description\":\"Where the caller stands with the badge, as vtc/badges/list states it. `holder`: at least one accepted award. `offered`: an open offer names them. `requested`: an undecided request to join its badge group. `none`: nothing.\",\"enum\":[\"holder\",\"offered\",\"requested\",\"none\"],\"title\":\"MyState\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vtc/badges/show/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/badges/show/0.1#response.\",\"properties\":{\"badge\":{\"$ref\":\"#/$defs/Badge\",\"description\":\"The badge as the caller sees it; `holderCount` only where the caller may see the holders.\"},\"credentialRegime\":{\"$ref\":\"#/$defs/CredentialRegime\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"maker\":{\"$ref\":\"#/$defs/EntryId\",\"description\":\"Kudos badges only: the member who made it.\"},\"myAwards\":{\"description\":\"The caller's own accepted awards of this badge, newest first, each with `shared` where they show it outside the community — what `vtc/badges/awards/share` and `unshare` name. Absent where the caller holds none. Never another member's award.\",\"items\":{\"$ref\":\"#/$defs/Award\"},\"maxItems\":1000,\"type\":\"array\"},\"myCount\":{\"description\":\"Accepted awards of this badge the caller holds; 0 where none.\",\"minimum\":0,\"type\":\"integer\"},\"myState\":{\"$ref\":\"#/$defs/MyState\"},\"owners\":{\"description\":\"Community badges only: the badge group's managers, whom a request for the badge goes to. Shown to every caller who may see the badge.\",\"items\":{\"$ref\":\"#/$defs/EntryId\"},\"maxItems\":64,\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"badge\",\"myCount\",\"myState\",\"credentialRegime\"],\"title\":\"VTC Badges — Show — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

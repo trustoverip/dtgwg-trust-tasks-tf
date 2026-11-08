@@ -3,7 +3,7 @@
  * Source: specs/vtc/badges/show/0.1/payload.schema.json
  */
 
-import type { Badge, BadgeCriteria, BadgeDescription, BadgeId, BadgeKind, BadgeName, BadgeState, CardBlobRef, EntryId, Ext, GroupId } from "../../../../_shared/components.js";
+import type { Award, AwardId, AwardNote, AwardShare, AwardState, Badge, BadgeCriteria, BadgeDescription, BadgeId, BadgeKind, BadgeName, BadgeState, CardBlobRef, EntryId, Ext, GroupCredentialId, GroupId } from "../../../../_shared/components.js";
 
 
 /**
@@ -36,6 +36,12 @@ export interface VTCBadgesShowResponsePayload {
   myCount: number;
   myState: MyState;
   /**
+   * The caller's own accepted awards of this badge, newest first, each with `shared` where they show it outside the community — what `vtc/badges/awards/share` and `unshare` name. Absent where the caller holds none. Never another member's award.
+   *
+   * @maxItems 1000
+   */
+  myAwards?: Award[];
+  /**
    * Community badges only: the badge group's managers, whom a request for the badge goes to. Shown to every caller who may see the badge.
    *
    * @maxItems 64
@@ -50,7 +56,7 @@ export interface VTCBadgesShowResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { Badge, BadgeCriteria, BadgeDescription, BadgeId, BadgeKind, BadgeName, BadgeState, CardBlobRef, EntryId, Ext, GroupId };
+export type { Award, AwardId, AwardNote, AwardShare, AwardState, Badge, BadgeCriteria, BadgeDescription, BadgeId, BadgeKind, BadgeName, BadgeState, CardBlobRef, EntryId, Ext, GroupCredentialId, GroupId };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/badges/show/0.1" as const;
@@ -154,6 +160,14 @@ export const PAYLOAD_SCHEMA = {
         "myState": {
           "$ref": "#/$defs/MyState"
         },
+        "myAwards": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "$ref": "#/$defs/Award"
+          },
+          "description": "The caller's own accepted awards of this badge, newest first, each with `shared` where they show it outside the community — what `vtc/badges/awards/share` and `unshare` name. Absent where the caller holds none. Never another member's award."
+        },
         "owners": {
           "type": "array",
           "maxItems": 64,
@@ -190,6 +204,130 @@ export const PAYLOAD_SCHEMA = {
       "description": "Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.",
       "type": "string",
       "pattern": "^dir_[A-Za-z0-9_-]{16,64}$"
+    },
+    "Award": {
+      "title": "Award",
+      "description": "One giving of a badge to one member. `givenBy` is the giver's directory entry, absent for an award a dynamic badge group's rule made. `note` is shown to the recipient, the giver, the badge's owners and administrators, never to other members. `credentialId` is present on an accepted award of a community badge: the badge credential that evidences it, renewed or re-issued as the badge's regime requires. `shared` is present on an accepted award of a badge its holders may show outside while its holder shares it (vtc/badges/awards/share).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "awardId",
+        "badgeId",
+        "entryId",
+        "state",
+        "offeredAt"
+      ],
+      "properties": {
+        "awardId": {
+          "$ref": "#/$defs/AwardId"
+        },
+        "badgeId": {
+          "$ref": "#/$defs/BadgeId"
+        },
+        "entryId": {
+          "$ref": "#/$defs/EntryId",
+          "description": "The recipient."
+        },
+        "givenBy": {
+          "$ref": "#/$defs/EntryId"
+        },
+        "note": {
+          "$ref": "#/$defs/AwardNote"
+        },
+        "state": {
+          "$ref": "#/$defs/AwardState"
+        },
+        "offeredAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "decidedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the recipient accepted or declined, the giver withdrew, the offer expired, or the award was revoked."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When an unanswered offer lapses, where the community expires offers."
+        },
+        "credentialId": {
+          "$ref": "#/$defs/GroupCredentialId"
+        },
+        "shared": {
+          "$ref": "#/$defs/AwardShare"
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "AwardShare": {
+      "title": "AwardShare",
+      "description": "Where an accepted award is shown outside the community, by its holder's choice (VTI-BDG-070): the public location that answers a verification of exactly what the credential says, the baked image where the community serves one, and since when. Present only while the holder shares the award; absent once they stop, the award is taken back, the badge is retired or the holder departs. The locations are unguessable and name no other holder (VTI-BDG-071).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "verificationUrl",
+        "since"
+      ],
+      "properties": {
+        "verificationUrl": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 2048,
+          "description": "The public location that answers the credential and a verification of it."
+        },
+        "bakedImageUrl": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 2048,
+          "description": "The badge's picture with the credential baked into it, for a website or an email signature. Absent where the community serves no baked image."
+        },
+        "since": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "AwardState": {
+      "title": "AwardState",
+      "description": "`offered`: waiting for the recipient. `accepted`: the recipient took it; for a community badge the credential was issued and the membership recorded. `declined`: the recipient declined; nothing was recorded in the group and nothing issued. `withdrawn`: the giver withdrew the offer before a decision. `expired`: the offer lapsed unanswered. `revoked`: taken back after acceptance (VTI-BDG-023).",
+      "type": "string",
+      "enum": [
+        "offered",
+        "accepted",
+        "declined",
+        "withdrawn",
+        "expired",
+        "revoked"
+      ]
+    },
+    "AwardNote": {
+      "title": "AwardNote",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "description": "What the award is for, from the giver, shown to the recipient and written as the award's evidence narrative where the badge carries a credential. Plain text; erased with its author (VTI-BDG-090)."
+    },
+    "BadgeId": {
+      "title": "BadgeId",
+      "description": "Opaque identifier of a badge: `bdg_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-BDG-001).",
+      "type": "string",
+      "pattern": "^bdg_[A-Za-z0-9_-]{16,64}$"
+    },
+    "AwardId": {
+      "title": "AwardId",
+      "description": "Opaque identifier of one giving of a badge to one member: `awd_` followed by 16 to 64 base64url characters. Random and unique within the community.",
+      "type": "string",
+      "pattern": "^awd_[A-Za-z0-9_-]{16,64}$"
+    },
+    "GroupCredentialId": {
+      "title": "GroupCredentialId",
+      "description": "Identifier (`id`) of a group membership credential issued to a member. Each renewal issues a new credential with a new identifier. Validity is the community's setting; a community SHOULD default to 30 days, renewed when 10 days remain.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
     },
     "Badge": {
       "title": "Badge",
@@ -314,12 +452,6 @@ export const PAYLOAD_SCHEMA = {
         "community",
         "kudos"
       ]
-    },
-    "BadgeId": {
-      "title": "BadgeId",
-      "description": "Opaque identifier of a badge: `bdg_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-BDG-001).",
-      "type": "string",
-      "pattern": "^bdg_[A-Za-z0-9_-]{16,64}$"
     },
     "GroupId": {
       "title": "GroupId",
@@ -425,6 +557,14 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "myState": {
           "$ref": "#/$defs/MyState"
         },
+        "myAwards": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "$ref": "#/$defs/Award"
+          },
+          "description": "The caller's own accepted awards of this badge, newest first, each with `shared` where they show it outside the community — what `vtc/badges/awards/share` and `unshare` name. Absent where the caller holds none. Never another member's award."
+        },
         "owners": {
           "type": "array",
           "maxItems": 64,
@@ -461,6 +601,130 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.",
       "type": "string",
       "pattern": "^dir_[A-Za-z0-9_-]{16,64}$"
+    },
+    "Award": {
+      "title": "Award",
+      "description": "One giving of a badge to one member. `givenBy` is the giver's directory entry, absent for an award a dynamic badge group's rule made. `note` is shown to the recipient, the giver, the badge's owners and administrators, never to other members. `credentialId` is present on an accepted award of a community badge: the badge credential that evidences it, renewed or re-issued as the badge's regime requires. `shared` is present on an accepted award of a badge its holders may show outside while its holder shares it (vtc/badges/awards/share).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "awardId",
+        "badgeId",
+        "entryId",
+        "state",
+        "offeredAt"
+      ],
+      "properties": {
+        "awardId": {
+          "$ref": "#/$defs/AwardId"
+        },
+        "badgeId": {
+          "$ref": "#/$defs/BadgeId"
+        },
+        "entryId": {
+          "$ref": "#/$defs/EntryId",
+          "description": "The recipient."
+        },
+        "givenBy": {
+          "$ref": "#/$defs/EntryId"
+        },
+        "note": {
+          "$ref": "#/$defs/AwardNote"
+        },
+        "state": {
+          "$ref": "#/$defs/AwardState"
+        },
+        "offeredAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "decidedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the recipient accepted or declined, the giver withdrew, the offer expired, or the award was revoked."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When an unanswered offer lapses, where the community expires offers."
+        },
+        "credentialId": {
+          "$ref": "#/$defs/GroupCredentialId"
+        },
+        "shared": {
+          "$ref": "#/$defs/AwardShare"
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "AwardShare": {
+      "title": "AwardShare",
+      "description": "Where an accepted award is shown outside the community, by its holder's choice (VTI-BDG-070): the public location that answers a verification of exactly what the credential says, the baked image where the community serves one, and since when. Present only while the holder shares the award; absent once they stop, the award is taken back, the badge is retired or the holder departs. The locations are unguessable and name no other holder (VTI-BDG-071).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "verificationUrl",
+        "since"
+      ],
+      "properties": {
+        "verificationUrl": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 2048,
+          "description": "The public location that answers the credential and a verification of it."
+        },
+        "bakedImageUrl": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 2048,
+          "description": "The badge's picture with the credential baked into it, for a website or an email signature. Absent where the community serves no baked image."
+        },
+        "since": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "AwardState": {
+      "title": "AwardState",
+      "description": "`offered`: waiting for the recipient. `accepted`: the recipient took it; for a community badge the credential was issued and the membership recorded. `declined`: the recipient declined; nothing was recorded in the group and nothing issued. `withdrawn`: the giver withdrew the offer before a decision. `expired`: the offer lapsed unanswered. `revoked`: taken back after acceptance (VTI-BDG-023).",
+      "type": "string",
+      "enum": [
+        "offered",
+        "accepted",
+        "declined",
+        "withdrawn",
+        "expired",
+        "revoked"
+      ]
+    },
+    "AwardNote": {
+      "title": "AwardNote",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "description": "What the award is for, from the giver, shown to the recipient and written as the award's evidence narrative where the badge carries a credential. Plain text; erased with its author (VTI-BDG-090)."
+    },
+    "BadgeId": {
+      "title": "BadgeId",
+      "description": "Opaque identifier of a badge: `bdg_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-BDG-001).",
+      "type": "string",
+      "pattern": "^bdg_[A-Za-z0-9_-]{16,64}$"
+    },
+    "AwardId": {
+      "title": "AwardId",
+      "description": "Opaque identifier of one giving of a badge to one member: `awd_` followed by 16 to 64 base64url characters. Random and unique within the community.",
+      "type": "string",
+      "pattern": "^awd_[A-Za-z0-9_-]{16,64}$"
+    },
+    "GroupCredentialId": {
+      "title": "GroupCredentialId",
+      "description": "Identifier (`id`) of a group membership credential issued to a member. Each renewal issues a new credential with a new identifier. Validity is the community's setting; a community SHOULD default to 30 days, renewed when 10 days remain.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
     },
     "Badge": {
       "title": "Badge",
@@ -585,12 +849,6 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "community",
         "kudos"
       ]
-    },
-    "BadgeId": {
-      "title": "BadgeId",
-      "description": "Opaque identifier of a badge: `bdg_` followed by 16 to 64 base64url characters. Random, community-scoped, never reused (VTI-BDG-001).",
-      "type": "string",
-      "pattern": "^bdg_[A-Za-z0-9_-]{16,64}$"
     },
     "GroupId": {
       "title": "GroupId",
