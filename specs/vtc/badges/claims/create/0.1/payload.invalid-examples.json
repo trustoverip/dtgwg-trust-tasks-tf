@@ -1,0 +1,41 @@
+[
+  {
+    "note": "`limit` is REQUIRED: a code admits a stated number of claims (VTI-BDG-025).",
+    "payload": {
+      "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+      "label": "x",
+      "validUntil": "2026-11-08T18:00:00Z"
+    }
+  },
+  {
+    "note": "The code is the community's to generate, never the signer's to choose (VTI-BDG-025).",
+    "payload": {
+      "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+      "label": "x",
+      "validUntil": "2026-11-08T18:00:00Z",
+      "limit": 4,
+      "code": "my-own-code-0000000000000"
+    }
+  },
+  {
+    "note": "A code admits at least one claim.",
+    "payload": {
+      "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+      "label": "x",
+      "validUntil": "2026-11-08T18:00:00Z",
+      "limit": 0
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+      "label": "x",
+      "validUntil": "2026-11-08T18:00:00Z",
+      "limit": 4,
+      "ext": {
+        "bare": true
+      }
+    }
+  }
+]

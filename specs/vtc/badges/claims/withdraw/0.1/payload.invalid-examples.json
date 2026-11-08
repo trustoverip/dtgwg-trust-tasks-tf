@@ -1,0 +1,22 @@
+[
+  {
+    "note": "`claimId` is REQUIRED.",
+    "payload": {}
+  },
+  {
+    "note": "A code is withdrawn by its record's identifier, never by the code: the community no longer has it.",
+    "payload": {
+      "claimId": "bcl_T4nQ8mLw2Rx9Kv5Z",
+      "code": "Qm7xV2kR9pLw4Nt8Hs3Fz6"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "claimId": "bcl_T4nQ8mLw2Rx9Kv5Z",
+      "ext": {
+        "bare": true
+      }
+    }
+  }
+]

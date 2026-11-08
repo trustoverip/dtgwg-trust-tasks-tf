@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/badges/claims/create/0.1",
+  "title": "VTC Badges — Claims — Create — payload",
+  "description": "Issue a claim code for a community badge: the community answers the code, once. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "badgeId",
+    "label",
+    "validUntil",
+    "limit"
+  ],
+  "properties": {
+    "badgeId": {
+      "$ref": "../../../_shared/0.1/badge.schema.json#/$defs/BadgeId"
+    },
+    "label": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "description": "What the code is for — the event, say."
+    },
+    "validUntil": {
+      "type": "string",
+      "format": "date-time",
+      "description": "After this the code admits no one. At most 90 days ahead."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10000,
+      "description": "How many claims the code admits."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Badges — Claims — Create — response payload",
+      "description": "The success response to a vtc/badges/claims/create/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/badges/claims/create/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "claim",
+        "code"
+      ],
+      "properties": {
+        "claim": {
+          "$ref": "../../../_shared/0.1/badge.schema.json#/$defs/ClaimCode"
+        },
+        "code": {
+          "$ref": "../../../_shared/0.1/badge.schema.json#/$defs/ClaimSecret",
+          "description": "The code, answered this once. The community keeps only its digest."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
