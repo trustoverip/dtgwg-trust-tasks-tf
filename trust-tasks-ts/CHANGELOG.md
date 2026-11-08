@@ -11,6 +11,15 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.28.22 — 2026-11-08
+
+
+### Added
+
+- **vtc/badges**: Claim codes and the badge rule counts (VTI-BDG-015, VTI-BDG-025 – 027) (#1059)
+
+* feat(vtc/badges): claim codes and the badge rule counts (VTI-BDG-015, VTI-BDG-025 – 027)
+
 ## 0.28.21 — 2026-11-08
 
 

@@ -31,6 +31,17 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.37.10](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.37.9...trust-tasks-rs-v0.37.10) — 2026-11-08
+
+
+### Added
+
+- **vtc/badges**: Claim codes and the badge rule counts (VTI-BDG-015, VTI-BDG-025 – 027) ([#1059](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1059))
+
+* feat(vtc/badges): claim codes and the badge rule counts (VTI-BDG-015, VTI-BDG-025 – 027)
+
+
+
 ## [0.37.9](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.37.8...trust-tasks-rs-v0.37.9) — 2026-11-08
 
 
