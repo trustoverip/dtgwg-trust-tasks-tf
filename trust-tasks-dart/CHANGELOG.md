@@ -14,6 +14,15 @@ pub.dev only accepts an automated publish from a tag-triggered workflow. See
 Entries before 0.9.0 are in [`CHANGELOG-archive.md`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/trust-tasks-dart/CHANGELOG-archive.md),
 kept out of the package: pub.dev refuses a `CHANGELOG.md` over 256 KiB.
 
+## 0.9.31 — 2026-11-08
+
+
+### Added
+
+- **vtc/badges**: Claim codes and the badge rule counts (VTI-BDG-015, VTI-BDG-025 – 027) (#1059)
+
+* feat(vtc/badges): claim codes and the badge rule counts (VTI-BDG-015, VTI-BDG-025 – 027)
+
 ## 0.9.30 — 2026-11-08
 
 
