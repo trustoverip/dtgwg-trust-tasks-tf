@@ -14591,15 +14591,19 @@ export interface RuleCondition {
    */
   field?: FieldKey;
   /**
-   * `equals` compares with `value`; `oneOf` with any of `values`; `exists` needs neither; `before` and `after` compare a date fact with `value`; `atLeast` compares a count fact with an integer `value`.
+   * `equals` compares with `value`; `oneOf` with any of `values`; `exists` needs neither; `before` and `after` compare a date fact with `value`; `atLeast` compares a count fact with `count`.
    */
   op: "equals" | "oneOf" | "exists" | "before" | "after" | "atLeast";
-  value?: string | boolean | number;
+  value?: string | boolean;
   /**
    * @minItems 1
    * @maxItems 64
    */
   values?: [string, ...string[]];
+  /**
+   * With `atLeast`: the least a count fact (`kudosReceived`, `ideasSelected`, `electionTickets`) must be. Present exactly when `op` is `atLeast`.
+   */
+  count?: number;
 }
 export interface S3Settings {
   kind: "s3";

@@ -113,7 +113,7 @@ extension type const RuleConditionFact(String value) {
 
 /// `equals` compares with `value`; `oneOf` with any of `values`; `exists` needs
 /// neither; `before` and `after` compare a date fact with `value`; `atLeast` compares
-/// a count fact with an integer `value`.
+/// a count fact with `count`.
 ///
 /// An extension type rather than an enum: a value from a newer MINOR of this
 /// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
@@ -154,6 +154,7 @@ class RuleCondition {
     required this.op,
     this.value,
     this.values,
+    this.count,
   });
 
   /// Read this payload from a decoded JSON object.
@@ -167,6 +168,7 @@ class RuleCondition {
             : (json['values'] as List<dynamic>)
                 .map((e) => e as String)
                 .toList(),
+        count: json['count'] as int?,
       );
 
   final RuleConditionFact fact;
@@ -176,10 +178,14 @@ class RuleCondition {
 
   /// `equals` compares with `value`; `oneOf` with any of `values`; `exists` needs
   /// neither; `before` and `after` compare a date fact with `value`; `atLeast` compares
-  /// a count fact with an integer `value`.
+  /// a count fact with `count`.
   final RuleConditionOp op;
   final Object? value;
   final List<String>? values;
+
+  /// With `atLeast`: the least a count fact (`kudosReceived`, `ideasSelected`,
+  /// `electionTickets`) must be. Present exactly when `op` is `atLeast`.
+  final int? count;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
@@ -188,6 +194,7 @@ class RuleCondition {
         'op': op.value,
         if (value != null) 'value': value!,
         if (values != null) 'values': values!,
+        if (count != null) 'count': count!,
       };
 }
 

@@ -295,7 +295,7 @@ export const PAYLOAD_SCHEMA = {
             "after",
             "atLeast"
           ],
-          "description": "`equals` compares with `value`; `oneOf` with any of `values`; `exists` needs neither; `before` and `after` compare a date fact with `value`; `atLeast` compares a count fact with an integer `value`."
+          "description": "`equals` compares with `value`; `oneOf` with any of `values`; `exists` needs neither; `before` and `after` compare a date fact with `value`; `atLeast` compares a count fact with `count`."
         },
         "value": {
           "anyOf": [
@@ -305,11 +305,6 @@ export const PAYLOAD_SCHEMA = {
             },
             {
               "type": "boolean"
-            },
-            {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 100000
             }
           ]
         },
@@ -321,6 +316,12 @@ export const PAYLOAD_SCHEMA = {
             "type": "string",
             "maxLength": 256
           }
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000,
+          "description": "With `atLeast`: the least a count fact (`kudosReceived`, `ideasSelected`, `electionTickets`) must be. Present exactly when `op` is `atLeast`."
         }
       }
     },
@@ -595,7 +596,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "after",
             "atLeast"
           ],
-          "description": "`equals` compares with `value`; `oneOf` with any of `values`; `exists` needs neither; `before` and `after` compare a date fact with `value`; `atLeast` compares a count fact with an integer `value`."
+          "description": "`equals` compares with `value`; `oneOf` with any of `values`; `exists` needs neither; `before` and `after` compare a date fact with `value`; `atLeast` compares a count fact with `count`."
         },
         "value": {
           "anyOf": [
@@ -605,11 +606,6 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             },
             {
               "type": "boolean"
-            },
-            {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 100000
             }
           ]
         },
@@ -621,6 +617,12 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "type": "string",
             "maxLength": 256
           }
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000,
+          "description": "With `atLeast`: the least a count fact (`kudosReceived`, `ideasSelected`, `electionTickets`) must be. Present exactly when `op` is `atLeast`."
         }
       }
     },

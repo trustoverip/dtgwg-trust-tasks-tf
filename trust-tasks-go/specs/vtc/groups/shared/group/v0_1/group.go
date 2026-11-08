@@ -76,7 +76,7 @@ const (
 
 // RuleConditionOp `equals` compares with `value`; `oneOf` with any of `values`; `exists`
 // needs neither; `before` and `after` compare a date fact with `value`; `atLeast`
-// compares a count fact with an integer `value`.
+// compares a count fact with `count`.
 type RuleConditionOp string
 
 // Values RuleConditionOp may take, per this specification's schema.
@@ -107,10 +107,14 @@ type RuleCondition struct {
 
 	// `equals` compares with `value`; `oneOf` with any of `values`; `exists` needs neither;
 	// `before` and `after` compare a date fact with `value`; `atLeast` compares a count fact
-	// with an integer `value`.
+	// with `count`.
 	Op     RuleConditionOp `json:"op"`
 	Value  json.RawMessage `json:"value,omitempty"`
 	Values *[]string       `json:"values,omitempty"`
+
+	// With `atLeast`: the least a count fact (`kudosReceived`, `ideasSelected`,
+	// `electionTickets`) must be. Present exactly when `op` is `atLeast`.
+	Count *int64 `json:"count,omitempty"`
 }
 
 // DynamicRule A dynamic group's membership rule: a member belongs when every condition
