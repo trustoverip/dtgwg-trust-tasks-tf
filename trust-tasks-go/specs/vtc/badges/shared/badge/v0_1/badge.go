@@ -299,6 +299,62 @@ type BadgeSettings struct {
 	Ext                 *Ext    `json:"ext,omitempty"`
 }
 
+// ClaimID Opaque identifier of a claim code's record: `bcl_` followed by 16 to 64
+// base64url characters. Random; never the code itself, which the community keeps only as
+// a digest (VTI-BDG-025).
+type ClaimID = string
+
+// ClaimSecret A claim code itself: at least 128 random bits the community generated,
+// base64url (22 to 64 characters). A bearer secret: shown to its issuer once, redeemed by
+// a member, never stored or answered again (VTI-BDG-025).
+type ClaimSecret = string
+
+// ClaimCodeState `withdrawn` once its issuer withdrew it or the badge was retired. A code
+// past `validUntil` or out of claims stays `active` and admits no one.
+type ClaimCodeState string
+
+// Values ClaimCodeState may take, per this specification's schema.
+const (
+	ClaimCodeStateActive    ClaimCodeState = "active"
+	ClaimCodeStateWithdrawn ClaimCodeState = "withdrawn"
+)
+
+// ClaimCode A claim code's record, as the badge's owners and administrators see it: never
+// the code (VTI-BDG-027).
+type ClaimCode struct {
+	ClaimID ClaimID `json:"claimId"`
+	BadgeID BadgeID `json:"badgeId"`
+
+	// What the code is for — the event, say — shown to the badge's owners. Never shown to
+	// whoever redeems it.
+	Label string `json:"label"`
+
+	// After this the code admits no one.
+	ValidUntil string `json:"validUntil"`
+
+	// How many claims the code admits.
+	Limit int64 `json:"limit"`
+
+	// How many members have redeemed it.
+	Claims int64 `json:"claims"`
+
+	// `withdrawn` once its issuer withdrew it or the badge was retired. A code past
+	// `validUntil` or out of claims stays `active` and admits no one.
+	State     ClaimCodeState `json:"state"`
+	CreatedAt string         `json:"createdAt"`
+
+	// The issuer's entry, where they have one; the giver of every award the code admits.
+	CreatedBy *EntryID `json:"createdBy,omitempty"`
+}
+
+// EntryID Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url
+// characters. Random, scoped to one community, and stable for the life of the membership
+// — it survives a rotation of the member's DID, which is why groups, notes and cards are
+// keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member,
+// and the same person's entries in two communities MUST NOT share one. Compared by exact
+// string equality.
+type EntryID = string
+
 // Ext Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a
 // reverse-DNS namespace; structure under each namespace is opaque to the framework.
 type Ext = map[string]json.RawMessage
@@ -312,14 +368,6 @@ type GroupID = string
 // community's setting; a community SHOULD default to 30 days, renewed when 10 days
 // remain.
 type GroupCredentialID = string
-
-// EntryID Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url
-// characters. Random, scoped to one community, and stable for the life of the membership
-// — it survives a rotation of the member's DID, which is why groups, notes and cards are
-// keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member,
-// and the same person's entries in two communities MUST NOT share one. Compared by exact
-// string equality.
-type EntryID = string
 
 // CardBlobRefMediaType Media type of the stored bytes.
 type CardBlobRefMediaType string

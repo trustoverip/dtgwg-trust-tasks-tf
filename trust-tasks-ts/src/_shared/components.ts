@@ -635,6 +635,14 @@ export type ChunkIndex = number;
  */
 export type ChunkSize = number;
 /**
+ * Opaque identifier of a claim code's record: `bcl_` followed by 16 to 64 base64url characters. Random; never the code itself, which the community keeps only as a digest (VTI-BDG-025).
+ */
+export type ClaimId = string;
+/**
+ * A claim code itself: at least 128 random bits the community generated, base64url (22 to 64 characters). A bearer secret: shown to its issuer once, redeemed by a member, never stored or answered again (VTI-BDG-025).
+ */
+export type ClaimSecret = string;
+/**
  * The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.
  *
  * The token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.
@@ -6888,6 +6896,38 @@ export interface Claim {
    * Whether the claimant may renew the claim with vta/collection/claim before it ends.
    */
   renewable: boolean;
+}
+/**
+ * A claim code's record, as the badge's owners and administrators see it: never the code (VTI-BDG-027).
+ */
+export interface ClaimCode {
+  claimId: ClaimId;
+  badgeId: BadgeId;
+  /**
+   * What the code is for — the event, say — shown to the badge's owners. Never shown to whoever redeems it.
+   */
+  label: string;
+  /**
+   * After this the code admits no one.
+   */
+  validUntil: string;
+  /**
+   * How many claims the code admits.
+   */
+  limit: number;
+  /**
+   * How many members have redeemed it.
+   */
+  claims: number;
+  /**
+   * `withdrawn` once its issuer withdrew it or the badge was retired. A code past `validUntil` or out of claims stays `active` and admits no one.
+   */
+  state: "active" | "withdrawn";
+  createdAt: string;
+  /**
+   * The issuer's entry, where they have one; the giver of every award the code admits.
+   */
+  createdBy?: EntryId;
 }
 /**
  * Which claim a `claim` field accepts, from which credentials and issuers.
@@ -14542,19 +14582,19 @@ export interface RotationRecord {
   cacheHorizonAt?: string;
 }
 /**
- * One test over a verified fact about a member. `fact: role` tests the member's community role; `fact: field` tests an `admin`- or `credential`-sourced directory field named by `field`; `fact: personhood` tests whether a personhood assertion is on file; `fact: joinedAt` tests when they joined. A rule never reads a self-asserted (`member`-sourced) field: a member must not be able to join a group by editing their card.
+ * One test over a verified fact about a member. `fact: role` tests the member's community role; `fact: field` tests an `admin`- or `credential`-sourced directory field named by `field`; `fact: personhood` tests whether a personhood assertion is on file; `fact: joinedAt` tests when they joined. A rule never reads a self-asserted (`member`-sourced) field: a member must not be able to join a group by editing their card. `kudosReceived`, `ideasSelected` and `electionTickets` are counts the community keeps of its own records (kudos the member accepted, ideas of theirs a board selected, elections it issued them a ticket in), compared with `atLeast`; only a badge's group reads them (VTI-BDG-015), and any other group refuses them with `ruleInvalid`.
  */
 export interface RuleCondition {
-  fact: "role" | "field" | "personhood" | "joinedAt";
+  fact: "role" | "field" | "personhood" | "joinedAt" | "kudosReceived" | "ideasSelected" | "electionTickets";
   /**
    * Present exactly when `fact` is `field`.
    */
   field?: FieldKey;
   /**
-   * `equals` compares with `value`; `oneOf` with any of `values`; `exists` needs neither; `before` and `after` compare a date fact with `value`.
+   * `equals` compares with `value`; `oneOf` with any of `values`; `exists` needs neither; `before` and `after` compare a date fact with `value`; `atLeast` compares a count fact with an integer `value`.
    */
-  op: "equals" | "oneOf" | "exists" | "before" | "after";
-  value?: string | boolean;
+  op: "equals" | "oneOf" | "exists" | "before" | "after" | "atLeast";
+  value?: string | boolean | number;
   /**
    * @minItems 1
    * @maxItems 64

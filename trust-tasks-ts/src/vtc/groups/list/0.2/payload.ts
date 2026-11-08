@@ -321,7 +321,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "RuleCondition": {
       "title": "RuleCondition",
-      "description": "One test over a verified fact about a member. `fact: role` tests the member's community role; `fact: field` tests an `admin`- or `credential`-sourced directory field named by `field`; `fact: personhood` tests whether a personhood assertion is on file; `fact: joinedAt` tests when they joined. A rule never reads a self-asserted (`member`-sourced) field: a member must not be able to join a group by editing their card.",
+      "description": "One test over a verified fact about a member. `fact: role` tests the member's community role; `fact: field` tests an `admin`- or `credential`-sourced directory field named by `field`; `fact: personhood` tests whether a personhood assertion is on file; `fact: joinedAt` tests when they joined. A rule never reads a self-asserted (`member`-sourced) field: a member must not be able to join a group by editing their card. `kudosReceived`, `ideasSelected` and `electionTickets` are counts the community keeps of its own records (kudos the member accepted, ideas of theirs a board selected, elections it issued them a ticket in), compared with `atLeast`; only a badge's group reads them (VTI-BDG-015), and any other group refuses them with `ruleInvalid`.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -335,7 +335,10 @@ export const PAYLOAD_SCHEMA = {
             "role",
             "field",
             "personhood",
-            "joinedAt"
+            "joinedAt",
+            "kudosReceived",
+            "ideasSelected",
+            "electionTickets"
           ]
         },
         "field": {
@@ -349,9 +352,10 @@ export const PAYLOAD_SCHEMA = {
             "oneOf",
             "exists",
             "before",
-            "after"
+            "after",
+            "atLeast"
           ],
-          "description": "`equals` compares with `value`; `oneOf` with any of `values`; `exists` needs neither; `before` and `after` compare a date fact with `value`."
+          "description": "`equals` compares with `value`; `oneOf` with any of `values`; `exists` needs neither; `before` and `after` compare a date fact with `value`; `atLeast` compares a count fact with an integer `value`."
         },
         "value": {
           "anyOf": [
@@ -361,6 +365,11 @@ export const PAYLOAD_SCHEMA = {
             },
             {
               "type": "boolean"
+            },
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000
             }
           ]
         },
@@ -631,7 +640,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
     },
     "RuleCondition": {
       "title": "RuleCondition",
-      "description": "One test over a verified fact about a member. `fact: role` tests the member's community role; `fact: field` tests an `admin`- or `credential`-sourced directory field named by `field`; `fact: personhood` tests whether a personhood assertion is on file; `fact: joinedAt` tests when they joined. A rule never reads a self-asserted (`member`-sourced) field: a member must not be able to join a group by editing their card.",
+      "description": "One test over a verified fact about a member. `fact: role` tests the member's community role; `fact: field` tests an `admin`- or `credential`-sourced directory field named by `field`; `fact: personhood` tests whether a personhood assertion is on file; `fact: joinedAt` tests when they joined. A rule never reads a self-asserted (`member`-sourced) field: a member must not be able to join a group by editing their card. `kudosReceived`, `ideasSelected` and `electionTickets` are counts the community keeps of its own records (kudos the member accepted, ideas of theirs a board selected, elections it issued them a ticket in), compared with `atLeast`; only a badge's group reads them (VTI-BDG-015), and any other group refuses them with `ruleInvalid`.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -645,7 +654,10 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "role",
             "field",
             "personhood",
-            "joinedAt"
+            "joinedAt",
+            "kudosReceived",
+            "ideasSelected",
+            "electionTickets"
           ]
         },
         "field": {
@@ -659,9 +671,10 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "oneOf",
             "exists",
             "before",
-            "after"
+            "after",
+            "atLeast"
           ],
-          "description": "`equals` compares with `value`; `oneOf` with any of `values`; `exists` needs neither; `before` and `after` compare a date fact with `value`."
+          "description": "`equals` compares with `value`; `oneOf` with any of `values`; `exists` needs neither; `before` and `after` compare a date fact with `value`; `atLeast` compares a count fact with an integer `value`."
         },
         "value": {
           "anyOf": [
@@ -671,6 +684,11 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             },
             {
               "type": "boolean"
+            },
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000
             }
           ]
         },

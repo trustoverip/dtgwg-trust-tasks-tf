@@ -736,3 +736,96 @@ class BadgeSettings {
         if (ext != null) 'ext': ext!,
       };
 }
+
+/// Opaque identifier of a claim code's record: `bcl_` followed by 16 to 64 base64url
+/// characters. Random; never the code itself, which the community keeps only as a
+/// digest (VTI-BDG-025).
+typedef ClaimId = String;
+
+/// A claim code itself: at least 128 random bits the community generated, base64url
+/// (22 to 64 characters). A bearer secret: shown to its issuer once, redeemed by a
+/// member, never stored or answered again (VTI-BDG-025).
+typedef ClaimSecret = String;
+
+/// `withdrawn` once its issuer withdrew it or the badge was retired. A code past
+/// `validUntil` or out of claims stays `active` and admits no one.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const ClaimCodeState(String value) {
+  static const ClaimCodeState active = ClaimCodeState('active');
+  static const ClaimCodeState withdrawn = ClaimCodeState('withdrawn');
+
+  /// Every value this specification's schema permits.
+  static const List<ClaimCodeState> values = <ClaimCodeState>[
+    active,
+    withdrawn
+  ];
+}
+
+/// A claim code's record, as the badge's owners and administrators see it: never the
+/// code (VTI-BDG-027).
+class ClaimCode {
+  const ClaimCode({
+    required this.claimId,
+    required this.badgeId,
+    required this.label,
+    required this.validUntil,
+    required this.limit,
+    required this.claims,
+    required this.state,
+    required this.createdAt,
+    this.createdBy,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory ClaimCode.fromJson(Map<String, dynamic> json) => ClaimCode(
+        claimId: json['claimId'] as String,
+        badgeId: json['badgeId'] as String,
+        label: json['label'] as String,
+        validUntil: json['validUntil'] as String,
+        limit: json['limit'] as int,
+        claims: json['claims'] as int,
+        state: ClaimCodeState(json['state'] as String),
+        createdAt: json['createdAt'] as String,
+        createdBy: json['createdBy'] as String?,
+      );
+
+  final ClaimId claimId;
+  final BadgeId badgeId;
+
+  /// What the code is for — the event, say — shown to the badge's owners. Never shown to
+  /// whoever redeems it.
+  final String label;
+
+  /// After this the code admits no one.
+  final String validUntil;
+
+  /// How many claims the code admits.
+  final int limit;
+
+  /// How many members have redeemed it.
+  final int claims;
+
+  /// `withdrawn` once its issuer withdrew it or the badge was retired. A code past
+  /// `validUntil` or out of claims stays `active` and admits no one.
+  final ClaimCodeState state;
+  final String createdAt;
+
+  /// The issuer's entry, where they have one; the giver of every award the code admits.
+  final EntryId? createdBy;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'claimId': claimId,
+        'badgeId': badgeId,
+        'label': label,
+        'validUntil': validUntil,
+        'limit': limit,
+        'claims': claims,
+        'state': state.value,
+        'createdAt': createdAt,
+        if (createdBy != null) 'createdBy': createdBy!,
+      };
+}

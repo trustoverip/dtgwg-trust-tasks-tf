@@ -3228,6 +3228,18 @@ export import VtcBadgesAwardsUnshare_v0_1 = _VtcBadgesAwardsUnshare_v0_1;
 import * as _VtcBadgesAwardsWithdraw_v0_1 from "./vtc/badges/awards/withdraw/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtcBadgesAwardsWithdraw_v0_1 = _VtcBadgesAwardsWithdraw_v0_1;
+import * as _VtcBadgesClaimsCreate_v0_1 from "./vtc/badges/claims/create/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcBadgesClaimsCreate_v0_1 = _VtcBadgesClaimsCreate_v0_1;
+import * as _VtcBadgesClaimsList_v0_1 from "./vtc/badges/claims/list/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcBadgesClaimsList_v0_1 = _VtcBadgesClaimsList_v0_1;
+import * as _VtcBadgesClaimsRedeem_v0_1 from "./vtc/badges/claims/redeem/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcBadgesClaimsRedeem_v0_1 = _VtcBadgesClaimsRedeem_v0_1;
+import * as _VtcBadgesClaimsWithdraw_v0_1 from "./vtc/badges/claims/withdraw/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtcBadgesClaimsWithdraw_v0_1 = _VtcBadgesClaimsWithdraw_v0_1;
 import * as _VtcBadgesCreate_v0_1 from "./vtc/badges/create/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtcBadgesCreate_v0_1 = _VtcBadgesCreate_v0_1;
