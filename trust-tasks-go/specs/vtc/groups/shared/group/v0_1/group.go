@@ -65,23 +65,28 @@ type RuleConditionFact string
 
 // Values RuleConditionFact may take, per this specification's schema.
 const (
-	RuleConditionFactRole       RuleConditionFact = "role"
-	RuleConditionFactField      RuleConditionFact = "field"
-	RuleConditionFactPersonhood RuleConditionFact = "personhood"
-	RuleConditionFactJoinedAt   RuleConditionFact = "joinedAt"
+	RuleConditionFactRole            RuleConditionFact = "role"
+	RuleConditionFactField           RuleConditionFact = "field"
+	RuleConditionFactPersonhood      RuleConditionFact = "personhood"
+	RuleConditionFactJoinedAt        RuleConditionFact = "joinedAt"
+	RuleConditionFactKudosReceived   RuleConditionFact = "kudosReceived"
+	RuleConditionFactIdeasSelected   RuleConditionFact = "ideasSelected"
+	RuleConditionFactElectionTickets RuleConditionFact = "electionTickets"
 )
 
 // RuleConditionOp `equals` compares with `value`; `oneOf` with any of `values`; `exists`
-// needs neither; `before` and `after` compare a date fact with `value`.
+// needs neither; `before` and `after` compare a date fact with `value`; `atLeast`
+// compares a count fact with `count`.
 type RuleConditionOp string
 
 // Values RuleConditionOp may take, per this specification's schema.
 const (
-	RuleConditionOpEquals RuleConditionOp = "equals"
-	RuleConditionOpOneOf  RuleConditionOp = "oneOf"
-	RuleConditionOpExists RuleConditionOp = "exists"
-	RuleConditionOpBefore RuleConditionOp = "before"
-	RuleConditionOpAfter  RuleConditionOp = "after"
+	RuleConditionOpEquals  RuleConditionOp = "equals"
+	RuleConditionOpOneOf   RuleConditionOp = "oneOf"
+	RuleConditionOpExists  RuleConditionOp = "exists"
+	RuleConditionOpBefore  RuleConditionOp = "before"
+	RuleConditionOpAfter   RuleConditionOp = "after"
+	RuleConditionOpAtLeast RuleConditionOp = "atLeast"
 )
 
 // RuleCondition One test over a verified fact about a member. `fact: role` tests the
@@ -89,7 +94,11 @@ const (
 // directory field named by `field`; `fact: personhood` tests whether a personhood
 // assertion is on file; `fact: joinedAt` tests when they joined. A rule never reads a
 // self-asserted (`member`-sourced) field: a member must not be able to join a group by
-// editing their card.
+// editing their card. `kudosReceived`, `ideasSelected` and `electionTickets` are counts
+// the community keeps of its own records (kudos the member accepted, ideas of theirs a
+// board selected, elections it issued them a ticket in), compared with `atLeast`; only a
+// badge's group reads them (VTI-BDG-015), and any other group refuses them with
+// `ruleInvalid`.
 type RuleCondition struct {
 	Fact RuleConditionFact `json:"fact"`
 
@@ -97,10 +106,15 @@ type RuleCondition struct {
 	Field *FieldKey `json:"field,omitempty"`
 
 	// `equals` compares with `value`; `oneOf` with any of `values`; `exists` needs neither;
-	// `before` and `after` compare a date fact with `value`.
+	// `before` and `after` compare a date fact with `value`; `atLeast` compares a count fact
+	// with `count`.
 	Op     RuleConditionOp `json:"op"`
 	Value  json.RawMessage `json:"value,omitempty"`
 	Values *[]string       `json:"values,omitempty"`
+
+	// With `atLeast`: the least a count fact (`kudosReceived`, `ideasSelected`,
+	// `electionTickets`) must be. Present exactly when `op` is `atLeast`.
+	Count *int64 `json:"count,omitempty"`
 }
 
 // DynamicRule A dynamic group's membership rule: a member belongs when every condition

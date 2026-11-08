@@ -1,0 +1,22 @@
+[
+  {
+    "note": "`badgeId` is REQUIRED: claim codes are listed one badge at a time.",
+    "payload": {}
+  },
+  {
+    "note": "No code is ever asked for or answered by a list (VTI-BDG-027).",
+    "payload": {
+      "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+      "code": "Qm7xV2kR9pLw4Nt8Hs3Fz6"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "badgeId": "bdg_W5k2N8xRb3Qz7TpL",
+      "ext": {
+        "bare": true
+      }
+    }
+  }
+]

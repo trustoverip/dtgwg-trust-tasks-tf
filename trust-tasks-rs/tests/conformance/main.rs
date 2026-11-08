@@ -2246,6 +2246,20 @@ mod vtc {
                 mod v0_1;
             }
         }
+        mod claims {
+            mod create {
+                mod v0_1;
+            }
+            mod list {
+                mod v0_1;
+            }
+            mod redeem {
+                mod v0_1;
+            }
+            mod withdraw {
+                mod v0_1;
+            }
+        }
         mod create {
             mod v0_1;
         }

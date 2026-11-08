@@ -20,4 +20,4 @@ export interface BadgeSharedDefinitionsForTheVtcBadgesSpecFamily {
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../../../_shared/components.js".
  */
-export type { Award, AwardId, AwardNote, AwardShare, AwardState, Badge, BadgeCriteria, BadgeDescription, BadgeId, BadgeKind, BadgeLimits, BadgeName, BadgeSettings, BadgeState, KudosMakers, MyBadge, WallEntry, WallVisibility } from "../../../../_shared/components.js";
+export type { Award, AwardId, AwardNote, AwardShare, AwardState, Badge, BadgeCriteria, BadgeDescription, BadgeId, BadgeKind, BadgeLimits, BadgeName, BadgeSettings, BadgeState, ClaimCode, ClaimId, ClaimSecret, KudosMakers, MyBadge, WallEntry, WallVisibility } from "../../../../_shared/components.js";
