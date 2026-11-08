@@ -14,6 +14,46 @@ pub.dev only accepts an automated publish from a tag-triggered workflow. See
 Entries before 0.9.0 are in [`CHANGELOG-archive.md`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/trust-tasks-dart/CHANGELOG-archive.md),
 kept out of the package: pub.dev refuses a `CHANGELOG.md` over 256 KiB.
 
+## 0.9.30 — 2026-11-08
+
+
+### Added
+
+- **vtc/badges**: Show answers the caller's own awards (myAwards), so a holder can share one (#1057)
+
+* feat(vtc/badges): show answers the caller's own awards (myAwards), so a holder can share one
+
+  vtc/badges/awards/share and unshare (#1054) name an award, but no read answered a holder their own accepted award identifiers for a community badge: mine/list carries badges, show only myCount. vtc/badges/show/0.1#response gains the optional myAwards - the caller's own accepted awards of the badge, newest first, each with its shared - and conformance item 4 says so. Additive, on a draft.
+
+- **auth/step-up**: Requests/show — the subject's wallet fetches a step-up refused to a delegated producer (auth/step-up/requests/show/0.1) (#1056)
+
+A relying party that refuses an operation until its subject steps up carries
+  the request inline in the refusal (approve-request/0.5, Inline delivery). That
+  only works when the producer of the operation can gather the evidence itself.
+  A process acting with a key the subject delegated to it — an assistant, an
+  automation — can redeem a recorded step-up but never make one. It cannot
+  forward the inline request to the subject's wallet either, because the inline
+  request carries no proof.
+
+  This adds a hand-off by reference. Beside the inline request, the relying
+  party MAY carry `details.stepUpHandoff` (`$defs.Handoff`): a single-use handle
+  of at least 128 bits, its expiry and this task's Type URI. The person's
+  approver agent sends the handle and receives two things:
+
+  - the relying party's own signed approve-request/0.5, addressed to the
+    subject, with the same challenge and binding as the inline request;
+  - the operation the step-up is bound to, exactly as received.
+
+  The agent verifies the proof and shows the operation itself. It recomputes the
+  binding where it knows the construction. It then answers with approve-response
+  0.7, signed by the subject's own DID, directly to the relying party. The
+  producer resends the identical operation, and the recorded step-up is redeemed.
+
+  A handle is answered at most once, atomically. Unknown, spent, expired and
+  settled handles all return `notFound`. Reading a handle is never part of an
+  approval, so a party that sees the handle can spend the read but cannot
+  approve.
+
 ## 0.9.29 — 2026-11-07
 
 
