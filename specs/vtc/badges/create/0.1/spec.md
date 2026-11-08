@@ -136,7 +136,7 @@ For a community badge the community, on a valid request:
 
 1. Creates the badge group exactly as [`vtc/groups/create`](../../../groups/create/0.1/spec.md) does — has its VTA mint the group's DID from the `vtc-group` template, then issues the group the community's authorization credential — with `kind` `static` (or `dynamic` with `automatic.rule`), `joinPolicy` `request` where `requestable` is true and `closed` otherwise, `visibility` `members`, `showMembers` from `holdersVisibleTo`, `issuesCredentials` true, and the badge's name as the group's name.
 2. **Then** stores the badge and the group, each referencing the other (`groupId` on the badge, `badgeId` on the group), and appoints each entry in `owners` a manager of the group as [`vtc/groups/managers/add`](../../../groups/managers/add/0.1/spec.md) appoints one.
-3. Where the community publishes to a trust registry, projects the badge group as an issuer the community recognises (VTI-BDG-080), after the badge is stored and through a projector that is the one retry owner.
+3. Where the community publishes to a trust registry, projects the badge as one the community issues (VTI-BDG-080), after the badge is stored and through a projector that is the one retry owner.
 
 Every remote step comes before the one local write. A failure in step 1 leaves no badge and no group behind; at most a DID the VTA minted and nobody uses, which `keyHolderUnavailable` names.
 

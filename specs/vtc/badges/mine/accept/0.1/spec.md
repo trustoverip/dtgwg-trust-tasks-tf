@@ -29,7 +29,7 @@ issuedAtRequirement:
   rationale: Consequential, so SPEC §7.3 item 17 sets REQUIRED as the floor. A replayed accept of an already-accepted award changes nothing, but bounding it keeps a captured document from acting after the member changed their mind.
 sideEffects:
   level: mutating
-  rationale: Marks the award accepted. For a community badge, has the badge group issue (or re-issue) the member's badge credential and records their badge-group membership. Reversed by vtc/badges/awards/revoke.
+  rationale: Marks the award accepted. For a community badge, has the community issue (or re-issue) the member's badge credential and records their badge-group membership. Reversed by vtc/badges/awards/revoke.
 exposure:
   discloses: metadata
   ingests: none
@@ -87,23 +87,24 @@ related:
 
 The **VTC Badges — Mine — Accept** Trust Task is the member's side of an award. An offer made by a badge owner ([`vtc/badges/awards/offer`](../../../awards/offer/0.1/spec.md)) or a kudos giving ([`vtc/badges/kudos/give`](../../../kudos/give/0.1/spec.md)) waits in state `offered` until its recipient accepts it here or declines it with [`vtc/badges/mine/decline`](../../decline/0.1/spec.md). **Nothing is admitted, issued or shown before acceptance** (VTI-BDG-020, VTI-BDG-021).
 
-For a **community badge**, acceptance is the admission: the community has its VTA sign, as the badge group's DID, the member's **badge credential**, offers it to the member's agent, and only then records their membership of the badge group — the order [`vtc/groups/members/add`](../../../../groups/members/add/0.1/spec.md) fixes for every group that issues credentials. For a **kudos badge** the giving is counted and nothing is issued. A repeatable badge accepted again appends an award: the credential is re-issued with every accepted award as evidence (VTI-BDG-022).
+For a **community badge**, acceptance is the admission: the community has its VTA sign, as the community's own DID, the member's **badge credential**, offers it to the member's agent, and only then records their membership of the badge group — the order [`vtc/groups/members/add`](../../../../groups/members/add/0.1/spec.md) fixes for every group that issues credentials. For a **kudos badge** the giving is counted and nothing is issued. A repeatable badge accepted again appends an award: the credential is re-issued with every accepted award as evidence (VTI-BDG-022).
 
 ## The badge credential
 
 Where the badge is a community badge, admitting the member includes this step **before** the membership is recorded (VTI-BDG-060):
 
-- The community has its VTA sign, **as the badge group's DID** and through the generic `keys/sign-document/0.1` Trust Task (specified separately), an **Open Badges 3.0** `OpenBadgeCredential` — a profile of the W3C Verifiable Credentials Data Model v2.0 — in place of a DTG group membership credential:
+- The community has its VTA sign, **as the community's own DID** and through the generic `keys/sign-document/0.1` Trust Task (specified separately), an **Open Badges 3.0** `OpenBadgeCredential` — a profile of the W3C Verifiable Credentials Data Model v2.0 — in place of a DTG group membership credential:
   - `@context` `["https://www.w3.org/ns/credentials/v2", "https://purl.imsglobal.org/spec/ob/v3p0/context-3.0.3.json"]`, `type` `["VerifiableCredential", "OpenBadgeCredential"]`;
-  - `issuer` a `Profile` whose `id` is the badge group's DID;
-  - `credentialSubject` an `AchievementSubject` whose `id` is the member's membership DID and whose `achievement` is the badge: `id` a stable identifier of the badge the community serves, `name`, `description`, `criteria.narrative` from the badge's criteria, `image` the badge's picture, `creator` a `Profile` whose `id` is the community's DID, and `endorsement` carrying the community's `EndorsementCredential` of the Achievement;
-  - one `evidence` entry per accepted award — its `narrative` the award's note, where there is one, and its date — so a repeatable badge's count is the length of `evidence`;
+  - `issuer` a `Profile` whose `id` is the community's DID and whose `name` is the community's name, with its `url` where the community has a public origin;
+  - `credentialSchema` the Open Badges 3.0 JSON Schema, `{"id": "https://purl.imsglobal.org/spec/ob/v3p0/schema/json/ob_v3p0_achievementcredential_schema.json", "type": "1EdTechJsonSchemaValidator2019"}`;
+  - `credentialSubject` an `AchievementSubject` whose `id` is the member's membership DID and whose `achievement` is the badge: `id` a stable identifier of the badge the community serves, `name`, `description`, `criteria.narrative` from the badge's criteria, `image` the badge's picture, and `creator` the same `Profile` as `issuer`;
+  - one `evidence` entry per accepted award — its `narrative` the award's note, where there is one, and its `description` the date it was accepted, to the second in UTC — so a repeatable badge's count is the length of `evidence`;
   - `validFrom` now and `validUntil` by the badge's regime (below);
   - the proof suite the community uses for every credential it issues.
 - **Regime.** Where the badge's holders may not show it outside (`shareableOutside` false), the credential is short-lived and renewed through the community's VTA for as long as the holder stays, with no `credentialStatus` and no status set of the badge's or the group's own (VTI-BDG-061; the community's setting, defaulting to 30 days renewed when 10 remain, as a group membership credential). Where they may (`shareableOutside` true), its validity is the settings' `credentialValidDays` and it carries a `credentialStatus` entry in the **community's own status set** — the set its community credentials use, allocated as VTI-CRD-014 requires — which the community issues and alone changes (VTI-BDG-062). A re-issue under this regime revokes the previous credential's entry.
 - The community offers the credential to the member through the existing credential-exchange offer path ([`credential-exchange/offer`](../../../../../credential-exchange/offer/0.1/spec.md)), as it offers any credential it issues, and keeps its `id` on the award as `credentialId`.
 
-A verifier chains the badge credential to the community by its endorsement, by the community's authorization credential to the badge group, or by a trust registry (VTI-BDG-064). The community itself never reads it (VTI-BDG-002).
+The issuer is the community that created the badge, so a verifier needs nothing beyond the credential to know who stands behind it (VTI-BDG-064). The badge group holds the badge's owners, holders, requests and rules; it issues nothing. The community itself never reads it (VTI-BDG-002).
 
 ## Status of this Document
 
@@ -138,7 +139,7 @@ Accepting is an act of the member (VTI-BDG-095): a member portal that holds a ke
 ## Definitions
 
 - `Award`, `AwardState`, `MyBadge` — see [`badge.schema.json`](../../../_shared/0.1/badge.schema.json).
-- **Badge credential** — the `OpenBadgeCredential` a badge group issues its holders, above.
+- **Badge credential** — the `OpenBadgeCredential` the community issues a badge's holders, above.
 
 ## Request
 
