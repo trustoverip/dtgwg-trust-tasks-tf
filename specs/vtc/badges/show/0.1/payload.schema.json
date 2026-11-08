@@ -63,6 +63,14 @@
         "myState": {
           "$ref": "#/$defs/MyState"
         },
+        "myAwards": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "$ref": "../../_shared/0.1/badge.schema.json#/$defs/Award"
+          },
+          "description": "The caller's own accepted awards of this badge, newest first, each with `shared` where they show it outside the community — what `vtc/badges/awards/share` and `unshare` name. Absent where the caller holds none. Never another member's award."
+        },
         "owners": {
           "type": "array",
           "maxItems": 64,
