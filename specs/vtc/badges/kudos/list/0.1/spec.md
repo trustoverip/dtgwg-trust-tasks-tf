@@ -41,6 +41,8 @@ errorCodes:
 - code: vtc/badges/kudos/list:cursorInvalid
   meaning: '`cursor` was not issued for this caller and these filters.'
   retryable: false
+knownImplementations:
+  - https://github.com/OpenVTC/verifiable-trust-infrastructure
 related:
 - vtc/badges/kudos/give
 - vtc/badges/mine/list

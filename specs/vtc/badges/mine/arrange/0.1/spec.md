@@ -71,6 +71,8 @@ errorCodes:
       badgeId:
         type: string
         maxLength: 128
+knownImplementations:
+  - https://github.com/OpenVTC/verifiable-trust-infrastructure
 related:
 - vtc/badges/mine/list
 - vtc/badges/mine/hide

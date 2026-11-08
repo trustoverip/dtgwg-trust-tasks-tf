@@ -73,6 +73,8 @@ errorCodes:
             reason:
               type: string
               maxLength: 64
+knownImplementations:
+  - https://github.com/OpenVTC/verifiable-trust-infrastructure
 related:
 - vtc/badges/create
 - vtc/badges/awards/withdraw

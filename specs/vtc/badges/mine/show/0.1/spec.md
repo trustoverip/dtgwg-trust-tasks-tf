@@ -41,6 +41,8 @@ errorCodes:
 - code: vtc/badges/mine/show:badgesOff
   meaning: The community has badges turned off (VTI-BDG-004). Nothing was changed.
   retryable: false
+knownImplementations:
+  - https://github.com/OpenVTC/verifiable-trust-infrastructure
 related:
 - vtc/badges/mine/hide
 - vtc/badges/mine/list

@@ -96,6 +96,8 @@ errorCodes:
       message:
         type: string
         maxLength: 500
+knownImplementations:
+  - https://github.com/OpenVTC/verifiable-trust-infrastructure
 related:
 - vtc/badges/create
 - vtc/badges/show

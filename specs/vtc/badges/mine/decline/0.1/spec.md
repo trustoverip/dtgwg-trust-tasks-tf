@@ -51,6 +51,8 @@ errorCodes:
       state:
         type: string
         maxLength: 32
+knownImplementations:
+  - https://github.com/OpenVTC/verifiable-trust-infrastructure
 related:
 - vtc/badges/mine/accept
 - vtc/badges/mine/list
