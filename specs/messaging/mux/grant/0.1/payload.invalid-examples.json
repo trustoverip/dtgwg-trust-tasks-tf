@@ -1,0 +1,144 @@
+[
+  {
+    "note": "An attach statement offered as a grant \u2014 statement kinds are not interchangeable.",
+    "payload": {
+      "grants": [
+        {
+          "type": "muxAttach",
+          "issuer": "did:web:alice.example",
+          "audience": "did:web:mediator.example",
+          "principal": "did:web:phone.example",
+          "sessionId": "s1",
+          "muxNonce": "Zk3xQ0b9Rw7mT2pN4vYc8LsH1eJ6aUdG5oWiKfB0nXq",
+          "scope": [
+            "receive"
+          ],
+          "iat": 1,
+          "exp": 2,
+          "proof": {
+            "type": "DataIntegrityProof",
+            "cryptosuite": "eddsa-jcs-2022",
+            "verificationMethod": "did:web:alice.example#key-1",
+            "proofPurpose": "authentication",
+            "proofValue": "z3Example"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "note": "Grant statement without exp \u2014 every grant expires.",
+    "payload": {
+      "grants": [
+        {
+          "type": "muxGrant",
+          "issuer": "did:web:alice.example",
+          "audience": "did:web:mediator.example",
+          "grantId": "g1",
+          "principal": "did:web:phone.example",
+          "scope": [
+            "receive"
+          ],
+          "epoch": 0,
+          "iat": 1,
+          "proof": {
+            "type": "DataIntegrityProof",
+            "cryptosuite": "eddsa-jcs-2022",
+            "verificationMethod": "did:web:alice.example#key-1",
+            "proofPurpose": "authentication",
+            "proofValue": "z3Example"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "note": "Grant statement without epoch \u2014 a grant is bound to the member's epoch.",
+    "payload": {
+      "grants": [
+        {
+          "type": "muxGrant",
+          "issuer": "did:web:alice.example",
+          "audience": "did:web:mediator.example",
+          "grantId": "g1",
+          "principal": "did:web:phone.example",
+          "scope": [
+            "receive"
+          ],
+          "iat": 1,
+          "exp": 2,
+          "proof": {
+            "type": "DataIntegrityProof",
+            "cryptosuite": "eddsa-jcs-2022",
+            "verificationMethod": "did:web:alice.example#key-1",
+            "proofPurpose": "authentication",
+            "proofValue": "z3Example"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "note": "Unknown member beside the statement fields \u2014 e.g. a caller-asserted scope that would bypass the signed one.",
+    "payload": {
+      "grants": [
+        {
+          "type": "muxGrant",
+          "issuer": "did:web:alice.example",
+          "audience": "did:web:mediator.example",
+          "grantId": "g1",
+          "principal": "did:web:phone.example",
+          "scope": [
+            "receive"
+          ],
+          "epoch": 0,
+          "iat": 1,
+          "exp": 2,
+          "proof": {
+            "type": "DataIntegrityProof",
+            "cryptosuite": "eddsa-jcs-2022",
+            "verificationMethod": "did:web:alice.example#key-1",
+            "proofPurpose": "authentication",
+            "proofValue": "z3Example"
+          },
+          "extraScope": [
+            "send"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "note": "Iat as RFC 3339 rather than NumericDate \u2014 the signed statement carries integers.",
+    "payload": {
+      "grants": [
+        {
+          "type": "muxGrant",
+          "issuer": "did:web:alice.example",
+          "audience": "did:web:mediator.example",
+          "grantId": "g1",
+          "principal": "did:web:phone.example",
+          "scope": [
+            "receive"
+          ],
+          "epoch": 0,
+          "iat": "2026-11-09T09:00:00Z",
+          "exp": 2,
+          "proof": {
+            "type": "DataIntegrityProof",
+            "cryptosuite": "eddsa-jcs-2022",
+            "verificationMethod": "did:web:alice.example#key-1",
+            "proofPurpose": "authentication",
+            "proofValue": "z3Example"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "note": "Empty batch.",
+    "payload": {
+      "grants": []
+    }
+  }
+]

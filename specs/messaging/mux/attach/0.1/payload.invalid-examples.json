@@ -1,0 +1,204 @@
+[
+  {
+    "note": "A grant statement offered as an attach \u2014 the statement `type` is a const, so one kind is never accepted as another.",
+    "payload": {
+      "attachments": [
+        {
+          "type": "muxGrant",
+          "issuer": "did:web:alice.example",
+          "audience": "did:web:mediator.example",
+          "grantId": "g1",
+          "principal": "did:web:phone.example",
+          "scope": [
+            "receive"
+          ],
+          "epoch": 0,
+          "iat": 1,
+          "exp": 2,
+          "proof": {
+            "type": "DataIntegrityProof",
+            "cryptosuite": "eddsa-jcs-2022",
+            "verificationMethod": "did:web:alice.example#key-1",
+            "proofPurpose": "authentication",
+            "proofValue": "z3Example"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "note": "Unknown scope value \u2014 the scope vocabulary is closed.",
+    "payload": {
+      "attachments": [
+        {
+          "type": "muxAttach",
+          "issuer": "did:web:alice.example",
+          "audience": "did:web:mediator.example",
+          "principal": "did:web:phone.example",
+          "sessionId": "s1",
+          "muxNonce": "Zk3xQ0b9Rw7mT2pN4vYc8LsH1eJ6aUdG5oWiKfB0nXq",
+          "scope": [
+            "admin"
+          ],
+          "iat": 1,
+          "exp": 2,
+          "proof": {
+            "type": "DataIntegrityProof",
+            "cryptosuite": "eddsa-jcs-2022",
+            "verificationMethod": "did:web:alice.example#key-1",
+            "proofPurpose": "authentication",
+            "proofValue": "z3Example"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "note": "Missing proof \u2014 every attach statement carries the member's own Data Integrity proof.",
+    "payload": {
+      "attachments": [
+        {
+          "type": "muxAttach",
+          "issuer": "did:web:alice.example",
+          "audience": "did:web:mediator.example",
+          "principal": "did:web:phone.example",
+          "sessionId": "s1",
+          "muxNonce": "Zk3xQ0b9Rw7mT2pN4vYc8LsH1eJ6aUdG5oWiKfB0nXq",
+          "scope": [
+            "receive"
+          ],
+          "iat": 1,
+          "exp": 2
+        }
+      ]
+    }
+  },
+  {
+    "note": "Missing muxNonce \u2014 an attach statement must bind one connection.",
+    "payload": {
+      "attachments": [
+        {
+          "type": "muxAttach",
+          "issuer": "did:web:alice.example",
+          "audience": "did:web:mediator.example",
+          "principal": "did:web:phone.example",
+          "sessionId": "s1",
+          "scope": [
+            "receive"
+          ],
+          "iat": 1,
+          "exp": 2,
+          "proof": {
+            "type": "DataIntegrityProof",
+            "cryptosuite": "eddsa-jcs-2022",
+            "verificationMethod": "did:web:alice.example#key-1",
+            "proofPurpose": "authentication",
+            "proofValue": "z3Example"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "note": "Unknown member on a statement \u2014 statements are closed objects, so nothing unsigned-by-intent rides along.",
+    "payload": {
+      "attachments": [
+        {
+          "type": "muxAttach",
+          "issuer": "did:web:alice.example",
+          "audience": "did:web:mediator.example",
+          "principal": "did:web:phone.example",
+          "sessionId": "s1",
+          "muxNonce": "Zk3xQ0b9Rw7mT2pN4vYc8LsH1eJ6aUdG5oWiKfB0nXq",
+          "scope": [
+            "receive"
+          ],
+          "iat": 1,
+          "exp": 2,
+          "proof": {
+            "type": "DataIntegrityProof",
+            "cryptosuite": "eddsa-jcs-2022",
+            "verificationMethod": "did:web:alice.example#key-1",
+            "proofPurpose": "authentication",
+            "proofValue": "z3Example"
+          },
+          "trusted": true
+        }
+      ]
+    }
+  },
+  {
+    "note": "Unknown member in the embedded proof \u2014 the proof object is closed.",
+    "payload": {
+      "attachments": [
+        {
+          "type": "muxAttach",
+          "issuer": "did:web:alice.example",
+          "audience": "did:web:mediator.example",
+          "principal": "did:web:phone.example",
+          "sessionId": "s1",
+          "muxNonce": "Zk3xQ0b9Rw7mT2pN4vYc8LsH1eJ6aUdG5oWiKfB0nXq",
+          "scope": [
+            "receive"
+          ],
+          "iat": 1,
+          "exp": 2,
+          "proof": {
+            "type": "DataIntegrityProof",
+            "cryptosuite": "eddsa-jcs-2022",
+            "verificationMethod": "did:web:alice.example#key-1",
+            "proofPurpose": "authentication",
+            "proofValue": "z3Example",
+            "challenge": "x"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "note": "Cryptosuite outside the accepted set.",
+    "payload": {
+      "attachments": [
+        {
+          "type": "muxAttach",
+          "issuer": "did:web:alice.example",
+          "audience": "did:web:mediator.example",
+          "principal": "did:web:phone.example",
+          "sessionId": "s1",
+          "muxNonce": "Zk3xQ0b9Rw7mT2pN4vYc8LsH1eJ6aUdG5oWiKfB0nXq",
+          "scope": [
+            "receive"
+          ],
+          "iat": 1,
+          "exp": 2,
+          "proof": {
+            "type": "DataIntegrityProof",
+            "cryptosuite": "ecdsa-jcs-2019",
+            "verificationMethod": "did:web:alice.example#key-1",
+            "proofPurpose": "authentication",
+            "proofValue": "z3Example"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "note": "Empty batch \u2014 at least one attachment.",
+    "payload": {
+      "attachments": []
+    }
+  },
+  {
+    "note": "Refused outcome with an undeclared code.",
+    "variant": "response",
+    "payload": {
+      "results": [
+        {
+          "did": "did:web:alice.example",
+          "status": "refused",
+          "code": "messaging/mux:somethingElse"
+        }
+      ]
+    }
+  }
+]
