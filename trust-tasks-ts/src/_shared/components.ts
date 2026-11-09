@@ -750,6 +750,22 @@ export type DeliveryStatus = "delivered" | "duplicate" | "refused" | "queued" | 
  */
 export type Description = string;
 /**
+ * Why a member left a connection, or why a stored grant did not attach on connect. `revokedByMember` / `revokedByPrincipal`: messaging/mux/revoke by that side. `epochBumped`: the member DID ran messaging/mux/revoke-all. `suspendedUnknownKey`: the unknown-key rule suspended the grant. `keyRotated`: the grant's signing key left the member DID's current authentication relationship (grant state `staleKey`). `expired`: the grant or attach reached its effective expiry. `accountBlocked`: the member's account was blocked. `superseded`: the member DID's own direct connection, or a newer connection of the same kind, now receives its live traffic; the member stays on this connection inactive. `admin`: an operator acted. `detachRequested`: the principal removed a session attach with messaging/mux/detach. `accountRemoved`: the member's account, or the principal's, was removed. `resolutionFailed`: the member DID could not be resolved when the grant was re-validated; the grant is not changed and is re-checked later.
+ */
+export type DetachReason =
+  | "revokedByMember"
+  | "revokedByPrincipal"
+  | "epochBumped"
+  | "suspendedUnknownKey"
+  | "keyRotated"
+  | "expired"
+  | "accountBlocked"
+  | "superseded"
+  | "admin"
+  | "detachRequested"
+  | "accountRemoved"
+  | "resolutionFailed";
+/**
  * Producer-supplied attestation at registration time, verifiable by the maintainer against the platform's attestation infrastructure. Tagged union over the discriminator `kind`.
  */
 export type DeviceAttestation_DeviceV0_1 =
@@ -1026,6 +1042,14 @@ export type ForgeId_GitNsV0_1 = string;
  */
 export type ForgeId_GitNsV0_6 = string;
 /**
+ * A grant's identifier, chosen by the member DID's signer and carried in its grant statement; a UUID is RECOMMENDED. A mediator refuses a grant whose identifier is already on the member DID's record.
+ */
+export type GrantId = string;
+/**
+ * A stored grant's state. `active`: valid; the member is attached whenever the principal is connected. `suspended`: the member DID proved control with a key that signed none of its active grants (the unknown-key rule); terminal — the grant cannot be resumed and must be recreated by a fresh member signature. `staleKey`: the key that signed the grant is no longer in the member DID's current authentication relationship; terminal — it does not become active again if the key reappears. `expired`: an active grant past its effective expiry; computed when read, never stored. `epochRevoked`: the member DID advanced its epoch with messaging/mux/revoke-all. A grant revoked with messaging/mux/revoke has no state: it is deleted. A dead grant (every state but `active`) stays listable for the mediator's retention window after its effective expiry, then is pruned.
+ */
+export type GrantState = "active" | "suspended" | "staleKey" | "expired" | "epochRevoked";
+/**
  * Validity of a grant the sweep issues, in seconds: between one day and two years, the bounds vtc/vetting/vetters/grant applies to an administrator's grants.
  */
 export type GrantValiditySeconds = number;
@@ -1260,6 +1284,26 @@ export type MemberAction = "read" | "write" | "curate";
  */
 export type MemberActions = [MemberAction] | [MemberAction, MemberAction] | [MemberAction, MemberAction, MemberAction];
 /**
+ * The reason carried by one member's change in a messaging/mux/event `attached` or `detached` event: exactly the AttachReason values followed by the DetachReason values, with their meanings. An `attached` event carries only AttachReason values and a `detached` event only DetachReason values. One closed set rather than a union, so every generated binding types it as one enumeration; it MUST be kept equal to the two sets it joins.
+ */
+export type MemberChangeReason =
+  | "connect"
+  | "grant"
+  | "attach"
+  | "reactivated"
+  | "revokedByMember"
+  | "revokedByPrincipal"
+  | "epochBumped"
+  | "suspendedUnknownKey"
+  | "keyRotated"
+  | "expired"
+  | "accountBlocked"
+  | "superseded"
+  | "admin"
+  | "detachRequested"
+  | "accountRemoved"
+  | "resolutionFailed";
+/**
  * Where an admission stands. `offered`: credentials issued and waiting for the member to collect and accept them. `admitted`: accepted — on a sealed tier, the member is in the room's group. `removed`: an administrator removed them; on a sealed tier the room has advanced past them.
  */
 export type MemberState = "offered" | "admitted" | "removed";
@@ -1305,6 +1349,162 @@ export type Multibase_VotingV0_1 = string;
  * A binary value, multibase base58btc over the suite's canonical encoding.
  */
 export type Multibase_VtaV0_4 = string;
+/**
+ * A DID, carried verbatim and compared by exact string equality. Unlike the messaging family's `Vid`, never a hash: the mediator resolves it to verify a statement signed by it. For a member DID reached over TSP, the TSP VID is the DID itself.
+ */
+export type MuxDid = string;
+/**
+ * 32 random bytes, base64url without padding, that belong to exactly one connection and are never reused. Attach statements sign over it, which is what makes an attach statement unusable on any other connection.
+ */
+export type MuxNonce = string;
+/**
+ * The side of a delegation a requester acts as. `principal`: the DID that authenticated the connection and to which members' traffic is delegated. `member`: a DID whose traffic is delegated.
+ */
+export type MuxRole = "principal" | "member";
+/**
+ * A set of capabilities: a non-empty JSON array of MuxScopeValue, compared as a set — order is not significant and a repeated value collapses into one. Never empty: an empty scope is refused, never read as "all". There is no default scope anywhere — every attach and every grant names its scope explicitly. A scope is always bounded by the member DID's own access-control capabilities at the mediator.
+ *
+ * @minItems 1
+ * @maxItems 16
+ */
+export type MuxScope =
+  | [MuxScopeValue]
+  | [MuxScopeValue, MuxScopeValue]
+  | [MuxScopeValue, MuxScopeValue, MuxScopeValue]
+  | [MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue]
+  | [MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue]
+  | [MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue]
+  | [MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ];
+/**
+ * One capability a member DID extends to a principal's connection. `receive`: live delivery of the member's inbound messages on the connection. `pickup`: message-pickup status and delivery requests naming the member as `recipient_did`, and inclusion in a raw-TSP inbox drain. `delete`: deleting the member's stored messages, including delete-on-ack and delete-on-send; a member without `delete` keeps its messages in its inbox until something holding `delete` collects them. `send`: the mediator accepts on this connection frames whose sender is the member DID — the frame is still signed or authcrypted with the member's own keys; the scope only lets the mediator accept it on this socket.
+ */
+export type MuxScopeValue = "receive" | "pickup" | "delete" | "send";
 /**
  * Scopes one application's records within a context, so several tools can share a context without colliding — `openvtc`, `cnm`, an agent runtime. The maintainer MUST NOT interpret the value; it is an opaque partition name. Namespaces are first-come and unreserved, so an application SHOULD pick a stable, specific one: a future per-namespace ACL would grant on this exact string, which makes renaming a namespace a migration rather than an edit.
  */
@@ -2087,6 +2287,10 @@ export type ServiceKind = "didcomm" | "rest" | "tsp" | "webauthn";
  */
 export type SessionId = string;
 /**
+ * The mediator's identifier for one authenticated connection, as announced in that connection's `ready` event.
+ */
+export type SessionId_MessagingMuxV0_1 = string;
+/**
  * `EdDSA` pairs with an `ed25519` key; `ES256` pairs with a `p256` key; `ML-DSA-44` and `ML-DSA-65` pair with `mldsa44` and `mldsa65` keys respectively. An `x25519` key performs key agreement and can sign nothing, so no algorithm here is valid for one. These are JOSE algorithm identifiers, externally owned, so they are carried verbatim and never re-cased (SPEC.md §4.10 rule 5); the ML-DSA names are those RFC 9964 registers in the JOSE Web Signature and Encryption Algorithms registry, which is why their hyphenated casing differs from the `keyType` values beside them — those are specification-defined. The set is expected to grow as algorithms are registered. The enumeration remains closed: an unrecognised algorithm is refused rather than silently substituted with a supported one.
  */
 export type SignAlgorithm = "EdDSA" | "ES256" | "ML-DSA-44" | "ML-DSA-65";
@@ -2137,6 +2341,146 @@ export type Slot = string;
  * The principal's disposition of a held notification: `active`, or `dismissed` by vta/notifications/dismiss. Dismissal is the principal's alone and changes nothing outside the VTA (VTI-NTF-052).
  */
 export type State = "active" | "dismissed";
+/**
+ * The scope a member DID signs into a statement: a JSON array of MuxScopeValue, compared as a set — order is not significant and a repeated value collapses. It MUST NOT be empty; an empty signed scope is refused with the task's `emptyScope` code, never read as "all". Unlike MuxScope, emptiness is not a schema failure here, so that the refusal is reported per statement rather than failing the whole batch.
+ *
+ * @maxItems 16
+ */
+export type StatementScope =
+  | []
+  | [MuxScopeValue]
+  | [MuxScopeValue, MuxScopeValue]
+  | [MuxScopeValue, MuxScopeValue, MuxScopeValue]
+  | [MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue]
+  | [MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue]
+  | [MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue]
+  | [MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue, MuxScopeValue]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ]
+  | [
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue,
+      MuxScopeValue
+    ];
 /**
  * Whether the thing is still open to the audience: `available`, or `withdrawn` — cancelled by its holder, or no longer open to the audience — in which case the recipient keeps the record only to show that it was withdrawn (VTI-NTF-024).
  */
@@ -5583,6 +5927,57 @@ export interface ApproverBinding {
    * Optional routing detail — e.g. the operator's opaque conversationRef for `bridge-relay`.
    */
   routeHint?: string;
+}
+/**
+ * A member DID's statement that the named principal may carry its traffic on one connection — the one whose `sessionId` and `muxNonce` it names — until `exp`, within `scope`. Signed by the member with an embedded Data Integrity proof whose purpose is `authentication`.
+ */
+export interface AttachStatement {
+  /**
+   * Always `muxAttach`; names the statement kind, so a statement of one kind is never accepted as another.
+   */
+  type: "muxAttach";
+  /**
+   * The member DID: the signer, and the DID the statement concerns.
+   */
+  issuer: MuxDid;
+  /**
+   * The mediator's DID. A statement names exactly one mediator and is refused by every other.
+   */
+  audience: MuxDid;
+  /**
+   * The principal DID the connection is authenticated as. MUST differ from `issuer`.
+   */
+  principal: MuxDid;
+  sessionId: SessionId_MessagingMuxV0_1;
+  muxNonce: MuxNonce;
+  scope: StatementScope;
+  /**
+   * JWT NumericDate (RFC 7519 §2), whole seconds since 1970-01-01T00:00:00Z UTC: when the statement was signed. MUST NOT be more than 60 seconds in the mediator's future.
+   */
+  iat: number;
+  /**
+   * JWT NumericDate (RFC 7519 §2): when the statement stops being accepted. REQUIRED; MUST be after `iat` and in the future.
+   */
+  exp: number;
+  proof: MuxDataIntegrityProof;
+}
+/**
+ * One session attach on a connection.
+ */
+export interface AttachView {
+  /**
+   * The member DID.
+   */
+  did: MuxDid;
+  scope: MuxScope;
+  /**
+   * When the attach lapses: its signed `exp`.
+   */
+  expiresAt: string;
+  /**
+   * False while live traffic for the member goes elsewhere — to the member DID's own direct connection, which takes precedence over a mux connection.
+   */
+  deliveryActive: boolean;
 }
 export interface AttachmentRef_VaultV0_1 {
   /**
@@ -9986,6 +10381,82 @@ export interface GitNamespace_GitNsV0_6 {
   state: "pending" | "bound";
 }
 /**
+ * Identifies one stored grant and the two parties to it.
+ */
+export interface GrantRef {
+  grantId: GrantId;
+  /**
+   * The member DID.
+   */
+  did: MuxDid;
+  /**
+   * The principal DID the grant delegates to.
+   */
+  principal: MuxDid;
+}
+/**
+ * A member DID's standing statement that the named principal may carry its traffic at this mediator, on any connection, until `exp`, within `scope`, under the member's current `epoch`. Signed by the member with an embedded Data Integrity proof whose purpose is `authentication`, and stored verbatim by the mediator as the only evidence of the delegation.
+ */
+export interface GrantStatement {
+  /**
+   * Always `muxGrant`; names the statement kind, so a statement of one kind is never accepted as another.
+   */
+  type: "muxGrant";
+  /**
+   * The member DID: the signer, and the DID the statement concerns.
+   */
+  issuer: MuxDid;
+  /**
+   * The mediator's DID. A statement names exactly one mediator and is refused by every other.
+   */
+  audience: MuxDid;
+  grantId: GrantId;
+  /**
+   * The principal DID that may carry the member's traffic. MUST differ from `issuer`.
+   */
+  principal: MuxDid;
+  scope: StatementScope;
+  /**
+   * The member DID's current epoch at the mediator. Only messaging/mux/revoke-all advances it.
+   */
+  epoch: number;
+  /**
+   * JWT NumericDate (RFC 7519 §2), whole seconds since 1970-01-01T00:00:00Z UTC: when the statement was signed. MUST NOT be more than 60 seconds in the mediator's future.
+   */
+  iat: number;
+  /**
+   * JWT NumericDate (RFC 7519 §2): when the statement stops being accepted. REQUIRED; MUST be after `iat` and in the future.
+   */
+  exp: number;
+  proof: MuxDataIntegrityProof;
+}
+/**
+ * The mediator's view of one stored grant, as messaging/mux/list and messaging/mux/update return it: the grant statement verbatim, with the state and the effective scope and expiry beside it.
+ */
+export interface GrantView {
+  /**
+   * The grant statement exactly as the member signed it and the mediator stored it, proof included, so either party can re-verify it.
+   */
+  statement: GrantStatement;
+  state: GrantState;
+  /**
+   * The effective scope: the signed scope, or the narrower one messaging/mux/update set.
+   */
+  scope: MuxScope;
+  /**
+   * The effective expiry: the signed `exp` rendered as RFC 3339, or the earlier one messaging/mux/update set.
+   */
+  expiresAt: string;
+  /**
+   * True when messaging/mux/update narrowed the effective scope or expiry below what the statement signs.
+   */
+  narrowed?: boolean;
+  /**
+   * Principal view only: whether the member is attached through this grant to the connection that carried the list request.
+   */
+  attachedNow?: boolean;
+}
+/**
  * A grant set the group confers: each capability is written onto every member's access-control entry as a resource grant whose source is the group, bounded by the member's role ceiling and by the binder's own holdings.
  */
 export interface GrantsBindingSpec {
@@ -11741,6 +12212,32 @@ export interface MonitorFilter {
    * Only events that carry an `outcome`.
    */
   failuresOnly?: boolean;
+}
+/**
+ * The W3C Data Integrity proof embedded in a mux statement, made by the member DID: the format and verifier Trust Tasks already use for document proofs (SPEC §4.7). The proof covers the whole statement except `proof` itself, as the cryptosuite defines. Closed: a member Data Integrity defines but this list omits is refused.
+ */
+export interface MuxDataIntegrityProof {
+  type: "DataIntegrityProof";
+  /**
+   * The W3C Data Integrity EdDSA cryptosuite used.
+   */
+  cryptosuite: "eddsa-jcs-2022" | "eddsa-rdfc-2022";
+  /**
+   * The DID URL of the verification method that signed. MUST be controlled by the statement's `issuer` and listed in that DID's current `authentication` relationship.
+   */
+  verificationMethod: string;
+  /**
+   * MUST be `authentication`. Any other value is refused with `messaging/mux:proofPurposeInvalid` — a proof made for another relationship (an `assertionMethod` credential signature, say) is never accepted as control of the DID.
+   */
+  proofPurpose: string;
+  /**
+   * OPTIONAL: when the proof was made, as Data Integrity defines it. Covered by the proof; the statement's own `iat` is what the mediator checks.
+   */
+  created?: string;
+  /**
+   * The multibase (base58btc) signature.
+   */
+  proofValue: string;
 }
 /**
  * A badge as its holder sees it in their own list: the wall entry plus what only the holder knows — whether they hid it, their position for it, and the credential that evidences it.
@@ -13762,6 +14259,36 @@ export interface RevocationReceipt {
    * When the revocation was recorded.
    */
   revokedAt: string;
+}
+/**
+ * A member DID's statement, proving current control of it, that every grant on it signed under `epoch` or earlier is void. Signed by the member with an embedded Data Integrity proof whose purpose is `authentication`.
+ */
+export interface RevokeAllStatement {
+  /**
+   * Always `muxRevokeAll`; names the statement kind, so a statement of one kind is never accepted as another.
+   */
+  type: "muxRevokeAll";
+  /**
+   * The member DID: the signer, and the DID the statement concerns.
+   */
+  issuer: MuxDid;
+  /**
+   * The mediator's DID. A statement names exactly one mediator and is refused by every other.
+   */
+  audience: MuxDid;
+  /**
+   * The epoch being voided: the member DID's current one.
+   */
+  epoch: number;
+  /**
+   * JWT NumericDate (RFC 7519 §2), whole seconds since 1970-01-01T00:00:00Z UTC: when the statement was signed. MUST NOT be more than 60 seconds in the mediator's future.
+   */
+  iat: number;
+  /**
+   * JWT NumericDate (RFC 7519 §2): when the statement stops being accepted. REQUIRED; MUST be after `iat` and in the future.
+   */
+  exp: number;
+  proof: MuxDataIntegrityProof;
 }
 /**
  * One recorded right. Implied rights (§4.2 of the rights model: `own` implies `maintain` implies `commit.sign` on the same resource; `ns.admin` implies `repo.create` and `own` across its namespace) are not records and never appear as RightRecords.

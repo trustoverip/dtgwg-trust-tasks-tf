@@ -6,6 +6,7 @@ pub mod acl;
 pub mod admin;
 pub mod message;
 pub mod monitor;
+pub mod mux;
 pub mod ping;
 pub mod queue;
 pub mod stats;
