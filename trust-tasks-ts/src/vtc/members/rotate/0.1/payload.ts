@@ -25,7 +25,10 @@ export interface VTCMembersRotatePayload {
 }
 export interface VTCMembersRotateResponsePayload {
   newDid: string;
-  method: "did:key" | "did:webvh";
+  /**
+   * The DID method of `newDid`, as the community verified its signature: `did:scid` for a `did:scid:vh:1` identifier.
+   */
+  method: "did:key" | "did:webvh" | "did:scid" | "did:webs";
   /**
    * Membership credential re-issued to the new DID (opaque here).
    */
@@ -136,9 +139,12 @@ export const PAYLOAD_SCHEMA = {
         },
         "method": {
           "type": "string",
+          "description": "The DID method of `newDid`, as the community verified its signature: `did:scid` for a `did:scid:vh:1` identifier.",
           "enum": [
             "did:key",
-            "did:webvh"
+            "did:webvh",
+            "did:scid",
+            "did:webs"
           ]
         },
         "vmc": {
@@ -190,9 +196,12 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "method": {
           "type": "string",
+          "description": "The DID method of `newDid`, as the community verified its signature: `did:scid` for a `did:scid:vh:1` identifier.",
           "enum": [
             "did:key",
-            "did:webvh"
+            "did:webvh",
+            "did:scid",
+            "did:webs"
           ]
         },
         "vmc": {
