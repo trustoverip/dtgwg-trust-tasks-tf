@@ -73,16 +73,19 @@ retention:
     asks the recipient to discard the content sooner. The deduplication keys and
     withdrawal markers a consumer holds are kept for the acceptance window only.
 maxDocumentBytes:
-  request: 131072
+  request: 262144
   rationale: >-
-    `body` is at most 16384 characters, up to 4 bytes each in UTF-8, plus JSON
-    escaping, the other members and envelope headroom. No proof is expected.
+    `body` is at most 16384 characters. Up to 4 bytes each in UTF-8, but an encoder
+    that escapes every non-ASCII character writes an astral one as a surrogate
+    pair of `\u` escapes, 12 bytes, so a body alone can reach about 196 KB. The
+    bound covers that, the other members and envelope headroom. No proof is
+    expected.
 errorCodes:
   - code: chat/direct/message:notAuthor
-    meaning: The document writes a `messageId` the consumer already holds, and its authenticated issuer is not that message's author. Nothing was changed.
+    meaning: The document writes a `messageId` the consumer already holds for this conversation (the same `issuer`/`recipient` pair), and its authenticated issuer is not that message's author. Nothing was changed.
     retryable: false
   - code: chat/direct/message:revisionConflict
-    meaning: The consumer already holds this `revision` of this `messageId` from the same author with a different payload. The held revision stays.
+    meaning: The consumer holds this `revision` of this `messageId`, from the same author in the same conversation, as the message's current revision, with a different payload. The held revision stays. A revision lower than the current one is never refused; it is ignored silently.
     retryable: false
   - code: chat/direct/message:rewriteInvalid
     meaning: The rewrite changes the `kind` or `writtenAt` of the revision the consumer holds, or the `inReplyTo` of a reaction. The held revision stays.
@@ -185,9 +188,10 @@ A conforming producer (the message's author):
 A conforming consumer applies the rules in *Rewriting a message* below, in
 addition to [SPEC §7.2](/SPEC.md#72-consumer-requirements). In summary it
 **MUST** refuse a rewrite by anyone but the author (`notAuthor`), a conflicting
-copy of a revision it holds (`revisionConflict`), and a rewrite that changes what a
-new revision keeps (`rewriteInvalid`); it **MUST** ignore a stale revision
-silently; and it **MUST NOT** answer anything about a `messageId` it does not hold.
+copy of the current revision it holds (`revisionConflict`), and a rewrite that
+changes what a new revision keeps (`rewriteInvalid`); it **MUST** ignore a stale
+revision silently; and it **MUST NOT** answer anything about a `messageId` it does
+not hold for the conversation the document belongs to.
 
 ## Authorization
 
@@ -204,8 +208,8 @@ specification states the authority and does not prescribe the gate
 The authority for a **rewrite** — an edit, a withdrawal, a changed or withdrawn
 reaction — is the same relationship **plus authorship of the `messageId`**. The
 author of a `messageId` is the authenticated issuer of the first document the
-consumer accepted for it, and only the author rewrites it
-(*Rewriting a message*, R1).
+consumer accepted for it in that conversation or, for a message the consumer's own
+user sent, that user; only the author rewrites it (*Rewriting a message*, R1).
 
 Neither is established by identity or proof alone. Per
 [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10, authenticating the sender
@@ -233,7 +237,8 @@ and with the message's author; it is not itself the entitlement.
 - **`inReplyTo`** (`MessageReference`) — OPTIONAL on a `message`, the message it
   answers; REQUIRED on a `reaction`, the message it responds to. It names a message
   of the same conversation only; the reader resolves it against messages it already
-  holds and **MUST NOT** fetch anything because of it.
+  holds for this conversation and **MUST NOT** fetch anything because of it. A reader
+  ignores an `inReplyTo` that names the message's own `messageId`.
 - **`writtenAt`** (REQUIRED, the rooms `RecordWrittenAt`) — when the author wrote
   the message, UTC. Unchanged across rewrites.
 - **`editedAt`** (the rooms `RecordEditedAt`) — when the author made the edit that
@@ -252,7 +257,7 @@ substitutions, because a direct conversation has no host:
 |---|---|
 | record `key` | `messageId` |
 | record `version` (host-assigned) | `revision` (author-assigned) |
-| `author`, inside the signed body | the authenticated issuer of the first accepted document for the `messageId` |
+| `author`, inside the signed body | the authenticated issuer of the first accepted document for the `messageId`, or the consumer's own user for a message that user sent (R1) |
 | the host's `createdAt` for a record | the instant the consumer first accepted the `messageId` |
 | the host's `updatedAt` for a version | the instant the consumer received the revision |
 | "the same room" | the same direct conversation (the same pair of identifiers) |
@@ -271,15 +276,20 @@ out.
 ### R1. Only the original author rewrites
 
 1. The **author** of a `messageId` is the authenticated issuer of the first
-   document the consumer accepted for that `messageId`. Authenticated means the
+   document the consumer accepted for that `messageId` in the conversation or,
+   for a message the consumer's own user sent, that user. Authenticated means the
    in-band `issuer` cross-checked against the transport-authenticated sender per
    [SPEC §4.8.1](/SPEC.md#481-precedence-of-in-band-over-transport-derived-identity),
    or derived from it where the in-band member is absent.
-2. A consumer **MUST NOT** apply a document for a `messageId` it holds whose
+2. A consumer **MUST NOT** apply a document for a `messageId` it holds for this
+   conversation — the same `issuer`/`recipient` pair, in either direction — whose
    authenticated issuer is not that author. It answers
    `chat/direct/message:notAuthor` where a reply can be routed, and changes
    nothing. In a direct conversation this is the counterparty trying to rewrite
-   the other's message.
+   the other's message. Every `messageId` lookup in this specification is scoped
+   to the conversation the document belongs to: a `messageId` the consumer holds
+   only for a different conversation is, for this one, a `messageId` it does not
+   hold (R4).
 3. A consumer **MUST NOT** accept a rewrite on the strength of an in-band `issuer`
    the transport did not authenticate. With no proof, the transport is the only
    authentication.
@@ -298,14 +308,18 @@ There are two layers, and a consumer **MUST NOT** merge them:
    `idConflict`. The (`messageId`, `revision`) pair **MUST NOT** stand in for the
    document `id` in that record, just as a transport's own message identifier must
    not.
-2. **The message layer is this task's.** Its key is (author, `messageId`,
-   `revision`).
+2. **The message layer is this task's.** Its key is (conversation, author,
+   `messageId`, `revision`), where the conversation is the `issuer`/`recipient`
+   pair, and it is compared only against the **current** revision the consumer
+   holds for that `messageId`:
    - The same key with an identical payload — compared as the RFC 8785
      canonicalization of `payload` — under a **different** document `id` is a new
      attempt ([SPEC §8.4](/SPEC.md#84-retry-semantics)). It is absorbed: nothing
      changes, and no error is sent.
    - The same key with a different payload is refused with
      `chat/direct/message:revisionConflict`, and the held revision stays.
+   - A revision lower than the current one is not compared at all, whatever its
+     payload: it is stale, and R3 ignores it silently.
 
 This specification does not declare repeated execution safe. Item 11 still applies
 to every document.
@@ -313,9 +327,10 @@ to every document.
 ### R3. Ordering rewrites, edits and withdrawal
 
 1. **`revision` is the only ordering key.** A consumer applies a revision only if
-   it is greater than the one it holds for that `messageId`. A lower revision, or an
-   equal one after the R2 check, is stale: the consumer ignores it silently and
-   sends no error, because mediated delivery reorders routinely.
+   it is greater than the current one it holds for that `messageId`. A lower
+   revision is stale whatever its payload: the consumer ignores it silently and
+   sends no error, never `revisionConflict`, because mediated delivery reorders
+   routinely. An equal revision is handled by R2 alone.
 2. **`editedAt` is display only.** A reader shows a message carrying it as edited.
    It treats an `editedAt` earlier than `writtenAt`, or more than five minutes after
    the instant it received the revision, as implausible, and then shows that the
@@ -337,6 +352,10 @@ to every document.
 
 ### R4. A revision of a message the consumer does not hold
 
+"Does not hold" means does not hold for this conversation (R1): a `messageId` the
+consumer holds only in a different conversation is unknown here, and is treated by
+the rules below exactly as one it has never seen.
+
 1. `revision: 1` for an unknown `messageId` is a new message. The consumer accepts
    it, subject to *Authorization*.
 2. A revision greater than 1 for an unknown `messageId` means the earlier revisions
@@ -348,9 +367,12 @@ to every document.
    consumer records a tombstone for the `messageId` and shows nothing, so that a
    late revision 1 cannot bring the message back. It keeps tombstones at least for
    the acceptance window.
-4. A consumer **MUST NOT** send an error about a `messageId` it does not hold.
-   There is nothing to refuse, and silence avoids a state oracle
-   ([SPEC §12.6](/SPEC.md#126-error-response-identity-leakage)).
+4. A consumer **MUST NOT** send an error about a `messageId` it does not hold for
+   this conversation, including one it holds for another conversation. There is
+   nothing to refuse, and silence avoids a state oracle
+   ([SPEC §12.6](/SPEC.md#126-error-response-identity-leakage)): no answer
+   confirms that a `messageId` exists anywhere outside the sender's own
+   conversation.
 5. An `inReplyTo` naming an unknown or withdrawn message: the consumer shows the
    reply, marked as answering a message that is not available, and fetches
    nothing.
@@ -364,8 +386,10 @@ to every document.
 
 ### R5. What a consumer keeps
 
-Only the current revision of each `messageId`, the R2 key for the acceptance
-window, and its tombstones and deletion markers. It **SHOULD NOT** keep earlier
+Only the current revision of each `messageId`; for the acceptance window, the R2
+key of that revision and a digest of its RFC 8785 canonical `payload`, without
+which an identical new attempt cannot be told from a `revisionConflict` once the
+content is withdrawn or discarded; and its tombstones and deletion markers. It **SHOULD NOT** keep earlier
 revisions' content: edit history is not a requirement of this task, and keeping it
 undermines withdrawal.
 
@@ -654,7 +678,9 @@ refuses messages people actually sent. A consumer **SHOULD** accept an `issuedAt
 up to **30 days** old ([SPEC §7.3](/SPEC.md#73-specification-requirements)
 item 17), refusing older ones and ones beyond its clock skew in the future as
 [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 13 says, and **SHOULD** keep
-its item 11 record, the R2 keys and its tombstones for the same window. This is
+its item 11 record, the R2 key and payload digest of each message's current
+revision (R5), and its tombstones for the same window. A revision older than the
+current one is ignored silently (R3), never refused, so no key for it is needed. This is
 guidance; the window is the consumer's policy.
 
 ### Consent/purpose

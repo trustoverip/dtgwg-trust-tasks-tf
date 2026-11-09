@@ -87,6 +87,10 @@ fn rejects_invalid_examples() {
             "{\n  \"body\": \"👍\",\n  \"kind\": \"reaction\",\n  \"messageId\": \"Hk2pW8nQ4cZt6YvR1mLs9BxE3fJa7GuD5oTi0wKeN8M\",\n  \"revision\": 1,\n  \"writtenAt\": \"2026-11-08T09:16:10Z\"\n}",
         ),
         (
+            "A rewrite of a reaction MUST still name its target in `inReplyTo`, even when it withdraws the reaction.",
+            "{\n  \"body\": \"\",\n  \"editedAt\": \"2026-11-08T09:17:45Z\",\n  \"kind\": \"reaction\",\n  \"messageId\": \"Hk2pW8nQ4cZt6YvR1mLs9BxE3fJa7GuD5oTi0wKeN8M\",\n  \"revision\": 2,\n  \"writtenAt\": \"2026-11-08T09:16:10Z\"\n}",
+        ),
+        (
             "`messageId` is exactly 43 base64url characters (32 random bytes).",
             "{\n  \"body\": \"See you at three.\",\n  \"kind\": \"message\",\n  \"messageId\": \"msg-1\",\n  \"revision\": 1,\n  \"writtenAt\": \"2026-11-08T09:14:02Z\"\n}",
         ),

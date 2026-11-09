@@ -41,6 +41,17 @@
     }
   },
   {
+    "note": "A rewrite of a reaction MUST still name its target in `inReplyTo`, even when it withdraws the reaction.",
+    "payload": {
+      "messageId": "Hk2pW8nQ4cZt6YvR1mLs9BxE3fJa7GuD5oTi0wKeN8M",
+      "revision": 2,
+      "kind": "reaction",
+      "body": "",
+      "writtenAt": "2026-11-08T09:16:10Z",
+      "editedAt": "2026-11-08T09:17:45Z"
+    }
+  },
+  {
     "note": "`messageId` is exactly 43 base64url characters (32 random bytes).",
     "payload": {
       "messageId": "msg-1",
