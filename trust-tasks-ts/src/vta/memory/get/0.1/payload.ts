@@ -8,6 +8,8 @@ import type { Ext, MemoryKey, MemoryRecord, MemoryValue, MemoryVersion } from ".
 
 /**
  * Recall up to 256 named memory items from one context in a single round trip. The read an agent makes when it knows what it needs, and the one whose audit record says exactly which items it saw.
+ *
+ * @deprecated superseded by vta/memory/get/0.2
  */
 export interface VTAMemoryGetPayload {
   /**
@@ -32,6 +34,8 @@ export interface VTAMemoryGetPayload {
 }
 /**
  * Success response to vta/memory/get. Type https://trusttasks.org/spec/vta/memory/get/0.1#response. Every requested key appears in exactly one of `items`, `missing` or `deferred`, so a caller can account for all of them without comparing sets itself.
+ *
+ * @deprecated superseded by vta/memory/get/0.2
  */
 export interface VTAMemoryGetResponsePayload {
   /**
@@ -72,15 +76,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by vta/memory/get/0.2";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vta/memory/get/0.2
+ */
 export type Payload = VTAMemoryGetPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/memory/get/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vta/memory/get/0.2
+ */
 export type Response = VTAMemoryGetResponsePayload;
 
 /**

@@ -35,6 +35,8 @@ type NarrowAct struct {
 
 // Response The success response to an acl/revoke/0.2 request. Carried in a Trust Task
 // document whose type is https://trusttasks.org/spec/acl/revoke/0.2#response.
+//
+// Deprecated: superseded by acl/revoke/0.3
 type Response struct {
 	// null for a removal; the resulting AclEntry for an act-scope narrowing.
 	Entry json.RawMessage `json:"entry"`
@@ -348,6 +350,8 @@ type AuthorityScopeAll struct {
 // selects full removal. Narrowing of other axes (capabilities, approvable capabilities,
 // approve scope, keys) is carried by acl/update/0.2 as a privilege reduction. The outer
 // document members are owned by the framework — SPEC §6.3.
+//
+// Deprecated: superseded by acl/revoke/0.3
 type Payload struct {
 	// VID of the subject whose entry is removed or narrowed.
 	Subject string `json:"subject"`
@@ -377,7 +381,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by acl/revoke/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/acl/revoke/0.2#response"

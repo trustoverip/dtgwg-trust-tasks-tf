@@ -8,6 +8,8 @@ import type { AclEntry_AclV0_2 as AclEntry, ApproveCapabilityScope, ApproveCapab
 
 /**
  * Amend the non-role attributes of an existing AclEntry 0.2: its act scope (widening only), approve scope, capability scope, approvable-capability scope, key scope, label, expiry or step-up requirement. Every member REPLACES the stored value; an omitted member leaves it unchanged. Role changes are NOT expressible here — they go through acl/change-role, which requires the current role as a compare-and-swap. `delegatedBy` and the provenance timestamps are maintainer-populated and not settable.
+ *
+ * @deprecated superseded by acl/update/0.3
  */
 export interface ACLUpdate02Payload {
   /**
@@ -66,6 +68,8 @@ export interface ACLUpdate02Payload {
 }
 /**
  * The success response to an acl/update/0.2 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/update/0.2#response.
+ *
+ * @deprecated superseded by acl/update/0.3
  */
 export interface ACLUpdate02ResponsePayload {
   /**
@@ -98,15 +102,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by acl/update/0.3";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by acl/update/0.3
+ */
 export type Payload = ACLUpdate02Payload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/acl/update/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by acl/update/0.3
+ */
 export type Response = ACLUpdate02ResponsePayload;
 
 /**

@@ -20,4 +20,4 @@ export interface MemoryRecordSharedDefinitionForVtaMemoryFromPutDeleteList02AndG
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../../_shared/components.js".
  */
-export type { MemoryExpectedVersion, MemoryKey, MemoryRecord, MemoryValue, MemoryVersion } from "../../../_shared/components.js";
+export type { MemoryExpectedVersion, MemoryKey, MemoryPurpose, MemoryRecord, MemoryValue, MemoryVersion } from "../../../_shared/components.js";

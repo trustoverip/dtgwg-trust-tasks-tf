@@ -13,6 +13,8 @@ import (
 
 // Response The success response to an acl/grant/0.2 request. Carried in a Trust Task
 // document whose type is https://trusttasks.org/spec/acl/grant/0.2#response.
+//
+// Deprecated: superseded by acl/grant/0.3
 type Response struct {
 	// The canonical AclEntry the maintainer now holds for the subject, including the
 	// maintainer-populated provenance (`createdAt`, `createdBy`, `delegatedBy`).
@@ -326,6 +328,8 @@ type AuthorityScopeAll struct {
 // explicitly (`act`), and may carry an approve scope, a narrowed or additive capability
 // set, and the capabilities it may approve. The outer document members (id, type, issuer,
 // recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+//
+// Deprecated: superseded by acl/grant/0.3
 type Payload struct {
 	// The AclEntry the producer wants the maintainer to hold for the subject (intent). `act`,
 	// `keys` and `capabilities` are REQUIRED and explicit; `approve` and
@@ -356,7 +360,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by acl/grant/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/acl/grant/0.2#response"

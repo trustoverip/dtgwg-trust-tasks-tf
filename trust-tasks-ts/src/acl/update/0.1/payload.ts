@@ -9,7 +9,7 @@ import type { AclEntry_AclV0_1 as AclEntry, Ext } from "../../../_shared/compone
 /**
  * Amend the non-role attributes of an existing ACL entry: its label, scopes, allowed keys, expiry, step-up requirement, or approve-authority. Role changes are NOT expressible here — they go through acl/change-role, which requires the current role as a compare-and-swap.
  *
- * @deprecated superseded by acl/update/0.2
+ * @deprecated superseded by acl/update/0.3
  */
 export interface ACLUpdatePayload {
   /**
@@ -64,7 +64,7 @@ export interface ACLUpdatePayload {
   reason?: string;
   ext?: Ext;
 }
-/** @deprecated superseded by acl/update/0.2 */
+/** @deprecated superseded by acl/update/0.3 */
 export interface ACLUpdateResponsePayload {
   /**
    * The realized entry the maintainer now holds, after the amendment.
@@ -93,12 +93,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by acl/update/0.2";
+export const DEPRECATION: string | null = "superseded by acl/update/0.3";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by acl/update/0.2
+ * @deprecated superseded by acl/update/0.3
  */
 export type Payload = ACLUpdatePayload;
 
@@ -108,7 +108,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/acl/update/0.1#res
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by acl/update/0.2
+ * @deprecated superseded by acl/update/0.3
  */
 export type Response = ACLUpdateResponsePayload;
 

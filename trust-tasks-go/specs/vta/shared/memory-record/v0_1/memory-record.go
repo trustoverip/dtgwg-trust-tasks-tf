@@ -73,3 +73,23 @@ type MemoryRecord struct {
 	// for a tombstone the maintainer has not since rewritten.
 	DeletedAt *string `json:"deletedAt,omitempty"`
 }
+
+// MemoryPurpose The one purpose for which the caller will use the memory content a
+// request discloses (VTI-ACL-103): a name registered in the VTI specification's purpose
+// registry (`personalisation`, `taskExecution`, `analytics`, `modelTraining`) or an
+// absolute IRI. The VTA grants it only if the caller's ACL entry does — `any` grants
+// every purpose but `modelTraining` — refuses it otherwise (`purposeNotGranted`), and
+// records it in the audit record of the read. Optional where the entry lists exactly one
+// purpose (that one applies) or states `any` (the read is recorded as for no stated
+// purpose).
+type MemoryPurpose = Purpose
+
+// Purpose What content is used for: a lowerCamelCase name registered in the VTI
+// specification's purpose registry (Appendix H) — `personalisation`, `taskExecution`,
+// `analytics`, `modelTraining` at the time of writing — or an absolute IRI naming a
+// purpose defined elsewhere, such as a purpose of the W3C Data Privacy Vocabulary
+// (`https://w3id.org/dpv#ServicePersonalisation`). Compared by exact string equality: a
+// consumer MUST NOT treat a purpose it does not recognise as equal to any other, and
+// grants only a request naming exactly a listed purpose (VTI-ACL-109). A registered name
+// is never an IRI, because it contains no `:`.
+type Purpose = string

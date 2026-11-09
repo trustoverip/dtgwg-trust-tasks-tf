@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/memory/delete/0.3",
+  "title": "VTA Memory Delete — payload",
+  "description": "Forget one memory item. The item's value is discarded and a tombstone takes its place for the maintainer's retention window, so that another device syncing the context learns of the deletion instead of keeping a copy forever.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contextId",
+    "key"
+  ],
+  "properties": {
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The VTA context the item lives in."
+    },
+    "key": {
+      "$ref": "../../../_shared/0.1/memory-record.schema.json#/$defs/MemoryKey"
+    },
+    "expectedVersion": {
+      "$ref": "../../../_shared/0.1/memory-record.schema.json#/$defs/MemoryVersion",
+      "description": "Optional precondition, on the same terms as vta/memory/put: the live item must be at exactly this version, so a delete cannot discard an edit the caller never saw. Positive only — a create-only precondition on a delete can never be useful, so the schema does not admit 0."
+    },
+    "purpose": {
+      "$ref": "../../../_shared/0.1/memory-record.schema.json#/$defs/MemoryPurpose",
+      "description": "OPTIONAL. The one purpose the caller will use the content this request discloses for (VTI-ACL-103). Granted only as the caller's ACL entry grants it; a purpose the entry does not grant is refused with `purposeNotGranted`. May be omitted where the entry lists exactly one purpose, or states `any`."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Memory Delete — response payload",
+      "description": "Success response to vta/memory/delete. Type https://trusttasks.org/spec/vta/memory/delete/0.3#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contextId",
+        "key",
+        "existed"
+      ],
+      "properties": {
+        "contextId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Echoed from the request."
+        },
+        "key": {
+          "$ref": "../../../_shared/0.1/memory-record.schema.json#/$defs/MemoryKey"
+        },
+        "existed": {
+          "type": "boolean",
+          "description": "True when a live item was removed by this request. False when the key already held a tombstone, or held nothing at all — both of which are successes, because the caller's intent is satisfied either way."
+        },
+        "version": {
+          "$ref": "../../../_shared/0.1/memory-record.schema.json#/$defs/MemoryVersion",
+          "description": "The tombstone's version — the counter value this delete took, or the value the existing tombstone already held when `existed` is false. Absent only when the key held nothing and no tombstone was written."
+        },
+        "deletedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the deletion was recorded. Absent on the same terms as `version`."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

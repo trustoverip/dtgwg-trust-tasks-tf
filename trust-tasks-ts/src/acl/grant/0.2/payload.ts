@@ -8,6 +8,8 @@ import type { AclEntry_AclV0_2 as AclEntry, ApproveCapabilityScope, ApproveCapab
 
 /**
  * Add a subject to an access-control list. The entry states its act scope explicitly (`act`), and may carry an approve scope, a narrowed or additive capability set, and the capabilities it may approve. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by acl/grant/0.3
  */
 export interface ACLGrant02Payload {
   /**
@@ -25,6 +27,8 @@ export interface ACLGrant02Payload {
 }
 /**
  * The success response to an acl/grant/0.2 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/grant/0.2#response.
+ *
+ * @deprecated superseded by acl/grant/0.3
  */
 export interface ACLGrant02ResponsePayload {
   /**
@@ -57,15 +61,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by acl/grant/0.3";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by acl/grant/0.3
+ */
 export type Payload = ACLGrant02Payload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/acl/grant/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by acl/grant/0.3
+ */
 export type Response = ACLGrant02ResponsePayload;
 
 /**

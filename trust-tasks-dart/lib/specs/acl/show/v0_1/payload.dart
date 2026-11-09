@@ -251,7 +251,7 @@ class AclEntry {
 
 /// The success response to an acl/show request. Carried in a Trust Task document whose
 /// type is https://trusttasks.org/spec/acl/show/0.1#response.
-@Deprecated('superseded by acl/show/0.2')
+@Deprecated('superseded by acl/show/0.3')
 class Response {
   const Response({
     required this.entry,
@@ -289,7 +289,7 @@ class Response {
 }
 
 /// ACL Show — payload
-@Deprecated('superseded by acl/show/0.2')
+@Deprecated('superseded by acl/show/0.3')
 class Payload {
   const Payload({
     required this.subject,
@@ -322,7 +322,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by acl/show/0.2';
+const String? deprecation = 'superseded by acl/show/0.3';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/acl/show/0.1';

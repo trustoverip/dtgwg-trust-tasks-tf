@@ -14,7 +14,7 @@ import (
 // Response The success response to an acl/grant request. Carried in a Trust Task document
 // whose type is https://trusttasks.org/spec/acl/grant/0.1#response.
 //
-// Deprecated: superseded by acl/grant/0.2
+// Deprecated: superseded by acl/grant/0.3
 type Response struct {
 	// The canonical AclEntry the maintainer now holds for the subject.
 	Entry ACLEntry `json:"entry"`
@@ -152,7 +152,7 @@ type ACLEntry struct {
 
 // Payload ACL Grant — payload
 //
-// Deprecated: superseded by acl/grant/0.2
+// Deprecated: superseded by acl/grant/0.3
 type Payload struct {
 	// The AclEntry the producer wants the maintainer to hold for the subject (intent). The
 	// maintainer's response carries the realized AclEntry it now holds.
@@ -180,7 +180,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = "superseded by acl/grant/0.2"
+const Deprecation = "superseded by acl/grant/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/acl/grant/0.1#response"

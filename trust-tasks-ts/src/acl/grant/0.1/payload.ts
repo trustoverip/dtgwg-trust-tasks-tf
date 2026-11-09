@@ -6,7 +6,7 @@
 import type { AclEntry_AclV0_1 as AclEntry, Ext } from "../../../_shared/components.js";
 
 
-/** @deprecated superseded by acl/grant/0.2 */
+/** @deprecated superseded by acl/grant/0.3 */
 export interface ACLGrantPayload {
   /**
    * The AclEntry the producer wants the maintainer to hold for the subject (intent). The maintainer's response carries the realized AclEntry it now holds.
@@ -24,7 +24,7 @@ export interface ACLGrantPayload {
 /**
  * The success response to an acl/grant request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/grant/0.1#response.
  *
- * @deprecated superseded by acl/grant/0.2
+ * @deprecated superseded by acl/grant/0.3
  */
 export interface ACLGrantResponsePayload {
   /**
@@ -57,12 +57,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by acl/grant/0.2";
+export const DEPRECATION: string | null = "superseded by acl/grant/0.3";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by acl/grant/0.2
+ * @deprecated superseded by acl/grant/0.3
  */
 export type Payload = ACLGrantPayload;
 
@@ -72,7 +72,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/acl/grant/0.1#resp
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by acl/grant/0.2
+ * @deprecated superseded by acl/grant/0.3
  */
 export type Response = ACLGrantResponsePayload;
 

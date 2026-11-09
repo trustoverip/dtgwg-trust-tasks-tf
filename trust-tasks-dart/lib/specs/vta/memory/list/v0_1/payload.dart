@@ -38,7 +38,7 @@ class ResponseItemsItem {
 
 /// Success response to vta/memory/list. Type
 /// https://trusttasks.org/spec/vta/memory/list/0.1#response.
-@Deprecated('superseded by vta/memory/list/0.2')
+@Deprecated('superseded by vta/memory/list/0.3')
 class Response {
   const Response({
     required this.items,
@@ -65,7 +65,7 @@ class Response {
 }
 
 /// VTA Memory List — payload
-@Deprecated('superseded by vta/memory/list/0.2')
+@Deprecated('superseded by vta/memory/list/0.3')
 class Payload {
   const Payload({
     required this.contextId,
@@ -96,7 +96,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by vta/memory/list/0.2';
+const String? deprecation = 'superseded by vta/memory/list/0.3';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/vta/memory/list/0.1';

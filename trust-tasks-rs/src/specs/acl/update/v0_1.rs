@@ -4,7 +4,7 @@
 #![allow(deprecated)]
 /// Why this specification version is deprecated (SPEC "Superseded and
 /// Withdrawn Versions"), or `None` while it is current.
-pub const DEPRECATION: Option<&str> = Some("superseded by acl/update/0.2");
+pub const DEPRECATION: Option<&str> = Some("superseded by acl/update/0.3");
 #[allow(unused_imports)]
 use serde::{Deserialize, Serialize};
 /// Error types.
@@ -372,7 +372,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by acl/update/0.2")]
+#[deprecated(note = "superseded by acl/update/0.3")]
 pub struct Payload {
     ///Replacement key filter, applied wholesale rather than merged (the entry's allowedKeys becomes exactly this value). Omitted leaves the filter unchanged. Explicit `null` REMOVES the filter — the subject may once again reach every key within its scopes, a privilege increase a consumer SHOULD gate like clearing `expiresAt`. An EMPTY ARRAY sets the filter to no keys at all — the narrowest grant, not a wildcard. A replacement that narrows the previous filter IS a privilege reduction: unlike `scopes` (whose narrowing is refused here and routed to acl/revoke) it is accepted, because acl/revoke/0.1 cannot express a per-key reduction — but the consumer MUST audit it as a reduction and apply it to the subject's live sessions rather than letting the wider set survive until a credential expires.
     #[serde(
@@ -710,7 +710,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubject {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by acl/update/0.2")]
+#[deprecated(note = "superseded by acl/update/0.3")]
 pub struct Response {
     ///The realized entry the maintainer now holds, after the amendment.
     pub entry: AclEntry,

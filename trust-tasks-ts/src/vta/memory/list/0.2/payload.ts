@@ -8,6 +8,8 @@ import type { Ext, MemoryKey, MemoryRecord, MemoryValue, MemoryVersion } from ".
 
 /**
  * Enumerate the memory items in a context. Two modes, distinguished by whether `sinceVersion` is supplied. Without it this is a SNAPSHOT of live items, optionally narrowed by `prefix`. With it this is a CHANGE FEED: every item in the context whose version exceeds the watermark, tombstones included, which is what lets an agent's local cache on another device converge. Pagination is opaque-cursor based.
+ *
+ * @deprecated superseded by vta/memory/list/0.3
  */
 export interface VTAMemoryListPayload {
   /**
@@ -45,6 +47,8 @@ export interface VTAMemoryListPayload {
 }
 /**
  * Success response to vta/memory/list. Type https://trusttasks.org/spec/vta/memory/list/0.2#response.
+ *
+ * @deprecated superseded by vta/memory/list/0.3
  */
 export interface VTAMemoryListResponsePayload {
   /**
@@ -89,15 +93,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by vta/memory/list/0.3";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vta/memory/list/0.3
+ */
 export type Payload = VTAMemoryListPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/memory/list/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vta/memory/list/0.3
+ */
 export type Response = VTAMemoryListResponsePayload;
 
 /**

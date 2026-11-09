@@ -83,6 +83,11 @@
           "description": "When the item was deleted. Present only when `deleted` is true; equal to `updatedAt` for a tombstone the maintainer has not since rewritten."
         }
       }
+    },
+    "MemoryPurpose": {
+      "title": "MemoryPurpose",
+      "description": "The one purpose for which the caller will use the memory content a request discloses (VTI-ACL-103): a name registered in the VTI specification's purpose registry (`personalisation`, `taskExecution`, `analytics`, `modelTraining`) or an absolute IRI. The VTA grants it only if the caller's ACL entry does — `any` grants every purpose but `modelTraining` — refuses it otherwise (`purposeNotGranted`), and records it in the audit record of the read. Optional where the entry lists exactly one purpose (that one applies) or states `any` (the read is recorded as for no stated purpose).",
+      "$ref": "../../../acl/_shared/0.3/acl-entry.schema.json#/$defs/Purpose"
     }
   }
 }

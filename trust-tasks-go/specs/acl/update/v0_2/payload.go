@@ -13,6 +13,8 @@ import (
 
 // Response The success response to an acl/update/0.2 request. Carried in a Trust Task
 // document whose type is https://trusttasks.org/spec/acl/update/0.2#response.
+//
+// Deprecated: superseded by acl/update/0.3
 type Response struct {
 	// The realized entry the maintainer now holds, after the amendment.
 	Entry ACLEntry `json:"entry"`
@@ -338,6 +340,8 @@ type PayloadStepUp struct {
 // omitted member leaves it unchanged. Role changes are NOT expressible here — they go
 // through acl/change-role, which requires the current role as a compare-and-swap.
 // `delegatedBy` and the provenance timestamps are maintainer-populated and not settable.
+//
+// Deprecated: superseded by acl/update/0.3
 type Payload struct {
 	// VID of the entry to amend. The entry MUST already exist; this task does not create one
 	// (use acl/grant).
@@ -420,7 +424,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by acl/update/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/acl/update/0.2#response"

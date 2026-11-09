@@ -38,7 +38,7 @@ export interface UnsignedTrustTaskEnvelope {
    */
   threadId?: string;
   /**
-   * Type URI of the inner Trust Task (e.g. `https://trusttasks.org/spec/acl/grant/0.2`).
+   * Type URI of the inner Trust Task (e.g. `https://trusttasks.org/spec/acl/grant/0.3`).
    */
   type: string;
   /**
@@ -175,7 +175,7 @@ export const PAYLOAD_SCHEMA = {
           "type": "string",
           "format": "uri",
           "minLength": 1,
-          "description": "Type URI of the inner Trust Task (e.g. `https://trusttasks.org/spec/acl/grant/0.2`)."
+          "description": "Type URI of the inner Trust Task (e.g. `https://trusttasks.org/spec/acl/grant/0.3`)."
         },
         "issuer": {
           "type": "string",
@@ -340,7 +340,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "type": "string",
           "format": "uri",
           "minLength": 1,
-          "description": "Type URI of the inner Trust Task (e.g. `https://trusttasks.org/spec/acl/grant/0.2`)."
+          "description": "Type URI of the inner Trust Task (e.g. `https://trusttasks.org/spec/acl/grant/0.3`)."
         },
         "issuer": {
           "type": "string",

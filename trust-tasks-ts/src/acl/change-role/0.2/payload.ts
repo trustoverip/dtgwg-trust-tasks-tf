@@ -8,6 +8,8 @@ import type { AclEntry_AclV0_2 as AclEntry, ApproveCapabilityScope, ApproveCapab
 
 /**
  * Move a subject's AclEntry 0.2 from one role to another, with a compare-and-swap on the current role. Only the role changes; the entry's other members are carried over and re-evaluated against the new role's ceilings. The outer document members are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by acl/change-role/0.3
  */
 export interface ACLChangeRole02Payload {
   /**
@@ -33,6 +35,8 @@ export interface ACLChangeRole02Payload {
 }
 /**
  * The success response to an acl/change-role/0.2 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/change-role/0.2#response.
+ *
+ * @deprecated superseded by acl/change-role/0.3
  */
 export interface ACLChangeRole02ResponsePayload {
   /**
@@ -65,15 +69,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by acl/change-role/0.3";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by acl/change-role/0.3
+ */
 export type Payload = ACLChangeRole02Payload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/acl/change-role/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by acl/change-role/0.3
+ */
 export type Response = ACLChangeRole02ResponsePayload;
 
 /**

@@ -62,7 +62,7 @@ fn rejects_invalid_examples() {
         ),
         (
             "A type outside the rooms family — this task is not a general signing oracle; the schema refuses anything that is not a room request before the table is consulted.",
-            "{\n  \"document\": {\n    \"id\": \"urn:uuid:00000000-0000-4000-8000-0000000000a1\",\n    \"issuedAt\": \"2026-01-01T00:00:00Z\",\n    \"payload\": {\n      \"key\": \"giXFLTGBdnnQJRoIsktuIg\",\n      \"roomId\": \"did:webvh:example.com:rooms:northwind\"\n    },\n    \"recipient\": \"did:webvh:example.com:northwind-community\",\n    \"type\": \"https://trusttasks.org/spec/acl/grant/0.2#request\"\n  }\n}",
+            "{\n  \"document\": {\n    \"id\": \"urn:uuid:00000000-0000-4000-8000-0000000000a1\",\n    \"issuedAt\": \"2026-01-01T00:00:00Z\",\n    \"payload\": {\n      \"key\": \"giXFLTGBdnnQJRoIsktuIg\",\n      \"roomId\": \"did:webvh:example.com:rooms:northwind\"\n    },\n    \"recipient\": \"did:webvh:example.com:northwind-community\",\n    \"type\": \"https://trusttasks.org/spec/acl/grant/0.3#request\"\n  }\n}",
         ),
         (
             "A community task outside the community types — the schema admits rooms/*, vtc/rooms/offers/* and vtc/rooms/memberships/* only, so an administrator's request such as vtc/rooms/community/members/add is refused before the table is consulted: acting as a member never signs an administrator's act.",
