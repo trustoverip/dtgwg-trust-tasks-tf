@@ -1282,6 +1282,18 @@ export type MembershipSource = "added" | "joined" | "requestApproved" | "rule";
  */
 export type MerklePath = DigestMultibase[];
 /**
+ * The words of the message. On `kind: message`, plain text: a reader MUST NOT render it as markup (not markdown, not HTML, not a link it follows) and never follows a URL in it by itself. On `kind: reaction`, the reaction's value: normalised to NFC with every U+FE0E and U+FE0F removed before it is measured or compared, at most 64 code points after that normalisation, and one line (no U+000A, U+000B, U+000C, U+000D, U+0085, U+2028 or U+2029), as the rooms *A reaction's value* rule says. Empty means the message or reaction is withdrawn, which only a rewrite (`revision` greater than 1) may say.
+ */
+export type MessageBody = string;
+/**
+ * Names one message, or one reaction, across all of its revisions: 32 random bytes, base64url without padding (43 characters), the same convention as the rooms `FileManifest.fileId`. Minted by the message's author for its first revision and carried unchanged on every rewrite. It MUST be fresh and unguessable and MUST NOT be derived from the content, the counterparty, the time or any other identifier (SPEC §13.1 item 2). It is not the document `id`: a document `id` is used once per document, while a `messageId` names one message across every document that writes it. Opaque: a reader MUST NOT read meaning into it.
+ */
+export type MessageId = string;
+/**
+ * The author's revision number for a `messageId`: `1` on the first document written for it, and a strictly greater integer on each rewrite. Gaps are allowed, since every revision carries the whole message. The only key a reader orders rewrites by; `editedAt` never orders. Never shown.
+ */
+export type MessageRevision = number;
+/**
  * A one-line summary of the last failure, for an administrator: the step, the config and the backend's error code or status (`put to eu-s3-primary: 503 SlowDown`). Never a credential, a presigned URL, a signed request, a room identifier or anything derived from a room's contents.
  */
 export type MigrationLastError = string;
@@ -11451,6 +11463,12 @@ export interface MessageMeta {
    * When the message was first handed to the recipient. Present only when deliveryState is `delivered`.
    */
   deliveredAt?: string;
+}
+/**
+ * Names another message of the same direct conversation: the message a reply answers, or the message a reaction responds to. Never a message of another conversation. A reader resolves it only against messages it already holds for this conversation and MUST NOT fetch anything because of it. It MUST NOT name a message of kind `reaction`. The counterpart of the rooms `RecordReference`, with `messageId` in place of `key`.
+ */
+export interface MessageReference {
+  messageId: MessageId;
 }
 /**
  * One counter or gauge reading.

@@ -270,6 +270,11 @@ mod backup {
 }
 #[cfg(feature = "chat")]
 mod chat {
+    mod direct {
+        mod message {
+            mod v0_1;
+        }
+    }
     mod message {
         mod v0_1;
     }
