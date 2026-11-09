@@ -11,6 +11,29 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.28.25 — 2026-11-09
+
+
+### Documentation
+
+- **vta/dids**: Did:webs is eligible with the key-role designation extension (#1070)
+
+* docs(vta/dids): did:webs is eligible with the key-role designation extension
+
+  The did:webs method profile declared the method ineligible as published
+  (criteria 4 and 6: no controller-chosen relationships, no room for
+  keyRoles or revoked) and recommended an extension A: role keys anchored in
+  the KEL, rendered into their roles' relationships with keyRoles and
+  revoked, key-state keys in no relationship. affinidi-did-webs 0.9.1
+  implements it as a key-role designation (an anchored ACDC), proposed to
+  the did:webs specification.
+
+  The profile now states the status as eligible with that extension and
+  ineligible without it, and renders §4 as built: the record's schema and
+  attributes, one standing record, accumulated revocations, the document's
+  members, the fail-closed checks. It states the interop caveat: a resolver
+  without the extension refuses the published did.json.
+
 ## 0.28.24 — 2026-11-09
 
 
