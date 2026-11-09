@@ -2,12 +2,16 @@
 
 Covers `DidMethodName` **`webs`**.
 
-**Status: ineligible as the method is published.** A VTA **MUST** refuse to create a
-key-role identity under `did:webs`, with `vta/dids:methodNotEligible` and
-`details.missing: [4, 6]`, until the method provides what §1 below says it lacks. The rest
-of this profile is the mapping that applies from then, so that the extension needed can be
-proposed against a fixed target and the VTA work can start. It is flagged for
-working-group review.
+**Status: eligible with the key-role designation extension; ineligible without it.** A
+VTA **MAY** create a key-role identity under `did:webs` only with extension A below — the
+*key-role designation* — and **MUST** refuse otherwise, with `vta/dids:methodNotEligible`
+and `details.missing: [4, 6]`. Extension A is proposed to the did:webs specification
+(Trust Over IP KERI Suite WG) and has a reference implementation in `affinidi-did-webs`
+0.9.1 (`key_roles` module; proposal text in its `docs/key-role-designation.md`). Until the
+did:webs specification adopts it, a did:webs resolver that does not implement it derives a
+different document and so refuses the published `did.json`: a key-role identity under
+`did:webs` resolves only for verifiers whose resolver implements the extension. It is
+flagged for working-group review.
 
 ## 1. Eligibility
 
@@ -18,9 +22,9 @@ Against [CONVENTIONS.md §3.2](../CONVENTIONS.md#32-eligibility):
 | 1. Verifiable history | **Met.** The key event log (KEL), with witness receipts |
 | 2. Commitment to successors, more than one | **Met, and better than required.** Next-key digests `n` with a next threshold `nt`, which may be fractionally weighted |
 | 3. Rotation without change; deactivation | **Met.** The AID never changes; rotation to no next keys ends it |
-| 4. Controller-chosen relationships | **Not met.** The DID document is *derived* from the KEL: every key in the current key state `k` becomes a verification method in **both** `authentication` and `assertionMethod` (a `ConditionalProof2022` method when `kt` exceeds 1), and the method gives the controller no normative way to publish other keys or choose their relationships. The current signing keys — the change authority — are therefore role-less verification methods in two relationships, which CONVENTIONS.md §2.1 items 1 and 4 forbid (VTI-KEY-071, VTI-KEY-091, VTI-KEY-093) |
+| 4. Controller-chosen relationships | **Met with extension A; not met without it.** Without it, the DID document is *derived* from the KEL: every key in the current key state `k` becomes a verification method in **both** `authentication` and `assertionMethod` (a `ConditionalProof2022` method when `kt` exceeds 1), and the method gives the controller no normative way to publish other keys or choose their relationships. The current signing keys — the change authority — are therefore role-less verification methods in two relationships, which CONVENTIONS.md §2.1 items 1 and 4 forbid (VTI-KEY-071, VTI-KEY-091, VTI-KEY-093) |
 | 5. Historic resolution | **Met.** The `versionId` DID parameter selects a KEL sequence number |
-| 6. Room for `keyRoles` and `revoked` | **Not met.** The document is generated, and must equal the one derived from `keri.cesr`; there is no member for either |
+| 6. Room for `keyRoles` and `revoked` | **Met with extension A; not met without it.** Without it the document is generated, must equal the one derived from `keri.cesr`, and has no member for either |
 
 The method's informative *Key Agreement* guidance — use the X25519 key corresponding to an
 Ed25519 key in `k` — is refused in any case (CONVENTIONS.md §14 item 3).
@@ -68,10 +72,38 @@ DID parameter.
 
 ## 4. Rendering
 
-Per extension A: role keys from the anchored record, in their roles' relationships;
-`keyRoles` and `revoked` from the record; key-state keys in no relationship. Witnesses
-(`b`, `bt`) receipt every event, and **SHOULD** be at least one in a boundary other than the
-VTA's (CONVENTIONS.md §5.4).
+Extension A, as the key-role designation implements it:
+
+- **The record** is an ACDC of schema `EPulJFl5SEb8qb3ca5teXHRGiWmTsTkylGTrS2vB4ZQx`,
+  issued by the AID in a registry it anchors, and anchored by an interaction event. Its
+  attributes carry `roles`, an object from a role identifier to a non-empty array of CESR
+  public keys (`attestation` and `operational`: Ed25519, P-256 or secp256k1 signing keys;
+  `messaging`: X25519, P-256 or secp256k1 key-agreement keys), and `revoked`, an array of
+  `{ "key": <CESR>, "compromisedAt": <RFC 3339> }`.
+- **One record stands.** Issuing a record revokes the one before it. A planned rotation is
+  a new record without the retired key, which then leaves the document (VTI-KEY-126). A
+  revocation for compromise is a new record listing the key under `revoked`.
+- **Revocations accumulate.** The resolver collects every `revoked` entry from every record
+  the AID has issued, replaced ones included, and keeps the earliest compromise time per
+  key, so a later record cannot un-revoke a key (VTI-KEY-127). The issuer carries the
+  entries forward as well.
+- **The document** lists as verification methods only the role keys (`JsonWebKey`, id
+  `#<CESR key>`), each in the relationship its role requires and in no other
+  (VTI-KEY-091), and the revoked keys, with `revoked` and in no relationship. `keyRoles`
+  is a top-level member (VTI-KEY-090, VTI-KEY-095). The key-state keys `k` and the
+  `ConditionalProof2022` method are in no relationship and not in `keyRoles`
+  (VTI-KEY-093); the reference implementation omits them from `verificationMethod`
+  altogether, which the proposal leaves open.
+- **Key agreement designations give way** to the `messaging` role; designated services and
+  aliases apply as before.
+- **The record is checked on resolution, failing closed.** A role key that is a key of the
+  current key state or is committed in `n`, or a key under two roles or both bound and
+  revoked, invalidates the record. An AID that has issued a record stays a key-role
+  identity: if the standing record is invalid, or two stand at once, the document lists no
+  role keys (its revoked keys remain) and never falls back to the key-state keys. An
+  unrecognised role identifier is ignored (VTI-KEY-074) and refused at issuance.
+- **Witnesses** (`b`, `bt`) receipt every event, and **SHOULD** be at least one in a
+  boundary other than the VTA's (CONVENTIONS.md §5.4).
 
 ## 5. The cache horizon input
 
@@ -91,8 +123,8 @@ is the indexed signature, which the VTA attaches before receipting.
 
 ## 8. Method parameters
 
-To be defined with extension A (witness set `b` and threshold `bt` at creation and
-update). No schema is published while the method is ineligible.
+The witness set `b` and threshold `bt` at creation and update. No parameters schema is
+published yet: it follows the working group's review of extension A.
 
 ## 9. Algorithms
 
