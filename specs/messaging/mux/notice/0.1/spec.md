@@ -55,7 +55,7 @@ The **Messaging — Mux Notice** Trust Task carries what a mux party **must act 
 |---|---|---|
 | `grantsSuspended` | each affected principal | The unknown-key rule ([`messaging/mux/grant`](../../grant/0.1/spec.md#the-unknown-key-rule)) suspended these grants. **They must be recreated**: a fresh grant signed by the member DID under its current epoch. |
 | `grantsRevoked` | each affected principal | The member revoked, the member advanced its epoch with revoke-all, an operator acted, or an account was removed. Informational: there is no recreate path unless the member grants again. |
-| `grantsExpiring` | the principal | Grants past about three quarters of their lifetime, whose renewal the application did **not** opt into. They lapse unless the application acts. |
+| `grantsExpiring` | the principal | Grants past about three quarters of their lifetime that have not been renewed. They lapse unless the application renews them; a client that renews them itself discards the notice. |
 | `grantsPresent` | the member DID | The member DID authenticated directly while grants on it exist, so a new owner learns that delegations exist. |
 
 ## Status of this Document
@@ -89,7 +89,7 @@ A conforming **producer** (the mediator) **MUST**:
 2. Commit the change a notice reports before storing the notice: a `grantsSuspended` or `grantsRevoked` notice is stored only once the grants are suspended or revoked and their members detached.
 3. Store `grantsSuspended` for each principal whose grants the unknown-key rule suspended, and `grantsPresent` for the member DID whose new key triggered it, or whenever the member DID authenticates directly while grants on it exist and it has not been told since they last changed.
 4. Store `grantsRevoked` for each affected principal when a member DID revokes (messaging/mux/revoke as `member`), advances its epoch (messaging/mux/revoke-all), or an operator revokes, or an account is removed. A principal that revoked its own grants is not sent one.
-5. Store `grantsExpiring` once per grant, at about three quarters of its lifetime, only for grants whose renewal the application did not opt into. Batching several grants into one notice is RECOMMENDED.
+5. Store `grantsExpiring` once per grant, once about three quarters of its lifetime has passed, while it is still active and has not been replaced. Whether an application opted into renewal is known only to the client, so the producer sends it for every such grant. It MAY be stored when the principal next authenticates or opens a connection, or on a periodic check while the principal is connected, rather than at that instant; it is never stored for a grant already expired, revoked, suspended or replaced. Batching several grants into one notice is RECOMMENDED.
 6. Never disclose a principal DID in a notice to a member DID: `grantsPresent` carries counts only. The member lists principals with messaging/mux/list.
 
 A conforming **consumer** **MUST**:
@@ -98,7 +98,7 @@ A conforming **consumer** **MUST**:
 2. Delete a notice from its inbox only after it has handled it; deletion is the acknowledgement.
 3. Treat the document `id` as the notice's identity, and handle a re-delivered notice as already handled.
 4. On `grantsSuspended`, stop relying on the listed grants, and surface the notice to its application. Recreate a grant only where the application opted into recreation for it and the device holds the member DID's key; recreating means a fresh messaging/mux/grant signed under the member's current epoch with a new `grantId` and an `iat` newer than the suspended grant's.
-5. On `grantsExpiring`, surface the notice; renew only where the application opted in.
+5. On `grantsExpiring`, renew only where the application opted in, and surface the notice otherwise; a client that renews a listed grant itself, or already has, discards the notice for it.
 6. Not respond. There is no `#response` form for this task.
 
 ## Authorization
