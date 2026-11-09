@@ -31,6 +31,70 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.37.12](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.37.11...trust-tasks-rs-v0.37.12) — 2026-11-09
+
+
+### Added
+
+- **messaging/mux**: DID multiplexing at a mediator (messaging/mux/*/0.1) ([#1068](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1068))
+
+* feat(messaging/mux): DID multiplexing at a mediator (messaging/mux/*/0.1)
+
+  One authenticated connection (the principal) carries live delivery and
+  pickup for many member DIDs: session attaches bound to one connection's
+  sessionId/muxNonce, and stored grants a member DID signs once. Members
+  sign closed statements (muxAttach, muxGrant, muxRevokeAll) with an
+  embedded Data Integrity proof (proofPurpose authentication), verified in a
+  normative order before any state changes.
+
+  Adds attach, detach, grant, list, update (narrow only), revoke,
+  revoke-all (epoch advance), event (live: ready/attached/detached/refused,
+  incl. the tsp-mux subprotocol) and notice (durable: grantsSuspended,
+  grantsRevoked, grantsExpiring, grantsPresent), with shared definitions in
+  messaging/mux/_shared/0.1/mux.schema.json, stable per-statement refusal
+  codes, the unknown-key suspension rule and replay floors.
+
+  Allowlists eddsa-rdfc-2022 as W3C Data Integrity vocabulary for the
+  casing lint.
+
+- **vta/memory**: Versioned writes, tombstones, a change feed and named reads (put/delete/list 0.2, get 0.1) ([#1067](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1067))
+
+vta/memory 0.1 is an unconditional upsert key/value store: put overwrites
+  with no version, so two writers clobber each other undetected; delete is a
+  hard delete, so another device's cached copy never learns the item is gone;
+  and list returns the whole context with no prefix, paging or change feed.
+
+  The new versions apply vta/app-state's semantics to memory, restated per
+  spec so each can be implemented on its own:
+
+  - A per-context write counter (`MemoryRecord.version`, in the new shared
+    definition vta/_shared/0.1/memory-record) serves both as the
+    optimistic-concurrency token and the sync watermark.
+  - put/0.2: optional `expectedVersion` (0 = create only). A failed
+    precondition is `versionConflict`, with the current version and value
+    in its details so the loser need not re-read. The response returns
+    `version`, `wasCreated`, `updatedAt` and `valueBytes`. `valueTooLarge`
+    carries `limitBytes` / `actualBytes`. `currentValue` is withheld from a
+    caller that may write the context but not read it.
+  - delete/0.2: leaves a tombstone, takes an optional positive
+    `expectedVersion`, and treats deleting nothing as success
+    (`existed: false`).
+  - list/0.2: a snapshot (prefix, cursor/limit, values by default as in
+    0.1) or a change feed from `sinceVersion` that includes tombstones,
+    with `highWatermark`, `watermarkTooOld` and `cursorInvalid`.
+  - get/0.1 (new): up to 256 named keys, each answered once in `items`,
+    `missing` or `deferred`. It is the read whose audit can name exactly
+    which items an agent saw.
+
+  The 0.1 versions stay published and are not superseded; a VTA serving
+  both writes one store, and the 0.2 prose says how 0.1 writes and deletes
+  take versions and leave tombstones there.
+
+  Requested in OpenVTC/verifiable-trust-infrastructure#2115. The
+  item-level read audit in #2116 builds on get/0.1.
+
+
+
 ## [0.37.11](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.37.10...trust-tasks-rs-v0.37.11) — 2026-11-09
 
 
