@@ -391,6 +391,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadOldSignature {
 pub struct Response {
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub ext: ::std::option::Option<Ext>,
+    ///The DID method of `newDid`, as the community verified its signature: `did:scid` for a `did:scid:vh:1` identifier.
     pub method: ResponseMethod,
     #[serde(rename = "newDid")]
     pub new_did: ResponseNewDid,
@@ -405,7 +406,7 @@ impl Response {
         Default::default()
     }
 }
-///`ResponseMethod`
+///The DID method of `newDid`, as the community verified its signature: `did:scid` for a `did:scid:vh:1` identifier.
 ///
 #[derive(
     ::serde::Deserialize,
@@ -425,12 +426,18 @@ pub enum ResponseMethod {
     DidKey,
     #[serde(rename = "did:webvh")]
     DidWebvh,
+    #[serde(rename = "did:scid")]
+    DidScid,
+    #[serde(rename = "did:webs")]
+    DidWebs,
 }
 impl ::std::fmt::Display for ResponseMethod {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         match *self {
             Self::DidKey => f.write_str("did:key"),
             Self::DidWebvh => f.write_str("did:webvh"),
+            Self::DidScid => f.write_str("did:scid"),
+            Self::DidWebs => f.write_str("did:webs"),
         }
     }
 }
@@ -440,6 +447,8 @@ impl ::std::str::FromStr for ResponseMethod {
         match value {
             "did:key" => Ok(Self::DidKey),
             "did:webvh" => Ok(Self::DidWebvh),
+            "did:scid" => Ok(Self::DidScid),
+            "did:webs" => Ok(Self::DidWebs),
             _ => Err("invalid value".into()),
         }
     }
@@ -746,7 +755,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"method\":{\"enum\":[\"did:key\",\"did:webvh\"],\"type\":\"string\"},\"newDid\":{\"minLength\":1,\"type\":\"string\"},\"roleVac\":{\"description\":\"Role credential re-issued to the new DID (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\\\"role:<name>\\\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues.\",\"type\":\"object\"},\"vmc\":{\"description\":\"Membership credential re-issued to the new DID (opaque here).\",\"type\":\"object\"}},\"required\":[\"newDid\",\"method\",\"vmc\",\"roleVac\"],\"title\":\"VTC Members Rotate — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/members/rotate/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"newDid\":{\"minLength\":1,\"type\":\"string\"},\"newSignature\":{\"description\":\"Signature over the challenge by the NEW key.\",\"pattern\":\"^[0-9a-f]+$\",\"type\":\"string\"},\"oldDid\":{\"minLength\":1,\"type\":\"string\"},\"oldSignature\":{\"description\":\"Signature over the challenge by the OLD key.\",\"pattern\":\"^[0-9a-f]+$\",\"type\":\"string\"},\"rotationId\":{\"description\":\"From a prior rotate-challenge.\",\"type\":\"string\"}},\"required\":[\"rotationId\",\"oldDid\",\"newDid\",\"oldSignature\",\"newSignature\"],\"title\":\"VTC Members Rotate — payload\",\"type\":\"object\"}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"method\":{\"description\":\"The DID method of `newDid`, as the community verified its signature: `did:scid` for a `did:scid:vh:1` identifier.\",\"enum\":[\"did:key\",\"did:webvh\",\"did:scid\",\"did:webs\"],\"type\":\"string\"},\"newDid\":{\"minLength\":1,\"type\":\"string\"},\"roleVac\":{\"description\":\"Role credential re-issued to the new DID (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\\\"role:<name>\\\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues.\",\"type\":\"object\"},\"vmc\":{\"description\":\"Membership credential re-issued to the new DID (opaque here).\",\"type\":\"object\"}},\"required\":[\"newDid\",\"method\",\"vmc\",\"roleVac\"],\"title\":\"VTC Members Rotate — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/members/rotate/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"newDid\":{\"minLength\":1,\"type\":\"string\"},\"newSignature\":{\"description\":\"Signature over the challenge by the NEW key.\",\"pattern\":\"^[0-9a-f]+$\",\"type\":\"string\"},\"oldDid\":{\"minLength\":1,\"type\":\"string\"},\"oldSignature\":{\"description\":\"Signature over the challenge by the OLD key.\",\"pattern\":\"^[0-9a-f]+$\",\"type\":\"string\"},\"rotationId\":{\"description\":\"From a prior rotate-challenge.\",\"type\":\"string\"}},\"required\":[\"rotationId\",\"oldDid\",\"newDid\",\"oldSignature\",\"newSignature\"],\"title\":\"VTC Members Rotate — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -755,7 +764,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"method\":{\"enum\":[\"did:key\",\"did:webvh\"],\"type\":\"string\"},\"newDid\":{\"minLength\":1,\"type\":\"string\"},\"roleVac\":{\"description\":\"Role credential re-issued to the new DID (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\\\"role:<name>\\\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues.\",\"type\":\"object\"},\"vmc\":{\"description\":\"Membership credential re-issued to the new DID (opaque here).\",\"type\":\"object\"}},\"required\":[\"newDid\",\"method\",\"vmc\",\"roleVac\"],\"title\":\"VTC Members Rotate — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"method\":{\"description\":\"The DID method of `newDid`, as the community verified its signature: `did:scid` for a `did:scid:vh:1` identifier.\",\"enum\":[\"did:key\",\"did:webvh\",\"did:scid\",\"did:webs\"],\"type\":\"string\"},\"newDid\":{\"minLength\":1,\"type\":\"string\"},\"roleVac\":{\"description\":\"Role credential re-issued to the new DID (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\\\"role:<name>\\\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues.\",\"type\":\"object\"},\"vmc\":{\"description\":\"Membership credential re-issued to the new DID (opaque here).\",\"type\":\"object\"}},\"required\":[\"newDid\",\"method\",\"vmc\",\"roleVac\"],\"title\":\"VTC Members Rotate — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {
