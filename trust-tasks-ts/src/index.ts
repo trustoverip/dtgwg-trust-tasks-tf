@@ -2268,6 +2268,9 @@ export import ContextShared_v0_1 = _ContextShared_v0_1;
 import * as _DidTemplateShared_v0_1 from "./vta/_shared/0.1/did-template.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import DidTemplateShared_v0_1 = _DidTemplateShared_v0_1;
+import * as _MemoryRecordShared_v0_1 from "./vta/_shared/0.1/memory-record.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import MemoryRecordShared_v0_1 = _MemoryRecordShared_v0_1;
 import * as _PasskeyVmShared_v0_1 from "./vta/_shared/0.1/passkey-vm.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import PasskeyVmShared_v0_1 = _PasskeyVmShared_v0_1;
@@ -2577,12 +2580,24 @@ export import VtaManagementReloadServices_v1_0 = _VtaManagementReloadServices_v1
 import * as _VtaMemoryDelete_v0_1 from "./vta/memory/delete/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtaMemoryDelete_v0_1 = _VtaMemoryDelete_v0_1;
+import * as _VtaMemoryDelete_v0_2 from "./vta/memory/delete/0.2/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtaMemoryDelete_v0_2 = _VtaMemoryDelete_v0_2;
+import * as _VtaMemoryGet_v0_1 from "./vta/memory/get/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtaMemoryGet_v0_1 = _VtaMemoryGet_v0_1;
 import * as _VtaMemoryList_v0_1 from "./vta/memory/list/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtaMemoryList_v0_1 = _VtaMemoryList_v0_1;
+import * as _VtaMemoryList_v0_2 from "./vta/memory/list/0.2/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtaMemoryList_v0_2 = _VtaMemoryList_v0_2;
 import * as _VtaMemoryPut_v0_1 from "./vta/memory/put/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtaMemoryPut_v0_1 = _VtaMemoryPut_v0_1;
+import * as _VtaMemoryPut_v0_2 from "./vta/memory/put/0.2/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtaMemoryPut_v0_2 = _VtaMemoryPut_v0_2;
 import * as _VtaMetricsShow_v0_1 from "./vta/metrics/show/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtaMetricsShow_v0_1 = _VtaMetricsShow_v0_1;
