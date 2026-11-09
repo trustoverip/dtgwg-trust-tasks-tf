@@ -37,6 +37,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/change-role/0.2#response" => <crate::specs::acl::change_role::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/change-role/0.3" => <crate::specs::acl::change_role::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/change-role/0.3#response" => <crate::specs::acl::change_role::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/grant/0.1" => <crate::specs::acl::grant::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/grant/0.1#response" => <crate::specs::acl::grant::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -44,6 +48,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/acl/grant/0.2" => <crate::specs::acl::grant::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/grant/0.2#response" => <crate::specs::acl::grant::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/grant/0.3" => <crate::specs::acl::grant::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/grant/0.3#response" => <crate::specs::acl::grant::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/list/0.1" => <crate::specs::acl::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "acl")]
@@ -57,6 +65,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/list/0.3#response" => <crate::specs::acl::list::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/list/0.4" => <crate::specs::acl::list::v0_4::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/list/0.4#response" => <crate::specs::acl::list::v0_4::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/revoke/0.1" => <crate::specs::acl::revoke::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/revoke/0.1#response" => <crate::specs::acl::revoke::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -65,6 +77,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/revoke/0.2#response" => <crate::specs::acl::revoke::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/revoke/0.3" => <crate::specs::acl::revoke::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/revoke/0.3#response" => <crate::specs::acl::revoke::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/show/0.1" => <crate::specs::acl::show::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/show/0.1#response" => <crate::specs::acl::show::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
@@ -72,6 +88,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/acl/show/0.2" => <crate::specs::acl::show::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/show/0.2#response" => <crate::specs::acl::show::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/show/0.3" => <crate::specs::acl::show::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/show/0.3#response" => <crate::specs::acl::show::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/swap-key/0.1" => <crate::specs::acl::swap_key::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "acl")]
@@ -84,6 +104,10 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/acl/update/0.2" => <crate::specs::acl::update::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/update/0.2#response" => <crate::specs::acl::update::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/update/0.3" => <crate::specs::acl::update::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/update/0.3#response" => <crate::specs::acl::update::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "audit")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/audit/list/0.1" => <crate::specs::audit::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -4470,10 +4494,22 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vta/memory/delete/0.2#response" => <crate::specs::vta::memory::delete::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/delete/0.3" => <crate::specs::vta::memory::delete::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/delete/0.3#response" => <crate::specs::vta::memory::delete::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/memory/get/0.1" => <crate::specs::vta::memory::get::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/memory/get/0.1#response" => <crate::specs::vta::memory::get::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/get/0.2" => <crate::specs::vta::memory::get::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/get/0.2#response" => <crate::specs::vta::memory::get::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/memory/list/0.1" => <crate::specs::vta::memory::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -4488,6 +4524,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vta/memory/list/0.2#response" => <crate::specs::vta::memory::list::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/list/0.3" => <crate::specs::vta::memory::list::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/list/0.3#response" => <crate::specs::vta::memory::list::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/memory/put/0.1" => <crate::specs::vta::memory::put::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
@@ -4498,6 +4540,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/memory/put/0.2#response" => <crate::specs::vta::memory::put::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/put/0.3" => <crate::specs::vta::memory::put::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/put/0.3#response" => <crate::specs::vta::memory::put::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/metrics/show/0.1" => <crate::specs::vta::metrics::show::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -7956,12 +8004,20 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
             crate::specs::acl::change_role::v0_2::Payload,
         >()),
         #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/change-role/0.3" => Some(crate::SpecPolicy::of::<
+            crate::specs::acl::change_role::v0_3::Payload,
+        >()),
+        #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/grant/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::acl::grant::v0_1::Payload,
         >()),
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/grant/0.2" => Some(crate::SpecPolicy::of::<
             crate::specs::acl::grant::v0_2::Payload,
+        >()),
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/grant/0.3" => Some(crate::SpecPolicy::of::<
+            crate::specs::acl::grant::v0_3::Payload,
         >()),
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/list/0.1" => Some(crate::SpecPolicy::of::<
@@ -7976,6 +8032,10 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
             crate::specs::acl::list::v0_3::Payload,
         >()),
         #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/list/0.4" => Some(crate::SpecPolicy::of::<
+            crate::specs::acl::list::v0_4::Payload,
+        >()),
+        #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/revoke/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::acl::revoke::v0_1::Payload,
         >()),
@@ -7984,12 +8044,20 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
             crate::specs::acl::revoke::v0_2::Payload,
         >()),
         #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/revoke/0.3" => Some(crate::SpecPolicy::of::<
+            crate::specs::acl::revoke::v0_3::Payload,
+        >()),
+        #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/show/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::acl::show::v0_1::Payload,
         >()),
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/show/0.2" => Some(crate::SpecPolicy::of::<
             crate::specs::acl::show::v0_2::Payload,
+        >()),
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/show/0.3" => Some(crate::SpecPolicy::of::<
+            crate::specs::acl::show::v0_3::Payload,
         >()),
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/swap-key/0.1" => Some(crate::SpecPolicy::of::<
@@ -8002,6 +8070,10 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/update/0.2" => Some(crate::SpecPolicy::of::<
             crate::specs::acl::update::v0_2::Payload,
+        >()),
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/update/0.3" => Some(crate::SpecPolicy::of::<
+            crate::specs::acl::update::v0_3::Payload,
         >()),
         #[cfg(feature = "audit")]
         #[cfg(not(test))]
@@ -12245,8 +12317,18 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/delete/0.3" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::memory::delete::v0_3::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/memory/get/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::vta::memory::get::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/get/0.2" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::memory::get::v0_2::Payload,
         >()),
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
@@ -12260,6 +12342,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/list/0.3" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::memory::list::v0_3::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/memory/put/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::vta::memory::put::v0_1::Payload,
         >()),
@@ -12267,6 +12354,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/memory/put/0.2" => Some(crate::SpecPolicy::of::<
             crate::specs::vta::memory::put::v0_2::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/put/0.3" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::memory::put::v0_3::Payload,
         >()),
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
@@ -15688,12 +15780,20 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
             Some(crate::specs::acl::change_role::v0_2::ERROR_CODES)
         }
         #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/change-role/0.3" => {
+            Some(crate::specs::acl::change_role::v0_3::ERROR_CODES)
+        }
+        #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/grant/0.1" => {
             Some(crate::specs::acl::grant::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/grant/0.2" => {
             Some(crate::specs::acl::grant::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/grant/0.3" => {
+            Some(crate::specs::acl::grant::v0_3::ERROR_CODES)
         }
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/list/0.1" => {
@@ -15708,6 +15808,10 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
             Some(crate::specs::acl::list::v0_3::ERROR_CODES)
         }
         #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/list/0.4" => {
+            Some(crate::specs::acl::list::v0_4::ERROR_CODES)
+        }
+        #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/revoke/0.1" => {
             Some(crate::specs::acl::revoke::v0_1::ERROR_CODES)
         }
@@ -15716,12 +15820,20 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
             Some(crate::specs::acl::revoke::v0_2::ERROR_CODES)
         }
         #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/revoke/0.3" => {
+            Some(crate::specs::acl::revoke::v0_3::ERROR_CODES)
+        }
+        #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/show/0.1" => {
             Some(crate::specs::acl::show::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/show/0.2" => {
             Some(crate::specs::acl::show::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/show/0.3" => {
+            Some(crate::specs::acl::show::v0_3::ERROR_CODES)
         }
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/swap-key/0.1" => {
@@ -15734,6 +15846,10 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(feature = "acl")]
         "https://trusttasks.org/spec/acl/update/0.2" => {
             Some(crate::specs::acl::update::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "acl")]
+        "https://trusttasks.org/spec/acl/update/0.3" => {
+            Some(crate::specs::acl::update::v0_3::ERROR_CODES)
         }
         #[cfg(feature = "audit")]
         #[cfg(not(test))]
@@ -19471,8 +19587,18 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/delete/0.3" => {
+            Some(crate::specs::vta::memory::delete::v0_3::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/memory/get/0.1" => {
             Some(crate::specs::vta::memory::get::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/get/0.2" => {
+            Some(crate::specs::vta::memory::get::v0_2::ERROR_CODES)
         }
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
@@ -19486,6 +19612,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/list/0.3" => {
+            Some(crate::specs::vta::memory::list::v0_3::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/memory/put/0.1" => {
             Some(crate::specs::vta::memory::put::v0_1::ERROR_CODES)
         }
@@ -19493,6 +19624,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/memory/put/0.2" => {
             Some(crate::specs::vta::memory::put::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/memory/put/0.3" => {
+            Some(crate::specs::vta::memory::put::v0_3::ERROR_CODES)
         }
         #[cfg(feature = "vta")]
         #[cfg(not(test))]

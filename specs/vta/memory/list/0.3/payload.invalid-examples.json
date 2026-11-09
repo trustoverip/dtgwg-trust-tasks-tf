@@ -1,0 +1,4 @@
+[
+  { "note": "limit is bounded at 1000 so a single page cannot ask for an unbounded context.", "payload": { "contextId": "finance", "limit": 5000 } },
+  { "note": "An empty prefix is no filter; omit the member instead.", "payload": { "contextId": "finance", "prefix": "" } }
+]

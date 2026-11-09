@@ -8,6 +8,8 @@ import type { Ext, MemoryExpectedVersion, MemoryKey, MemoryValue, MemoryVersion 
 
 /**
  * Store one memory item at its `(contextId, key)` address. `expectedVersion` makes the write conditional: a positive value requires the item to be at exactly that version, and zero requires that no live item exists.
+ *
+ * @deprecated superseded by vta/memory/put/0.3
  */
 export interface VTAMemoryPutPayload {
   /**
@@ -27,6 +29,8 @@ export interface VTAMemoryPutPayload {
 }
 /**
  * Success response to vta/memory/put. Type https://trusttasks.org/spec/vta/memory/put/0.2#response. A failed precondition is not a success: it is a trust-task-error carrying vta/memory/put:versionConflict, whose details carry the maintainer's current version and value.
+ *
+ * @deprecated superseded by vta/memory/put/0.3
  */
 export interface VTAMemoryPutResponsePayload {
   /**
@@ -76,15 +80,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by vta/memory/put/0.3";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vta/memory/put/0.3
+ */
 export type Payload = VTAMemoryPutPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/memory/put/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vta/memory/put/0.3
+ */
 export type Response = VTAMemoryPutResponsePayload;
 
 /**

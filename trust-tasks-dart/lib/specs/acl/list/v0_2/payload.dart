@@ -604,7 +604,7 @@ class AclEntry {
 
 /// The success response to an acl/list/0.2 request. Carried in a Trust Task document
 /// whose type is https://trusttasks.org/spec/acl/list/0.2#response.
-@Deprecated('superseded by acl/list/0.3')
+@Deprecated('superseded by acl/list/0.4')
 class Response {
   const Response({
     required this.entries,
@@ -689,7 +689,7 @@ extension type const PayloadDirection(String value) {
 /// filters and paging. A hierarchical filter (`context`, `resource`) MUST state its
 /// `direction`; there is no default direction. The outer document members are owned by
 /// the framework — SPEC §6.3.
-@Deprecated('superseded by acl/list/0.3')
+@Deprecated('superseded by acl/list/0.4')
 class Payload {
   const Payload({
     this.role,
@@ -783,7 +783,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by acl/list/0.3';
+const String? deprecation = 'superseded by acl/list/0.4';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/acl/list/0.2';

@@ -1328,6 +1328,10 @@ export type MemoryExpectedVersion = number;
  */
 export type MemoryKey = string;
 /**
+ * The one purpose for which the caller will use the memory content a request discloses (VTI-ACL-103): a name registered in the VTI specification's purpose registry (`personalisation`, `taskExecution`, `analytics`, `modelTraining`) or an absolute IRI. The VTA grants it only if the caller's ACL entry does — `any` grants every purpose but `modelTraining` — refuses it otherwise (`purposeNotGranted`), and records it in the audit record of the read. Optional where the entry lists exactly one purpose (that one applies) or states `any` (the read is recorded as for no stated purpose).
+ */
+export type MemoryPurpose = Purpose_AclV0_3;
+/**
  * The remembered text: a fact, a summary, a preference. Opaque to the maintainer, which stores it as given and never interprets, rewrites or summarises it. The maintainer enforces a documented per-item cap on its size (see `vta/memory/put`).
  */
 export type MemoryValue = string;
@@ -1885,6 +1889,18 @@ export type ProviderObjectPrefix = string;
  * What the request is for. A CLOSED list: each purpose has a fixed row in CONVENTIONS.md §3 stating what is revealed at each step, what the grant contains, what redeem returns and the window lengths. Version 0.1 defines `login` only. `stepUp` and `deviceEnrol` are reserved names; adding one is a new version of this component and of every task that references it, never an in-place edit.
  */
 export type Purpose = "login";
+/**
+ * An explicit purpose scope. Exactly one of two shapes, discriminated by `scope`: `any`, or `listed` with a NON-EMPTY list of purposes. The empty list is invalid, not a third shape.
+ */
+export type PurposeScope = PurposeScopeAny | PurposeScopeListed;
+/**
+ * What content is used for: a lowerCamelCase name registered in the VTI specification's purpose registry (Appendix H) — `personalisation`, `taskExecution`, `analytics`, `modelTraining` at the time of writing — or an absolute IRI naming a purpose defined elsewhere, such as a purpose of the W3C Data Privacy Vocabulary (`https://w3id.org/dpv#ServicePersonalisation`). Compared by exact string equality: a consumer MUST NOT treat a purpose it does not recognise as equal to any other, and grants only a request naming exactly a listed purpose (VTI-ACL-109). A registered name is never an IRI, because it contains no `:`.
+ */
+export type Purpose_AclV0_3 = Purpose_AclV0_31 & Purpose_AclV0_32;
+export type Purpose_AclV0_31 = {
+  [k: string]: unknown | undefined;
+};
+export type Purpose_AclV0_32 = string;
 /**
  * A device's platform push channel — the body the device registers with its push GATEWAY (push wake-up binding, https://trusttasks.org/binding/push/0.1; modeled on Aries RFC 0699/0734). The gateway holds this token and returns an opaque WakeHandle in exchange; the token is held by the gateway ONLY, never by the mediator or the maintainer/VTA. The gateway uses it to send a contentless wake-up when an authorized trigger asks — the push payload never carries Trust Task content. Tagged union over the discriminator `platform`.
  */
@@ -5279,6 +5295,84 @@ export interface AclEntry_AclV0_2 {
    * REQUIRED explicit key scope: which keys this subject may invoke the maintainer's signing oracle on. Exactly one of `{"scope": "all"}` (every key the entry's act scope reaches), `{"scope": "none"}` (no keys), or `{"scope": "listed", "keys": [...]}` with at least one key identifier. INTERSECTS WITH `act` — it can only narrow, never widen: a listed key that lies outside the entry's act scope remains unreachable, exactly as if it were not listed. There is no implicit form: an entry without `keys`, or with an empty `keys` list, is malformed and MUST be refused. A maintainer that operates no signing oracle states `{"scope": "none"}`. Replaces 0.1's `allowedKeys`, whose absence meant every key.
    */
   keys: KeyScope;
+  /**
+   * Optional human-readable label. Confers nothing.
+   */
+  label?: string;
+  createdAt?: string;
+  /**
+   * VID of the party that originally wrote this entry.
+   */
+  createdBy?: string;
+  updatedAt?: string;
+  /**
+   * VID of the party that last modified this entry.
+   */
+  updatedBy?: string;
+  /**
+   * Optional time after which the entry confers no authority. Evaluated at every authorization decision, not only when a session is established.
+   */
+  expiresAt?: string;
+  /**
+   * Per-entry authentication step-up configuration, consumed by the ACL maintainer when it gates an operation behind a step-up (see auth/step-up/policy). ADDITIVE-ONLY: a per-entry setting MAY raise the assurance required of this subject above the maintainer's system-wide floor, but MUST NOT lower it. The maintainer resolves the effective requirement as the strictest of (system floor, this entry). Carried forward from 0.1 unchanged.
+   */
+  stepUp?: {
+    /**
+     * VID authorized to ratify step-up for this subject — the `recipient` the maintainer addresses an auth/step-up/approve-request to (e.g. the holder's mobile authenticator or browser companion). Absent → the subject is its own approver (mode `self`) when it holds a usable authenticator; if neither an `approver` nor a self authenticator exists, no step-up method is available for this subject and the maintainer's fail-closed rule applies.
+     */
+    approver?: string;
+    /**
+     * Minimum step-up mode this subject MUST satisfy for gated operations, raising the system floor. `self` = the subject re-authenticates its own session; `delegated` = a separate `approver` MUST ratify. Omitted → the system floor applies unchanged. A value weaker than the resolved floor is ignored (additive-only).
+     */
+    require?: "self" | "delegated";
+  };
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1. Reverse-DNS-namespaced; consumers MUST ignore unrecognized namespaces. An extension member MUST NOT be interpreted as conferring authority.
+   */
+  ext?: Ext;
+}
+/**
+ * One access-control entry: who the grant is for (`subject`), the ceiling it is held under (`role`), where the subject may act (`act`) and approve (`approve`), and which capabilities it may exercise (`capabilities`) and approve (`approveCapabilities`).
+ *
+ * The act axis and the approve axis are independent and a consumer MUST resolve them separately: `act` + `capabilities` (+ `keys`) answer "may this subject do X"; `approve` + `approveCapabilities` answer "may this subject ratify someone else doing X". Neither implies the other. An entry with `act: {scope: none}` and an approve scope other than none is a least-privilege approver — able to satisfy an approval and unable to initiate any change.
+ */
+export interface AclEntry_AclV0_3 {
+  /**
+   * VID of the party in the ACL. Compared by exact string equality (SPEC.md §4.8); producers SHOULD emit canonical form.
+   */
+  subject: string;
+  /**
+   * Opaque role identifier interpreted by the ACL maintainer. A role is a CEILING, never a grant: it bounds the capabilities the entry may hold and never adds to them. A consumer that does not recognise the role MUST treat the entry as conferring no authority and MUST NOT fall back to a default role. Act scope and role are independent members; a consumer MUST NOT compute either from the other.
+   */
+  role: string;
+  /**
+   * REQUIRED explicit act scope: where this subject may make a change itself. Exactly one of `{"scope": "all"}` (unrestricted — every context the maintainer has), `{"scope": "none"}` (may act nowhere), or `{"scope": "contexts", "contexts": [...]}` with at least one context path (the named contexts and, where the maintainer's contexts are hierarchical, their descendants). There is no default and no implicit form: an entry without `act`, or with an empty `contexts` list, is malformed and MUST be refused, never read as `all` and never read as `none`. A maintainer that has no contexts (for example a community node that narrows authority with resource qualifiers instead) states `all` or `none` only. Replaces 0.1's `scopes`.
+   */
+  act: AuthorityScope;
+  /**
+   * OPTIONAL approve scope: where this subject may ratify a change made by someone else (a step-up ratification, a consent decision, an N-of-M approval). Same three shapes as `act`, resolved independently of it. ABSENT MEANS NONE — the subject may ratify nothing — so a consumer that has not implemented the member confers less than the producer intended, never more. A producer SHOULD state `{"scope": "none"}` explicitly rather than rely on omission. A subject MUST NOT confer approve authority wider than the approve authority it holds itself (see acl/grant `approveWiderThanGranter`). Replaces 0.1's `approve {all, scopes}`.
+   */
+  approve?: AuthorityScope;
+  /**
+   * REQUIRED explicit capability scope: which capabilities this entry holds. Exactly one of `{"scope": "ceiling"}` (the role's full ceiling, unnarrowed), `{"scope": "none"}` (no capabilities), or `{"scope": "listed", "grants": [...]}` with at least one CapabilityGrant. For `listed`, the EFFECTIVE set is (the role's ceiling ∩ the non-additive grants) ∪ the additive grants; it can only narrow the ceiling, except through an explicit additive grant, which only an unrestricted granter may make. There is no implicit form: an entry without `capabilities`, or with an empty `grants` list, is malformed and MUST be refused. A non-additive grant outside the role's ceiling is refused when written, never accepted with the capability silently dropped; a capability the consumer does not recognise is never treated as granted. Producers SHOULD NOT list the same (capability, resource) pair twice; a consumer MAY refuse a list that does.
+   */
+  capabilities: CapabilityScope;
+  /**
+   * OPTIONAL explicit approvable-capability scope: which capabilities this subject may APPROVE an action needing — independent of what it may do itself, so an approver can ratify a capability it does not hold (the least-privilege approver). One of `{"scope": "ceiling"}` (the role's full approve ceiling; at a maintainer whose roles define no capability-level approve ceiling, any action within `approve`), `{"scope": "none"}`, or `{"scope": "listed", "grants": [...]}` with at least one CapabilityRef (intersected with the role's approve ceiling where one is defined). ABSENT MEANS NONE: the subject may approve no capability, because absence derives no authority. Bounded by `approve`: where `approve` is absent or `{"scope": "none"}` this member confers nothing whatever it states. A subject MUST NOT confer approvable capabilities it cannot itself approve.
+   */
+  approveCapabilities?: ApproveCapabilityScope;
+  /**
+   * VID of the granter whose authority this entry was delegated from and is bounded by. The entry MUST NOT hold authority the granter did not hold when it was written, and MUST NOT retain authority the granter has since lost, so a maintainer re-evaluates it when the granter's own entry narrows or is removed. Distinct from `createdBy`, which records who wrote the entry: the two differ where an entry is written on a granter's behalf (for example after an N-of-M approval, or by an offline operator). Set by the maintainer from the granter it authorized; absent on an entry that derives from no granter's authority (the first administrator, an operator-written recovery entry).
+   */
+  delegatedBy?: string;
+  /**
+   * REQUIRED explicit key scope: which keys this subject may invoke the maintainer's signing oracle on. Exactly one of `{"scope": "all"}` (every key the entry's act scope reaches), `{"scope": "none"}` (no keys), or `{"scope": "listed", "keys": [...]}` with at least one key identifier. INTERSECTS WITH `act` — it can only narrow, never widen: a listed key that lies outside the entry's act scope remains unreachable, exactly as if it were not listed. There is no implicit form: an entry without `keys`, or with an empty `keys` list, is malformed and MUST be refused. A maintainer that operates no signing oracle states `{"scope": "none"}`. Replaces 0.1's `allowedKeys`, whose absence meant every key.
+   */
+  keys: KeyScope;
+  /**
+   * REQUIRED explicit purpose scope: what this subject may use content it reads for — the purpose a request for a purpose-bound operation (a read of content held for the principal, or a refusal that carries such content) names, and the maintainer records in that operation's audit record. Exactly one of `{"scope": "any"}` (any purpose EXCEPT `modelTraining`) or `{"scope": "listed", "purposes": [...]}` with at least one Purpose. There is no implicit form: an entry without `purposes`, or with an empty list, is malformed and MUST be refused, never read as `any`. A maintainer that adopts this version writes `any` on every entry that predates it before serving a purpose-bound operation under it (VTI-ACL-101). Delegated purposes are a subset of the granter's: a granter stating `any` MAY delegate a list; a granter stating a list MUST NOT delegate `any`, and no granter delegates `modelTraining` unless its own entry names it (acl/grant `purposeOutsideDelegator`). A maintainer MAY refuse by policy to grant a purpose, naming it, when the entry is written (acl/grant `purposeRefused`), never by writing the entry without it. A purpose is a declaration, not a proof: the maintainer cannot see what the subject does with content, and holds it to what it declared.
+   */
+  purposes: PurposeScope;
   /**
    * Optional human-readable label. Confers nothing.
    */
@@ -13230,6 +13324,25 @@ export interface PurgeProgress {
    * What stopped the last pass, for an administrator. Present only after a pass failed. Plain text, written by the community; it names no member and carries no credential.
    */
   lastError?: string;
+}
+/**
+ * Any purpose except `modelTraining` (training, fine-tuning or evaluating a machine-learning model on the content), which `any` never grants (VTI-ACL-105).
+ */
+export interface PurposeScopeAny {
+  scope: "any";
+}
+/**
+ * Exactly the listed purposes. A request naming any other purpose is refused.
+ */
+export interface PurposeScopeListed {
+  scope: "listed";
+  /**
+   * Non-empty set of purposes. An empty array is invalid (it is not `any`).
+   *
+   * @minItems 1
+   * @maxItems 32
+   */
+  purposes: [Purpose_AclV0_3, ...Purpose_AclV0_3[]];
 }
 export interface Apns {
   platform: "apns";

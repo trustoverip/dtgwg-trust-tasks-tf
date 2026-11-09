@@ -6,7 +6,7 @@
 import type { AclEntry_AclV0_1 as AclEntry, Ext } from "../../../_shared/components.js";
 
 
-/** @deprecated superseded by acl/change-role/0.2 */
+/** @deprecated superseded by acl/change-role/0.3 */
 export interface ACLChangeRolePayload {
   /**
    * VID of the party whose role is changing.
@@ -32,7 +32,7 @@ export interface ACLChangeRolePayload {
 /**
  * The success response to an acl/change-role request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/change-role/0.1#response.
  *
- * @deprecated superseded by acl/change-role/0.2
+ * @deprecated superseded by acl/change-role/0.3
  */
 export interface ACLChangeRoleResponsePayload {
   /**
@@ -65,12 +65,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by acl/change-role/0.2";
+export const DEPRECATION: string | null = "superseded by acl/change-role/0.3";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by acl/change-role/0.2
+ * @deprecated superseded by acl/change-role/0.3
  */
 export type Payload = ACLChangeRolePayload;
 
@@ -80,7 +80,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/acl/change-role/0.
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by acl/change-role/0.2
+ * @deprecated superseded by acl/change-role/0.3
  */
 export type Response = ACLChangeRoleResponsePayload;
 

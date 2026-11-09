@@ -4,7 +4,7 @@
 #![allow(deprecated)]
 /// Why this specification version is deprecated (SPEC "Superseded and
 /// Withdrawn Versions"), or `None` while it is current.
-pub const DEPRECATION: Option<&str> = Some("superseded by acl/grant/0.2");
+pub const DEPRECATION: Option<&str> = Some("superseded by acl/grant/0.3");
 #[allow(unused_imports)]
 use serde::{Deserialize, Serialize};
 /// Error types.
@@ -372,7 +372,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by acl/grant/0.2")]
+#[deprecated(note = "superseded by acl/grant/0.3")]
 pub struct Payload {
     ///The AclEntry the producer wants the maintainer to hold for the subject (intent). The maintainer's response carries the realized AclEntry it now holds.
     pub entry: AclEntry,
@@ -452,7 +452,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by acl/grant/0.2")]
+#[deprecated(note = "superseded by acl/grant/0.3")]
 pub struct Response {
     ///The canonical AclEntry the maintainer now holds for the subject.
     pub entry: AclEntry,

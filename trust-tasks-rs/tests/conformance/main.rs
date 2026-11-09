@@ -14,23 +14,28 @@ mod acl {
     mod change_role {
         mod v0_1;
         mod v0_2;
+        mod v0_3;
     }
     mod grant {
         mod v0_1;
         mod v0_2;
+        mod v0_3;
     }
     mod list {
         mod v0_1;
         mod v0_2;
         mod v0_3;
+        mod v0_4;
     }
     mod revoke {
         mod v0_1;
         mod v0_2;
+        mod v0_3;
     }
     mod show {
         mod v0_1;
         mod v0_2;
+        mod v0_3;
     }
     mod swap_key {
         mod v0_1;
@@ -38,6 +43,7 @@ mod acl {
     mod update {
         mod v0_1;
         mod v0_2;
+        mod v0_3;
     }
 }
 #[cfg(feature = "audit")]
@@ -1846,17 +1852,21 @@ mod vta {
         mod delete {
             mod v0_1;
             mod v0_2;
+            mod v0_3;
         }
         mod get {
             mod v0_1;
+            mod v0_2;
         }
         mod list {
             mod v0_1;
             mod v0_2;
+            mod v0_3;
         }
         mod put {
             mod v0_1;
             mod v0_2;
+            mod v0_3;
         }
     }
     mod metrics {

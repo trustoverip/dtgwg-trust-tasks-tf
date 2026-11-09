@@ -6,7 +6,7 @@
 import type { AclEntry_AclV0_1 as AclEntry, Ext } from "../../../_shared/components.js";
 
 
-/** @deprecated superseded by acl/revoke/0.2 */
+/** @deprecated superseded by acl/revoke/0.3 */
 export interface ACLRevokePayload {
   /**
    * VID of the party being revoked (or scope-reduced).
@@ -30,7 +30,7 @@ export interface ACLRevokePayload {
 /**
  * The success response to an acl/revoke request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/revoke/0.1#response.
  *
- * @deprecated superseded by acl/revoke/0.2
+ * @deprecated superseded by acl/revoke/0.3
  */
 export interface ACLRevokeResponsePayload {
   /**
@@ -63,12 +63,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by acl/revoke/0.2";
+export const DEPRECATION: string | null = "superseded by acl/revoke/0.3";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by acl/revoke/0.2
+ * @deprecated superseded by acl/revoke/0.3
  */
 export type Payload = ACLRevokePayload;
 
@@ -78,7 +78,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/acl/revoke/0.1#res
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by acl/revoke/0.2
+ * @deprecated superseded by acl/revoke/0.3
  */
 export type Response = ACLRevokeResponsePayload;
 

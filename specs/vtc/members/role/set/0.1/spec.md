@@ -122,14 +122,14 @@ The move carries what a community role carries:
   the role: promoting a member to `admin` makes it a `community-admin`, and
   moving an `admin` to `member` withdraws it. Where the entry holds
   administrative authority stated on its own — granted, narrowed or qualified
-  with [`acl/grant/0.2`](../../../../../acl/grant/0.2/spec.md) or
-  [`acl/update/0.2`](../../../../../acl/update/0.2/spec.md) — that authority is
+  with [`acl/grant/0.3`](../../../../../acl/grant/0.3/spec.md) or
+  [`acl/update/0.3`](../../../../../acl/update/0.3/spec.md) — that authority is
   kept, and only the community role moves.
 - **The role credential.** A subject with a member record is issued a role
   credential at its new role, returned in the response and delivered to it.
 
 **Why a task of its own.** A community role is the community's notion, not the
-access-control list's. [`acl/change-role/0.2`](../../../../../acl/change-role/0.2/spec.md)
+access-control list's. [`acl/change-role/0.3`](../../../../../acl/change-role/0.3/spec.md)
 moves an entry's administrative role, a ceiling over capabilities, which is the
 same operation at any maintainer. Moving a community role also means re-issuing
 a membership's role credential and applying the community's own role-change

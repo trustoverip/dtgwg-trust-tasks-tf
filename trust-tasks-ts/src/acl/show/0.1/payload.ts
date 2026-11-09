@@ -6,7 +6,7 @@
 import type { AclEntry_AclV0_1 as AclEntry, Ext } from "../../../_shared/components.js";
 
 
-/** @deprecated superseded by acl/show/0.2 */
+/** @deprecated superseded by acl/show/0.3 */
 export interface ACLShowPayload {
   /**
    * VID of the party whose entry is being looked up.
@@ -20,7 +20,7 @@ export interface ACLShowPayload {
 /**
  * The success response to an acl/show request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/show/0.1#response.
  *
- * @deprecated superseded by acl/show/0.2
+ * @deprecated superseded by acl/show/0.3
  */
 export interface ACLShowResponsePayload {
   /**
@@ -57,12 +57,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by acl/show/0.2";
+export const DEPRECATION: string | null = "superseded by acl/show/0.3";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by acl/show/0.2
+ * @deprecated superseded by acl/show/0.3
  */
 export type Payload = ACLShowPayload;
 
@@ -72,7 +72,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/acl/show/0.1#respo
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by acl/show/0.2
+ * @deprecated superseded by acl/show/0.3
  */
 export type Response = ACLShowResponsePayload;
 

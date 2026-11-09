@@ -48,7 +48,7 @@
           "type": "string",
           "format": "uri",
           "minLength": 1,
-          "description": "Type URI of the inner Trust Task (e.g. `https://trusttasks.org/spec/acl/grant/0.2`)."
+          "description": "Type URI of the inner Trust Task (e.g. `https://trusttasks.org/spec/acl/grant/0.3`)."
         },
         "issuer": {
           "type": "string",

@@ -8,6 +8,8 @@ import type { AclEntry_AclV0_2 as AclEntry, ApproveCapabilityScope, ApproveCapab
 
 /**
  * Enumerate the AclEntry 0.2 records a maintainer holds, with optional conjunctive filters and paging. A hierarchical filter (`context`, `resource`) MUST state its `direction`; there is no default direction. The outer document members are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by acl/list/0.4
  */
 export interface ACLList03Payload {
   /**
@@ -49,6 +51,8 @@ export interface ACLList03Payload {
 }
 /**
  * The success response to an acl/list/0.3 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/list/0.3#response.
+ *
+ * @deprecated superseded by acl/list/0.4
  */
 export interface ACLList03ResponsePayload {
   /**
@@ -89,15 +93,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by acl/list/0.4";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by acl/list/0.4
+ */
 export type Payload = ACLList03Payload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/acl/list/0.3#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by acl/list/0.4
+ */
 export type Response = ACLList03ResponsePayload;
 
 /**
