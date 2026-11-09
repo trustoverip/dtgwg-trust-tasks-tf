@@ -1816,12 +1816,18 @@ mod vta {
     mod memory {
         mod delete {
             mod v0_1;
+            mod v0_2;
+        }
+        mod get {
+            mod v0_1;
         }
         mod list {
             mod v0_1;
+            mod v0_2;
         }
         mod put {
             mod v0_1;
+            mod v0_2;
         }
     }
     mod metrics {
