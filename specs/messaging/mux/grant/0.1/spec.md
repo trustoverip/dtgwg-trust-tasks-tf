@@ -196,11 +196,18 @@ The mediator keeps, per member DID and principal, a **replay floor**: an instant
 
 ### The unknown-key rule
 
-The *known keys* of a member DID are the verification methods that signed its currently active grants. The rule fires when the member DID proves control with a verification method **outside** that set, through any of:
+The *known keys* of a member DID are read from its currently active grants, and are of two kinds, because a proof of control is compared only with keys of the relationship it proves:
 
-- authenticating directly as the DID (the DIDComm authcrypt sender key, or the key of the TSP sender VID);
-- a session attach ([`messaging/mux/attach`](../../attach/0.1/spec.md));
-- a grant submitted with this task.
+- **signing keys** — the `authentication` verification methods that signed the active grants;
+- **key-agreement keys** — the `keyAgreement` verification methods the member DID's document listed when each active grant was stored. The mediator records them with the grant, identified by their key material, not only by their identifier.
+
+The rule fires when the member DID proves control with a key **outside** the matching set, through any of:
+
+- a grant submitted with this task, or a session attach ([`messaging/mux/attach`](../../attach/0.1/spec.md)) — the statement's signing key, compared with the signing keys;
+- authenticating directly as the DID over DIDComm — the authcrypt sender key, a key-agreement key, compared with the key-agreement keys;
+- authenticating directly as the DID over TSP — the sender VID's signing key, compared with the signing keys.
+
+Comparing an authcrypt sender key with signing keys would fire on every direct authentication, because the two relationships hold different keys. With the rule as stated, a key the member DID already listed when it granted is known, so a member that also authenticates directly does not suspend its own grants; a key added since — a new controller's, or a rotation — is unknown. An active grant stored without recorded key-agreement keys gives no basis for comparison, and a direct DIDComm authentication does not fire the rule while one exists.
 
 When it fires, every active grant on that DID that was **not** signed by the new verification method moves to `suspended`, with reason `suspendedUnknownKey`. A DID whose set is empty — no active grants yet — never fires it. The known keys are read from the grants themselves, so nothing separate can drift from them. Suspension does **not** advance the epoch — a grant the new key signs at the same moment must land active, which it could not under an epoch just invalidated — but `suspended` is terminal, so for the old grants the effect is that of revocation. It goes through the same synchronous detach as revocation: no frame for the DID reaches a suspended principal once the suspension is committed. Then the mediator:
 
