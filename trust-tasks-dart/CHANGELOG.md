@@ -14,6 +14,31 @@ pub.dev only accepts an automated publish from a tag-triggered workflow. See
 Entries before 0.9.0 are in [`CHANGELOG-archive.md`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/trust-tasks-dart/CHANGELOG-archive.md),
 kept out of the package: pub.dev refuses a `CHANGELOG.md` over 256 KiB.
 
+## 0.9.32 — 2026-11-09
+
+
+### Documentation
+
+- **vtc/badges**: Declare the known implementation of every badges task (#1061)
+
+
+### Fixed
+
+- **vtc/members/rotate**: A rotation onto did:scid or did:webs can be reported (#1064)
+
+`vtc/members/rotate/0.1`'s response `method` allowed only `did:key` and
+  `did:webvh`, but a community verifies a rotation onto a `did:scid:vh:1`
+  identifier (VTI-KEY-161) and, in VTI, onto a `did:webs` (VTI-KEY-003,
+  VTI-LNK-052): a successful rotation onto either had no conforming response.
+  Appends `did:scid` and `did:webs` to the enum, in place (an appended enum
+  value is an additive change), and says what `method` is.
+
+
+
+### Other
+
+- The community issues the badge credential (#1063)
+
 ## 0.9.31 — 2026-11-08
 
 
