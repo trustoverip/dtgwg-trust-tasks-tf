@@ -1,0 +1,60 @@
+[
+  {
+    "note": "Missing proof \u2014 revoke-all is authorised only by the member's own signature.",
+    "payload": {
+      "revocation": {
+        "type": "muxRevokeAll",
+        "issuer": "did:web:alice.example",
+        "audience": "did:web:mediator.example",
+        "epoch": 0,
+        "iat": 1,
+        "exp": 2
+      }
+    }
+  },
+  {
+    "note": "Member DID given as a hash, not a DID \u2014 the mediator must resolve it to verify the proof.",
+    "payload": {
+      "revocation": {
+        "type": "muxRevokeAll",
+        "issuer": "3f2a9c",
+        "audience": "did:web:mediator.example",
+        "epoch": 0,
+        "iat": 1,
+        "exp": 2,
+        "proof": {
+          "type": "DataIntegrityProof",
+          "cryptosuite": "eddsa-jcs-2022",
+          "verificationMethod": "did:web:alice.example#key-1",
+          "proofPurpose": "authentication",
+          "proofValue": "z3Example"
+        }
+      }
+    }
+  },
+  {
+    "note": "A grant statement offered as revoke-all.",
+    "payload": {
+      "revocation": {
+        "type": "muxGrant",
+        "issuer": "did:web:alice.example",
+        "audience": "did:web:mediator.example",
+        "grantId": "g1",
+        "principal": "did:web:phone.example",
+        "scope": [
+          "receive"
+        ],
+        "epoch": 0,
+        "iat": 1,
+        "exp": 2,
+        "proof": {
+          "type": "DataIntegrityProof",
+          "cryptosuite": "eddsa-jcs-2022",
+          "verificationMethod": "did:web:alice.example#key-1",
+          "proofPurpose": "authentication",
+          "proofValue": "z3Example"
+        }
+      }
+    }
+  }
+]

@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/messaging/mux/event/0.1",
+  "title": "Messaging — Mux Event — payload",
+  "description": "A live, unstored event from a mediator to the principal of one mux connection: the connection is ready (with its nonce and limits), members attached or detached, or an inbound frame for a member refused. The members present depend on `event`; see the specification. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event"
+  ],
+  "properties": {
+    "event": {
+      "type": "string",
+      "enum": [
+        "ready",
+        "attached",
+        "detached",
+        "refused"
+      ],
+      "description": "Which event this is. Each kind carries the members the specification lists for it, and no others."
+    },
+    "sessionId": {
+      "$ref": "../../_shared/0.1/mux.schema.json#/$defs/SessionId",
+      "description": "`ready` only, REQUIRED: this connection's identifier, which attach statements sign over."
+    },
+    "muxNonce": {
+      "$ref": "../../_shared/0.1/mux.schema.json#/$defs/MuxNonce",
+      "description": "`ready` only, REQUIRED: this connection's nonce, which attach statements sign over."
+    },
+    "maxDidsPerConnection": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "`ready` only, REQUIRED: the most members this connection may carry."
+    },
+    "maxGrantLifetimeSeconds": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "`ready` only, REQUIRED: the longest `exp − iat` a grant may have."
+    },
+    "maxAttachLifetimeSeconds": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "`ready` only, OPTIONAL: the longest an attach statement's `exp` may lie after its `iat`."
+    },
+    "sessionExpiresAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "`ready` only, OPTIONAL: when the principal's authentication of this connection expires and the connection closes. An attach statement's `exp` may not be later."
+    },
+    "pendingNotices": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "`ready` only, REQUIRED: how many messaging/mux/notice documents wait in the principal's inbox. Non-zero means the principal must drain them before it trusts its member set."
+    },
+    "dids": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1000,
+      "items": {
+        "$ref": "#/$defs/MemberChange"
+      },
+      "description": "`attached` and `detached` only, REQUIRED: the members that changed, batched. A larger change is split across several events."
+    },
+    "frameId": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "`refused` only, REQUIRED: the lowercase hex SHA-256 of the refused frame's exact bytes — the identifier `tsp-ack` already uses."
+    },
+    "sender": {
+      "$ref": "../../_shared/0.1/mux.schema.json#/$defs/MuxDid",
+      "description": "`refused` only, OPTIONAL: the frame's sender, when the mediator could read it."
+    },
+    "receiver": {
+      "$ref": "../../_shared/0.1/mux.schema.json#/$defs/MuxDid",
+      "description": "`refused` only, OPTIONAL: the member DID or principal the frame was addressed to, when the mediator could read it."
+    },
+    "code": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "`refused` only, REQUIRED: the mediator's stable refusal code, the same code a traffic-monitor `refused` event reports."
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "`refused` only, OPTIONAL: a short human-readable explanation. Never message content."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "MemberChange": {
+      "title": "MemberChange",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "did",
+        "reason"
+      ],
+      "description": "One member's change in an `attached` or `detached` event.",
+      "properties": {
+        "did": {
+          "$ref": "../../_shared/0.1/mux.schema.json#/$defs/MuxDid",
+          "description": "The member DID."
+        },
+        "reason": {
+          "$ref": "../../_shared/0.1/mux.schema.json#/$defs/MemberChangeReason",
+          "description": "Why the member changed: an AttachReason value in an `attached` event, a DetachReason value in a `detached` event."
+        },
+        "grantId": {
+          "$ref": "../../_shared/0.1/mux.schema.json#/$defs/GrantId",
+          "description": "The grant concerned, where the member is or was attached through one."
+        },
+        "scope": {
+          "$ref": "../../_shared/0.1/mux.schema.json#/$defs/MuxScope",
+          "description": "`attached` only: the scope now in force for the member."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "`attached` only: when the membership lapses unless renewed."
+        },
+        "deliveryActive": {
+          "type": "boolean",
+          "description": "`attached` only: false while the member DID's own direct connection keeps its live traffic."
+        }
+      }
+    }
+  }
+}

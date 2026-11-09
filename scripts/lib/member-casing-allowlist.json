@@ -48,6 +48,7 @@
       "cross-platform": "WebAuthn AuthenticatorAttachment",
       "decentralized_identifier": "OpenID for Verifiable Presentations 1.0 client identifier prefix",
       "eddsa-jcs-2022": "W3C Data Integrity EdDSA Cryptosuites",
+      "eddsa-rdfc-2022": "W3C Data Integrity EdDSA Cryptosuites",
       "public-key": "WebAuthn PublicKeyCredentialType",
       "service_account": "Google Cloud service-account key JSON",
       "sha-256": "IANA Named Information Hash Algorithm Registry",

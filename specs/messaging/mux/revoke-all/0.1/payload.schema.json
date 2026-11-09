@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/messaging/mux/revoke-all/0.1",
+  "title": "Messaging — Mux Revoke All — payload",
+  "description": "A member DID, proving current control with a signed revoke-all statement, advances its epoch at the mediator and so voids every grant on it at once. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "revocation"
+  ],
+  "properties": {
+    "revocation": {
+      "$ref": "../../_shared/0.1/mux.schema.json#/$defs/RevokeAllStatement",
+      "description": "The revoke-all statement; the member DID is its `issuer`."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Messaging — Mux Revoke All — response payload",
+      "description": "The success response to a messaging/mux/revoke-all request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/mux/revoke-all/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "did",
+        "epoch",
+        "epochAdvanced",
+        "revokedGrants"
+      ],
+      "properties": {
+        "did": {
+          "$ref": "../../_shared/0.1/mux.schema.json#/$defs/MuxDid"
+        },
+        "epoch": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The member DID's epoch now in force; a new grant must carry it."
+        },
+        "epochAdvanced": {
+          "type": "boolean",
+          "description": "False when the epoch named in the proof had already been voided, so nothing changed."
+        },
+        "revokedGrants": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many grants that were active this request moved to `epochRevoked`."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+        }
+      }
+    }
+  }
+}

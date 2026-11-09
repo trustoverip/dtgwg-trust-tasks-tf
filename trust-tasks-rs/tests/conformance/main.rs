@@ -971,6 +971,35 @@ mod messaging {
             mod v0_1;
         }
     }
+    mod mux {
+        mod attach {
+            mod v0_1;
+        }
+        mod detach {
+            mod v0_1;
+        }
+        mod event {
+            mod v0_1;
+        }
+        mod grant {
+            mod v0_1;
+        }
+        mod list {
+            mod v0_1;
+        }
+        mod notice {
+            mod v0_1;
+        }
+        mod revoke {
+            mod v0_1;
+        }
+        mod revoke_all {
+            mod v0_1;
+        }
+        mod update {
+            mod v0_1;
+        }
+    }
     mod ping {
         mod v0_1;
         mod v0_2;

@@ -1,0 +1,18 @@
+[
+  {
+    "note": "Scope narrowed to empty \u2014 use messaging/mux/revoke to end a grant.",
+    "payload": {
+      "grantId": "0b8f6c1e-3a2d-4f5e-9b7c-1d2e3f4a5b6c",
+      "scope": []
+    }
+  },
+  {
+    "note": "Grant identifier with characters outside the GrantId alphabet.",
+    "payload": {
+      "grantId": "grant 1/x",
+      "scope": [
+        "receive"
+      ]
+    }
+  }
+]

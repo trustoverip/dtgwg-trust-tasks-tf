@@ -1255,6 +1255,36 @@ export import MessagingMonitorSubscribe_v0_1 = _MessagingMonitorSubscribe_v0_1;
 import * as _MessagingMonitorUnsubscribe_v0_1 from "./messaging/monitor/unsubscribe/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import MessagingMonitorUnsubscribe_v0_1 = _MessagingMonitorUnsubscribe_v0_1;
+import * as _MuxShared_v0_1 from "./messaging/mux/_shared/0.1/mux.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import MuxShared_v0_1 = _MuxShared_v0_1;
+import * as _MessagingMuxAttach_v0_1 from "./messaging/mux/attach/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import MessagingMuxAttach_v0_1 = _MessagingMuxAttach_v0_1;
+import * as _MessagingMuxDetach_v0_1 from "./messaging/mux/detach/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import MessagingMuxDetach_v0_1 = _MessagingMuxDetach_v0_1;
+import * as _MessagingMuxEvent_v0_1 from "./messaging/mux/event/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import MessagingMuxEvent_v0_1 = _MessagingMuxEvent_v0_1;
+import * as _MessagingMuxGrant_v0_1 from "./messaging/mux/grant/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import MessagingMuxGrant_v0_1 = _MessagingMuxGrant_v0_1;
+import * as _MessagingMuxList_v0_1 from "./messaging/mux/list/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import MessagingMuxList_v0_1 = _MessagingMuxList_v0_1;
+import * as _MessagingMuxNotice_v0_1 from "./messaging/mux/notice/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import MessagingMuxNotice_v0_1 = _MessagingMuxNotice_v0_1;
+import * as _MessagingMuxRevokeAll_v0_1 from "./messaging/mux/revoke-all/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import MessagingMuxRevokeAll_v0_1 = _MessagingMuxRevokeAll_v0_1;
+import * as _MessagingMuxRevoke_v0_1 from "./messaging/mux/revoke/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import MessagingMuxRevoke_v0_1 = _MessagingMuxRevoke_v0_1;
+import * as _MessagingMuxUpdate_v0_1 from "./messaging/mux/update/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import MessagingMuxUpdate_v0_1 = _MessagingMuxUpdate_v0_1;
 import * as _MessagingPing_v0_1 from "./messaging/ping/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import MessagingPing_v0_1 = _MessagingPing_v0_1;
