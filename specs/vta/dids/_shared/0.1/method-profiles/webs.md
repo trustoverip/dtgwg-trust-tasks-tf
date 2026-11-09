@@ -27,7 +27,11 @@ Against [CONVENTIONS.md §3.2](../CONVENTIONS.md#32-eligibility):
 | 6. Room for `keyRoles` and `revoked` | **Met with extension A; not met without it.** Without it the document is generated, must equal the one derived from `keri.cesr`, and has no member for either |
 
 The method's informative *Key Agreement* guidance — use the X25519 key corresponding to an
-Ed25519 key in `k` — is refused in any case (CONVENTIONS.md §14 item 3).
+Ed25519 key in `k` — is refused for a key-role identity in any case: a VTA never publishes
+such a key (CONVENTIONS.md §14 item 3, VTI-KEY-184). A party *encrypting to* a `did:webs`
+identifier that has never designated key agreement keys or key roles — any identifier made
+by KERI software — MAY use it, as KERI practice does (VTI-KEY-185); this is a rule for
+reaching other parties' identifiers and gives a VTA nothing to publish.
 
 ### What would make it eligible
 
