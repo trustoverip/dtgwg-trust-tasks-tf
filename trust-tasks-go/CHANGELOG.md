@@ -11,6 +11,31 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.10.22 — 2026-11-09
+
+
+### Documentation
+
+- **vtc/badges**: Declare the known implementation of every badges task (#1061)
+
+
+### Fixed
+
+- **vtc/members/rotate**: A rotation onto did:scid or did:webs can be reported (#1064)
+
+`vtc/members/rotate/0.1`'s response `method` allowed only `did:key` and
+  `did:webvh`, but a community verifies a rotation onto a `did:scid:vh:1`
+  identifier (VTI-KEY-161) and, in VTI, onto a `did:webs` (VTI-KEY-003,
+  VTI-LNK-052): a successful rotation onto either had no conforming response.
+  Appends `did:scid` and `did:webs` to the enum, in place (an appended enum
+  value is an additive change), and says what `method` is.
+
+
+
+### Other
+
+- The community issues the badge credential (#1063)
+
 ## 0.10.21 — 2026-11-08
 
 
