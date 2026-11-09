@@ -396,15 +396,33 @@ undermines withdrawal.
 ### R6. Ordering in the conversation
 
 A reader orders the conversation by `writtenAt`, then by `messageId` where two are
-equal, with the rooms *When it was written* rules, reading the host's `createdAt`
-as the instant the consumer first accepted the `messageId`:
+equal. This rule is this specification's own and does not apply the rooms *When it
+was written* rules. Rooms bounds how far back a record may claim to have been
+written because a host attests `createdAt` and many members share one history; a
+direct conversation has no host and two parties, and its messages are composed
+offline and delivered late, up to the acceptance window (Security & Privacy). The
+*arrival instant* below is the instant the consumer first accepted the
+`messageId`.
 
-- A `writtenAt` more than five minutes after that instant is implausible: the
-  reader orders the message by that instant and does not show the claimed time as
-  when it was written.
-- A `writtenAt` more than 24 hours before that instant claims to have been written
-  well before it arrived: the reader orders the message by that instant and shows
-  that it arrived later than it claims.
+- **Ordered by `writtenAt`.** A message whose `writtenAt` is no more than five
+  minutes after the arrival instant, and no earlier than the acceptance window
+  before it, is placed by `writtenAt`, however late it arrived. Both parties, and
+  each of a user's devices, then agree on the order without a shared clock.
+- **A `writtenAt` more than five minutes after the arrival instant** is
+  implausible: the reader orders the message by the arrival instant and does not
+  show the claimed time as when it was written.
+- **A `writtenAt` earlier than the acceptance window before the arrival instant**
+  is not honoured: the reader orders the message by the arrival instant. Without
+  this floor a fresh `issuedAt` could carry a `writtenAt` that pins the message to
+  the top of the conversation.
+- **A late arrival is shown as late** whenever it arrived more than 24 hours after
+  its `writtenAt`. A message that is placed above what the user has already read
+  **SHOULD** be flagged as having arrived late, not inserted unannounced, because
+  the recipient is the one party who can judge the claim and the one it could
+  mislead.
+
+A rewrite keeps the `writtenAt` of the revision it replaces (R3), so a message's
+place does not move when it is edited or withdrawn.
 
 ## Reactions
 
