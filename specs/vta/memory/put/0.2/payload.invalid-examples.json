@@ -1,0 +1,5 @@
+[
+  { "note": "A negative expectedVersion has no meaning: 0 is create-only and a positive value names a version.", "payload": { "contextId": "finance", "key": "contact/billing", "value": "x", "expectedVersion": -1 } },
+  { "note": "An empty key addresses nothing; MemoryKey requires at least one character.", "payload": { "contextId": "finance", "key": "", "value": "x" } },
+  { "note": "A server-assigned version is not the producer's to send — additionalProperties: false catches it.", "payload": { "contextId": "finance", "key": "k", "value": "x", "version": 3 } }
+]

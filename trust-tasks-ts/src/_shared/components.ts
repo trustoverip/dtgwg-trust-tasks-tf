@@ -1320,6 +1320,22 @@ export type MembersOnly = boolean;
  */
 export type MembershipSource = "added" | "joined" | "requestApproved" | "rule";
 /**
+ * Optimistic-concurrency precondition on a write. A positive value requires that the item's current `version` equals it exactly. Zero means "create only" — the write applies only if no LIVE item exists at the key. A tombstone is not a live item, so `expectedVersion: 0` succeeds over one; the created item takes the context's next counter value, which is necessarily greater than the tombstone's.
+ */
+export type MemoryExpectedVersion = number;
+/**
+ * Agent-chosen identifier for an item within a context. Opaque to the maintainer: it MUST NOT be parsed, normalized, or case-folded, and prefix matching in `vta/memory/list` is a byte-prefix comparison over the UTF-8 encoding. Agents SHOULD use `/`-delimited hierarchical keys (`contact/billing`, `preference/timezone`) so that `prefix` can address a family of items, but the delimiter is a convention between an agent and itself. A key is content as well as an address: a key naming a person, a condition or a dispute discloses something to anyone who can list the context, even without its value.
+ */
+export type MemoryKey = string;
+/**
+ * The remembered text: a fact, a summary, a preference. Opaque to the maintainer, which stores it as given and never interprets, rewrites or summarises it. The maintainer enforces a documented per-item cap on its size (see `vta/memory/put`).
+ */
+export type MemoryValue = string;
+/**
+ * A value of the context's monotonic write counter (see this schema's description). Server-assigned; a producer never chooses one.
+ */
+export type MemoryVersion = number;
+/**
  * An RFC 9162 audit or consistency path: the node hashes, in the order §2.1.3 / §2.1.4 define.
  *
  * @maxItems 64
@@ -11887,6 +11903,44 @@ export interface MemberResponse {
  * A person's membership credential (VMC) from a community that is a member of this network, holder-bound to the requester's identity. Open for the same reason as `Credential`.
  */
 export interface Membership {}
+/**
+ * A memory item as the maintainer holds it. `value` is absent in two distinct situations and a consumer MUST NOT conflate them: the item is a tombstone (`deleted` is true), or the caller asked for a metadata-only view (`vta/memory/list` without `includeValues`). This is why `deleted` is required rather than defaulted — a consumer that infers deletion from an absent value gets the tombstone case wrong exactly when convergence depends on it.
+ */
+export interface MemoryRecord {
+  /**
+   * The VTA context the item is scoped to; the isolation boundary.
+   */
+  contextId: string;
+  key: MemoryKey;
+  /**
+   * The context counter value this item's most recent write took. Supply it as `expectedVersion` on the next write to make that write conditional on nothing having changed in between.
+   */
+  version: MemoryVersion;
+  /**
+   * The remembered text. Absent when this is a tombstone or a metadata-only view.
+   */
+  value?: MemoryValue;
+  /**
+   * Size of the stored value in bytes over its UTF-8 encoding, as the maintainer measures it for the per-item cap. Present in metadata-only views so a consumer can decide what to fetch without fetching it; absent on a tombstone.
+   */
+  valueBytes?: number;
+  /**
+   * True when this is a tombstone: the item was deleted, and this entry exists so that a consumer syncing incrementally learns of the deletion. Tombstones are reaped after the maintainer's retention window; see `vta/memory/list`.
+   */
+  deleted: boolean;
+  /**
+   * When the item was first created at this key. MAY be absent on a tombstone whose body has been discarded, and on an item written before the maintainer kept versions.
+   */
+  createdAt?: string;
+  /**
+   * When the write that produced this `version` was applied. For a tombstone, when the delete was applied.
+   */
+  updatedAt: string;
+  /**
+   * When the item was deleted. Present only when `deleted` is true; equal to `updatedAt` for a tombstone the maintainer has not since rewritten.
+   */
+  deletedAt?: string;
+}
 /**
  * Metadata of one stored message. Never carries the message body.
  */
