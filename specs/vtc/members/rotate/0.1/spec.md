@@ -49,7 +49,7 @@ The **VTC Members — Rotate** Trust Task completes a DID rotation opened by [`v
 
 Producer: supply `rotationId`, `oldDid`, `newDid`, and both signatures. Carry a proof.
 
-Consumer: look up the `rotationId`; if unknown or expired, return `rotationExpired`. Verify both signatures over the challenge; if either fails, return `signatureInvalid` and change nothing. Otherwise repoint the member to `newDid`, re-issue the credentials, and return `{ newDid, method, vmc, roleVac }`. Audit the rotation.
+Consumer: look up the `rotationId`; if unknown or expired, return `rotationExpired`. Verify both signatures over the challenge; if either fails, return `signatureInvalid` and change nothing. Otherwise repoint the member to `newDid`, re-issue the credentials, and return `{ newDid, method, vmc, roleVac }`, where `method` is the DID method of `newDid` (`did:scid` for a `did:scid:vh:1` identifier). Audit the rotation.
 
 ## Authorization
 

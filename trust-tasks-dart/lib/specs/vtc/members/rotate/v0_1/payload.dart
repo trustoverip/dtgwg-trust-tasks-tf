@@ -11,8 +11,8 @@ import 'package:trust_tasks/trust_tasks.dart';
 /// reverse-DNS namespace; structure under each namespace is opaque to the framework.
 typedef Ext = Map<String, dynamic>;
 
-/// ResponseMethod is a closed set of string values defined by this specification's
-/// schema.
+/// The DID method of `newDid`, as the community verified its signature: `did:scid` for
+/// a `did:scid:vh:1` identifier.
 ///
 /// An extension type rather than an enum: a value from a newer MINOR of this
 /// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
@@ -20,9 +20,16 @@ typedef Ext = Map<String, dynamic>;
 extension type const ResponseMethod(String value) {
   static const ResponseMethod didKey = ResponseMethod('did:key');
   static const ResponseMethod didWebvh = ResponseMethod('did:webvh');
+  static const ResponseMethod didScid = ResponseMethod('did:scid');
+  static const ResponseMethod didWebs = ResponseMethod('did:webs');
 
   /// Every value this specification's schema permits.
-  static const List<ResponseMethod> values = <ResponseMethod>[didKey, didWebvh];
+  static const List<ResponseMethod> values = <ResponseMethod>[
+    didKey,
+    didWebvh,
+    didScid,
+    didWebs
+  ];
 }
 
 /// VTC Members Rotate — response payload
@@ -45,6 +52,9 @@ class Response {
       );
 
   final String newDid;
+
+  /// The DID method of `newDid`, as the community verified its signature: `did:scid` for
+  /// a `did:scid:vh:1` identifier.
   final ResponseMethod method;
 
   /// Membership credential re-issued to the new DID (opaque here).
@@ -144,11 +154,11 @@ const String responseTypeUri =
 /// exclusion — so without it every such rule is unenforced. Cross-file \$refs are
 /// already inlined, so it needs no resolver.
 const String payloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/vtc/members/rotate/0.1","title":"VTC Members Rotate — payload","type":"object","additionalProperties":false,"required":["rotationId","oldDid","newDid","oldSignature","newSignature"],"properties":{"rotationId":{"type":"string","description":"From a prior rotate-challenge."},"oldDid":{"type":"string","minLength":1},"newDid":{"type":"string","minLength":1},"oldSignature":{"type":"string","pattern":"^[0-9a-f]+\$","description":"Signature over the challenge by the OLD key."},"newSignature":{"type":"string","pattern":"^[0-9a-f]+\$","description":"Signature over the challenge by the NEW key."},"ext":{"\$ref":"#/\$defs/Ext"}},"\$defs":{"Response":{"\$anchor":"response","title":"VTC Members Rotate — response payload","type":"object","additionalProperties":false,"required":["newDid","method","vmc","roleVac"],"properties":{"newDid":{"type":"string","minLength":1},"method":{"type":"string","enum":["did:key","did:webvh"]},"vmc":{"type":"object","description":"Membership credential re-issued to the new DID (opaque here)."},"roleVac":{"type":"object","description":"Role credential re-issued to the new DID (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\\"role:<name>\\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues."},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$id":"https://trusttasks.org/spec/vtc/members/rotate/0.1","title":"VTC Members Rotate — payload","type":"object","additionalProperties":false,"required":["rotationId","oldDid","newDid","oldSignature","newSignature"],"properties":{"rotationId":{"type":"string","description":"From a prior rotate-challenge."},"oldDid":{"type":"string","minLength":1},"newDid":{"type":"string","minLength":1},"oldSignature":{"type":"string","pattern":"^[0-9a-f]+\$","description":"Signature over the challenge by the OLD key."},"newSignature":{"type":"string","pattern":"^[0-9a-f]+\$","description":"Signature over the challenge by the NEW key."},"ext":{"\$ref":"#/\$defs/Ext"}},"\$defs":{"Response":{"\$anchor":"response","title":"VTC Members Rotate — response payload","type":"object","additionalProperties":false,"required":["newDid","method","vmc","roleVac"],"properties":{"newDid":{"type":"string","minLength":1},"method":{"type":"string","description":"The DID method of `newDid`, as the community verified its signature: `did:scid` for a `did:scid:vh:1` identifier.","enum":["did:key","did:webvh","did:scid","did:webs"]},"vmc":{"type":"object","description":"Membership credential re-issued to the new DID (opaque here)."},"roleVac":{"type":"object","description":"Role credential re-issued to the new DID (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\\"role:<name>\\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues."},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
 
 /// As [payloadSchemaJson], for the success-response variant.
 const String responsePayloadSchemaJson =
-    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"Response":{"\$anchor":"response","title":"VTC Members Rotate — response payload","type":"object","additionalProperties":false,"required":["newDid","method","vmc","roleVac"],"properties":{"newDid":{"type":"string","minLength":1},"method":{"type":"string","enum":["did:key","did:webvh"]},"vmc":{"type":"object","description":"Membership credential re-issued to the new DID (opaque here)."},"roleVac":{"type":"object","description":"Role credential re-issued to the new DID (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\\"role:<name>\\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues."},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
+    '{"\$schema":"https://json-schema.org/draft/2020-12/schema","\$ref":"#/\$defs/Response","\$defs":{"Response":{"\$anchor":"response","title":"VTC Members Rotate — response payload","type":"object","additionalProperties":false,"required":["newDid","method","vmc","roleVac"],"properties":{"newDid":{"type":"string","minLength":1},"method":{"type":"string","description":"The DID method of `newDid`, as the community verified its signature: `did:scid` for a `did:scid:vh:1` identifier.","enum":["did:key","did:webvh","did:scid","did:webs"]},"vmc":{"type":"object","description":"Membership credential re-issued to the new DID (opaque here)."},"roleVac":{"type":"object","description":"Role credential re-issued to the new DID (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\\"role:<name>\\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues."},"ext":{"\$ref":"#/\$defs/Ext"}}},"Ext":{"title":"Ext","description":"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.","type":"object","minProperties":1,"additionalProperties":true,"propertyNames":{"pattern":"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+\$"}}}}';
 
 /// The SPEC §7.2 policy for the request variant, taken from this
 /// specification's front matter.

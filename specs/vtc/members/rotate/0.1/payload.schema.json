@@ -57,9 +57,12 @@
         },
         "method": {
           "type": "string",
+          "description": "The DID method of `newDid`, as the community verified its signature: `did:scid` for a `did:scid:vh:1` identifier.",
           "enum": [
             "did:key",
-            "did:webvh"
+            "did:webvh",
+            "did:scid",
+            "did:webs"
           ]
         },
         "vmc": {
