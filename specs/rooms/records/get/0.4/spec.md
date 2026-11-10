@@ -56,7 +56,7 @@ errorCodes:
     meaning: "A `private` room presentation omitted the required same-subject proof."
     retryable: false
   - code: rooms/records/get:purposeNotGranted
-    meaning: "The presented authority chain states purposes, and the request names one it does not grant, or names none where the chain lists more than one. The refusal discloses no content and is distinct from `permissionDenied`, which refuses access itself (VTI-ACL-104)."
+    meaning: "The request names a purpose the presented authority chain does not grant — a chain stating no purposes grants `any`, which never includes `modelTraining` — or names none where the chain lists more than one. The refusal discloses no content and is distinct from `permissionDenied`, which refuses access itself (VTI-ACL-104)."
     retryable: false
     detailsSchema:
       type: object
@@ -101,7 +101,7 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-m
 - **`purpose`** (optional) is added to the request: the one purpose the presenter will use the record for
   (VTI-ACL-100 – 110), `RecordPurpose` in [`rooms/_shared`](../../../_shared/0.2/room.schema.json).
 - **`rooms/records/get:purposeNotGranted`** is new: a host refuses a read whose purpose the presented
-  authority chain does not grant, where the chain states purposes (VTI-ACL-110).
+  authority chain does not grant (VTI-ACL-110); a chain stating none grants `any`.
 - `extends: "0.3"`: a 0.3 consumer reads a 0.4 get as a 0.3 get, ignoring `purpose`. The response is unchanged.
 
 ## Conformance
@@ -259,9 +259,10 @@ the record finds the `blobRef` in the sealed, author-signed `FileManifest` regar
 
 ### Purpose of use
 
-A read is **purpose-bound** wherever the presented authority chain states `purposes` (VTI-ACL-110): the
-chain is a grant written as a credential, and the purposes it states bound what the presenter may use the
-record for. A chain stating none grants `any`.
+Every read is **purpose-bound** (VTI-ACL-102, VTI-ACL-110): the presented authority chain is a grant
+written as a credential, and the purposes it grants bound what the presenter may use the record for. A
+chain stating none grants `any`, which does not grant `modelTraining`, so a read is held to the chain's
+purposes whether or not any link states them.
 
 The purposes the chain **grants** are those its leaf states, read as
 the chain rule in [`rooms/owner/issue-authority`](../../../owner/issue-authority/0.3/spec.md) 0.3, *Purposes along a chain* describes: a link that states none takes
