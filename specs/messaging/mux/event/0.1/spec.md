@@ -6,7 +6,7 @@ summary: "Live, unstored events from a mediator to the principal of one mux conn
 status: draft
 targetFrameworkVersion: "0.6.0"
 category: messaging
-keywords: [messaging, mediator, mux, multiplexing, event, attach, detach, tsp-mux, websocket]
+keywords: [messaging, mediator, mux, multiplexing, event, attach, detach, tsp-mux, didcomm-mux, websocket]
 parties:
   - role: Mediator
     requirement: REQUIRED
@@ -58,8 +58,10 @@ The **Messaging — Mux Event** Trust Task is how a mediator keeps the principal
 
 - **`ready`** — the mediator's first frame on a mux connection after authentication. It carries the connection's `sessionId` and `muxNonce`, which session attaches sign over ([`messaging/mux/attach`](../../attach/0.1/spec.md)), the mediator's limits, and `pendingNotices`, the number of durable [`messaging/mux/notice`](../../notice/0.1/spec.md) documents waiting in the principal's inbox.
 - **`attached`** — members joined the connection: through a stored grant on connect or when stored, through a session attach, or by reactivation.
-- **`detached`** — members left the connection, each with a reason (revoked, epoch advanced, suspended under the unknown-key rule, key rotated, expired, blocked, superseded, an operator, or the principal's own detach). On connect, stored grants that fail re-validation are reported here too.
+- **`detached`** — members left the connection, each with a reason (revoked, epoch advanced, suspended under the unknown-key rule, key rotated, expired, blocked, superseded, an operator, or the principal's own detach). Stored grants that fail re-validation on connect, and valid grants the connection has no room for (`connectionFull`), are reported here too.
 - **`refused`** — on a raw-TSP `tsp-mux` socket, an inbound frame was refused, reported in-band instead of by closing the socket.
+
+A DIDComm socket becomes a mux connection by negotiating the `didcomm-mux` WebSocket subprotocol, a raw-TSP socket by negotiating `tsp-mux`.
 
 Events are **live only**. The mediator never stores one, because each describes one connection; there is no response; and after a drop, [`messaging/mux/list`](../../list/0.1/spec.md) is the source of truth. Anything the principal must act on even when offline is also sent as a durable notice.
 
@@ -93,8 +95,8 @@ A conforming **producer** (the mediator) **MUST**:
 1. Emit documents whose `type` is `https://trusttasks.org/spec/messaging/mux/event/0.1`, with itself as `issuer`, the principal as `recipient`, and an `issuedAt`, over the principal's live connection only — authcrypted to the principal for DIDComm, sealed to the principal's VID and sent verbatim for TSP. Every event is addressed to the principal, never to a member: the principal is the party authenticated on the connection, and an event about a member just detached needs none of that member's keys.
 2. **Never store** an event in any inbox, and never resend one on another connection.
 3. Send `ready` as the first frame on a mux connection after authentication, with a `muxNonce` of 32 fresh random bytes that belongs to this connection alone and is never reused. `pendingNotices` counts the messaging/mux/notice documents in the principal's inbox at that moment.
-4. On connect, re-validate every stored grant of the principal, attach each valid one, and report them in **one** batched `attached` event with reason `connect` (split only where more than 1000 members change), followed by one `detached` event listing each grant that failed, with its reason.
-5. Emit `attached` whenever a member joins, or a member's scope or expiry changes, and `detached` whenever a member leaves, every time, with its reason. A `detached` event for a member is sent only after the member's live traffic on this connection has stopped and any frame for it still queued has been dropped.
+4. On connect, re-validate every stored grant of the principal, attach each valid one, and report them in **one** batched `attached` event with reason `connect` (split only where more than 1000 members change), followed by one `detached` event listing each grant that failed, with its reason, and each valid grant the connection had no room for, with reason `connectionFull`. Which grants fill the connection when the principal holds more than it can carry is the mediator's choice; it **SHOULD** be stable from one connect to the next.
+5. Emit `attached` whenever a member joins, or a member's scope or expiry changes, and `detached` whenever a member leaves, every time, with its reason. A grant stored while the principal is connected that the connection has no room for is reported `detached` with reason `connectionFull`; it never joined, but the principal learns that the grant exists and is not carried here. A `detached` event for a member is sent only after the member's live traffic on this connection has stopped and any frame for it still queued has been dropped.
 6. Set `deliveryActive: false` for a member whose own direct connection takes precedence, and report its later reactivation with an `attached` event, reason `reactivated`. A member losing live traffic to the DID's own direct connection, or to a newer connection of the same kind, is reported `detached` with reason `superseded`; it stays in the member set, inactive.
 
 A conforming **consumer** (the principal) **MUST**:
@@ -112,10 +114,18 @@ A raw-TSP socket carries binary TSP frames only. Without mux, a mediator reports
 1. **Negotiation.** The client offers `tsp`, `tsp-ack` and `tsp-mux`, in that order. A mediator selects `tsp-mux` only when it implements it and mux is enabled; an older mediator selects `tsp`, so a client never wrongly believes mux is on, and **MUST** treat a selected `tsp` or `tsp-ack` as "mux unavailable". `tsp-mux` implies `tsp-ack`.
 2. **Control.** Mux Trust Tasks, and these events, travel as TSP Direct messages between the principal's VID and the mediator's on the same socket.
 3. **Data frames are not tagged.** A TSP envelope names its receiver VID in the clear, and a member DID's TSP VID is the DID itself, so the client routes each delivered frame to its member by receiver.
-4. **In-band refusals.** On a `tsp-mux` socket, a refused inbound frame does not close the socket. The mediator sends a `refused` event, where `frameId` is the lowercase hex SHA-256 of the frame's exact bytes — the identifier `tsp-ack` already uses — and `code` the stable refusal code a traffic-monitor `refused` event would report. The socket closes only for a failure of the principal itself: its authentication expiring, its account blocked, or a protocol violation.
+4. **In-band refusals.** On a `tsp-mux` socket, a refused inbound frame does not close the socket. The mediator sends a `refused` event, where `frameId` is the lowercase hex SHA-256 of the frame's exact bytes, as the traffic monitor identifies a refused frame (a refused frame is never stored, so it has no stored-message id for `tsp-ack` to acknowledge), and `code` the stable refusal code a traffic-monitor `refused` event would report. The socket closes only for a failure of the principal itself: its authentication expiring, its account blocked, or a protocol violation.
 5. **Inbox drain.** The mediator drains the principal's inbox and then, round-robin, each attached member's with `pickup`, in pages bounded per member. Acknowledgements are authorised against the owning member's `delete` scope; a member without `delete` has delete-on-send turned off, and its frames stay in its inbox.
 
-How a DIDComm WebSocket becomes a mux connection is the transport's concern and is not defined here.
+### DIDComm sockets
+
+A DIDComm WebSocket becomes a mux connection by negotiating the `didcomm-mux` subprotocol:
+
+1. **Negotiation.** The client offers `didcomm-mux` with its upgrade request, next to any authentication subprotocol it uses. A mediator selects `didcomm-mux` only when it implements it and mux is enabled. A mediator that does not implement it may still echo the token back, so selection alone proves nothing: the client **MUST** treat the connection as a mux connection only once it has received `ready` on it, and **MUST NOT** report a member as reachable before then. A connection that is not selected as `didcomm-mux`, or that sends no `ready` before its first other frame, is an ordinary DIDComm connection for the principal alone.
+2. **Control and data.** Mux Trust Tasks and these events travel as DIDComm messages between the principal and the mediator on the same socket, authcrypted as any other. Each delivered frame is the member's own message, packed for the member, so the client routes it to its member by recipient.
+3. **Refusals.** A DIDComm socket already reports a refused inbound message in-band, with a problem report to its sender, so no `refused` event is sent on one.
+
+A mediator **MAY** also accept a provisional token it shipped before this binding was defined; a client **MUST NOT** offer one.
 
 ## Authorization
 

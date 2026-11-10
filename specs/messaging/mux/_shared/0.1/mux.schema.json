@@ -119,9 +119,10 @@
         "admin",
         "detachRequested",
         "accountRemoved",
-        "resolutionFailed"
+        "resolutionFailed",
+        "connectionFull"
       ],
-      "description": "Why a member left a connection, or why a stored grant did not attach on connect. `revokedByMember` / `revokedByPrincipal`: messaging/mux/revoke by that side. `epochBumped`: the member DID ran messaging/mux/revoke-all. `suspendedUnknownKey`: the unknown-key rule suspended the grant. `keyRotated`: the grant's signing key left the member DID's current authentication relationship (grant state `staleKey`). `expired`: the grant or attach reached its effective expiry. `accountBlocked`: the member's account was blocked. `superseded`: the member DID's own direct connection, or a newer connection of the same kind, now receives its live traffic; the member stays on this connection inactive. `admin`: an operator acted. `detachRequested`: the principal removed a session attach with messaging/mux/detach. `accountRemoved`: the member's account, or the principal's, was removed. `resolutionFailed`: the member DID could not be resolved when the grant was re-validated; the grant is not changed and is re-checked later."
+      "description": "Why a member left a connection, or why a stored grant did not attach on connect. `revokedByMember` / `revokedByPrincipal`: messaging/mux/revoke by that side. `epochBumped`: the member DID ran messaging/mux/revoke-all. `suspendedUnknownKey`: the unknown-key rule suspended the grant. `keyRotated`: the grant's signing key left the member DID's current authentication relationship (grant state `staleKey`). `expired`: the grant or attach reached its effective expiry. `accountBlocked`: the member's account was blocked. `superseded`: the member DID's own direct connection, or a newer connection of the same kind, now receives its live traffic; the member stays on this connection inactive. `admin`: an operator acted. `detachRequested`: the principal removed a session attach with messaging/mux/detach. `accountRemoved`: the member's account, or the principal's, was removed. `resolutionFailed`: the member DID could not be resolved when the grant was re-validated; the grant is not changed and is re-checked later. `connectionFull`: the grant is valid and stays stored, but this connection already carries `maxDidsPerConnection` members, so it was not attached here; it attaches on a connection with room, including this one's successor once the principal makes room and reconnects."
     },
     "MemberChangeReason": {
       "title": "MemberChangeReason",
@@ -142,7 +143,8 @@
         "admin",
         "detachRequested",
         "accountRemoved",
-        "resolutionFailed"
+        "resolutionFailed",
+        "connectionFull"
       ],
       "description": "The reason carried by one member's change in a messaging/mux/event `attached` or `detached` event: exactly the AttachReason values followed by the DetachReason values, with their meanings. An `attached` event carries only AttachReason values and a `detached` event only DetachReason values. One closed set rather than a union, so every generated binding types it as one enumeration; it MUST be kept equal to the two sets it joins."
     },

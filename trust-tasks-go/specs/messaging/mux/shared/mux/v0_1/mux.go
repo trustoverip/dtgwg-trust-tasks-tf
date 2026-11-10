@@ -129,7 +129,10 @@ const (
 // removed a session attach with messaging/mux/detach. `accountRemoved`: the member's
 // account, or the principal's, was removed. `resolutionFailed`: the member DID could not
 // be resolved when the grant was re-validated; the grant is not changed and is re-checked
-// later.
+// later. `connectionFull`: the grant is valid and stays stored, but this connection
+// already carries `maxDidsPerConnection` members, so it was not attached here; it
+// attaches on a connection with room, including this one's successor once the principal
+// makes room and reconnects.
 type DetachReason string
 
 // Values DetachReason may take, per this specification's schema.
@@ -146,6 +149,7 @@ const (
 	DetachReasonDetachRequested     DetachReason = "detachRequested"
 	DetachReasonAccountRemoved      DetachReason = "accountRemoved"
 	DetachReasonResolutionFailed    DetachReason = "resolutionFailed"
+	DetachReasonConnectionFull      DetachReason = "connectionFull"
 )
 
 // MemberChangeReason The reason carried by one member's change in a messaging/mux/event
@@ -174,6 +178,7 @@ const (
 	MemberChangeReasonDetachRequested     MemberChangeReason = "detachRequested"
 	MemberChangeReasonAccountRemoved      MemberChangeReason = "accountRemoved"
 	MemberChangeReasonResolutionFailed    MemberChangeReason = "resolutionFailed"
+	MemberChangeReasonConnectionFull      MemberChangeReason = "connectionFull"
 )
 
 // GrantRef Identifies one stored grant and the two parties to it.

@@ -184,7 +184,7 @@ The member's authority is bounded twice: by the scope it signed, and by its own 
 
 - **Principal** — the DID the connection is authenticated as. It stays the authenticated identity; members never are.
 - **Member DID** — a DID whose traffic rides the principal's connection; the `issuer` of its statement.
-- **Mux connection** — an authenticated connection the mediator has announced with a `ready` event carrying its `sessionId` and `muxNonce`. How a connection becomes one is the transport's concern: on a raw-TSP socket, negotiating the `tsp-mux` subprotocol ([`messaging/mux/event`](../../event/0.1/spec.md#raw-tsp-sockets)).
+- **Mux connection** — an authenticated connection the mediator has announced with a `ready` event carrying its `sessionId` and `muxNonce`. A DIDComm WebSocket becomes one by negotiating the `didcomm-mux` subprotocol ([`messaging/mux/event`](../../event/0.1/spec.md#didcomm-sockets)), a raw-TSP socket by negotiating `tsp-mux` ([`messaging/mux/event`](../../event/0.1/spec.md#raw-tsp-sockets)).
 - **`attachments`** — REQUIRED. 1–256 [`AttachStatement`](../../_shared/0.1/mux.schema.json#/$defs/AttachStatement)s.
 - **`results`** (response) — one `AttachOutcome` per statement: `did` (its issuer), `status` (`attached` | `refused`), and for `attached` the `scope` in force, `expiresAt`, and `deliveryActive`; for `refused`, `code`.
 
