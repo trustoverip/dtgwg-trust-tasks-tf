@@ -195,9 +195,21 @@ A conforming **consumer** **MUST**, in addition:
 2. Refuse a `purposes` its own policy will not grant by refusing the request, naming the purpose, never by
    issuing without it.
 
-A holder attenuating the credential to equip an agent states, on the link it adds, purposes within these
-(VTI-ACL-107), and a verifier refuses a chain in which a link does not — see
-[`AuthorityPresentation`](../../../_shared/0.2/room.schema.json).
+### Purposes along a chain
+
+An authority credential MAY state `purposes`, a `PurposeScope` as
+[AclEntry 0.3](../../../../acl/_shared/0.3/acl-entry.schema.json) defines it: what its subject may use the
+content it reads for. A credential stating none grants `any`, which never includes `modelTraining`.
+
+Along a chain presented as an `AuthorityPresentation`, a link that states no `purposes` takes its parent's,
+and a link **MUST NOT** state purposes its parent does not grant — `any` under a list, a purpose the list
+does not name, or `modelTraining` under `any` (VTI-ACL-107). A holder attenuating the credential to equip
+an agent states, on the link it adds, purposes within these. A verifier **MUST** refuse a chain in which a
+link states wider purposes than its parent, whole, as it refuses any chain that does not verify. The leaf's
+purposes are what the chain grants, and a verifier serving a purpose-bound read holds the request to them as
+VTI-ACL-103 – VTI-ACL-106 hold a read to an access-control entry's
+([`rooms/records/get`](../../../records/get/0.4/spec.md) 0.4,
+[`rooms/keys/open`](../../../keys/open/0.3/spec.md) 0.3).
 
 ## Security & Privacy
 

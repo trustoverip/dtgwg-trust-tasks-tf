@@ -362,7 +362,7 @@ one where more than one is granted to it; it **MUST NOT** expect `any` to grant 
 The purposes **granted** are those both of the following grant: the caller's authorization at the key
 holder (its access-control entry's `purposes`, VTI-ACL-100), and the principal's own authority over the
 room — where the authority credential the key holder acts under states `purposes`, those, and `any` where
-it states none (VTI-ACL-110, [`AuthorityPresentation`](../../../_shared/0.2/room.schema.json)).
+it states none (VTI-ACL-110, [`rooms/owner/issue-authority`](../../../owner/issue-authority/0.3/spec.md) 0.3, *Purposes along a chain*).
 
 `any` grants every purpose but `modelTraining` (VTI-ACL-105); a list grants exactly its members, an
 unrecognised purpose equalling only itself (VTI-ACL-109). Where exactly one purpose is granted, a request

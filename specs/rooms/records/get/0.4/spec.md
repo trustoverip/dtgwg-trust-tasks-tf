@@ -264,7 +264,7 @@ chain is a grant written as a credential, and the purposes it states bound what 
 record for. A chain stating none grants `any`.
 
 The purposes the chain **grants** are those its leaf states, read as
-[`AuthorityPresentation`](../../../_shared/0.2/room.schema.json) describes: a link that states none takes
+the chain rule in [`rooms/owner/issue-authority`](../../../owner/issue-authority/0.3/spec.md) 0.3, *Purposes along a chain* describes: a link that states none takes
 its parent's, and a chain in which a link states purposes its parent does not grant is refused whole, as
 any other chain that does not verify (VTI-ACL-107).
 
