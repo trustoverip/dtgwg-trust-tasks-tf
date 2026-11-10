@@ -14,6 +14,15 @@ pub.dev only accepts an automated publish from a tag-triggered workflow. See
 Entries before 0.9.0 are in [`CHANGELOG-archive.md`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/trust-tasks-dart/CHANGELOG-archive.md),
 kept out of the package: pub.dev refuses a `CHANGELOG.md` over 256 KiB.
 
+## 0.9.36 — 2026-11-10
+
+
+### Added
+
+- **messaging/mux**: ConnectionFull detach reason; didcomm-mux subprotocol binds a DIDComm socket (#1078)
+
+* feat(messaging/mux): connectionFull detach reason; didcomm-mux subprotocol binds a DIDComm socket
+
 ## 0.9.35 — 2026-11-10
 
 

@@ -11,6 +11,15 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.28.27 — 2026-11-10
+
+
+### Added
+
+- **messaging/mux**: ConnectionFull detach reason; didcomm-mux subprotocol binds a DIDComm socket (#1078)
+
+* feat(messaging/mux): connectionFull detach reason; didcomm-mux subprotocol binds a DIDComm socket
+
 ## 0.28.26 — 2026-11-10
 
 

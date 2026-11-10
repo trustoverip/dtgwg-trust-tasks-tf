@@ -31,6 +31,32 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.37.14](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.37.13...trust-tasks-rs-v0.37.14) — 2026-11-10
+
+
+### Added
+
+- **messaging/mux**: ConnectionFull detach reason; didcomm-mux subprotocol binds a DIDComm socket ([#1078](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1078))
+
+* feat(messaging/mux): connectionFull detach reason; didcomm-mux subprotocol binds a DIDComm socket
+
+
+
+### Specifications
+
+- **rooms/records/get**: Every 0.4 read is held to the chain's purposes, stated or not ([#1077](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1077))
+
+0.4 opened by calling a read purpose-bound "wherever the presented authority
+  chain states purposes", while its own conformance item, VTI-ACL-105 and
+  VTI-ACL-110 refuse modelTraining under a chain stating none, which grants
+  `any`. Say what the item already requires: every read is purpose-bound, and a
+  chain stating none grants `any`, which never includes modelTraining. The
+  purposeNotGranted meaning and the change note say the same. Wording only, so
+  the version is unchanged; it now agrees with the VAC's Purposes of Use in
+  trustoverip/dtgwg-cred-spec#84.
+
+
+
 ## [0.37.13](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.37.12...trust-tasks-rs-v0.37.13) — 2026-11-10
 
 
