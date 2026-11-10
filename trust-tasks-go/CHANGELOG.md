@@ -11,6 +11,15 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.10.26 — 2026-11-10
+
+
+### Added
+
+- **messaging/mux**: ConnectionFull detach reason; didcomm-mux subprotocol binds a DIDComm socket (#1078)
+
+* feat(messaging/mux): connectionFull detach reason; didcomm-mux subprotocol binds a DIDComm socket
+
 ## 0.10.25 — 2026-11-10
 
 
