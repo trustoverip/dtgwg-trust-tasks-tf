@@ -1,0 +1,259 @@
+---
+slug: rooms/keys/open
+version: "0.3"
+extends: "0.2"
+title: Rooms Keys — Open
+summary: "An agent asks the party holding its principal's room keys to open one sealed record; the plaintext comes back and the key never does."
+status: draft
+targetFrameworkVersion: "0.5.0"
+category: ai-agents
+keywords:
+  - room
+  - oracle
+  - decryption
+  - agent
+  - key-custody
+authors:
+  - Glenn Gore (https://github.com/stormer78)
+parties:
+  - role: Agent
+    requirement: REQUIRED
+    member: issuer
+    identifierScope: pairwise
+  - role: Oracle
+    requirement: REQUIRED
+    member: recipient
+proofRequirement:
+  requirement: REQUIRED
+  rationale: "The oracle acts on its principal's key material; a request whose integrity depended on the transport would let a compromised channel choose what gets opened."
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: "A replayed request would re-run an operation the principal authorized once, at a time they did not choose."
+sideEffects:
+  level: none
+  rationale: "Returns plaintext for one sealed record; stores nothing."
+subjectPath: /roomId
+exposure:
+  discloses: secret
+  ingests: none
+  actsAsSubject: false
+  rationale: "Returns the plaintext of one record — material the room's members can read and nobody else should. The oracle is the principal's own infrastructure, which is why it may see it."
+retention:
+  class: transient
+  rationale: "The task returns a result and stores nothing; an oracle that cached plaintext would create a second copy of the room outside the room."
+errorCodes:
+  - code: rooms/keys/open:unknownEpoch
+    meaning: "The oracle holds no key for the epoch this record was sealed under. `details.reason` says why, exactly as `rooms/keys/file-key` 0.2 says it: `notDelivered` — the room has moved to an epoch whose commit has not reached the oracle yet, so retrying after it arrives may succeed, and `details.heldEpoch`, when present, is the latest epoch the oracle holds; `beyondChain` — the oracle's epoch chain reaches back only to `details.earliestEpoch`; `removed` — a commit the oracle processed removed its principal from the room's group at `details.removedAtEpoch`, and the record's epoch is at or after it and below the epoch the principal next joined at, if it has, so no later commit will make it openable and catching up will not help."
+    retryable: false
+    detailsSchema:
+      type: object
+      additionalProperties: false
+      required: [reason]
+      properties:
+        reason:
+          type: string
+          enum: [notDelivered, beyondChain, removed]
+        earliestEpoch:
+          type: integer
+          minimum: 1
+        heldEpoch:
+          type: integer
+          minimum: 1
+        removedAtEpoch:
+          type: integer
+          minimum: 1
+  - code: rooms/keys/open:didNotOpen
+    meaning: "The record failed authentication — it was sealed under a different key, or relocated."
+    retryable: false
+  - code: rooms/keys/open:purposeNotGranted
+    meaning: "The request names a purpose that is not granted, or names none where more than one is granted — by the caller's authorization at the key holder or by the principal's authority over the room. The refusal discloses no content and is distinct from `permissionDenied`, which refuses access itself (VTI-ACL-104)."
+    retryable: false
+    detailsSchema:
+      type: object
+      additionalProperties: false
+      required: [purposeNamed]
+      properties:
+        purposeNamed:
+          type: boolean
+          description: Whether the request named a purpose. False when it named none where more than one is granted.
+        purpose:
+          type: string
+          description: The purpose the request named, when it named one.
+related:
+  - rooms/keys/present
+  - rooms/keys/file-key
+  - rooms/records/get
+---
+
+## Abstract
+
+The **Rooms Keys — Open** Trust Task opens one sealed room record on behalf of a caller that
+does not hold the room's keys.
+
+**The key never crosses.** This is a decryption oracle, not a key-release call, and the
+distinction is the whole point. The caller is typically an **AI agent**: it needs to *read*
+what a room holds, and it should not therefore hold — on a general-purpose machine, for as
+long as the software lives — key material belonging to every other member of that room.
+
+Two properties follow, and both are things a key-release design cannot offer:
+
+- **Revoking the caller actually revokes it.** Withdrawing an agent's authorization at the
+  oracle withdraws its access, because there is nothing else for it to keep.
+- **The blast radius of a compromised caller is bounded by time**, not by the lifetime of a
+  key it was given.
+
+A failure to open is not an error to paper over: a record that does not authenticate was
+sealed under a different key, or has been moved. Either way the honest answer is a refusal,
+not a decryption attempted with a different key until one works.
+
+## Status of this Document
+
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+
+### What changed from 0.2
+
+- **`purpose`** (optional) is added to the request: the one purpose the caller will use the opened record
+  for (VTI-ACL-100 – 110), `RecordPurpose` in [`rooms/_shared`](../../../_shared/0.2/room.schema.json).
+- **`rooms/keys/open:purposeNotGranted`** is new, for a request whose purpose is not granted (*Purpose of use*).
+- `extends: "0.2"`: a 0.2 consumer reads a 0.3 open as a 0.2 open, ignoring `purpose`. The response is unchanged.
+
+## Conformance
+
+[[RFC2119]](https://www.rfc-editor.org/rfc/rfc2119) and [[RFC8174]](https://www.rfc-editor.org/rfc/rfc8174) key-word conventions apply.
+
+A caller who is not authorized to open records for the room is refused with the framework's standard `permissionDenied` ([SPEC §8.3](/SPEC.md#83-standard-error-codes)). This specification declares no task-specific code for it.
+
+A key holder serving several members — several principals, or several personas of one — keeps
+one current group state per member per room, and **MUST** open with the group state of the
+member its caller acts as. State it holds for another member **MUST NOT** be used to open a record for this
+one, and a record that does not open under the caller's member's state is `didNotOpen` or
+`unknownEpoch`, never a retry under another member's.
+
+A member removed from the room's group and admitted again also has **prior memberships**
+([`rooms/keys/welcome`](../../welcome/0.1/spec.md), *Rejoining after a removal*): one per
+removal, each covering the epochs at or after the epoch it joined at and below the epoch of its
+removal. The record's epoch `E` chooses which of the member's states opens it, and no two of
+them cover the same epoch, so there is never a choice between states for one record. The oracle
+**MUST** use:
+
+- the member's current group state when `E` is at or after the epoch that state joined at;
+- otherwise, the prior membership whose range covers `E`, when `E` is below that membership's
+  removal epoch and at or after its join epoch.
+
+When `E` is at or after a removal epoch and below the join epoch of the member's next state —
+or at or after its last removal epoch, when it holds no current state — no state of the member
+covers it, and the oracle answers `unknownEpoch` with reason `removed` and that removal's epoch
+as `removedAtEpoch`. A record that does not open under the state `E` chose is `didNotOpen` or
+`unknownEpoch`; the oracle **MUST NOT** retry it under another of the member's states.
+
+A prior membership the oracle recognised from a Welcome rather than from a removal it processed
+([`rooms/keys/welcome`](../../welcome/0.1/spec.md), *Rejoining after a removal*) has a removal
+epoch that is **not yet known**: it held the room at some epoch `h`, and the member was removed
+at an epoch above `h` and at or below the next join epoch. Until the oracle applies the
+removing commit to that state, the membership covers every epoch at or after its join epoch
+and below the next join epoch, and `E` chooses it as above. A record whose `E` is above `h` is
+then a commit not yet delivered to that state: the oracle answers `unknownEpoch` with reason
+`notDelivered` and `heldEpoch` `h` — the epoch that state holds, not the current state's — and
+**MAY** first repair that state by applying the room's commits to it from a host, as it would
+catch up the current state. Applying the removing commit fixes the removal epoch, and from then
+on the membership is answered as one with a known removal: `E` below it opens under that state,
+and `E` at or after it and below the next join epoch is `removed`. An oracle that cannot obtain
+those commits answers what its repair would — `notDelivered` — and **MUST NOT** answer `removed`
+for an epoch above `h` before it has processed the commit that says so.
+
+An oracle that refuses with `unknownEpoch` a record sealed under epoch `E` **MUST** say which
+case holds in `details.reason`:
+
+- `removed`, with `removedAtEpoch`, when a commit the oracle processed removed its principal
+  from the room's group at `removedAtEpoch` and `E` is at or after it and below the epoch the
+  principal next joined at, if it has — no later commit will make `E` openable, so the caller
+  **MUST NOT** be told to catch up. This case takes precedence over `notDelivered`: an oracle
+  that knows of such a removal **MUST NOT** answer `notDelivered` for an `E` in that range.
+- `notDelivered` when `E` is later than any epoch the state `E` chose holds and the removal
+  case does not apply (a commit has not been delivered), with `heldEpoch` naming the latest
+  epoch that state holds where it can — including a prior membership whose removal epoch is
+  not yet known, until the oracle applies the commit that removes it.
+- `beyondChain`, with `earliestEpoch`, when `E` is earlier than the latest epoch the state `E`
+  chose holds and that state's retained epoch chain does not reach back to `E`, or when `E` is
+  below the epoch the principal first joined at, so that no state of its covers `E`.
+
+An epoch below the room's epoch floor, once the oracle has learnt one, is answered as
+`beyondChain` with `earliestEpoch` at or above the floor, whatever the oracle still holds — see
+[`EpochFloor`](../../../_shared/0.1/room.schema.json) and
+[`rooms/epoch/prune`](../../../epoch/prune/0.2/spec.md) 0.2.
+
+It **MUST NOT** attempt the record under a different epoch's key. A caller acts on
+`details.reason`, never on the message, and after `removed` **MUST NOT** retry after catching
+up.
+
+### Purpose of use
+
+Opening a record is **purpose-bound** (VTI-ACL-102): content crosses to the caller, and what the caller
+may use it for is stated by the authority it holds.
+
+A producer **SHOULD** name in `purpose` the one purpose it will use what it receives for, and **MUST** name
+one where more than one is granted to it; it **MUST NOT** expect `any` to grant `modelTraining`.
+
+The purposes **granted** are those both of the following grant: the caller's authorization at the key
+holder (its access-control entry's `purposes`, VTI-ACL-100), and the principal's own authority over the
+room — where the authority credential the key holder acts under states `purposes`, those, and `any` where
+it states none (VTI-ACL-110, [`rooms/owner/issue-authority`](../../../owner/issue-authority/0.3/spec.md) 0.3, *Purposes along a chain*).
+
+`any` grants every purpose but `modelTraining` (VTI-ACL-105); a list grants exactly its members, an
+unrecognised purpose equalling only itself (VTI-ACL-109). Where exactly one purpose is granted, a request
+naming none is read as naming it (VTI-ACL-103).
+
+A conforming **consumer** (the key holder) **MUST**, in addition:
+
+1. Refuse with `rooms/keys/open:purposeNotGranted`, before it opens, fetches or derives anything, a request naming a
+   purpose not granted, or naming none where more than one is granted. The refusal carries no content.
+2. Record the purpose in the record it keeps of every request it serves or refuses for its principal, or
+   that the request named none (VTI-ACL-106).
+
+## Security & Privacy
+
+**The key never crosses.** That is the whole design. An oracle that returned key material
+would be a key-release call wearing a different name, and the caller — typically an AI agent
+running on a general-purpose machine — would then hold, indefinitely, material belonging to
+every other member of the room.
+
+**Revocation must actually revoke.** Because the caller holds no key, withdrawing its access
+is withdrawing its authorization at the oracle. If a caller retains anything that keeps
+working afterwards, the oracle has leaked.
+
+**The oracle sees plaintext, and that is the trade.** It is the principal's own agent
+infrastructure, which is already in their trusted computing base; a host is not, which is
+why the host sees only ciphertext.
+
+**Scope every presentation.** A presentation minted for one action cannot be replayed for
+another, and one granted to one caller cannot be used by a second. An implementation that mints one covering every action has handed
+the caller its principal's whole standing, which is the outcome attenuation exists to
+prevent.
+
+### Data carried
+
+`open` carries one sealed record and its location; the response carries its plaintext.
+`present` carries a room and an action; the response carries a presentation. Neither carries key material in either direction.
+
+### Correlation
+
+An oracle learns which records its principal's agents read and when — a complete picture of
+that principal's own activity. It learns nothing about other members.
+
+### Retention
+
+Neither task stores anything of its own. An oracle that caches opened plaintext has created
+a second copy of the room outside the room.
+
+### Consent/purpose
+
+The caller acts for the principal whose keys the oracle holds, within whatever authorization
+the principal granted it. That grant is what an implementation checks; this specification
+defines the shape of the request, not the policy.
+
+Where that grant is expressed as a device capability, the registered value is **`roomOpen`**
+(`room-open` in the `0.1` casing) — see `Capability` in
+[`device/_shared`](../../../../device/_shared/0.2/device-binding.schema.json). It is separate
+from `roomPresent` on purpose: producing a presentation and decrypting a record are different
+powers, and an agent that indexes a room should not thereby be able to read it. Both are
+separate from `sign`, which would grant strictly more than either task needs.

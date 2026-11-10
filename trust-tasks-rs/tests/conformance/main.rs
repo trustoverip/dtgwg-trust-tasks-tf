@@ -1303,6 +1303,7 @@ mod rooms {
         mod file_key {
             mod v0_1;
             mod v0_2;
+            mod v0_3;
         }
         mod key_package {
             mod v0_2;
@@ -1325,6 +1326,7 @@ mod rooms {
         mod read {
             mod v0_1;
             mod v0_2;
+            mod v0_3;
         }
         mod seal {
             mod v0_1;
@@ -1365,6 +1367,7 @@ mod rooms {
         mod issue_authority {
             mod v0_1;
             mod v0_2;
+            mod v0_3;
         }
         mod issue_membership {
             mod v0_1;
@@ -1381,6 +1384,7 @@ mod rooms {
         mod get {
             mod v0_2;
             mod v0_3;
+            mod v0_4;
         }
         mod list {
             mod v0_2;

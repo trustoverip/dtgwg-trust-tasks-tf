@@ -2961,3 +2961,22 @@ class RecordMetadataV3 {
         if (kind != null) 'kind': kind!,
       };
 }
+
+/// What content is used for: a lowerCamelCase name registered in the VTI
+/// specification's purpose registry (Appendix H) — `personalisation`, `taskExecution`,
+/// `analytics`, `modelTraining` at the time of writing — or an absolute IRI naming a
+/// purpose defined elsewhere, such as a purpose of the W3C Data Privacy Vocabulary
+/// (`https://w3id.org/dpv#ServicePersonalisation`). Compared by exact string equality:
+/// a consumer MUST NOT treat a purpose it does not recognise as equal to any other,
+/// and grants only a request naming exactly a listed purpose (VTI-ACL-109). A
+/// registered name is never an IRI, because it contains no `:`.
+typedef Purpose = String;
+
+/// The one purpose for which a caller will use room content a request discloses
+/// (VTI-ACL-103): a name registered in the VTI specification's purpose registry
+/// (`personalisation`, `taskExecution`, `analytics`, `modelTraining`) or an absolute
+/// IRI. Granted only as the caller's authority grants it — `any` grants every purpose
+/// but `modelTraining` — refused otherwise (`purposeNotGranted`), and recorded with
+/// the read. Distinct from `PermittedUse`, which is what a record's author permits and
+/// is a statement, not a grant.
+typedef RecordPurpose = Purpose;

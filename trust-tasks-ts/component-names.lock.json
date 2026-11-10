@@ -453,6 +453,7 @@
   "rooms/_shared/0.2/room.schema.json#/$defs/RecordMetadataV2": "RecordMetadataV2",
   "rooms/_shared/0.2/room.schema.json#/$defs/RecordMetadataV3": "RecordMetadataV3",
   "rooms/_shared/0.2/room.schema.json#/$defs/RecordPrune": "RecordPrune_RoomsV0_2",
+  "rooms/_shared/0.2/room.schema.json#/$defs/RecordPurpose": "RecordPurpose",
   "rooms/_shared/0.2/room.schema.json#/$defs/RecordReference": "RecordReference",
   "rooms/_shared/0.2/room.schema.json#/$defs/RecordRetention": "RecordRetention",
   "rooms/_shared/0.2/room.schema.json#/$defs/RecordValidUntil": "RecordValidUntil",
