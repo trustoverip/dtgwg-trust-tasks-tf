@@ -163,7 +163,10 @@ extension type const AttachReason(String value) {
 /// the principal removed a session attach with messaging/mux/detach. `accountRemoved`:
 /// the member's account, or the principal's, was removed. `resolutionFailed`: the
 /// member DID could not be resolved when the grant was re-validated; the grant is not
-/// changed and is re-checked later.
+/// changed and is re-checked later. `connectionFull`: the grant is valid and stays
+/// stored, but this connection already carries `maxDidsPerConnection` members, so it
+/// was not attached here; it attaches on a connection with room, including this one's
+/// successor once the principal makes room and reconnects.
 ///
 /// An extension type rather than an enum: a value from a newer MINOR of this
 /// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
@@ -183,6 +186,7 @@ extension type const DetachReason(String value) {
   static const DetachReason detachRequested = DetachReason('detachRequested');
   static const DetachReason accountRemoved = DetachReason('accountRemoved');
   static const DetachReason resolutionFailed = DetachReason('resolutionFailed');
+  static const DetachReason connectionFull = DetachReason('connectionFull');
 
   /// Every value this specification's schema permits.
   static const List<DetachReason> values = <DetachReason>[
@@ -197,7 +201,8 @@ extension type const DetachReason(String value) {
     admin,
     detachRequested,
     accountRemoved,
-    resolutionFailed
+    resolutionFailed,
+    connectionFull
   ];
 }
 
@@ -237,6 +242,8 @@ extension type const MemberChangeReason(String value) {
       MemberChangeReason('accountRemoved');
   static const MemberChangeReason resolutionFailed =
       MemberChangeReason('resolutionFailed');
+  static const MemberChangeReason connectionFull =
+      MemberChangeReason('connectionFull');
 
   /// Every value this specification's schema permits.
   static const List<MemberChangeReason> values = <MemberChangeReason>[
@@ -255,7 +262,8 @@ extension type const MemberChangeReason(String value) {
     admin,
     detachRequested,
     accountRemoved,
-    resolutionFailed
+    resolutionFailed,
+    connectionFull
   ];
 }
 

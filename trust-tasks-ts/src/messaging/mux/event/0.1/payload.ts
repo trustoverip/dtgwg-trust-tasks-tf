@@ -317,7 +317,8 @@ export const PAYLOAD_SCHEMA = {
         "admin",
         "detachRequested",
         "accountRemoved",
-        "resolutionFailed"
+        "resolutionFailed",
+        "connectionFull"
       ],
       "description": "The reason carried by one member's change in a messaging/mux/event `attached` or `detached` event: exactly the AttachReason values followed by the DetachReason values, with their meanings. An `attached` event carries only AttachReason values and a `detached` event only DetachReason values. One closed set rather than a union, so every generated binding types it as one enumeration; it MUST be kept equal to the two sets it joins."
     },
