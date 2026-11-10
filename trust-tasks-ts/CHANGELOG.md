@@ -11,6 +11,90 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.28.26 — 2026-11-10
+
+
+### Added
+
+- **acl**: Purpose of use on grants and on memory reads (AclEntry 0.3; vta/memory put/delete/list 0.3, get 0.2) (#1074)
+
+* feat(acl): purpose of use on grants and on memory reads (AclEntry 0.3; vta/memory put/delete/list 0.3, get 0.2)
+
+  An access-control entry says who may do what, where and until when, but not
+  what for. An agent granted a read of its principal's memory can use the content
+  for anything, and nothing records the use it intended. The VTI specification
+  now requires the purpose (VTI-ACL-100 – 110, trustoverip/dtgwg-vti-spec#115);
+  these are the wire shapes.
+
+  acl/_shared/0.3 — AclEntry 0.3 adds one REQUIRED axis, `purposes`:
+  `{"scope": "any"}` or `{"scope": "listed", "purposes": [...]}` with at least
+  one `Purpose` — a lowerCamelCase name registered in the VTI purpose registry
+  (personalisation, taskExecution, analytics, modelTraining) or an absolute IRI
+  such as a DPV purpose. `any` never grants `modelTraining`. Delegated purposes
+  are a subset of the granter's. CONVENTIONS.md §8a maps a 0.2 entry onto 0.3
+  (`any`, the authority it already held, now stated) and §12 states the rules.
+
+  acl tasks on AclEntry 0.3: grant/0.3, update/0.3, show/0.3, revoke/0.3,
+  change-role/0.3, list/0.4. New errors on grant and update: `purposeOutsideDelegator`
+  (purposes wider than the granter's) and `purposeRefused` (policy will not grant
+  a purpose, refused by name, never dropped). update/0.3 replaces `purposes`
+  wholesale; narrowing it is an audited privilege reduction. `purposes` is never
+  redacted by show or list. No `extends`: a REQUIRED member on the entry cannot
+  be added to a version a 0.2 consumer still reads.
+
+  vta/memory put/0.3, delete/0.3, list/0.3, get/0.2 (each `extends` its
+  predecessor) add an optional `purpose` (`MemoryPurpose`, new in
+  vta/_shared/0.1/memory-record, a reference to acl's `Purpose`) and a
+  `purposeNotGranted` error that discloses nothing and is distinct from
+  `contextForbidden`. A recall, and a listing with values, is purpose-bound:
+  refused for a purpose the entry does not grant, or for none under an entry
+  listing several, and audited with its purpose either way. A write is not
+  purpose-bound, but a conflict that returns `currentValue` is: the value is
+  withheld unless the request's purpose is granted.
+
+  Data rooms (a room authority credential's `purposes`, VTI-ACL-110) are a
+  follow-up.
+
+  Samples in other specs that named the superseded acl versions now name the new
+  ones, with `purposes` on every embedded entry; prose links were moved by
+  `npm run fix-stale-references`.
+
+
+
+### Fixed
+
+- **mux/grant**: Unknown-key rule fails closed on direct authentication; no exemption for a grant without recorded keys (#1075)
+
+A grant that recorded no key-agreement keys exempted every grant on its DID from the DIDComm direct-authentication rule. A grant is now refused (didUnresolvable) when its keys cannot be read, an empty set means the DID listed none, and the rule is applied before a direct authentication succeeds, refusing it when it cannot be applied.
+
+- **messaging/mux**: Compare a direct authentication with keys of its own relationship; send grantsExpiring for every unrenewed grant (#1072)
+
+
+### Specifications
+
+- **rooms**: Purpose of use on room reads and authority credentials (VTI-ACL-102, -110) (#1076)
+
+* spec(rooms): purpose of use on room reads and authority credentials (VTI-ACL-102, -110)
+
+  Room content a key holder releases to its caller is purpose-bound, as agent
+  memory is (vta/memory/get 0.2), and a room's authority credential may state
+  the purposes it grants.
+
+  - rooms/keys/open 0.3, rooms/keys/read 0.3: optional `purpose`; refused with
+    `purposeNotGranted` where the caller's entry, or the principal's authority
+    over the room, does not grant it. read passes it to the host.
+  - rooms/keys/file-key 0.3: the same as `purposeOfUse` (`purpose` already
+    says seal or open), bound only on `open`.
+  - rooms/records/get 0.4: the host holds a read to the purposes the presented
+    chain states; a chain stating none grants `any`.
+  - rooms/owner/issue-authority 0.3: optional `purposes` (AclEntry 0.3's
+    PurposeScope), stated in the credential; absent grants `any`.
+  - rooms/_shared 0.2: `RecordPurpose`, and AuthorityPresentation's rule for
+    purposes along a chain: a link stating none takes its parent's, a link
+    stating wider is refused whole (VTI-ACL-107).
+
+  Each new version `extends` its predecessor.
+
 ## 0.28.25 — 2026-11-09
 
 
