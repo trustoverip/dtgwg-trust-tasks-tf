@@ -4,7 +4,7 @@
 #![allow(deprecated)]
 /// Why this specification version is deprecated (SPEC "Superseded and
 /// Withdrawn Versions"), or `None` while it is current.
-pub const DEPRECATION: Option<&str> = Some("superseded by rooms/keys/file-key/0.2");
+pub const DEPRECATION: Option<&str> = Some("superseded by rooms/keys/file-key/0.3");
 #[allow(unused_imports)]
 use serde::{Deserialize, Serialize};
 /// Error types.
@@ -122,7 +122,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by rooms/keys/file-key/0.2")]
+#[deprecated(note = "superseded by rooms/keys/file-key/0.3")]
 pub struct Payload {
     ///The epoch the file key derives from, as FileManifest.epoch states it. REQUIRED for `open` and forbidden for `seal` — a rule over two members this schema does not express; the custodian refuses a violation with `malformedRequest`. A sealing caller never chooses the epoch: sealing under anything but the current one would produce a file members who joined later could not open, or one a removed member still could.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -271,7 +271,7 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadPurpose {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by rooms/keys/file-key/0.2")]
+#[deprecated(note = "superseded by rooms/keys/file-key/0.3")]
 pub struct Response {
     ///The epoch the key was derived under. For `seal`, the room's current epoch, which the caller writes into the file's manifest; for `open`, the epoch requested.
     pub epoch: ::std::num::NonZeroU64,

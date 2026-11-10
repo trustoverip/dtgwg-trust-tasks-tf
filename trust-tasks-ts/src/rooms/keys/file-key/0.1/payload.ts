@@ -9,7 +9,7 @@ import type { Ext } from "../../../../_shared/components.js";
 /**
  * A caller asks the party holding its principal's room keys for the key of ONE file in a room: derived from the room's storage key for an epoch, bound to the room, the epoch and the file's identifier, and opening that file and nothing else.
  *
- * @deprecated superseded by rooms/keys/file-key/0.2
+ * @deprecated superseded by rooms/keys/file-key/0.3
  */
 export interface RoomsKeysFileKeyPayload {
   /**
@@ -36,7 +36,7 @@ export interface RoomsKeysFileKeyPayload {
 /**
  * Success response to rooms/keys/file-key. Type https://trusttasks.org/spec/rooms/keys/file-key/0.1#response.
  *
- * @deprecated superseded by rooms/keys/file-key/0.2
+ * @deprecated superseded by rooms/keys/file-key/0.3
  */
 export interface RoomsKeysFileKeyResponsePayload {
   /**
@@ -70,12 +70,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by rooms/keys/file-key/0.2";
+export const DEPRECATION: string | null = "superseded by rooms/keys/file-key/0.3";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by rooms/keys/file-key/0.2
+ * @deprecated superseded by rooms/keys/file-key/0.3
  */
 export type Payload = RoomsKeysFileKeyPayload;
 
@@ -85,7 +85,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/rooms/keys/file-ke
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by rooms/keys/file-key/0.2
+ * @deprecated superseded by rooms/keys/file-key/0.3
  */
 export type Response = RoomsKeysFileKeyResponsePayload;
 

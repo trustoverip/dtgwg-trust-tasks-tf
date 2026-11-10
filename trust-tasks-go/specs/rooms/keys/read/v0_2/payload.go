@@ -26,6 +26,8 @@ const (
 // https://trusttasks.org/spec/rooms/keys/read/0.2#response. For a request naming `key`,
 // the record and its verdict, as in 0.1, with `createdAt` and `createdBy`. For a request
 // naming `keys`, `results`: one entry per key, each its own success or error.
+//
+// Deprecated: superseded by rooms/keys/read/0.3
 type Response struct {
 	RoomID string  `json:"roomId"`
 	Key    *string `json:"key,omitempty"`
@@ -459,6 +461,8 @@ type Ext = map[string]json.RawMessage
 // to 32 (`keys`), read from the named host, checked and opened. Exactly one of `key` and
 // `keys` is present. The outer document members (id, type, issuer, recipient, issuedAt,
 // expiresAt, proof) are owned by the framework — SPEC §6.3.
+//
+// Deprecated: superseded by rooms/keys/read/0.3
 type Payload struct {
 	// The room to read from. The recipient MUST already hold group state for it.
 	RoomID string `json:"roomId"`
@@ -495,7 +499,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by rooms/keys/read/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/rooms/keys/read/0.2#response"

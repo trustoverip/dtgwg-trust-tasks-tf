@@ -151,7 +151,17 @@ class RecordRetention {
 /// revoked by that list, under every task and every version of every task it serves
 /// for the room. A chain from which any link is revoked is refused whole: a credential
 /// delegated from a revoked one confers nothing, however it was attenuated. The
-/// refusal is the same `permissionDenied` as any other failed presentation.
+/// refusal is the same `permissionDenied` as any other failed presentation. **Purposes
+/// (VTI-ACL-110).** An authority credential MAY state `purposes`, a `PurposeScope` as
+/// \[AclEntry 0.3\](../../../acl/_shared/0.3/acl-entry.schema.json) defines it: what its
+/// subject may use the content it reads for. A credential stating none grants `any`,
+/// which never includes `modelTraining`. Along a chain, a link that states none takes
+/// its parent's, and a link MUST NOT state purposes its parent does not grant — `any`
+/// under a list, a purpose the list does not name, or `modelTraining` under `any`
+/// (VTI-ACL-107); a verifier refuses such a chain whole. The leaf's purposes are what
+/// the chain grants, and a verifier that serves a purpose-bound read holds the request
+/// to them as VTI-ACL-103 – VTI-ACL-106 hold a read to an access-control entry's
+/// (`rooms/records/get` 0.4, `rooms/keys/open` 0.3).
 class AuthorityPresentation {
   const AuthorityPresentation({
     required this.membership,
@@ -2961,3 +2971,22 @@ class RecordMetadataV3 {
         if (kind != null) 'kind': kind!,
       };
 }
+
+/// What content is used for: a lowerCamelCase name registered in the VTI
+/// specification's purpose registry (Appendix H) — `personalisation`, `taskExecution`,
+/// `analytics`, `modelTraining` at the time of writing — or an absolute IRI naming a
+/// purpose defined elsewhere, such as a purpose of the W3C Data Privacy Vocabulary
+/// (`https://w3id.org/dpv#ServicePersonalisation`). Compared by exact string equality:
+/// a consumer MUST NOT treat a purpose it does not recognise as equal to any other,
+/// and grants only a request naming exactly a listed purpose (VTI-ACL-109). A
+/// registered name is never an IRI, because it contains no `:`.
+typedef Purpose = String;
+
+/// The one purpose for which a caller will use room content a request discloses
+/// (VTI-ACL-103): a name registered in the VTI specification's purpose registry
+/// (`personalisation`, `taskExecution`, `analytics`, `modelTraining`) or an absolute
+/// IRI. Granted only as the caller's authority grants it — `any` grants every purpose
+/// but `modelTraining` — refused otherwise (`purposeNotGranted`), and recorded with
+/// the read. Distinct from `PermittedUse`, which is what a record's author permits and
+/// is a statement, not a grant.
+typedef RecordPurpose = Purpose;

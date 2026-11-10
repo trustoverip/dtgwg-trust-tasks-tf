@@ -1987,6 +1987,10 @@ export type RecordId_VtcNotificationsV0_1 = string;
  */
 export type RecordKind = string;
 /**
+ * The one purpose for which a caller will use room content a request discloses (VTI-ACL-103): a name registered in the VTI specification's purpose registry (`personalisation`, `taskExecution`, `analytics`, `modelTraining`) or an absolute IRI. Granted only as the caller's authority grants it — `any` grants every purpose but `modelTraining` — refused otherwise (`purposeNotGranted`), and recorded with the read. Distinct from `PermittedUse`, which is what a record's author permits and is a statement, not a grant.
+ */
+export type RecordPurpose = Purpose_AclV0_3;
+/**
  * The path from one record's leaf to the room's `DataCommitment` — a Merkle inclusion proof, in the vocabulary this work already uses for it.
  *
  * **It is not called `proof`** because in this framework that word is taken: `proof` is the document's data-integrity proof (SPEC §7.3), and a payload member of the same name in the same document invites reading one for the other. The two are not interchangeable and the confusion would be silent.
@@ -6388,6 +6392,40 @@ export interface Author {
  * **A chain that verifies may still be revoked.** A host that has accepted a `RevocationList` for the room (`rooms/revocations/put`) MUST, from the moment it accepted it, refuse every presentation in which the membership credential or any link of `authority` is revoked by that list, under every task and every version of every task it serves for the room. A chain from which any link is revoked is refused whole: a credential delegated from a revoked one confers nothing, however it was attenuated. The refusal is the same `permissionDenied` as any other failed presentation.
  */
 export interface AuthorityPresentation {
+  /**
+   * The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile.
+   */
+  membership: string;
+  /**
+   * The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent.
+   *
+   * @minItems 1
+   * @maxItems 8
+   */
+  authority:
+    | [string]
+    | [string, string]
+    | [string, string, string]
+    | [string, string, string, string]
+    | [string, string, string, string, string]
+    | [string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string];
+  /**
+   * REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this.
+   */
+  subjectBinding?: string;
+}
+/**
+ * What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier. A host MUST bind the presenter to the chain's leaf. A chain that verifies is evidence that authority was conferred on somebody; it is not evidence that the party presenting it is that somebody. The leaf's subject MUST equal the party the host authenticated for this request — an identity the transport established or a document `proof` proved, never one named in a payload. A host that omits this check authorizes every captured presentation, and the omission is silent, because the chain still verifies.
+ *
+ * **Every credential is its issuer's attestation, and only its issuer's.** For the membership credential and for every link of `authority`, a host MUST verify the credential's `proof` with a key that the credential's own `issuer` lists for `assertionMethod` in its DID document, and MUST refuse a credential whose proof names a verification method that is not its issuer's. A proof that verifies under some other party's key is that party's statement, not the issuer's, and confers nothing. The same binding holds for every other document a room signs, such as a `RevocationList`.
+ *
+ * **A chain that verifies may still be revoked.** A host that has accepted a `RevocationList` for the room (`rooms/revocations/put`) MUST, from the moment it accepted it, refuse every presentation in which the membership credential or any link of `authority` is revoked by that list, under every task and every version of every task it serves for the room. A chain from which any link is revoked is refused whole: a credential delegated from a revoked one confers nothing, however it was attenuated. The refusal is the same `permissionDenied` as any other failed presentation.
+ *
+ * **Purposes (VTI-ACL-110).** An authority credential MAY state `purposes`, a `PurposeScope` as [AclEntry 0.3](../../../acl/_shared/0.3/acl-entry.schema.json) defines it: what its subject may use the content it reads for. A credential stating none grants `any`, which never includes `modelTraining`. Along a chain, a link that states none takes its parent's, and a link MUST NOT state purposes its parent does not grant — `any` under a list, a purpose the list does not name, or `modelTraining` under `any` (VTI-ACL-107); a verifier refuses such a chain whole. The leaf's purposes are what the chain grants, and a verifier that serves a purpose-bound read holds the request to them as VTI-ACL-103 – VTI-ACL-106 hold a read to an access-control entry's (`rooms/records/get` 0.4, `rooms/keys/open` 0.3).
+ */
+export interface AuthorityPresentation_RoomsV0_2 {
   /**
    * The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile.
    */

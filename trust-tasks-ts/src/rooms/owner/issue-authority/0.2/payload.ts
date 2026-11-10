@@ -6,6 +6,7 @@
 import type { Ext } from "../../../../_shared/components.js";
 
 
+/** @deprecated superseded by rooms/owner/issue-authority/0.3 */
 export interface RoomsOwnerIssueAuthorityPayload {
   /**
    * The room whose identity issues this credential. The recipient MUST hold a signing key for it — it is signing AS the room, not as itself.
@@ -36,6 +37,8 @@ export interface RoomsOwnerIssueAuthorityPayload {
 }
 /**
  * Success response to rooms/owner/issue-authority. Type https://trusttasks.org/spec/rooms/owner/issue-authority/0.2#response. The signed VAC, a chain root at the room's scope.
+ *
+ * @deprecated superseded by rooms/owner/issue-authority/0.3
  */
 export interface RoomsOwnerIssueAuthorityResponsePayload {
   /**
@@ -69,15 +72,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by rooms/owner/issue-authority/0.3";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by rooms/owner/issue-authority/0.3
+ */
 export type Payload = RoomsOwnerIssueAuthorityPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/rooms/owner/issue-authority/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by rooms/owner/issue-authority/0.3
+ */
 export type Response = RoomsOwnerIssueAuthorityResponsePayload;
 
 /**

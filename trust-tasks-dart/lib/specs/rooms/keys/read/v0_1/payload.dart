@@ -433,7 +433,7 @@ extension type const ResponseStatus(String value) {
 
 /// Success response to rooms/keys/read. Type
 /// https://trusttasks.org/spec/rooms/keys/read/0.1#response.
-@Deprecated('superseded by rooms/keys/read/0.2')
+@Deprecated('superseded by rooms/keys/read/0.3')
 class Response {
   const Response({
     required this.roomId,
@@ -514,7 +514,7 @@ class Response {
 /// TODO: what the request payload of rooms/keys/read carries. The outer document
 /// members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the
 /// framework — SPEC §6.3.
-@Deprecated('superseded by rooms/keys/read/0.2')
+@Deprecated('superseded by rooms/keys/read/0.3')
 class Payload {
   const Payload({
     required this.roomId,
@@ -563,7 +563,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by rooms/keys/read/0.2';
+const String? deprecation = 'superseded by rooms/keys/read/0.3';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/rooms/keys/read/0.1';
