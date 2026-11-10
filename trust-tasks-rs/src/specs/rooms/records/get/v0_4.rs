@@ -1744,7 +1744,7 @@ pub mod error_codes {
     };
     /// `rooms/records/get:purposeNotGranted`
     ///
-    /// The presented authority chain states purposes, and the request names one it does not grant, or names none where the chain lists more than one. The refusal discloses no content and is distinct from `permissionDenied`, which refuses access itself (VTI-ACL-104).
+    /// The request names a purpose the presented authority chain does not grant — a chain stating no purposes grants `any`, which never includes `modelTraining` — or names none where the chain lists more than one. The refusal discloses no content and is distinct from `permissionDenied`, which refuses access itself (VTI-ACL-104).
     ///
     /// Declared `retryable: false`.
     /// Declares a `detailsSchema` for the error's `details` member.
