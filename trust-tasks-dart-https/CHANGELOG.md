@@ -10,6 +10,54 @@ Publishing is triggered by the `trust-tasks-dart-https-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.1.9 — 2026-11-10
+
+
+### Added
+
+- **acl**: Purpose of use on grants and on memory reads (AclEntry 0.3; vta/memory put/delete/list 0.3, get 0.2) (#1074)
+
+* feat(acl): purpose of use on grants and on memory reads (AclEntry 0.3; vta/memory put/delete/list 0.3, get 0.2)
+
+  An access-control entry says who may do what, where and until when, but not
+  what for. An agent granted a read of its principal's memory can use the content
+  for anything, and nothing records the use it intended. The VTI specification
+  now requires the purpose (VTI-ACL-100 – 110, trustoverip/dtgwg-vti-spec#115);
+  these are the wire shapes.
+
+  acl/_shared/0.3 — AclEntry 0.3 adds one REQUIRED axis, `purposes`:
+  `{"scope": "any"}` or `{"scope": "listed", "purposes": [...]}` with at least
+  one `Purpose` — a lowerCamelCase name registered in the VTI purpose registry
+  (personalisation, taskExecution, analytics, modelTraining) or an absolute IRI
+  such as a DPV purpose. `any` never grants `modelTraining`. Delegated purposes
+  are a subset of the granter's. CONVENTIONS.md §8a maps a 0.2 entry onto 0.3
+  (`any`, the authority it already held, now stated) and §12 states the rules.
+
+  acl tasks on AclEntry 0.3: grant/0.3, update/0.3, show/0.3, revoke/0.3,
+  change-role/0.3, list/0.4. New errors on grant and update: `purposeOutsideDelegator`
+  (purposes wider than the granter's) and `purposeRefused` (policy will not grant
+  a purpose, refused by name, never dropped). update/0.3 replaces `purposes`
+  wholesale; narrowing it is an audited privilege reduction. `purposes` is never
+  redacted by show or list. No `extends`: a REQUIRED member on the entry cannot
+  be added to a version a 0.2 consumer still reads.
+
+  vta/memory put/0.3, delete/0.3, list/0.3, get/0.2 (each `extends` its
+  predecessor) add an optional `purpose` (`MemoryPurpose`, new in
+  vta/_shared/0.1/memory-record, a reference to acl's `Purpose`) and a
+  `purposeNotGranted` error that discloses nothing and is distinct from
+  `contextForbidden`. A recall, and a listing with values, is purpose-bound:
+  refused for a purpose the entry does not grant, or for none under an entry
+  listing several, and audited with its purpose either way. A write is not
+  purpose-bound, but a conflict that returns `currentValue` is: the value is
+  withheld unless the request's purpose is granted.
+
+  Data rooms (a room authority credential's `purposes`, VTI-ACL-110) are a
+  follow-up.
+
+  Samples in other specs that named the superseded acl versions now name the new
+  ones, with `purposes` on every embedded entry; prose links were moved by
+  `npm run fix-stale-references`.
+
 ## 0.1.8 — 2026-11-04
 
 
