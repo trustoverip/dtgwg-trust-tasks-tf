@@ -634,6 +634,9 @@ final class HttpsServer {
         newErrorId: newUrnUuid,
         payloadToJson: encode,
         responseToJson: encodeResponse,
+        // The document as it arrived: the item-11 digest is over it, so a member
+        // the payload type does not model still tells two documents apart.
+        received: json,
         handler: (accepted, parties) => handler(accepted, ctx),
       );
     } on Object {

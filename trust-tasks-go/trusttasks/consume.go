@@ -351,6 +351,12 @@ type ConsumeOptions[P, R any] struct {
 	// that Doc is a reading of Received (the envelope equal, the payload a subset),
 	// and refuses proofInvalid when it is not: a proof over one document vouches
 	// for nothing about another.
+	//
+	// When set, and Doc is a reading of it, the §7.2 item 11 digest is over these
+	// bytes too, in canonical form, so two documents under one id that differ
+	// only in a member Doc's type does not model are an idConflict rather than a
+	// duplicate. Otherwise the digest is of Doc's re-encoding, which cannot see
+	// such a member.
 	Received json.RawMessage
 
 	// MyVID is this consumer's own VID, for the §7.2 item 5 recipient check.
@@ -538,7 +544,18 @@ func ConsumeInbound[P, R any](
 		if guard == nil {
 			return zero, fmt.Errorf("%w: Checks.Replay.Guard under ReplayGuarded", ErrMissingOption)
 		}
-		digest, err := DocumentDigest(doc)
+		// Over the document as it arrived where the caller has it and it is the
+		// document being consumed: SPEC §7.2 compares the whole received
+		// document, and Doc's re-encoding drops every member its type does not
+		// model. A Received that is not a reading of Doc vouches for nothing
+		// about Doc, so its digest would key the record on another document.
+		var digest string
+		var err error
+		if len(opts.Received) > 0 && isReadingOf(doc, opts.Received) {
+			digest, err = receivedDigest(opts.Received)
+		} else {
+			digest, err = DocumentDigest(doc)
+		}
 		if err != nil {
 			return zero, err
 		}

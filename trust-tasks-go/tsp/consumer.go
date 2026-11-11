@@ -206,10 +206,14 @@ func Consume[P, R any](
 		PayloadPolicy: payloadPolicy,
 		Checks:        checks,
 		Doc:           doc,
-		MyVID:         transport.Local,
-		Now:           now,
-		NewErrorID:    c.newID,
-		Handler:       handler,
+		// The document as it arrived: the item-11 digest is over it, so a
+		// member the payload type does not model still tells two documents
+		// under one id apart.
+		Received:   unpacked.Document,
+		MyVID:      transport.Local,
+		Now:        now,
+		NewErrorID: c.newID,
+		Handler:    handler,
 	})
 	if err != nil {
 		// A handler error that is not a Refusal, or a misconfiguration. The core

@@ -87,7 +87,10 @@ use crate::error::{ErrorPayload, RejectReason};
 use crate::freshness::{FreshnessPolicy, StaleReason};
 use crate::payload::{Payload, SpecPolicy};
 use crate::proof::{ProofVerifier, VerificationError};
-use crate::replay::{document_digest, DocumentDigest, ReplayGuard, ReplayPolicy, ReplayVerdict};
+use crate::replay::{
+    document_digest, received_document_digest, DocumentDigest, ReplayGuard, ReplayPolicy,
+    ReplayVerdict,
+};
 use crate::transport::{ResolvedParties, TransportHandler};
 
 /// The two stateful consumer checks SPEC.md §7.2 requires and that no runtime
@@ -187,6 +190,12 @@ pub enum ProofPolicy<'a, V: ProofVerifier + ?Sized> {
     /// [`consume_inbound`] re-parses it and refuses (`proofInvalid`) when the
     /// two disagree, since a proof over one document vouches for nothing
     /// about another.
+    ///
+    /// The §7.2 item 11 digest is taken over this value too, with or without
+    /// a proof, so two documents under one `id` that differ only in a member
+    /// `P` does not model are an `idConflict`. Under a policy that carries no
+    /// received document the digest is of `doc`'s serialisation, which cannot
+    /// see such a member.
     VerifyReceived(&'a V, &'a Value),
 
     /// Reject documents that carry an in-band proof with
@@ -205,22 +214,41 @@ pub enum ProofPolicy<'a, V: ProofVerifier + ?Sized> {
     /// counterparty). This is the explicit opt-out — the variant name
     /// is deliberately uncomfortable to type.
     AcceptUnverified,
+
+    /// [`RejectIfPresent`](Self::RejectIfPresent), carrying the document as
+    /// it was received — the `&Value` `doc` was parsed from — so the §7.2
+    /// item 11 digest is taken over it rather than over `doc`'s
+    /// serialisation. What [`with_received`](Self::with_received) makes of
+    /// `RejectIfPresent`.
+    RejectIfPresentReceived(&'a Value),
+
+    /// [`AcceptUnverified`](Self::AcceptUnverified), carrying the document as
+    /// it was received for the §7.2 item 11 digest. What
+    /// [`with_received`](Self::with_received) makes of `AcceptUnverified`.
+    AcceptUnverifiedReceived(&'a Value),
 }
 
 impl<'a, V: ProofVerifier + ?Sized> ProofPolicy<'a, V> {
     /// Bind this policy to the document as received: [`Verify`](Self::Verify)
-    /// becomes [`VerifyReceived`](Self::VerifyReceived) over `received`, and
-    /// every other policy is returned unchanged.
+    /// becomes [`VerifyReceived`](Self::VerifyReceived) over `received`,
+    /// [`RejectIfPresent`](Self::RejectIfPresent) becomes
+    /// [`RejectIfPresentReceived`](Self::RejectIfPresentReceived) and
+    /// [`AcceptUnverified`](Self::AcceptUnverified) becomes
+    /// [`AcceptUnverifiedReceived`](Self::AcceptUnverifiedReceived). A policy
+    /// already bound to a received document is returned unchanged.
     ///
     /// For a pipeline that takes a caller's policy and parses the document
     /// itself — every transport binding's `receive` — so the caller asks for
-    /// verification and gets it over the bytes that were signed.
+    /// verification and gets it over the bytes that were signed, and the
+    /// item-11 record compares those bytes whichever policy was asked for.
     pub fn with_received<'b>(self, received: &'b Value) -> ProofPolicy<'b, V>
     where
         'a: 'b,
     {
         match self {
             ProofPolicy::Verify(v) => ProofPolicy::VerifyReceived(v, received),
+            ProofPolicy::RejectIfPresent => ProofPolicy::RejectIfPresentReceived(received),
+            ProofPolicy::AcceptUnverified => ProofPolicy::AcceptUnverifiedReceived(received),
             other => other,
         }
     }
@@ -694,6 +722,21 @@ where
         }
     };
 
+    // The document as it arrived, where the policy carries it, and whether it
+    // is the one being consumed. The proof is verified over it, and the item-11
+    // digest below is taken over it, because both concern the whole received
+    // document — members `doc`'s type does not model included.
+    let received = match &policy {
+        ProofPolicy::VerifyReceived(_, received)
+        | ProofPolicy::RejectIfPresentReceived(received)
+        | ProofPolicy::AcceptUnverifiedReceived(received) => {
+            Some((*received, is_received_form(received, &doc)))
+        }
+        ProofPolicy::Verify(_) | ProofPolicy::RejectIfPresent | ProofPolicy::AcceptUnverified => {
+            None
+        }
+    };
+
     // §7.2 item 7, clause B — apply the consumer's chosen proof policy.
     match (&policy, doc.proof.as_ref()) {
         (ProofPolicy::Verify(v), Some(_)) => {
@@ -706,8 +749,8 @@ where
                 );
             }
         }
-        (ProofPolicy::VerifyReceived(v, received), Some(_)) => {
-            let verified = if is_received_form(received, &doc) {
+        (ProofPolicy::VerifyReceived(v, _), Some(_)) => {
+            let verified = if let Some((received, true)) = received {
                 v.verify_received(received).await
             } else {
                 Err(VerificationError::Other(
@@ -723,7 +766,7 @@ where
                 );
             }
         }
-        (ProofPolicy::RejectIfPresent, Some(_)) => {
+        (ProofPolicy::RejectIfPresent | ProofPolicy::RejectIfPresentReceived(_), Some(_)) => {
             return route_rejection(
                 transport,
                 &doc,
@@ -737,8 +780,8 @@ where
         // RejectIfPresent-with-no-proof — all accept and fall through.
         (ProofPolicy::Verify(_), None)
         | (ProofPolicy::VerifyReceived(..), None)
-        | (ProofPolicy::RejectIfPresent, None)
-        | (ProofPolicy::AcceptUnverified, _) => {}
+        | (ProofPolicy::RejectIfPresent | ProofPolicy::RejectIfPresentReceived(_), None)
+        | (ProofPolicy::AcceptUnverified | ProofPolicy::AcceptUnverifiedReceived(_), _) => {}
     }
 
     // §7.2 items 5b + 7A + 8 — the flag-driven per-spec checks, in one place
@@ -760,7 +803,14 @@ where
     // and an attacker could pre-burn an `id` it had merely observed.
     let mut claim: Option<(&dyn ReplayGuard, DocumentDigest)> = None;
     if let ReplayPolicy::Guard(guard) = replay {
-        let digest = match document_digest(&doc) {
+        // Over the document as received when it is in hand: SPEC §7.2 compares
+        // the whole received document, and `doc`'s re-serialisation drops
+        // members its type does not model and re-renders the timestamps.
+        let digest = match received {
+            Some((received, true)) => Ok(received_document_digest(received)),
+            _ => document_digest(&doc),
+        };
+        let digest = match digest {
             Ok(digest) => digest,
             Err(e) => {
                 return route_rejection(

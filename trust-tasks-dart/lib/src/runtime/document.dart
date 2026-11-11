@@ -5,6 +5,7 @@
 /// in @openvtc/trust-tasks and `trusttasks/document.go` in trust-tasks-go.
 library;
 
+import 'canonical.dart';
 import 'codes.dart';
 import 'rfc3339.dart';
 
@@ -169,6 +170,73 @@ class Ceremony {
         if (terminal != null) 'terminal': terminal,
         if (prev != null) 'prev': prev!.map((e) => e.toJson()).toList(),
       };
+}
+
+/// What [parseTrustTaskDocument] made of a decoded JSON value.
+sealed class DocumentParse<P> {
+  const DocumentParse();
+}
+
+/// The value was a Trust Task document; here it is.
+final class ParsedDocument<P> extends DocumentParse<P> {
+  const ParsedDocument(this.document);
+  final TrustTaskDocument<P> document;
+}
+
+/// The value was not a Trust Task document this consumer can read. Refuse it
+/// with [reason], which is `malformedRequest`; nothing in the value is
+/// trustworthy enough to address the refusal to, so answer it the way your
+/// transport answers a body that does not parse.
+final class UnparsableDocument<P> extends DocumentParse<P> {
+  const UnparsableDocument(this.reason);
+  final RejectReason reason;
+}
+
+/// Decode [json] — the result of `jsonDecode` on a received body — into a
+/// document, or say why it is not one, without throwing.
+///
+/// [TrustTaskDocument.fromJson] casts each member to the type the framework
+/// gives it, so a received document with a number where `id` belongs throws a
+/// [TypeError] — an [Error], which a handler written for [Exception]s lets
+/// through. This catches that, refuses a value nested more than
+/// [maxNestingDepth] levels deep before anything walks it, and refuses a
+/// non-object `payload` or a `@context` that is not a string, a list or an
+/// object, which the framework schema also excludes. [payloadFromJson]'s own
+/// failures are caught the same way.
+///
+/// The reason never repeats the decoder's own words: they name members and
+/// types, which describe this consumer's internal layout (SPEC §12.4).
+DocumentParse<P> parseTrustTaskDocument<P>(
+  Object? json,
+  P Function(Object? payload) payloadFromJson,
+) {
+  UnparsableDocument<P> malformed(String detail) => UnparsableDocument<P>(
+        RejectReason(
+          code: StandardCode.malformedRequest,
+          message: 'document is not a well-formed Trust Task document '
+              '(SPEC §7.2 item 1): $detail',
+        ),
+      );
+
+  if (json is! Map<String, dynamic>) return malformed('not a JSON object');
+  if (exceedsNestingDepth(json)) {
+    return malformed('nested more than $maxNestingDepth levels deep');
+  }
+  if (json['payload'] is! Map) return malformed('`payload` is not an object');
+  final context = json['@context'];
+  if (context != null &&
+      context is! String &&
+      context is! List &&
+      context is! Map) {
+    return malformed('`@context` is not a string, a list or an object');
+  }
+  try {
+    return ParsedDocument<P>(
+      TrustTaskDocument<P>.fromJson(json, payloadFromJson),
+    );
+  } on Object {
+    return malformed('a member is missing or is not of its type');
+  }
 }
 
 /// A single Trust Task document, per SPEC.md §4.2.
