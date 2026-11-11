@@ -54,7 +54,14 @@ void main() {
           extra: {'expires': expires},
         );
 
-    for (final expires in ['2026-06-01T12:00:01Z', '2026-06-01T12:00:00Z']) {
+    for (final expires in [
+      '2026-06-01T12:00:01Z',
+      '2026-06-01T12:00:00Z',
+      '2028-02-29T00:00:00Z',
+      '2027-01-01T00:00:00+14:00',
+      '2027-01-01T00:00:00-12:59',
+      '2027-01-01T23:59:59.999999Z',
+    ]) {
       test('$expires verifies', () async {
         final result = await fixed.verifyDetailed(await withExpires(expires));
         expect(result.isValid, isTrue, reason: '$result');
@@ -69,6 +76,15 @@ void main() {
       'not a date': 'tomorrow',
       'date only': '2027-01-01',
       'impossible month': '2027-13-01T00:00:00Z',
+      'February 30': '2027-02-30T00:00:00Z',
+      'February 29, not a leap year': '2027-02-29T00:00:00Z',
+      'hour 24': '2027-01-01T24:00:00Z',
+      'minute 60': '2027-01-01T00:60:00Z',
+      'leap second': '2027-01-01T00:00:60Z',
+      'offset +24:00': '2027-01-01T00:00:00+24:00',
+      'offset +23:60': '2027-01-01T00:00:00+23:60',
+      'offset +14:01': '2027-01-01T00:00:00+14:01',
+      'offset -99:00': '2027-01-01T00:00:00-99:00',
       'empty': '',
     };
     refused.forEach((name, expires) {
@@ -175,6 +191,28 @@ void main() {
       });
       expect(result.failure, ProofFailureKind.signatureInvalid);
       expect(result.detail, contains('controller'));
+    });
+
+    test('an embedded key whose controller is another DID is refused',
+        () async {
+      final result = await verifyAgainst({
+        'id': did,
+        'verificationMethod': [method('$did#key-1')],
+        'authentication': [
+          method('$did#key-1', controller: 'did:web:other.example'),
+        ],
+      });
+      expect(result.failure, ProofFailureKind.signatureInvalid);
+      expect(result.detail, contains('controller'));
+    });
+
+    test('an embedded key with the issuer as controller verifies', () async {
+      final result = await verifyAgainst({
+        'id': did,
+        'verificationMethod': [method('$did#key-1')],
+        'authentication': [method('$did#key-1')],
+      });
+      expect(result.isValid, isTrue, reason: '$result');
     });
 
     test('a document for another DID is refused', () async {

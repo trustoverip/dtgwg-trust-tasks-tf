@@ -54,7 +54,14 @@ The proof's `proofPurpose` must name a signing relationship — `authentication`
 `assertionMethod`, `capabilityInvocation` or `capabilityDelegation`, all of which
 a `did:key` authorises; `keyAgreement` and any other value are refused
 (SPEC §4.7.3). A proof carrying `expires` is refused once that instant has
-passed.
+passed, or when any of its fields is out of range (February 30, hour 24, a leap
+second, an offset beyond ±14:00).
+
+An Ed25519 key must be a canonically encoded point of large order.
+`crypto/ed25519` accepts a non-canonical or small-order key, and a small-order
+key satisfies the verification equation for any message with a chosen
+signature, so the verifier checks the key itself (on `math/big`, no new
+dependency) before verifying.
 
 ## Sign
 

@@ -53,7 +53,8 @@ library, verified and then tampered with.
    An offset-less timestamp is refused rather than guessed at: VC Data
    Integrity §2.1 says to read it as UTC, and `DateTime.parse` would read it as
    local time. `expires`, when present, is a `dateTimeStamp` that has not
-   passed.
+   passed, with every field in range: no February 30, hour 24, leap second, or
+   offset beyond ±14:00.
 5. **The proof is bound to the document's `issuer`.** A valid signature proves
    only that *some* key signed. The DID part of `verificationMethod` (before
    `#`) must equal `issuer` exactly, with no normalization (SPEC §4.8), or the
@@ -65,7 +66,23 @@ library, verified and then tampered with.
    and names the issuer as its controller. A `did:key` lists its key under all
    four signing relationships. A key published only for `keyAgreement`, or for
    another relationship, is refused as `signatureInvalid`.
-7. The signature verifies over the document minus its `proof`, using that key.
+7. An Ed25519 key is a canonically encoded point of large order. A
+   small-order key satisfies the verification equation for any message with a
+   chosen signature; ssi 4 refuses it, and ssi 3.9 does not, so this package
+   checks it whichever ssi resolves.
+8. The signature verifies over the document minus its `proof`, using that key.
+
+Two cases where this package refuses what `trust-tasks-proof` (Rust) accepts:
+
+- **A key embedded only under a relationship.** ssi takes the key from the
+  document's `verificationMethod` set, so a method that appears embedded under
+  `authentication` (say) and nowhere in `verificationMethod` cannot be used,
+  and the proof is refused. When it appears in both, the two must carry the
+  same key and both must name the issuer as controller.
+- **`did:scid` with a `?src=` locator.** Rust strips the locator before
+  comparing the method with its document. This package compares the
+  `verificationMethod` with the document exactly, so a reference carrying
+  `?src=` does not match the method the document lists under the bare DID.
 
 The verifier never mutates the document it is given and never throws for a bad
 one.

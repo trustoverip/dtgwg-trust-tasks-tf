@@ -198,13 +198,10 @@ func (v *Verifier) Verify(_ context.Context, doc json.RawMessage) error {
 	// expires, when present, is a dateTimeStamp that has not yet passed (VC
 	// Data Integrity §2.1). No allowance applies: the signer chose the instant.
 	if expires, hasExpires := proof["expires"]; hasExpires {
-		s, ok := expires.(string)
-		if !ok || !dateTimeStamp.MatchString(s) {
+		s, _ := expires.(string)
+		t, ok := parseDateTimeStamp(s)
+		if !ok {
 			return failf(MalformedProof, "proof.expires must be a dateTimeStamp with Z or an offset: %v", expires)
-		}
-		t, perr := time.Parse(time.RFC3339, s)
-		if perr != nil {
-			return failf(MalformedProof, "proof.expires does not parse: %v", perr)
 		}
 		if v.now().After(t) {
 			return failf(MalformedProof, "proof.expires %s has passed", s)
@@ -246,6 +243,72 @@ func (v *Verifier) Verify(_ context.Context, doc json.RawMessage) error {
 		return err
 	}
 	return nil
+}
+
+// dateTimeStampParts captures each field of a dateTimeStamp for the range
+// checks in parseDateTimeStamp.
+var dateTimeStampParts = regexp.MustCompile(`^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d+)?(?:Z|([+-])(\d{2}):(\d{2}))$`)
+
+// parseDateTimeStamp reads s as an XSD dateTimeStamp and refuses every field
+// out of range: month 1-12, a day the month has (leap years included), hour
+// 0-23, minute and second 0-59 (no leap second), and an offset of at most
+// 14:00 with minutes 0-59. The Rust, TypeScript and Dart verifiers apply the
+// same ranges, so no runtime accepts an instant another refuses — each
+// language's own date parser rolls over or accepts a different subset.
+func parseDateTimeStamp(s string) (time.Time, bool) {
+	m := dateTimeStampParts.FindStringSubmatch(s)
+	if m == nil {
+		return time.Time{}, false
+	}
+	n := func(i int) int {
+		v := 0
+		for _, c := range m[i] {
+			v = v*10 + int(c-'0')
+		}
+		return v
+	}
+	year, month, day, hour, minute, second := n(1), n(2), n(3), n(4), n(5), n(6)
+	if month < 1 || month > 12 || day < 1 || day > daysIn(year, month) ||
+		hour > 23 || minute > 59 || second > 59 {
+		return time.Time{}, false
+	}
+	nanos := 0
+	if frac := m[7]; frac != "" {
+		digits := frac[1:]
+		for i := 0; i < 9; i++ {
+			nanos *= 10
+			if i < len(digits) {
+				nanos += int(digits[i] - '0')
+			}
+		}
+	}
+	t := time.Date(year, time.Month(month), day, hour, minute, second, nanos, time.UTC)
+	if m[8] != "" {
+		oh, om := n(9), n(10)
+		if oh > 14 || om > 59 || (oh == 14 && om != 0) {
+			return time.Time{}, false
+		}
+		offset := time.Duration(oh)*time.Hour + time.Duration(om)*time.Minute
+		if m[8] == "+" {
+			t = t.Add(-offset)
+		} else {
+			t = t.Add(offset)
+		}
+	}
+	return t, true
+}
+
+func daysIn(year, month int) int {
+	switch month {
+	case 2:
+		if year%4 == 0 && (year%100 != 0 || year%400 == 0) {
+			return 29
+		}
+		return 28
+	case 4, 6, 9, 11:
+		return 30
+	}
+	return 31
 }
 
 // SigningPurposes are the proofPurpose values a proof may carry: the
@@ -328,6 +391,11 @@ func verifySignature(key *publicKey, hashData, signature []byte) error {
 	case Ed25519:
 		if len(signature) != ed25519.SignatureSize {
 			return failf(SignatureInvalid, "ed25519 signature must be %d bytes", ed25519.SignatureSize)
+		}
+		// crypto/ed25519 accepts a non-canonical or small-order key; refuse it
+		// here too, whatever built the key (see checkEd25519PublicKey).
+		if err := checkEd25519PublicKey(key.ed25519); err != nil {
+			return failf(SignatureInvalid, "%v", err)
 		}
 		if !ed25519.Verify(key.ed25519, hashData, signature) {
 			return failf(SignatureInvalid, "signature does not verify")

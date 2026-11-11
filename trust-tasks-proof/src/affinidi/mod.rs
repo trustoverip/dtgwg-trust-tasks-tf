@@ -72,7 +72,11 @@ pub use affinidi_data_integrity::{crypto_suites::CryptoSuite, SignOptions};
 pub struct Verifier {
     resolver: Arc<dyn ProofPurposeResolver>,
     options: VerifyOptions,
+    clock: Clock,
 }
+
+/// The clock a [`Verifier`] reads `expires` against.
+pub type Clock = Arc<dyn Fn() -> chrono::DateTime<chrono::Utc> + Send + Sync>;
 
 impl Verifier {
     /// Verifier that resolves `did:key:` URIs locally; rejects every other
@@ -93,7 +97,15 @@ impl Verifier {
         Self {
             resolver,
             options: VerifyOptions::default(),
+            clock: Arc::new(chrono::Utc::now),
         }
+    }
+
+    /// Override the clock `expires` is checked against (default:
+    /// `chrono::Utc::now`). For tests.
+    pub fn with_clock(mut self, clock: Clock) -> Self {
+        self.clock = clock;
+        self
     }
 
     /// Override the [`VerifyOptions`] (expected proof purpose, expected
@@ -148,8 +160,15 @@ impl Verifier {
             VerificationError::MalformedProof("document carries no proof member".to_string())
         })?;
         // `expires` is read from the proof as received: the upstream proof
-        // type has no member for it and drops it when parsing.
-        check_expires(&proof_value, chrono::Utc::now())?;
+        // type has no member for it and drops it when parsing. A malformed or
+        // passed one is refused as such; any other is refused as unsupported,
+        // because the signature checked below would not cover it.
+        check_expires(&proof_value, (self.clock)())?;
+        if proof_value.get("expires").is_some() {
+            return Err(VerificationError::MalformedProof(
+                UNSUPPORTED_EXPIRES.to_string(),
+            ));
+        }
         let parsed_proof: DataIntegrityProof = serde_json::from_value(proof_value)
             .map_err(|e| VerificationError::MalformedProof(format!("parse proof: {e}")))?;
 
@@ -203,15 +222,24 @@ impl Verifier {
     }
 }
 
-/// Refuse a proof whose `expires` (VC Data Integrity §2.1) is not a
-/// `dateTimeStamp` — a date-time ending in `Z` or an explicit `±hh:mm` offset —
-/// or has passed at `now`. No clock-skew allowance applies: the signer chose
-/// the instant. The same rule as the Go, TypeScript and Dart verifiers.
+/// Why [`Verifier::verify_raw`] refuses a proof carrying an unexpired,
+/// well-formed `expires`.
 ///
-/// `affinidi-data-integrity`'s proof type has no `expires` member, so a proof
-/// that carries one is checked here but its signature is computed without it:
-/// such a proof verifies only if its signer also left `expires` out of what it
-/// signed.
+/// `affinidi-data-integrity` 0.8's proof type has no `expires` member and
+/// drops it when parsing, so the signature this crate recomputes would leave
+/// out a member the signer covered (or, if the member was added after
+/// signing, accept a value nobody signed). Until the upstream type carries
+/// it, such a proof is refused here — the Go, TypeScript and Dart verifiers
+/// accept it. The shared vector `eddsa-jcs-2022-expires-future.json` records
+/// the gap.
+pub const UNSUPPORTED_EXPIRES: &str =
+    "proof.expires is not supported by this verifier: affinidi-data-integrity's proof type does not carry it, so the signature check could not cover it";
+
+/// Refuse a proof whose `expires` (VC Data Integrity §2.1) is not a
+/// `dateTimeStamp` — a date-time ending in `Z` or an explicit `±hh:mm` offset,
+/// every field in range — or has passed at `now`. No clock-skew allowance
+/// applies: the signer chose the instant. The same rule as the Go, TypeScript
+/// and Dart verifiers.
 fn check_expires(
     proof: &Value,
     now: chrono::DateTime<chrono::Utc>,
@@ -221,8 +249,7 @@ fn check_expires(
     };
     let at = expires
         .as_str()
-        .filter(|s| is_date_time_stamp(s))
-        .and_then(|s| chrono::DateTime::parse_from_rfc3339(s).ok())
+        .and_then(parse_date_time_stamp)
         .ok_or_else(|| {
             VerificationError::MalformedProof(format!(
                 "proof.expires must be a dateTimeStamp with Z or an offset: {expires}"
@@ -236,41 +263,72 @@ fn check_expires(
     Ok(())
 }
 
-/// `YYYY-MM-DDThh:mm:ss[.f+](Z|±hh:mm)` — the shape the other verifiers'
-/// `dateTimeStamp` pattern accepts. RFC 3339 parsing alone would also take a
-/// lower-case `t`/`z` or a space separator.
-fn is_date_time_stamp(s: &str) -> bool {
+/// `YYYY-MM-DDThh:mm:ss[.f+](Z|±hh:mm)` with every field in range — month
+/// 1-12, a day the month has (leap years included), hour 0-23, minute and
+/// second 0-59 (no leap second), an offset of at most 14:00 with minutes 0-59.
+/// The Go, TypeScript and Dart verifiers apply the same ranges. chrono's RFC
+/// 3339 parser alone would also take a lower-case `t`/`z`, a space separator,
+/// and a leap second.
+fn parse_date_time_stamp(s: &str) -> Option<chrono::DateTime<chrono::Utc>> {
+    use chrono::{NaiveDate, TimeZone};
     let b = s.as_bytes();
-    let digits =
-        |r: std::ops::Range<usize>| b.get(r).is_some_and(|d| d.iter().all(u8::is_ascii_digit));
+    let num = |r: std::ops::Range<usize>| -> Option<u32> {
+        let d = b.get(r)?;
+        d.iter()
+            .all(u8::is_ascii_digit)
+            .then(|| d.iter().fold(0u32, |n, c| n * 10 + u32::from(c - b'0')))
+    };
     if b.len() < 20
-        || !digits(0..4)
         || b[4] != b'-'
-        || !digits(5..7)
         || b[7] != b'-'
-        || !digits(8..10)
         || b[10] != b'T'
-        || !digits(11..13)
         || b[13] != b':'
-        || !digits(14..16)
         || b[16] != b':'
-        || !digits(17..19)
     {
-        return false;
+        return None;
     }
+    let (year, month, day) = (num(0..4)?, num(5..7)?, num(8..10)?);
+    let (hour, minute, second) = (num(11..13)?, num(14..16)?, num(17..19)?);
+    if hour > 23 || minute > 59 || second > 59 {
+        return None;
+    }
+    let date = NaiveDate::from_ymd_opt(i32::try_from(year).ok()?, month, day)?;
     let mut rest = &b[19..];
+    let mut nanos = 0u32;
     if let Some(fraction) = rest.strip_prefix(b".") {
         let n = fraction.iter().take_while(|c| c.is_ascii_digit()).count();
         if n == 0 {
-            return false;
+            return None;
+        }
+        for i in 0..9 {
+            nanos = nanos * 10
+                + fraction
+                    .get(i)
+                    .filter(|_| i < n)
+                    .map_or(0, |c| u32::from(c - b'0'));
         }
         rest = &fraction[n..];
     }
-    match rest {
-        [b'Z'] => true,
-        [b'+' | b'-', h1, h2, b':', m1, m2] => [h1, h2, m1, m2].iter().all(|d| d.is_ascii_digit()),
-        _ => false,
-    }
+    let offset_minutes: i64 = match rest {
+        [b'Z'] => 0,
+        [sign @ (b'+' | b'-'), ..] if rest.len() == 6 && rest[3] == b':' => {
+            let oh = num(b.len() - 5..b.len() - 3)?;
+            let om = num(b.len() - 2..b.len())?;
+            if oh > 14 || om > 59 || (oh == 14 && om != 0) {
+                return None;
+            }
+            let m = i64::from(oh * 60 + om);
+            if *sign == b'+' {
+                m
+            } else {
+                -m
+            }
+        }
+        _ => return None,
+    };
+    let local = date.and_hms_nano_opt(hour, minute, second, nanos)?;
+    let utc = chrono::Utc.from_utc_datetime(&local);
+    utc.checked_sub_signed(chrono::TimeDelta::minutes(offset_minutes))
 }
 
 /// Map [`DataIntegrityError`] variants into the framework's
@@ -327,6 +385,18 @@ mod expires_tests {
     }
 
     #[test]
+    fn offsets_are_applied() {
+        assert_eq!(
+            parse_date_time_stamp("2026-06-01T14:00:00+02:00"),
+            Some(at("2026-06-01T12:00:00Z"))
+        );
+        assert_eq!(
+            parse_date_time_stamp("2026-06-01T10:30:00.25-01:30"),
+            Some(at("2026-06-01T12:00:00.25Z"))
+        );
+    }
+
+    #[test]
     fn absent_expires_is_accepted() {
         assert!(check_expires(&json!({}), at("2026-06-01T12:00:00Z")).is_ok());
     }
@@ -338,6 +408,10 @@ mod expires_tests {
             "2026-06-01T12:00:01Z",
             "2026-06-01T12:00:00Z",
             "2026-06-01T14:00:00.5+02:00",
+            "2028-02-29T00:00:00Z",
+            "2027-01-01T00:00:00+14:00",
+            "2027-01-01T00:00:00-12:59",
+            "2027-01-01T23:59:59.999999999Z",
         ] {
             assert!(
                 check_expires(&json!({ "expires": expires }), now).is_ok(),
@@ -359,6 +433,15 @@ mod expires_tests {
             json!("tomorrow"),
             json!("2027-01-01"),
             json!("2027-13-01T00:00:00Z"),
+            json!("2027-02-30T00:00:00Z"),
+            json!("2027-02-29T00:00:00Z"),
+            json!("2027-01-01T24:00:00Z"),
+            json!("2027-01-01T00:60:00Z"),
+            json!("2027-01-01T00:00:60Z"),
+            json!("2027-01-01T00:00:00+24:00"),
+            json!("2027-01-01T00:00:00+23:60"),
+            json!("2027-01-01T00:00:00+14:01"),
+            json!("2027-01-01T00:00:00-99:00"),
             json!(""),
         ] {
             let err = check_expires(&json!({ "expires": expires }), now)

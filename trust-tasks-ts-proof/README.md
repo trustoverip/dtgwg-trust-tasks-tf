@@ -45,14 +45,16 @@ taxonomy as the Rust and Dart libraries.
 4. `created`, when present, is a `dateTimeStamp` (ending in `Z` or an explicit
    offset) and no more than `clockSkewMs` (60s default) in the future. An
    offset-less timestamp is refused rather than read as local time. `expires`,
-   when present, is a `dateTimeStamp` that has not passed.
+   when present, is a `dateTimeStamp` that has not passed, with every field in
+   range (no February 30, hour 24, leap second, or offset beyond ±14:00).
 5. **The proof is bound to the document's `issuer`.** The DID part of
    `verificationMethod` must equal `issuer` exactly, with no normalization (SPEC
    §4.8), or the document is `issuerMismatch`. A valid signature proves only
    that *some* key signed.
 6. The signature verifies over the document minus its `proof`. Ed25519 is
-   checked under RFC 8032's encoding rules, as the Go, Rust and Dart libraries
-   check it, not ZIP-215's wider ones.
+   checked as the Go, Rust and Dart libraries check it: RFC 8032 point
+   decoding (not ZIP-215's wider rules), a small-order public key refused, and
+   the cofactorless equation, so an `R` with a small-order component fails.
 
 Keys travel in the `did:key` verification method — no resolver, no network.
 

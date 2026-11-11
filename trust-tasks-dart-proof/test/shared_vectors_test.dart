@@ -19,7 +19,12 @@ void main() {
   for (final entry
       in (manifest['entries'] as List).cast<Map<String, dynamic>>()) {
     final file = entry['file'] as String;
-    final expect_ = entry['expect'] as String;
+    // `exceptions.dart` names a known gap in this runtime, asserted so the
+    // test fails once it closes.
+    final exceptions = entry['exceptions'] as Map<String, dynamic>?;
+    final expect_ =
+        ((exceptions?['dart'] as Map<String, dynamic>?)?['expect'] ??
+            entry['expect']) as String;
     test('shared vector: $file is $expect_', () async {
       // Every suite this verifier implements; an entry for any other suite
       // fails rather than being skipped silently.

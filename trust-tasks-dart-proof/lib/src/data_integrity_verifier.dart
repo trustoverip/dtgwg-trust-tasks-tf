@@ -3,6 +3,8 @@ import 'dart:typed_data';
 import 'package:ssi/ssi.dart' as ssi;
 import 'package:trust_tasks/trust_tasks.dart';
 
+import 'ed25519_point.dart';
+
 /// Why a proof failed to verify.
 ///
 /// The same taxonomy `trust-tasks-proof` uses in Rust, so a failure logged by a
@@ -198,10 +200,8 @@ final class DataIntegrityProofVerifier implements ProofVerifier {
     // local time.
     final expires = proof['expires'];
     if (expires != null) {
-      final at = expires is String && _dateTimeStamp.hasMatch(expires)
-          ? DateTime.tryParse(expires)
-          : null;
-      if (at == null || !_isRealInstant(expires as String, at)) {
+      final at = expires is String ? parseDateTimeStamp(expires) : null;
+      if (at == null) {
         return _malformed(
           'proof.expires must be a dateTimeStamp with Z or an offset: $expires',
         );
@@ -336,22 +336,6 @@ final class DataIntegrityProofVerifier implements ProofVerifier {
     return null;
   }
 
-  /// Whether [text], which matched [_dateTimeStamp], names the instant
-  /// [parsed] — DateTime.tryParse rolls an out-of-range field such as month 13
-  /// over into the next year instead of refusing it.
-  static bool _isRealInstant(String text, DateTime parsed) {
-    final local = text.substring(0, 19);
-    final offset = RegExp(r'([+-])(\d{2}):(\d{2})$').firstMatch(text);
-    var check = parsed.toUtc();
-    if (offset != null) {
-      final minutes =
-          int.parse(offset.group(2)!) * 60 + int.parse(offset.group(3)!);
-      check = check
-          .add(Duration(minutes: offset.group(1) == '+' ? minutes : -minutes));
-    }
-    return check.toIso8601String().startsWith(local);
-  }
-
   /// Why [vm] is not a key [did]'s document authorises for [purpose], or
   /// `null` when it is. The rule `trust-tasks-proof`'s `CachedDidResolver`
   /// applies: the document is [did]'s; the relationship lists [vm] by absolute
@@ -406,6 +390,11 @@ final class DataIntegrityProofVerifier implements ProofVerifier {
       return 'verificationMethod is not defined under verificationMethod '
           'in its DID document';
     }
+    // An embedded entry is a method in its own right; its controller must be
+    // the issuer too, as trust-tasks-proof requires of the method it uses.
+    if (listed is! ssi.VerificationMethodRef && listed.controller != did) {
+      return "verificationMethod's controller is not the DID that names it";
+    }
     if (listed is! ssi.VerificationMethodRef &&
         !_sameKey(listed.asMultiKey(), selected.asMultiKey())) {
       return 'verificationMethod is embedded under $purpose with a key other '
@@ -413,6 +402,13 @@ final class DataIntegrityProofVerifier implements ProofVerifier {
     }
     if (selected.controller != did) {
       return "verificationMethod's controller is not the DID that names it";
+    }
+    // An Ed25519 multikey (0xed 0x01 header) must be a canonical point of
+    // large order; see ed25519PublicKeyError.
+    final multikey = selected.asMultiKey();
+    if (multikey.length == 34 && multikey[0] == 0xed && multikey[1] == 0x01) {
+      final keyError = ed25519PublicKeyError(multikey.sublist(2));
+      if (keyError != null) return keyError;
     }
     return null;
   }
@@ -458,6 +454,44 @@ String? proofPurposeError(String purpose) {
   return purpose == 'keyAgreement'
       ? 'proofPurpose keyAgreement never authorises a signature'
       : 'proofPurpose names no signing verification relationship';
+}
+
+final _dateTimeStampParts = RegExp(
+  r'^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d+)?'
+  r'(?:Z|([+-])(\d{2}):(\d{2}))$',
+);
+
+/// [value] as a UTC instant when it is a dateTimeStamp with every field in
+/// range — month 1-12, a day the month has (leap years included), hour 0-23,
+/// minute and second 0-59 (no leap second), an offset of at most 14:00 with
+/// minutes 0-59 — else `null`. `DateTime.tryParse` rolls an out-of-range
+/// field over instead of refusing it; the Go, Rust and TypeScript verifiers
+/// apply these ranges.
+DateTime? parseDateTimeStamp(String value) {
+  final m = _dateTimeStampParts.firstMatch(value);
+  if (m == null) return null;
+  final f = [for (var i = 1; i <= 6; i++) int.parse(m.group(i)!)];
+  final [year, month, day, hour, minute, second] = f;
+  if (month < 1 || month > 12) return null;
+  final daysInMonth = DateTime.utc(year, month + 1, 0).day;
+  if (day < 1 || day > daysInMonth || hour > 23 || minute > 59 || second > 59) {
+    return null;
+  }
+  var micros = 0;
+  final fraction = m.group(7);
+  if (fraction != null) {
+    final digits = fraction.substring(1).padRight(6, '0').substring(0, 6);
+    micros = int.parse(digits);
+  }
+  var at = DateTime.utc(year, month, day, hour, minute, second, 0, micros);
+  if (m.group(8) != null) {
+    final oh = int.parse(m.group(9)!);
+    final om = int.parse(m.group(10)!);
+    if (oh > 14 || om > 59 || (oh == 14 && om != 0)) return null;
+    final offset = Duration(hours: oh, minutes: om);
+    at = m.group(8) == '+' ? at.subtract(offset) : at.add(offset);
+  }
+  return at;
 }
 
 /// Resolves each DID once through [_inner] and answers again from memory, so

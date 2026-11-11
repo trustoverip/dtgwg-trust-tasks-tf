@@ -2,7 +2,7 @@ import type { ProofVerifier, TrustTaskDocument } from "@openvtc/trust-tasks/runt
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { p256, p384 } from "@noble/curves/nist.js";
 import { sha256 } from "@noble/hashes/sha2.js";
-import { sha384 } from "@noble/hashes/sha2.js";
+import { sha384, sha512 } from "@noble/hashes/sha2.js";
 import { canonicalBytes } from "./jcs.js";
 import { fromMultibase, publicKeyFromDidKey, type Cryptosuite } from "./keys.js";
 
@@ -135,8 +135,8 @@ export class DataIntegrityProofVerifier implements ProofVerifier {
     // Integrity §2.1). No allowance applies: the signer chose the instant.
     const expires = p.expires;
     if (expires !== undefined) {
-      const at = typeof expires === "string" && DATE_TIME_STAMP.test(expires) ? Date.parse(expires) : NaN;
-      if (Number.isNaN(at)) {
+      const at = typeof expires === "string" ? parseDateTimeStamp(expires) : undefined;
+      if (at === undefined) {
         return fail("malformedProof", `proof.expires must be a dateTimeStamp with Z or an offset: ${String(expires)}`);
       }
       if (this.now() > at) {
@@ -185,10 +185,7 @@ export class DataIntegrityProofVerifier implements ProofVerifier {
     try {
       const ok =
         key.curve === "ed25519"
-          ? // RFC 8032 decoding, as Go's crypto/ed25519 and the Rust and Dart
-            // backends do: @noble's ed25519 defaults to ZIP-215, which also
-            // accepts non-canonical point encodings the others refuse.
-            ed25519.verify(signature, hashData, key.bytes, { zip215: false })
+          ? ed25519VerifyStrict(signature, hashData, key.bytes)
           : // The digest is the ECDSA message hash, so no second hash
             // (`prehash`). High-S is valid ECDSA and what Go's ecdsa.Sign
             // emits half the time, so it is accepted (`lowS`).
@@ -201,6 +198,61 @@ export class DataIntegrityProofVerifier implements ProofVerifier {
       return fail("signatureInvalid", `verification error: ${String(e)}`);
     }
   }
+}
+
+/**
+ * Ed25519 as the Go, Rust and Dart backends verify it: RFC 8032 point decoding
+ * (`zip215: false` — @noble's ed25519 defaults to ZIP-215, which accepts
+ * non-canonical encodings), a public key of small order refused (noble's strict
+ * mode does this), and the **cofactorless** equation `[S]B = R + [k]A` checked
+ * by comparing encodings. noble checks the cofactored equation, which also
+ * accepts an R carrying a small-order component that the other three refuse.
+ */
+function ed25519VerifyStrict(signature: Uint8Array, message: Uint8Array, publicKey: Uint8Array): boolean {
+  if (!ed25519.verify(signature, message, publicKey, { zip215: false })) return false;
+  const Point = ed25519.Point;
+  const order = Point.Fn.ORDER;
+  const A = Point.fromBytes(publicKey);
+  const R = signature.subarray(0, 32);
+  const S = leToBigInt(signature.subarray(32, 64));
+  const k = leToBigInt(sha512(new Uint8Array([...R, ...publicKey, ...message]))) % order;
+  const expected = Point.BASE.multiplyUnsafe(S).subtract(A.multiplyUnsafe(k)).toBytes();
+  return expected.length === R.length && expected.every((b, i) => b === R[i]);
+}
+
+function leToBigInt(bytes: Uint8Array): bigint {
+  let n = 0n;
+  for (let i = bytes.length - 1; i >= 0; i--) n = (n << 8n) | BigInt(bytes[i]);
+  return n;
+}
+
+const DATE_TIME_STAMP_PARTS = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d+)?(?:Z|([+-])(\d{2}):(\d{2}))$/;
+
+/** `value` as epoch milliseconds when it is a dateTimeStamp with every field in
+ * range — month 1-12, a day the month has (leap years included), hour 0-23,
+ * minute and second 0-59 (no leap second), an offset of at most 14:00 with
+ * minutes 0-59 — else `undefined`. `Date.parse` alone takes 24:00 and rolls
+ * 2027-02-30 into March; the Go, Rust and Dart verifiers apply these ranges. */
+export function parseDateTimeStamp(value: string): number | undefined {
+  const m = DATE_TIME_STAMP_PARTS.exec(value);
+  if (m === null) return undefined;
+  const [year, month, day, hour, minute, second] = m.slice(1, 7).map(Number);
+  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  if (month < 1 || month > 12 || day < 1 || day > daysInMonth || hour > 23 || minute > 59 || second > 59) {
+    return undefined;
+  }
+  let offsetMinutes = 0;
+  if (m[8] !== undefined) {
+    const oh = Number(m[9]);
+    const om = Number(m[10]);
+    if (oh > 14 || om > 59 || (oh === 14 && om !== 0)) return undefined;
+    offsetMinutes = (m[8] === "+" ? 1 : -1) * (oh * 60 + om);
+  }
+  const fractionMs = m[7] === undefined ? 0 : Number(`0${m[7]}`) * 1000;
+  const utc = new Date(0);
+  utc.setUTCFullYear(year, month - 1, day);
+  utc.setUTCHours(hour, minute, second, 0);
+  return utc.getTime() + fractionMs - offsetMinutes * 60_000;
 }
 
 function fail(failure: ProofFailureKind, detail: string): ProofVerification {

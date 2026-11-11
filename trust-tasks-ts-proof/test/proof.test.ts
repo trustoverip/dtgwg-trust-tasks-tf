@@ -252,16 +252,22 @@ test("signing refuses a document that could never verify", () => {
 {
   const dir = new URL("../../../fixtures/proof/", import.meta.url);
   const manifest = JSON.parse(readFileSync(fileURLToPath(new URL("manifest.json", dir)), "utf8")) as {
-    entries: { file: string; cryptosuite: string; expect: "valid" | "invalid" }[];
+    entries: {
+      file: string;
+      cryptosuite: string;
+      expect: "valid" | "invalid";
+      exceptions?: Record<string, { expect: "valid" | "invalid" }>;
+    }[];
   };
   // Every suite this verifier implements; an entry for any other suite fails
   // rather than being skipped silently.
   const supported = new Set(["eddsa-jcs-2022", "ecdsa-jcs-2019"]);
   for (const entry of manifest.entries) {
-    test(`shared vector: ${entry.file} is ${entry.expect}`, async () => {
+    const expect = entry.exceptions?.ts?.expect ?? entry.expect;
+    test(`shared vector: ${entry.file} is ${expect}`, async () => {
       assert.ok(supported.has(entry.cryptosuite), `no support for ${entry.cryptosuite}`);
       const doc = JSON.parse(readFileSync(fileURLToPath(new URL(entry.file, dir)), "utf8")) as TrustTaskDocument<unknown>;
-      assert.equal(await verifier.verify(doc), entry.expect === "valid");
+      assert.equal(await verifier.verify(doc), expect === "valid");
     });
   }
 }
@@ -317,7 +323,14 @@ test("signTrustTask defaults proofPurpose to authentication and refuses a non-si
   const withExpires = (expires: unknown) =>
     signWithConfig(grant(seed1Did), { created: "2026-06-01T11:00:00Z", proofPurpose: "authentication", expires });
 
-  for (const expires of ["2026-06-01T12:00:01Z", "2026-06-01T12:00:00Z"]) {
+  for (const expires of [
+    "2026-06-01T12:00:01Z",
+    "2026-06-01T12:00:00Z",
+    "2028-02-29T00:00:00Z",
+    "2027-01-01T00:00:00+14:00",
+    "2027-01-01T00:00:00-12:59",
+    "2027-01-01T23:59:59.999Z",
+  ]) {
     test(`a proof whose expires is ${expires} verifies`, async () => {
       const r = await fixed.verifyDetailed(withExpires(expires));
       assert.equal(r.valid, true, r.detail);
@@ -332,6 +345,15 @@ test("signTrustTask defaults proofPurpose to authentication and refuses a non-si
     "not a date": "tomorrow",
     "date only": "2027-01-01",
     "impossible month": "2027-13-01T00:00:00Z",
+    "February 30": "2027-02-30T00:00:00Z",
+    "February 29, not a leap year": "2027-02-29T00:00:00Z",
+    "hour 24": "2027-01-01T24:00:00Z",
+    "minute 60": "2027-01-01T00:60:00Z",
+    "leap second": "2027-01-01T00:00:60Z",
+    "offset +24:00": "2027-01-01T00:00:00+24:00",
+    "offset +23:60": "2027-01-01T00:00:00+23:60",
+    "offset +14:01": "2027-01-01T00:00:00+14:01",
+    "offset -99:00": "2027-01-01T00:00:00-99:00",
     empty: "",
   };
   for (const [name, expires] of Object.entries(refused)) {
