@@ -1,0 +1,102 @@
+[
+  {
+    "note": "No presentation. A watch is set by a party the room has authorized to read it, exactly as a listing is; a host account or session is never the authority in this family.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "address": "did:peer:2.Ez6LSexample.Vz6Mkexample",
+      "sinceVersion": 412
+    }
+  },
+  {
+    "note": "An address that is not a DID. The host sends the signal as a Trust Task over a transport the address's DID document advertises; a URL would make the host call an endpoint the member chose, and a push token would hand the host the device's push channel.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "presentation": {
+        "membership": "m",
+        "authority": [
+          "a"
+        ]
+      },
+      "address": "https://push.example/handle/7f3a",
+      "sinceVersion": 412
+    }
+  },
+  {
+    "note": "`cancel: false`. Only `true` is meaningful; an arming request omits the member.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "presentation": {
+        "membership": "m",
+        "authority": [
+          "a"
+        ]
+      },
+      "address": "did:peer:2.Ez6LSexample.Vz6Mkexample",
+      "cancel": false
+    }
+  },
+  {
+    "note": "A lease beyond 30 days. A watch that outlives the member's interest keeps sending to an address nobody reads.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "presentation": {
+        "membership": "m",
+        "authority": [
+          "a"
+        ]
+      },
+      "address": "did:peer:2.Ez6LSexample.Vz6Mkexample",
+      "sinceVersion": 412,
+      "leaseSeconds": 31536000
+    }
+  },
+  {
+    "note": "`live: false`. Only `true` is meaningful; a one-shot watch omits the member, so that a request says one thing in one way.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:standup",
+      "presentation": {
+        "membership": "m",
+        "authority": [
+          "a"
+        ]
+      },
+      "address": "did:peer:2.Ez6LSexample.Vz6Mkexample",
+      "sinceVersion": 2071,
+      "live": false
+    }
+  },
+  {
+    "note": "`live` as a string. It is a boolean that only `true` satisfies; a host never has to read meaning into a spelling.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:standup",
+      "presentation": {
+        "membership": "m",
+        "authority": [
+          "a"
+        ]
+      },
+      "address": "did:peer:2.Ez6LSexample.Vz6Mkexample",
+      "sinceVersion": 2071,
+      "live": "true"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A response that does not say whether the watch is armed — the one thing the member needs to know.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "address": "did:peer:2.Ez6LSexample.Vz6Mkexample"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "`live: false` in a response. A one-shot watch omits the member; only its presence says a watch is live, so that a host implementing 0.1, which never writes it, is read correctly.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:standup",
+      "address": "did:peer:2.Ez6LSexample.Vz6Mkexample",
+      "armed": true,
+      "live": false,
+      "expiresAt": "2027-02-01T09:45:00Z"
+    }
+  }
+]

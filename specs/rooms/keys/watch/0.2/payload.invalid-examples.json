@@ -1,0 +1,133 @@
+[
+  {
+    "note": "No member. The recipient never picks a member for the caller: a watch armed as the wrong persona presents that persona's credentials to the host.",
+    "payload": {
+      "host": "did:web:rooms.northwind.example",
+      "rooms": [
+        {
+          "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+          "sinceVersion": 412
+        }
+      ]
+    }
+  },
+  {
+    "note": "An address in the request. The key holder chooses the address and keeps it; a caller-named address would put the client's own identifier, or one it chose, in front of the host.",
+    "payload": {
+      "member": "did:webvh:QmAlice:personas.example:northwind",
+      "host": "did:web:rooms.northwind.example",
+      "address": "did:peer:2.Ez6LSexample.Vz6Mkexample",
+      "rooms": [
+        {
+          "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal"
+        }
+      ]
+    }
+  },
+  {
+    "note": "No rooms. A request watches at least one.",
+    "payload": {
+      "member": "did:webvh:QmAlice:personas.example:northwind",
+      "host": "did:web:rooms.northwind.example",
+      "rooms": []
+    }
+  },
+  {
+    "note": "`cancel: false`. Only `true` is meaningful; an arming request omits the member.",
+    "payload": {
+      "member": "did:webvh:QmAlice:personas.example:northwind",
+      "host": "did:web:rooms.northwind.example",
+      "rooms": [
+        {
+          "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal"
+        }
+      ],
+      "cancel": false
+    }
+  },
+  {
+    "note": "A lease beyond 30 days, which no host grants.",
+    "payload": {
+      "member": "did:webvh:QmAlice:personas.example:northwind",
+      "host": "did:web:rooms.northwind.example",
+      "rooms": [
+        {
+          "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal"
+        }
+      ],
+      "leaseSeconds": 31536000
+    }
+  },
+  {
+    "note": "`live: false`. Only `true` is meaningful; a one-shot request omits the member.",
+    "payload": {
+      "member": "did:webvh:QmAlice:personas.example:northwind",
+      "host": "did:web:rooms.northwind.example",
+      "rooms": [
+        {
+          "roomId": "did:webvh:QmRoom:rooms.northwind.example:standup",
+          "sinceVersion": 2071
+        }
+      ],
+      "live": false
+    }
+  },
+  {
+    "note": "`live` on a room rather than on the request. Whether to watch live is the request's, with its lease: a client with one conversation open sends a request for that room alone.",
+    "payload": {
+      "member": "did:webvh:QmAlice:personas.example:northwind",
+      "host": "did:web:rooms.northwind.example",
+      "rooms": [
+        {
+          "roomId": "did:webvh:QmRoom:rooms.northwind.example:standup",
+          "sinceVersion": 2071,
+          "live": true
+        }
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An outcome that does not say whether the watch is armed — the one thing the caller needs to know.",
+    "payload": {
+      "member": "did:webvh:QmAlice:personas.example:northwind",
+      "host": "did:web:rooms.northwind.example",
+      "watches": [
+        {
+          "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal"
+        }
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A refusal reason outside the list. The caller decides between retrying and polling from it, so it is closed.",
+    "payload": {
+      "member": "did:webvh:QmAlice:personas.example:northwind",
+      "host": "did:web:rooms.northwind.example",
+      "watches": [
+        {
+          "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+          "armed": false,
+          "refused": "busy"
+        }
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "`live: false` in an outcome. A one-shot watch omits the member; only its presence says a watch is live, so that a key holder implementing 0.1, which never writes it, is read correctly.",
+    "payload": {
+      "member": "did:webvh:QmAlice:personas.example:northwind",
+      "host": "did:web:rooms.northwind.example",
+      "watches": [
+        {
+          "roomId": "did:webvh:QmRoom:rooms.northwind.example:standup",
+          "armed": true,
+          "live": false,
+          "expiresAt": "2027-02-01T09:45:00Z"
+        }
+      ]
+    }
+  }
+]

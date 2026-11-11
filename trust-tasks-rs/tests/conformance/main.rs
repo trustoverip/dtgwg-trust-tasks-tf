@@ -1336,6 +1336,7 @@ mod rooms {
         }
         mod watch {
             mod v0_1;
+            mod v0_2;
         }
     }
     mod owner {
@@ -1428,6 +1429,7 @@ mod rooms {
     }
     mod watch {
         mod v0_1;
+        mod v0_2;
     }
 }
 #[cfg(feature = "sync")]

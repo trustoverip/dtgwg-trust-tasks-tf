@@ -8,6 +8,8 @@ import type { Ext } from "../../../../_shared/components.js";
 
 /**
  * A member's own client asks the member's key holder to arm, re-arm or cancel rooms/watch at one host for one or more rooms, as the member, with an address the key holder controls; the key holder passes each signal on to the client with rooms/keys/changed. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by rooms/keys/watch/0.2
  */
 export interface RoomsKeysWatchPayload {
   /**
@@ -53,6 +55,8 @@ export interface RoomToWatch {
 }
 /**
  * Success response to rooms/keys/watch: one outcome per room requested, in the order requested. Type https://trusttasks.org/spec/rooms/keys/watch/0.1#response.
+ *
+ * @deprecated superseded by rooms/keys/watch/0.2
  */
 export interface RoomsKeysWatchResponsePayload {
   /**
@@ -116,15 +120,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by rooms/keys/watch/0.2";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by rooms/keys/watch/0.2
+ */
 export type Payload = RoomsKeysWatchPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/rooms/keys/watch/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by rooms/keys/watch/0.2
+ */
 export type Response = RoomsKeysWatchResponsePayload;
 
 /**
