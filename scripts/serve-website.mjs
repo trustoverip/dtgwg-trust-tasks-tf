@@ -6,6 +6,10 @@
  *
  *   node scripts/serve-website.mjs            # default port 8765
  *   node scripts/serve-website.mjs --port 3000
+ *   node scripts/serve-website.mjs --host 0.0.0.0   # reachable from other machines
+ *
+ * Listens on 127.0.0.1 unless `--host` (or the `SERVE_WEBSITE_HOST` environment
+ * variable) names another address.
  */
 import http from 'node:http';
 import fs from 'node:fs';
@@ -16,6 +20,8 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'w
 
 const portArg = process.argv.indexOf('--port');
 const PORT = portArg >= 0 ? Number(process.argv[portArg + 1]) : 8765;
+const hostArg = process.argv.indexOf('--host');
+const HOST = (hostArg >= 0 ? process.argv[hostArg + 1] : process.env.SERVE_WEBSITE_HOST) || '127.0.0.1';
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -67,8 +73,8 @@ const server = http.createServer((req, res) => {
   res.writeHead(404); res.end('not found');
 });
 
-server.listen(PORT, () => {
-  console.log(`Trust Tasks dev server: http://localhost:${PORT}/`);
+server.listen(PORT, HOST, () => {
+  console.log(`Trust Tasks dev server: http://localhost:${PORT}/ (listening on ${HOST})`);
   console.log(`  Try:`);
   console.log(`    http://localhost:${PORT}/spec/did-management/did/register/0.1`);
   console.log(`    http://localhost:${PORT}/schema/did-management/_shared/0.1/did-record`);

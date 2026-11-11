@@ -99,6 +99,11 @@ jobs:
       - name: Test the Type URI negotiation function
         run: npm run test:infra
 
+      # The markdown renderer's raw-HTML allow-list and link-scheme check
+      # (website/assets/markdown.js).
+      - name: Test the website markdown renderer
+        run: npm run test:website
+
       - name: Sync SPEC.md into website/
         run: cp SPEC.md website/SPEC.md
 

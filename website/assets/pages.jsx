@@ -1461,10 +1461,8 @@ function SpecDetail({ task, setRoute }) {
       .then(r => { if (!r.ok) throw new Error(`Failed to load spec.md (${r.status})`); return r.text(); })
       .then(src => {
         if (cancelled) return;
-        if (typeof marked === "undefined") throw new Error("Markdown renderer is unavailable.");
         const body = stripFrontMatter(src);
-        marked.setOptions({ gfm: true, breaks: false });
-        const rawHtml = rewriteSpecMdLinks(marked.parse(body));
+        const rawHtml = rewriteSpecMdLinks(ttMarkdown.renderMarkdown(body));
         const { html, toc } = injectHeadingIds(rawHtml);
         setProseHtml(html);
         setProseToc(toc);
@@ -1656,7 +1654,11 @@ function SpecDetail({ task, setRoute }) {
             <>
               <dt>Carries</dt>
               <dd>
-                <a href={task.carries.reference} target="_blank" rel="noreferrer">{task.carries.protocol} {task.carries.version}</a>
+                {/* `reference` is `format: uri`, which admits any scheme; only
+                    an http(s) reference becomes a link. */}
+                {/^https?:\/\//i.test(task.carries.reference || "")
+                  ? <a href={task.carries.reference} target="_blank" rel="noreferrer">{task.carries.protocol} {task.carries.version}</a>
+                  : <span>{task.carries.protocol} {task.carries.version}</span>}
                 {" "}operation <code>{task.carries.operation}</code>
                 <span style={{ color: "var(--tt-text-muted)" }}> — this specification is that operation carried as a Trust Task; its meaning is the protocol's (<a href="/SPEC.md#94-carried-protocols">SPEC §9.4</a>).</span>
               </dd>
@@ -2085,9 +2087,7 @@ function FrameworkSpecPage({ setRoute }) {
       })
       .then(text => {
         if (cancelled) return;
-        if (typeof marked === "undefined") throw new Error("Markdown renderer is unavailable.");
-        marked.setOptions({ gfm: true, breaks: false });
-        const rawHtml = marked.parse(text);
+        const rawHtml = ttMarkdown.renderMarkdown(text);
         const { html: withIds } = injectHeadingIds(rawHtml);
         setHtml(withIds);
       })
@@ -3086,10 +3086,8 @@ function BindingSpecPage({ slug, version, setRoute }) {
       .then(r => { if (!r.ok) throw new Error(`Failed to load spec.md (${r.status})`); return r.text(); })
       .then(src => {
         if (cancelled) return;
-        if (typeof marked === "undefined") throw new Error("Markdown renderer is unavailable.");
         const body = stripFrontMatter(src);
-        marked.setOptions({ gfm: true, breaks: false });
-        const rawHtml = rewriteSpecMdLinks(marked.parse(body));
+        const rawHtml = rewriteSpecMdLinks(ttMarkdown.renderMarkdown(body));
         const { html, toc } = injectHeadingIds(rawHtml);
         setProseHtml(html);
         setProseToc(toc);
