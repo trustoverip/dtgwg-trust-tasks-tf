@@ -172,8 +172,15 @@ type Unpacked struct {
 // PackTrustTask seals doc into a DIDComm v2.1 authcrypt envelope from sender to
 // recipient (binding §2, §3.1). doc is the serialised Trust Task document; its
 // threadId (or, failing that, its id) becomes the DIDComm `thid`, and its
-// parentThreadId becomes `pthid`.
+// parentThreadId becomes `pthid`. A nil sender or recipient, or one not built
+// with [NewIdentity] / [NewPeerKey], is an error.
 func PackTrustTask(doc json.RawMessage, sender *Identity, recipient *PeerKey) ([]byte, error) {
+	if sender == nil || sender.priv == nil {
+		return nil, errors.New("didcomm: no sender identity (build it with NewIdentity)")
+	}
+	if recipient == nil || recipient.pub == nil {
+		return nil, errors.New("didcomm: no recipient key (build it with NewPeerKey)")
+	}
 	var th threadHeaders
 	if err := json.Unmarshal(doc, &th); err != nil {
 		return nil, fmt.Errorf("didcomm: document is not a JSON object: %w", err)
