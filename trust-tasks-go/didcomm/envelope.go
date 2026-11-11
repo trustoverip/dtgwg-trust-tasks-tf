@@ -4,6 +4,7 @@ import (
 	"crypto/ecdh"
 	"crypto/rand"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -200,6 +201,10 @@ func PackTrustTask(doc json.RawMessage, sender *Identity, recipient *PeerKey) ([
 // ResolveSender maps an authenticated sender DID to its X25519 key-agreement
 // key. The binding does no DID resolution itself (the Go-style model): the
 // caller supplies this, looking the DID up in its own store.
+//
+// Return a non-nil error for a DID the store does not know. A nil *PeerKey, or
+// one not built with [NewPeerKey], is treated the same way: the envelope is
+// refused with [FailSenderUnresolved].
 type ResolveSender func(senderDID string) (*PeerKey, error)
 
 // UnpackTrustTask opens a DIDComm v2.1 authcrypt envelope addressed to
@@ -213,6 +218,9 @@ func UnpackTrustTask(wire []byte, recipient *Identity, resolve ResolveSender) (*
 		pk, err := resolve(bareDID(skid))
 		if err != nil {
 			return nil, err
+		}
+		if pk == nil || pk.pub == nil {
+			return nil, errors.New("resolver returned no key-agreement key")
 		}
 		return pk.pub, nil
 	})
