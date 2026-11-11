@@ -81,7 +81,7 @@ tombstone — and every blob only those records named is released.
 
 The rule is the room's, stated in advance and readable by every member
 ([`RecordRetention`](../../../_shared/0.2/room.schema.json), set at
-[`rooms/create`](../../../create/0.2/spec.md) and changed with
+[`rooms/create`](../../../create/0.3/spec.md) and changed with
 [`rooms/records/retention/set`](../../retention/set/0.1/spec.md), served by
 [`rooms/info`](../../../info/0.4/spec.md)). The act is the administrator's, made deliberately
 with a reason. The host does neither on its own: it measures age and removes what it is asked
@@ -147,7 +147,7 @@ A conforming **host** (`recipient`):
    record.
 8. **MUST NOT** remove a record by age in any other way — on a timer, at a quota, on a
    lapse short of reclamation — and **MUST NOT** prune on its own initiative. Reclaiming a whole
-   room after `retentionDays` ([`rooms/create`](../../../create/0.2/spec.md)) is a different
+   room after `retentionDays` ([`rooms/create`](../../../create/0.3/spec.md)) is a different
    act and is unaffected.
 
 A conforming **producer** **SHOULD** make a dry run first and show its result to whoever is

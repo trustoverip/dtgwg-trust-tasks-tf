@@ -274,7 +274,7 @@ The **KeyHolder** answers with the sub-schema reachable via `$anchor: "response"
 
 ## Security & Privacy
 
-**The name never reaches the host on a sealed tier.** The profile is sealed like any record, at a key the host cannot compute or tell from a random one, padded so its length says little. It is never put in a credential, in the room's host record, in `rooms/create` or [`rooms/owner/register`](../../../../owner/register/0.2/spec.md), or in any cleartext member of anything sent to the host. What the host can still see is pattern: a record written by the owner just after each epoch advance. It can guess; it cannot read, and it can do nothing to that record it could not do to any other.
+**The name never reaches the host on a sealed tier.** The profile is sealed like any record, at a key the host cannot compute or tell from a random one, padded so its length says little. It is never put in a credential, in the room's host record, in `rooms/create` or [`rooms/owner/register`](../../../../owner/register/0.3/spec.md), or in any cleartext member of anything sent to the host. What the host can still see is pattern: a record written by the owner just after each epoch advance. It can guess; it cannot read, and it can do nothing to that record it could not do to any other.
 
 **A member holding only `write` can overwrite the profile's record, and cannot rename the room.** The host cannot stop the overwrite, because it cannot tell the record is the profile — any writer can already overwrite any record key in a room. What it cannot do is make readers accept it: readers ignore a statement whose chain lacks `curate` or `admin`, fall back to the profile before it, and say who tried. Somebody holding `curate` repairs it by writing again.
 

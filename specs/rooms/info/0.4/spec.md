@@ -127,8 +127,8 @@ A conforming **host** (`recipient`) **MUST**:
    retention it would not apply, or omit one it would.
 7. Return `lastPrune` when the room's records have been pruned, as the latest
    `rooms/records/prune` left it, and omit it otherwise.
-8. Return `signalDelay` as the one it applies to the room's `rooms/changed` signals — set by
-   `rooms/signal-delay/set`, else `randomised`. **MUST NOT** report `randomised` for a room whose
+8. Return `signalDelay` as the one it applies to the room's `rooms/changed` signals — set at
+   `rooms/create` 0.3 or since by `rooms/signal-delay/set`, else `randomised`. **MUST NOT** report `randomised` for a room whose
    signals it sends without a wait, since a member reading it would believe the room keeps a
    protection it does not.
 9. **Never** return another member's figures, a list of members, or anything derived from

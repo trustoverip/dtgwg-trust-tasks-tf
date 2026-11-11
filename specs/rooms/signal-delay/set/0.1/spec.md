@@ -57,6 +57,7 @@ related:
   - rooms/changed
   - rooms/watch
   - rooms/info
+  - rooms/create
   - rooms/records/retention/set
 ---
 
@@ -72,7 +73,9 @@ exactly. It costs a few seconds on every signal. In a room used as a document st
 nothing; in a room used as a conversation it is a few seconds between one member writing and
 another seeing it, on every message. This task lets a room that is a conversation say so.
 
-The setting is the room's, not a member's, and it can be turned back on at any time.
+A room meant as a conversation can state its signal delay at creation
+([`rooms/create`](../../../create/0.3/spec.md) 0.3); this task changes it afterwards. The setting
+is the room's, not a member's, and it can be turned back on at any time.
 
 ## Status of this Document
 

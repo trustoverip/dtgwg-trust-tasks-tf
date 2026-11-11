@@ -6,6 +6,7 @@
 import type { DigestMultibase, Ext, RetentionPolicy, RevocationHead, Visibility } from "../../../../_shared/components.js";
 
 
+/** @deprecated superseded by rooms/owner/register/0.3 */
 export interface RoomsOwnerRegisterPayload {
   /**
    * The room being registered. Its identity exists already — this asks a host to store it, not to name it.
@@ -38,6 +39,8 @@ export interface RoomsOwnerRegisterPayload {
 }
 /**
  * Success response to rooms/owner/register. Type https://trusttasks.org/spec/rooms/owner/register/0.2#response.
+ *
+ * @deprecated superseded by rooms/owner/register/0.3
  */
 export interface RoomsOwnerRegisterResponsePayload {
   roomId: string;
@@ -89,15 +92,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by rooms/owner/register/0.3";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by rooms/owner/register/0.3
+ */
 export type Payload = RoomsOwnerRegisterPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/rooms/owner/register/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by rooms/owner/register/0.3
+ */
 export type Response = RoomsOwnerRegisterResponsePayload;
 
 /**

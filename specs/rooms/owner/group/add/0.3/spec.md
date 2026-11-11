@@ -115,7 +115,7 @@ related:
 
 A room's owner asks their **key holder** to admit a member to the room's MLS group.
 
-Admitting someone to a sealed room is three things that have to happen together: the group gains a leaf for them, the room's epoch advances at its host so records from now on are sealed to the new group, and the newcomer receives the Welcome that lets their own key holder join. The first and third are the key holder's — it holds the group — and the second needs the owner's `admin` authority, which the key holder also holds. So the key holder does all of it, for the same reason [`rooms/owner/register`](../../../register/0.2/spec.md) exists: the surfaces owners act from reach their own agent and no third party.
+Admitting someone to a sealed room is three things that have to happen together: the group gains a leaf for them, the room's epoch advances at its host so records from now on are sealed to the new group, and the newcomer receives the Welcome that lets their own key holder join. The first and third are the key holder's — it holds the group — and the second needs the owner's `admin` authority, which the key holder also holds. So the key holder does all of it, for the same reason [`rooms/owner/register`](../../../register/0.3/spec.md) exists: the surfaces owners act from reach their own agent and no third party.
 
 What comes back is the **Welcome**, for the caller to deliver to the newcomer's key holder with [`rooms/keys/welcome`](../../../../keys/welcome/0.1/spec.md). It is returned rather than delivered because on a `private` room it **MUST NOT** pass through the host, and the recipient has no other channel to a stranger's agent.
 

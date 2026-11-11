@@ -1723,6 +1723,9 @@ export import RoomsCreate_v0_1 = _RoomsCreate_v0_1;
 import * as _RoomsCreate_v0_2 from "./rooms/create/0.2/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomsCreate_v0_2 = _RoomsCreate_v0_2;
+import * as _RoomsCreate_v0_3 from "./rooms/create/0.3/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import RoomsCreate_v0_3 = _RoomsCreate_v0_3;
 import * as _RoomsEpochChain_v0_1 from "./rooms/epoch/chain/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomsEpochChain_v0_1 = _RoomsEpochChain_v0_1;
@@ -1945,6 +1948,9 @@ export import RoomsOwnerRegister_v0_1 = _RoomsOwnerRegister_v0_1;
 import * as _RoomsOwnerRegister_v0_2 from "./rooms/owner/register/0.2/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomsOwnerRegister_v0_2 = _RoomsOwnerRegister_v0_2;
+import * as _RoomsOwnerRegister_v0_3 from "./rooms/owner/register/0.3/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import RoomsOwnerRegister_v0_3 = _RoomsOwnerRegister_v0_3;
 import * as _RoomsOwnerRevoke_v0_1 from "./rooms/owner/revoke/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomsOwnerRevoke_v0_1 = _RoomsOwnerRevoke_v0_1;

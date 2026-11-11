@@ -75,7 +75,7 @@ A room's **administrator** changes the room's **record retention** — how long 
 retracted records' tombstones, and how long it keeps records at all, by age
 ([`RecordRetention`](../../../../_shared/0.1/room.schema.json)).
 
-A room states its first record retention at [`rooms/create`](../../../../create/0.2/spec.md).
+A room states its first record retention at [`rooms/create`](../../../../create/0.3/spec.md).
 Unlike the key chain's `retentionPolicy`, which is fixed because key material either exists for
 an epoch or it does not, how long a room keeps its meeting notes is a decision it is entitled to
 revisit. This is how it does.
