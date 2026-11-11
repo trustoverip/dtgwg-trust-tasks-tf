@@ -2944,6 +2944,10 @@ export type Visibility = "open" | "attributed" | "private";
  */
 export type WallVisibility = "members" | "nobody";
 /**
+ * The path segments a did:webs DID's slot carries before its AID, separated by `/`: lowercase letters, digits and hyphens. The VTA appends the AID as the final segment, and the hosting server checks that the published stream establishes exactly that AID. `people/alice` on `example.com` gives the slot `people/alice/<AID>` and the DID `did:webs:example.com:people:alice:<AID>`. The caller never writes the AID: it is the digest of an inception event that does not exist until the VTA writes it.
+ */
+export type WebsSlotPath = string;
+/**
  * A file's content hash: the lowercase hex SHA-256 of its bytes — the `etag` vtc/website/files/list reports, and the `ETag` a direct read of the path returns, without the HTTP quotes.
  */
 export type WebsiteEtag = string;
@@ -8232,6 +8236,42 @@ export interface DeferredPresentation {
    * After this the deferral is stale and approval MUST refuse — the verifier's nonce is no longer fresh, so any presentation minted against it would fail the verifier's own replay check.
    */
   expiresAt: string;
+}
+/**
+ * A DID document service entry the AID designates for itself: an ACDC it issues in its own registry, anchored in its key event log, which the host renders into `service`. Not a KERI endpoint reply, which can carry only KERI's own roles and URL schemes. `id` is a fragment relative to the DID. Members other than `id`, `type` and `serviceEndpoint` are carried as the DID document data model allows.
+ */
+export interface DesignatedService {
+  /**
+   * The service's fragment, such as `#files`. `#didcomm` and `#tsp` are the VTA's own (see `addMediatorService` and `addTspService`), and an id a KERI endpoint reply of the AID already establishes cannot be reused.
+   */
+  id: string;
+  /**
+   * The service type, matched by peers on its value, never on `id`.
+   */
+  type: string | [string, ...string[]];
+  /**
+   * A URI, a map, or a set of either, as the DID document data model allows.
+   */
+  serviceEndpoint:
+    | string
+    | {
+        [k: string]: unknown | undefined;
+      }
+    | [
+        (
+          | string
+          | {
+              [k: string]: unknown | undefined;
+            }
+        ),
+        ...(
+          | string
+          | {
+              [k: string]: unknown | undefined;
+            }
+        )[]
+      ];
+  [k: string]: unknown | undefined;
 }
 export interface WebAuthnAttestation_DeviceV0_1 {
   kind: "webauthn";
@@ -17429,6 +17469,98 @@ export interface WalrusSettings {
    * How many epochs before a live blob's end epoch the community extends it. A blob that has become an orphan is not extended, and lapses: the Walrus form of deletion.
    */
   extendBeforeEpochs: number;
+}
+/**
+ * A did:webs DID as the VTA holds it. The DID document is not here: the host derives it from `keri.cesr`, which `vta/webs/dids/get` returns on request. Every key named here is public, and every key id names a key the VTA holds and never returns.
+ */
+export interface WebsDidRecord {
+  /**
+   * The DID: `did:webs:<domain>:<path segments>:<AID>`, a port in the domain written `%3A<port>`.
+   */
+  did: string;
+  /**
+   * The KERI autonomic identifier: the self-addressing digest of the inception event, and the DID's final segment. It never changes: a rotation changes the keys, not the AID.
+   */
+  aid: string;
+  /**
+   * Context the DID belongs to. Its keys were derived in it, and deleting that context destroys them.
+   */
+  contextId: string;
+  /**
+   * The VTA's id for the hosting server that serves the slot.
+   */
+  serverId: string;
+  /**
+   * The hosting domain, decoded (`localhost:8534`, not `localhost%3A8534`). Load-bearing: the host builds the DID from its domain and slot on every read.
+   */
+  domain: string;
+  /**
+   * The slot on the hosting server: the path segments, then the AID, separated by `/`.
+   */
+  slot: string;
+  /**
+   * Where the key event log is served: `https://<domain>/<slot>/keri.cesr`.
+   */
+  keriCesrUrl: string;
+  /**
+   * Where the derived document is served: `https://<domain>/<slot>/did.json`.
+   */
+  didJsonUrl: string;
+  /**
+   * Operator-facing label. Never published.
+   */
+  label?: string;
+  /**
+   * Whether this is its context's primary DID.
+   */
+  primary?: boolean;
+  /**
+   * Sequence number of the latest event in the key event log.
+   */
+  sequenceNumber: number;
+  /**
+   * The latest event as `<sequence number>:<SAID>`, the form `expectedVersionId` is compared against (vta/dids method profile `webs`, §3). Both parts are compared: a sequence number alone does not distinguish two events at the same position.
+   */
+  versionId: string;
+  /**
+   * The VTA's id for the current signing key, the one key of the key state (`kt` 1). It signs the DID's key events and what the DID signs as itself. After deactivation, the key the final rotation installed, which the VTA signs nothing more with.
+   */
+  signingKeyId: string;
+  /**
+   * The current signing key in CESR (an Ed25519 key, `D…`). The document's verification method for it is `<did>#<signingKey>`.
+   */
+  signingKey: string;
+  /**
+   * The VTA's id for the committed successor, whose digest is the key state's one next-key commitment (`nt` 1). Inactive until the rotation that installs it. Absent once the DID is deactivated, when nothing is committed.
+   */
+  nextKeyId?: string;
+  /**
+   * The VTA's id for the designated key agreement key.
+   */
+  keyAgreementKeyId: string;
+  /**
+   * The designated key agreement key in CESR (an X25519 key, `C…`). Never the X25519 key converted from a signing key.
+   */
+  keyAgreementKey: string;
+  /**
+   * The designated aliases in force, the DID itself first. The did:webs resolution of the DID requires the AID to designate it, so the list is never empty while the DID is live.
+   */
+  alsoKnownAs: string[];
+  /**
+   * The designated services in force, `#didcomm` and `#tsp` included when present.
+   */
+  services: DesignatedService[];
+  /**
+   * True once `vta/webs/dids/delete` has published the rotation to no next keys. Irreversible.
+   */
+  deactivated: boolean;
+  /**
+   * When the deactivating rotation was published. Present exactly when `deactivated` is true.
+   */
+  deactivatedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  ext?: Ext;
 }
 /**
  * A did:webvh DID as the VTA holds it. The DID document itself is not here — it lives in the log, which `vta/webvh/dids/get` returns on request.

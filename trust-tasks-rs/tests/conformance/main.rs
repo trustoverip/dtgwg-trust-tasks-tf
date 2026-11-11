@@ -2081,6 +2081,28 @@ mod vta {
             mod v1_2;
         }
     }
+    mod webs {
+        mod dids {
+            mod create {
+                mod v0_1;
+            }
+            mod delete {
+                mod v0_1;
+            }
+            mod get {
+                mod v0_1;
+            }
+            mod list {
+                mod v0_1;
+            }
+            mod rotate_keys {
+                mod v0_1;
+            }
+            mod update {
+                mod v0_1;
+            }
+        }
+    }
     mod webvh {
         mod agent_name {
             mod check {

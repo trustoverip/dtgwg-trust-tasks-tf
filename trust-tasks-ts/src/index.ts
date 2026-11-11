@@ -2955,6 +2955,27 @@ export import VtaServicesUpdate_v1_1 = _VtaServicesUpdate_v1_1;
 import * as _VtaServicesUpdate_v1_2 from "./vta/services/update/1.2/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtaServicesUpdate_v1_2 = _VtaServicesUpdate_v1_2;
+import * as _WebsRecordsShared_v0_1 from "./vta/webs/_shared/0.1/webs-records.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import WebsRecordsShared_v0_1 = _WebsRecordsShared_v0_1;
+import * as _VtaWebsDidsCreate_v0_1 from "./vta/webs/dids/create/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtaWebsDidsCreate_v0_1 = _VtaWebsDidsCreate_v0_1;
+import * as _VtaWebsDidsDelete_v0_1 from "./vta/webs/dids/delete/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtaWebsDidsDelete_v0_1 = _VtaWebsDidsDelete_v0_1;
+import * as _VtaWebsDidsGet_v0_1 from "./vta/webs/dids/get/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtaWebsDidsGet_v0_1 = _VtaWebsDidsGet_v0_1;
+import * as _VtaWebsDidsList_v0_1 from "./vta/webs/dids/list/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtaWebsDidsList_v0_1 = _VtaWebsDidsList_v0_1;
+import * as _VtaWebsDidsRotateKeys_v0_1 from "./vta/webs/dids/rotate-keys/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtaWebsDidsRotateKeys_v0_1 = _VtaWebsDidsRotateKeys_v0_1;
+import * as _VtaWebsDidsUpdate_v0_1 from "./vta/webs/dids/update/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtaWebsDidsUpdate_v0_1 = _VtaWebsDidsUpdate_v0_1;
 import * as _VtaWebvhAgentNameCheck_v1_0 from "./vta/webvh/agent-name/check/1.0/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtaWebvhAgentNameCheck_v1_0 = _VtaWebvhAgentNameCheck_v1_0;

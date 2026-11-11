@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/webs/dids/list/0.1",
+  "title": "VTA did:webs DIDs List — payload",
+  "description": "Enumerate the did:webs DIDs a VTA holds that the caller may see, optionally narrowed to a context or hosting server. Alpha.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Only DIDs in this context."
+    },
+    "serverId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Only DIDs published through this hosting server."
+    },
+    "includeDeactivated": {
+      "type": "boolean",
+      "description": "Include deactivated DIDs. Absent means no."
+    },
+    "cursor": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Opaque position from a previous response's `nextCursor`. The VTA accepts only a cursor it issued, for the same filters."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 500,
+      "description": "The most DIDs to return. Absent lets the VTA choose."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA did:webs DIDs List — response payload",
+      "description": "Success response to vta/webs/dids/list. Type https://trusttasks.org/spec/vta/webs/dids/list/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dids"
+      ],
+      "properties": {
+        "dids": {
+          "type": "array",
+          "description": "Matching DIDs the caller may see. An empty array is a successful answer, and does not imply the VTA holds none.",
+          "items": {
+            "$ref": "../../../_shared/0.1/webs-records.schema.json#/$defs/WebsDidRecord"
+          }
+        },
+        "nextCursor": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Position of the next page. Absent on the last page."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

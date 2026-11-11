@@ -5130,6 +5130,42 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vta/services/update/1.2#response" => <crate::specs::vta::services::update::v1_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/create/0.1" => <crate::specs::vta::webs::dids::create::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/create/0.1#response" => <crate::specs::vta::webs::dids::create::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/delete/0.1" => <crate::specs::vta::webs::dids::delete::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/delete/0.1#response" => <crate::specs::vta::webs::dids::delete::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/get/0.1" => <crate::specs::vta::webs::dids::get::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/get/0.1#response" => <crate::specs::vta::webs::dids::get::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/list/0.1" => <crate::specs::vta::webs::dids::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/list/0.1#response" => <crate::specs::vta::webs::dids::list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/rotate-keys/0.1" => <crate::specs::vta::webs::dids::rotate_keys::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/rotate-keys/0.1#response" => <crate::specs::vta::webs::dids::rotate_keys::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/update/0.1" => <crate::specs::vta::webs::dids::update::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/update/0.1#response" => <crate::specs::vta::webs::dids::update::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/webvh/agent-name/check/1.0" => <crate::specs::vta::webvh::agent_name::check::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
@@ -12901,6 +12937,38 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/create/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::webs::dids::create::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/delete/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::webs::dids::delete::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/get/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::webs::dids::get::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/list/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::webs::dids::list::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/rotate-keys/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vta::webs::dids::rotate_keys::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/update/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::webs::dids::update::v0_1::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/webvh/agent-name/check/1.0" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::vta::webvh::agent_name::check::v1_0::Payload,
@@ -20171,6 +20239,36 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/services/update/1.2" => {
             Some(crate::specs::vta::services::update::v1_2::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/create/0.1" => {
+            Some(crate::specs::vta::webs::dids::create::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/delete/0.1" => {
+            Some(crate::specs::vta::webs::dids::delete::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/get/0.1" => {
+            Some(crate::specs::vta::webs::dids::get::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/list/0.1" => {
+            Some(crate::specs::vta::webs::dids::list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/rotate-keys/0.1" => {
+            Some(crate::specs::vta::webs::dids::rotate_keys::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/update/0.1" => {
+            Some(crate::specs::vta::webs::dids::update::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
