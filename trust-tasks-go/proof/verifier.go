@@ -163,7 +163,11 @@ func (v *Verifier) Verify(_ context.Context, doc json.RawMessage) error {
 	if err != nil {
 		return err
 	}
-	if _, err := requireString(proof, "proofPurpose"); err != nil {
+	proofPurpose, err := requireString(proof, "proofPurpose")
+	if err != nil {
+		return err
+	}
+	if err := checkProofPurpose(proofPurpose); err != nil {
 		return err
 	}
 	proofValue, err := requireString(proof, "proofValue")
@@ -188,6 +192,22 @@ func (v *Verifier) Verify(_ context.Context, doc json.RawMessage) error {
 		}
 		if t.After(v.now().Add(v.clockSkew)) {
 			return failf(MalformedProof, "proof.created is more than %s in the future", v.clockSkew)
+		}
+	}
+
+	// expires, when present, is a dateTimeStamp that has not yet passed (VC
+	// Data Integrity §2.1). No allowance applies: the signer chose the instant.
+	if expires, hasExpires := proof["expires"]; hasExpires {
+		s, ok := expires.(string)
+		if !ok || !dateTimeStamp.MatchString(s) {
+			return failf(MalformedProof, "proof.expires must be a dateTimeStamp with Z or an offset: %v", expires)
+		}
+		t, perr := time.Parse(time.RFC3339, s)
+		if perr != nil {
+			return failf(MalformedProof, "proof.expires does not parse: %v", perr)
+		}
+		if v.now().After(t) {
+			return failf(MalformedProof, "proof.expires %s has passed", s)
 		}
 	}
 
@@ -226,6 +246,27 @@ func (v *Verifier) Verify(_ context.Context, doc json.RawMessage) error {
 		return err
 	}
 	return nil
+}
+
+// SigningPurposes are the proofPurpose values a proof may carry: the
+// verification relationships a signature can be made under. A did:key's key is
+// authorised for all four, as the did:key method defines. keyAgreement is
+// deliberately absent — a key-agreement key never authorises a signature — and
+// so is any value naming no relationship, as in the Rust, TypeScript and Dart
+// verifiers.
+var SigningPurposes = []string{"authentication", "assertionMethod", "capabilityInvocation", "capabilityDelegation"}
+
+// checkProofPurpose refuses a proofPurpose that names no signing relationship.
+func checkProofPurpose(purpose string) error {
+	for _, p := range SigningPurposes {
+		if purpose == p {
+			return nil
+		}
+	}
+	if purpose == "keyAgreement" {
+		return failf(MalformedProof, "proofPurpose keyAgreement never authorises a signature")
+	}
+	return failf(MalformedProof, "proofPurpose names no signing verification relationship")
 }
 
 // suiteMatchesCurve rejects a suite/curve pairing the cryptosuites forbid.
@@ -326,7 +367,7 @@ var envelopeMembers = []string{
 
 // proofMembers are the Data Integrity proof members this verifier reads.
 var proofMembers = []string{
-	"type", "cryptosuite", "verificationMethod", "created", "proofPurpose", "proofValue",
+	"type", "cryptosuite", "verificationMethod", "created", "expires", "proofPurpose", "proofValue",
 }
 
 // caseVariantOf returns a member of obj that is not one of names but folds to

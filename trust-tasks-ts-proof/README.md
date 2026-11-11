@@ -37,15 +37,22 @@ taxonomy as the Rust and Dart libraries.
 
 1. The proof is a `DataIntegrityProof` with a non-empty `cryptosuite`,
    `verificationMethod`, `proofPurpose` and `proofValue`.
-2. The cryptosuite is one this verifier accepts.
-3. `created`, when present, is a `dateTimeStamp` (ending in `Z` or an explicit
+2. `proofPurpose` names a signing relationship (`SIGNING_PURPOSES`:
+   `authentication`, `assertionMethod`, `capabilityInvocation`,
+   `capabilityDelegation`), all of which a `did:key` authorises. `keyAgreement`
+   and any other value are refused (SPEC §4.7.3).
+3. The cryptosuite is one this verifier accepts.
+4. `created`, when present, is a `dateTimeStamp` (ending in `Z` or an explicit
    offset) and no more than `clockSkewMs` (60s default) in the future. An
-   offset-less timestamp is refused rather than read as local time.
-4. **The proof is bound to the document's `issuer`.** The DID part of
+   offset-less timestamp is refused rather than read as local time. `expires`,
+   when present, is a `dateTimeStamp` that has not passed.
+5. **The proof is bound to the document's `issuer`.** The DID part of
    `verificationMethod` must equal `issuer` exactly, with no normalization (SPEC
    §4.8), or the document is `issuerMismatch`. A valid signature proves only
    that *some* key signed.
-5. The signature verifies over the document minus its `proof`.
+6. The signature verifies over the document minus its `proof`. Ed25519 is
+   checked under RFC 8032's encoding rules, as the Go, Rust and Dart libraries
+   check it, not ZIP-215's wider ones.
 
 Keys travel in the `did:key` verification method — no resolver, no network.
 
@@ -59,8 +66,11 @@ const signed = signTrustTask(doc, signer);
 ```
 
 `signTrustTask` refuses to sign a document with no `issuer`, or one whose
-`issuer` is not the signer's `did:key` — such a document could never verify. It
-replaces any existing `proof`.
+`issuer` is not the signer's `did:key` — such a document could never verify —
+or a `proofPurpose` outside `SIGNING_PURPOSES`. It replaces any existing `proof`.
+`proofPurpose` defaults to `authentication`, the purpose SPEC §4.7.3 recommends
+for a Trust Task document; pass `assertionMethod` only where a specification
+defines the proof as an attestation.
 
 ## Cryptosuites
 

@@ -136,8 +136,8 @@ impl Verifier {
     /// member dropped by the payload type — any of those makes a genuine
     /// proof fail. A receiver holding the raw JSON should verify that.
     ///
-    /// Checks, in order: a `proof` member is present and well-formed; the
-    /// document names an `issuer` controlling the proof's verificationMethod
+    /// Checks, in order: a `proof` member is present and well-formed, and its
+    /// `expires`, if any, has not passed; the document names an `issuer` controlling the proof's verificationMethod
     /// (SPEC §4.8, exact string equality); the `proofPurpose` names a signing
     /// relationship and the issuer lists the verificationMethod under it
     /// (W3C Data Integrity / Controlled Identifiers §3.3); the signature
@@ -147,6 +147,9 @@ impl Verifier {
         let proof_value = doc.get("proof").cloned().ok_or_else(|| {
             VerificationError::MalformedProof("document carries no proof member".to_string())
         })?;
+        // `expires` is read from the proof as received: the upstream proof
+        // type has no member for it and drops it when parsing.
+        check_expires(&proof_value, chrono::Utc::now())?;
         let parsed_proof: DataIntegrityProof = serde_json::from_value(proof_value)
             .map_err(|e| VerificationError::MalformedProof(format!("parse proof: {e}")))?;
 
@@ -200,6 +203,76 @@ impl Verifier {
     }
 }
 
+/// Refuse a proof whose `expires` (VC Data Integrity §2.1) is not a
+/// `dateTimeStamp` — a date-time ending in `Z` or an explicit `±hh:mm` offset —
+/// or has passed at `now`. No clock-skew allowance applies: the signer chose
+/// the instant. The same rule as the Go, TypeScript and Dart verifiers.
+///
+/// `affinidi-data-integrity`'s proof type has no `expires` member, so a proof
+/// that carries one is checked here but its signature is computed without it:
+/// such a proof verifies only if its signer also left `expires` out of what it
+/// signed.
+fn check_expires(
+    proof: &Value,
+    now: chrono::DateTime<chrono::Utc>,
+) -> Result<(), VerificationError> {
+    let Some(expires) = proof.get("expires") else {
+        return Ok(());
+    };
+    let at = expires
+        .as_str()
+        .filter(|s| is_date_time_stamp(s))
+        .and_then(|s| chrono::DateTime::parse_from_rfc3339(s).ok())
+        .ok_or_else(|| {
+            VerificationError::MalformedProof(format!(
+                "proof.expires must be a dateTimeStamp with Z or an offset: {expires}"
+            ))
+        })?;
+    if now > at {
+        return Err(VerificationError::MalformedProof(format!(
+            "proof.expires {expires} has passed"
+        )));
+    }
+    Ok(())
+}
+
+/// `YYYY-MM-DDThh:mm:ss[.f+](Z|±hh:mm)` — the shape the other verifiers'
+/// `dateTimeStamp` pattern accepts. RFC 3339 parsing alone would also take a
+/// lower-case `t`/`z` or a space separator.
+fn is_date_time_stamp(s: &str) -> bool {
+    let b = s.as_bytes();
+    let digits =
+        |r: std::ops::Range<usize>| b.get(r).is_some_and(|d| d.iter().all(u8::is_ascii_digit));
+    if b.len() < 20
+        || !digits(0..4)
+        || b[4] != b'-'
+        || !digits(5..7)
+        || b[7] != b'-'
+        || !digits(8..10)
+        || b[10] != b'T'
+        || !digits(11..13)
+        || b[13] != b':'
+        || !digits(14..16)
+        || b[16] != b':'
+        || !digits(17..19)
+    {
+        return false;
+    }
+    let mut rest = &b[19..];
+    if let Some(fraction) = rest.strip_prefix(b".") {
+        let n = fraction.iter().take_while(|c| c.is_ascii_digit()).count();
+        if n == 0 {
+            return false;
+        }
+        rest = &fraction[n..];
+    }
+    match rest {
+        [b'Z'] => true,
+        [b'+' | b'-', h1, h2, b':', m1, m2] => [h1, h2, m1, m2].iter().all(|d| d.is_ascii_digit()),
+        _ => false,
+    }
+}
+
 /// Map [`DataIntegrityError`] variants into the framework's
 /// [`VerificationError`] taxonomy. The mapping aligns with SPEC.md §8.3:
 /// every failure surfaces as `proof_invalid` to the wire, distinguished
@@ -242,4 +315,58 @@ fn map_error(err: DataIntegrityError) -> VerificationError {
 pub fn parse_data_integrity_proof(value: &Value) -> Result<DataIntegrityProof, VerificationError> {
     serde_json::from_value(value.clone())
         .map_err(|e| VerificationError::MalformedProof(format!("parse DataIntegrityProof: {e}")))
+}
+
+#[cfg(test)]
+mod expires_tests {
+    use super::*;
+    use serde_json::json;
+
+    fn at(s: &str) -> chrono::DateTime<chrono::Utc> {
+        s.parse().unwrap()
+    }
+
+    #[test]
+    fn absent_expires_is_accepted() {
+        assert!(check_expires(&json!({}), at("2026-06-01T12:00:00Z")).is_ok());
+    }
+
+    #[test]
+    fn unexpired_and_boundary_expires_are_accepted() {
+        let now = at("2026-06-01T12:00:00Z");
+        for expires in [
+            "2026-06-01T12:00:01Z",
+            "2026-06-01T12:00:00Z",
+            "2026-06-01T14:00:00.5+02:00",
+        ] {
+            assert!(
+                check_expires(&json!({ "expires": expires }), now).is_ok(),
+                "{expires}"
+            );
+        }
+    }
+
+    #[test]
+    fn passed_or_malformed_expires_is_refused() {
+        let now = at("2026-06-01T12:00:00Z");
+        for expires in [
+            json!("2026-06-01T11:59:59Z"),
+            json!("2026-06-01T13:59:59+02:00"),
+            json!("2027-01-01T00:00:00"),
+            json!("2027-01-01t00:00:00z"),
+            json!("2027-01-01 00:00:00Z"),
+            json!(1767225600),
+            json!("tomorrow"),
+            json!("2027-01-01"),
+            json!("2027-13-01T00:00:00Z"),
+            json!(""),
+        ] {
+            let err = check_expires(&json!({ "expires": expires }), now)
+                .expect_err(&format!("{expires} should be refused"));
+            assert!(
+                matches!(err, VerificationError::MalformedProof(_)),
+                "{expires}: {err:?}"
+            );
+        }
+    }
 }

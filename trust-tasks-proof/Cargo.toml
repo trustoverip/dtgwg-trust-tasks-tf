@@ -37,6 +37,9 @@ async-trait = "0.1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "2"
+# `proof.expires` is read here: the upstream proof type has no member for it.
+# Already in every graph through trust-tasks-rs.
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
 
 # `affinidi` backend deps — gated by the `affinidi` feature.
 affinidi-data-integrity = { version = "0.8", optional = true }

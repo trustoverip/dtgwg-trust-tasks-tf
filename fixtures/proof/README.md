@@ -7,4 +7,6 @@ One set of signed Trust Task documents that **every** library's proof verifier r
 
 The timestamp pair exists for [SPEC §4.7](../../SPEC.md#47-proof), "What a consumer verifies". `eddsa-jcs-2022-timestamp-spellings.json` is signed over `issuedAt: 2026-01-01T00:00:00.000Z` and `expiresAt: 2027-01-01T00:00:00+00:00`. A verifier that re-serializes a typed parse rewrites both to `…Z` and refuses a correctly signed document. Its `-normalized` twin is that rewrite with the original proof, and must fail.
 
+The `purpose-` and `expired` entries are correctly signed and must still fail: a `proofPurpose` that names no signing relationship (`keyAgreement`, or a value naming none) is refused before any key is used, and a proof past its `expires` is refused whatever its signature ([SPEC §4.7.3](../../SPEC.md#473-proof-purpose-and-verification-relationship)).
+
 All Ed25519 entries use the key of seed `[7; 32]` (`did:key:z6MkvDqGT54cXesYGvABpF1UapVNwjCqRcafi4Px6Thv5T3Z`). Ed25519 is deterministic, so the signers can reproduce each `proofValue`. To add an entry, sign it with any of the four signers, add it to `manifest.json`, and run every library's proof tests.

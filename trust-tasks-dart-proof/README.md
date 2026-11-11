@@ -44,19 +44,28 @@ library, verified and then tampered with.
 
 1. The proof is a `DataIntegrityProof` with a non-empty `cryptosuite`,
    `verificationMethod`, `proofPurpose` and `proofValue`.
-2. The cryptosuite is one this verifier accepts.
-3. `created`, when present, is a `dateTimeStamp` — ending in `Z` or an explicit
+2. `proofPurpose` names a signing relationship: `authentication`,
+   `assertionMethod`, `capabilityInvocation` or `capabilityDelegation`.
+   `keyAgreement` and any other value are refused (SPEC §4.7.3).
+3. The cryptosuite is one this verifier accepts.
+4. `created`, when present, is a `dateTimeStamp` — ending in `Z` or an explicit
    offset — and no more than `clockSkew` (60 seconds by default) in the future.
    An offset-less timestamp is refused rather than guessed at: VC Data
    Integrity §2.1 says to read it as UTC, and `DateTime.parse` would read it as
-   local time.
-4. **The proof is bound to the document's `issuer`.** A valid signature proves
+   local time. `expires`, when present, is a `dateTimeStamp` that has not
+   passed.
+5. **The proof is bound to the document's `issuer`.** A valid signature proves
    only that *some* key signed. The DID part of `verificationMethod` (before
    `#`) must equal `issuer` exactly, with no normalization (SPEC §4.8), or the
    document is refused as `issuerMismatch`. Without this, anyone could sign
    with their own key while claiming to be someone else.
-5. The signature verifies over the document minus its `proof`, using the key
-   the issuer's DID resolves to.
+6. The issuer's DID document lists the `verificationMethod` under the
+   relationship `proofPurpose` names — by absolute reference, by a fragment
+   relative to the DID, or embedded — defines it under `verificationMethod`,
+   and names the issuer as its controller. A `did:key` lists its key under all
+   four signing relationships. A key published only for `keyAgreement`, or for
+   another relationship, is refused as `signatureInvalid`.
+7. The signature verifies over the document minus its `proof`, using that key.
 
 The verifier never mutates the document it is given and never throws for a bad
 one.
@@ -103,6 +112,10 @@ else in it, replacing any proof already there. It refuses — with a
 
 The cryptosuite follows from the key: `eddsa-jcs-2022` for Ed25519,
 `ecdsa-jcs-2019` for P-256 and P-384. `created` is written in UTC with a `Z`.
+`proofPurpose` defaults to `authentication`, the purpose SPEC §4.7.3 recommends
+for a Trust Task document; pass `assertionMethod` only where a specification
+defines the proof as an attestation. A purpose outside `signingPurposes` is an
+`ArgumentError`.
 
 It builds the proof itself instead of calling `ssi`'s generators. Before ssi
 4.3.0 those wrote `created` with no zone designator, which this verifier and

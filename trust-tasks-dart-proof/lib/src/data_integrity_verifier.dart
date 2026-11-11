@@ -159,6 +159,10 @@ final class DataIntegrityProofVerifier implements ProofVerifier {
       }
     }
 
+    final purpose = proof['proofPurpose'] as String;
+    final purposeError = proofPurposeError(purpose);
+    if (purposeError != null) return _malformed(purposeError);
+
     final cryptosuite = proof['cryptosuite'] as String;
     if (!cryptosuites.contains(cryptosuite)) {
       return ProofVerification.failed(
@@ -185,6 +189,25 @@ final class DataIntegrityProofVerifier implements ProofVerifier {
           'proof.created is in the future beyond the '
           '${clockSkew.inSeconds}s clock-skew allowance',
         );
+      }
+    }
+
+    // `expires`, if present, is a dateTimeStamp that has not yet passed (VC
+    // Data Integrity §2.1). No allowance applies: the signer chose the instant.
+    // Checked here rather than left to ssi, which reads an offset-less value as
+    // local time.
+    final expires = proof['expires'];
+    if (expires != null) {
+      final at = expires is String && _dateTimeStamp.hasMatch(expires)
+          ? DateTime.tryParse(expires)
+          : null;
+      if (at == null || !_isRealInstant(expires as String, at)) {
+        return _malformed(
+          'proof.expires must be a dateTimeStamp with Z or an offset: $expires',
+        );
+      }
+      if (_clock().isAfter(at)) {
+        return _malformed('proof.expires $expires has passed');
       }
     }
 
@@ -229,21 +252,40 @@ final class DataIntegrityProofVerifier implements ProofVerifier {
       }
     }
 
+    // One resolution per verification: the relationship check below and ssi
+    // read the same document.
+    final resolver = _OnceResolver(_resolver);
     final suite = switch (cryptosuite) {
       'eddsa-jcs-2022' => ssi.DataIntegrityEddsaJcsVerifier(
           verifierDid: issuer,
-          didResolver: _resolver,
+          didResolver: resolver,
           getNow: _clock,
         ),
       'ecdsa-jcs-2019' => ssi.DataIntegrityEcdsaJcsVerifier(
           verifierDid: issuer,
-          didResolver: _resolver,
+          didResolver: resolver,
           getNow: _clock,
         ),
       _ => throw StateError('unreachable: $cryptosuite'),
     };
 
     try {
+      // The key must be one the issuer authorised for the purpose the proof
+      // declares (SPEC §4.7.3). ssi finds the key by id alone — or by fragment
+      // — whatever relationship lists it.
+      final notAuthorised = _notAuthorised(
+        await resolver.resolveDid(issuer),
+        issuer,
+        proof['verificationMethod'] as String,
+        purpose,
+      );
+      if (notAuthorised != null) {
+        return ProofVerification.failed(
+          ProofFailureKind.signatureInvalid,
+          notAuthorised,
+        );
+      }
+
       // A deep copy: ssi removes `proofValue` from the proof it is handed.
       final result = await suite.verify(_deepCopy(doc), getNow: _clock);
       if (result.isValid) return ProofVerification.ok;
@@ -294,6 +336,95 @@ final class DataIntegrityProofVerifier implements ProofVerifier {
     return null;
   }
 
+  /// Whether [text], which matched [_dateTimeStamp], names the instant
+  /// [parsed] — DateTime.tryParse rolls an out-of-range field such as month 13
+  /// over into the next year instead of refusing it.
+  static bool _isRealInstant(String text, DateTime parsed) {
+    final local = text.substring(0, 19);
+    final offset = RegExp(r'([+-])(\d{2}):(\d{2})$').firstMatch(text);
+    var check = parsed.toUtc();
+    if (offset != null) {
+      final minutes =
+          int.parse(offset.group(2)!) * 60 + int.parse(offset.group(3)!);
+      check = check
+          .add(Duration(minutes: offset.group(1) == '+' ? minutes : -minutes));
+    }
+    return check.toIso8601String().startsWith(local);
+  }
+
+  /// Why [vm] is not a key [did]'s document authorises for [purpose], or
+  /// `null` when it is. The rule `trust-tasks-proof`'s `CachedDidResolver`
+  /// applies: the document is [did]'s; the relationship lists [vm] by absolute
+  /// reference, by a fragment relative to [did], or embedded; a reference
+  /// names a method in `verificationMethod`; and that method's controller is
+  /// [did]. The method ssi will then select must be the one checked.
+  static String? _notAuthorised(
+    ssi.DidDocument doc,
+    String did,
+    String vm,
+    String purpose,
+  ) {
+    if (doc.id != did) {
+      return "the resolved DID document's id is not the verificationMethod's DID";
+    }
+    bool namesVm(String id) => id.startsWith('#') ? vm == '$did$id' : id == vm;
+
+    final relationship = switch (purpose) {
+      'authentication' => doc.authentication,
+      'assertionMethod' => doc.assertionMethod,
+      'capabilityInvocation' => doc.capabilityInvocation,
+      'capabilityDelegation' => doc.capabilityDelegation,
+      _ => const <ssi.VerificationMethod>[],
+    };
+    ssi.VerificationMethod? listed;
+    for (final entry in relationship) {
+      final names = switch (entry) {
+        ssi.VerificationMethodRef(:final reference) => namesVm(reference),
+        _ => namesVm(entry.id),
+      };
+      if (names) {
+        listed = entry;
+        break;
+      }
+    }
+    if (listed == null) {
+      return 'verificationMethod is not listed under $purpose '
+          'in its DID document';
+    }
+
+    // ssi takes the first `verificationMethod` entry whose id is [vm] or ends
+    // with its fragment.
+    final fragment = vm.substring(vm.indexOf('#') + 1);
+    ssi.EmbeddedVerificationMethod? selected;
+    for (final method in doc.verificationMethod) {
+      if (method.id == vm || method.id.endsWith('#$fragment')) {
+        selected = method;
+        break;
+      }
+    }
+    if (selected == null || !namesVm(selected.id)) {
+      return 'verificationMethod is not defined under verificationMethod '
+          'in its DID document';
+    }
+    if (listed is! ssi.VerificationMethodRef &&
+        !_sameKey(listed.asMultiKey(), selected.asMultiKey())) {
+      return 'verificationMethod is embedded under $purpose with a key other '
+          'than the one its DID document defines';
+    }
+    if (selected.controller != did) {
+      return "verificationMethod's controller is not the DID that names it";
+    }
+    return null;
+  }
+
+  static bool _sameKey(List<int> a, List<int> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
+
   static ProofVerification _malformed(String detail) =>
       ProofVerification.failed(ProofFailureKind.malformedProof, detail);
 
@@ -308,6 +439,38 @@ final class DataIntegrityProofVerifier implements ProofVerifier {
         List() => [for (final v in value) _copyValue(v)],
         _ => value,
       };
+}
+
+/// The `proofPurpose` values a proof may carry: the verification relationships
+/// a signature can be made under. `keyAgreement` is deliberately absent — a
+/// key-agreement key never authorises a signature (SPEC §4.7.3) — as it is
+/// from the Rust, Go and TypeScript verifiers.
+const signingPurposes = {
+  'authentication',
+  'assertionMethod',
+  'capabilityInvocation',
+  'capabilityDelegation',
+};
+
+/// Why [purpose] cannot be a proof's `proofPurpose`, or `null` when it can.
+String? proofPurposeError(String purpose) {
+  if (signingPurposes.contains(purpose)) return null;
+  return purpose == 'keyAgreement'
+      ? 'proofPurpose keyAgreement never authorises a signature'
+      : 'proofPurpose names no signing verification relationship';
+}
+
+/// Resolves each DID once through [_inner] and answers again from memory, so
+/// one verification's checks all read the same document.
+final class _OnceResolver implements ssi.DidResolver {
+  _OnceResolver(this._inner);
+
+  final ssi.DidResolver _inner;
+  final _resolved = <String, Future<ssi.DidDocument>>{};
+
+  @override
+  Future<ssi.DidDocument> resolveDid(String did) =>
+      _resolved.putIfAbsent(did, () => _inner.resolveDid(did));
 }
 
 /// Resolves `did:key` only, locally. Anything else is refused before any I/O.

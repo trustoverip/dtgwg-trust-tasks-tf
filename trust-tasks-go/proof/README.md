@@ -50,6 +50,12 @@ whose `Kind` (`malformedProof`, `issuerMismatch`, `unsupportedCryptosuite`,
 `signatureInvalid`) is for **your logs only** — every failure reaches the wire as
 the single `proofInvalid` code (SPEC §12.4).
 
+The proof's `proofPurpose` must name a signing relationship — `authentication`,
+`assertionMethod`, `capabilityInvocation` or `capabilityDelegation`, all of which
+a `did:key` authorises; `keyAgreement` and any other value are refused
+(SPEC §4.7.3). A proof carrying `expires` is refused once that instant has
+passed.
+
 ## Sign
 
 ```go
@@ -58,6 +64,8 @@ signed, err := signer.Sign(docJSON, proof.SignOptions{})     // issuer must be s
 ```
 
 `Sign` refuses a document whose `issuer` is absent or is not the signer's
-`did:key` — such a document could never verify. `created` is written UTC,
+`did:key` — such a document could never verify — and a `ProofPurpose` naming no
+signing relationship. `ProofPurpose` defaults to `authentication`, the purpose
+SPEC §4.7.3 recommends for a Trust Task document. `created` is written UTC,
 `Z`-terminated, with no sub-second field (chrono's form), so the same key over
 the same document and `created` reproduces the Rust crate's `proofValue`.

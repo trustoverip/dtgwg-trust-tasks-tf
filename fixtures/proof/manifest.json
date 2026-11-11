@@ -58,6 +58,24 @@
       "cryptosuite": "eddsa-jcs-2022",
       "expect": "invalid",
       "why": "The same response with `disclosed.timeline.checkpointCount` altered after signing. The proof covers the disclosed aggregates, not only the envelope: a Holder cannot adjust what it disclosed without re-signing."
+    },
+    {
+      "file": "eddsa-jcs-2022-purpose-key-agreement.json",
+      "cryptosuite": "eddsa-jcs-2022",
+      "expect": "invalid",
+      "why": "The baseline document correctly signed with proofPurpose keyAgreement. It must fail: a key-agreement key never authorises a signature (SPEC §4.7.3)."
+    },
+    {
+      "file": "eddsa-jcs-2022-purpose-unrecognised.json",
+      "cryptosuite": "eddsa-jcs-2022",
+      "expect": "invalid",
+      "why": "The baseline document correctly signed with proofPurpose `assertion`, which names no verification relationship. It must fail (SPEC §4.7.3): the purpose is the relationship the verifier checks, so one it does not recognise cannot be checked."
+    },
+    {
+      "file": "eddsa-jcs-2022-expired.json",
+      "cryptosuite": "eddsa-jcs-2022",
+      "expect": "invalid",
+      "why": "A correctly signed proof whose `expires` (2026-01-02T00:00:00Z) has passed. It must fail: VC Data Integrity §2.1 makes a proof unusable after its `expires`."
     }
   ]
 }

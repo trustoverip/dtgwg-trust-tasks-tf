@@ -5,5 +5,5 @@
 /// cryptosuite behind it; [signTrustTask] produces what it verifies.
 library;
 
-export 'src/data_integrity_verifier.dart';
+export 'src/data_integrity_verifier.dart' hide proofPurposeError;
 export 'src/sign.dart';

@@ -40,6 +40,25 @@ export interface VerifierOptions {
   now?: () => number;
 }
 
+/** The `proofPurpose` values a proof may carry: the verification relationships
+ * a signature can be made under, all of which a `did:key` authorises.
+ * `keyAgreement` is deliberately absent — a key-agreement key never authorises a
+ * signature (SPEC §4.7.3) — as it is from the Rust, Go and Dart verifiers. */
+export const SIGNING_PURPOSES: readonly string[] = [
+  "authentication",
+  "assertionMethod",
+  "capabilityInvocation",
+  "capabilityDelegation",
+];
+
+/** Why `purpose` cannot be a proof's `proofPurpose`, or `undefined` when it can. */
+export function proofPurposeError(purpose: string): string | undefined {
+  if (SIGNING_PURPOSES.includes(purpose)) return undefined;
+  return purpose === "keyAgreement"
+    ? "proofPurpose keyAgreement never authorises a signature"
+    : "proofPurpose names no signing verification relationship";
+}
+
 const DATE_TIME_STAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$/;
 
 /**
@@ -88,6 +107,10 @@ export class DataIntegrityProofVerifier implements ProofVerifier {
         return fail("malformedProof", `proof.${member} must be a non-empty string`);
       }
     }
+    const purposeError = proofPurposeError(p.proofPurpose as string);
+    if (purposeError !== undefined) {
+      return fail("malformedProof", purposeError);
+    }
     const cryptosuite = p.cryptosuite as string;
     if (!this.cryptosuites.has(cryptosuite as Cryptosuite)) {
       return fail("unsupportedCryptosuite", cryptosuite);
@@ -105,6 +128,19 @@ export class DataIntegrityProofVerifier implements ProofVerifier {
       const horizon = this.now() + Math.max(0, this.clockSkewMs);
       if (Date.parse(created) > horizon) {
         return fail("malformedProof", `proof.created is more than ${this.clockSkewMs}ms in the future`);
+      }
+    }
+
+    // `expires`, if present, is a dateTimeStamp that has not yet passed (VC Data
+    // Integrity §2.1). No allowance applies: the signer chose the instant.
+    const expires = p.expires;
+    if (expires !== undefined) {
+      const at = typeof expires === "string" && DATE_TIME_STAMP.test(expires) ? Date.parse(expires) : NaN;
+      if (Number.isNaN(at)) {
+        return fail("malformedProof", `proof.expires must be a dateTimeStamp with Z or an offset: ${String(expires)}`);
+      }
+      if (this.now() > at) {
+        return fail("malformedProof", `proof.expires ${expires} has passed`);
       }
     }
 
@@ -149,7 +185,10 @@ export class DataIntegrityProofVerifier implements ProofVerifier {
     try {
       const ok =
         key.curve === "ed25519"
-          ? ed25519.verify(signature, hashData, key.bytes)
+          ? // RFC 8032 decoding, as Go's crypto/ed25519 and the Rust and Dart
+            // backends do: @noble's ed25519 defaults to ZIP-215, which also
+            // accepts non-canonical point encodings the others refuse.
+            ed25519.verify(signature, hashData, key.bytes, { zip215: false })
           : // The digest is the ECDSA message hash, so no second hash
             // (`prehash`). High-S is valid ECDSA and what Go's ecdsa.Sign
             // emits half the time, so it is accepted (`lowS`).
