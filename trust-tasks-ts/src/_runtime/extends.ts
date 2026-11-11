@@ -248,6 +248,50 @@ export function readForSpec<P>(
   return { kind: "accepted", doc: pruned, received: doc, extended: true };
 }
 
+/**
+ * Whether a document whose `type` is `typeUri` may be consumed under `spec`
+ * (SPEC §7.2 item 3): `null` when it may, otherwise the reason to refuse it.
+ *
+ * It may when `typeUri` is `spec.typeUri` — `#request` and no fragment are one
+ * variant (§4.4.1) — or a later version of the same specification and variant
+ * whose `extends` chain reaches `spec`'s version (§5.2). Otherwise
+ * `unsupportedVersion` for the same specification and variant, and
+ * `unsupportedType` for anything else: another slug, the same slug under
+ * another authority or form (§6.1), another variant, or a `type` that is not a
+ * Type URI. `consumeInbound` runs this before any other check.
+ */
+export function typeRefusalFor(
+  typeUri: unknown,
+  spec: SpecPolicy,
+  options: { index?: ExtendsLookup } = {},
+): RejectReason | null {
+  if (typeof typeUri === "string" && typeUri === spec.typeUri) return null;
+  const shown = JSON.stringify(typeof typeUri === "string" ? typeUri : String(typeUri));
+  const got = typeof typeUri === "string" ? tryParseTypeUri(typeUri) : null;
+  const want = tryParseTypeUri(spec.typeUri);
+  if (
+    got === null ||
+    want === null ||
+    !sameSpecification(got, want) ||
+    (got.variant ?? "request") !== (want.variant ?? "request")
+  ) {
+    return {
+      code: "unsupportedType",
+      message: `unsupported Trust Task type ${shown}; this consumer implements ${spec.typeUri}`,
+      retryable: false,
+    };
+  }
+  const gotVersion = versionOf(got);
+  const wantVersion = versionOf(want);
+  if (gotVersion === wantVersion) return null;
+  if (extendsChain(typeUri as string, options.index ?? defaultLookup).includes(wantVersion)) return null;
+  return {
+    code: "unsupportedVersion",
+    message: `version ${gotVersion} of ${got.slug} is not supported; this consumer implements ${wantVersion}`,
+    retryable: false,
+  };
+}
+
 function refused(code: RejectReason["code"], message: string): ReadForSpecResult<never> {
   return { kind: "refused", reason: { code, message, retryable: false } };
 }

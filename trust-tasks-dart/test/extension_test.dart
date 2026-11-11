@@ -120,6 +120,7 @@ Future<ConsumeOutcome<auth03.Response>> consume(
       checks: checks ?? notConsequentialChecks(),
       doc: read.doc,
       received: passReceived ? (received ?? read.received) : null,
+      extendsIndex: chained,
       myVid: me,
       now: testNow,
       newErrorId: () => 'err-1',

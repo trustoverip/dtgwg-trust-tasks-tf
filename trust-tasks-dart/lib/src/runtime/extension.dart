@@ -233,6 +233,42 @@ VersionRead<P> readForVersion<P>(
   );
 }
 
+/// The SPEC §7.2 item 3 check `consumeInbound` runs: null when a document typed
+/// [type] may be consumed under [spec], otherwise the reason to refuse it.
+///
+/// It may when [type] is [spec]'s Type URI (`#request` and no fragment are one
+/// variant), or a later version of the same specification and variant whose
+/// `extends` chain, per [index], reaches [spec]'s (SPEC §5.2). Otherwise
+/// `unsupportedVersion` for the same specification and variant, and
+/// `unsupportedType` for anything else — the refusals [readForVersion] gives.
+RejectReason? typeRefusalFor(
+  String type,
+  SpecPolicy spec, {
+  Map<String, String> index = generated.extendsIndex,
+}) {
+  if (type == spec.typeUri) return null;
+  final receivedBare = bareTypeUri(type);
+  final implementedBare = bareTypeUri(spec.typeUri);
+  final sameVariant = _variantOf(type) == _variantOf(spec.typeUri);
+  if (sameVariant && receivedBare == implementedBare) return null;
+  final r = TypeUri.tryParse(receivedBare);
+  final i = TypeUri.tryParse(implementedBare);
+  if (!sameVariant || r == null || i == null || !r.isSameSpecification(i)) {
+    return RejectReason(
+      code: StandardCode.unsupportedType,
+      message: 'this consumer does not implement $type',
+    );
+  }
+  if (!extendsTo(receivedBare, implementedBare, index: index)) {
+    return RejectReason(
+      code: StandardCode.unsupportedVersion,
+      message: 'version ${r.version} is not supported, and does not declare '
+          'that it extends ${i.version} (SPEC §5.2)',
+    );
+  }
+  return null;
+}
+
 /// [payload] with every object member [schemaJson] does not know removed, where
 /// the schema closes the object with `additionalProperties: false`.
 ///

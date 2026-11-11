@@ -132,10 +132,14 @@ and audience binding — are declared *per specification* and cannot be derived
 from the document itself, so every generated module exports the declarations as
 `SPEC` (and `RESPONSE_SPEC`, where the spec defines a response).
 
-`consumeInbound` runs item 2 and items 4–8, the freshness bound, and item 11's
-duplicate-execution record, then calls your handler. Items 1 and 3 (framework
-schema, unknown `type`) belong to your parse and dispatch, and have already
-succeeded by the time you hold a typed document.
+`consumeInbound` runs items 2–8, the freshness bound, and item 11's
+duplicate-execution record, then calls your handler. Item 3 is a check that the
+document's `type` is `spec.typeUri` (`#request` and no fragment alike), or a
+later version whose `extends` chain reaches it: anything else is refused
+`unsupportedVersion` (the same specification) or `unsupportedType` (another
+one), before the item-11 record. A document re-read with `readForSpec` has been
+routed already and is not checked again. Item 1 (framework schema) belongs to
+your parse.
 
 ```ts
 import {

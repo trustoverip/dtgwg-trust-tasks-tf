@@ -11,7 +11,9 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import {
+  consequentialChecks,
   consumeInbound,
+  InMemoryReplayGuard,
   notConsequentialChecks,
   refuse,
   rejectWithRecipient,
@@ -144,7 +146,8 @@ function run(
     proofPolicy: opts.proofPolicy ?? { kind: "verify", verify: alwaysValid },
     payloadPolicy: opts.payloadPolicy ?? { kind: "acceptUnvalidated" },
     checks: opts.checks ?? notConsequentialChecks(),
-    doc: doc(over),
+    // A document of the spec it is consumed under, unless a test says otherwise.
+    doc: doc({ type: (opts.spec ?? REQUIRED_SPEC).typeUri, ...over }),
     myVid: ME,
     now: Date.parse("2026-01-01T00:00:00Z"),
     newErrorId: () => "err-1",
@@ -314,6 +317,45 @@ describe("§7.2 pipeline", () => {
   });
 });
 
+describe("§7.2 item 3 — the document's type is the spec's", () => {
+  // A payload that satisfies the spec does not make a document of another
+  // specification a document of this one.
+  const cases: [string, string][] = [
+    ["https://trusttasks.org/spec/chat/message/1.0", "unsupportedType"],
+    // The same slug under another authority is another specification.
+    ["https://other.example/spec/acl/grant/0.1", "unsupportedType"],
+    // The response variant is not the request.
+    ["https://trusttasks.org/spec/acl/grant/0.1#response", "unsupportedType"],
+    ["trust-task-error", "unsupportedType"],
+    // The same specification at a version that does not reach 0.1.
+    ["https://trusttasks.org/spec/acl/grant/9.9", "unsupportedVersion"],
+    ["https://trusttasks.org/spec/acl/grant/0.0", "unsupportedVersion"],
+  ];
+  for (const [type, code] of cases) {
+    it(`refuses ${type} with ${code}`, async () => {
+      const outcome = await run({ type, proof: PROOF }, { handlerShouldNotRun: true });
+      assert.equal(rejectedCode(outcome), code);
+    });
+  }
+
+  it("treats #request and no fragment as one type", async () => {
+    const outcome = await run({ type: `${REQUIRED_SPEC.typeUri}#request`, proof: PROOF });
+    assert.equal(outcome.kind, "handled");
+  });
+
+  it("refuses before the item-11 claim, so the id is still served afterwards", async () => {
+    const checks = consequentialChecks(new InMemoryReplayGuard());
+    const now = "2026-01-01T00:00:00Z";
+    const wrong = await run(
+      { type: "https://trusttasks.org/spec/chat/message/1.0", proof: PROOF, issuedAt: now },
+      { checks, handlerShouldNotRun: true },
+    );
+    assert.equal(rejectedCode(wrong), "unsupportedType");
+    const right = await run({ proof: PROOF, issuedAt: now }, { checks });
+    assert.equal(right.kind, "handled");
+  });
+});
+
 describe("§4.8.1 party resolution", () => {
   it("fills absent in-band members from the transport", async () => {
     const transport = new StaticTransport({ issuer: PEER, recipient: ME });
@@ -324,7 +366,7 @@ describe("§4.8.1 party resolution", () => {
       proofPolicy: { kind: "rejectIfPresent" },
       payloadPolicy: { kind: "acceptUnvalidated" },
       checks: notConsequentialChecks(),
-      doc: doc({ issuer: undefined, recipient: ME }),
+      doc: doc({ type: RELAXED_SPEC.typeUri, issuer: undefined, recipient: ME }),
       myVid: ME,
       now: Date.now(),
       newErrorId: () => "err-1",
@@ -384,7 +426,7 @@ describe("handler refusals", () => {
       proofPolicy: { kind: "rejectIfPresent" },
       payloadPolicy: { kind: "acceptUnvalidated" },
       checks: notConsequentialChecks(),
-      doc: doc({ proof: undefined }),
+      doc: doc({ type: RELAXED_SPEC.typeUri, proof: undefined }),
       myVid: ME,
       now: Date.now(),
       newErrorId: () => "err-unused",

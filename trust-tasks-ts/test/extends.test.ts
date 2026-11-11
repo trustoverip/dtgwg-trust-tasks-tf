@@ -364,9 +364,12 @@ describe("consumeInbound on a re-read document", () => {
     assert.equal(outcome.kind === "rejected" && outcome.error.payload.code, "proofInvalid");
   });
 
-  it("without pruning, the 0.1 schema refuses the 0.3 payload", async () => {
+  it("without readForSpec, a 0.3 document is not consumed as 0.1", async () => {
+    // This test's chain is declared only in INDEX, which consumeInbound does
+    // not see: handed the 0.3 document directly, item 3 refuses it before the
+    // 0.1 schema is consulted.
     const { outcome } = await consume01(sign(doc03()) as unknown as TrustTaskDocument<V01.Payload>);
-    assert.equal(outcome.kind === "rejected" && outcome.error.payload.code, "malformedRequest");
+    assert.equal(outcome.kind === "rejected" && outcome.error.payload.code, "unsupportedVersion");
   });
 
   it("records the received document for item 11, so an extension-only difference is an idConflict", async () => {

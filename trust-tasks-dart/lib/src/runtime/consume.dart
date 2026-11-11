@@ -38,8 +38,12 @@
 /// }
 /// ```
 ///
-/// Items 1 (framework schema) and 3 (unknown `type`) are *not* attempted here —
-/// they belong to the caller's parse and dispatch.
+/// Item 1 (framework schema) is *not* attempted here — it belongs to the
+/// caller's parse. Item 3 is: a document whose `type` is neither `spec.typeUri`
+/// (`#request` and no fragment alike) nor a later version whose declared
+/// `extends` chain reaches it (SPEC §5.2) is refused `unsupportedVersion` for
+/// the same specification and `unsupportedType` for another, as
+/// `readForVersion` refuses it.
 ///
 /// Item 2 (payload schema) is. A Dart class enforces member *types* on decode
 /// but nothing else — not `minLength`, not `pattern`, not the `oneOf` mutual
@@ -51,6 +55,7 @@ library;
 import 'canonical.dart';
 import 'codes.dart';
 import 'document.dart';
+import 'extension.dart' show typeRefusalFor;
 import 'freshness.dart';
 import 'replay.dart';
 import 'transport.dart';
@@ -342,6 +347,11 @@ Refusal refuse<P>(
 /// payload has been pruned. A [received] whose `id` or `type` is not [doc]'s is
 /// refused `proofInvalid`: a proof over one document vouches for nothing about
 /// another.
+///
+/// [extendsIndex] is the `extends` index the §7.2 item 3 type check follows
+/// when [doc]'s `type` is a later version than [spec]'s; it defaults to the
+/// generated one. Pass the index [readForVersion] was given, when it was given
+/// one.
 Future<ConsumeOutcome<R>> consumeInbound<P, R>({
   required TransportHandler transport,
   required SpecPolicy spec,
@@ -357,6 +367,7 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
   Clock? clock,
   Object? Function(R response)? responseToJson,
   Map<String, dynamic>? received,
+  Map<String, String>? extendsIndex,
 }) async {
   // §7.2 item 1, as far as every step below relies on it: the document is
   // shallow enough for them to walk. The payload validator, the proof's
@@ -378,6 +389,16 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
     final error = reject(transport, doc, newErrorId(), reason, clock: clock);
     return error == null ? Suppressed<R>(reason) : Rejected<R>(error);
   }
+
+  // §7.2 item 3 — the document's `type` is the specification [spec] describes.
+  // Decoding into `TrustTaskDocument<P>` does not look at it, so a document of
+  // another specification whose payload happens to decode as `P` would
+  // otherwise run under [spec]'s policy and [handler]. Refused before the
+  // item-11 claim, so a refused document never burns its `id`.
+  final typeRefusal = extendsIndex == null
+      ? typeRefusalFor(doc.type, spec)
+      : typeRefusalFor(doc.type, spec, index: extendsIndex);
+  if (typeRefusal != null) return route(typeRefusal);
 
   // §7.2 item 2 — payload schema. Runs first, in the spec's own order, and
   // before anything that reasons about what the payload means: a payload that is

@@ -131,6 +131,29 @@ func chainReaches(from, to TypeURI, lookup ExtendsLookup) bool {
 	return false
 }
 
+// typeRefusalFor is the §7.2 item 3 check [ConsumeInbound] runs: nil when a
+// document typed typeURI may be consumed under spec — spec's own Type URI, or a
+// later version of the same specification and variant whose extension chain
+// (per lookup; nil means [RegistryExtends]) reaches it — and otherwise the
+// refusal [ReadForSpecWith] would give it.
+func typeRefusalFor(typeURI string, spec SpecPolicy, lookup ExtendsLookup) *RejectReason {
+	if typeURI != "" && typeURI == spec.TypeURI {
+		return nil
+	}
+	implemented, err := routingKey(spec.TypeURI)
+	if err != nil {
+		return &RejectReason{Code: CodeUnsupportedType, Message: UnsupportedTypeWireMessage}
+	}
+	received, err := routingKey(typeURI)
+	if err != nil || !sameRoute(received, implemented) {
+		return &RejectReason{Code: CodeUnsupportedType, Message: UnsupportedTypeWireMessage}
+	}
+	if !chainReaches(received, implemented, lookup) {
+		return &RejectReason{Code: CodeUnsupportedVersion, Message: UnsupportedVersionWireMessage}
+	}
+	return nil
+}
+
 // ReadForSpec re-reads a received document for the specification version the
 // application implements — spec, a generated package's Spec (or ResponseSpec) —
 // along the registry's declared extensions. See [ReadForSpecWith].

@@ -260,6 +260,7 @@ func consumeWidget(t *testing.T, doc *tt.Document[widgetPayload], received json.
 		Checks:        tt.NotConsequentialChecks(),
 		Doc:           doc,
 		Received:      received,
+		Extends:       widgetChain,
 		MyVID:         me,
 		Now:           testNow,
 		NewErrorID:    func() string { return "err-1" },
