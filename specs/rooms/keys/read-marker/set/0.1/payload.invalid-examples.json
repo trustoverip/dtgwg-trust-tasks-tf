@@ -1,0 +1,65 @@
+[
+  {
+    "note": "No member. A marker is kept by room AND member — a person holding one room as two personas keeps one for each — so the key holder never infers whose marker is meant.",
+    "payload": { "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal", "readMarker": { "version": 415 } }
+  },
+  {
+    "note": "A member that is not a DID.",
+    "payload": { "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal", "member": "alice", "readMarker": { "version": 415 } }
+  },
+  {
+    "note": "No marker. A set says where the member has read to; there is nothing else for it to say.",
+    "payload": { "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal", "member": "did:webvh:QmAlice:personas.example:northwind" }
+  },
+  {
+    "note": "A marker with no version. The version is what a reader that keeps a copy of the room counts against, and what orders two markers.",
+    "payload": { "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal", "member": "did:webvh:QmAlice:personas.example:northwind", "readMarker": { "createdAt": "2027-02-01T10:14:02Z" } }
+  },
+  {
+    "note": "A negative version. `0` is the lowest: nothing in the room seen.",
+    "payload": { "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal", "member": "did:webvh:QmAlice:personas.example:northwind", "readMarker": { "version": -1 } }
+  },
+  {
+    "note": "A version as a string. Markers are ordered by comparing versions as numbers; \"9\" would sort after \"415\".",
+    "payload": { "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal", "member": "did:webvh:QmAlice:personas.example:northwind", "readMarker": { "version": "415" } }
+  },
+  {
+    "note": "A createdAt that is not an RFC 3339 date-time. It is the host's timestamp, carried exactly as the host returned it.",
+    "payload": { "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal", "member": "did:webvh:QmAlice:personas.example:northwind", "readMarker": { "version": 415, "createdAt": "yesterday" } }
+  },
+  {
+    "note": "The message keys the member has read. A marker is a position, not a list of what was read: a list would grow with the room and would be a record of exactly which messages the member has seen.",
+    "payload": { "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal", "member": "did:webvh:QmAlice:personas.example:northwind", "readMarker": { "version": 415, "readKeys": ["msg-0412", "msg-0415"] } }
+  },
+  {
+    "note": "When the member read. A marker carries where they read to, never when; a reading time kept beside it would be the reading pattern the key holder is forbidden to keep.",
+    "payload": { "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal", "member": "did:webvh:QmAlice:personas.example:northwind", "readMarker": { "version": 415, "readAt": "2027-02-01T10:19:58Z" } }
+  },
+  {
+    "note": "rewind: false. Only `true` is meaningful; `false` would be a second spelling of the default.",
+    "payload": { "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal", "member": "did:webvh:QmAlice:personas.example:northwind", "readMarker": { "version": 415 }, "rewind": false }
+  },
+  {
+    "note": "A request to share the marker — a read receipt. There is no such member: a marker is never sent to the room, its host or another member, so no request carries a destination for it.",
+    "payload": { "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal", "member": "did:webvh:QmAlice:personas.example:northwind", "readMarker": { "version": 415 }, "shareWith": "did:webvh:QmBob:personas.example:northwind" }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": { "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal", "member": "did:webvh:QmAlice:personas.example:northwind", "readMarker": { "version": 415 }, "ext": { "bare-key": { "anything": "here" } } }
+  },
+  {
+    "variant": "response",
+    "note": "No marker. A set always leaves one in force, and the caller adopts it.",
+    "payload": { "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal", "member": "did:webvh:QmAlice:personas.example:northwind", "moved": true }
+  },
+  {
+    "variant": "response",
+    "note": "No `moved`. A caller retrying a request, or racing another device, needs to know whether this one moved the marker.",
+    "payload": { "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal", "member": "did:webvh:QmAlice:personas.example:northwind", "readMarker": { "version": 415 } }
+  },
+  {
+    "variant": "response",
+    "note": "Which device set the marker. The key holder keeps no record of it, so a response has none to give.",
+    "payload": { "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal", "member": "did:webvh:QmAlice:personas.example:northwind", "readMarker": { "version": 415 }, "moved": false, "setBy": "did:key:z6MkPhoneHolderExample" }
+  }
+]

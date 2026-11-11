@@ -6,7 +6,7 @@
 import type { Ext } from "../../../../_shared/components.js";
 
 
-/** @deprecated superseded by rooms/keys/list/0.2 */
+/** @deprecated superseded by rooms/keys/list/0.3 */
 export interface RoomsKeysListPayload {
   /**
    * Ecosystem-defined extension members per SPEC.md §4.5.1.
@@ -16,7 +16,7 @@ export interface RoomsKeysListPayload {
 /**
  * Success response to rooms/keys/list. Type https://trusttasks.org/spec/rooms/keys/list/0.1#response. The rooms this key holder can open, which is a different set from the rooms its principal is a member of: membership is a credential the room issued, and this is key custody. A room whose group state was never delivered is absent here and the principal may still hold a perfectly good VMC for it.
  *
- * @deprecated superseded by rooms/keys/list/0.2
+ * @deprecated superseded by rooms/keys/list/0.3
  */
 export interface RoomsKeysListResponsePayload {
   /**
@@ -59,12 +59,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by rooms/keys/list/0.2";
+export const DEPRECATION: string | null = "superseded by rooms/keys/list/0.3";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by rooms/keys/list/0.2
+ * @deprecated superseded by rooms/keys/list/0.3
  */
 export type Payload = RoomsKeysListPayload;
 
@@ -74,7 +74,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/rooms/keys/list/0.
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by rooms/keys/list/0.2
+ * @deprecated superseded by rooms/keys/list/0.3
  */
 export type Response = RoomsKeysListResponsePayload;
 
