@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:ssi/ssi.dart' as ssi;
 import 'package:test/test.dart';
 import 'package:trust_tasks_proof/trust_tasks_proof.dart';
@@ -213,6 +216,75 @@ void main() {
         'authentication': [method('$did#key-1')],
       });
       expect(result.isValid, isTrue, reason: '$result');
+    });
+
+    // Every way a document can carry an Ed25519 key reaches the key check:
+    // the identity point (small order), with R = identity and S = 0, is
+    // refused before ssi sees it. The same formats with the real key verify.
+    group('Ed25519 key formats', () {
+      final identity = [1, ...List.filled(31, 0)];
+      final realKey = ssi.Ed25519KeyPair.fromSeed(
+        Uint8List.fromList(List.filled(32, 1)),
+      ).publicKey.bytes;
+      String b64u(List<int> b) => base64Url.encode(b).replaceAll('=', '');
+      final formats = <String, Map<String, dynamic> Function(List<int>)>{
+        'Multikey publicKeyMultibase': (k) => {
+              'type': 'Multikey',
+              'publicKeyMultibase': ssi.toMultiBase(
+                Uint8List.fromList([0xed, 0x01, ...k]),
+              ),
+            },
+        'Ed25519VerificationKey2020 publicKeyMultibase': (k) => {
+              'type': 'Ed25519VerificationKey2020',
+              'publicKeyMultibase': ssi.toMultiBase(
+                Uint8List.fromList([0xed, 0x01, ...k]),
+              ),
+            },
+        'Ed25519VerificationKey2018 publicKeyBase58': (k) => {
+              'type': 'Ed25519VerificationKey2018',
+              'publicKeyBase58':
+                  ssi.toMultiBase(Uint8List.fromList(k)).substring(1),
+            },
+        'JsonWebKey2020 publicKeyJwk': (k) => {
+              'type': 'JsonWebKey2020',
+              'publicKeyJwk': {'kty': 'OKP', 'crv': 'Ed25519', 'x': b64u(k)},
+            },
+      };
+      formats.forEach((name, keyMembers) {
+        Map<String, dynamic> document(List<int> key) => {
+              'id': did,
+              'verificationMethod': [
+                {'id': '$did#key-1', 'controller': did, ...keyMembers(key)},
+              ],
+              'authentication': ['$did#key-1'],
+            };
+
+        test('$name: a small-order key is refused', () async {
+          final signed = await id.sign(
+            grant(did),
+            proofPurpose: 'authentication',
+            verificationMethod: '$did#key-1',
+          );
+          (signed['proof'] as Map<String, dynamic>)['proofValue'] =
+              ssi.toMultiBase(
+                  Uint8List.fromList([...identity, ...List.filled(32, 0)]));
+          final v = DataIntegrityProofVerifier.withResolver(_Fixed({
+            '@context': [
+              'https://www.w3.org/ns/did/v1',
+              'https://w3id.org/security/multikey/v1',
+            ],
+            ...document(identity),
+          }));
+          final result = await v.verifyDetailed(signed);
+          expect(result.failure, ProofFailureKind.signatureInvalid);
+          expect(result.detail, contains('small order'));
+        });
+
+        test('$name: the real key verifies', () async {
+          final result = await verifyAgainst(document(realKey));
+          expect(result.isValid, isTrue, reason: '$result');
+        });
+      });
     });
 
     test('a document for another DID is refused', () async {

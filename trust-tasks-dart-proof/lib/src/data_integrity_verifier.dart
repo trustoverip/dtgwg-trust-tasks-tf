@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:ssi/ssi.dart' as ssi;
@@ -403,11 +404,26 @@ final class DataIntegrityProofVerifier implements ProofVerifier {
     if (selected.controller != did) {
       return "verificationMethod's controller is not the DID that names it";
     }
-    // An Ed25519 multikey (0xed 0x01 header) must be a canonical point of
-    // large order; see ed25519PublicKeyError.
+    // An Ed25519 key must be a canonical point of large order; see
+    // ed25519PublicKeyError. ssi verifies with selected.asJwk(), which every
+    // format (publicKeyMultibase, publicKeyBase58, publicKeyJwk) reaches
+    // through the 0xed 0x01 multikey, with no length check. So the key is read
+    // from that JWK — the bytes ssi will use — and an Ed25519 multikey of any
+    // length is checked, not only a 34-byte one.
     final multikey = selected.asMultiKey();
-    if (multikey.length == 34 && multikey[0] == 0xed && multikey[1] == 0x01) {
-      final keyError = ed25519PublicKeyError(multikey.sublist(2));
+    final ed25519Multikey =
+        multikey.length >= 2 && multikey[0] == 0xed && multikey[1] == 0x01;
+    final jwk = selected.asJwk().toJson();
+    if (ed25519Multikey || jwk['crv'] == 'Ed25519') {
+      final x = jwk['x'];
+      if (x is! String) return 'Ed25519 verificationMethod carries no key';
+      final List<int> raw;
+      try {
+        raw = base64Url.decode(base64Url.normalize(x));
+      } on FormatException {
+        return 'Ed25519 verificationMethod key is not base64url';
+      }
+      final keyError = ed25519PublicKeyError(raw);
       if (keyError != null) return keyError;
     }
     return null;

@@ -7,12 +7,12 @@ import (
 	"testing"
 )
 
-// The eight points of small order, canonically encoded, with the sign-bit
-// variants libsodium also refuses.
+// The eight points of small order, canonically encoded.
 var smallOrderEncodings = []string{
 	"0100000000000000000000000000000000000000000000000000000000000000", // identity
 	"ecffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f", // order 2
 	"0000000000000000000000000000000000000000000000000000000000000000", // order 4
+	"0000000000000000000000000000000000000000000000000000000000000080", // order 4 (y = 0, sign set)
 	"26e8958fc2b227b045c3f489f2ef98f0d5dfac05d3c63339b13802886d53fc05", // order 8
 	"26e8958fc2b227b045c3f489f2ef98f0d5dfac05d3c63339b13802886d53fc85", // order 8
 	"c7176a703d4dd84fba3c0b760d10670f2a2053fa2c39ccc64ec7fd7792ac037a", // order 8
@@ -23,8 +23,8 @@ var nonCanonicalEncodings = []string{
 	"eeffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f", // y = p + 1
 	"edffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f", // y = p
 	"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", // y = 2^255 - 1
-	"0000000000000000000000000000000000000000000000000000000000000080", // x = 0, sign set
-	"0100000000000000000000000000000000000000000000000000000000000080", // identity, sign set
+	"0100000000000000000000000000000000000000000000000000000000000080", // identity (x = 0), sign set
+	"ecffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", // order 2 (x = 0), sign set
 }
 
 func TestEd25519KeyCheckRefusesSmallOrderAndNonCanonical(t *testing.T) {
