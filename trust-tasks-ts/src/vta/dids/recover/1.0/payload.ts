@@ -8,6 +8,8 @@ import type { ApprovalEvidenceKind, DidMethodName, DidVerificationRelationship, 
 
 /**
  * Ask a Verifiable Trust Agent to take over a key-role identity whose VTA was lost, with the identity's committed recovery key (CONVENTIONS.md §9.5; VTI-KEY-117). The recovering VTA generates new keys, and the recovery custodian signs the one change that publishes them. Level 3 only: a level-1 or level-2 identity is recovered by restoring its VTA's backup, and is refused with `vta/dids:assuranceLevelMismatch`.
+ *
+ * @deprecated superseded by vta/dids/recover/1.1
  */
 export interface VTADIDsRecoverPayload {
   /**
@@ -37,7 +39,7 @@ export interface VTADIDsRecoverPayload {
    */
   methodParameters?: {};
   /**
-   * The fresh recovery key that replaces the one this recovery uses (VTI-KEY-128). One key, whatever custodian held the recovery key used: an identity whose recovery key was held by a threshold custodian commits a single key here, and returns to a threshold custodian afterwards with `keys/rotate` (`thresholdRecoveryCommitment`).
+   * The fresh recovery key that replaces the one this recovery uses (VTI-KEY-128). One key, whatever custodian held the recovery key used. To recover straight back to a threshold custodian, use `vta/dids/recover/1.1`, whose `recoveryCommitment` takes either form.
    */
   recoveryCommitment: RecoveryCommitment;
   /**
@@ -62,6 +64,7 @@ export interface VTADIDsRecoverPayload {
   reason?: string;
   ext?: Ext;
 }
+/** @deprecated superseded by vta/dids/recover/1.1 */
 export interface VTADIDsRecoverResponsePayload {
   did: string;
   outcome: KeyChangeOutcome;
@@ -110,15 +113,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by vta/dids/recover/1.1";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vta/dids/recover/1.1
+ */
 export type Payload = VTADIDsRecoverPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/dids/recover/1.0#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vta/dids/recover/1.1
+ */
 export type Response = VTADIDsRecoverResponsePayload;
 
 /**
@@ -181,7 +192,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "recoveryCommitment": {
       "$ref": "#/$defs/RecoveryCommitment",
-      "description": "The fresh recovery key that replaces the one this recovery uses (VTI-KEY-128). One key, whatever custodian held the recovery key used: an identity whose recovery key was held by a threshold custodian commits a single key here, and returns to a threshold custodian afterwards with `keys/rotate` (`thresholdRecoveryCommitment`)."
+      "description": "The fresh recovery key that replaces the one this recovery uses (VTI-KEY-128). One key, whatever custodian held the recovery key used. To recover straight back to a threshold custodian, use `vta/dids/recover/1.1`, whose `recoveryCommitment` takes either form."
     },
     "recoveryProof": {
       "type": "object",

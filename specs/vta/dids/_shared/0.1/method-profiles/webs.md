@@ -115,8 +115,10 @@ The `update` role is the key state: the current signing keys `k` with threshold 
 - **By level** (CONVENTIONS.md §3.4). The shape above is level 3, and the next-key threshold
   stands in for the witness of CONVENTIONS.md §5.4 (VTI-KEY-129). At level 2, `n` commits
   R′ alone with `nt: "1"`. `keyAssurance.recoveryCommitment` names K's digest as it appears
-  in `n`, and a verifier checks that K alone satisfies `nt` — which is what a level-3
-  structure means under this method, and a stronger check than did:webvh allows.
+  in `n`, and a verifier checks that K alone satisfies `nt` and that no set of the other
+  committed keys does — which is what a level-3 structure means under this method, makes the
+  version count as witnessed for its level (CONVENTIONS.md §5.4), and is a stronger check
+  than did:webvh allows.
 
 ## 3. Versions
 
@@ -197,7 +199,9 @@ Extension A, as the key-role designation implements it:
   role keys (its revoked keys remain) and never falls back to the key-state keys. An
   unrecognised role identifier is ignored (VTI-KEY-074) and refused at issuance.
 - **Witnesses** (`b`, `bt`) receipt every event, and **SHOULD** be at least one in a
-  boundary other than the VTA's (CONVENTIONS.md §5.4).
+  boundary other than the VTA's (CONVENTIONS.md §5.4). The next-key threshold, not the
+  witnesses, guards the recovery commitment; witnesses are what detect duplicity — a second
+  key event log for the AID — which the one host the identifier names cannot show.
 
 ## 5. The cache horizon input
 

@@ -1862,6 +1862,7 @@ mod vta {
         }
         mod recover {
             mod v1_0;
+            mod v1_1;
         }
         mod update {
             mod v1_0;

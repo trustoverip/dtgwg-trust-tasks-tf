@@ -2676,6 +2676,9 @@ export import VtaDidsKeysRotate_v1_0 = _VtaDidsKeysRotate_v1_0;
 import * as _VtaDidsRecover_v1_0 from "./vta/dids/recover/1.0/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtaDidsRecover_v1_0 = _VtaDidsRecover_v1_0;
+import * as _VtaDidsRecover_v1_1 from "./vta/dids/recover/1.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtaDidsRecover_v1_1 = _VtaDidsRecover_v1_1;
 import * as _VtaDidsUpdate_v1_0 from "./vta/dids/update/1.0/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtaDidsUpdate_v1_0 = _VtaDidsUpdate_v1_0;

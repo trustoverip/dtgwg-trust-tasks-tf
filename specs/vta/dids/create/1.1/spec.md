@@ -170,7 +170,7 @@ A conforming **consumer** (the VTA) **MUST**:
 
 A conforming consumer **MUST NOT** accept a key, a key identifier, a document carrying keys,
 or an existing history in any member or in `ext`. Importing an identity minted elsewhere is
-not creation; it is [`recover`](../../recover/1.0/spec.md), or a method-specific task for a
+not creation; it is [`recover`](../../recover/1.1/spec.md), or a method-specific task for a
 level-1 identity.
 
 ## Authorization
