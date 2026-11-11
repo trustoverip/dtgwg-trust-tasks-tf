@@ -43,6 +43,8 @@ type ResponseRoomsItem struct {
 // open, one entry per room and member, for the members the caller may act as. This is key
 // custody, not membership: a room whose group state was never delivered is absent here
 // and the member may still hold a perfectly good VMC for it.
+//
+// Deprecated: superseded by rooms/keys/list/0.3
 type Response struct {
 	// One entry per room and member, in no guaranteed order. A room held as two members the
 	// caller may act as appears twice, once per member.
@@ -98,6 +100,8 @@ type PersonalLabelName = string
 // returned. Carries no filter: the recipient answers for the members its caller acts as,
 // and there is nothing to ask it about. The outer document members are owned by the
 // framework — SPEC §6.3.
+//
+// Deprecated: superseded by rooms/keys/list/0.3
 type Payload struct {
 	// `true` asks for each entry's personal label (rooms/keys/label) in `personal`. Absent or
 	// `false`: no entry carries one. A request option, not a filter — it changes which
@@ -125,7 +129,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by rooms/keys/list/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/rooms/keys/list/0.2#response"
