@@ -328,6 +328,7 @@
   "messaging/mux/_shared/0.1/mux.schema.json#/$defs/MuxRole": "MuxRole",
   "messaging/mux/_shared/0.1/mux.schema.json#/$defs/MuxScope": "MuxScope",
   "messaging/mux/_shared/0.1/mux.schema.json#/$defs/MuxScopeValue": "MuxScopeValue",
+  "messaging/mux/_shared/0.1/mux.schema.json#/$defs/MuxSource": "MuxSource",
   "messaging/mux/_shared/0.1/mux.schema.json#/$defs/RevokeAllStatement": "RevokeAllStatement",
   "messaging/mux/_shared/0.1/mux.schema.json#/$defs/SessionId": "SessionId_MessagingMuxV0_1",
   "messaging/mux/_shared/0.1/mux.schema.json#/$defs/StatementScope": "StatementScope",
