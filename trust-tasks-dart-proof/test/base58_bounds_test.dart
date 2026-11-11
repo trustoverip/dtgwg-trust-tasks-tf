@@ -76,7 +76,9 @@ void main() {
   // verificationMethod or proofValue costs does not grow with its length.
   test('a 1 MiB proofValue or did:key is refused quickly', () async {
     final huge = 'z${'2' * (1 << 20)}';
-    final docs = [withProofValue(huge), withDidKey(huge)];
+    // `z6Mk` is the Ed25519 multikey prefix, which ssi decodes in full.
+    final hugeKey = 'z6Mk${'2' * (1 << 20)}';
+    final docs = [withProofValue(huge), withDidKey(hugeKey)];
     final sw = Stopwatch()..start();
     for (var i = 0; i < 100; i++) {
       for (final doc in docs) {

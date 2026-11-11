@@ -29,9 +29,11 @@
 //! the identical document-minus-`proof` contract on the sign side, so
 //! what it emits is what [`Verifier`] verifies.
 
+mod bounds;
 mod purpose;
 mod resolver;
 mod sign;
+pub use bounds::check_proof_bounds;
 pub use purpose::{ProofPurpose, ProofPurposeResolver, PurposeBound};
 pub use resolver::CachedDidResolver;
 pub use sign::{sign_trust_task, SignError};
@@ -178,20 +180,10 @@ impl Verifier {
             }
         }
 
-        // ─── 3a. Bound the base58btc values before the Affinidi crates decode
-        //        them: decoding costs the square of a value's length, and both
-        //        arrive before any signature is checked. Same bounds as the Go,
-        //        TypeScript and Dart verifiers.
-        if let Some(proof_value) = &parsed_proof.proof_value {
-            check_base58_bound(proof_value)
-                .map_err(|e| VerificationError::MalformedProof(format!("proofValue: {e}")))?;
-        }
-        let vm_did = vm.split('#').next().unwrap_or(vm);
-        if let Some(multikey) = vm_did.strip_prefix("did:key:") {
-            check_base58_bound(multikey).map_err(|e| {
-                VerificationError::MalformedProof(format!("verificationMethod: {e}"))
-            })?;
-        }
+        // ─── 3a. Bound the encoded values before the Affinidi crates decode
+        //        them: base58 decoding costs the square of a value's length,
+        //        and both arrive before any signature is checked.
+        check_proof_bounds(&parsed_proof)?;
 
         // ─── 4. The key must be one the issuer authorised for the purpose
         //        the proof declares: `keyAgreement` and unknown purposes are
@@ -205,37 +197,6 @@ impl Verifier {
             .await
             .map_err(map_error)?;
         Ok(())
-    }
-}
-
-/// The most bytes a base58btc value this crate reads may carry. The largest is
-/// a P-384 signature (96 bytes); a `did:key` multikey is at most 51 (a 2-byte
-/// multicodec header and a 49-byte compressed P-384 point).
-const MAX_BASE58_BYTES: usize = 128;
-
-/// The longest base58btc string that can encode [`MAX_BASE58_BYTES`] bytes:
-/// ceil(128 * log(256) / log(58)) = 175 characters.
-const MAX_BASE58_CHARS: usize = 175;
-
-/// Refuse a multibase-base58btc `value` longer than [`MAX_BASE58_CHARS`]
-/// characters, checked before decoding, or decoding to more than
-/// [`MAX_BASE58_BYTES`]. A value in another base, or one that does not decode,
-/// passes through: the Affinidi crates refuse it themselves.
-fn check_base58_bound(value: &str) -> Result<(), String> {
-    let Some(encoded) = value.strip_prefix('z') else {
-        return Ok(());
-    };
-    if encoded.len() > MAX_BASE58_CHARS {
-        return Err(format!(
-            "base58 value is {} characters, longer than the {MAX_BASE58_CHARS} this verifier accepts",
-            encoded.len()
-        ));
-    }
-    match affinidi_encoding::decode_base58btc(value) {
-        Ok(bytes) if bytes.len() > MAX_BASE58_BYTES => Err(format!(
-            "base58 value decodes to more than {MAX_BASE58_BYTES} bytes"
-        )),
-        _ => Ok(()),
     }
 }
 

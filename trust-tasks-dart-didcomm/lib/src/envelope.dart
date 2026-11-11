@@ -201,6 +201,14 @@ Future<UnpackedTrustTask> unpackTrustTask(
     }
   }
 
+  // didcomm resolves the authcrypt `skid` before it decrypts anything, and
+  // ssi's base58 decoding of a did:key costs the square of its length, so an
+  // over-long sender key id is refused before didcomm sees it.
+  final skidError = _senderKidBound(envelope);
+  if (skidError != null) {
+    throw EnvelopeException(EnvelopeFailure.undecryptable, skidError);
+  }
+
   List<DidcommMessage> layers = const [];
   final PlainTextMessage message;
   try {
@@ -309,6 +317,36 @@ RejectReason? checkThreadHeaders(
             '(bindings/didcomm/0.2 §3.1)',
       );
     }
+  }
+  return null;
+}
+
+/// The longest sender key id (`skid`) [unpackTrustTask] passes on to be
+/// resolved. Far longer than any `did:key`, `did:web`, `did:webvh` or
+/// `did:peer` key id, while keeping what resolving one costs bounded.
+const int _maxSenderKidChars = 4096;
+
+/// The longest base58btc `did:key` multikey: 175 characters encode 128 bytes,
+/// the bound the proof verifiers in every runtime apply too.
+const int _maxDidKeyChars = 175;
+
+/// Why the claimed sender key id in [envelope]'s protected header is too long
+/// to resolve, or `null` when it is within bounds or absent.
+String? _senderKidBound(Map<String, dynamic> envelope) {
+  final protected = envelope['protected'];
+  if (protected is! String) return null;
+  final skid = _protectedHeader(protected)?['skid'];
+  if (skid is! String) return null;
+  if (skid.length > _maxSenderKidChars) {
+    return 'sender kid is ${skid.length} characters, longer than the '
+        '$_maxSenderKidChars accepted';
+  }
+  final hash = skid.indexOf('#');
+  final did = hash < 0 ? skid : skid.substring(0, hash);
+  if (did.startsWith('did:key:') &&
+      did.length - 'did:key:'.length > _maxDidKeyChars + 1) {
+    return 'sender did:key is longer than the $_maxDidKeyChars base58 '
+        'characters a key needs';
   }
   return null;
 }
