@@ -64,7 +64,7 @@ jobs:
       # short-lived one per run after verifying the workflow's identity.
       id-token: write
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # Full history + tags. release-plz decides WHETHER a crate changed by
           # comparing its packaged files against the tarball on crates.io — it
@@ -102,7 +102,7 @@ jobs:
         # moving major tag, so `@v0` resolves to nothing and the job fails at
         # "Set up job" before running a step. (actions/checkout@v6 works
         # because that repo does publish v6 — the convention is not universal.)
-        uses: release-plz/action@2eb1d8bcb770b4c48ccfaad919734b38b51958c9 # v0.5.131
+        uses: release-plz/action@66b324fd6c72d05d2a08568492ecdd62bfb8a62b # v0.5.148
         with:
           command: release
         env:
@@ -159,10 +159,10 @@ jobs:
       group: publish-npm-${{ matrix.dir }}-${{ github.ref }}
       cancel-in-progress: false
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           # npm 12 (installed below for OIDC trusted publishing)
           # requires Node >= 22.22.2; Node 20 fails with EBADENGINE.
@@ -319,7 +319,7 @@ jobs:
       group: publish-go-${{ matrix.dir }}-${{ github.ref }}
       cancel-in-progress: false
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
@@ -344,7 +344,7 @@ jobs:
             echo "should_publish=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         if: steps.decide.outputs.should_publish == 'true'
         with:
           go-version: "1.24"
@@ -450,7 +450,7 @@ jobs:
       group: tag-dart-${{ matrix.dir }}-${{ github.ref }}
       cancel-in-progress: false
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           # A tag pushed by the default GITHUB_TOKEN does not trigger
@@ -560,7 +560,7 @@ jobs:
       group: release-pr-${{ github.ref }}
       cancel-in-progress: false
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # Full history + tags: every bump is measured from a tag, and a
           # shallow clone produces a correct bump with an empty changelog.
@@ -589,7 +589,7 @@ jobs:
         with:
           toolchain: stable
 
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "24"
 
