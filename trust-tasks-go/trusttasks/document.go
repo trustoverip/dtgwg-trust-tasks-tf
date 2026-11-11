@@ -26,6 +26,7 @@ package trusttasks
 
 import (
 	"encoding/json"
+	"reflect"
 	"time"
 )
 
@@ -52,8 +53,15 @@ func (p Proof) MarshalJSON() ([]byte, error) {
 }
 
 // UnmarshalJSON collects members this struct does not name into [Proof.Extra].
+//
+// A member whose name differs from a declared one only by case is refused (see
+// [CheckMemberNames]): encoding/json would read it as the declared member, where
+// a proof verifier reads the exact-case one.
 func (p *Proof) UnmarshalJSON(data []byte) error {
 	type plain Proof
+	if err := checkMemberNames(data, reflect.TypeOf(plain{})); err != nil {
+		return err
+	}
 	var base plain
 	if err := json.Unmarshal(data, &base); err != nil {
 		return err
@@ -220,8 +228,17 @@ func (d Document[P]) MarshalJSON() ([]byte, error) {
 }
 
 // UnmarshalJSON collects unrecognized top-level members into [Document.Extra].
+//
+// A member whose name differs from one the envelope, or the payload type P,
+// declares only by case is refused (see [CheckMemberNames]). encoding/json would
+// read `"Issuer"` as Issuer, while a proof verifier, a schema validator and the
+// other runtimes read the exact-case `"issuer"`; refusing it keeps the decoded
+// document the one those checks saw.
 func (d *Document[P]) UnmarshalJSON(data []byte) error {
 	type plain Document[P]
+	if err := checkMemberNames(data, reflect.TypeOf(plain{})); err != nil {
+		return err
+	}
 	var base plain
 	if err := json.Unmarshal(data, &base); err != nil {
 		return err
