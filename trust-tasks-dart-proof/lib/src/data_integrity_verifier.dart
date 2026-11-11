@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:ssi/ssi.dart' as ssi;
 import 'package:trust_tasks/trust_tasks.dart';
 
@@ -206,6 +208,27 @@ final class DataIntegrityProofVerifier implements ProofVerifier {
       );
     }
 
+    // ssi decodes base58btc at a cost that grows with the square of the
+    // value's length, so an over-long proofValue or did:key is refused here,
+    // before it reaches ssi. The bounds are the Go, Rust and TypeScript
+    // packages': no value this package reads is longer.
+    final proofValueError = _base58Bound(proof['proofValue'] as String);
+    if (proofValueError != null) {
+      return ProofVerification.failed(
+        ProofFailureKind.signatureInvalid,
+        'proofValue: $proofValueError',
+      );
+    }
+    if (vmDid.startsWith(_didKeyPrefix)) {
+      final keyError = _base58Bound(vmDid.substring(_didKeyPrefix.length));
+      if (keyError != null) {
+        return ProofVerification.failed(
+          ProofFailureKind.signatureInvalid,
+          'verificationMethod: $keyError',
+        );
+      }
+    }
+
     final suite = switch (cryptosuite) {
       'eddsa-jcs-2022' => ssi.DataIntegrityEddsaJcsVerifier(
           verifierDid: issuer,
@@ -236,6 +259,39 @@ final class DataIntegrityProofVerifier implements ProofVerifier {
         e.toString(),
       );
     }
+  }
+
+  static const _didKeyPrefix = 'did:key:';
+
+  /// The most bytes a base58btc value this package reads may carry. The
+  /// largest is a P-384 signature (96 bytes); a `did:key` multikey is at most
+  /// 51 (a 2-byte multicodec header and a 49-byte compressed P-384 point).
+  static const _maxBase58Bytes = 128;
+
+  /// The longest base58btc string that can encode [_maxBase58Bytes] bytes:
+  /// ceil(128 * log(256) / log(58)) = 175 characters.
+  static const _maxBase58Chars = 175;
+
+  /// Why the multibase-base58btc [value] is out of bounds, or `null` when it is
+  /// within them (or is not base58btc at all, which ssi refuses itself). The
+  /// length is checked before anything is decoded.
+  static String? _base58Bound(String value) {
+    if (!value.startsWith('z')) return null;
+    final chars = value.length - 1;
+    if (chars > _maxBase58Chars) {
+      return 'base58 value is $chars characters, longer than the '
+          '$_maxBase58Chars this verifier accepts';
+    }
+    final Uint8List bytes;
+    try {
+      bytes = ssi.multiBaseToUint8List(value);
+    } on Object {
+      return null;
+    }
+    if (bytes.length > _maxBase58Bytes) {
+      return 'base58 value decodes to more than $_maxBase58Bytes bytes';
+    }
+    return null;
   }
 
   static ProofVerification _malformed(String detail) =>
