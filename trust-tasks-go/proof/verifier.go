@@ -134,7 +134,9 @@ func (v *Verifier) Verify(_ context.Context, doc json.RawMessage) error {
 	// The binding below reads the exact-case "issuer" and "proof". A Go consumer
 	// decoding the same bytes with encoding/json would match "Issuer" or "PROOF"
 	// to those members too, so a document carrying such a variant means one thing
-	// here and another to the handler. Refuse it rather than vouch for either.
+	// here and another to the handler. Refuse it rather than vouch for either —
+	// stricter than the Rust, TypeScript and Dart verifiers, which have no such
+	// reader to disagree with.
 	if name, variant := caseVariantOf(obj, envelopeMembers); variant != "" {
 		return failf(MalformedProof, "document member %q differs from %q only by case", variant, name)
 	}
@@ -328,8 +330,8 @@ var proofMembers = []string{
 }
 
 // caseVariantOf returns a member of obj that is not one of names but folds to
-// one — as encoding/json's case-insensitive matching (and encoding/json/v2's,
-// which also ignores '_' and '-') would read it — and the name it folds to.
+// one — as encoding/json's case-insensitive matching would read it — and the
+// name it folds to. '_' and '-' are significant, as they are to encoding/json.
 func caseVariantOf(obj map[string]any, names []string) (name, variant string) {
 	folded := make(map[string]string, len(names))
 	exact := make(map[string]bool, len(names))
@@ -351,9 +353,6 @@ func caseVariantOf(obj map[string]any, names []string) (name, variant string) {
 func foldMemberName(name string) string {
 	var out strings.Builder
 	for _, r := range name {
-		if r == '_' || r == '-' {
-			continue
-		}
 		if r < utf8.RuneSelf {
 			out.WriteRune(unicode.ToUpper(r))
 			continue

@@ -20,9 +20,16 @@ import (
 // case, so `{"issuer":"a","Issuer":"b"}` decodes with Issuer "b" — while a proof
 // verifier, a JSON Schema validator, and the Rust, TypeScript and Dart runtimes
 // all read the exact-case "issuer" and see "a". A document must mean one thing to
-// every reader, so a member that differs from a declared one only by case (or,
-// for the experimental encoding/json/v2 matcher, by '_' or '-') is refused here
-// rather than silently read as the declared one.
+// every reader, so a member that differs from a declared one only by case (as
+// encoding/json compares names: ASCII case and Unicode simple case folding) is
+// refused here rather than silently read as the declared one.
+//
+// This is stricter than the other runtimes, which keep such a member as an
+// unrecognised one: a Go consumer refuses `{"issuer":"a","Issuer":"b"}`, where
+// Rust, TypeScript and Dart accept it with issuer "a". Refusing is the only
+// reading in which Go agrees with them about issuer. Names differing in any
+// other way ("thread_id", "issuerNote") are ordinary unrecognised members and
+// are kept, as everywhere else.
 //
 // The check follows T into nested structs, pointers, slices, arrays and map
 // values. A type that decodes itself ([json.Unmarshaler] or
@@ -138,50 +145,58 @@ func fieldsOf(t reflect.Type) *structFields {
 
 // collectFields follows encoding/json's naming: the tag name, or the Go field
 // name when the tag gives none; `json:"-"` excluded; the fields of an untagged
-// embedded struct promoted.
-func collectFields(t reflect.Type, into *structFields, depth int) {
-	if depth > 16 {
-		return
-	}
-	for i := 0; i < t.NumField(); i++ {
-		field := t.Field(i)
-		tag := field.Tag.Get("json")
-		if tag == "-" {
-			continue
-		}
-		name, _, _ := strings.Cut(tag, ",")
-		if field.Anonymous && name == "" {
-			embedded := field.Type
-			if embedded.Kind() == reflect.Pointer {
-				embedded = embedded.Elem()
+// embedded struct promoted, breadth first, so a shallower field wins a name
+// over a deeper one as it does in encoding/json.
+func collectFields(t reflect.Type, into *structFields, _ int) {
+	level := []reflect.Type{t}
+	for depth := 0; depth <= 16 && len(level) > 0; depth++ {
+		var next []reflect.Type
+		named := map[string]reflect.Type{}
+		for _, st := range level {
+			for i := 0; i < st.NumField(); i++ {
+				field := st.Field(i)
+				tag := field.Tag.Get("json")
+				if tag == "-" {
+					continue
+				}
+				name, _, _ := strings.Cut(tag, ",")
+				if field.Anonymous && name == "" {
+					embedded := field.Type
+					if embedded.Kind() == reflect.Pointer {
+						embedded = embedded.Elem()
+					}
+					if embedded.Kind() == reflect.Struct {
+						next = append(next, embedded)
+						continue
+					}
+				}
+				if !field.IsExported() {
+					continue
+				}
+				if name == "" {
+					name = field.Name
+				}
+				if _, taken := named[name]; !taken {
+					named[name] = field.Type
+				}
 			}
-			if embedded.Kind() == reflect.Struct {
-				collectFields(embedded, into, depth+1)
-				continue
+		}
+		for name, fieldType := range named {
+			if _, shadowed := into.exact[name]; !shadowed {
+				into.exact[name] = fieldType
 			}
 		}
-		if !field.IsExported() {
-			continue
-		}
-		if name == "" {
-			name = field.Name
-		}
-		if _, taken := into.exact[name]; !taken {
-			into.exact[name] = field.Type
-		}
+		level = next
 	}
 }
 
-// foldMemberName folds a member name the way the more permissive of the two
-// encoding/json matchers does: ASCII case and Unicode simple case folding (so
-// "ſ" and "s", "K" and "k" fold together), and — as encoding/json/v2's
-// case-insensitive matching does — ignoring '_' and '-'.
+// foldMemberName folds a member name as encoding/json's (v1) matcher does:
+// ASCII case and Unicode simple case folding, so "ſ" and "s", "K" and "k" fold
+// together. '_' and '-' are significant, as they are in v1 (and in v1 run on the
+// v2 implementation, whose v1 defaults set MatchCaseSensitiveDelimiter).
 func foldMemberName(name string) string {
 	var out strings.Builder
 	for _, r := range name {
-		if r == '_' || r == '-' {
-			continue
-		}
 		if r < utf8.RuneSelf {
 			out.WriteRune(unicode.ToUpper(r))
 			continue

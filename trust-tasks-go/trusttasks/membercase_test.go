@@ -23,7 +23,6 @@ func TestDocumentDecodeRefusesCaseVariantMembers(t *testing.T) {
 		"alone":                   `"Issuer":"did:web:b.example"`,
 		"upper case":              `"issuer":"did:web:a.example","ISSUER":"did:web:b.example"`,
 		"unicode fold (long s)":   `"issuer":"did:web:a.example","iſſuer":"did:web:b.example"`,
-		"delimiter variant":       `"issuer":"did:web:a.example","issued_at":"2026-01-01T00:00:00Z"`,
 		"in the payload":          `"issuer":"did:web:a.example","payload":{"role":"admin","Role":"owner"}`,
 		"in the proof": `"issuer":"did:web:a.example","proof":{"type":"DataIntegrityProof",` +
 			`"cryptosuite":"eddsa-jcs-2022","verificationMethod":"did:web:a.example#k",` +
@@ -47,7 +46,9 @@ func TestDocumentDecodeRefusesCaseVariantMembers(t *testing.T) {
 }
 
 func TestDocumentDecodeKeepsExactAndUnrelatedMembers(t *testing.T) {
-	data := "{" + caseBase + `,"issuer":"did:web:a.example","issuerNote":"kept","x-vendor":1`
+	// Names differing other than by case — a delimiter included — are ordinary
+	// unrecognised members, kept as the other runtimes keep them.
+	data := "{" + caseBase + `,"issuer":"did:web:a.example","issuerNote":"kept","x-vendor":1,"thread_id":"t"`
 	var doc tt.Document[payload]
 	if err := json.Unmarshal([]byte(data+"}"), &doc); err != nil {
 		t.Fatal(err)
@@ -55,8 +56,13 @@ func TestDocumentDecodeKeepsExactAndUnrelatedMembers(t *testing.T) {
 	if deref(doc.Issuer) != "did:web:a.example" || doc.Payload.Role != "admin" {
 		t.Fatalf("decoded %+v", doc)
 	}
-	if _, ok := doc.Extra["issuerNote"]; !ok {
-		t.Fatalf("an unrelated member was not preserved: %v", doc.Extra)
+	for _, name := range []string{"issuerNote", "x-vendor", "thread_id"} {
+		if _, ok := doc.Extra[name]; !ok {
+			t.Fatalf("unrelated member %q was not preserved: %v", name, doc.Extra)
+		}
+	}
+	if doc.ThreadID != nil {
+		t.Fatalf("thread_id was read as threadId")
 	}
 }
 
@@ -125,4 +131,24 @@ func deref(s *string) string {
 		return "<nil>"
 	}
 	return *s
+}
+
+type caseInner struct {
+	Name string `json:"name"`
+}
+
+type caseOuter struct {
+	caseInner
+	Name int `json:"name"`
+}
+
+// A shallower field wins a name over a promoted one, as in encoding/json, so the
+// walk follows the shallower field's type.
+func TestCheckMemberNamesFollowsTheShallowestField(t *testing.T) {
+	if err := tt.CheckMemberNames[caseOuter]([]byte(`{"name":1}`)); err != nil {
+		t.Fatal(err)
+	}
+	if err := tt.CheckMemberNames[caseOuter]([]byte(`{"Name":1}`)); err == nil {
+		t.Fatal("accepted a case variant of a promoted name")
+	}
 }
