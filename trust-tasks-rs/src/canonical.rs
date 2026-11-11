@@ -29,10 +29,13 @@
 //!   documents being compared identically, so it cannot make two
 //!   JCS-identical documents differ here, nor two JCS-differing documents
 //!   agree.
-//! * **Number formatting** is `serde_json`'s, which is shortest-round-trip
-//!   like ECMAScript's `Number::toString` but spells some exponents
-//!   differently (`1e100` vs JCS's `1e+100`). Again, the same `f64` always
-//!   formats the same way, so the induced equality is unchanged.
+//! * **Number formatting.** Every number is read as the IEEE 754 double JCS
+//!   reads it as, so `1`, `1.0` and `1e0` are one number, as they are to the
+//!   TypeScript and Go runtimes. An integral value below `1e21` is written as
+//!   an integer, as ECMAScript's `Number::toString` writes it; anything else
+//!   is `serde_json`'s shortest-round-trip form, which spells some exponents
+//!   differently (`1e100` vs JCS's `1e+100`). The same `f64` always formats
+//!   the same way, so the induced equality is JCS's.
 //!
 //! The item-11 digest is **consumer-local**: it is written to the consumer's
 //! own replay record and never appears on the wire, in a citation, or in a
@@ -66,7 +69,7 @@ fn write_value(out: &mut String, value: &Value) {
         Value::Null => out.push_str("null"),
         Value::Bool(true) => out.push_str("true"),
         Value::Bool(false) => out.push_str("false"),
-        Value::Number(n) => out.push_str(&n.to_string()),
+        Value::Number(n) => write_number(out, n),
         Value::String(s) => write_string(out, s),
         Value::Array(items) => {
             out.push('[');
@@ -97,6 +100,27 @@ fn write_value(out: &mut String, value: &Value) {
                 write_value(out, &map[key.as_str()]);
             }
             out.push('}');
+        }
+    }
+}
+
+/// A number as the IEEE 754 double RFC 8785 §3.2.2.3 reads it as: integral
+/// values below `1e21` as integers (`1.0` and `1e2` are `1` and `100`), and
+/// everything else in `serde_json`'s shortest-round-trip form.
+fn write_number(out: &mut String, n: &serde_json::Number) {
+    let Some(f) = n.as_f64() else {
+        // Not reachable without serde_json's `arbitrary_precision`; keep the
+        // number's own spelling rather than guess.
+        out.push_str(&n.to_string());
+        return;
+    };
+    if f.is_finite() && f.fract() == 0.0 && f.abs() < 1e21 {
+        // Exact: every integral f64 below 1e21 fits an i128. `-0.0` is `0`.
+        let _ = write!(out, "{}", f as i128);
+    } else {
+        match serde_json::Number::from_f64(f) {
+            Some(n) => out.push_str(&n.to_string()),
+            None => out.push_str(&n.to_string()),
         }
     }
 }
@@ -281,5 +305,30 @@ mod tests {
         let a: Value = serde_json::from_str(r#"{ "a" :  1 , "b": [ 2 ] }"#).unwrap();
         let b: Value = serde_json::from_str(r#"{"b":[2],"a":1}"#).unwrap();
         assert_eq!(canonical_json(&a), canonical_json(&b));
+    }
+
+    /// RFC 8785 §3.2.2.3 reads every number as an IEEE 754 double, so these
+    /// spellings are one number — as they are to the TypeScript and Go
+    /// runtimes, whose parsers produce a double for each.
+    #[test]
+    fn numbers_canonicalise_as_the_double_they_denote() {
+        let canon = |s: &str| canonical_json(&serde_json::from_str::<Value>(s).unwrap());
+        for (spellings, expected) in [
+            (&["1", "1.0", "1e0", "10e-1"][..], "1"),
+            (&["100", "100.0", "1e2", "1E+2"][..], "100"),
+            (&["-0", "-0.0", "0"][..], "0"),
+            (&["-7", "-7.0"][..], "-7"),
+            (&["1.5", "15e-1"][..], "1.5"),
+        ] {
+            for s in spellings {
+                assert_eq!(canon(s), expected, "{s}");
+            }
+        }
+        assert_ne!(canon("1"), canon("1.5"));
+        // Large integral values keep integer spelling below 1e21 and agree
+        // with their exponent forms.
+        assert_eq!(canon("1e20"), "100000000000000000000");
+        assert_eq!(canon("1e20"), canon("100000000000000000000"));
+        assert_eq!(canon("1e21"), canon("1000000000000000000000"));
     }
 }

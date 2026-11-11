@@ -22,6 +22,11 @@ affinidi = [
     "dep:affinidi-did-resolver-cache-sdk",
     "dep:affinidi-did-common",
 ]
+# `ml-dsa` — switches on `affinidi-data-integrity`'s ML-DSA cryptosuites
+# (`mldsa44-jcs-2024`, `mldsa44-rdfc-2024`). An application that enables that
+# upstream feature itself gets them without this one; this feature exists so
+# the crate's own tests cover the post-quantum size bounds.
+ml-dsa = ["affinidi", "affinidi-data-integrity/ml-dsa"]
 
 [dependencies]
 # The runtime only. This crate uses no generated specification module, and

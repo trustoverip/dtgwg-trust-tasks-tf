@@ -868,3 +868,25 @@ fn the_published_definition_deserializes_with_every_member_verification_needs() 
     assert!(is_ancestor(&def, "apply", "reciprocate"));
     assert!(!is_ancestor(&def, "reciprocate", "apply"));
 }
+
+// --- salt size -----------------------------------------------------------
+
+#[test]
+fn an_over_long_salt_is_refused_quickly() {
+    // At the bound, a salt still decodes.
+    let at_bound = format!("z{}", "2".repeat(MAX_SALT_CHARS - 1));
+    decode_salt(Some(&at_bound)).expect("a salt at the bound decodes");
+    let over = format!("z{}", "2".repeat(MAX_SALT_CHARS));
+    assert!(matches!(decode_salt(Some(&over)), Err(Error::Salt(_))));
+
+    let huge = format!("z{}", "2".repeat(1 << 20));
+    let start = std::time::Instant::now();
+    for _ in 0..100 {
+        assert!(matches!(decode_salt(Some(&huge)), Err(Error::Salt(_))));
+    }
+    let elapsed = start.elapsed();
+    assert!(
+        elapsed < std::time::Duration::from_secs(1),
+        "refusing 100 oversized salts took {elapsed:?}"
+    );
+}

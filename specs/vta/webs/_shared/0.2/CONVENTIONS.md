@@ -292,6 +292,7 @@ document that drops, moves or adds anything the template described.
 | `id` | the DID | anything but `{DID}` rendered (`documentId`) |
 | `controller` | absent, or the DID | any other value (`controller`) |
 | `@context` | ignored: the host derives its own | — |
+| `resolvedMethods` | ignored: a did:webs node declares `did:webs` by using it, and the derivation renders no declaration of further methods (VTI-KEY-008, and the open issue under VTI-KEY-009). A template written for any method — a VTI node's — therefore carries it without being refused | — |
 | `verificationMethod` | one entry publishing the signing key and one publishing the key agreement key, rendered by the derivation under its own ids and types (`<did>#<signingKey>`, a `JsonWebKey` for the key agreement key) | any other entry, or an entry publishing either key twice (`verificationMethod`) |
 | `authentication`, `assertionMethod` | the signing key, in both, as the derivation renders it | either relationship without the signing key, or listing anything else (`verificationRelationship`) |
 | `keyAgreement` | the key agreement key, as its designation | no `keyAgreement`, or one listing anything else: every DID of the family designates one key agreement key, and the records of the family require it (`keyAgreementRequired`, `verificationRelationship`) |
@@ -299,6 +300,13 @@ document that drops, moves or adds anything the template described.
 | `service` | each entry designated as a `DesignatedService`, its id reduced to the fragment (`<did>#didcomm` → `#didcomm`); `#didcomm` and `#tsp` are the template's to define | an id naming another DID or not a fragment, an entry without `type` or `serviceEndpoint`, or more than 32 entries (`service`); two entries with one id is `vta/webs/dids:serviceIdConflict` |
 | `alsoKnownAs` | each DID designated as an alias, after the DID itself; an entry equal to the DID is listed once | an entry that is not a DID (`alias`) |
 | any other member (`keyAssurance`, a profile member, an extension) | — | always: the derivation renders no member it is not given (`documentMember`) |
+
+*Note (post-quantum keys).* A template that lists a second signing key — `vtc-host`'s
+ML-DSA-44 `pq-signing` slot, for dual classical and post-quantum proofs — is refused
+(`keyAlgorithm`, `verificationMethod`): a level-1 did:webs has exactly one key-state key,
+and the key-role designation registers no post-quantum attestation key. An identity
+that needs a post-quantum key is a `did:webvh` until the did:webs key state, or the
+key-role designation, can carry one.
 
 The template's other members are read as follows. `kind` is the **integration kind**:
 the VTA records it with the DID and returns it, and it is not published. `name` and the

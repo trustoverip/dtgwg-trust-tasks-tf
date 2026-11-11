@@ -331,7 +331,10 @@ Refusal refuse<P>(
 /// success response, and a resend would be absorbed with nothing to return.
 ///
 /// Pass [received] — the decoded JSON map [doc] was read from, exactly as it
-/// arrived — and a proof is verified over it rather than over [doc]'s typed
+/// arrived — and the item-11 digest is taken over it, so a member [doc]'s type
+/// does not model still tells two documents under one `id` apart; without it
+/// the digest is of [doc]'s typed re-encoding. A proof is likewise verified
+/// over it rather than over [doc]'s typed
 /// re-encoding, which drops any member the payload type does not model and so
 /// breaks a genuine signature. [readForVersion] hands it back as
 /// [VersionAccepted.received]; for a document read forward along a declared
@@ -355,6 +358,22 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
   Object? Function(R response)? responseToJson,
   Map<String, dynamic>? received,
 }) async {
+  // §7.2 item 1, as far as every step below relies on it: the document is
+  // shallow enough for them to walk. The payload validator, the proof's
+  // canonical form and the item-11 digest recurse, and a body nested far deeper
+  // than any document needs would otherwise exhaust the stack — a
+  // StackOverflowError, which is an Error and escapes a caller catching
+  // Exceptions. First, so nothing has walked the document yet.
+  if (exceedsNestingDepth(received ?? doc.toJson(payloadToJson))) {
+    const reason = RejectReason(
+      code: StandardCode.malformedRequest,
+      message: 'document is not a well-formed Trust Task document '
+          '(SPEC §7.2 item 1): nested more than $maxNestingDepth levels deep',
+    );
+    final error = reject(transport, doc, newErrorId(), reason, clock: clock);
+    return error == null ? Suppressed<R>(reason) : Rejected<R>(error);
+  }
+
   ConsumeOutcome<R> route(RejectReason reason) {
     final error = reject(transport, doc, newErrorId(), reason, clock: clock);
     return error == null ? Suppressed<R>(reason) : Rejected<R>(error);
@@ -464,15 +483,15 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
   final replay = checks.replay;
   if (replay is GuardedReplay) {
     final guard = replay.guard;
-    // A document read forward along an `extends` chain has had payload members
-    // pruned, so its typed re-encoding cannot tell two documents apart that
-    // differ only in those members — an `idConflict` would be absorbed as a
-    // duplicate. Key it on what arrived instead. Only in that case: a document
-    // of the implemented version keeps the digest it always had, so a guard's
-    // existing records still match.
-    final forward =
-        received != null && bareTypeUri(doc.type) != bareTypeUri(spec.typeUri);
-    final digest = forward
+    // Over the document as it arrived whenever the caller passed it. SPEC §7.2
+    // compares the whole received document, and [doc]'s typed re-encoding
+    // drops every member its type does not model — and, for a document read
+    // forward along an `extends` chain, the pruned payload members — so two
+    // documents differing only there would be absorbed as a duplicate instead
+    // of refused `idConflict`.
+    final digest = received != null &&
+            received['id'] == doc.id &&
+            received['type'] == doc.type
         ? sha256HexOfString(canonicalJson(received))
         : documentDigest(doc, payloadToJson);
 
