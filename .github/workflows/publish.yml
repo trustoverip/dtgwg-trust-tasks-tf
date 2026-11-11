@@ -38,7 +38,8 @@ on:
   push:
     branches: [main]
   # Manual escape hatch: re-run a release after fixing something, without
-  # needing a fresh commit.
+  # needing a fresh commit. Only a run on main publishes; dispatched on any
+  # other branch, every job is skipped.
   workflow_dispatch:
 
 permissions:
@@ -47,6 +48,8 @@ permissions:
 jobs:
   # ── Rust ─────────────────────────────────────────────────────────────────
   release-plz-release:
+    # Publishes only from main, including a manual re-run.
+    if: github.ref == 'refs/heads/main'
     # Runs on every push to main, but only *does* anything when a crate's
     # version is not yet on crates.io — which in practice means immediately
     # after the Release PR merges. An ordinary feature merge is a no-op.
@@ -61,7 +64,7 @@ jobs:
       # short-lived one per run after verifying the workflow's identity.
       id-token: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           # Full history + tags. release-plz decides WHETHER a crate changed by
           # comparing its packaged files against the tarball on crates.io — it
@@ -86,10 +89,12 @@ jobs:
           sudo apt-get update || true
           sudo apt-get install -y libdbus-1-dev pkg-config
 
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: stable
 
       - name: Authenticate to crates.io (Trusted Publishing)
-        uses: rust-lang/crates-io-auth-action@v1
+        uses: rust-lang/crates-io-auth-action@3268eb413133e2960fa4ae0e963ca76380c54cd9 # v1.0.6
         id: auth
 
       - name: Run release-plz
@@ -97,7 +102,7 @@ jobs:
         # moving major tag, so `@v0` resolves to nothing and the job fails at
         # "Set up job" before running a step. (actions/checkout@v6 works
         # because that repo does publish v6 — the convention is not universal.)
-        uses: release-plz/action@v0.5.131
+        uses: release-plz/action@2eb1d8bcb770b4c48ccfaad919734b38b51958c9 # v0.5.131
         with:
           command: release
         env:
@@ -116,6 +121,8 @@ jobs:
   # a feature merge is a no-op and the first publish of a new package (which npm
   # trusted publishing cannot bootstrap) is done by hand — see RELEASING.md.
   publish-npm:
+    # Publishes only from main, including a manual re-run.
+    if: github.ref == 'refs/heads/main'
     name: Publish ${{ matrix.name }} to npm
     runs-on: ubuntu-latest
     # 30, not 20: the publish is followed by up to 8 minutes of waiting for the
@@ -152,19 +159,19 @@ jobs:
       group: publish-npm-${{ matrix.dir }}-${{ github.ref }}
       cancel-in-progress: false
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
-          # npm@latest (v12+, installed below for OIDC trusted publishing)
+          # npm 12 (installed below for OIDC trusted publishing)
           # requires Node >= 22.22.2; Node 20 fails with EBADENGINE.
           node-version: "24"
           registry-url: "https://registry.npmjs.org"
 
       # Trusted publishing (OIDC) requires npm >= 11.5.1; Node 20 ships older.
       - name: Update npm
-        run: npm install -g npm@latest
+        run: npm install -g npm@12.2.2
 
       - name: Decide whether to publish
         id: decide
@@ -276,6 +283,8 @@ jobs:
   # unpublished affinidi-tsp-go and so cannot be released. Each leg reads its own
   # `const Version`, and the nested legs' verify step fetches the published core.
   publish-go:
+    # Publishes only from main, including a manual re-run.
+    if: github.ref == 'refs/heads/main'
     name: Publish ${{ matrix.name }} (tag + module proxy)
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -310,7 +319,7 @@ jobs:
       group: publish-go-${{ matrix.dir }}-${{ github.ref }}
       cancel-in-progress: false
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           fetch-depth: 0
 
@@ -335,7 +344,7 @@ jobs:
             echo "should_publish=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
         if: steps.decide.outputs.should_publish == 'true'
         with:
           go-version: "1.24"
@@ -410,6 +419,8 @@ jobs:
   # before pub.dev has finished publishing the core and fail; re-run the job
   # once the core is live. Its failure also holds back `release-pr` until then.
   tag-dart:
+    # Publishes only from main, including a manual re-run.
+    if: github.ref == 'refs/heads/main'
     name: Tag ${{ matrix.name }} for pub.dev
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -439,7 +450,7 @@ jobs:
       group: tag-dart-${{ matrix.dir }}-${{ github.ref }}
       cancel-in-progress: false
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           fetch-depth: 0
           # A tag pushed by the default GITHUB_TOKEN does not trigger
@@ -468,7 +479,7 @@ jobs:
             echo "should_tag=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - uses: dart-lang/setup-dart@v1
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
         if: steps.decide.outputs.should_tag == 'true'
         with:
           sdk: stable
@@ -539,7 +550,7 @@ jobs:
     # finish (re-run the failed job), and proposing the next release on top of
     # it would only muddy which versions are actually out. Skipped legs are
     # fine — that is an ordinary feature merge.
-    if: ${{ !cancelled() && !contains(needs.*.result, 'failure') }}
+    if: ${{ github.ref == 'refs/heads/main' && !cancelled() && !contains(needs.*.result, 'failure') }}
     permissions:
       contents: write
       pull-requests: write
@@ -549,7 +560,7 @@ jobs:
       group: release-pr-${{ github.ref }}
       cancel-in-progress: false
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           # Full history + tags: every bump is measured from a tag, and a
           # shallow clone produces a correct bump with an empty changelog.
@@ -574,9 +585,11 @@ jobs:
           sudo apt-get update || true
           sudo apt-get install -y libdbus-1-dev pkg-config
 
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: stable
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
           node-version: "24"
 
@@ -599,9 +612,9 @@ jobs:
       # changes. (The publish job is unaffected — release-plz/action installs
       # its own default, 0.3.160.)
       - name: Install release-plz and git-cliff
-        uses: taiki-e/install-action@v2
+        uses: taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39 # v2.90.3
         with:
-          tool: release-plz@0.3.171,git-cliff
+          tool: release-plz@0.3.171,git-cliff@2.14.2
 
       - name: Open or update the Release PR
         env:
