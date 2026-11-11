@@ -26,7 +26,7 @@ export interface RoomsKeysWatchPayload {
    */
   rooms: [RoomToWatch, ...RoomToWatch[]];
   /**
-   * How long the caller asks each watch to last if it does not fire, in seconds, up to 30 days. Passed to the host as rooms/watch's leaseSeconds; the host and the recipient MAY grant less, and a host grants a live watch at most 900 seconds. Absent means the host's default. Ignored on a cancel.
+   * How long the caller asks each watch to last if it does not fire, in seconds, up to 30 days. Passed to the host as rooms/watch's leaseSeconds; the host and the recipient MAY grant less, and a host grants a live watch at most 120 seconds. Absent means the host's default. Ignored on a cancel.
    */
   leaseSeconds?: number;
   /**
@@ -182,7 +182,7 @@ export const PAYLOAD_SCHEMA = {
       "type": "integer",
       "minimum": 60,
       "maximum": 2592000,
-      "description": "How long the caller asks each watch to last if it does not fire, in seconds, up to 30 days. Passed to the host as rooms/watch's leaseSeconds; the host and the recipient MAY grant less, and a host grants a live watch at most 900 seconds. Absent means the host's default. Ignored on a cancel."
+      "description": "How long the caller asks each watch to last if it does not fire, in seconds, up to 30 days. Passed to the host as rooms/watch's leaseSeconds; the host and the recipient MAY grant less, and a host grants a live watch at most 120 seconds. Absent means the host's default. Ignored on a cancel."
     },
     "live": {
       "type": "boolean",

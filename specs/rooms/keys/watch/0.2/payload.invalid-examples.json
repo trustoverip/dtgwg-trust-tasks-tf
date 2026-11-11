@@ -125,7 +125,7 @@
           "roomId": "did:webvh:QmRoom:rooms.northwind.example:standup",
           "armed": true,
           "live": false,
-          "expiresAt": "2027-02-01T09:45:00Z"
+          "expiresAt": "2027-02-01T09:32:00Z"
         }
       ]
     }

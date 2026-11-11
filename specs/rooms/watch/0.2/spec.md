@@ -52,7 +52,7 @@ retention:
   class: durable
   rationale: >-
     A host keeps a watch until it fires, is cancelled or its lease ends — at most 30 days, and at
-    most 15 minutes for a live watch the member does not renew — and then forgets it. It is not a
+    most 120 seconds for a live watch the member does not renew — and then forgets it. It is not a
     record of the room and is never part of one.
 errorCodes:
   - code: rooms/watch:addressUnreachable
@@ -93,7 +93,7 @@ A watch is one of two kinds:
   address holds at most one signal per watch.
 - **Live**, for a conversation that is open on a member's screen. The host sends a signal each time
   the room moves past the version it last signalled, at most about once a second, for a lease of at
-  most 15 minutes that the member renews while the screen stays open. It saves a re-arming round
+  most two minutes that the member renews — about once a minute — while the screen stays open. It saves a re-arming round
   trip per message, and it is permitted only on a room whose **signal delay** is `none`
   ([`rooms/signal-delay/set`](../../signal-delay/set/0.1/spec.md)): a room that has already chosen
   to let its signals' timing follow its writes.
@@ -119,7 +119,7 @@ This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). I
 
 * A request member, **`live`** (`true` only): arm, or renew, a **live** watch — a signal each time
   the room moves past the version last signalled, coalesced to at most one a second, under a lease
-  of at most 900 seconds. Permitted only on a room whose signal delay is `none`; otherwise refused
+  of at most 120 seconds. Permitted only on a room whose signal delay is `none`; otherwise refused
   with the new code **`rooms/watch:liveNotPermitted`**.
 * A response member, **`live`** (`true` only), present when the watch armed is live.
 * A watch without `live` is the 0.1 watch, unchanged.
@@ -167,8 +167,9 @@ A conforming **producer** (the member) **MUST**:
    reads.
 5. Ask for a live watch only while its person has the room open and is reading it as it changes,
    and only on a room whose signal delay ([`rooms/info`](../../info/0.4/spec.md) `signalDelay`) is
-   `none`. It renews the watch — the same room and address, with `live: true` — before `expiresAt`
-   for as long as that holds, and **MUST** stop renewing it, and **SHOULD** cancel it, when the
+   `none`. It renews the watch — the same room and address, with `live: true` — before `expiresAt`,
+   about every 60 seconds, for as long as the room is on screen and the application is in the
+   foreground, and **MUST** stop renewing it, and **SHOULD** cancel it, when the
    screen closes or the application leaves the foreground. It **SHOULD NOT** hold a live watch on a
    room its person is not looking at: that is what a one-shot watch is for.
 6. Treat a watch as live only when the response says `live: true`. A response without it — from a
@@ -209,7 +210,7 @@ A conforming **consumer** (the host) **MUST**:
    ([`rooms/signal-delay/set`](../../signal-delay/set/0.1/spec.md)), sending nothing to its address;
    the member learns of it when it next renews, which is refused with `liveNotPermitted`, and arms
    a one-shot watch instead.
-7. Grant a live watch a lease of at most 900 seconds from the request, whatever `leaseSeconds`
+7. Grant a live watch a lease of at most 120 seconds from the request, whatever `leaseSeconds`
    asks, and answer `live: true` with it. A renewal grants a new lease from the renewal.
 8. Forget a watch when a one-shot watch fires, when it is cancelled, and at `expiresAt`, which
    **MUST NOT** be later than the earliest instant at which any credential of the presentation
@@ -278,7 +279,7 @@ minutes per renewal.
 - **`cancel`** — end the watch.
 - **One-shot watch** — a watch armed without `live`: one signal, then disarmed.
 - **Live watch** — a watch armed with `live: true`: a signal per change, coalesced, for a lease of
-  at most 900 seconds that the member renews.
+  at most 120 seconds that the member renews.
 - **Response** — `armed`, `live` when the watch is live, and `expiresAt` when it is armed.
 
 ## Request
@@ -333,7 +334,7 @@ the top-level schema in [`payload.schema.json`](payload.schema.json).
     },
     "address": "did:peer:2.Ez6LSg8zQom395jKLrGiBNruB9MM6V8PWuf2FpEy4uRFiqQBR.Vz6MkfQwwNSZq3DwuHyBN9yS7qnQrRwJ7h4uYzaUJDEFzfW6Y.SeyJ0IjoiZG0iLCJzIjoiZGlkOndlYjptZWRpYXRvci5leGFtcGxlIn0",
     "sinceVersion": 2071,
-    "leaseSeconds": 900,
+    "leaseSeconds": 120,
     "live": true
   },
   "proof": {
@@ -403,7 +404,7 @@ watch is live, and `expiresAt` when armed. Failures use `trust-task-error`
 }
 ```
 
-### Armed live, for 15 minutes
+### Armed live, for two minutes
 
 ```json
 {
@@ -418,7 +419,7 @@ watch is live, and `expiresAt` when armed. Failures use `trust-task-error`
     "address": "did:peer:2.Ez6LSg8zQom395jKLrGiBNruB9MM6V8PWuf2FpEy4uRFiqQBR.Vz6MkfQwwNSZq3DwuHyBN9yS7qnQrRwJ7h4uYzaUJDEFzfW6Y.SeyJ0IjoiZG0iLCJzIjoiZGlkOndlYjptZWRpYXRvci5leGFtcGxlIn0",
     "armed": true,
     "live": true,
-    "expiresAt": "2027-02-01T09:45:00Z"
+    "expiresAt": "2027-02-01T09:32:00Z"
   }
 }
 ```
@@ -475,10 +476,13 @@ happened — and, by lining a write that reaches the host up with a signal that 
 writer and the watcher share the room. A one-shot watch with no delay already shows most of this
 to the same parties while a member reads after every signal; a live watch shows it without the
 member's reads between, including while the member's device is not reading at all. That is why it
-is permitted only where the room's signal delay is `none` (Host item 6), lasts at most 15 minutes
+is permitted only where the room's signal delay is `none` (Host item 6), lasts at most two minutes
 per renewal (Host item 7), and is held only while the room is on screen (Producer item 5). A
-device that stops reading without cancelling — killed, or asleep — can find up to one signal a
-second for the rest of the lease waiting in its mediator's queue; the lease is what bounds it.
+device that stops reading without cancelling — killed, or asleep — is bounded by the lease alone,
+which is why the lease is short: at the minimum spacing of one second it collects at most about
+120 signals in its mediator's queue before the watch ends, and usually far fewer, because a room
+sends nothing while nobody writes. The renewal that keeps the lease this short costs one small
+request a minute, and only while someone is looking at the room.
 
 ### Retention
 

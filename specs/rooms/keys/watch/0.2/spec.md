@@ -56,7 +56,7 @@ retention:
     The recipient keeps one record per armed watch — the caller, the member, the room, the host,
     the address and when the watch lapses — because it must know, when a signal arrives at the
     address, whose it is and where to pass it on. It forgets the record when the watch fires, is
-    cancelled or lapses — at most 30 days, and at most 15 minutes for a live watch the caller does
+    cancelled or lapses — at most 30 days, and at most two minutes for a live watch the caller does
     not renew — and keeps nothing of the watermarks or the signals.
 errorCodes:
   - code: rooms/keys/watch:memberNotPrincipal
@@ -152,7 +152,7 @@ the client re-arms after it has read.
 
 A **live** watch is the exception, for a conversation open on the client's screen: the host sends a
 signal per change, coalesced to at most one a second, and the key holder passes on every one, as it
-arrives, until the watch ends. It lasts at most 15 minutes per renewal, is permitted only on a room
+arrives, until the watch ends. It lasts at most two minutes per renewal, is permitted only on a room
 whose signal delay is `none` ([`rooms/watch/0.2`](../../../watch/0.2/spec.md), *Live watches and the
 signal delay*), and is held only while the room is on screen (Producer item 6).
 
@@ -176,7 +176,8 @@ A conforming **producer** (the member's own client) **MUST**:
 6. Ask for a live watch (`live: true`) only for a room its person has open and is reading as it
    changes, and only where the room's signal delay ([`rooms/info`](../../../info/0.4/spec.md)
    `signalDelay`) is `none`. It renews the watch — a request naming the room with `live: true` —
-   before `expiresAt` for as long as that holds, **MUST** stop renewing it when the screen closes
+   before `expiresAt`, about every 60 seconds, for as long as the room is on screen and the
+   application is in the foreground, **MUST** stop renewing it when the screen closes
    or the application leaves the foreground, and **SHOULD** then cancel it. It **SHOULD NOT** hold
    a live watch on a room its person is not looking at, which is what a one-shot watch is for: each
    live watch is a stream of signal times to the host and to the mediators that carry them.
@@ -369,7 +370,7 @@ validates against the top-level schema in [`payload.schema.json`](payload.schema
     "rooms": [
       { "roomId": "did:webvh:QmRoom:rooms.northwind.example:standup", "sinceVersion": 2071 }
     ],
-    "leaseSeconds": 900,
+    "leaseSeconds": 120,
     "live": true
   },
   "proof": {
@@ -456,7 +457,7 @@ is that room's outcome.
     "member": "did:webvh:QmAlice:personas.example:northwind",
     "host": "did:web:rooms.northwind.example",
     "watches": [
-      { "roomId": "did:webvh:QmRoom:rooms.northwind.example:standup", "armed": true, "live": true, "expiresAt": "2027-02-01T09:45:00Z" }
+      { "roomId": "did:webvh:QmRoom:rooms.northwind.example:standup", "armed": true, "live": true, "expiresAt": "2027-02-01T09:32:00Z" }
     ]
   }
 }
@@ -517,7 +518,8 @@ service see that something arrived, and when. For a one-shot watch that is once 
 live watch it is once per change, at most once a second: the client's mediator, the push path and
 the key holder's own mediator learn how busy the room is while it is on screen, and when each write
 happened. That is what a live watch gives up, and why it is held only for a room on screen (Producer
-item 6), lasts at most 15 minutes per renewal, and is permitted only on a room that has already let
+item 6), lasts at most two minutes per renewal — so a client that stops reading without cancelling
+collects at most about 120 signals, and usually far fewer, before it lapses — and is permitted only on a room that has already let
 its signals' timing follow its writes. A live sitting keeps one address at the host across its
 renewals; once it ends, the next arming of the room, live or not, takes another (Recipient item 5).
 

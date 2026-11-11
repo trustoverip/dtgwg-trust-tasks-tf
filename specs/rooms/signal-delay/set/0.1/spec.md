@@ -152,7 +152,7 @@ mediator and, for a sleeping device, a push gateway, each of which takes the tim
 has the room open, a signal per change, coalesced to at most one a second, rather than one per
 arming. A member reading an open conversation re-arms after every signal anyway, so what the
 address's mediator and push path see changes little; but a live watch keeps sending while the
-member's device is not reading, for up to 15 minutes per renewal, and so shows them how busy the
+member's device is not reading, for up to two minutes per renewal, and so shows them how busy the
 room is and when each write happened. An administrator choosing `none` is choosing that as well.
 
 ## Definitions

@@ -17,7 +17,7 @@ fn request_example_1() {
 }
 #[test]
 fn request_example_2() {
-    const JSON: &str = "{\n  \"id\": \"urn:uuid:7d2c1e0a-3b4f-4a6e-9d81-2c5f0e7a1004\",\n  \"type\": \"https://trusttasks.org/spec/rooms/keys/watch/0.2#request\",\n  \"issuer\": \"did:key:z6MkWalletHolderExample\",\n  \"recipient\": \"did:webvh:QmVta:vta.example\",\n  \"issuedAt\": \"2027-02-01T09:30:00Z\",\n  \"payload\": {\n    \"member\": \"did:webvh:QmAlice:personas.example:northwind\",\n    \"host\": \"did:web:rooms.northwind.example\",\n    \"rooms\": [\n      { \"roomId\": \"did:webvh:QmRoom:rooms.northwind.example:standup\", \"sinceVersion\": 2071 }\n    ],\n    \"leaseSeconds\": 900,\n    \"live\": true\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2027-02-01T09:30:00Z\",\n    \"verificationMethod\": \"did:key:z6MkWalletHolderExample#z6MkWalletHolderExample\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z3ExampleProofValueNotReal\"\n  }\n}\n";
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:7d2c1e0a-3b4f-4a6e-9d81-2c5f0e7a1004\",\n  \"type\": \"https://trusttasks.org/spec/rooms/keys/watch/0.2#request\",\n  \"issuer\": \"did:key:z6MkWalletHolderExample\",\n  \"recipient\": \"did:webvh:QmVta:vta.example\",\n  \"issuedAt\": \"2027-02-01T09:30:00Z\",\n  \"payload\": {\n    \"member\": \"did:webvh:QmAlice:personas.example:northwind\",\n    \"host\": \"did:web:rooms.northwind.example\",\n    \"rooms\": [\n      { \"roomId\": \"did:webvh:QmRoom:rooms.northwind.example:standup\", \"sinceVersion\": 2071 }\n    ],\n    \"leaseSeconds\": 120,\n    \"live\": true\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2027-02-01T09:30:00Z\",\n    \"verificationMethod\": \"did:key:z6MkWalletHolderExample#z6MkWalletHolderExample\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z3ExampleProofValueNotReal\"\n  }\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Payload> =
         serde_json::from_str(JSON).expect("deserialize request example");
     let rendered = serde_json::to_value(&doc).expect("re-serialize");
@@ -44,7 +44,7 @@ fn response_example_1() {
 }
 #[test]
 fn response_example_2() {
-    const JSON: &str = "{\n  \"id\": \"urn:uuid:7d2c1e0a-3b4f-4a6e-9d81-2c5f0e7a1005\",\n  \"type\": \"https://trusttasks.org/spec/rooms/keys/watch/0.2#response\",\n  \"issuer\": \"did:webvh:QmVta:vta.example\",\n  \"recipient\": \"did:key:z6MkWalletHolderExample\",\n  \"issuedAt\": \"2027-02-01T09:30:01Z\",\n  \"threadId\": \"urn:uuid:7d2c1e0a-3b4f-4a6e-9d81-2c5f0e7a1004\",\n  \"payload\": {\n    \"member\": \"did:webvh:QmAlice:personas.example:northwind\",\n    \"host\": \"did:web:rooms.northwind.example\",\n    \"watches\": [\n      { \"roomId\": \"did:webvh:QmRoom:rooms.northwind.example:standup\", \"armed\": true, \"live\": true, \"expiresAt\": \"2027-02-01T09:45:00Z\" }\n    ]\n  }\n}\n";
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:7d2c1e0a-3b4f-4a6e-9d81-2c5f0e7a1005\",\n  \"type\": \"https://trusttasks.org/spec/rooms/keys/watch/0.2#response\",\n  \"issuer\": \"did:webvh:QmVta:vta.example\",\n  \"recipient\": \"did:key:z6MkWalletHolderExample\",\n  \"issuedAt\": \"2027-02-01T09:30:01Z\",\n  \"threadId\": \"urn:uuid:7d2c1e0a-3b4f-4a6e-9d81-2c5f0e7a1004\",\n  \"payload\": {\n    \"member\": \"did:webvh:QmAlice:personas.example:northwind\",\n    \"host\": \"did:web:rooms.northwind.example\",\n    \"watches\": [\n      { \"roomId\": \"did:webvh:QmRoom:rooms.northwind.example:standup\", \"armed\": true, \"live\": true, \"expiresAt\": \"2027-02-01T09:32:00Z\" }\n    ]\n  }\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Response> =
         serde_json::from_str(JSON).expect("deserialize response example");
     let rendered = serde_json::to_value(&doc).expect("re-serialize");
@@ -136,7 +136,7 @@ fn rejects_invalid_response_examples() {
         ),
         (
             "`live: false` in an outcome. A one-shot watch omits the member; only its presence says a watch is live, so that a key holder implementing 0.1, which never writes it, is read correctly.",
-            "{\n  \"host\": \"did:web:rooms.northwind.example\",\n  \"member\": \"did:webvh:QmAlice:personas.example:northwind\",\n  \"watches\": [\n    {\n      \"armed\": true,\n      \"expiresAt\": \"2027-02-01T09:45:00Z\",\n      \"live\": false,\n      \"roomId\": \"did:webvh:QmRoom:rooms.northwind.example:standup\"\n    }\n  ]\n}",
+            "{\n  \"host\": \"did:web:rooms.northwind.example\",\n  \"member\": \"did:webvh:QmAlice:personas.example:northwind\",\n  \"watches\": [\n    {\n      \"armed\": true,\n      \"expiresAt\": \"2027-02-01T09:32:00Z\",\n      \"live\": false,\n      \"roomId\": \"did:webvh:QmRoom:rooms.northwind.example:standup\"\n    }\n  ]\n}",
         ),
     ];
     for (i, (note, raw)) in fixtures.iter().enumerate() {

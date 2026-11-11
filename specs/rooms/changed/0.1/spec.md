@@ -217,7 +217,7 @@ when the member re-arms — is described in [`rooms/watch`](../../watch/0.2/spec
 down to the host's spacing of at least a second, with no wait: the address's mediator, the push
 path and anyone watching traffic to the address learn how busy the room is and when each write
 happened. That is why a host holds one only on a room whose signal delay is `none` — which has
-already let its signals' timing follow its writes — for at most 15 minutes per renewal, and why a
+already let its signals' timing follow its writes — for at most two minutes per renewal, and why a
 member holds one only while the room is on its person's screen
 ([`rooms/watch`](../../watch/0.2/spec.md#live-watches-and-the-signal-delay)).
 

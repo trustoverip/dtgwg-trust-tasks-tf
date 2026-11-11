@@ -7,7 +7,7 @@ import type { AuthorityPresentation, Ext } from "../../../_shared/components.js"
 
 
 /**
- * A member asks a room's host to send a content-free `rooms/changed` signal to an address the member names when the room moves past a version the member has read to. A one-shot watch sends one signal per arming, and the member re-arms after it has caught up; a live watch (`live: true`), permitted only on a room whose signal delay is `none`, sends one each time the room moves past the version last signalled, coalesced to at most one a second, for a lease of at most 900 seconds the member renews while the room is on screen. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ * A member asks a room's host to send a content-free `rooms/changed` signal to an address the member names when the room moves past a version the member has read to. A one-shot watch sends one signal per arming, and the member re-arms after it has caught up; a live watch (`live: true`), permitted only on a room whose signal delay is `none`, sends one each time the room moves past the version last signalled, coalesced to at most one a second, for a lease of at most 120 seconds the member renews while the room is on screen. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
  */
 export interface RoomsWatchPayload {
   /**
@@ -27,11 +27,11 @@ export interface RoomsWatchPayload {
    */
   sinceVersion?: number;
   /**
-   * How long the member asks the watch to last if it does not fire, in seconds, up to 30 days. A host MAY grant less, and says what it granted in `expiresAt`; for a live watch it grants at most 900 seconds whatever is asked. Absent means the host's default.
+   * How long the member asks the watch to last if it does not fire, in seconds, up to 30 days. A host MAY grant less, and says what it granted in `expiresAt`; for a live watch it grants at most 120 seconds whatever is asked. Absent means the host's default.
    */
   leaseSeconds?: number;
   /**
-   * Arm, or renew, a live watch: a signal each time the room moves past the version last signalled, coalesced to at most one a second, for a lease of at most 900 seconds. Only `true` is meaningful, so only `true` is accepted; a one-shot watch omits the member. Permitted only on a room whose signal delay is `none` — refused otherwise with `rooms/watch:liveNotPermitted`. A member renews a live watch by sending the same room and address with `live: true` before `expiresAt`, and asks for one only while the room is on its person's screen. A host ignores it on a cancel.
+   * Arm, or renew, a live watch: a signal each time the room moves past the version last signalled, coalesced to at most one a second, for a lease of at most 120 seconds. Only `true` is meaningful, so only `true` is accepted; a one-shot watch omits the member. Permitted only on a room whose signal delay is `none` — refused otherwise with `rooms/watch:liveNotPermitted`. A member renews a live watch by sending the same room and address with `live: true` before `expiresAt`, and asks for one only while the room is on its person's screen. A host ignores it on a cancel.
    */
   live?: true;
   /**
@@ -61,7 +61,7 @@ export interface RoomsWatchResponsePayload {
    */
   live?: true;
   /**
-   * Present when `armed` is `true`: when the host forgets the watch if it has not fired, or, for a live watch, when it ends unless renewed — the lease granted, at most 900 seconds from the request for a live watch, never later than the earliest instant at which any credential of the presentation stops being valid.
+   * Present when `armed` is `true`: when the host forgets the watch if it has not fired, or, for a live watch, when it ends unless renewed — the lease granted, at most 120 seconds from the request for a live watch, never later than the earliest instant at which any credential of the presentation stops being valid.
    */
   expiresAt?: string;
   ext?: Ext;
@@ -111,7 +111,7 @@ export const PAYLOAD_SCHEMA = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/rooms/watch/0.2",
   "title": "Rooms — Watch — payload",
-  "description": "A member asks a room's host to send a content-free `rooms/changed` signal to an address the member names when the room moves past a version the member has read to. A one-shot watch sends one signal per arming, and the member re-arms after it has caught up; a live watch (`live: true`), permitted only on a room whose signal delay is `none`, sends one each time the room moves past the version last signalled, coalesced to at most one a second, for a lease of at most 900 seconds the member renews while the room is on screen. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "description": "A member asks a room's host to send a content-free `rooms/changed` signal to an address the member names when the room moves past a version the member has read to. A one-shot watch sends one signal per arming, and the member re-arms after it has caught up; a live watch (`live: true`), permitted only on a room whose signal delay is `none`, sends one each time the room moves past the version last signalled, coalesced to at most one a second, for a lease of at most 120 seconds the member renews while the room is on screen. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -144,12 +144,12 @@ export const PAYLOAD_SCHEMA = {
       "type": "integer",
       "minimum": 60,
       "maximum": 2592000,
-      "description": "How long the member asks the watch to last if it does not fire, in seconds, up to 30 days. A host MAY grant less, and says what it granted in `expiresAt`; for a live watch it grants at most 900 seconds whatever is asked. Absent means the host's default."
+      "description": "How long the member asks the watch to last if it does not fire, in seconds, up to 30 days. A host MAY grant less, and says what it granted in `expiresAt`; for a live watch it grants at most 120 seconds whatever is asked. Absent means the host's default."
     },
     "live": {
       "type": "boolean",
       "const": true,
-      "description": "Arm, or renew, a live watch: a signal each time the room moves past the version last signalled, coalesced to at most one a second, for a lease of at most 900 seconds. Only `true` is meaningful, so only `true` is accepted; a one-shot watch omits the member. Permitted only on a room whose signal delay is `none` — refused otherwise with `rooms/watch:liveNotPermitted`. A member renews a live watch by sending the same room and address with `live: true` before `expiresAt`, and asks for one only while the room is on its person's screen. A host ignores it on a cancel."
+      "description": "Arm, or renew, a live watch: a signal each time the room moves past the version last signalled, coalesced to at most one a second, for a lease of at most 120 seconds. Only `true` is meaningful, so only `true` is accepted; a one-shot watch omits the member. Permitted only on a room whose signal delay is `none` — refused otherwise with `rooms/watch:liveNotPermitted`. A member renews a live watch by sending the same room and address with `live: true` before `expiresAt`, and asks for one only while the room is on its person's screen. A host ignores it on a cancel."
     },
     "cancel": {
       "type": "boolean",
@@ -196,7 +196,7 @@ export const PAYLOAD_SCHEMA = {
         "expiresAt": {
           "type": "string",
           "format": "date-time",
-          "description": "Present when `armed` is `true`: when the host forgets the watch if it has not fired, or, for a live watch, when it ends unless renewed — the lease granted, at most 900 seconds from the request for a live watch, never later than the earliest instant at which any credential of the presentation stops being valid."
+          "description": "Present when `armed` is `true`: when the host forgets the watch if it has not fired, or, for a live watch, when it ends unless renewed — the lease granted, at most 120 seconds from the request for a live watch, never later than the earliest instant at which any credential of the presentation stops being valid."
         },
         "ext": {
           "$ref": "#/$defs/Ext"
@@ -284,7 +284,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "expiresAt": {
           "type": "string",
           "format": "date-time",
-          "description": "Present when `armed` is `true`: when the host forgets the watch if it has not fired, or, for a live watch, when it ends unless renewed — the lease granted, at most 900 seconds from the request for a live watch, never later than the earliest instant at which any credential of the presentation stops being valid."
+          "description": "Present when `armed` is `true`: when the host forgets the watch if it has not fired, or, for a live watch, when it ends unless renewed — the lease granted, at most 120 seconds from the request for a live watch, never later than the earliest instant at which any credential of the presentation stops being valid."
         },
         "ext": {
           "$ref": "#/$defs/Ext"

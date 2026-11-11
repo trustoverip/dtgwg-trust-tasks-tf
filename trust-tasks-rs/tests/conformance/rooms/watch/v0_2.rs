@@ -17,7 +17,7 @@ fn request_example_1() {
 }
 #[test]
 fn request_example_2() {
-    const JSON: &str = "{\n  \"id\": \"urn:uuid:5b1f6c2e-0a7d-4e3b-9c41-8d2f7a6e1004\",\n  \"type\": \"https://trusttasks.org/spec/rooms/watch/0.2#request\",\n  \"issuer\": \"did:webvh:QmAlice:personas.example:northwind\",\n  \"recipient\": \"did:web:rooms.northwind.example\",\n  \"issuedAt\": \"2027-02-01T09:30:00Z\",\n  \"payload\": {\n    \"roomId\": \"did:webvh:QmRoom:rooms.northwind.example:standup\",\n    \"presentation\": {\n      \"membership\": \"eyJhbGciOi...membership\",\n      \"authority\": [\"eyJhbGciOi...authority\"]\n    },\n    \"address\": \"did:peer:2.Ez6LSg8zQom395jKLrGiBNruB9MM6V8PWuf2FpEy4uRFiqQBR.Vz6MkfQwwNSZq3DwuHyBN9yS7qnQrRwJ7h4uYzaUJDEFzfW6Y.SeyJ0IjoiZG0iLCJzIjoiZGlkOndlYjptZWRpYXRvci5leGFtcGxlIn0\",\n    \"sinceVersion\": 2071,\n    \"leaseSeconds\": 900,\n    \"live\": true\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2027-02-01T09:30:00Z\",\n    \"verificationMethod\": \"did:webvh:QmAlice:personas.example:northwind#key-1\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z3ExampleProofValueNotReal\"\n  }\n}\n";
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:5b1f6c2e-0a7d-4e3b-9c41-8d2f7a6e1004\",\n  \"type\": \"https://trusttasks.org/spec/rooms/watch/0.2#request\",\n  \"issuer\": \"did:webvh:QmAlice:personas.example:northwind\",\n  \"recipient\": \"did:web:rooms.northwind.example\",\n  \"issuedAt\": \"2027-02-01T09:30:00Z\",\n  \"payload\": {\n    \"roomId\": \"did:webvh:QmRoom:rooms.northwind.example:standup\",\n    \"presentation\": {\n      \"membership\": \"eyJhbGciOi...membership\",\n      \"authority\": [\"eyJhbGciOi...authority\"]\n    },\n    \"address\": \"did:peer:2.Ez6LSg8zQom395jKLrGiBNruB9MM6V8PWuf2FpEy4uRFiqQBR.Vz6MkfQwwNSZq3DwuHyBN9yS7qnQrRwJ7h4uYzaUJDEFzfW6Y.SeyJ0IjoiZG0iLCJzIjoiZGlkOndlYjptZWRpYXRvci5leGFtcGxlIn0\",\n    \"sinceVersion\": 2071,\n    \"leaseSeconds\": 120,\n    \"live\": true\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"created\": \"2027-02-01T09:30:00Z\",\n    \"verificationMethod\": \"did:webvh:QmAlice:personas.example:northwind#key-1\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z3ExampleProofValueNotReal\"\n  }\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Payload> =
         serde_json::from_str(JSON).expect("deserialize request example");
     let rendered = serde_json::to_value(&doc).expect("re-serialize");
@@ -44,7 +44,7 @@ fn response_example_1() {
 }
 #[test]
 fn response_example_2() {
-    const JSON: &str = "{\n  \"id\": \"urn:uuid:5b1f6c2e-0a7d-4e3b-9c41-8d2f7a6e1005\",\n  \"type\": \"https://trusttasks.org/spec/rooms/watch/0.2#response\",\n  \"issuer\": \"did:web:rooms.northwind.example\",\n  \"recipient\": \"did:webvh:QmAlice:personas.example:northwind\",\n  \"issuedAt\": \"2027-02-01T09:30:01Z\",\n  \"threadId\": \"urn:uuid:5b1f6c2e-0a7d-4e3b-9c41-8d2f7a6e1004\",\n  \"payload\": {\n    \"roomId\": \"did:webvh:QmRoom:rooms.northwind.example:standup\",\n    \"address\": \"did:peer:2.Ez6LSg8zQom395jKLrGiBNruB9MM6V8PWuf2FpEy4uRFiqQBR.Vz6MkfQwwNSZq3DwuHyBN9yS7qnQrRwJ7h4uYzaUJDEFzfW6Y.SeyJ0IjoiZG0iLCJzIjoiZGlkOndlYjptZWRpYXRvci5leGFtcGxlIn0\",\n    \"armed\": true,\n    \"live\": true,\n    \"expiresAt\": \"2027-02-01T09:45:00Z\"\n  }\n}\n";
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:5b1f6c2e-0a7d-4e3b-9c41-8d2f7a6e1005\",\n  \"type\": \"https://trusttasks.org/spec/rooms/watch/0.2#response\",\n  \"issuer\": \"did:web:rooms.northwind.example\",\n  \"recipient\": \"did:webvh:QmAlice:personas.example:northwind\",\n  \"issuedAt\": \"2027-02-01T09:30:01Z\",\n  \"threadId\": \"urn:uuid:5b1f6c2e-0a7d-4e3b-9c41-8d2f7a6e1004\",\n  \"payload\": {\n    \"roomId\": \"did:webvh:QmRoom:rooms.northwind.example:standup\",\n    \"address\": \"did:peer:2.Ez6LSg8zQom395jKLrGiBNruB9MM6V8PWuf2FpEy4uRFiqQBR.Vz6MkfQwwNSZq3DwuHyBN9yS7qnQrRwJ7h4uYzaUJDEFzfW6Y.SeyJ0IjoiZG0iLCJzIjoiZGlkOndlYjptZWRpYXRvci5leGFtcGxlIn0\",\n    \"armed\": true,\n    \"live\": true,\n    \"expiresAt\": \"2027-02-01T09:32:00Z\"\n  }\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Response> =
         serde_json::from_str(JSON).expect("deserialize response example");
     let rendered = serde_json::to_value(&doc).expect("re-serialize");
@@ -119,7 +119,7 @@ fn rejects_invalid_response_examples() {
         ),
         (
             "`live: false` in a response. A one-shot watch omits the member; only its presence says a watch is live, so that a host implementing 0.1, which never writes it, is read correctly.",
-            "{\n  \"address\": \"did:peer:2.Ez6LSexample.Vz6Mkexample\",\n  \"armed\": true,\n  \"expiresAt\": \"2027-02-01T09:45:00Z\",\n  \"live\": false,\n  \"roomId\": \"did:webvh:QmRoom:rooms.northwind.example:standup\"\n}",
+            "{\n  \"address\": \"did:peer:2.Ez6LSexample.Vz6Mkexample\",\n  \"armed\": true,\n  \"expiresAt\": \"2027-02-01T09:32:00Z\",\n  \"live\": false,\n  \"roomId\": \"did:webvh:QmRoom:rooms.northwind.example:standup\"\n}",
         ),
     ];
     for (i, (note, raw)) in fixtures.iter().enumerate() {
