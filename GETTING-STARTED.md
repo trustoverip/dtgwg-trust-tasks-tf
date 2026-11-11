@@ -382,6 +382,14 @@ access, moves value, discloses a secret, or is otherwise irreversible — SPEC
 transport binding delegates it to the consumer. `notConsequentialChecks()` keeps
 no record and is conformant only where repeated execution is safe and intended.
 
+A consumer may keep its record for less time than a producer's `expiresAt`
+asks, provided it stops accepting the document when it stops remembering it
+(SPEC §7.2, *Bounding the record*): the consequential policies in all four
+libraries honour an `expiresAt` up to 30 days after `issuedAt` and treat the
+document as expiring there. The in-memory guard refuses new documents
+`unavailable` when full of live records, and lets no single issuer hold more
+than a tenth of it; size it for your retention window, or use a shared store.
+
 Items 1 and 3 (framework schema, unknown `type`) belong to your parse and
 dispatch and have already succeeded by the time you hold a typed document. Full
 detail is in [`trust-tasks-ts/README.md`](./trust-tasks-ts/README.md).

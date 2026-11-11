@@ -231,6 +231,25 @@ pub trait ReplayGuard: Send + Sync {
         now: DateTime<Utc>,
     ) -> Result<ReplayVerdict, ReplayGuardError>;
 
+    /// [`claim`](Self::claim), told which party the document is attributed
+    /// to: the issuer SPEC §4.8.1 resolved for it, `None` when there is none.
+    ///
+    /// The pipeline calls this rather than `claim`, so a guard can share its
+    /// capacity out between parties — [`InMemoryReplayGuard`] does, so that
+    /// one party cannot hold every slot. The default ignores `issuer` and calls
+    /// `claim`, which is what every guard did before this method existed.
+    async fn claim_for(
+        &self,
+        issuer: Option<&str>,
+        id: &str,
+        digest: &DocumentDigest,
+        retain_until: Option<DateTime<Utc>>,
+        now: DateTime<Utc>,
+    ) -> Result<ReplayVerdict, ReplayGuardError> {
+        let _ = issuer;
+        self.claim(id, digest, retain_until, now).await
+    }
+
     /// Attach the response a completed execution produced, so a later
     /// duplicate can be answered with it per SPEC §7.2 (*Disposition of a
     /// duplicate*) rather than merely absorbed in silence.
@@ -272,6 +291,19 @@ impl<T: ReplayGuard + ?Sized> ReplayGuard for &T {
         now: DateTime<Utc>,
     ) -> Result<ReplayVerdict, ReplayGuardError> {
         (**self).claim(id, digest, retain_until, now).await
+    }
+
+    async fn claim_for(
+        &self,
+        issuer: Option<&str>,
+        id: &str,
+        digest: &DocumentDigest,
+        retain_until: Option<DateTime<Utc>>,
+        now: DateTime<Utc>,
+    ) -> Result<ReplayVerdict, ReplayGuardError> {
+        (**self)
+            .claim_for(issuer, id, digest, retain_until, now)
+            .await
     }
 
     async fn record_response(
@@ -347,8 +379,34 @@ pub enum ReplayPolicy<'a> {
 /// deployment admitting long-lived documents should either raise it, lower
 /// the expiry horizon ([`FreshnessPolicy`](crate::FreshnessPolicy)), or back
 /// [`ReplayGuard`] with a store that can hold the window.
+///
+/// A document carrying an `expiresAt` but no `issuedAt` is not bounded by the
+/// horizon (it runs from `issuedAt`): under a policy that does not require
+/// `issuedAt`, its record lives until its `expiresAt`. The consequential
+/// policy requires `issuedAt`.
+///
+/// # One party's share
+///
+/// So that one party cannot fill the guard and hold every slot for the length
+/// of the expiry horizon — refusing every other party in the meantime — no
+/// issuer may hold more than a share of the capacity: a tenth by default
+/// ([`with_per_issuer_limit`](Self::with_per_issuer_limit) changes it). A party
+/// at its share is refused `unavailable` for its *own* new documents; other
+/// parties are unaffected. The issuer is the one the pipeline resolved
+/// (SPEC §4.8.1) and passes to [`claim_for`](ReplayGuard::claim_for); documents
+/// with no resolved issuer share one allowance, and [`claim`](ReplayGuard::claim)
+/// called directly counts against that same allowance. The share is per
+/// *identifier*: on a transport where anyone can mint identifiers, a party
+/// using many of them is limited only by the overall capacity.
+///
+/// # Memory
+///
+/// The guard holds at most `capacity` records, each its `id`, a digest and the
+/// response cached for duplicates, so its worst case is roughly `capacity` ×
+/// (the largest `id` + the largest response) the transport admits.
 pub struct InMemoryReplayGuard {
     capacity: usize,
+    per_issuer: usize,
     inner: Mutex<Inner>,
 }
 
@@ -360,10 +418,13 @@ struct Inner {
     /// has closed without scanning, and keeps `InMemoryReplayGuard`
     /// dependency-free.
     expiry: BTreeMap<(DateTime<Utc>, u64), String>,
+    /// Live records per issuer (`None`: no resolved issuer).
+    per_issuer: HashMap<Option<String>, usize>,
     seq: u64,
 }
 
 struct Entry {
+    issuer: Option<String>,
     digest: DocumentDigest,
     retain_until: Option<DateTime<Utc>>,
     response: Option<Value>,
@@ -388,8 +449,18 @@ impl InMemoryReplayGuard {
         );
         Self {
             capacity,
+            per_issuer: capacity.div_ceil(10),
             inner: Mutex::new(Inner::default()),
         }
+    }
+
+    /// Builder: let one issuer hold at most `limit` live records (default: a
+    /// tenth of the capacity, rounded up). Clamped to `1..=capacity`; see
+    /// [*One party's share*](InMemoryReplayGuard#one-partys-share).
+    #[must_use]
+    pub fn with_per_issuer_limit(mut self, limit: usize) -> Self {
+        self.per_issuer = limit.clamp(1, self.capacity);
+        self
     }
 
     /// Number of records currently retained. Exposed for tests and metrics.
@@ -446,7 +517,21 @@ impl Inner {
             if let Some(until) = entry.retain_until {
                 self.expiry.remove(&(until, entry.seq));
             }
+            self.forget_issuer(&entry.issuer);
         }
+    }
+
+    fn forget_issuer(&mut self, issuer: &Option<String>) {
+        if let Some(count) = self.per_issuer.get_mut(issuer) {
+            *count -= 1;
+            if *count == 0 {
+                self.per_issuer.remove(issuer);
+            }
+        }
+    }
+
+    fn held_by(&self, issuer: &Option<String>) -> usize {
+        self.per_issuer.get(issuer).copied().unwrap_or(0)
     }
 
     /// Drop every record whose retention deadline is at or before `now`.
@@ -458,7 +543,9 @@ impl Inner {
             let Some((_, id)) = self.expiry.pop_first() else {
                 break;
             };
-            self.entries.remove(&id);
+            if let Some(entry) = self.entries.remove(&id) {
+                self.forget_issuer(&entry.issuer);
+            }
         }
     }
 }
@@ -472,6 +559,18 @@ impl ReplayGuard for InMemoryReplayGuard {
         retain_until: Option<DateTime<Utc>>,
         now: DateTime<Utc>,
     ) -> Result<ReplayVerdict, ReplayGuardError> {
+        self.claim_for(None, id, digest, retain_until, now).await
+    }
+
+    async fn claim_for(
+        &self,
+        issuer: Option<&str>,
+        id: &str,
+        digest: &DocumentDigest,
+        retain_until: Option<DateTime<Utc>>,
+        now: DateTime<Utc>,
+    ) -> Result<ReplayVerdict, ReplayGuardError> {
+        let issuer = issuer.map(str::to_string);
         let mut inner = self.inner.lock().expect("replay guard mutex");
 
         // An expired record is treated as absent, per the trait contract: the
@@ -501,12 +600,20 @@ impl ReplayGuard for InMemoryReplayGuard {
         // Full: reclaim the records whose window has closed, and if every
         // slot still holds a live record, refuse rather than drop one. A
         // record dropped inside its window is a replay accepted later.
-        if inner.entries.len() >= self.capacity {
+        // Likewise for one issuer's share, so that one party cannot hold
+        // every slot and refuse everyone else.
+        if inner.entries.len() >= self.capacity || inner.held_by(&issuer) >= self.per_issuer {
             inner.purge_expired(now);
             if inner.entries.len() >= self.capacity {
                 return Err(ReplayGuardError(format!(
                     "in-memory replay guard is full: {} records are inside their retention window",
                     inner.entries.len()
+                )));
+            }
+            if inner.held_by(&issuer) >= self.per_issuer {
+                return Err(ReplayGuardError(format!(
+                    "in-memory replay guard: this issuer holds its share of {} records",
+                    self.per_issuer
                 )));
             }
         }
@@ -516,6 +623,7 @@ impl ReplayGuard for InMemoryReplayGuard {
         inner.entries.insert(
             id.to_string(),
             Entry {
+                issuer: issuer.clone(),
                 digest: digest.clone(),
                 retain_until,
                 response: None,
@@ -526,6 +634,7 @@ impl ReplayGuard for InMemoryReplayGuard {
         if let Some(until) = retain_until {
             inner.expiry.insert((until, seq), id.to_string());
         }
+        *inner.per_issuer.entry(issuer).or_insert(0) += 1;
         Ok(ReplayVerdict::Fresh)
     }
 
@@ -746,7 +855,7 @@ mod tests {
     /// `unavailable`. Dropping one would let that document execute again.
     #[tokio::test]
     async fn a_full_guard_refuses_rather_than_dropping_a_live_record() {
-        let guard = InMemoryReplayGuard::new(2);
+        let guard = InMemoryReplayGuard::new(2).with_per_issuer_limit(2);
         let now = t("2026-08-26T12:00:00Z");
         let later = t("2026-09-20T12:00:00Z");
         let d = |id: &str| document_digest(&doc(id, json!({}))).unwrap();
@@ -774,7 +883,7 @@ mod tests {
     /// so a full guard holds only live records.
     #[tokio::test]
     async fn a_full_guard_reclaims_expired_records_first() {
-        let guard = InMemoryReplayGuard::new(2);
+        let guard = InMemoryReplayGuard::new(2).with_per_issuer_limit(2);
         let now = t("2026-08-26T12:00:00Z");
         let soon = t("2026-08-26T12:05:00Z");
         let later = t("2026-08-26T13:00:00Z");
@@ -798,6 +907,71 @@ mod tests {
                 .unwrap(),
             ReplayVerdict::Duplicate { .. }
         ));
+    }
+
+    /// One issuer at its share is refused for its own new documents only;
+    /// every other party keeps its access, and the share frees as records
+    /// expire.
+    #[tokio::test]
+    async fn one_issuer_cannot_hold_every_slot() {
+        let guard = InMemoryReplayGuard::new(10);
+        let now = t("2026-08-26T12:00:00Z");
+        let month = t("2026-09-25T12:00:00Z");
+        let d = |id: &str| document_digest(&doc(id, json!({}))).unwrap();
+
+        // A tenth of 10 is 1.
+        assert_eq!(
+            guard
+                .claim_for(Some("did:example:a"), "a1", &d("a1"), Some(month), now)
+                .await
+                .unwrap(),
+            ReplayVerdict::Fresh
+        );
+        let refused = guard
+            .claim_for(Some("did:example:a"), "a2", &d("a2"), Some(month), now)
+            .await;
+        assert_eq!(
+            RejectReason::from(refused.unwrap_err()).code(),
+            crate::StandardCode::Unavailable
+        );
+        // Its own record is still recognised.
+        assert!(matches!(
+            guard
+                .claim_for(Some("did:example:a"), "a1", &d("a1"), Some(month), now)
+                .await
+                .unwrap(),
+            ReplayVerdict::Duplicate { .. }
+        ));
+        // Another party, and the no-issuer allowance, are unaffected.
+        for (issuer, id) in [(Some("did:example:b"), "b1"), (None, "n1")] {
+            assert_eq!(
+                guard
+                    .claim_for(issuer, id, &d(id), Some(month), now)
+                    .await
+                    .unwrap(),
+                ReplayVerdict::Fresh
+            );
+        }
+        // Once its record expires the share frees.
+        let later = t("2026-09-26T12:00:00Z");
+        assert_eq!(
+            guard
+                .claim_for(Some("did:example:a"), "a2", &d("a2"), None, later)
+                .await
+                .unwrap(),
+            ReplayVerdict::Fresh
+        );
+        // And the limit is configurable.
+        let wide = InMemoryReplayGuard::new(10).with_per_issuer_limit(3);
+        for id in ["x1", "x2", "x3"] {
+            wide.claim_for(Some("did:example:a"), id, &d(id), None, now)
+                .await
+                .unwrap();
+        }
+        assert!(wide
+            .claim_for(Some("did:example:a"), "x4", &d("x4"), None, now)
+            .await
+            .is_err());
     }
 
     #[tokio::test]

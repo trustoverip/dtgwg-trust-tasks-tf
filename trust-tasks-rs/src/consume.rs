@@ -838,7 +838,16 @@ where
             );
         };
 
-        match guard.claim(&doc.id, &digest, Some(retain_until), now).await {
+        match guard
+            .claim_for(
+                parties.issuer.as_deref(),
+                &doc.id,
+                &digest,
+                Some(retain_until),
+                now,
+            )
+            .await
+        {
             Ok(ReplayVerdict::Fresh) => claim = Some((guard, digest)),
             Ok(ReplayVerdict::Duplicate {
                 prior_response,

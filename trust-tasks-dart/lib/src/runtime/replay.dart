@@ -138,6 +138,24 @@ abstract interface class ReplayGuard {
   Future<void> release(String id, String digest);
 }
 
+/// A [ReplayGuard] that is told which party a document is attributed to: the
+/// issuer SPEC §4.8.1 resolved for it, null when there is none.
+///
+/// [consumeInbound] calls [claimFor] in place of [ReplayGuard.claim] on a guard
+/// that implements this, so the guard can share its capacity out between
+/// parties — [InMemoryReplayGuard] does, so that one party cannot hold every
+/// slot. A separate interface, so that existing guards keep compiling.
+abstract interface class IssuerScopedReplayGuard implements ReplayGuard {
+  /// [ReplayGuard.claim], counting the record against [issuer].
+  Future<ReplayVerdict> claimFor(
+    String? issuer,
+    String id,
+    String digest,
+    DateTime? retainUntil,
+    DateTime now,
+  );
+}
+
 /// How a consumer applies SPEC §7.2 item 11 in [consumeInbound].
 sealed class ReplayPolicy {
   const ReplayPolicy();
@@ -162,7 +180,8 @@ final class NotConsequentialReplay extends ReplayPolicy {
 }
 
 class _Entry {
-  _Entry(this.digest, this.retainUntil);
+  _Entry(this.issuer, this.digest, this.retainUntil);
+  final String? issuer;
   final String digest;
   final DateTime? retainUntil;
   Object? response;
@@ -183,15 +202,23 @@ const int defaultReplayCapacity = 100000;
 /// Thrown by [InMemoryReplayGuard.claim] when every slot holds a record still
 /// inside its retention window. `consumeInbound` answers it `unavailable`.
 final class ReplayGuardFullException implements Exception {
-  /// The guard held [size] live records.
-  const ReplayGuardFullException(this.size);
+  /// The guard held [size] live records — or, with [issuerShare], the
+  /// document's issuer held its share of [size].
+  const ReplayGuardFullException(this.size, {this.issuerShare = false});
 
-  /// How many live records the guard held.
+  /// How many live records the guard (or the issuer) held.
   final int size;
 
+  /// Whether the refusal is of one issuer at its share, rather than the guard
+  /// being full.
+  final bool issuerShare;
+
   @override
-  String toString() => 'ReplayGuardFullException: in-memory replay guard is '
-      'full: $size records are inside their retention window';
+  String toString() => issuerShare
+      ? 'ReplayGuardFullException: in-memory replay guard: this issuer holds '
+          'its share of $size records'
+      : 'ReplayGuardFullException: in-memory replay guard is full: $size '
+          'records are inside their retention window';
 }
 
 /// A bounded, in-process [ReplayGuard]: a map from `id` to the digest accepted
@@ -212,21 +239,70 @@ final class ReplayGuardFullException implements Exception {
 /// (retryable): the guard refuses to execute a document it could not then
 /// remember, rather than forgetting one it promised to. Records whose window
 /// has closed are reclaimed first. The capacity is therefore a ceiling on
-/// distinct documents *per retention window*; see [defaultReplayCapacity].
+/// distinct documents *per retention window*; see [defaultReplayCapacity]. A
+/// document carrying an `expiresAt` but no `issuedAt` is not bounded by the
+/// expiry horizon (it runs from `issuedAt`), so under a policy that does not
+/// require `issuedAt` its record lives until its `expiresAt`.
+///
+/// **One party's share.** So that one party cannot fill the guard and hold
+/// every slot for the length of the expiry horizon, no issuer may hold more
+/// than a share of the capacity — a tenth by default, rounded up
+/// (`perIssuerLimit` changes it). A party at its share is refused
+/// `unavailable` for its *own* new documents; others are unaffected. The issuer
+/// is the one `consumeInbound` resolved (SPEC §4.8.1) and passes to
+/// [claimFor]; documents with no resolved issuer, and direct calls to [claim],
+/// share one allowance. The share is per identifier: where anyone can mint
+/// identifiers, a party using many is limited only by the capacity.
+///
+/// **Memory.** At most `capacity` records, each its `id`, a digest and the
+/// response cached for duplicates: roughly `capacity` × (largest `id` +
+/// largest response) at worst.
 ///
 /// Dart is single-threaded per isolate and none of these methods await, so
 /// claim-and-record is atomic by construction.
-class InMemoryReplayGuard implements ReplayGuard {
+class InMemoryReplayGuard implements IssuerScopedReplayGuard {
   /// Builds a guard retaining at most [capacity] records.
   ///
   /// A capacity below 1 takes [defaultReplayCapacity]. It is not treated as
   /// "retain nothing": a guard that retains nothing answers [Fresh] to
   /// everything, which is a silent total defeat of item 11 rather than a visible
   /// misconfiguration.
-  InMemoryReplayGuard([int capacity = defaultReplayCapacity])
-      : _capacity = capacity < 1 ? defaultReplayCapacity : capacity;
+  ///
+  /// [perIssuerLimit] is the most live records one issuer may hold; it defaults
+  /// to a tenth of the capacity, rounded up, and is clamped to `1..capacity`.
+  InMemoryReplayGuard(
+      [int capacity = defaultReplayCapacity, int? perIssuerLimit])
+      : _capacity = capacity < 1 ? defaultReplayCapacity : capacity,
+        _perIssuer = _shareOf(
+          capacity < 1 ? defaultReplayCapacity : capacity,
+          perIssuerLimit,
+        );
+
+  static int _shareOf(int capacity, int? limit) =>
+      (limit ?? (capacity + 9) ~/ 10).clamp(1, capacity);
 
   final int _capacity;
+  final int _perIssuer;
+
+  /// Live records per issuer (null key: no resolved issuer).
+  final Map<String?, int> _held = <String?, int>{};
+
+  int _heldBy(String? issuer) => _held[issuer] ?? 0;
+
+  void _forget(_Entry entry) {
+    final held = _heldBy(entry.issuer) - 1;
+    if (held <= 0) {
+      _held.remove(entry.issuer);
+    } else {
+      _held[entry.issuer] = held;
+    }
+  }
+
+  void _remove(String id) {
+    final entry = _entries.remove(id);
+    if (entry != null) _forget(entry);
+  }
+
   final LinkedHashMap<String, _Entry> _entries =
       LinkedHashMap<String, _Entry>();
 
@@ -244,7 +320,10 @@ class InMemoryReplayGuard implements ReplayGuard {
     _entries.removeWhere((_, e) {
       final until = e.retainUntil;
       if (until == null) return false;
-      if (!until.isAfter(now)) return true;
+      if (!until.isAfter(now)) {
+        _forget(e);
+        return true;
+      }
       if (earliest == null || until.isBefore(earliest!)) earliest = until;
       return false;
     });
@@ -253,6 +332,16 @@ class InMemoryReplayGuard implements ReplayGuard {
 
   @override
   Future<ReplayVerdict> claim(
+    String id,
+    String digest,
+    DateTime? retainUntil,
+    DateTime now,
+  ) =>
+      claimFor(null, id, digest, retainUntil, now);
+
+  @override
+  Future<ReplayVerdict> claimFor(
+    String? issuer,
     String id,
     String digest,
     DateTime? retainUntil,
@@ -266,7 +355,7 @@ class InMemoryReplayGuard implements ReplayGuard {
       // the key would only manufacture a permanent `idConflict` for an `id`
       // nobody can use.
       if (until != null && !until.isAfter(now)) {
-        _entries.remove(id);
+        _remove(id);
       } else {
         if (existing.digest != digest) return const Conflict();
         return Duplicate(
@@ -279,15 +368,21 @@ class InMemoryReplayGuard implements ReplayGuard {
     // Full: reclaim the records whose window has closed, and if every slot
     // still holds a live record, refuse rather than drop one. A record dropped
     // inside its window is a replay accepted later.
-    if (_entries.length >= _capacity) {
+    // Likewise for one issuer's share, so that one party cannot hold every slot
+    // and refuse everyone else.
+    if (_entries.length >= _capacity || _heldBy(issuer) >= _perIssuer) {
       final earliest = _earliestExpiry;
       if (earliest != null && !earliest.isAfter(now)) purgeExpired(now);
       if (_entries.length >= _capacity) {
         throw ReplayGuardFullException(_entries.length);
       }
+      if (_heldBy(issuer) >= _perIssuer) {
+        throw ReplayGuardFullException(_perIssuer, issuerShare: true);
+      }
     }
 
-    _entries[id] = _Entry(digest, retainUntil);
+    _entries[id] = _Entry(issuer, digest, retainUntil);
+    _held[issuer] = _heldBy(issuer) + 1;
     final earliest = _earliestExpiry;
     if (retainUntil != null &&
         (earliest == null || retainUntil.isBefore(earliest))) {
@@ -311,7 +406,7 @@ class InMemoryReplayGuard implements ReplayGuard {
     // a concurrent arrival that legitimately holds the key must not have it
     // taken away by another document's cleanup.
     if (entry != null && entry.digest == digest && !entry.completed) {
-      _entries.remove(id);
+      _remove(id);
     }
   }
 }

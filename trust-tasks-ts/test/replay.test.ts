@@ -319,7 +319,7 @@ describe("InMemoryReplayGuard", () => {
   const D = "digest-a";
 
   it("refuses a new document when full of live records, rather than dropping one", () => {
-    const guard = new InMemoryReplayGuard(2);
+    const guard = new InMemoryReplayGuard(2, 2);
     const later = NOW + 30 * 24 * 3600_000;
     guard.claim("a", "da", later, NOW);
     guard.claim("b", "db", undefined, NOW);
@@ -332,13 +332,33 @@ describe("InMemoryReplayGuard", () => {
   });
 
   it("reclaims expired records first when full", () => {
-    const guard = new InMemoryReplayGuard(2);
+    const guard = new InMemoryReplayGuard(2, 2);
     guard.claim("a", "da", NOW + 5 * 60_000, NOW);
     guard.claim("b", "db", NOW + 60 * 60_000, NOW);
     const afterA = NOW + 10 * 60_000;
     assert.equal(guard.claim("c", "dc", NOW + 60 * 60_000, afterA).kind, "fresh");
     assert.equal(guard.size, 2);
     assert.equal(guard.claim("b", "db", NOW + 60 * 60_000, afterA).kind, "duplicate");
+  });
+
+  it("lets no one issuer hold more than its share, refusing only that issuer", () => {
+    const guard = new InMemoryReplayGuard(10); // a tenth of 10 is 1
+    const month = NOW + 30 * 24 * 3600_000;
+    assert.equal(guard.claimFor("did:example:a", "a1", "d", month, NOW).kind, "fresh");
+    assert.throws(
+      () => guard.claimFor("did:example:a", "a2", "d", month, NOW),
+      (e: unknown) => e instanceof ReplayGuardFullError && e.issuerShare,
+    );
+    // Its own record is still recognised; other parties are unaffected.
+    assert.equal(guard.claimFor("did:example:a", "a1", "d", month, NOW).kind, "duplicate");
+    assert.equal(guard.claimFor("did:example:b", "b1", "d", month, NOW).kind, "fresh");
+    assert.equal(guard.claimFor(undefined, "n1", "d", month, NOW).kind, "fresh");
+    // The share frees as its records expire.
+    assert.equal(guard.claimFor("did:example:a", "a2", "d", undefined, month + 1).kind, "fresh");
+    // And it is configurable.
+    const wide = new InMemoryReplayGuard(10, 3);
+    for (const id of ["x1", "x2", "x3"]) wide.claimFor("did:example:a", id, "d", undefined, NOW);
+    assert.throws(() => wide.claimFor("did:example:a", "x4", "d", undefined, NOW), ReplayGuardFullError);
   });
 
   it("answers a full guard's new document unavailable through the pipeline", async () => {

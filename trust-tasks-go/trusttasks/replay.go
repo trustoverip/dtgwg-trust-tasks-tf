@@ -183,6 +183,7 @@ type ReplayPolicy struct {
 }
 
 type replayEntry struct {
+	issuer      string
 	id          string
 	digest      string
 	retainUntil time.Time
@@ -210,15 +211,34 @@ type replayEntry struct {
 // a document it could not then remember, rather than forgetting one it promised
 // to. Records whose window has closed are reclaimed first. The capacity is
 // therefore a ceiling on distinct documents per retention window; see
-// [DefaultReplayCapacity] for sizing.
+// [DefaultReplayCapacity] for sizing. A document carrying an expiresAt but no
+// issuedAt is not bounded by the expiry horizon (it runs from issuedAt), so
+// under a policy that does not require issuedAt its record lives until its
+// expiresAt.
+//
+// One party's share: so that one party cannot fill the guard and hold every slot
+// for the length of the expiry horizon, no issuer may hold more than a share of
+// the capacity — a tenth by default, rounded up ([InMemoryReplayGuard.WithPerIssuerLimit]
+// changes it). A party at its share is refused with [ErrReplayGuardIssuerShare]
+// (unavailable) for its own new documents; others are unaffected. The issuer is
+// the one [ConsumeInbound] resolved (SPEC §4.8.1) and passes to
+// [InMemoryReplayGuard.ClaimFor]; documents with no resolved issuer, and direct
+// calls to Claim, share one allowance. The share is per identifier: where anyone
+// can mint identifiers, a party using many is limited only by the capacity.
+//
+// Memory: at most capacity records, each its id, a digest and the response
+// cached for duplicates — roughly capacity × (largest id + largest response) at
+// worst.
 //
 // Safe for concurrent use, which is what makes claim-and-record atomic as the
 // [ReplayGuard] contract requires.
 type InMemoryReplayGuard struct {
-	mu       sync.Mutex
-	capacity int
-	order    *list.List               // insertion order
-	entries  map[string]*list.Element // id -> element holding *replayEntry
+	mu        sync.Mutex
+	capacity  int
+	perIssuer int
+	held      map[string]int           // live records per issuer ("" = none)
+	order     *list.List               // insertion order
+	entries   map[string]*list.Element // id -> element holding *replayEntry
 	// earliest is no later than any bounded record's retainUntil (it may be
 	// earlier, after a removal). Lets a full guard skip the reclaiming scan when
 	// nothing can have expired yet. Zero means no bounded record.
@@ -240,6 +260,19 @@ const DefaultReplayCapacity = 100_000
 // holds a record still inside its retention window.
 var ErrReplayGuardFull = errors.New("trusttasks: in-memory replay guard is full of records inside their retention window")
 
+// ErrReplayGuardIssuerShare is returned by [InMemoryReplayGuard.ClaimFor] when
+// the document's issuer already holds its share of live records.
+var ErrReplayGuardIssuerShare = errors.New("trusttasks: in-memory replay guard: this issuer holds its share of records")
+
+// IssuerScopedReplayGuard is a [ReplayGuard] that is told which party a document
+// is attributed to: the issuer SPEC §4.8.1 resolved for it, "" when there is
+// none. [ConsumeInbound] calls ClaimFor in place of Claim on a guard that
+// implements it, so the guard can share its capacity out between parties.
+type IssuerScopedReplayGuard interface {
+	ReplayGuard
+	ClaimFor(ctx context.Context, issuer, id, digest string, retainUntil, now time.Time) (ReplayVerdict, error)
+}
+
 // NewInMemoryReplayGuard builds a guard retaining at most capacity records.
 //
 // A capacity of zero or less takes [DefaultReplayCapacity]. It is not treated as
@@ -251,10 +284,21 @@ func NewInMemoryReplayGuard(capacity int) *InMemoryReplayGuard {
 		capacity = DefaultReplayCapacity
 	}
 	return &InMemoryReplayGuard{
-		capacity: capacity,
-		order:    list.New(),
-		entries:  make(map[string]*list.Element),
+		capacity:  capacity,
+		perIssuer: (capacity + 9) / 10,
+		held:      make(map[string]int),
+		order:     list.New(),
+		entries:   make(map[string]*list.Element),
 	}
+}
+
+// WithPerIssuerLimit lets one issuer hold at most limit live records (default: a
+// tenth of the capacity, rounded up), clamped to 1..capacity. It returns g.
+func (g *InMemoryReplayGuard) WithPerIssuerLimit(limit int) *InMemoryReplayGuard {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	g.perIssuer = min(max(limit, 1), g.capacity)
+	return g
 }
 
 // Size reports how many records are currently retained. For tests and metrics.
@@ -290,8 +334,19 @@ func (g *InMemoryReplayGuard) purgeExpired(now time.Time) {
 
 // Claim implements [ReplayGuard].
 func (g *InMemoryReplayGuard) Claim(
-	_ context.Context,
+	ctx context.Context,
 	id, digest string,
+	retainUntil time.Time,
+	now time.Time,
+) (ReplayVerdict, error) {
+	return g.ClaimFor(ctx, "", id, digest, retainUntil, now)
+}
+
+// ClaimFor implements [IssuerScopedReplayGuard]: [InMemoryReplayGuard.Claim],
+// counting the record against issuer's share.
+func (g *InMemoryReplayGuard) ClaimFor(
+	_ context.Context,
+	issuer, id, digest string,
 	retainUntil time.Time,
 	now time.Time,
 ) (ReplayVerdict, error) {
@@ -321,23 +376,30 @@ func (g *InMemoryReplayGuard) Claim(
 	// Full: reclaim the records whose window has closed, and if every slot still
 	// holds a live record, refuse rather than drop one. A record dropped inside
 	// its window is a replay accepted later.
-	if len(g.entries) >= g.capacity {
+	// Likewise for one issuer's share, so that one party cannot hold every slot
+	// and refuse everyone else.
+	if len(g.entries) >= g.capacity || g.held[issuer] >= g.perIssuer {
 		if !g.earliest.IsZero() && !g.earliest.After(now) {
 			g.purgeExpired(now)
 		}
 		if len(g.entries) >= g.capacity {
 			return ReplayVerdict{}, ErrReplayGuardFull
 		}
+		if g.held[issuer] >= g.perIssuer {
+			return ReplayVerdict{}, ErrReplayGuardIssuerShare
+		}
 	}
 
 	bounded := !retainUntil.IsZero()
 	element := g.order.PushBack(&replayEntry{
+		issuer:      issuer,
 		id:          id,
 		digest:      digest,
 		retainUntil: retainUntil,
 		bounded:     bounded,
 	})
 	g.entries[id] = element
+	g.held[issuer]++
 	if bounded && (g.earliest.IsZero() || retainUntil.Before(g.earliest)) {
 		g.earliest = retainUntil
 	}
@@ -385,4 +447,9 @@ func (g *InMemoryReplayGuard) remove(element *list.Element) {
 	entry := element.Value.(*replayEntry)
 	delete(g.entries, entry.id)
 	g.order.Remove(element)
+	if g.held[entry.issuer] <= 1 {
+		delete(g.held, entry.issuer)
+	} else {
+		g.held[entry.issuer]--
+	}
 }

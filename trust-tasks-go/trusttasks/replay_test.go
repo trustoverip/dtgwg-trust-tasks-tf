@@ -263,7 +263,7 @@ func TestItem11KeepsNoRecordWhenTheCallerDeclaresTheTaskNotConsequential(t *test
 // it refuses the new document instead. Dropping one would let that document
 // execute again.
 func TestInMemoryGuardRefusesRatherThanDroppingALiveRecord(t *testing.T) {
-	guard := tt.NewInMemoryReplayGuard(2)
+	guard := tt.NewInMemoryReplayGuard(2).WithPerIssuerLimit(2)
 	ctx := context.Background()
 	deadline := testNow.Add(30 * 24 * time.Hour)
 
@@ -283,7 +283,7 @@ func TestInMemoryGuardRefusesRatherThanDroppingALiveRecord(t *testing.T) {
 }
 
 func TestInMemoryGuardReclaimsExpiredRecordsFirst(t *testing.T) {
-	guard := tt.NewInMemoryReplayGuard(2)
+	guard := tt.NewInMemoryReplayGuard(2).WithPerIssuerLimit(2)
 	ctx := context.Background()
 
 	_, _ = guard.Claim(ctx, "a", "d1", testNow.Add(5*time.Minute), testNow)
@@ -294,6 +294,40 @@ func TestInMemoryGuardReclaimsExpiredRecordsFirst(t *testing.T) {
 	}
 	if verdict, _ := guard.Claim(ctx, "b", "d2", testNow.Add(time.Hour), afterA); verdict.Kind != tt.VerdictDuplicate {
 		t.Errorf("expected b retained, got %q", verdict.Kind)
+	}
+}
+
+// No one issuer may hold more than its share; at its share it alone is refused.
+func TestInMemoryGuardLimitsOneIssuersShare(t *testing.T) {
+	guard := tt.NewInMemoryReplayGuard(10) // a tenth of 10 is 1
+	ctx := context.Background()
+	month := testNow.Add(30 * 24 * time.Hour)
+	claim := func(issuer, id string, until, now time.Time) (tt.ReplayVerdict, error) {
+		return guard.ClaimFor(ctx, issuer, id, "d", until, now)
+	}
+	if v, err := claim("did:example:a", "a1", month, testNow); err != nil || v.Kind != tt.VerdictFresh {
+		t.Fatalf("first: %q %v", v.Kind, err)
+	}
+	if _, err := claim("did:example:a", "a2", month, testNow); !errors.Is(err, tt.ErrReplayGuardIssuerShare) {
+		t.Fatalf("expected ErrReplayGuardIssuerShare, got %v", err)
+	}
+	if v, _ := claim("did:example:a", "a1", month, testNow); v.Kind != tt.VerdictDuplicate {
+		t.Errorf("own record: %q", v.Kind)
+	}
+	for _, c := range []struct{ issuer, id string }{{"did:example:b", "b1"}, {"", "n1"}} {
+		if v, err := claim(c.issuer, c.id, month, testNow); err != nil || v.Kind != tt.VerdictFresh {
+			t.Errorf("%q: %q %v", c.issuer, v.Kind, err)
+		}
+	}
+	if v, err := claim("did:example:a", "a2", time.Time{}, month.Add(time.Second)); err != nil || v.Kind != tt.VerdictFresh {
+		t.Errorf("after expiry: %q %v", v.Kind, err)
+	}
+	wide := tt.NewInMemoryReplayGuard(10).WithPerIssuerLimit(3)
+	for _, id := range []string{"x1", "x2", "x3"} {
+		_, _ = wide.ClaimFor(ctx, "did:example:a", id, "d", time.Time{}, testNow)
+	}
+	if _, err := wide.ClaimFor(ctx, "did:example:a", "x4", "d", time.Time{}, testNow); err == nil {
+		t.Error("configured share not enforced")
 	}
 }
 
@@ -321,7 +355,7 @@ func TestItem11AFullGuardRefusesUnavailable(t *testing.T) {
 }
 
 func TestInMemoryGuardDoesNotLetAConflictDisplaceTheRecordItConflictsWith(t *testing.T) {
-	guard := tt.NewInMemoryReplayGuard(2)
+	guard := tt.NewInMemoryReplayGuard(2).WithPerIssuerLimit(2)
 	ctx := context.Background()
 	deadline := testNow.Add(time.Hour)
 
@@ -540,6 +574,14 @@ func TestFreshnessClampsADistantExpiresAtToTheHorizon(t *testing.T) {
 	if reason := tt.ValidateFreshness(d, end.Add(policy.Skew+time.Second), policy); reason == nil ||
 		reason.Code != tt.CodeExpired {
 		t.Errorf("expected expired past the horizon, got %v", reason)
+	}
+
+	// A zero horizon clamps at issuedAt; only nil means none, as in the other
+	// runtimes.
+	zero := time.Duration(0)
+	immediate := tt.FreshnessPolicy{Skew: tt.DefaultSkew, MaxAge: tt.DefaultMaxAge, ExpiryHorizon: &zero}
+	if got, _ := tt.RecordExpiry(d, immediate, testNow); !got.Equal(issuedAt.Add(tt.DefaultSkew)) {
+		t.Errorf("zero horizon kept the record until %v", got)
 	}
 
 	unbounded := tt.FreshnessPolicy{Skew: tt.DefaultSkew, MaxAge: tt.DefaultMaxAge}

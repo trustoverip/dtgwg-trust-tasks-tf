@@ -525,7 +525,10 @@ export async function consumeInbound<P, R>(
 
     let verdict;
     try {
-      verdict = await guard.claim(doc.id, digest, retainUntil, now);
+      verdict =
+        guard.claimFor === undefined
+          ? await guard.claim(doc.id, digest, retainUntil, now)
+          : await guard.claimFor(resolved.parties.issuer, doc.id, digest, retainUntil, now);
     } catch {
       // Fail closed. A consumer that cannot consult its record has not
       // satisfied item 11, and executing anyway is exactly the double

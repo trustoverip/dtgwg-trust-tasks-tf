@@ -511,7 +511,10 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
 
     ReplayVerdict verdict;
     try {
-      verdict = await guard.claim(doc.id, digest, retainUntil, now);
+      verdict = guard is IssuerScopedReplayGuard
+          ? await guard.claimFor(
+              parties.issuer, doc.id, digest, retainUntil, now)
+          : await guard.claim(doc.id, digest, retainUntil, now);
     } on Object {
       // Fail closed. A consumer that cannot consult its record has not satisfied
       // item 11, and executing anyway is exactly the double execution the rule

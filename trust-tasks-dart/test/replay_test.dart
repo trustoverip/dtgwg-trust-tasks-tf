@@ -301,7 +301,7 @@ void main() {
 
     test('refuses a new document when full of live records, dropping none',
         () async {
-      final guard = InMemoryReplayGuard(2);
+      final guard = InMemoryReplayGuard(2, 2);
       final later = testNow.add(const Duration(days: 30));
       await guard.claim('a', 'd1', later, testNow);
       await guard.claim('b', 'd2', null, testNow);
@@ -317,7 +317,7 @@ void main() {
     });
 
     test('reclaims expired records first when full', () async {
-      final guard = InMemoryReplayGuard(2);
+      final guard = InMemoryReplayGuard(2, 2);
       final hour = testNow.add(const Duration(hours: 1));
       await guard.claim(
           'a', 'd1', testNow.add(const Duration(minutes: 5)), testNow);
@@ -326,6 +326,37 @@ void main() {
       expect(await guard.claim('c', 'd3', hour, afterA), isA<Fresh>());
       expect(guard.size, 2);
       expect(await guard.claim('b', 'd2', hour, afterA), isA<Duplicate>());
+    });
+
+    test('no one issuer holds more than its share; only it is refused',
+        () async {
+      final guard = InMemoryReplayGuard(10); // a tenth of 10 is 1
+      final month = testNow.add(const Duration(days: 30));
+      expect(await guard.claimFor('did:example:a', 'a1', 'd', month, testNow),
+          isA<Fresh>());
+      await expectLater(
+        guard.claimFor('did:example:a', 'a2', 'd', month, testNow),
+        throwsA(isA<ReplayGuardFullException>()
+            .having((e) => e.issuerShare, 'issuerShare', isTrue)),
+      );
+      expect(await guard.claimFor('did:example:a', 'a1', 'd', month, testNow),
+          isA<Duplicate>());
+      expect(await guard.claimFor('did:example:b', 'b1', 'd', month, testNow),
+          isA<Fresh>());
+      expect(
+          await guard.claimFor(null, 'n1', 'd', month, testNow), isA<Fresh>());
+      expect(
+          await guard.claimFor('did:example:a', 'a2', 'd', null,
+              month.add(const Duration(seconds: 1))),
+          isA<Fresh>());
+      final wide = InMemoryReplayGuard(10, 3);
+      for (final id in ['x1', 'x2', 'x3']) {
+        await wide.claimFor('did:example:a', id, 'd', null, testNow);
+      }
+      await expectLater(
+        wide.claimFor('did:example:a', 'x4', 'd', null, testNow),
+        throwsA(isA<ReplayGuardFullException>()),
+      );
     });
 
     test('a full guard answers unavailable through the pipeline', () async {
@@ -346,7 +377,7 @@ void main() {
     });
 
     test('a conflict does not displace the record it conflicts with', () async {
-      final guard = InMemoryReplayGuard(2);
+      final guard = InMemoryReplayGuard(2, 2);
       await guard.claim('a', 'd1', deadline, testNow);
       await guard.claim('b', 'd2', deadline, testNow);
       for (var i = 0; i < 5; i++) {
@@ -562,6 +593,11 @@ void main() {
             ?.code,
         StandardCode.expired,
       );
+      // A zero horizon clamps at issuedAt; only null means none.
+      const immediate =
+          FreshnessPolicy(maxAge: defaultMaxAge, expiryHorizon: Duration.zero);
+      expect(recordExpiry(d, immediate, testNow),
+          DateTime.utc(2026, 1, 1).add(defaultSkew));
       // With no horizon the stated expiresAt stands.
       const unbounded = FreshnessPolicy(maxAge: defaultMaxAge);
       expect(recordExpiry(d, unbounded, testNow)?.year, 9999);

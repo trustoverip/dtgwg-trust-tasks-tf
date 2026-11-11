@@ -93,7 +93,8 @@ class FreshnessPolicy {
   /// whose `expiresAt` lies beyond `issuedAt + expiryHorizon` is treated as
   /// expiring there: accepted until then (plus [skew]) and refused as `expired`
   /// after, never refused for stating the later instant; its replay record is
-  /// kept until the same instant. Null honours any `expiresAt`.
+  /// kept until the same instant. Null honours any `expiresAt`;
+  /// [Duration.zero] clamps at `issuedAt` (as in the other runtimes).
   ///
   /// The horizon runs from `issuedAt`, so it does not apply to a document
   /// without one: that is bounded by its `expiresAt` alone. Set

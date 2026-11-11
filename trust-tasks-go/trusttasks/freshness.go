@@ -65,12 +65,14 @@ type FreshnessPolicy struct {
 	// honoured. A document whose expiresAt lies beyond issuedAt + ExpiryHorizon
 	// is treated as expiring there: accepted until then (plus Skew) and refused
 	// as expired after, never refused for stating the later instant; its replay
-	// record is kept until the same instant. Zero honours any expiresAt.
+	// record is kept until the same instant. Nil honours any expiresAt; a zero
+	// horizon clamps at issuedAt — as None / undefined / null and zero do in the
+	// Rust, TypeScript and Dart runtimes. Unlike MaxAge, zero is not "unbounded".
 	//
 	// The horizon runs from issuedAt, so it does not apply to a document without
 	// one: that is bounded by its expiresAt alone. Set RequireIssuedAt to refuse
 	// such documents.
-	ExpiryHorizon time.Duration
+	ExpiryHorizon *time.Duration
 
 	// RequireIssuedAt rejects a document carrying no issuedAt, with
 	// malformedRequest.
@@ -96,18 +98,20 @@ func ConsequentialFreshness() FreshnessPolicy {
 	return FreshnessPolicy{
 		Skew:            DefaultSkew,
 		MaxAge:          DefaultMaxAge,
-		ExpiryHorizon:   DefaultExpiryHorizon,
+		ExpiryHorizon:   ptrTo(DefaultExpiryHorizon),
 		RequireIssuedAt: true,
 	}
 }
 
 // horizonEnd is issuedAt + ExpiryHorizon; false with no horizon.
 func (p FreshnessPolicy) horizonEnd(issuedAt time.Time) (time.Time, bool) {
-	if p.ExpiryHorizon <= 0 {
+	if p.ExpiryHorizon == nil {
 		return time.Time{}, false
 	}
-	return issuedAt.Add(p.ExpiryHorizon), true
+	return issuedAt.Add(*p.ExpiryHorizon), true
 }
+
+func ptrTo[T any](v T) *T { return &v }
 
 // Wire-safe reasons for the freshness rejections. Constants so the same text
 // reaches the wire from every call site, and so a test can assert on them.
