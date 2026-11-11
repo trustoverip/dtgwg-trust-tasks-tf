@@ -9,9 +9,11 @@
  *     (today the prose uses `<a id="…">` anchors and `<!-- … -->` comments),
  *     and shows anything else as literal text;
  *   - drops comments, which never render anyway;
- *   - keeps a link or image only when its URL is relative, a fragment, or
- *     `http:`, `https:` or `mailto:` — otherwise a link renders as its text
- *     and an image as its alt text.
+ *   - escapes text after an inline `<code>`, `<kbd>`, `<pre>` or `<script>`
+ *     tag like any other text;
+ *   - keeps a link or image only when its URL is relative (not starting with
+ *     `//`), a fragment, or `http:`, `https:` or `mailto:` — otherwise a link
+ *     renders as its text and an image as its alt text.
  *
  * Markdown the prose uses today renders exactly as before. Plain script (no
  * JSX) so `scripts/test/website-markdown.test.mjs` can load it under Node.
@@ -35,9 +37,12 @@
    * Browsers ignore whitespace and control characters inside a scheme and
    * decode character references in attribute values before reading it, so
    * those are removed first and any `&` before the first `/`, `?` or `#`
-   * refuses the URL rather than trying to decode it. */
+   * refuses the URL rather than trying to decode it. A URL that starts with
+   * two slashes names another host (browsers read `\` as `/`), so it is
+   * refused too: an off-site link spells out its scheme. */
   function isSafeUrl(url) {
     const s = String(url).replace(/[\u0000- \u007f-\u009f]/g, "");
+    if (/^[/\\]{2}/.test(s)) return false;
     const head = s.split(/[/?#]/, 1)[0];
     if (!/[:&]/.test(head)) return true;
     return /^(?:https?|mailto):/i.test(head) && !head.includes("&");
@@ -99,7 +104,23 @@
   function markdownInstance(markedLib) {
     if (instance) return instance;
     instance = new markedLib.Marked({ gfm: true, breaks: false });
+    // marked's inline `tag` tokenizer turns on a raw-block state after an
+    // opening `<code>`, `<kbd>`, `<pre>` or `<script>` tag, and while it is on
+    // the text that follows is emitted without escaping — whatever the html
+    // renderer below does with the tag itself. Keep the state off, so that
+    // text is escaped like any other.
+    const baseTag = markedLib.Tokenizer.prototype.tag;
     instance.use({
+      tokenizer: {
+        tag(src) {
+          const token = baseTag.call(this, src);
+          if (token) {
+            this.lexer.state.inRawBlock = false;
+            token.inRawBlock = false;
+          }
+          return token;
+        },
+      },
       renderer: {
         html(html) { return sanitizeRawHtml(html); },
         // `false` hands a safe link or image back to marked's own renderer.

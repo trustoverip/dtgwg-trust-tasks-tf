@@ -102,7 +102,9 @@ jobs:
         run: npm run test:infra
 
       # The markdown renderer's raw-HTML allow-list and link-scheme check
-      # (website/assets/markdown.js).
+      # (website/assets/markdown.js), end to end through the marked build the
+      # page loads — fetched from the URL pinned in index.html and checked
+      # against its integrity hash.
       - name: Test the website markdown renderer
         run: npm run test:website
 

@@ -6,7 +6,9 @@
  *
  *   node scripts/serve-website.mjs            # default port 8765
  *   node scripts/serve-website.mjs --port 3000
- *   node scripts/serve-website.mjs --host 0.0.0.0   # reachable from other machines
+ *   node scripts/serve-website.mjs --host 0.0.0.0   # every IPv4 interface
+ *   node scripts/serve-website.mjs --host ::        # every interface, IPv6 and
+ *                                                   # (on most systems) IPv4
  *
  * Listens on 127.0.0.1 unless `--host` (or the `SERVE_WEBSITE_HOST` environment
  * variable) names another address.
@@ -74,9 +76,12 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, HOST, () => {
-  console.log(`Trust Tasks dev server: http://localhost:${PORT}/ (listening on ${HOST})`);
+  // The address actually bound, so the log says what is reachable.
+  const { address, family, port } = server.address();
+  const base = `http://${family === 'IPv6' ? `[${address}]` : address}:${port}`;
+  console.log(`Trust Tasks dev server: ${base}/`);
   console.log(`  Try:`);
-  console.log(`    http://localhost:${PORT}/spec/did-management/did/register/0.1`);
-  console.log(`    http://localhost:${PORT}/schema/did-management/_shared/0.1/did-record`);
-  console.log(`    http://localhost:${PORT}/schema`);
+  console.log(`    ${base}/spec/did-management/did/register/0.1`);
+  console.log(`    ${base}/schema/did-management/_shared/0.1/did-record`);
+  console.log(`    ${base}/schema`);
 });
