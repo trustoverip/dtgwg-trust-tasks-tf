@@ -151,9 +151,27 @@ interface Entry {
 }
 
 /**
- * A bounded, in-process {@link ReplayGuard}: an LRU map from `id` to the
- * digest accepted under it, its retention deadline, and the response it
- * produced.
+ * The capacity of `new InMemoryReplayGuard()`: 100 000 live records.
+ *
+ * Enough for the consequential policy's five-minute acceptance window at ~330
+ * distinct documents per second. Documents carrying an `expiresAt` hold their
+ * record until then (up to the expiry horizon, 30 days by default), so a
+ * consumer accepting them should size for that window instead. Mirrors Rust's
+ * `DEFAULT_REPLAY_CAPACITY`.
+ */
+export const DEFAULT_REPLAY_CAPACITY = 100_000;
+
+/** Thrown by {@link InMemoryReplayGuard.claim} when every slot holds a live record. */
+export class ReplayGuardFullError extends Error {
+  constructor(size: number) {
+    super(`in-memory replay guard is full: ${size} records are inside their retention window`);
+    this.name = "ReplayGuardFullError";
+  }
+}
+
+/**
+ * A bounded, in-process {@link ReplayGuard}: a map from `id` to the digest
+ * accepted under it, its retention deadline, and the response it produced.
  *
  * **Suitable when** one process is the sole consumer for the `recipient` VID
  * it serves and losing the record on restart is acceptable.
@@ -163,24 +181,32 @@ interface Entry {
  * effect happens twice — the exact failure item 11 exists to prevent.
  * Replicated deployments MUST back the guard with a shared store.
  *
- * Eviction is by capacity as well as by `retainUntil`: a burst of distinct
- * documents can push an older record out before its deadline, and a replay
- * arriving after that would be accepted. Size the capacity above the number of
- * distinct documents the widest acceptance window can hold.
- *
- * `Map` preserves insertion order, which is what makes the LRU a delete-then-
- * reinsert rather than a second index.
+ * **When it is full.** A record is dropped only once its `retainUntil` has
+ * passed — never to make room. When a new `id` arrives and every slot holds a
+ * record still inside its retention window, `claim` throws
+ * {@link ReplayGuardFullError}, which `consumeInbound` answers `unavailable`
+ * (retryable): the guard refuses to execute a document it could not then
+ * remember, rather than forgetting one it promised to. Records whose window
+ * has closed are reclaimed first. The capacity is therefore a ceiling on
+ * distinct documents *per retention window*; see
+ * {@link DEFAULT_REPLAY_CAPACITY} for sizing.
  */
 export class InMemoryReplayGuard implements ReplayGuard {
   readonly #entries = new Map<string, Entry>();
   readonly #capacity: number;
+  /**
+   * No record's `retainUntil` is earlier than this (it may be earlier than every
+   * record's, after a removal). Lets a full guard skip the reclaiming scan when
+   * nothing can have expired yet.
+   */
+  #earliestExpiry = Number.POSITIVE_INFINITY;
 
   /**
-   * @param capacity Maximum records retained. Must be positive: a guard that
-   * retains nothing answers `fresh` to everything, which is a silent total
+   * @param capacity Maximum live records retained. Must be positive: a guard
+   * that retains nothing answers `fresh` to everything, which is a silent total
    * defeat of item 11 rather than a visible misconfiguration.
    */
-  constructor(capacity = 10_000) {
+  constructor(capacity = DEFAULT_REPLAY_CAPACITY) {
     if (!Number.isInteger(capacity) || capacity < 1) {
       throw new RangeError("InMemoryReplayGuard capacity must be a positive integer");
     }
@@ -194,9 +220,13 @@ export class InMemoryReplayGuard implements ReplayGuard {
 
   /** Drop every record whose `retainUntil` has passed. */
   purgeExpired(now: number): void {
+    let earliest = Number.POSITIVE_INFINITY;
     for (const [id, entry] of this.#entries) {
-      if (entry.retainUntil !== undefined && entry.retainUntil <= now) this.#entries.delete(id);
+      if (entry.retainUntil === undefined) continue;
+      if (entry.retainUntil <= now) this.#entries.delete(id);
+      else if (entry.retainUntil < earliest) earliest = entry.retainUntil;
     }
+    this.#earliestExpiry = earliest;
   }
 
   claim(id: string, digest: string, retainUntil: number | undefined, now: number): ReplayVerdict {
@@ -209,25 +239,22 @@ export class InMemoryReplayGuard implements ReplayGuard {
     if (existing !== undefined && existing.retainUntil !== undefined && existing.retainUntil <= now) {
       this.#entries.delete(id);
     } else if (existing !== undefined) {
-      if (existing.digest !== digest) {
-        // A conflicting document is not a *use* of the record, so it does not
-        // refresh recency — otherwise a flood of conflicts could pin an entry
-        // and evict live ones.
-        return { kind: "conflict" };
-      }
-      this.#entries.delete(id);
-      this.#entries.set(id, existing);
+      if (existing.digest !== digest) return { kind: "conflict" };
       return existing.response === undefined
         ? { kind: "duplicate", inFlight: !existing.completed }
         : { kind: "duplicate", priorResponse: existing.response, inFlight: !existing.completed };
     }
 
-    this.#entries.set(id, { digest, retainUntil, response: undefined, completed: false });
-    while (this.#entries.size > this.#capacity) {
-      const oldest = this.#entries.keys().next();
-      if (oldest.done === true) break;
-      this.#entries.delete(oldest.value);
+    // Full: reclaim the records whose window has closed, and if every slot
+    // still holds a live record, refuse rather than drop one. A record dropped
+    // inside its window is a replay accepted later.
+    if (this.#entries.size >= this.#capacity) {
+      if (this.#earliestExpiry <= now) this.purgeExpired(now);
+      if (this.#entries.size >= this.#capacity) throw new ReplayGuardFullError(this.#entries.size);
     }
+
+    this.#entries.set(id, { digest, retainUntil, response: undefined, completed: false });
+    if (retainUntil !== undefined && retainUntil < this.#earliestExpiry) this.#earliestExpiry = retainUntil;
     return { kind: "fresh" };
   }
 

@@ -299,17 +299,50 @@ void main() {
   group('InMemoryReplayGuard', () {
     final deadline = testNow.add(const Duration(hours: 1));
 
-    test('evicts the least recently used record at capacity', () async {
+    test('refuses a new document when full of live records, dropping none',
+        () async {
       final guard = InMemoryReplayGuard(2);
-      await guard.claim('a', 'd1', deadline, testNow);
-      await guard.claim('b', 'd2', deadline, testNow);
-      await guard.claim('a', 'd1', deadline, testNow); // touch a
-      await guard.claim('c', 'd3', deadline, testNow); // evicts b
+      final later = testNow.add(const Duration(days: 30));
+      await guard.claim('a', 'd1', later, testNow);
+      await guard.claim('b', 'd2', null, testNow);
+      await expectLater(
+        guard.claim('c', 'd3', later, testNow),
+        throwsA(isA<ReplayGuardFullException>()),
+      );
 
+      // Both records survive, and duplicates are still recognised while full.
       expect(guard.size, 2);
-      // Assert `a` before re-claiming `b`, which would itself evict something.
-      expect(await guard.claim('a', 'd1', deadline, testNow), isA<Duplicate>());
-      expect(await guard.claim('b', 'd2', deadline, testNow), isA<Fresh>());
+      expect(await guard.claim('a', 'd1', later, testNow), isA<Duplicate>());
+      expect(await guard.claim('b', 'd2', null, testNow), isA<Duplicate>());
+    });
+
+    test('reclaims expired records first when full', () async {
+      final guard = InMemoryReplayGuard(2);
+      final hour = testNow.add(const Duration(hours: 1));
+      await guard.claim(
+          'a', 'd1', testNow.add(const Duration(minutes: 5)), testNow);
+      await guard.claim('b', 'd2', hour, testNow);
+      final afterA = testNow.add(const Duration(minutes: 10));
+      expect(await guard.claim('c', 'd3', hour, afterA), isA<Fresh>());
+      expect(guard.size, 2);
+      expect(await guard.claim('b', 'd2', hour, afterA), isA<Duplicate>());
+    });
+
+    test('a full guard answers unavailable through the pipeline', () async {
+      final guard = InMemoryReplayGuard(1);
+      final executions = Executions();
+      expect(await consequential(guard, consequentialDoc(), executions),
+          isA<Handled<Response>>());
+      final refused = await consequential(
+          guard, consequentialDoc().copyWith(id: 'req-2'), executions);
+      expect(refused, isA<Rejected<Response>>());
+      final error = (refused as Rejected<Response>).error;
+      expect(error.payload.code, StandardCode.unavailable);
+      expect(error.payload.retryable, isTrue);
+      // The first document's record was kept: a resend is still absorbed.
+      expect(await consequential(guard, consequentialDoc(), executions),
+          isA<DuplicateOutcome<Response>>());
+      expect(executions.count, 1);
     });
 
     test('a conflict does not displace the record it conflicts with', () async {
@@ -320,8 +353,9 @@ void main() {
         expect(await guard.claim('a', 'other', deadline, testNow),
             isA<Conflict>());
       }
-      await guard.claim(
-          'c', 'd3', deadline, testNow); // evicts the LRU, which is a
+      // Full: refused, nothing dropped.
+      await expectLater(guard.claim('c', 'd3', deadline, testNow),
+          throwsA(isA<ReplayGuardFullException>()));
       expect(await guard.claim('b', 'd2', deadline, testNow), isA<Duplicate>());
     });
 
@@ -497,6 +531,40 @@ void main() {
       );
       // No window at all: the caller must not execute a consequential task.
       expect(recordExpiry(at(), FreshnessPolicy.defaults, testNow), isNull);
+    });
+
+    test('a stated expiresAt replaces maxAge, as in Rust', () {
+      // Ten minutes old with an hour left.
+      expect(
+        validateFreshness(
+          at(
+              issuedAt: '2025-12-31T23:50:00Z',
+              expiresAt: '2026-01-01T01:00:00Z'),
+          testNow,
+          FreshnessPolicy.consequential,
+        ),
+        isNull,
+      );
+    });
+
+    test('a distant expiresAt is clamped to the expiry horizon', () {
+      const policy = FreshnessPolicy.consequential;
+      final d = at(
+          issuedAt: '2026-01-01T00:00:00Z', expiresAt: '9999-12-31T23:59:59Z');
+      final end = DateTime.utc(2026, 1, 1).add(defaultExpiryHorizon);
+      // The record is not pinned for the producer's millennia.
+      expect(recordExpiry(d, policy, testNow), end.add(policy.skew));
+      // Accepted inside the horizon (plus skew), refused after.
+      expect(validateFreshness(d, end.add(policy.skew), policy), isNull);
+      expect(
+        validateFreshness(
+                d, end.add(policy.skew + const Duration(seconds: 1)), policy)
+            ?.code,
+        StandardCode.expired,
+      );
+      // With no horizon the stated expiresAt stands.
+      const unbounded = FreshnessPolicy(maxAge: defaultMaxAge);
+      expect(recordExpiry(d, unbounded, testNow)?.year, 9999);
     });
   });
 

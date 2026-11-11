@@ -19,8 +19,11 @@ import {
   EXPIRY_NOT_AFTER_ISSUANCE,
   FUTURE_ISSUED_AT,
   ID_CONFLICT_WIRE_MESSAGE,
+  CONSEQUENTIAL_FRESHNESS,
+  DEFAULT_EXPIRY_HORIZON_MS,
   InMemoryReplayGuard,
   notConsequentialChecks,
+  ReplayGuardFullError,
   PROOF_INVALID_WIRE_MESSAGE,
   sha256Hex,
   STALE_WIRE_MESSAGE,
@@ -315,16 +318,41 @@ describe("SPEC §7.2 item 11 — duplicate execution", () => {
 describe("InMemoryReplayGuard", () => {
   const D = "digest-a";
 
-  it("evicts the least recently used record at capacity", () => {
+  it("refuses a new document when full of live records, rather than dropping one", () => {
     const guard = new InMemoryReplayGuard(2);
-    guard.claim("a", "da", undefined, NOW);
+    const later = NOW + 30 * 24 * 3600_000;
+    guard.claim("a", "da", later, NOW);
     guard.claim("b", "db", undefined, NOW);
-    guard.claim("a", "da", undefined, NOW); // touch `a`
-    guard.claim("c", "dc", undefined, NOW);
+    assert.throws(() => guard.claim("c", "dc", later, NOW), ReplayGuardFullError);
 
+    // Both records survive, and duplicates are still recognised while full.
     assert.equal(guard.size, 2);
-    assert.equal(guard.claim("a", "da", undefined, NOW).kind, "duplicate");
-    assert.equal(guard.claim("b", "db", undefined, NOW).kind, "fresh");
+    assert.equal(guard.claim("a", "da", later, NOW).kind, "duplicate");
+    assert.equal(guard.claim("b", "db", undefined, NOW).kind, "duplicate");
+  });
+
+  it("reclaims expired records first when full", () => {
+    const guard = new InMemoryReplayGuard(2);
+    guard.claim("a", "da", NOW + 5 * 60_000, NOW);
+    guard.claim("b", "db", NOW + 60 * 60_000, NOW);
+    const afterA = NOW + 10 * 60_000;
+    assert.equal(guard.claim("c", "dc", NOW + 60 * 60_000, afterA).kind, "fresh");
+    assert.equal(guard.size, 2);
+    assert.equal(guard.claim("b", "db", NOW + 60 * 60_000, afterA).kind, "duplicate");
+  });
+
+  it("answers a full guard's new document unavailable through the pipeline", async () => {
+    const guard = new InMemoryReplayGuard(1);
+    const { run, state } = runner(guard);
+    assert.equal((await run(doc({ id: "req-1" }))).kind, "handled");
+    const refused = await run(doc({ id: "req-2" }));
+    assert.equal(refused.kind, "rejected");
+    assert.ok(refused.kind === "rejected");
+    assert.equal(refused.error.payload.code, "unavailable");
+    assert.equal(refused.error.payload.retryable, true);
+    assert.equal(state.executions, 1);
+    // The first document's record was kept: a resend is still absorbed.
+    assert.equal((await run(doc({ id: "req-1" }))).kind, "duplicate");
   });
 
   it("does not let a conflicting document displace the record it conflicts with", () => {
@@ -439,6 +467,31 @@ describe("SPEC §4.2 / §7.2 — freshness bounds", () => {
     // …unless the producer supplied an `expiresAt`, which is a window of its own.
     const bounded = doc({ issuedAt: undefined, expiresAt: "2026-08-26T12:30:00Z" });
     assert.equal(validateFreshness(bounded, NOW, windowed), null);
+  });
+
+  it("lets a stated expiresAt replace maxAgeMs, up to the expiry horizon", () => {
+    // Ten minutes old with an hour left: past maxAgeMs, but the producer's
+    // expiresAt is the window (SPEC §7.2, *Bounding the record*), as in Rust.
+    const policy = CONSEQUENTIAL_FRESHNESS;
+    const d = doc({ issuedAt: "2026-08-26T11:50:00Z", expiresAt: "2026-08-26T13:00:00Z" });
+    assert.equal(validateFreshness(d, NOW, policy), null);
+    assert.equal(recordExpiry(d, policy, NOW), Date.parse("2026-08-26T13:00:00Z"));
+  });
+
+  it("clamps a distant expiresAt to the expiry horizon, for acceptance and for the record", () => {
+    const policy = CONSEQUENTIAL_FRESHNESS;
+    const issuedAt = "2026-08-26T12:00:00Z";
+    const d = doc({ issuedAt, expiresAt: "9999-12-31T23:59:59Z" });
+    const horizonEnd = Date.parse(issuedAt) + DEFAULT_EXPIRY_HORIZON_MS;
+    // The record is not pinned for the producer's millennia.
+    assert.equal(recordExpiry(d, policy, NOW), horizonEnd + policy.skewMs);
+    // Accepted inside the horizon (plus skew), refused after — never accepted
+    // once the record could have been dropped.
+    assert.equal(validateFreshness(d, horizonEnd + policy.skewMs, policy), null);
+    assert.equal(validateFreshness(d, horizonEnd + policy.skewMs + 1, policy)?.code, "expired");
+    // With no horizon, the stated expiresAt stands.
+    const unbounded = { skewMs: 60_000, maxAgeMs: 5 * 60_000 };
+    assert.equal(recordExpiry(d, unbounded, NOW), Date.parse("9999-12-31T23:59:59Z"));
   });
 
   it("keeps the replay record for as long as the skew lets the document be accepted", () => {

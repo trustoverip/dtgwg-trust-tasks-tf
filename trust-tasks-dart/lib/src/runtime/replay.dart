@@ -169,12 +169,33 @@ class _Entry {
   bool completed = false;
 }
 
-/// The record count [InMemoryReplayGuard] retains when given no explicit
-/// capacity.
-const int defaultReplayCapacity = 10000;
+/// The live-record count [InMemoryReplayGuard] retains when given no explicit
+/// capacity: 100 000.
+///
+/// Enough for the consequential policy's five-minute acceptance window at ~330
+/// distinct documents per second. Documents carrying an `expiresAt` hold their
+/// record until then (up to the expiry horizon, 30 days by default), so a
+/// consumer accepting them should size for that window instead — when the
+/// guard is full of live records it refuses new documents rather than
+/// forgetting one. Mirrors Rust's `DEFAULT_REPLAY_CAPACITY`.
+const int defaultReplayCapacity = 100000;
 
-/// A bounded, in-process [ReplayGuard]: an LRU map from `id` to the digest
-/// accepted under it, its retention deadline, and the response it produced.
+/// Thrown by [InMemoryReplayGuard.claim] when every slot holds a record still
+/// inside its retention window. `consumeInbound` answers it `unavailable`.
+final class ReplayGuardFullException implements Exception {
+  /// The guard held [size] live records.
+  const ReplayGuardFullException(this.size);
+
+  /// How many live records the guard held.
+  final int size;
+
+  @override
+  String toString() => 'ReplayGuardFullException: in-memory replay guard is '
+      'full: $size records are inside their retention window';
+}
+
+/// A bounded, in-process [ReplayGuard]: a map from `id` to the digest accepted
+/// under it, its retention deadline, and the response it produced.
 ///
 /// **Suitable when** one process is the sole consumer for the `recipient` VID it
 /// serves and losing the record on restart is acceptable.
@@ -184,15 +205,17 @@ const int defaultReplayCapacity = 10000;
 /// effect happens twice — the exact failure item 11 exists to prevent.
 /// Replicated deployments MUST back the guard with a shared store.
 ///
-/// Eviction is by capacity as well as by `retainUntil`: a burst of distinct
-/// documents can push an older record out before its deadline, and a replay
-/// arriving after that would be accepted. Size the capacity above the number of
-/// distinct documents the widest acceptance window can hold.
+/// **When it is full.** A record is dropped only once its `retainUntil` has
+/// passed — never to make room. When a new `id` arrives and every slot holds a
+/// record still inside its retention window, [claim] throws
+/// [ReplayGuardFullException], which `consumeInbound` answers `unavailable`
+/// (retryable): the guard refuses to execute a document it could not then
+/// remember, rather than forgetting one it promised to. Records whose window
+/// has closed are reclaimed first. The capacity is therefore a ceiling on
+/// distinct documents *per retention window*; see [defaultReplayCapacity].
 ///
-/// [LinkedHashMap] preserves insertion order, which is what makes the LRU a
-/// remove-then-reinsert rather than a second index. Dart is single-threaded per
-/// isolate and none of these methods await, so claim-and-record is atomic by
-/// construction.
+/// Dart is single-threaded per isolate and none of these methods await, so
+/// claim-and-record is atomic by construction.
 class InMemoryReplayGuard implements ReplayGuard {
   /// Builds a guard retaining at most [capacity] records.
   ///
@@ -207,15 +230,25 @@ class InMemoryReplayGuard implements ReplayGuard {
   final LinkedHashMap<String, _Entry> _entries =
       LinkedHashMap<String, _Entry>();
 
+  /// No record's `retainUntil` is earlier than this (it may be earlier than
+  /// every record's, after a removal). Lets a full guard skip the reclaiming
+  /// scan when nothing can have expired yet. Null: no bounded record.
+  DateTime? _earliestExpiry;
+
   /// How many records are currently retained. For tests and metrics.
   int get size => _entries.length;
 
   /// Drop every record whose `retainUntil` has passed.
   void purgeExpired(DateTime now) {
+    DateTime? earliest;
     _entries.removeWhere((_, e) {
       final until = e.retainUntil;
-      return until != null && !until.isAfter(now);
+      if (until == null) return false;
+      if (!until.isAfter(now)) return true;
+      if (earliest == null || until.isBefore(earliest!)) earliest = until;
+      return false;
     });
+    _earliestExpiry = earliest;
   }
 
   @override
@@ -235,14 +268,7 @@ class InMemoryReplayGuard implements ReplayGuard {
       if (until != null && !until.isAfter(now)) {
         _entries.remove(id);
       } else {
-        if (existing.digest != digest) {
-          // A conflicting document is not a *use* of the record, so it does not
-          // refresh recency — otherwise a flood of conflicts could pin an entry
-          // and evict live ones.
-          return const Conflict();
-        }
-        _entries.remove(id);
-        _entries[id] = existing;
+        if (existing.digest != digest) return const Conflict();
         return Duplicate(
           priorResponse: existing.response,
           inFlight: !existing.completed,
@@ -250,9 +276,22 @@ class InMemoryReplayGuard implements ReplayGuard {
       }
     }
 
+    // Full: reclaim the records whose window has closed, and if every slot
+    // still holds a live record, refuse rather than drop one. A record dropped
+    // inside its window is a replay accepted later.
+    if (_entries.length >= _capacity) {
+      final earliest = _earliestExpiry;
+      if (earliest != null && !earliest.isAfter(now)) purgeExpired(now);
+      if (_entries.length >= _capacity) {
+        throw ReplayGuardFullException(_entries.length);
+      }
+    }
+
     _entries[id] = _Entry(digest, retainUntil);
-    while (_entries.length > _capacity) {
-      _entries.remove(_entries.keys.first);
+    final earliest = _earliestExpiry;
+    if (retainUntil != null &&
+        (earliest == null || retainUntil.isBefore(earliest))) {
+      _earliestExpiry = retainUntil;
     }
     return const Fresh();
   }

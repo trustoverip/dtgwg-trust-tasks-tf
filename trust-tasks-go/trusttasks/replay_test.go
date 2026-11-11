@@ -259,35 +259,64 @@ func TestItem11KeepsNoRecordWhenTheCallerDeclaresTheTaskNotConsequential(t *test
 
 /* ── InMemoryReplayGuard ─────────────────────────────────────────────────── */
 
-func TestInMemoryGuardEvictsTheLeastRecentlyUsedRecordAtCapacity(t *testing.T) {
+// A full guard never drops a record inside its retention window to make room:
+// it refuses the new document instead. Dropping one would let that document
+// execute again.
+func TestInMemoryGuardRefusesRatherThanDroppingALiveRecord(t *testing.T) {
 	guard := tt.NewInMemoryReplayGuard(2)
 	ctx := context.Background()
-	deadline := testNow.Add(time.Hour)
+	deadline := testNow.Add(30 * 24 * time.Hour)
 
-	mustClaim := func(id, digest string) tt.ReplayVerdict {
-		t.Helper()
-		verdict, err := guard.Claim(ctx, id, digest, deadline, testNow)
-		if err != nil {
-			t.Fatalf("claim: %v", err)
-		}
-		return verdict
+	_, _ = guard.Claim(ctx, "a", "d1", deadline, testNow)
+	_, _ = guard.Claim(ctx, "b", "d2", time.Time{}, testNow)
+	if _, err := guard.Claim(ctx, "c", "d3", deadline, testNow); !errors.Is(err, tt.ErrReplayGuardFull) {
+		t.Fatalf("expected ErrReplayGuardFull, got %v", err)
 	}
-
-	mustClaim("a", "d1")
-	mustClaim("b", "d2")
-	mustClaim("a", "d1") // touch a, making b the least recently used
-	mustClaim("c", "d3") // evicts b
-
 	if guard.Size() != 2 {
 		t.Fatalf("expected 2 records, got %d", guard.Size())
 	}
-	// `a` was touched and so survived; assert that before re-claiming `b`, which
-	// would itself evict something.
-	if verdict := mustClaim("a", "d1"); verdict.Kind != tt.VerdictDuplicate {
-		t.Errorf("expected a to have been retained, got %q", verdict.Kind)
+	for id, digest := range map[string]string{"a": "d1", "b": "d2"} {
+		if verdict, err := guard.Claim(ctx, id, digest, deadline, testNow); err != nil || verdict.Kind != tt.VerdictDuplicate {
+			t.Errorf("%s: expected duplicate while full, got %q (%v)", id, verdict.Kind, err)
+		}
 	}
-	if verdict := mustClaim("b", "d2"); verdict.Kind != tt.VerdictFresh {
-		t.Errorf("expected b to have been evicted, got %q", verdict.Kind)
+}
+
+func TestInMemoryGuardReclaimsExpiredRecordsFirst(t *testing.T) {
+	guard := tt.NewInMemoryReplayGuard(2)
+	ctx := context.Background()
+
+	_, _ = guard.Claim(ctx, "a", "d1", testNow.Add(5*time.Minute), testNow)
+	_, _ = guard.Claim(ctx, "b", "d2", testNow.Add(time.Hour), testNow)
+	afterA := testNow.Add(10 * time.Minute)
+	if verdict, err := guard.Claim(ctx, "c", "d3", testNow.Add(time.Hour), afterA); err != nil || verdict.Kind != tt.VerdictFresh {
+		t.Fatalf("expected fresh once a's window closed, got %q (%v)", verdict.Kind, err)
+	}
+	if verdict, _ := guard.Claim(ctx, "b", "d2", testNow.Add(time.Hour), afterA); verdict.Kind != tt.VerdictDuplicate {
+		t.Errorf("expected b retained, got %q", verdict.Kind)
+	}
+}
+
+// Through the pipeline, a full guard's refusal is unavailable (retryable), and
+// the record it kept still absorbs a resend.
+func TestItem11AFullGuardRefusesUnavailable(t *testing.T) {
+	guard := tt.NewInMemoryReplayGuard(1)
+	executions := 0
+	first := consequentialDoc(nil)
+	if outcome := consequential(t, guard, first, &executions, testNow); outcome.Kind != tt.OutcomeHandled {
+		t.Fatalf("expected handled, got %q", outcome.Kind)
+	}
+	second := consequentialDoc(func(d *tt.Document[payload]) { d.ID = "req-2" })
+	outcome := consequential(t, guard, second, &executions, testNow)
+	if outcome.Kind != tt.OutcomeRejected || outcome.Error.Payload.Code != string(tt.CodeUnavailable) ||
+		!outcome.Error.Payload.Retryable {
+		t.Fatalf("expected a retryable unavailable, got %q %+v", outcome.Kind, outcome.Error)
+	}
+	if outcome := consequential(t, guard, consequentialDoc(nil), &executions, testNow); outcome.Kind != tt.OutcomeDuplicate {
+		t.Fatalf("expected the kept record to absorb a resend, got %q", outcome.Kind)
+	}
+	if executions != 1 {
+		t.Fatalf("executions = %d, want 1", executions)
 	}
 }
 
@@ -298,14 +327,14 @@ func TestInMemoryGuardDoesNotLetAConflictDisplaceTheRecordItConflictsWith(t *tes
 
 	_, _ = guard.Claim(ctx, "a", "d1", deadline, testNow)
 	_, _ = guard.Claim(ctx, "b", "d2", deadline, testNow)
-	// A flood of conflicts on `a` must not refresh its recency and evict `b`.
+	// A flood of conflicts on `a` must not displace either record.
 	for i := 0; i < 5; i++ {
 		verdict, _ := guard.Claim(ctx, "a", "other", deadline, testNow)
 		if verdict.Kind != tt.VerdictConflict {
 			t.Fatalf("expected conflict, got %q", verdict.Kind)
 		}
 	}
-	_, _ = guard.Claim(ctx, "c", "d3", deadline, testNow) // evicts the LRU, which is a
+	_, _ = guard.Claim(ctx, "c", "d3", deadline, testNow) // full: refused, nothing dropped
 	if verdict, _ := guard.Claim(ctx, "b", "d2", deadline, testNow); verdict.Kind != tt.VerdictDuplicate {
 		t.Errorf("expected b retained, got %q", verdict.Kind)
 	}
@@ -480,6 +509,42 @@ func TestRecordExpiryPrefersExpiresAtThenIssuedAtPlusWindow(t *testing.T) {
 	// No window at all: the caller must not execute a consequential task.
 	if _, bounded := tt.RecordExpiry(freshnessDoc(nil, nil), tt.DefaultFreshness(), testNow); bounded {
 		t.Error("expected an unbounded policy to report no retention deadline")
+	}
+}
+
+// A stated expiresAt replaces MaxAge (SPEC §7.2, *Bounding the record*), as in
+// Rust: ten minutes old with an hour left is accepted.
+func TestFreshnessLetsAStatedExpiresAtReplaceMaxAge(t *testing.T) {
+	policy := tt.ConsequentialFreshness()
+	d := freshnessDoc(ptr("2025-12-31T23:50:00Z"), ptr("2026-01-01T01:00:00Z"))
+	if reason := tt.ValidateFreshness(d, testNow, policy); reason != nil {
+		t.Fatalf("expected acceptance, got %q", reason.Message)
+	}
+}
+
+// A distant expiresAt is clamped to the expiry horizon, for acceptance and for
+// the record alike, so a producer cannot pin a record for millennia.
+func TestFreshnessClampsADistantExpiresAtToTheHorizon(t *testing.T) {
+	policy := tt.ConsequentialFreshness()
+	issuedAt := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	d := freshnessDoc(ptr("2026-01-01T00:00:00Z"), ptr("9999-12-31T23:59:59Z"))
+	end := issuedAt.Add(tt.DefaultExpiryHorizon)
+
+	got, bounded := tt.RecordExpiry(d, policy, testNow)
+	if !bounded || !got.Equal(end.Add(policy.Skew)) {
+		t.Errorf("record kept until %v, want %v", got, end.Add(policy.Skew))
+	}
+	if reason := tt.ValidateFreshness(d, end.Add(policy.Skew), policy); reason != nil {
+		t.Errorf("expected acceptance at the horizon, got %q", reason.Message)
+	}
+	if reason := tt.ValidateFreshness(d, end.Add(policy.Skew+time.Second), policy); reason == nil ||
+		reason.Code != tt.CodeExpired {
+		t.Errorf("expected expired past the horizon, got %v", reason)
+	}
+
+	unbounded := tt.FreshnessPolicy{Skew: tt.DefaultSkew, MaxAge: tt.DefaultMaxAge}
+	if got, _ := tt.RecordExpiry(d, unbounded, testNow); got.Year() != 9999 {
+		t.Errorf("with no horizon the stated expiresAt stands, got %v", got)
 	}
 }
 

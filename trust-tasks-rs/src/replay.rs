@@ -309,7 +309,7 @@ pub enum ReplayPolicy<'a> {
     NotConsequential,
 }
 
-/// A bounded, in-process [`ReplayGuard`]: an LRU map from `id` to the digest
+/// A bounded, in-process [`ReplayGuard`]: a map from `id` to the digest
 /// accepted under it, its retention deadline, and the response it produced.
 ///
 /// # Suitable when
@@ -328,10 +328,25 @@ pub enum ReplayPolicy<'a> {
 /// [`ReplayGuard`] with a store shared by every replica, which is why the seam
 /// is a trait.
 ///
-/// Eviction is by capacity as well as by `retain_until`: a burst of distinct
-/// documents can push an older record out before its retention deadline, and a
-/// replay arriving after that would be accepted. Size the capacity above the
-/// number of distinct documents the widest acceptance window can hold.
+/// # When it is full
+///
+/// A record is dropped only once its `retain_until` has passed — never to make
+/// room. When a new `id` arrives and every one of the `capacity` slots holds a
+/// record still inside its retention window, the claim fails with a
+/// [`ReplayGuardError`], which the pipeline answers `unavailable` (retryable):
+/// the guard refuses to execute a document it could not then remember, rather
+/// than forgetting one it promised to. Records whose window has closed are
+/// reclaimed first, so the guard is only ever full of live records.
+///
+/// The capacity is therefore a ceiling on distinct documents *per retention
+/// window*, not a cache size. A record lives until the document's `expiresAt`
+/// where it has one (capped by the freshness policy's expiry horizon, 30 days
+/// by default), and until `issuedAt` + the maximum age otherwise. Size it above
+/// the number of distinct documents your consumers will accept inside that
+/// window; [`InMemoryReplayGuard::default`] is sized for a short window, and a
+/// deployment admitting long-lived documents should either raise it, lower
+/// the expiry horizon ([`FreshnessPolicy`](crate::FreshnessPolicy)), or back
+/// [`ReplayGuard`] with a store that can hold the window.
 pub struct InMemoryReplayGuard {
     capacity: usize,
     inner: Mutex<Inner>,
@@ -340,10 +355,12 @@ pub struct InMemoryReplayGuard {
 #[derive(Default)]
 struct Inner {
     entries: HashMap<String, Entry>,
-    /// Recency index: tick → id. Lets eviction find the least-recently-used
-    /// key without scanning, and keeps `InMemoryReplayGuard` dependency-free.
-    recency: BTreeMap<u64, String>,
-    tick: u64,
+    /// Expiry index: (retain_until, sequence) → id, for every record with a
+    /// retention deadline. Lets a full guard reclaim the records whose window
+    /// has closed without scanning, and keeps `InMemoryReplayGuard`
+    /// dependency-free.
+    expiry: BTreeMap<(DateTime<Utc>, u64), String>,
+    seq: u64,
 }
 
 struct Entry {
@@ -351,11 +368,12 @@ struct Entry {
     retain_until: Option<DateTime<Utc>>,
     response: Option<Value>,
     completed: bool,
-    tick: u64,
+    seq: u64,
 }
 
 impl InMemoryReplayGuard {
-    /// A guard retaining at most `capacity` records.
+    /// A guard retaining at most `capacity` live records; see
+    /// [*When it is full*](InMemoryReplayGuard#when-it-is-full).
     ///
     /// # Panics
     ///
@@ -387,29 +405,34 @@ impl InMemoryReplayGuard {
     /// Drop every record whose `retain_until` has passed.
     ///
     /// [`claim`](ReplayGuard::claim) already treats an individual expired
-    /// record as absent, so calling this is an optimisation (it reclaims
-    /// memory) rather than a correctness requirement.
+    /// record as absent, and reclaims expired records itself when the guard is
+    /// full, so calling this is an optimisation (it reclaims memory sooner)
+    /// rather than a correctness requirement.
     pub fn purge_expired(&self, now: DateTime<Utc>) {
-        let mut inner = self.inner.lock().expect("replay guard mutex");
-        let expired: Vec<String> = inner
-            .entries
-            .iter()
-            .filter(|(_, e)| e.is_expired_at(now))
-            .map(|(id, _)| id.clone())
-            .collect();
-        for id in expired {
-            inner.remove(&id);
-        }
+        self.inner
+            .lock()
+            .expect("replay guard mutex")
+            .purge_expired(now);
     }
 }
 
 impl Default for InMemoryReplayGuard {
-    /// 10 000 records — a few megabytes at typical document sizes, and enough
-    /// to cover a five-minute acceptance window at ~33 documents per second.
+    /// [`DEFAULT_REPLAY_CAPACITY`] records.
     fn default() -> Self {
-        Self::new(10_000)
+        Self::new(DEFAULT_REPLAY_CAPACITY)
     }
 }
+
+/// The capacity of [`InMemoryReplayGuard::default`]: 100 000 live records.
+///
+/// Enough for the consequential policy's five-minute acceptance window at
+/// ~330 distinct documents per second. Each record holds the `id`, a digest
+/// and the cached response, so the memory it bounds is roughly 100 000 × the
+/// size of a typical response. Documents carrying an `expiresAt` hold their
+/// record until then (up to the expiry horizon), so a consumer accepting them
+/// should size for that window instead — when the guard is full of live
+/// records it refuses new documents `unavailable` rather than forgetting one.
+pub const DEFAULT_REPLAY_CAPACITY: usize = 100_000;
 
 impl Entry {
     fn is_expired_at(&self, now: DateTime<Utc>) -> bool {
@@ -420,26 +443,22 @@ impl Entry {
 impl Inner {
     fn remove(&mut self, id: &str) {
         if let Some(entry) = self.entries.remove(id) {
-            self.recency.remove(&entry.tick);
+            if let Some(until) = entry.retain_until {
+                self.expiry.remove(&(until, entry.seq));
+            }
         }
     }
 
-    fn touch(&mut self, id: &str) {
-        self.tick += 1;
-        let tick = self.tick;
-        if let Some(entry) = self.entries.get_mut(id) {
-            self.recency.remove(&entry.tick);
-            entry.tick = tick;
-            self.recency.insert(tick, id.to_string());
-        }
-    }
-
-    fn evict_to_capacity(&mut self, capacity: usize) {
-        while self.entries.len() > capacity {
-            let Some((_, victim)) = self.recency.iter().next().map(|(k, v)| (*k, v.clone())) else {
+    /// Drop every record whose retention deadline is at or before `now`.
+    fn purge_expired(&mut self, now: DateTime<Utc>) {
+        while let Some((&(until, _), _)) = self.expiry.first_key_value() {
+            if until > now {
+                break;
+            }
+            let Some((_, id)) = self.expiry.pop_first() else {
                 break;
             };
-            self.remove(&victim);
+            self.entries.remove(&id);
         }
     }
 }
@@ -476,17 +495,24 @@ impl ReplayGuard for InMemoryReplayGuard {
             } else {
                 ReplayVerdict::Conflict
             };
-            // A conflicting document is not a use of the record, so it does
-            // not refresh the record's recency — otherwise a flood of
-            // conflicts could pin an entry and evict live ones.
-            if matches!(verdict, ReplayVerdict::Duplicate { .. }) {
-                inner.touch(id);
-            }
             return Ok(verdict);
         }
 
-        inner.tick += 1;
-        let tick = inner.tick;
+        // Full: reclaim the records whose window has closed, and if every
+        // slot still holds a live record, refuse rather than drop one. A
+        // record dropped inside its window is a replay accepted later.
+        if inner.entries.len() >= self.capacity {
+            inner.purge_expired(now);
+            if inner.entries.len() >= self.capacity {
+                return Err(ReplayGuardError(format!(
+                    "in-memory replay guard is full: {} records are inside their retention window",
+                    inner.entries.len()
+                )));
+            }
+        }
+
+        inner.seq += 1;
+        let seq = inner.seq;
         inner.entries.insert(
             id.to_string(),
             Entry {
@@ -494,12 +520,12 @@ impl ReplayGuard for InMemoryReplayGuard {
                 retain_until,
                 response: None,
                 completed: false,
-                tick,
+                seq,
             },
         );
-        inner.recency.insert(tick, id.to_string());
-        let capacity = self.capacity;
-        inner.evict_to_capacity(capacity);
+        if let Some(until) = retain_until {
+            inner.expiry.insert((until, seq), id.to_string());
+        }
         Ok(ReplayVerdict::Fresh)
     }
 
@@ -715,27 +741,63 @@ mod tests {
         assert_eq!(guard.len(), 0);
     }
 
+    /// A full guard never drops a record inside its retention window to make
+    /// room: it refuses the new document instead, which the pipeline answers
+    /// `unavailable`. Dropping one would let that document execute again.
     #[tokio::test]
-    async fn capacity_evicts_the_least_recently_used_record() {
+    async fn a_full_guard_refuses_rather_than_dropping_a_live_record() {
         let guard = InMemoryReplayGuard::new(2);
         let now = t("2026-08-26T12:00:00Z");
+        let later = t("2026-09-20T12:00:00Z");
         let d = |id: &str| document_digest(&doc(id, json!({}))).unwrap();
 
-        guard.claim("a", &d("a"), None, now).await.unwrap();
+        guard.claim("a", &d("a"), Some(later), now).await.unwrap();
         guard.claim("b", &d("b"), None, now).await.unwrap();
-        // Touch `a` so `b` becomes the least recently used.
-        guard.claim("a", &d("a"), None, now).await.unwrap();
-        guard.claim("c", &d("c"), None, now).await.unwrap();
-
-        assert_eq!(guard.len(), 2);
-        assert!(matches!(
-            guard.claim("a", &d("a"), None, now).await.unwrap(),
-            ReplayVerdict::Duplicate { .. }
-        ));
+        let refused = guard.claim("c", &d("c"), Some(later), now).await;
+        assert!(refused.is_err(), "expected a refusal, got {refused:?}");
         assert_eq!(
-            guard.claim("b", &d("b"), None, now).await.unwrap(),
+            RejectReason::from(refused.unwrap_err()).code(),
+            crate::StandardCode::Unavailable
+        );
+
+        // Both records survive, and duplicates are still recognised while full.
+        assert_eq!(guard.len(), 2);
+        for id in ["a", "b"] {
+            assert!(matches!(
+                guard.claim(id, &d(id), Some(later), now).await.unwrap(),
+                ReplayVerdict::Duplicate { .. }
+            ));
+        }
+    }
+
+    /// Records whose window has closed are reclaimed when the guard is full,
+    /// so a full guard holds only live records.
+    #[tokio::test]
+    async fn a_full_guard_reclaims_expired_records_first() {
+        let guard = InMemoryReplayGuard::new(2);
+        let now = t("2026-08-26T12:00:00Z");
+        let soon = t("2026-08-26T12:05:00Z");
+        let later = t("2026-08-26T13:00:00Z");
+        let d = |id: &str| document_digest(&doc(id, json!({}))).unwrap();
+
+        guard.claim("a", &d("a"), Some(soon), now).await.unwrap();
+        guard.claim("b", &d("b"), Some(later), now).await.unwrap();
+        let after_a = t("2026-08-26T12:10:00Z");
+        assert_eq!(
+            guard
+                .claim("c", &d("c"), Some(later), after_a)
+                .await
+                .unwrap(),
             ReplayVerdict::Fresh
         );
+        assert_eq!(guard.len(), 2);
+        assert!(matches!(
+            guard
+                .claim("b", &d("b"), Some(later), after_a)
+                .await
+                .unwrap(),
+            ReplayVerdict::Duplicate { .. }
+        ));
     }
 
     #[tokio::test]

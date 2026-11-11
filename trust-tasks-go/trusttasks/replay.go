@@ -46,6 +46,7 @@ import (
 	"container/list"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -190,8 +191,8 @@ type replayEntry struct {
 	completed   bool
 }
 
-// InMemoryReplayGuard is a bounded, in-process [ReplayGuard]: an LRU map from id
-// to the digest accepted under it, its retention deadline, and the response it
+// InMemoryReplayGuard is a bounded, in-process [ReplayGuard]: a map from id to
+// the digest accepted under it, its retention deadline, and the response it
 // produced.
 //
 // Suitable when one process is the sole consumer for the recipient VID it serves
@@ -202,23 +203,42 @@ type replayEntry struct {
 // happens twice — the exact failure item 11 exists to prevent. Replicated
 // deployments MUST back the guard with a shared store.
 //
-// Eviction is by capacity as well as by retainUntil: a burst of distinct
-// documents can push an older record out before its deadline, and a replay
-// arriving after that would be accepted. Size the capacity above the number of
-// distinct documents the widest acceptance window can hold.
+// When it is full: a record is dropped only once its retainUntil has passed —
+// never to make room. When a new id arrives and every slot holds a record still
+// inside its retention window, Claim returns [ErrReplayGuardFull], which
+// [ConsumeInbound] answers unavailable (retryable): the guard refuses to execute
+// a document it could not then remember, rather than forgetting one it promised
+// to. Records whose window has closed are reclaimed first. The capacity is
+// therefore a ceiling on distinct documents per retention window; see
+// [DefaultReplayCapacity] for sizing.
 //
 // Safe for concurrent use, which is what makes claim-and-record atomic as the
 // [ReplayGuard] contract requires.
 type InMemoryReplayGuard struct {
 	mu       sync.Mutex
 	capacity int
-	order    *list.List               // front = least recently used
+	order    *list.List               // insertion order
 	entries  map[string]*list.Element // id -> element holding *replayEntry
+	// earliest is no later than any bounded record's retainUntil (it may be
+	// earlier, after a removal). Lets a full guard skip the reclaiming scan when
+	// nothing can have expired yet. Zero means no bounded record.
+	earliest time.Time
 }
 
-// DefaultReplayCapacity is the record count [NewInMemoryReplayGuard] retains when
-// given no explicit capacity.
-const DefaultReplayCapacity = 10_000
+// DefaultReplayCapacity is the live-record count [NewInMemoryReplayGuard]
+// retains when given no explicit capacity: 100 000.
+//
+// Enough for the consequential policy's five-minute acceptance window at ~330
+// distinct documents per second. Documents carrying an expiresAt hold their
+// record until then (up to the expiry horizon, 30 days by default), so a
+// consumer accepting them should size for that window instead — when the guard
+// is full of live records it refuses new documents rather than forgetting one.
+// Mirrors Rust's DEFAULT_REPLAY_CAPACITY.
+const DefaultReplayCapacity = 100_000
+
+// ErrReplayGuardFull is returned by [InMemoryReplayGuard.Claim] when every slot
+// holds a record still inside its retention window.
+var ErrReplayGuardFull = errors.New("trusttasks: in-memory replay guard is full of records inside their retention window")
 
 // NewInMemoryReplayGuard builds a guard retaining at most capacity records.
 //
@@ -248,14 +268,24 @@ func (g *InMemoryReplayGuard) Size() int {
 func (g *InMemoryReplayGuard) PurgeExpired(now time.Time) {
 	g.mu.Lock()
 	defer g.mu.Unlock()
+	g.purgeExpired(now)
+}
+
+func (g *InMemoryReplayGuard) purgeExpired(now time.Time) {
+	var earliest time.Time
 	for element := g.order.Front(); element != nil; {
 		next := element.Next()
 		entry := element.Value.(*replayEntry)
-		if entry.bounded && !entry.retainUntil.After(now) {
-			g.remove(element)
+		if entry.bounded {
+			if !entry.retainUntil.After(now) {
+				g.remove(element)
+			} else if earliest.IsZero() || entry.retainUntil.Before(earliest) {
+				earliest = entry.retainUntil
+			}
 		}
 		element = next
 	}
+	g.earliest = earliest
 }
 
 // Claim implements [ReplayGuard].
@@ -278,12 +308,8 @@ func (g *InMemoryReplayGuard) Claim(
 			g.remove(element)
 		} else {
 			if entry.digest != digest {
-				// A conflicting document is not a use of the record, so it does not
-				// refresh recency — otherwise a flood of conflicts could pin an
-				// entry and evict live ones.
 				return ReplayVerdict{Kind: VerdictConflict}, nil
 			}
-			g.order.MoveToBack(element)
 			return ReplayVerdict{
 				Kind:          VerdictDuplicate,
 				PriorResponse: entry.response,
@@ -292,19 +318,28 @@ func (g *InMemoryReplayGuard) Claim(
 		}
 	}
 
+	// Full: reclaim the records whose window has closed, and if every slot still
+	// holds a live record, refuse rather than drop one. A record dropped inside
+	// its window is a replay accepted later.
+	if len(g.entries) >= g.capacity {
+		if !g.earliest.IsZero() && !g.earliest.After(now) {
+			g.purgeExpired(now)
+		}
+		if len(g.entries) >= g.capacity {
+			return ReplayVerdict{}, ErrReplayGuardFull
+		}
+	}
+
+	bounded := !retainUntil.IsZero()
 	element := g.order.PushBack(&replayEntry{
 		id:          id,
 		digest:      digest,
 		retainUntil: retainUntil,
-		bounded:     !retainUntil.IsZero(),
+		bounded:     bounded,
 	})
 	g.entries[id] = element
-	for len(g.entries) > g.capacity {
-		oldest := g.order.Front()
-		if oldest == nil {
-			break
-		}
-		g.remove(oldest)
+	if bounded && (g.earliest.IsZero() || retainUntil.Before(g.earliest)) {
+		g.earliest = retainUntil
 	}
 	return ReplayVerdict{Kind: VerdictFresh}, nil
 }
