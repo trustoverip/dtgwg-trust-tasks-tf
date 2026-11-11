@@ -245,10 +245,25 @@ func UnpackTrustTask(wire []byte, recipient *Identity, resolve ResolveSender) (*
 	if len(msg.Body) == 0 {
 		return nil, &EnvelopeError{Failure: FailInvalidBody, Detail: "message carries no body", Sender: inner.senderKid}
 	}
+	// DIDComm v2: the plaintext `from` names the DID whose key authcrypt
+	// authenticated, and `to` the DIDs the message was encrypted for. Both are
+	// inside the AEAD, so a mismatch is the sender's own statement disagreeing
+	// with its envelope, and the message is refused rather than attributed to
+	// either party.
+	sender := bareDID(inner.senderKid)
+	local := bareDID(recipient.Kid)
+	if msg.From != "" && bareDID(msg.From) != sender {
+		return nil, &EnvelopeError{Failure: FailDecrypt, Detail: fmt.Sprintf("message from %s is not the authenticated sender %s", msg.From, sender), Sender: inner.senderKid}
+	}
+	if msg.To != nil && !containsDID(msg.To, local) {
+		return nil, &EnvelopeError{Failure: FailNotForThisRecipient, Detail: fmt.Sprintf("message to does not name %s", local), Sender: inner.senderKid}
+	}
 
 	return &Unpacked{
-		Document:  msg.Body,
-		Transport: Transport{Local: bareDID(inner.recipientKid), Peer: bareDID(inner.senderKid)},
+		Document: msg.Body,
+		// Local is the identity this call opened the envelope with, not a value
+		// read from the envelope.
+		Transport: Transport{Local: local, Peer: sender},
 		Thid:      msg.Thid,
 		Pthid:     msg.Pthid,
 	}, nil
@@ -271,6 +286,16 @@ func AdvertisedSender(wire []byte) string {
 		return ""
 	}
 	return bareDID(header.Skid)
+}
+
+// containsDID reports whether any of dids, fragment stripped, is did.
+func containsDID(dids []string, did string) bool {
+	for _, d := range dids {
+		if bareDID(d) == did {
+			return true
+		}
+	}
+	return false
 }
 
 // bareDID strips the #fragment from a DID URL: did:example:a#key-1 → did:example:a.

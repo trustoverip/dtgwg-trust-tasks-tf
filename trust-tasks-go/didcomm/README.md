@@ -44,6 +44,21 @@ unpacked, err := didcomm.UnpackTrustTask(wire, bob, func(senderDID string) (*did
 `PackTrustTask` sets the DIDComm `thid` from the document's `threadId` (or its
 `id`) and `pthid` from `parentThreadId` (binding §3.1).
 
+`UnpackTrustTask` opens only the recipient entry whose `kid` is exactly the
+identity's `Kid`, and reports that identity's DID as `Transport.Local` — never a
+value read from the envelope. Before opening, it checks the JWE: `apu` must be
+the base64url `skid`, `apv` the base64url SHA-256 of the sorted recipient kids
+(so the unprotected kids are bound to the protected header), every recipient
+entry must carry a `kid`, `typ` (when present) must be
+`application/didcomm-encrypted+json`, and a `crit` or `zip` header, a shared
+`unprotected` header, `aad`, the flattened `header`/`encrypted_key` form, a
+per-recipient header repeating a protected parameter, or JSON member names that
+differ only by case are refused (`FailNotAuthcrypt`). After decrypting, a
+plaintext `from` that is not the authenticated sender is `FailDecrypt`, and a
+`to` that does not name the recipient is `FailNotForThisRecipient`. An empty
+`"to": []` names no one and is refused the same way; an absent `to` (or `null`)
+is accepted.
+
 ## Consume (§7.2 pipeline)
 
 ```go
@@ -73,7 +88,9 @@ Interop is asserted **both directions** against `affinidi-messaging-didcomm` (th
 library the Rust and Dart Trust Tasks DIDComm bindings are built on):
 
 - **affinidi → Go**: `interop_test.go` unpacks a JWE packed by affinidi
-  (`testdata/authcrypt-interop.fixture.json`).
+  (`testdata/authcrypt-interop.fixture.json`), and `interop_multi_test.go` one
+  packed to two recipients (`testdata/authcrypt-interop-multi.fixture.json`),
+  which pins the `apv` check to affinidi's computation.
 - **Go → affinidi**: `trust-tasks-didcomm/tests/interop.rs` unpacks a JWE packed
   by this binding with affinidi.
 

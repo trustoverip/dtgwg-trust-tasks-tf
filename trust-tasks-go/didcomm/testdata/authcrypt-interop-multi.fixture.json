@@ -1,0 +1,16 @@
+{
+  "jwe": "{\"protected\":\"eyJ0eXAiOiJhcHBsaWNhdGlvbi9kaWRjb21tLWVuY3J5cHRlZCtqc29uIiwiYWxnIjoiRUNESC0xUFUrQTI1NktXIiwiZW5jIjoiQTI1NkNCQy1IUzUxMiIsInNraWQiOiJkaWQ6ZXhhbXBsZTphbGljZSNrZXkteDI1NTE5LTEiLCJhcHUiOiJaR2xrT21WNFlXMXdiR1U2WVd4cFkyVWphMlY1TFhneU5UVXhPUzB4IiwiYXB2IjoicTJZcVRlVnVKUWRFZFdlX0laTTY5N09DdEM0MUFrcWxRcVVRMDEyaV8wTSIsImVwayI6eyJjcnYiOiJYMjU1MTkiLCJrdHkiOiJPS1AiLCJ4IjoieFlLM1l3TFc2ZkZuSWllSG5hWVM4WjNNaEZUNTluS1diZUZNTFJONkFITSJ9fQ\",\"recipients\":[{\"header\":{\"kid\":\"did:example:carol#key-x25519-1\"},\"encrypted_key\":\"bEvJvokDGESfcnbkZNgRhb2RhGffibiJHYHXAC4NVeeC_ekxQug5Yg75ZSU-dC_-WBIM97qhzDoYVF8dIrBF_F2ct6p2QuBr\"},{\"header\":{\"kid\":\"did:example:bob#key-x25519-1\"},\"encrypted_key\":\"9nTLKulP9z43zOygxMOhaMzAGFCOx82lkyXJcqvfyRsLM5QYYUjosyYq3EQqcI0_dL3k5PVfsskxEmu1mPIvtAj8_HXkkgLz\"}],\"iv\":\"tMeoJ0kVDf_EYhjWvQdGVg\",\"ciphertext\":\"eDXzcdSslcnbHAV-G3r8j-PeJAtzybmHijgXM-Sm4o6dMLOgm-eV52jYhWPdeJW1MLScyuz9Vhbtr1LDhMo0OOn-4fE4PKPU3V_TtNKiTcIps7hA6BbZ4CTzSPro91npiRWT5PVX2YhZO5IowkqVQ3rftPHMlxWpPRXHamC8TrBKkrtrBI7Rnu60bJZf7CICf6nHuZz52vgFjAtSppKGzTFjW9HF3x--sHvQs88NpdXwg-52tCwT_ei0SzifLxu2XR0RfTx5rq2X6BpjAf34svx2PjgolVxfjezagwFg7awERQn8JAPIWl6A9XwtVO53Vrizk2zkA89Arb4VbcAjyVAM1gojajl1REMNS7QQx3iWgM6cGKcFYly-2fYliMFI0amC7LJa7fNwQVwOHLmXfWxaRMy8KH39yzWcPjfE77XSdNs8KCv7HLY9hq3iRDzmEWpPXCvJngIL8VGYrmMb0bw8FPlf0u03PYowvwzarBfg9I6polG96XPJGJJKTlg2R1YtHvOIgnoK8MzSwvMPCueIBJ6OKt7XSMl_E-IifhnanMlaYSnC-r1a636JlxNQwoRRg_AeSvG3UOOx2IOSMMjqTyrEeQwIgmEcCT_yskw\",\"tag\":\"D457Vu9A5WJORgTcHcC_Rzy0fOFNY1kaZQZQFRHqzZI\"}",
+  "plaintext": "{\"body\":{\"id\":\"urn:uuid:00000000-0000-4000-8000-000000000002\",\"issuedAt\":\"2026-06-01T12:00:00Z\",\"payload\":{\"text\":\"hello to two recipients from affinidi\"},\"type\":\"https://trusttasks.org/spec/example/echo/0.1\"},\"from\":\"did:example:alice\",\"id\":\"urn:uuid:2b1a7e0c-0000-4000-8000-00000000abce\",\"thid\":\"urn:uuid:00000000-0000-4000-8000-000000000002\",\"to\":[\"did:example:bob\",\"did:example:carol\"],\"type\":\"https://trusttasks.org/binding/didcomm/0.1/envelope\"}",
+  "recipients": [
+    {
+      "kid": "did:example:bob#key-x25519-1",
+      "privX25519": "0909090909090909090909090909090909090909090909090909090909090909"
+    },
+    {
+      "kid": "did:example:carol#key-x25519-1",
+      "privX25519": "0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b"
+    }
+  ],
+  "senderKid": "did:example:alice#key-x25519-1",
+  "senderPubX25519": "13be4feaeaf204c7fd3358fc9c00721881d174278128227ec674f37f7fe97b6d"
+}

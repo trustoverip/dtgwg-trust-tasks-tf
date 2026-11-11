@@ -29,7 +29,7 @@
   "dependencies": {
     "@noble/curves": "^2.0.0",
     "@noble/hashes": "^2.0.0",
-    "@scure/base": "^2.0.0"
+    "@scure/base": "^2.4.0"
   },
   "peerDependencies": {
     "@openvtc/trust-tasks": "^0.28.0"
