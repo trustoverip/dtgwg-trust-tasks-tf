@@ -17,5 +17,6 @@ pub mod passkey_vms;
 pub mod pcs;
 pub mod restore;
 pub mod services;
+pub mod webs;
 pub mod webvh;
 pub mod witness;

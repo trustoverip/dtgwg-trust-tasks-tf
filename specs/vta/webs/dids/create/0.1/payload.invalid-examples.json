@@ -1,0 +1,52 @@
+[
+  {
+    "note": "No hosting server. A did:webs DID is hosted only — the VTA has no inbound surface to serve one from — so there is no serverless form, and a request without `serverId` must fail validation rather than fall back to one.",
+    "payload": { "contextId": "alice", "path": "people/alice" }
+  },
+  {
+    "note": "The path carries the AID. The caller cannot know the AID — it is the digest of an inception event the VTA has not yet written — and the slot grammar is lowercase, so a case-sensitive AID segment is refused rather than taken as a path the VTA then appends a second AID to.",
+    "payload": { "contextId": "alice", "serverId": "prod", "path": "people/ENro7uf0ePmiK3jdTo2YCdXLqW7z7xoP6qhhBou6gBLe" }
+  },
+  {
+    "note": "A path with a leading slash. The slot grammar has no empty segment, so `/people` would publish a DID with an empty label.",
+    "payload": { "contextId": "alice", "serverId": "prod", "path": "/people" }
+  },
+  {
+    "note": "Caller-supplied key material. The VTA derives every key; a request naming a signing key is a request to custody a key the caller chose, and the closed schema refuses it.",
+    "payload": { "contextId": "alice", "serverId": "prod", "signingKeyId": "my-key" }
+  },
+  {
+    "note": "An alias that is not a DID. Designated aliases are DIDs; a URL here would be published as one.",
+    "payload": { "contextId": "alice", "serverId": "prod", "alsoKnownAs": ["https://alice.example"] }
+  },
+  {
+    "note": "A service without an endpoint. A designated service is rendered into the document as given, and one with no `serviceEndpoint` is not a service.",
+    "payload": { "contextId": "alice", "serverId": "prod", "additionalServices": [ { "id": "#files", "type": "FileStore" } ] }
+  },
+  {
+    "note": "A service id that is not a fragment. Ids are relative to the DID; an absolute id could name another DID's service.",
+    "payload": { "contextId": "alice", "serverId": "prod", "additionalServices": [ { "id": "did:webs:other.example:EAbc#files", "type": "FileStore", "serviceEndpoint": "https://files.example.com" } ] }
+  },
+  {
+    "variant": "response",
+    "note": "A response without the committed successor. Every live did:webs DID this family creates commits one (nt 1); a response that omits it hides whether pre-rotation is in place.",
+    "payload": {
+      "did": "did:webs:example.com:people:alice:ENro7uf0ePmiK3jdTo2YCdXLqW7z7xoP6qhhBou6gBLe",
+      "aid": "ENro7uf0ePmiK3jdTo2YCdXLqW7z7xoP6qhhBou6gBLe",
+      "contextId": "alice",
+      "serverId": "prod",
+      "domain": "example.com",
+      "slot": "people/alice/ENro7uf0ePmiK3jdTo2YCdXLqW7z7xoP6qhhBou6gBLe",
+      "keriCesrUrl": "https://example.com/people/alice/ENro7uf0ePmiK3jdTo2YCdXLqW7z7xoP6qhhBou6gBLe/keri.cesr",
+      "didJsonUrl": "https://example.com/people/alice/ENro7uf0ePmiK3jdTo2YCdXLqW7z7xoP6qhhBou6gBLe/did.json",
+      "signingKeyId": "webs-alice-sign-0",
+      "signingKey": "DKxy2sgzfplyr-tgwIxS19f2OchFHtLwPWD3v4oYimBx",
+      "keyAgreementKeyId": "webs-alice-ka-0",
+      "keyAgreementKey": "CBwO9bU8Qk3n2YQm0xTNu0R1tq2Hk7f1pWx0aJc3Kd5e",
+      "sequenceNumber": 1,
+      "versionId": "1:EHmLpA0OPWQbm6Ua2A8m2c4XUbJkfR7zTG4MBxwdXNbk",
+      "alsoKnownAs": ["did:webs:example.com:people:alice:ENro7uf0ePmiK3jdTo2YCdXLqW7z7xoP6qhhBou6gBLe"],
+      "createdAt": "2026-11-11T10:00:02Z"
+    }
+  }
+]
