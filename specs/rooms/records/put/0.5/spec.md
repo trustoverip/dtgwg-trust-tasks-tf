@@ -327,7 +327,7 @@ A conforming **consumer** (the host) **MUST**:
     message*).
 16. Record, when it stores a record's first version, the instant it did so, and keep it
     unchanged across every later version and every curation, retraction included; it serves it
-    as `createdAt` ([`rooms/records/list/0.6`](../../list/0.6/spec.md), `RecordMetadataV3`), and
+    as `createdAt` ([`rooms/records/list/0.7`](../../list/0.7/spec.md), `RecordMetadataV3`), and
     readers measure a record's `writtenAt` against it. Record also, with every put that stores a
     body, the instant it did so, and serve it as `bodyStoredAt` for the version carrying that
     body: a curation, and anything else that moves a record's version without storing a new

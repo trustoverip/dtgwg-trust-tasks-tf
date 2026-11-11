@@ -1266,6 +1266,10 @@ export type ListName = string;
  */
 export type ListOrder = number;
 /**
+ * The order in which a listing returns a room's records (`rooms/records/list/0.7`, `rooms/keys/browse/0.5`). `oldestFirst`, the default when the member is absent: ascending `version`, the order an incremental sync reads in. `newestFirst`: descending `version`, so a reader that opens a conversation at its newest messages reads the room's head first and pages backwards; `sinceVersion` still bounds the listing from below. A cursor continues the listing in the order it was issued under, and a host refuses it under the other.
+ */
+export type ListOrder_RoomsV0_2 = "oldestFirst" | "newestFirst";
+/**
  * Whether members can find the entry. `listed`: it appears when members browse. `findable`: it does not appear when browsing, but a search that matches it under `search` returns it. `hidden`: no member finds it by browsing or searching; administrators still see it, and members who share a group that shows its members see it in that group's member list.
  */
 export type Listing = "listed" | "findable" | "hidden";

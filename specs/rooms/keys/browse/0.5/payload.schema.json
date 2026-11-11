@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/keys/browse/0.5",
+  "title": "Rooms Keys Browse — payload",
+  "description": "TODO: what the request payload of rooms/keys/browse carries. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId",
+    "host"
+  ],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "description": "The room to list. The recipient MUST already hold group state for it."
+    },
+    "host": {
+      "type": "string",
+      "description": "The host to list from, as a DID. Named by the caller for the same reason it is on `rooms/keys/read`: nothing maps a room to its host."
+    },
+    "prefix": {
+      "type": "string",
+      "maxLength": 512,
+      "description": "Restrict to keys with this prefix. Passed through to the host. **Setting it makes the listing non-comparable against the room's `recordCount`** — see `verification.count`."
+    },
+    "sinceVersion": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Return only records above this version. Passed through. Also makes the listing non-comparable against `recordCount`."
+    },
+    "order": {
+      "$ref": "../../../_shared/0.2/room.schema.json#/$defs/ListOrder",
+      "description": "Passed through to the host. `oldestFirst` (the default when absent) or `newestFirst`, which reads the room's head first: with `maxPages`, the shape a member's surface uses to open a conversation at its newest messages."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "description": "Page size to ask the host for. A cap on what a page holds, never a cap on the result: a recipient MUST follow the host's cursor to the end unless the caller asked it to stop with `maxPages`, or it stopped of its own accord, because a listing read to its end is the only one whose length means anything."
+    },
+    "maxPages": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "The most host pages the recipient reads for this request. Absent, it reads to the end unless it stops of its own accord. A recipient that stops here with more records remaining answers `complete: false` and the host's continuation as `nextCursor`. Setting it makes the listing non-comparable against `recordCount` unless the end is reached within it."
+    },
+    "cursor": {
+      "type": "string",
+      "maxLength": 4096,
+      "description": "A `nextCursor` from an earlier browse of the same room at the same host, with the same `prefix`, `sinceVersion` and `order`. Passed through to the host as its listing's `cursor`; the host refuses one it did not issue or issued under another order, and the recipient answers `hostRefused`. A listing resumed from a cursor does not start at the room's first record in its order, so it is never comparable against `recordCount`."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roomId",
+        "records",
+        "verification"
+      ],
+      "description": "Success response to rooms/keys/browse. Type https://trusttasks.org/spec/rooms/keys/browse/0.5#response.",
+      "properties": {
+        "roomId": {
+          "type": "string"
+        },
+        "records": {
+          "type": "array",
+          "items": {
+            "$ref": "../../../_shared/0.2/room.schema.json#/$defs/RecordMetadataV3"
+          },
+          "description": "Metadata, never bodies — the same projection the host serves, passed through. A member who wants a body asks for one record, which is also the only shape a trace can be produced for."
+        },
+        "complete": {
+          "type": "boolean",
+          "description": "Whether the recipient followed the host's cursor to the end. `false` means a page bound was hit, and is what makes `verification.count` `notComparable` even on an unfiltered listing — a short listing and a truncated one are indistinguishable by length alone, which is exactly the confusion this member exists to prevent."
+        },
+        "nextCursor": {
+          "type": "string",
+          "maxLength": 4096,
+          "description": "The host's continuation token, present exactly when `complete` is `false`: the recipient stopped — at `maxPages` or of its own accord — while the host still had records to list. Pass it back as `cursor`, with the same `prefix`, `sinceVersion` and `order`, to continue. Absent when the listing reached its end."
+        },
+        "verification": {
+          "$ref": "../../../_shared/0.2/room.schema.json#/$defs/ReadVerification",
+          "description": "What the recipient checked and what it found. REQUIRED for the same reason it is on `rooms/keys/read`."
+        },
+        "lastPrune": {
+          "$ref": "../../../_shared/0.2/room.schema.json#/$defs/RecordPrune",
+          "description": "The room's latest record prune, passed through from the host's listing (`rooms/records/list` 0.3) exactly as served, whenever the room's records have been pruned. A caller keeping its own copy of the room synchronised below `lastPrune.version` rebuilds it from a browse with no `sinceVersion`, as `rooms/records/list` 0.3 *After a prune* requires."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      },
+      "title": "Rooms Keys Browse — response payload"
+    }
+  }
+}

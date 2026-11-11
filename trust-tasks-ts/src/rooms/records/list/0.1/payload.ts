@@ -6,7 +6,7 @@
 import type { AuthorityPresentation, DataCommitment, DigestMultibase, Ext, HeadVersion, RecordCount, RecordMetadata } from "../../../../_shared/components.js";
 
 
-/** @deprecated superseded by rooms/records/list/0.6 */
+/** @deprecated superseded by rooms/records/list/0.7 */
 export interface RoomsRecordsListPayload {
   /**
    * The room's identifier.
@@ -40,7 +40,7 @@ export interface RoomsRecordsListPayload {
 /**
  * Success response to rooms/records/list. Type https://trusttasks.org/spec/rooms/records/list/0.1#response. Returns METADATA, never bodies: a reader fetches the handful it wants with rooms/records/get.
  *
- * @deprecated superseded by rooms/records/list/0.6
+ * @deprecated superseded by rooms/records/list/0.7
  */
 export interface RoomsRecordsListResponsePayload {
   records: RecordMetadata[];
@@ -83,12 +83,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by rooms/records/list/0.6";
+export const DEPRECATION: string | null = "superseded by rooms/records/list/0.7";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by rooms/records/list/0.6
+ * @deprecated superseded by rooms/records/list/0.7
  */
 export type Payload = RoomsRecordsListPayload;
 
@@ -98,7 +98,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/rooms/records/list
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by rooms/records/list/0.6
+ * @deprecated superseded by rooms/records/list/0.7
  */
 export type Response = RoomsRecordsListResponsePayload;
 
