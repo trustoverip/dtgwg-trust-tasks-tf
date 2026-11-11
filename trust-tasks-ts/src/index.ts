@@ -1750,6 +1750,9 @@ export import RoomsInfo_v0_2 = _RoomsInfo_v0_2;
 import * as _RoomsInfo_v0_3 from "./rooms/info/0.3/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomsInfo_v0_3 = _RoomsInfo_v0_3;
+import * as _RoomsInfo_v0_4 from "./rooms/info/0.4/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import RoomsInfo_v0_4 = _RoomsInfo_v0_4;
 import * as _RoomsKeysAct_v0_1 from "./rooms/keys/act/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomsKeysAct_v0_1 = _RoomsKeysAct_v0_1;
@@ -2011,6 +2014,9 @@ export import RoomsRevocationsGet_v0_1 = _RoomsRevocationsGet_v0_1;
 import * as _RoomsRevocationsPut_v0_1 from "./rooms/revocations/put/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomsRevocationsPut_v0_1 = _RoomsRevocationsPut_v0_1;
+import * as _RoomsSignalDelaySet_v0_1 from "./rooms/signal-delay/set/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import RoomsSignalDelaySet_v0_1 = _RoomsSignalDelaySet_v0_1;
 import * as _RoomsUsage_v0_1 from "./rooms/usage/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomsUsage_v0_1 = _RoomsUsage_v0_1;

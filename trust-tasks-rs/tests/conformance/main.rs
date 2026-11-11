@@ -1267,6 +1267,7 @@ mod rooms {
         mod v0_1;
         mod v0_2;
         mod v0_3;
+        mod v0_4;
     }
     mod keys {
         mod act {
@@ -1414,6 +1415,11 @@ mod rooms {
             mod v0_1;
         }
         mod put {
+            mod v0_1;
+        }
+    }
+    mod signal_delay {
+        mod set {
             mod v0_1;
         }
     }

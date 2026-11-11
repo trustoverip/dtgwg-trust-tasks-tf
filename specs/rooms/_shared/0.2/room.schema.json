@@ -1124,6 +1124,15 @@
       "title": "RecordPurpose",
       "description": "The one purpose for which a caller will use room content a request discloses (VTI-ACL-103): a name registered in the VTI specification's purpose registry (`personalisation`, `taskExecution`, `analytics`, `modelTraining`) or an absolute IRI. Granted only as the caller's authority grants it — `any` grants every purpose but `modelTraining` — refused otherwise (`purposeNotGranted`), and recorded with the read. Distinct from `PermittedUse`, which is what a record's author permits and is a statement, not a grant.",
       "$ref": "../../../acl/_shared/0.3/acl-entry.schema.json#/$defs/Purpose"
+    },
+    "SignalDelay": {
+      "title": "SignalDelay",
+      "type": "string",
+      "enum": [
+        "randomised",
+        "none"
+      ],
+      "description": "Whether a room's host waits a randomised interval before sending a `rooms/changed` signal: the room's **signal delay**.\n\n`randomised` is the default and what a room without one has: the host waits a few seconds after the change that fires a watch, so that the signal's time does not mark one write exactly (`rooms/changed`, producer item 4). `none` is for a room where members expect to see a write as soon as it is made, such as a conversation: the host sends the signal as soon as the change that fires it is stored, with no wait of its own.\n\n**A room's setting, not a member's.** The delay protects the room's writers as much as its watchers. A watcher whose signal is sent at once marks, to anyone who sees both the writer's request reach the host and the signal leave it, the moment of the write and that the two parties share the room. So one watcher cannot opt out for itself without giving away something about everyone who writes, and the setting is the room's: changed by a holder of `admin` (`rooms/signal-delay/set`) and served to every member (`rooms/info`).\n\n**What `none` gives up.** Little in a busy room, where writes are frequent enough that their rhythm is visible anyway; most in a quiet one, where a single write and a single signal line up. A surface that offers the setting SHOULD say so.\n\nAbsent means `randomised`."
     }
   }
 }

@@ -1788,6 +1788,30 @@ type RecordMetadataV3 struct {
 // statement, not a grant.
 type RecordPurpose = Purpose
 
+// SignalDelay Whether a room's host waits a randomised interval before sending a
+// `rooms/changed` signal: the room's **signal delay**. `randomised` is the default and
+// what a room without one has: the host waits a few seconds after the change that fires a
+// watch, so that the signal's time does not mark one write exactly (`rooms/changed`,
+// producer item 4). `none` is for a room where members expect to see a write as soon as
+// it is made, such as a conversation: the host sends the signal as soon as the change
+// that fires it is stored, with no wait of its own. **A room's setting, not a member's.**
+// The delay protects the room's writers as much as its watchers. A watcher whose signal
+// is sent at once marks, to anyone who sees both the writer's request reach the host and
+// the signal leave it, the moment of the write and that the two parties share the room.
+// So one watcher cannot opt out for itself without giving away something about everyone
+// who writes, and the setting is the room's: changed by a holder of `admin`
+// (`rooms/signal-delay/set`) and served to every member (`rooms/info`). **What `none`
+// gives up.** Little in a busy room, where writes are frequent enough that their rhythm
+// is visible anyway; most in a quiet one, where a single write and a single signal line
+// up. A surface that offers the setting SHOULD say so. Absent means `randomised`.
+type SignalDelay string
+
+// Values SignalDelay may take, per this specification's schema.
+const (
+	SignalDelayRandomised SignalDelay = "randomised"
+	SignalDelayNone       SignalDelay = "none"
+)
+
 // Purpose What content is used for: a lowerCamelCase name registered in the VTI
 // specification's purpose registry (Appendix H) — `personalisation`, `taskExecution`,
 // `analytics`, `modelTraining` at the time of writing — or an absolute IRI naming a

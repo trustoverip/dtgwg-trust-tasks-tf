@@ -106,7 +106,7 @@ A conforming **host** (`recipient`):
    shortened is records removed under a rule nobody stated.
 4. **MUST** replace the retention in force with `recordRetention` whole. A member it leaves out
    is no longer stated; `{}` clears the retention, after which no record is eligible by age.
-5. **MUST** serve the new retention from then on in [`rooms/info`](../../../../info/0.3/spec.md)
+5. **MUST** serve the new retention from then on in [`rooms/info`](../../../../info/0.4/spec.md)
    0.2 and apply it to the next prune, and **MUST** keep in the room's audit trail the retention
    replaced, the one recorded, the `reason`, and the requester where the tier discloses one.
 6. **MUST NOT** remove any record because of this task.

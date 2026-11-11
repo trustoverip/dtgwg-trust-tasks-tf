@@ -83,7 +83,7 @@ The rule is the room's, stated in advance and readable by every member
 ([`RecordRetention`](../../../_shared/0.2/room.schema.json), set at
 [`rooms/create`](../../../create/0.2/spec.md) and changed with
 [`rooms/records/retention/set`](../../retention/set/0.1/spec.md), served by
-[`rooms/info`](../../../info/0.3/spec.md)). The act is the administrator's, made deliberately
+[`rooms/info`](../../../info/0.4/spec.md)). The act is the administrator's, made deliberately
 with a reason. The host does neither on its own: it measures age and removes what it is asked
 to, and nothing on a timer.
 
@@ -142,7 +142,7 @@ A conforming **host** (`recipient`):
    A prune that removed nothing takes no version and leaves no mark.
 6. **MUST** return `lastPrune` thereafter wherever a response can carry it
    ([`rooms/records/list`](../../list/0.6/spec.md) 0.3, [`rooms/keys/browse`](../../../keys/browse/0.4/spec.md)
-   0.2 through it, [`rooms/info`](../../../info/0.3/spec.md) 0.2).
+   0.2 through it, [`rooms/info`](../../../info/0.4/spec.md) 0.2).
 7. **MUST** keep the audit trail below, and **MUST NOT** keep anything else of a removed
    record.
 8. **MUST NOT** remove a record by age in any other way — on a timer, at a quota, on a
