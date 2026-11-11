@@ -978,6 +978,9 @@ mod messaging {
         }
     }
     mod mux {
+        mod ack {
+            mod v0_1;
+        }
         mod attach {
             mod v0_1;
         }

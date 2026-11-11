@@ -1279,6 +1279,9 @@ export import MessagingMonitorUnsubscribe_v0_1 = _MessagingMonitorUnsubscribe_v0
 import * as _MuxShared_v0_1 from "./messaging/mux/_shared/0.1/mux.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import MuxShared_v0_1 = _MuxShared_v0_1;
+import * as _MessagingMuxAck_v0_1 from "./messaging/mux/ack/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import MessagingMuxAck_v0_1 = _MessagingMuxAck_v0_1;
 import * as _MessagingMuxAttach_v0_1 from "./messaging/mux/attach/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import MessagingMuxAttach_v0_1 = _MessagingMuxAttach_v0_1;

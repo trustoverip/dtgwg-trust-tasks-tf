@@ -44,6 +44,7 @@ maxDocumentBytes:
     An attached or detached event batches up to 1000 members, each a DID and a few short members.
 errorCodes: []
 related:
+  - messaging/mux/ack
   - messaging/mux/attach
   - messaging/mux/detach
   - messaging/mux/grant
@@ -115,7 +116,7 @@ A raw-TSP socket carries binary TSP frames only. Without mux, a mediator reports
 2. **Control.** Mux Trust Tasks, and these events, travel as TSP Direct messages between the principal's VID and the mediator's on the same socket.
 3. **Data frames are not tagged.** A TSP envelope names its receiver VID in the clear, and a member DID's TSP VID is the DID itself, so the client routes each delivered frame to its member by receiver.
 4. **In-band refusals.** On a `tsp-mux` socket, a refused inbound frame does not close the socket. The mediator sends a `refused` event, where `frameId` is the lowercase hex SHA-256 of the frame's exact bytes, as the traffic monitor identifies a refused frame (a refused frame is never stored, so it has no stored-message id for `tsp-ack` to acknowledge), and `code` the stable refusal code a traffic-monitor `refused` event would report. The socket closes only for a failure of the principal itself: its authentication expiring, its account blocked, or a protocol violation.
-5. **Inbox drain.** The mediator drains the principal's inbox and then, round-robin, each attached member's with `pickup`, in pages bounded per member. Acknowledgements are authorised against the owning member's `delete` scope; a member without `delete` has delete-on-send turned off, and its frames stay in its inbox.
+5. **Inbox drain.** The mediator drains the principal's inbox and then, round-robin, each attached member's with `pickup`, in pages bounded per member. Acknowledgements are authorised against the owning member's `delete` scope; a member without `delete` has delete-on-send turned off, and its frames stay in its inbox. A client acknowledges on the socket itself, with [`messaging/mux/ack`](../../ack/0.1/spec.md): only the connection knows its members and their scopes, so an out-of-band delete may be refused by an instance of a clustered mediator that does not hold the connection.
 
 ### DIDComm sockets
 
