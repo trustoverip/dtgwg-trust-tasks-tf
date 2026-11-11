@@ -5205,6 +5205,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vta/webs/dids/create/0.1#response" => <crate::specs::vta::webs::dids::create::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/create/0.2" => <crate::specs::vta::webs::dids::create::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/create/0.2#response" => <crate::specs::vta::webs::dids::create::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/webs/dids/delete/0.1" => <crate::specs::vta::webs::dids::delete::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
@@ -13077,6 +13083,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/create/0.2" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::webs::dids::create::v0_2::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/webs/dids/delete/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::vta::webs::dids::delete::v0_1::Payload,
         >()),
@@ -20439,6 +20450,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/webs/dids/create/0.1" => {
             Some(crate::specs::vta::webs::dids::create::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webs/dids/create/0.2" => {
+            Some(crate::specs::vta::webs::dids::create::v0_2::ERROR_CODES)
         }
         #[cfg(feature = "vta")]
         #[cfg(not(test))]

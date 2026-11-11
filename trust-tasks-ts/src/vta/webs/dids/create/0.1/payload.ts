@@ -8,6 +8,8 @@ import type { DesignatedService, Ext, WebsSlotPath } from "../../../../../_share
 
 /**
  * Create a did:webs persona, relationship or integration DID in a context: the VTA derives the keys, writes the KERI v2 inception and designation events, and publishes keri.cesr through a hosting server. Never a node's service DID (VTI-KEY-001). Alpha.
+ *
+ * @deprecated superseded by vta/webs/dids/create/0.2
  */
 export interface VTADidWebsDIDsCreatePayload {
   /**
@@ -58,6 +60,8 @@ export interface VTADidWebsDIDsCreatePayload {
 }
 /**
  * Success response to vta/webs/dids/create. Type https://trusttasks.org/spec/vta/webs/dids/create/0.1#response.
+ *
+ * @deprecated superseded by vta/webs/dids/create/0.2
  */
 export interface VTADidWebsDIDsCreateResponsePayload {
   /**
@@ -150,15 +154,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by vta/webs/dids/create/0.2";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vta/webs/dids/create/0.2
+ */
 export type Payload = VTADidWebsDIDsCreatePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/webs/dids/create/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vta/webs/dids/create/0.2
+ */
 export type Response = VTADidWebsDIDsCreateResponsePayload;
 
 /**
