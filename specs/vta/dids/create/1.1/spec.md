@@ -77,13 +77,13 @@ errorCodes:
     meaning: "`assuranceLevel` is below the floor the template sets in `defaults.keyAssurance.minimum` (CONVENTIONS.md §4 item 7)."
     retryable: false
   - code: "vta/dids:witnessRequired"
-    meaning: "A level-3 identity under a method with witnesses, and `methodParameters` names no witness enforcing CONVENTIONS.md §5.4."
+    meaning: "A level-3 identity under a method with witnesses, `methodParameters` names no witness enforcing CONVENTIONS.md §5.4, and the method profile's next-key threshold does not stand in for one."
     retryable: false
   - code: "vta/dids/create:templateNotFound"
     meaning: "No template of that name is visible in the requested scope."
     retryable: false
   - code: "vta/dids/create:templateNotKeyRole"
-    meaning: "The template is not a key-role template: not `schemaVersion` 3, or its `document` carries key members."
+    meaning: "The template is not a key-role template: not `schemaVersion` 3, or its `document` carries key members, or a member the method profile renders nothing for (method profile `webs` §4)."
     retryable: false
 related:
   - vta/dids/upgrade
@@ -157,8 +157,10 @@ A conforming **consumer** (the VTA) **MUST**:
 5. At level 3, require `recoveryCommitment`, verify its `proofOfPossession` over the
    `previewId` on the apply request, refuse a recovery key it generated or can derive
    (`vta/dids:recoveryCommitmentRequired`), record `custodian` in custody and nowhere else,
-   and refuse a method with witnesses when `methodParameters` names none
-   (`vta/dids:witnessRequired`). At level 2, refuse `recoveryCommitment`
+   and refuse a method with witnesses when `methodParameters` names none and the method
+   profile's next-key threshold does not stand in for one
+   ([§5.4](../../_shared/0.1/CONVENTIONS.md#54-witnesses-and-the-recovery-commitment);
+   `vta/dids:witnessRequired`). At level 2, refuse `recoveryCommitment`
    (`vta/dids:assuranceLevelMismatch`), and warn `roleKeysInBackups` and, where no witness
    is named, `noWitnesses`.
 6. Follow the preview, step-up and approval rules of

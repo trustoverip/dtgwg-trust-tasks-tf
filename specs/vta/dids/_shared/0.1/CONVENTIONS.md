@@ -172,9 +172,14 @@ Raise it to level 2 with `dids upgrade`, or create a new identity" — and not a
 retry.
 
 A level-1 identity keeps being managed by the method-specific tasks it was created with
-(for did:webvh, `vta/webvh/dids/update/1.0` and `vta/webvh/dids/rotate-keys/1.0`) until it
-is raised. A VTA **MUST** refuse those tasks for a key-role identity with the framework's
-`unsupportedVersion`, because they cannot change one role without the others.
+(for did:webvh, `vta/webvh/dids/update/1.0` and `vta/webvh/dids/rotate-keys/1.0`; for
+did:webs, [`vta/webs/dids/update/0.1`](../../../webs/dids/update/0.1/spec.md) and
+[`vta/webs/dids/rotate-keys/0.1`](../../../webs/dids/rotate-keys/0.1/spec.md)) until it
+is raised. A VTA **MUST** refuse those tasks for a key-role identity, because they cannot
+change one role without the others: the did:webvh tasks with the framework's
+`unsupportedVersion`, and the did:webs tasks with `vta/webs/dids/<task>:notFound`, as that
+family's [conventions §1](../../../webs/_shared/0.2/CONVENTIONS.md#1-which-identities)
+require.
 
 ### 3.2 Eligibility
 
@@ -263,7 +268,7 @@ lost VTA's keys come back with its backup, so its loss needs no recovery key.
 | §5.2 protection at rest independent of the seed | — | ✓ |
 | §5.3 routine successor committed | ✓ (may be derived) | ✓ (generated) |
 | §5.3 recovery commitment, §9.4 `scope: boundary`, `recover` | — : refused with `vta/dids:assuranceLevelMismatch` | ✓ |
-| §5.4 witness enforcing the level | SHOULD | **MUST** (`vta/dids:witnessRequired`) |
+| §5.4 witness enforcing the level | SHOULD | **MUST** (`vta/dids:witnessRequired`), unless the profile's next-key threshold stands in (§5.4) |
 | §5.4 witness enforcing the recovery commitment | — | **MUST** |
 | §5.5 `inBackups: false`, never exportable | exportable only in the VTA's own backup | ✓ |
 | §6 preview, bound step-up, quorum | as §6.5 | as §6.5 |
@@ -367,8 +372,9 @@ A VTA creating a key-role identity **MUST**:
 4. Commit, in the first version, a routine update successor, and at level 3 the recovery
    commitment (§5.3); render `keyAssurance` (§3.4.2).
 5. At level 3, refuse a method with witnesses unless `methodParameters` names at least one
-   witness enforcing §5.4 (`vta/dids:witnessRequired`); at level 2, warn `noWitnesses`
-   when none is named.
+   witness enforcing §5.4, or the method profile's next-key threshold stands in for it as
+   §5.4 allows (`vta/dids:witnessRequired`); at level 2, warn `noWitnesses` when none is
+   named.
 6. Do all of this under preview and approval (§6), so the approver sees the exact public
    keys and document.
 7. Honour the template's level floor. A template **MAY** carry, in `defaults`,
@@ -383,7 +389,9 @@ A VTA creating a key-role identity **MUST**:
    kind of service it describes (VTI-KEY-196).
 
 A level-1 identity is not created by this family: it is what the method-specific creation
-tasks produce (for did:webvh, `vta/webvh/dids/create`), and what `upgrade` raises.
+tasks produce (for did:webvh, `vta/webvh/dids/create`; for did:webs,
+[`vta/webs/dids/create`](../../../webs/dids/create/0.2/spec.md), which creates level 1
+only), and what `upgrade` raises.
 
 ## 5. Custody
 
@@ -495,13 +503,18 @@ that:
 
 A level-2 identity **SHOULD** be witnessed by a witness applying item 1. A VTA **MUST**
 refuse to create, raise to or keep a level-3 identity without such a witness
-(`vta/dids:witnessRequired`) — including an `update` that would remove the last one — and
-**MUST** warn `noWitnesses` on every preview of an unwitnessed level-2 identity. The witness
-**MAY** be operated by the recovery custodian, which is already outside the VTA's boundary.
+(`vta/dids:witnessRequired`) — including an `update` that would remove the last one —
+except as the next paragraph allows, and **MUST** warn `noWitnesses` on every preview of an
+unwitnessed level-2 identity. The witness **MAY** be operated by the recovery custodian,
+which is already outside the VTA's boundary.
 
 Where the method lets the next-key threshold require more than one key (KERI), the profile
 **SHOULD** make every rotation of the change authority require the recovery custodian, and
 use routine keys only for changes that do not rotate it; that closes T2 without a witness.
+Where the profile does so require, the threshold **MAY** stand in for the witness
+(VTI-KEY-129), and a level-3 identity under it is not refused `vta/dids:witnessRequired`
+for want of one; the `did:webs` profile so requires
+([§2](method-profiles/webs.md#2-the-change-authority)).
 
 ### 5.5 Exportability and backups
 
@@ -820,8 +833,8 @@ new identity.
 At level 2 there is no recovery key, so `scope: boundary` is refused with
 `vta/dids:assuranceLevelMismatch`: a level-2 identity whose VTA may be compromised **MUST**
 be deactivated, if the operator still can, and a successor identity created
-(VTI-KEY-124) — the method-specific deactivation (for did:webvh, `vta/webvh/dids/delete`)
-is the instrument. Where no uncompromised committed key remains at level 3 — the recovery
+(VTI-KEY-124) — the method-specific deactivation (for did:webvh, `vta/webvh/dids/delete`;
+for did:webs, a rotation to no next keys, as the profile's §1 says) is the instrument. Where no uncompromised committed key remains at level 3 — the recovery
 key is lost or exposed too — the same applies. A VTA **MUST NOT** go on operating an
 identity whose history it no longer solely controls.
 
@@ -1073,7 +1086,7 @@ task that can reach one **MUST** declare it.
   meaning: The operation or a member given needs a different key assurance level from the identity's or the request's — a recovery commitment, `scope: boundary` or `recover` below level 3, or a change that would lower the level.
   retryable: false
 - code: vta/dids:witnessRequired
-  meaning: A level-3 identity under a method with witnesses must be witnessed by a witness enforcing the level and the recovery commitment; the request names none, or would remove the last.
+  meaning: A level-3 identity under a method with witnesses must be witnessed by a witness enforcing the level and the recovery commitment, unless the method profile's next-key threshold stands in for one (§5.4); the request names none, or would remove the last.
   retryable: false
 ```
 

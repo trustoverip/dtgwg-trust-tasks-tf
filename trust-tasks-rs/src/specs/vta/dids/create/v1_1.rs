@@ -6225,7 +6225,7 @@ pub mod error_codes {
     };
     /// `vta/dids:witnessRequired`
     ///
-    /// A level-3 identity under a method with witnesses, and `methodParameters` names no witness enforcing CONVENTIONS.md §5.4.
+    /// A level-3 identity under a method with witnesses, `methodParameters` names no witness enforcing CONVENTIONS.md §5.4, and the method profile's next-key threshold does not stand in for one.
     ///
     /// Declared `retryable: false`.
     pub const WITNESS_REQUIRED: crate::DeclaredErrorCode = crate::DeclaredErrorCode {
@@ -6245,7 +6245,7 @@ pub mod error_codes {
     };
     /// `vta/dids/create:templateNotKeyRole`
     ///
-    /// The template is not a key-role template: not `schemaVersion` 3, or its `document` carries key members.
+    /// The template is not a key-role template: not `schemaVersion` 3, or its `document` carries key members, or a member the method profile renders nothing for (method profile `webs` §4).
     ///
     /// Declared `retryable: false`.
     pub const TEMPLATE_NOT_KEY_ROLE: crate::DeclaredErrorCode = crate::DeclaredErrorCode {

@@ -159,6 +159,20 @@ A conforming **consumer** (the VTA) **MUST**:
 7. Treat a revocation of any key in this rotation as superseding it (rotation `aborted`).
 8. Refuse `authenticator`.
 
+*Note (non-normative): the VTA's own identity.* A role key's verification method id is
+derived from the key (conventions §2.1 item 7, VTI-KEY-150), and under did:webs it is the
+key itself (`#<CESR key>`, [method profile `webs`
+§4](../../../_shared/0.1/method-profiles/webs.md#4-rendering)). Under did:webs a role rotation is
+a new key-role designation anchored by an interaction event, which the current key state
+signs and the recovery custodian takes no part in. Rotating a role key of the identity the
+VTA itself acts as — its `operational` key (its `authentication` key, the one its Trust Task
+documents and its DIDComm sender prove with), its `messaging` key, or its `attestation`
+key — therefore changes the key ids the VTA signs, encrypts and decrypts under, not only the
+key material. An implementation **may** need to reload the new keys into every component
+that holds them, or restart, at `activatesAt` and again at retirement; peers holding a cached
+document see the new id at the cache horizon, which is why the successor is published
+`staged` first. A rotation of the update authority changes no role key and needs neither.
+
 ## Authorization
 
 Context `admin` or `super-admin` for `operational` and `messaging`; `super-admin` for
