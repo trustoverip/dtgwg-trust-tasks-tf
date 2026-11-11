@@ -45,8 +45,11 @@
  * }
  * ```
  *
- * Items 1 (framework schema) and 3 (unknown `type`) are *not* attempted here —
- * they belong to the caller's parse and dispatch.
+ * Item 1 (framework schema) is checked only as far as every later step relies
+ * on it: the envelope members' types and a nesting bound (`validateEnvelope`),
+ * refused `malformedRequest` before anything else reads the document. Formats
+ * are left to the steps that read them. Item 3 (unknown `type`) is not
+ * attempted here — it belongs to the caller's dispatch.
  *
  * Item 2 (payload schema) used to be on that list, on the same reasoning: "by
  * the time you hold a typed document it has already succeeded." That was never
@@ -91,6 +94,7 @@ import {
   type ResolvedParties,
   type TransportHandler,
 } from "./transport.js";
+import { envelopeForRefusal, validateEnvelope } from "./envelope.js";
 
 /**
  * The two stateful §7.2 checks: the freshness bound over `issuedAt` /
@@ -386,6 +390,28 @@ export async function consumeInbound<P, R>(
   // never on the pruned copy. Everything that reasons about the payload's
   // meaning (item 2, the handler) gets `doc`.
   const received = receivedDocumentOf(doc) ?? doc;
+
+  // §7.2 item 1, as far as every later step depends on it: the envelope
+  // members are the types the framework gives them, and the document is
+  // shallow enough for the walks below (the proof's canonical form, the
+  // item-11 digest) to finish. Nothing here has checked either — a cast from
+  // `JSON.parse` is not a check — and an array `id` would otherwise reach the
+  // item-11 record as a key no resend ever equals. The refusal is addressed
+  // from the string-valued members only.
+  const malformedEnvelope =
+    validateEnvelope(received) ?? (received === doc ? null : validateEnvelope(doc));
+  if (malformedEnvelope !== null) {
+    const error = reject(
+      transport,
+      envelopeForRefusal(received),
+      newErrorId(),
+      malformedEnvelope,
+      clock,
+    );
+    return error === undefined
+      ? { kind: "suppressed", reason: malformedEnvelope }
+      : { kind: "rejected", error };
+  }
 
   // §7.2 item 2 — payload schema. Runs first, in the spec's own order, and
   // before anything that reasons about what the payload means: a payload that

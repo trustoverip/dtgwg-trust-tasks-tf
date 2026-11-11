@@ -1,0 +1,45 @@
+{
+  "description": "Item-11 duplicate-execution vectors (SPEC §7.2 item 11, Keying and comparison). For each case, consume `first`, then `second`, under the same `id` against one replay guard, with a payload type that models only `payload.subject`, passing each document as received. `expect` is the outcome of the second.",
+  "spec": "https://trusttasks.org/spec/conformance/widget/0.1",
+  "consumer": "did:web:consumer.example",
+  "now": "2026-11-01T00:00:30Z",
+  "first": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000001\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:alice.example\"}}",
+  "cases": [
+    {
+      "name": "byte-identical resend",
+      "second": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000001\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:alice.example\"}}",
+      "expect": "duplicate",
+      "why": "SPEC §8.4: a retry is the same document re-sent; item 11 absorbs it."
+    },
+    {
+      "name": "same members, different order and whitespace",
+      "second": "{\n  \"payload\": { \"subject\": \"did:web:alice.example\" },\n  \"issuedAt\": \"2026-11-01T00:00:00Z\",\n  \"recipient\": \"did:web:consumer.example\",\n  \"issuer\": \"did:web:producer.example\",\n  \"type\": \"https://trusttasks.org/spec/conformance/widget/0.1\",\n  \"id\": \"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000001\"\n}",
+      "expect": "duplicate",
+      "why": "Two serializations identical under RFC 8785 canonicalization are the same document (SPEC §7.2, Keying and comparison)."
+    },
+    {
+      "name": "extra payload member the consumer's type does not model",
+      "second": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000001\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:alice.example\",\"note\":\"added\"}}",
+      "expect": "idConflict",
+      "why": "The comparison is over the whole received document, not the consumer's typed reading of it, which drops `note`."
+    },
+    {
+      "name": "extra top-level member",
+      "second": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000001\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:alice.example\"},\"trace\":\"abc\"}",
+      "expect": "idConflict",
+      "why": "An unrecognised top-level member is part of the document (SPEC §7.2 preserves it)."
+    },
+    {
+      "name": "issuedAt spelled with fractional seconds",
+      "second": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000001\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00.000Z\",\"payload\":{\"subject\":\"did:web:alice.example\"}}",
+      "expect": "idConflict",
+      "why": "The same instant written differently is a different serialization; a typed reading that normalises the timestamp cannot see it."
+    },
+    {
+      "name": "modelled payload member changed",
+      "second": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000001\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:bob.example\"}}",
+      "expect": "idConflict",
+      "why": "Control case: a difference every reading sees."
+    }
+  ]
+}

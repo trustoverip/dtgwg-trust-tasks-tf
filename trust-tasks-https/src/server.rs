@@ -68,7 +68,7 @@ use tower::limit::ConcurrencyLimitLayer;
 use tower::timeout::TimeoutLayer;
 use tower::ServiceBuilder;
 use trust_tasks_rs::{
-    discovery::DiscoveryRegistry, document_digest, erase_verifier,
+    discovery::DiscoveryRegistry, erase_verifier, received_document_digest,
     specs::trust_task_discovery::v0_4 as discovery, DocumentDigest, DynProofVerifier, ErrorPayload,
     ErrorResponse, FreshnessPolicy, InMemoryReplayGuard, Payload, ProofVerifier, RejectReason,
     ReplayGuard, ReplayVerdict, RequestPayload, ResolvedParties, StaleReason, StandardCode,
@@ -894,17 +894,10 @@ async fn dispatch_handler(
         // Keyed on `id`, compared on a digest of the whole canonical document
         // (`proof` included) — §7.2's *Keying and comparison*. An `id` alone
         // cannot tell the §8.4 retry it must absorb from the conflict it must
-        // reject.
-        let digest = match document_digest(&doc) {
-            Ok(digest) => digest,
-            Err(e) => {
-                return reject_response(
-                    Some(&handler),
-                    Some(&doc),
-                    RejectReason::malformed_from_serde(&e),
-                );
-            }
-        };
+        // reject. Over `received`, the body as it arrived, not `doc`
+        // re-serialised: that re-renders `issuedAt` and `expiresAt`, so two
+        // bodies spelling one instant differently would compare equal.
+        let digest = received_document_digest(&received);
 
         // §7.2 (*Bounding the record*): "A *consumer* that can establish
         // neither an `expiresAt` nor an age for a document has no window in

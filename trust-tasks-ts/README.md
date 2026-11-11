@@ -185,6 +185,15 @@ switch (outcome.kind) {
 }
 ```
 
+**The envelope is checked before anything reads it.** `JSON.parse(body) as
+TrustTaskDocument<P>` checks nothing, so `consumeInbound` first refuses
+`malformedRequest` a document whose framework members are not the types SPEC
+§4.2 gives them (a string `id` and `type`, an object `payload`, and so on), or
+which nests objects and arrays more than `MAX_NESTING_DEPTH` (128) levels deep.
+The refusal is addressed only from the members that are strings.
+`validateEnvelope` is the same check, exported for a caller that routes on a
+document before consuming it.
+
 **Choose the checks deliberately.** `consequentialChecks(guard)` is correct for
 any task whose execution grants access, moves value, discloses a secret, or is
 otherwise irreversible — SPEC §7.2 item 11 makes duplicate-execution protection
@@ -232,7 +241,8 @@ itself, not a copy of it.
 ## Validating payloads at runtime
 
 This package does not bundle a JSON-Schema validator, so §7.2 items 1–2
-(framework and payload schema validation) are yours to wire up. Fetch the
+(framework and payload schema validation) are yours to wire up, beyond the
+envelope member types and nesting bound `consumeInbound` checks itself. Fetch the
 `payload.schema.json` from
 `https://trusttasks.org/spec/<slug>/<version>` and feed it to
 [`ajv`](https://www.npmjs.com/package/ajv) or any other Draft 2020-12

@@ -57,6 +57,41 @@ String canonicalJson(Object? value) {
   return out.toString();
 }
 
+/// The deepest nesting of maps and lists a consumed document may have, the
+/// document itself counting as one level. The same figure as the recursion
+/// limit of serde_json, which trust-tasks-rs parses documents with.
+///
+/// [canonicalJson] and the other walks of a document recurse, so a document
+/// nested far deeper — a 200 KB body can hold 100,000 levels — would exhaust
+/// the stack. [consumeInbound] and [parseTrustTaskDocument] refuse such a
+/// document `malformedRequest` first.
+const int maxNestingDepth = 128;
+
+/// Whether [value], a decoded JSON tree, nests maps and lists more than
+/// [limit] levels deep.
+///
+/// Iterative, so it cannot itself run out of stack on the input it exists to
+/// refuse.
+bool exceedsNestingDepth(Object? value, [int limit = maxNestingDepth]) {
+  final stack = <(Object?, int)>[(value, 1)];
+  while (stack.isNotEmpty) {
+    final (node, depth) = stack.removeLast();
+    final Iterable<Object?> children;
+    if (node is List) {
+      children = node;
+    } else if (node is Map) {
+      children = node.values;
+    } else {
+      continue;
+    }
+    if (depth > limit) return true;
+    for (final child in children) {
+      if (child is List || child is Map) stack.add((child, depth + 1));
+    }
+  }
+  return false;
+}
+
 void _writeCanonical(StringBuffer out, Object? value) {
   if (value == null) {
     out.write('null');
