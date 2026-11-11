@@ -33,16 +33,16 @@ env:
 jobs:
   batch:
     name: open the withdrawal pull request
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           # Full history: the script dates each supersession and retirement from git.
           fetch-depth: 0
           # The PR must trigger CI, which a GITHUB_TOKEN push does not.
           token: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
           node-version: "24"
       - run: npm ci --no-audit --no-fund
@@ -64,15 +64,16 @@ jobs:
           else
             echo "due=$(git diff --name-only -- specs | wc -l | tr -d ' ')" >> "$GITHUB_OUTPUT"
           fi
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
         if: steps.flip.outputs.due != '0'
         with:
+          toolchain: stable
           components: rustfmt
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
         if: steps.flip.outputs.due != '0'
         with:
           go-version: stable
-      - uses: dart-lang/setup-dart@v1
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
         if: steps.flip.outputs.due != '0'
         with:
           sdk: stable
