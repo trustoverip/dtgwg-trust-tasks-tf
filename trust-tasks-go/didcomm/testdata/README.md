@@ -9,6 +9,12 @@ bindings are built on.
 
 - **`authcrypt-interop.fixture.json`** — a JWE packed by **affinidi**, with fixed
   X25519 keys. `interop_test.go` unpacks it (affinidi → Go).
+- **`authcrypt-interop-multi.fixture.json`** — a JWE packed by **affinidi** to
+  two recipients, bob and carol, with carol's entry first so the entries are
+  not in `apv`'s sorted order. `interop_multi_test.go` opens it as each
+  recipient, checks that affinidi's `apv` is SHA-256 of the sorted kids, and
+  checks that dropping an entry fails the `apv` check. This pins the `apv`
+  check against a value another implementation computed.
 - The Go → affinidi direction is asserted on the Rust side:
   `trust-tasks-didcomm/tests/interop.rs` unpacks a Go-packed JWE
   (`trust-tasks-didcomm/tests/fixtures/go-authcrypt-interop.json`) with affinidi.
@@ -59,6 +65,20 @@ fn main() {
         "plaintext": String::from_utf8(pt).unwrap(), "jwe": jwe,
     }));
 }
+```
+
+### The two-recipient fixture
+
+The same harness, with a third key (`[11u8; 32]`) and two recipients:
+
+```rust
+let cp = PrivateKeyAgreement::from_raw_bytes(Curve::X25519, &[11u8; 32]).unwrap();
+let (bk, ck) = ("did:example:bob#key-x25519-1", "did:example:carol#key-x25519-1");
+// plaintext as above, with "to": ["did:example:bob", "did:example:carol"]
+let jwe = authcrypt(&pt, sk, &sp, &[(ck, &cp.public_key()), (bk, &rp.public_key())]).unwrap();
+// print senderKid, senderPubX25519, plaintext, jwe, and
+// "recipients": [{"kid": bk, "privX25519": hex([9; 32])},
+//                {"kid": ck, "privX25519": hex([11; 32])}]
 ```
 
 ## Regenerating the Go-packed fixture

@@ -55,7 +55,9 @@ entry must carry a `kid`, `typ` (when present) must be
 per-recipient header repeating a protected parameter, or JSON member names that
 differ only by case are refused (`FailNotAuthcrypt`). After decrypting, a
 plaintext `from` that is not the authenticated sender is `FailDecrypt`, and a
-`to` that does not name the recipient is `FailNotForThisRecipient`.
+`to` that does not name the recipient is `FailNotForThisRecipient`. An empty
+`"to": []` names no one and is refused the same way; an absent `to` (or `null`)
+is accepted.
 
 ## Consume (§7.2 pipeline)
 
@@ -86,7 +88,9 @@ Interop is asserted **both directions** against `affinidi-messaging-didcomm` (th
 library the Rust and Dart Trust Tasks DIDComm bindings are built on):
 
 - **affinidi → Go**: `interop_test.go` unpacks a JWE packed by affinidi
-  (`testdata/authcrypt-interop.fixture.json`).
+  (`testdata/authcrypt-interop.fixture.json`), and `interop_multi_test.go` one
+  packed to two recipients (`testdata/authcrypt-interop-multi.fixture.json`),
+  which pins the `apv` check to affinidi's computation.
 - **Go → affinidi**: `trust-tasks-didcomm/tests/interop.rs` unpacks a JWE packed
   by this binding with affinidi.
 
