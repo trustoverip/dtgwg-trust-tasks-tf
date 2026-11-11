@@ -131,6 +131,17 @@ pub fn document_digest<P: Serialize>(
     )))
 }
 
+/// [`document_digest`] over a document as it arrived, rather than over a
+/// typed reading of it: members the reading's type does not model, and the
+/// exact spelling of every timestamp, are part of the digest.
+///
+/// For a pipeline that holds the received JSON, as every transport binding
+/// does. The two digests agree whenever the typed reading re-serialises to the
+/// received document.
+pub fn received_document_digest(received: &Value) -> DocumentDigest {
+    DocumentDigest(sha256_hex(canonical_json(received).as_bytes()))
+}
+
 /// What a [`ReplayGuard`] says about a document offered for execution.
 #[derive(Debug, Clone, PartialEq)]
 #[non_exhaustive]

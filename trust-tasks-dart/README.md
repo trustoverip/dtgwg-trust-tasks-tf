@@ -59,9 +59,27 @@ the freshness bound of item 4 and the duplicate-execution record of item 11 —
 and then either calls your handler or builds the correctly-routed error response
 per §8.1.
 
+Read the body with `parseTrustTaskDocument`, which never throws.
+`TrustTaskDocument.fromJson` casts each member, so a received document with a
+number where `id` belongs throws a `TypeError` — an `Error`, not an
+`Exception` — and `parseTrustTaskDocument` turns that, and a body nested more
+than `maxNestingDepth` (128) levels deep, into a `malformedRequest` reason.
+Pass the decoded map to `consumeInbound` as `received` too: the item-11 digest
+is then over the document as it arrived, members the payload type does not
+model included.
+
 ```dart
 // One guard per consumer, not one per document: it IS the record.
 final guard = InMemoryReplayGuard();
+
+final json = jsonDecode(body); // a FormatException for text that is not JSON
+final doc = switch (parseTrustTaskDocument(
+  json,
+  (p) => acl_grant.Payload.fromJson(p! as Map<String, dynamic>),
+)) {
+  ParsedDocument(:final document) => document,
+  UnparsableDocument(:final reason) => throw MalformedBody(reason), // yours
+};
 
 final outcome = await consumeInbound<acl_grant.Payload, acl_grant.Response>(
   transport: transport,
@@ -75,6 +93,7 @@ final outcome = await consumeInbound<acl_grant.Payload, acl_grant.Response>(
   now: DateTime.now(),
   newErrorId: () => uuid.v4(),
   payloadToJson: (p) => p.toJson(),
+  received: json as Map<String, dynamic>,
   handler: (accepted, parties) async => respondWith(
     accepted,
     uuid.v4(),

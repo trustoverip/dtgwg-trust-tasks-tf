@@ -73,6 +73,17 @@ func DocumentDigest[P any](doc *Document[P]) (string, error) {
 	return SHA256Hex(canonical), nil
 }
 
+// receivedDigest is [DocumentDigest] over a document as it arrived: SHA-256 over
+// its canonical serialization, as hex. Members a typed decode would drop are
+// part of it.
+func receivedDigest(received json.RawMessage) (string, error) {
+	canonical, err := CanonicalJSON(received)
+	if err != nil {
+		return "", fmt.Errorf("trusttasks: document digest: %w", err)
+	}
+	return SHA256Hex(canonical), nil
+}
+
 // VerdictKind is what a [ReplayGuard] says about a document offered for
 // execution.
 type VerdictKind string
