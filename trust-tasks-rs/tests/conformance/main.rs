@@ -1292,6 +1292,7 @@ mod rooms {
             mod v0_2;
             mod v0_3;
             mod v0_4;
+            mod v0_5;
         }
         mod chain {
             mod v0_1;
@@ -1392,6 +1393,7 @@ mod rooms {
             mod v0_4;
             mod v0_5;
             mod v0_6;
+            mod v0_7;
         }
         mod prune {
             mod v0_1;

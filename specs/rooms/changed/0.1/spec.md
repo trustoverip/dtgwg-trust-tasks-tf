@@ -116,13 +116,13 @@ a signal can wake a device for a reaction exactly as for a message, and whether 
 
 1. **Skip a signal it has caught up past.** If `latestVersion` is at or below the reader's
    watermark, there is nothing to read; it re-arms and stops.
-2. **List what changed.** [`rooms/records/list/0.6`](../../records/list/0.6/spec.md) with
+2. **List what changed.** [`rooms/records/list/0.7`](../../records/list/0.7/spec.md) with
    `sinceVersion` set to its watermark, to the end, applying *After a prune* where a page carries
    `lastPrune`.
 3. **Learn each changed record's kind.** On an `open` room the row carries it. On the sealed tiers
    the reader opens the new and changed records through its member's key holder, several at a time
    ([`rooms/keys/read/0.2`](../../keys/read/0.2/spec.md), or
-   [`rooms/keys/browse/0.4`](../../keys/browse/0.4/spec.md)), and applies the `SealedRecordBody`
+   [`rooms/keys/browse/0.5`](../../keys/browse/0.5/spec.md)), and applies the `SealedRecordBody`
    reading rules to each.
 4. **Count as unread** only a record that, as the reader shows it, is a message — `kind: message`,
    or an untitled record without a kind where the reader shows those as messages

@@ -1788,6 +1788,21 @@ type RecordMetadataV3 struct {
 // statement, not a grant.
 type RecordPurpose = Purpose
 
+// ListOrder The order in which a listing returns a room's records
+// (`rooms/records/list/0.7`, `rooms/keys/browse/0.5`). `oldestFirst`, the default when
+// the member is absent: ascending `version`, the order an incremental sync reads in.
+// `newestFirst`: descending `version`, so a reader that opens a conversation at its
+// newest messages reads the room's head first and pages backwards; `sinceVersion` still
+// bounds the listing from below. A cursor continues the listing in the order it was
+// issued under, and a host refuses it under the other.
+type ListOrder string
+
+// Values ListOrder may take, per this specification's schema.
+const (
+	ListOrderOldestFirst ListOrder = "oldestFirst"
+	ListOrderNewestFirst ListOrder = "newestFirst"
+)
+
 // Purpose What content is used for: a lowerCamelCase name registered in the VTI
 // specification's purpose registry (Appendix H) — `personalisation`, `taskExecution`,
 // `analytics`, `modelTraining` at the time of writing — or an absolute IRI naming a
