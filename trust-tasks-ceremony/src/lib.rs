@@ -973,9 +973,19 @@ fn is_ancestor(definition: &Definition, ancestor: &str, of: &str) -> bool {
     false
 }
 
+/// The longest encoded salt [`decode_salt`] accepts. A salt carries at least
+/// 128 bits of entropy (16 bytes, 22 base58btc characters); 1 KiB is far more
+/// than any salt needs, and keeps the multibase decoders, some of whose cost
+/// grows with the square of the input length, from running on a large value.
+const MAX_SALT_CHARS: usize = 1024;
+
 fn decode_salt(salt: Option<&str>) -> Result<Vec<u8>, Error> {
     match salt {
         None => Ok(Vec::new()),
+        Some(s) if s.len() > MAX_SALT_CHARS => Err(Error::Salt(format!(
+            "salt is {} characters, longer than the {MAX_SALT_CHARS} accepted",
+            s.len()
+        ))),
         Some(s) => {
             #[cfg(feature = "affinidi")]
             {

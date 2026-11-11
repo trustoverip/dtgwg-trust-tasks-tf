@@ -29,9 +29,11 @@
 //! the identical document-minus-`proof` contract on the sign side, so
 //! what it emits is what [`Verifier`] verifies.
 
+mod bounds;
 mod purpose;
 mod resolver;
 mod sign;
+pub use bounds::check_proof_bounds;
 pub use purpose::{ProofPurpose, ProofPurposeResolver, PurposeBound};
 pub use resolver::CachedDidResolver;
 pub use sign::{sign_trust_task, SignError};
@@ -177,6 +179,11 @@ impl Verifier {
                 }
             }
         }
+
+        // ─── 3a. Bound the encoded values before the Affinidi crates decode
+        //        them: base58 decoding costs the square of a value's length,
+        //        and both arrive before any signature is checked.
+        check_proof_bounds(&parsed_proof)?;
 
         // ─── 4. The key must be one the issuer authorised for the purpose
         //        the proof declares: `keyAgreement` and unknown purposes are
