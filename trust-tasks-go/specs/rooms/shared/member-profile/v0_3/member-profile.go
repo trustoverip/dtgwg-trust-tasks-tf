@@ -111,40 +111,46 @@ type MemberName = string
 // room by rule 2 and kept is not a guess, and it MAY show that name until it finds a more
 // recent one. **Finding one.** There is no fixed location: a reader learns names from the
 // `memberProfile` records it reads. On an `open` room a listing
-// (`rooms/records/list/0.6`) gives each record's `kind`, so a reader finds them without
-// reading every body; on the sealed tiers it finds them as it opens records. Two writer
-// rules keep a member's name where readers look. **Under a new epoch.** A member whose
-// name was sealed under an epoch a reader cannot open — a room whose history starts at
-// each member's join — is invisible to that reader. So a member SHOULD write its name
-// again after the room's epoch advances past the one its current version was sealed
-// under. **Near the room's head.** A reader that opens only the room's recent records
-// sees no name written long before them. So a member that writes a record to the room —
-// any record, a reaction included — SHOULD write its name again when the `version` that
-// write was assigned (`rooms/records/put`) exceeds the current `version` of its
-// `memberProfile` record by more than 500. 500 is the largest page
-// `rooms/records/list/0.6` returns (its maximum `limit`), so a member that follows this
-// rule holds a name record no more than one full page of versions before any record it
-// has written since, or just after it; a reader that has listed the 500 versions before
-// the earliest record it shows finds the name of every author it shows who follows the
-// rule. The distance is fixed here rather than left to each writer because a reader can
-// bound how far back it reads only if every writer bounds the same distance. It is
-// counted in versions, not records or time, because a version is what every write reports
-// and what a reader's `sinceVersion` counts; a curation of the name record moves its
-// version as well, which only brings it nearer. It costs at most one record per member
-// per 500 versions of the room, and only for members who write: the re-write is the
-// member's own record, and a member that does not write is never moved. **Writing it
-// again.** For either rule a member writes a new version of the record rule 2 took its
-// name from — the same key — carrying the name rule 2 gives its own author from the
-// records its client holds, not a name a device remembers, since another of the member's
-// devices may have changed it since. It keeps the `writtenAt` of the version it rewrites,
-// unchanged, and sets no new `editedAt`, since the name has not changed; an `editedAt`
-// the earlier version carries stays as it is. A member whose name is withdrawn writes
-// nothing. A member's client MAY do either once, on its next write to the room, rather
-// than when the epoch advances or the distance is crossed, and one version satisfies
-// both. **Removed members.** A name keeps applying to its author's records after the
-// author leaves the room, until a member with `curate` retracts the record
-// (`rooms/records/curate`). A member who returns under a new DID writes a new name; the
-// earlier DID's name stays with that DID's records.
+// (`rooms/records/list/0.7`) gives each record's `kind`, so a reader finds them without
+// reading every body; on the sealed tiers it finds them as it opens records. A reader
+// that opens a conversation at its newest messages lists `newestFirst` and finds the
+// names of the authors it shows in the rows it has already listed or just below them, as
+// the next rule arranges. Two writer rules keep a member's name where readers look.
+// **Under a new epoch.** A member whose name was sealed under an epoch a reader cannot
+// open — a room whose history starts at each member's join — is invisible to that reader.
+// So a member SHOULD write its name again after the room's epoch advances past the one
+// its current version was sealed under. **Near the room's head.** A reader that opens
+// only the room's recent records sees no name written long before them. So a member that
+// writes a record to the room — any record, a reaction included — SHOULD write its name
+// again when the `version` that write was assigned (`rooms/records/put`) exceeds the
+// current `version` of its `memberProfile` record by more than 500. 500 is the largest
+// page `rooms/records/list/0.7` returns (its maximum `limit`), so a member that follows
+// this rule holds a name record no more than one full page of versions before any record
+// it has written since, or just after it; a reader that has listed the 500 versions
+// before the earliest record it shows finds the name of every author it shows who follows
+// the rule. Under `order: newestFirst` that is the reader's listing continued for at
+// least 500 rows below the earliest record it shows, or to its end: each row is a
+// distinct version, so 500 rows reach at least 500 versions down, and a newest-first
+// listing holds every record whose current version is above its lowest row
+// (`rooms/records/list/0.7`, *Order*). The distance is fixed here rather than left to
+// each writer because a reader can bound how far back it reads only if every writer
+// bounds the same distance. It is counted in versions, not records or time, because a
+// version is what every write reports and what a reader's `sinceVersion` counts; a
+// curation of the name record moves its version as well, which only brings it nearer. It
+// costs at most one record per member per 500 versions of the room, and only for members
+// who write: the re-write is the member's own record, and a member that does not write is
+// never moved. **Writing it again.** For either rule a member writes a new version of the
+// record rule 2 took its name from — the same key — carrying the name rule 2 gives its
+// own author from the records its client holds, not a name a device remembers, since
+// another of the member's devices may have changed it since. It keeps the `writtenAt` of
+// the version it rewrites, unchanged, and sets no new `editedAt`, since the name has not
+// changed; an `editedAt` the earlier version carries stays as it is. A member whose name
+// is withdrawn writes nothing. A member's client MAY do either once, on its next write to
+// the room, rather than when the epoch advances or the distance is crossed, and one
+// version satisfies both. **Removed members.** A name keeps applying to its author's
+// records after the author leaves the room, until a member with `curate` retracts the
+// record (`rooms/records/curate`). A member who returns under a new DID writes a new
+// name; the earlier DID's name stays with that DID's records.
 type MemberProfileRecord = json.RawMessage
 
 // MemberProfileCleartext A member's name on an `open` room: the `cleartext` of the

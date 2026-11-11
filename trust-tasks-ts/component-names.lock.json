@@ -440,6 +440,7 @@
   "rooms/_shared/0.2/room.schema.json#/$defs/AuthorityPresentation": "AuthorityPresentation",
   "rooms/_shared/0.2/room.schema.json#/$defs/DataCommitment": "DataCommitment",
   "rooms/_shared/0.2/room.schema.json#/$defs/HeadVersion": "HeadVersion",
+  "rooms/_shared/0.2/room.schema.json#/$defs/ListOrder": "ListOrder_RoomsV0_2",
   "rooms/_shared/0.2/room.schema.json#/$defs/PermittedUse": "PermittedUse",
   "rooms/_shared/0.2/room.schema.json#/$defs/ReadVerification": "ReadVerification",
   "rooms/_shared/0.2/room.schema.json#/$defs/RecordBasis": "RecordBasis",

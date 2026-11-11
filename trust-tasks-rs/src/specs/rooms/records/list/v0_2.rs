@@ -4,7 +4,7 @@
 #![allow(deprecated)]
 /// Why this specification version is deprecated (SPEC "Superseded and
 /// Withdrawn Versions"), or `None` while it is current.
-pub const DEPRECATION: Option<&str> = Some("superseded by rooms/records/list/0.6");
+pub const DEPRECATION: Option<&str> = Some("superseded by rooms/records/list/0.7");
 #[allow(unused_imports)]
 use serde::{Deserialize, Serialize};
 /// Error types.
@@ -388,7 +388,7 @@ impl ::std::fmt::Display for HeadVersion {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by rooms/records/list/0.6")]
+#[deprecated(note = "superseded by rooms/records/list/0.7")]
 pub struct Payload {
     ///Opaque continuation token from a previous response. A host MUST NOT accept a cursor it did not issue.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -813,7 +813,7 @@ impl<'de> ::serde::Deserialize<'de> for RecordMetadataV2Title {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by rooms/records/list/0.6")]
+#[deprecated(note = "superseded by rooms/records/list/0.7")]
 pub struct Response {
     ///Present when more records remain.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]

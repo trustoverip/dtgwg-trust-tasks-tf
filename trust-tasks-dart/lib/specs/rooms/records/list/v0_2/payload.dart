@@ -261,7 +261,7 @@ typedef Ext = Map<String, dynamic>;
 /// Success response to rooms/records/list. Type
 /// https://trusttasks.org/spec/rooms/records/list/0.2#response. Returns METADATA,
 /// never bodies: a reader fetches the handful it wants with rooms/records/get.
-@Deprecated('superseded by rooms/records/list/0.6')
+@Deprecated('superseded by rooms/records/list/0.7')
 class Response {
   const Response({
     required this.records,
@@ -395,7 +395,7 @@ class AuthorityPresentation {
 }
 
 /// Rooms Records List — payload
-@Deprecated('superseded by rooms/records/list/0.6')
+@Deprecated('superseded by rooms/records/list/0.7')
 class Payload {
   const Payload({
     required this.roomId,
@@ -465,7 +465,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by rooms/records/list/0.6';
+const String? deprecation = 'superseded by rooms/records/list/0.7';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/rooms/records/list/0.2';
