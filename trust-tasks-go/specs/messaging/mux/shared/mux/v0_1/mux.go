@@ -119,13 +119,15 @@ const (
 
 // DetachReason Why a member left a connection, or why a stored grant did not attach on
 // connect. `revokedByMember` / `revokedByPrincipal`: messaging/mux/revoke by that side.
-// `epochBumped`: the member DID ran messaging/mux/revoke-all. `suspendedUnknownKey`: the
-// unknown-key rule suspended the grant. `keyRotated`: the grant's signing key left the
-// member DID's current authentication relationship (grant state `staleKey`). `expired`:
-// the grant or attach reached its effective expiry. `accountBlocked`: the member's
-// account was blocked. `superseded`: the member DID's own direct connection, or a newer
-// connection of the same kind, now receives its live traffic; the member stays on this
-// connection inactive. `admin`: an operator acted. `detachRequested`: the principal
+// `epochBumped`: the member DID ran messaging/mux/revoke-all, which ends its grants and
+// its session attaches. `suspendedUnknownKey`: the unknown-key rule suspended the grant.
+// `keyRotated`: the grant's signing key left the member DID's current authentication
+// relationship (grant state `staleKey`). `expired`: the grant or attach reached its
+// effective expiry. `accountBlocked`: the member's account was blocked, or its
+// access-control capabilities no longer cover the member's scope; the member leaves
+// rather than being narrowed. `superseded`: the member DID's own direct connection, or a
+// newer connection of the same kind, now receives its live traffic; the member stays on
+// this connection inactive. `admin`: an operator acted. `detachRequested`: the principal
 // removed a session attach with messaging/mux/detach. `accountRemoved`: the member's
 // account, or the principal's, was removed. `resolutionFailed`: the member DID could not
 // be resolved when the grant was re-validated; the grant is not changed and is re-checked
