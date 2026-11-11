@@ -106,10 +106,11 @@ test('attribute values are re-quoted so they cannot close the tag', () => {
 });
 
 test('rendering needs the marked library', () => {
-  const saved = ctx.marked;
-  delete ctx.marked;
-  assert.throws(() => renderMarkdown('x'), /unavailable/);
-  ctx.marked = saved;
+  const bare = {};
+  bare.window = bare;
+  vm.createContext(bare);
+  vm.runInContext(source, bare);
+  assert.throws(() => bare.ttMarkdown.renderMarkdown('x'), /unavailable/);
 });
 
 // ── End to end, through marked ──────────────────────────────────────────────
