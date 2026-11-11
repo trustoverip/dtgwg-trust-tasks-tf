@@ -34,7 +34,7 @@ type ResponseRoomsItem struct {
 // never delivered is absent here and the principal may still hold a perfectly good VMC
 // for it.
 //
-// Deprecated: superseded by rooms/keys/list/0.2
+// Deprecated: superseded by rooms/keys/list/0.3
 type Response struct {
 	// One entry per room, in no guaranteed order.
 	Rooms []ResponseRoomsItem `json:"rooms"`
@@ -47,7 +47,7 @@ type Ext = map[string]json.RawMessage
 
 // Payload Rooms Keys List — payload
 //
-// Deprecated: superseded by rooms/keys/list/0.2
+// Deprecated: superseded by rooms/keys/list/0.3
 type Payload struct {
 	// Ecosystem-defined extension members per SPEC.md §4.5.1.
 	Ext *Ext `json:"ext,omitempty"`
@@ -68,7 +68,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = "superseded by rooms/keys/list/0.2"
+const Deprecation = "superseded by rooms/keys/list/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/rooms/keys/list/0.1#response"

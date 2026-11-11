@@ -58,7 +58,7 @@ related:
 
 ## Abstract
 
-A member who holds several rooms has to be able to tell them apart, and a room's DID says nothing about it. The names others give a room — the room's own profile, written by its curators; the label a community puts on an offer — are theirs: they may be missing, generic, in another language, or chosen for an audience the member is not. **Rooms Keys — Label** lets the member keep **their own** name for a room, with a description, notes and tags, held by their **key holder** beside the room's keys and shown back to them by [`rooms/keys/list`](../../list/0.2/spec.md) 0.2.
+A member who holds several rooms has to be able to tell them apart, and a room's DID says nothing about it. The names others give a room — the room's own profile, written by its curators; the label a community puts on an offer — are theirs: they may be missing, generic, in another language, or chosen for an audience the member is not. **Rooms Keys — Label** lets the member keep **their own** name for a room, with a description, notes and tags, held by their **key holder** beside the room's keys and shown back to them by [`rooms/keys/list`](../../list/0.3/spec.md) 0.3.
 
 The label is **private to the member**. It is not part of the room, not sent to the room's host, its owner or any community, and not shared with the room's other members. It is the complement of the room's profile: a profile is one room's name for itself, written by its curators and read by every member; a personal label is one member's name for one room, written and read by that member alone.
 
@@ -78,7 +78,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 A conforming **producer** (the member's client):
 
-1. **MUST** name in `member` the member whose label it means, as [`rooms/keys/list`](../../list/0.2/spec.md) 0.2 returns it beside the room.
+1. **MUST** name in `member` the member whose label it means, as [`rooms/keys/list`](../../list/0.3/spec.md) 0.3 returns it beside the room.
 2. **SHOULD** trim leading and trailing white space from every detail before sending it. The key holder stores what it receives.
 3. **MUST NOT** put a credential, a key, a password or a secret of any kind in a detail. A label is shown on every surface that lists the member's rooms, and is not protected as a secret.
 
@@ -121,7 +121,7 @@ Per [SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements), verifying the VID, 
 
 A room can be known by several names, written by different parties for different readers. A surface showing a member their rooms is expected to prefer, in order:
 
-1. the member's **personal label** (this task, read through [`rooms/keys/list`](../../list/0.2/spec.md) 0.2) — the only name nobody else wrote;
+1. the member's **personal label** (this task, read through [`rooms/keys/list`](../../list/0.3/spec.md) 0.3) — the only name nobody else wrote;
 2. the room's own **profile** name — written by the room's curators, sealed in the room and read by its members, and the same for every member;
 3. the label of the community's **offer** of the room ([`vtc/rooms/offers/list`](../../../../vtc/rooms/offers/list/0.4/spec.md)) — what the community called it when it offered it, which the member may have seen only once;
 4. the room's **DID**.
@@ -272,7 +272,7 @@ A room identifier, a member DID, and up to four details the member wrote, in; th
 
 **To the key holder, and back to the member's own clients — nowhere else.** The key holder sends it to no room, host, owner or community and puts it in nothing it signs or seals (Recipient item 9). That is what makes it safe for a member to write what they actually think a room is.
 
-A **client** that receives a label (through [`rooms/keys/list`](../../list/0.2/spec.md) 0.2) holds the same obligation: it **MUST NOT** include a label in anything it sends to a room's host, a community or a room. A wallet answering a **website** — a community's member portal, or any page asking which rooms the member holds — **SHOULD NOT** hand that page a label unless the member has chosen to show it to that site; by default it shares the room, never what the member calls it. A portal is the community's, and a label is exactly what the member did not tell the community.
+A **client** that receives a label (through [`rooms/keys/list`](../../list/0.3/spec.md) 0.3) holds the same obligation: it **MUST NOT** include a label in anything it sends to a room's host, a community or a room. A wallet answering a **website** — a community's member portal, or any page asking which rooms the member holds — **SHOULD NOT** hand that page a label unless the member has chosen to show it to that site; by default it shares the room, never what the member calls it. A portal is the community's, and a label is exactly what the member did not tell the community.
 
 ### Correlation
 

@@ -399,6 +399,7 @@
   "rooms/_shared/0.1/personal-label.schema.json#/$defs/PersonalLabelNotes": "PersonalLabelNotes",
   "rooms/_shared/0.1/personal-label.schema.json#/$defs/PersonalLabelTag": "PersonalLabelTag",
   "rooms/_shared/0.1/personal-label.schema.json#/$defs/PersonalLabelTags": "PersonalLabelTags",
+  "rooms/_shared/0.1/read-marker.schema.json#/$defs/ReadMarker": "ReadMarker",
   "rooms/_shared/0.1/room.schema.json#/$defs/AnchorCadence": "AnchorCadence",
   "rooms/_shared/0.1/room.schema.json#/$defs/AuthorityPresentation": "AuthorityPresentation",
   "rooms/_shared/0.1/room.schema.json#/$defs/CredentialRevocation": "CredentialRevocation",
