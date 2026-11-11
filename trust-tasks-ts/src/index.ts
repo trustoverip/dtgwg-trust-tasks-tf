@@ -1906,6 +1906,9 @@ export import RoomsKeysSeal_v0_3 = _RoomsKeysSeal_v0_3;
 import * as _RoomsKeysWatch_v0_1 from "./rooms/keys/watch/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomsKeysWatch_v0_1 = _RoomsKeysWatch_v0_1;
+import * as _RoomsKeysWatch_v0_2 from "./rooms/keys/watch/0.2/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import RoomsKeysWatch_v0_2 = _RoomsKeysWatch_v0_2;
 import * as _RoomsKeysWelcome_v0_1 from "./rooms/keys/welcome/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomsKeysWelcome_v0_1 = _RoomsKeysWelcome_v0_1;
@@ -2050,6 +2053,9 @@ export import RoomsUsage_v0_1 = _RoomsUsage_v0_1;
 import * as _RoomsWatch_v0_1 from "./rooms/watch/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomsWatch_v0_1 = _RoomsWatch_v0_1;
+import * as _RoomsWatch_v0_2 from "./rooms/watch/0.2/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import RoomsWatch_v0_2 = _RoomsWatch_v0_2;
 import * as _SyncEventShared_v0_1 from "./sync/_shared/0.1/sync-event.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import SyncEventShared_v0_1 = _SyncEventShared_v0_1;

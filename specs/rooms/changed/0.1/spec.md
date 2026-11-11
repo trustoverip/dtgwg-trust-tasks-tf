@@ -2,7 +2,7 @@
 slug: rooms/changed
 version: "0.1"
 title: "Rooms — Changed"
-summary: "A room's host tells the address of an armed watch that the room has moved past the version its member had read to — the room and its latest version, nothing about what changed, and no response."
+summary: "A room's host tells the address of an armed watch that the room has moved past the version its member had read to, or last heard of — the room and its latest version, nothing about what changed, and no response."
 status: draft
 targetFrameworkVersion: "0.6.0"
 category: access-control
@@ -56,10 +56,13 @@ related:
 
 ## Abstract
 
-The **Rooms — Changed** Trust Task is the signal an armed [`rooms/watch`](../../watch/0.1/spec.md)
+The **Rooms — Changed** Trust Task is the signal an armed [`rooms/watch`](../../watch/0.2/spec.md)
 sends: *room R has moved past the version you had read to*. It names the room and the room's latest
 version, and says nothing else — not what changed, not who changed it, not how many things did.
-The host sends one per arming, and the member re-arms after it has read.
+For a one-shot watch the host sends one per arming, and the member re-arms after it has read. For
+a live watch — an open conversation, on a room whose signal delay is `none` — it sends one each
+time the room moves past the version it last signalled, coalesced to at most one a second, until
+the watch ends.
 
 It is one-way: there is no `#response`. A reply would tell the host when the member's device woke,
 which is more than the member asked the host to know.
@@ -84,7 +87,8 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 A conforming **producer** (the host) **MUST**:
 
 1. Send a signal only for a watch it holds armed, to that watch's address, as
-   [`rooms/watch`](../../watch/0.1/spec.md) Host item 4 says, and send nothing else to the address.
+   [`rooms/watch`](../../watch/0.2/spec.md) Host item 4 (a one-shot watch) or Host item 5 (a live
+   watch) says, and send nothing else to the address.
 2. Carry the room exactly as the member named it and the room's latest version when it sends, and
    **MUST NOT** carry anything about what changed — in `ext` or anywhere else — nor vary the
    signal's size or timing by it.
@@ -96,10 +100,14 @@ A conforming **producer** (the host) **MUST**:
    when it **MUST** send without a wait of its own. A host **MUST** apply the signal delay it serves
    in [`rooms/info`](../../info/0.4/spec.md), never a watcher's preference: the wait protects the
    room's writers as much as the watcher (*Correlation*). It **MUST NOT** hold a signal back to wait
-   for a later change, or send a second for the same arming.
+   for a later change. For a one-shot watch it **MUST NOT** send a second signal for the same
+   arming. For a live watch — which a host holds only on a room whose signal delay is `none` — it
+   sends a signal each time the room moves past the version it last signalled, coalescing changes
+   that land while one is being sent, or within its minimum spacing of at least one second, into the
+   next ([`rooms/watch`](../../watch/0.2/spec.md) Host item 5).
 5. Treat delivery as the delivery layer's: a signal that is lost costs the member nothing it cannot
-   recover, because its next listing catches up. A host **MUST NOT** queue signals per change or
-   re-send one the delivery layer accepted.
+   recover, because its next listing — or, for a live watch, the next signal — catches up. A host
+   **MUST NOT** queue signals per change or re-send one the delivery layer accepted.
 
 A conforming **consumer** (the address's agent, for its member) **MUST**:
 
@@ -108,8 +116,10 @@ A conforming **consumer** (the address's agent, for its member) **MUST**:
 2. Act on it only by reading the room — never by showing anything to its person on the strength of
    the signal alone — and **MUST NOT** treat `latestVersion` as evidence of anything but a reason to
    list.
-3. Re-arm the watch after it has read, with the version it has read to
-   ([`rooms/watch`](../../watch/0.1/spec.md) producer item 4), if it wants the next signal.
+3. Re-arm a one-shot watch after it has read, with the version it has read to
+   ([`rooms/watch`](../../watch/0.2/spec.md) producer item 4), if it wants the next signal. A live
+   watch needs no re-arming between signals; the member renews it before it expires
+   ([`rooms/watch`](../../watch/0.2/spec.md) producer item 5).
 
 ## What a reader does with a signal
 
@@ -153,7 +163,8 @@ a signal can wake a device for a reaction exactly as for a message, and whether 
    reactions or edits raises no alert. Where the platform lets it, a reader **SHOULD** arrange that
    the wake itself is silent, so that this decision is the reader's.
 7. **Advance its watermark and re-arm.** The new watermark is the highest version it has read,
-   which is what it gives `rooms/watch` as `sinceVersion`.
+   which is what it gives `rooms/watch` as `sinceVersion`. Under a live watch it only advances the
+   watermark: the next signal comes without re-arming.
 
 The read marker of step 4 is the member's own: where its member has seen the conversation up to.
 A reader keeps it itself, or **MAY** keep it with its member's key holder through
@@ -202,11 +213,19 @@ size and timing free of anything about the change.
 
 The signal travels encrypted to its address. Its address's mediator sees a document for the
 address, and the push gateway and the platform push service see a contentless wake: each learns
-that something arrived, and when, and nothing of the room. One signal per arming
-([`rooms/watch`](../../watch/0.1/spec.md)) keeps the number of signals from saying how busy the
-room was, and producer item 4 keeps their timing from marking single writes. The host learns
+that something arrived, and when, and nothing of the room. For a one-shot watch, one signal per
+arming ([`rooms/watch`](../../watch/0.2/spec.md)) keeps the number of signals from saying how busy
+the room was, and producer item 4 keeps their timing from marking single writes. The host learns
 nothing from sending one, because there is no reply. What the host does learn — the address, and
-when the member re-arms — is described in [`rooms/watch`](../../watch/0.1/spec.md#correlation).
+when the member re-arms — is described in [`rooms/watch`](../../watch/0.2/spec.md#correlation).
+
+**A live watch gives up both, while it lasts.** Its signals follow the room's changes one for one,
+down to the host's spacing of at least a second, with no wait: the address's mediator, the push
+path and anyone watching traffic to the address learn how busy the room is and when each write
+happened. That is why a host holds one only on a room whose signal delay is `none` — which has
+already let its signals' timing follow its writes — for at most two minutes per renewal, and why a
+member holds one only while the room is on its person's screen
+([`rooms/watch`](../../watch/0.2/spec.md#live-watches-and-the-signal-delay)).
 
 A room whose signal delay is `none` gives up the protection of producer item 4, for every member
 at once: a party who sees a writer's request reach the host and a signal leave it soon after can
@@ -218,9 +237,11 @@ and why no watch request can change it
 ### Retention
 
 Nothing is kept. A reader acts on a signal by listing the room and keeps the listing; the host
-forgets the watch when the signal is sent.
+forgets a one-shot watch when the signal is sent, and of a live watch keeps only the version it last
+signalled, never when it signalled.
 
 ### Consent/purpose
 
-The member asked for exactly this signal at exactly this address. A host sends nothing else there,
-and a reader uses it only to decide to read the room.
+The member asked for exactly this signal at exactly this address — once, or, for a live watch, for
+as long as it renews it. A host sends nothing else there, and a reader uses it only to decide to
+read the room.

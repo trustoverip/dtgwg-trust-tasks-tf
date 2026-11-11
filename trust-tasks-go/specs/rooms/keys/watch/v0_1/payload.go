@@ -72,6 +72,8 @@ type RoomWatchOutcome struct {
 
 // Response Success response to rooms/keys/watch: one outcome per room requested, in the
 // order requested. Type https://trusttasks.org/spec/rooms/keys/watch/0.1#response.
+//
+// Deprecated: superseded by rooms/keys/watch/0.2
 type Response struct {
 	// The member, echoed.
 	Member string `json:"member"`
@@ -91,6 +93,8 @@ type Ext = map[string]json.RawMessage
 // holder controls; the key holder passes each signal on to the client with
 // rooms/keys/changed. The outer document members (id, type, issuer, recipient, issuedAt,
 // expiresAt, proof) are owned by the framework — SPEC §6.3.
+//
+// Deprecated: superseded by rooms/keys/watch/0.2
 type Payload struct {
 	// The member to watch as: a DID the recipient holds keys for and the caller may act as.
 	// Always named — the recipient never picks a member for the caller. This task's subject.
@@ -132,7 +136,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by rooms/keys/watch/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/rooms/keys/watch/0.1#response"

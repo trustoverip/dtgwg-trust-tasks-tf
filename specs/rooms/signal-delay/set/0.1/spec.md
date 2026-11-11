@@ -31,7 +31,7 @@ issuedAtRequirement:
 sideEffects:
   level: mutating
   rationale: >-
-    Replaces the room's signal delay. Applies to every signal the host sends from then on; a signal already waiting is sent as it would have been.
+    Replaces the room's signal delay. Applies to every signal the host sends from then on; a signal already waiting is sent as it would have been. A change to `randomised` also ends every live watch on the room.
 subjectPath: /roomId
 exposure:
   discloses: metadata
@@ -66,7 +66,7 @@ related:
 A room's **administrator** changes the room's **signal delay**
 ([`SignalDelay`](../../../_shared/0.2/room.schema.json)): whether its host waits a short,
 randomised interval before sending a [`rooms/changed`](../../../changed/0.1/spec.md) signal to a
-member's armed [`rooms/watch`](../../../watch/0.1/spec.md).
+member's armed [`rooms/watch`](../../../watch/0.2/spec.md).
 
 The delay is the default, and it is there so that a signal's time does not mark one write
 exactly. It costs a few seconds on every signal. In a room used as a document store that is
@@ -75,7 +75,9 @@ another seeing it, on every message. This task lets a room that is a conversatio
 
 A room meant as a conversation can state its signal delay at creation
 ([`rooms/create`](../../../create/0.3/spec.md) 0.3); this task changes it afterwards. The setting
-is the room's, not a member's, and it can be turned back on at any time.
+is the room's, not a member's, and it can be turned back on at any time. A room whose signal delay
+is `none` also lets its members hold **live** watches ([`rooms/watch`](../../../watch/0.2/spec.md))
+while a conversation is open on screen: a signal per change rather than one per arming.
 
 ## Status of this Document
 
@@ -105,8 +107,13 @@ A conforming **host** (`recipient`):
    nothing, so that a retry after a lost response is harmless.
 5. **MUST** keep in the room's audit trail the setting replaced, the one recorded, the `reason`,
    and the requester where the tier discloses one.
-6. **MUST NOT** change, because of this task, anything but the timing of signals: not which
-   watches are armed, not how many signals a watch sends, and not what a signal carries.
+6. **MUST NOT** change, because of this task, anything but the timing of signals and whether live
+   watches may be held: not which one-shot watches are armed, not how many signals a one-shot watch
+   sends, and not what a signal carries. On a change to `randomised` it **MUST** end every live
+   watch on the room at once ([`rooms/watch`](../../../watch/0.2/spec.md) Host item 6), sending
+   nothing to their addresses; each member learns of it when it next renews its live watch, which
+   is refused, and arms a one-shot watch instead. On a change to `none`, no watch changes until a
+   member asks for a live one.
 
 A conforming **producer** **SHOULD**, before sending `none`, show whoever is deciding what it gives
 up (*What `none` gives up*, below), and **SHOULD** show the room's members the signal delay in
@@ -142,6 +149,13 @@ is written to twice a week is making a poor one, and a surface **SHOULD** say so
 
 `none` removes only the host's own wait. A signal still crosses the host's transport, its
 mediator and, for a sleeping device, a push gateway, each of which takes the time it takes.
+
+`none` also permits **live** watches ([`rooms/watch`](../../../watch/0.2/spec.md)): while a member
+has the room open, a signal per change, coalesced to at most one a second, rather than one per
+arming. A member reading an open conversation re-arms after every signal anyway, so what the
+address's mediator and push path see changes little; but a live watch keeps sending while the
+member's device is not reading, for up to two minutes per renewal, and so shows them how busy the
+room is and when each write happened. An administrator choosing `none` is choosing that as well.
 
 ## Definitions
 

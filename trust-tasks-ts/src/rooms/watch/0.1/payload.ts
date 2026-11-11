@@ -8,6 +8,8 @@ import type { AuthorityPresentation, Ext } from "../../../_shared/components.js"
 
 /**
  * A member asks a room's host to send one content-free `rooms/changed` signal to an address the member names, the first time the room moves past a version the member has read to. One signal per arming: a member re-arms the watch after it has caught up. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by rooms/watch/0.2
  */
 export interface RoomsWatchPayload {
   /**
@@ -41,6 +43,8 @@ export interface RoomsWatchPayload {
 }
 /**
  * Success response to rooms/watch. Type https://trusttasks.org/spec/rooms/watch/0.1#response.
+ *
+ * @deprecated superseded by rooms/watch/0.2
  */
 export interface RoomsWatchResponsePayload {
   roomId: string;
@@ -79,15 +83,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by rooms/watch/0.2";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by rooms/watch/0.2
+ */
 export type Payload = RoomsWatchPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/rooms/watch/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by rooms/watch/0.2
+ */
 export type Response = RoomsWatchResponsePayload;
 
 /**

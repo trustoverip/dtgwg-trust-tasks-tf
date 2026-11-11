@@ -59,12 +59,14 @@ related:
 ## Abstract
 
 The **Rooms Keys — Changed** Trust Task is the last hop of a watch armed through a key holder.
-A client asks its key holder to watch a room with [`rooms/keys/watch`](../../watch/0.1/spec.md);
-the key holder arms [`rooms/watch`](../../../watch/0.1/spec.md) at the room's host, as the member,
+A client asks its key holder to watch a room with [`rooms/keys/watch`](../../watch/0.2/spec.md);
+the key holder arms [`rooms/watch`](../../../watch/0.2/spec.md) at the room's host, as the member,
 with an address of its own; the host sends [`rooms/changed`](../../../changed/0.1/spec.md) to that
 address; and the key holder sends **this** to the client: *room R, which you watch as member M at
 host H, has moved past the version you had read to*. It adds to the host's signal only what the
-client named when it armed — the member and the host — and says nothing about what changed.
+client named when it armed — the member and the host — and says nothing about what changed. For a
+one-shot watch the key holder sends one; for a live watch, which a client holds while a
+conversation is on screen, it sends one for every signal the host sends, until the watch ends.
 
 It is one-way: there is no `#response`. A reply would tell the key holder when the client's device
 woke, which is more than it needs to know, and the host learns nothing from this hop at all.
@@ -86,15 +88,17 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 A conforming **producer** (the key holder) **MUST**:
 
-1. Send it only as [`rooms/keys/watch`](../../watch/0.1/spec.md) Recipient item 8 says: for a
+1. Send it only as [`rooms/keys/watch`](../../watch/0.2/spec.md) Recipient item 8 says: for a
    `rooms/changed` from the host a watch was armed at, at that watch's address, for that watch's
-   room, while the watch is armed — once, to the client that armed it, and then forget the watch.
+   room, while the watch is armed, to the client that armed it — once for a one-shot watch, and then
+   forget the watch; for each signal of a live watch, keeping the watch until it ends.
 2. Carry the signal's `roomId` and `latestVersion` unaltered, and the watch's `member` and `host`
    as the client named them, and **MUST NOT** carry anything else — in `ext` or anywhere else —
    nor the address the watch was armed with.
-3. Send it without delay of its own: the host has already randomised the signal's time
+3. Send it without delay of its own: the host has already applied the room's signal delay
    ([`rooms/changed`](../../../changed/0.1/spec.md) producer item 4), and the key holder neither
-   holds it back for a later signal nor batches it with others.
+   holds it back for a later signal nor batches it with others — for a live watch no more than for
+   a one-shot one, since the host has already coalesced its signals.
 4. Send it to the client the way it sends that client any other document unasked — for a client
    whose DID advertises no service, through the mediator at which the client collects from its key
    holder — and treat delivery as the delivery layer's: a lost signal costs the client nothing it
@@ -110,8 +114,9 @@ A conforming **consumer** (the member's client) **MUST**:
 2. Act on it only by reading the room — never by showing anything to its person on the strength of
    the signal alone — and **MUST NOT** treat `latestVersion` as evidence of anything but a reason to
    read.
-3. Re-arm with `rooms/keys/watch` after it has read, with the version it has read to, if it wants
-   the next signal. One signal per arming holds end to end.
+3. Re-arm a one-shot watch with `rooms/keys/watch` after it has read, with the version it has read
+   to, if it wants the next signal: one signal per arming holds end to end. A live watch needs no
+   re-arming between signals; the client renews it while the room is on screen.
 
 ## What a reader does with a signal
 
@@ -121,7 +126,7 @@ watermark; list what changed with [`rooms/keys/browse/0.5`](../../browse/0.5/spe
 `sinceVersion`; open the new and changed records with
 [`rooms/keys/read/0.2`](../../read/0.2/spec.md) where the tier seals them; count as unread only a
 current message, new to the reader, that is not the member's own; alert only on what it found, with
-wording derived from the records it opened; then advance its watermark and re-arm. A signal can
+wording derived from the records it opened; then advance its watermark and, for a one-shot watch, re-arm. A signal can
 mean a reaction, an edit, a curation, a prune or a profile written as well as a message, and on the
 sealed tiers nobody before the reader can tell which.
 
@@ -173,16 +178,20 @@ address with the key holder.
 
 The signal travels encrypted to the client. Its mediator sees a document from the key holder, and
 the push gateway and the platform push service see a contentless wake: each learns that something
-arrived, and when, and nothing of the room. One signal per arming keeps their number from saying how
-busy the room was, and the host's randomised delay, which this hop does not undo, keeps their timing
-from marking single writes. The key holder learns nothing from sending one, because there is no
-reply. What the host learns is described in [`rooms/watch`](../../../watch/0.1/spec.md#correlation),
-and what the key holder learns in [`rooms/keys/watch`](../../watch/0.1/spec.md#correlation).
+arrived, and when, and nothing of the room. For a one-shot watch, one signal per arming keeps their
+number from saying how busy the room was, and the host's randomised delay, which this hop does not
+undo, keeps their timing from marking single writes. A live watch gives up both while it lasts —
+its signals follow the room's changes one for one, at most one a second — which is why it is held
+only on a room whose signal delay is `none`, and only while the room is on screen
+([`rooms/keys/watch`](../../watch/0.2/spec.md#correlation)). The key holder learns nothing from
+sending one, because there is no reply. What the host learns is described in [`rooms/watch`](../../../watch/0.2/spec.md#correlation),
+and what the key holder learns in [`rooms/keys/watch`](../../watch/0.2/spec.md#correlation).
 
 ### Retention
 
 Nothing is kept. A reader acts on a signal by reading the room and keeps what it reads; the key
-holder forgets the watch when it passes the signal on.
+holder forgets a one-shot watch when it passes the signal on, and keeps a live watch's record —
+never its signals — until the watch ends.
 
 ### Consent/purpose
 
