@@ -389,3 +389,31 @@ func upper(s string) string {
 	}
 	return string(b)
 }
+
+// Two members differing only by case would be one field to encoding/json and
+// two to every other reader, so the document is refused before decode.
+func TestConsumerCaseFoldedDuplicateMembers(t *testing.T) {
+	for name, edit := range map[string]func(map[string]any){
+		"payload":  func(m map[string]any) { m["payload"] = map[string]any{"text": "reader", "Text": "admin"} },
+		"envelope": func(m map[string]any) { m["issuedAt"] = fixedIssuedAt; m["IssuedAt"] = fixedIssuedAt },
+	} {
+		t.Run(name, func(t *testing.T) {
+			h := newHarness(t)
+			r := h.receive(t, h.seal(t, echoDoc(defaultID, "hello", edit)))
+			if code := codeOf(t, r); code != "malformedRequest" {
+				t.Fatalf("code = %q, want malformedRequest", code)
+			}
+			if len(*h.calls) != 0 {
+				t.Fatal("handler ran")
+			}
+		})
+	}
+	// A member differing other than by case is an ordinary unknown member.
+	h := newHarness(t)
+	r := h.receive(t, h.seal(t, echoDoc(defaultID, "hello", func(m map[string]any) {
+		m["payload"] = map[string]any{"text": "hello", "text_note": "kept"}
+	})))
+	if r.Outcome.Kind != tt.OutcomeHandled {
+		t.Fatalf("outcome = %s, reply=%s", r.Outcome.Kind, r.Reply)
+	}
+}

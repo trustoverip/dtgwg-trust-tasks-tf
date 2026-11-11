@@ -31,7 +31,7 @@ issuedAtRequirement:
 sideEffects:
   level: mutating
   rationale: >-
-    Adds members to the connection's member set and routes their live traffic, pickup and (per scope) deletes and sends through it. Reversible: an attach ends on messaging/mux/detach, at its expiry, or when the connection closes, and it changes nothing stored.
+    Adds members to the connection's member set and routes their live traffic, pickup and (per scope) deletes and sends through it. Reversible: an attach ends on messaging/mux/detach, at its expiry, when the connection closes, when the member DID runs messaging/mux/revoke-all, or when the member's account is blocked or removed, and it changes nothing stored.
 consequences:
   - Live delivery for each attached DID moves to this connection; if the DID has its own direct connection, that one keeps precedence and the attach is held inactive.
   - With `delete` in scope, messages the principal collects for the member are deleted from the member's inbox on acknowledgement.
