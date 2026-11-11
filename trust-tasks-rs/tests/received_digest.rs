@@ -46,8 +46,8 @@ impl ProofVerifier for NoVerifier {
 struct Vectors {
     consumer: String,
     now: DateTime<Utc>,
-    first: String,
-    cases: Vec<(String, String, String)>,
+    /// `(name, first, second, expect)`.
+    cases: Vec<(String, String, String, String)>,
 }
 
 fn vectors() -> Vectors {
@@ -59,12 +59,18 @@ fn vectors() -> Vectors {
     Vectors {
         consumer: s(&raw["consumer"]),
         now: s(&raw["now"]).parse().unwrap(),
-        first: s(&raw["first"]),
         cases: raw["cases"]
             .as_array()
             .expect("cases")
             .iter()
-            .map(|c| (s(&c["name"]), s(&c["second"]), s(&c["expect"])))
+            .map(|c| {
+                let first = if c["first"].is_string() {
+                    s(&c["first"])
+                } else {
+                    s(&raw["first"])
+                };
+                (s(&c["name"]), first, s(&c["second"]), s(&c["expect"]))
+            })
             .collect(),
     }
 }
@@ -112,9 +118,9 @@ fn verdict(outcome: &ConsumeOutcome<Value>) -> String {
 async fn shared_item11_vectors_compare_the_document_as_received() {
     let v = vectors();
     assert!(!v.cases.is_empty());
-    for (name, second, expect) in &v.cases {
+    for (name, first_body, second, expect) in &v.cases {
         let guard = InMemoryReplayGuard::new(16);
-        let first = consume(&v, &guard, &v.first, true).await;
+        let first = consume(&v, &guard, first_body, true).await;
         assert!(
             matches!(first, ConsumeOutcome::Handled(_)),
             "{name}: first {first:?}"
@@ -130,14 +136,14 @@ async fn shared_item11_vectors_compare_the_document_as_received() {
 #[tokio::test]
 async fn without_the_received_json_the_digest_is_of_the_typed_view() {
     let v = vectors();
-    let (_, second, _) = v
+    let (_, first, second, _) = v
         .cases
         .iter()
-        .find(|(name, _, _)| name == "extra payload member the consumer's type does not model")
+        .find(|(name, _, _, _)| name == "extra payload member the consumer's type does not model")
         .expect("vector");
     let guard = InMemoryReplayGuard::new(16);
     assert!(matches!(
-        consume(&v, &guard, &v.first, false).await,
+        consume(&v, &guard, first, false).await,
         ConsumeOutcome::Handled(_)
     ));
     assert_eq!(

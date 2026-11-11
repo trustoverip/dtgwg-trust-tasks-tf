@@ -115,11 +115,33 @@ describe("envelope member types (SPEC §7.2 item 1)", () => {
     });
   }
 
-  it("refuses a value that is not an object at all", async () => {
+  it("emits nothing for a value that is not an object at all", async () => {
     for (const value of [null, [], "doc", 3]) {
       const outcome = await consume(value);
-      assert.equal(outcome.kind, "rejected");
-      if (outcome.kind === "rejected") assert.equal(outcome.error.payload.code, "malformedRequest");
+      assert.equal(outcome.kind, "suppressed");
+      if (outcome.kind === "suppressed") assert.equal(outcome.reason.code, "malformedRequest");
+    }
+  });
+
+  it("emits nothing when neither id nor type is a string", async () => {
+    const outcome = await consume({ ...base(), id: ["x"], type: 7 });
+    assert.equal(outcome.kind, "suppressed");
+  });
+
+  it("leaves inResponseTo out when type is not a string, and names it otherwise", async () => {
+    const noType = await consume({ ...base(), type: 7 });
+    assert.equal(noType.kind, "rejected");
+    if (noType.kind === "rejected") {
+      assert.equal(noType.error.payload.inResponseTo, undefined);
+      assert.equal(noType.error.threadId, "req-1");
+    }
+    const noId = await consume({ ...base(), id: 7 });
+    assert.equal(noId.kind, "rejected");
+    if (noId.kind === "rejected") {
+      // As sent: an absent `id` is not on the wire.
+      assert.deepEqual(JSON.parse(JSON.stringify(noId.error.payload.inResponseTo)), {
+        typeUri: SPEC.typeUri,
+      });
     }
   });
 
@@ -189,7 +211,7 @@ describe("shared item-11 vectors (fixtures/consume)", () => {
     consumer: string;
     now: string;
     first: string;
-    cases: Array<{ name: string; second: string; expect: string }>;
+    cases: Array<{ name: string; first?: string; second: string; expect: string }>;
   };
   const spec: SpecPolicy = { ...SPEC, typeUri: vectors.spec };
 
@@ -204,7 +226,7 @@ describe("shared item-11 vectors (fixtures/consume)", () => {
           vectors.consumer,
           Date.parse(vectors.now),
         );
-      assert.equal((await run(vectors.first)).kind, "handled");
+      assert.equal((await run(c.first ?? vectors.first)).kind, "handled");
       const second = await run(c.second);
       const got =
         second.kind === "rejected" && second.error.payload.code === "idConflict"

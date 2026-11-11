@@ -2259,3 +2259,55 @@ mod superseded_discovery {
     }
 }
 // --- end trust-task-discovery 0.1 / 0.2 (superseded) ------------------------
+
+/// §7.2 item 11 compares the body **as received**: the same instant written
+/// with and without fractional seconds is a different serialization, so a
+/// second document under the `id` that differs only there is an `idConflict`.
+/// A digest over the parsed document re-renders the timestamp and cannot see
+/// the difference.
+#[tokio::test]
+async fn a_differently_spelled_timestamp_under_a_reused_id_is_an_id_conflict() {
+    let (addr, calls) = spawn_replay_server(|b| b, HandlerBehaviour::Succeed).await;
+    let issued = Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Secs, true);
+    let with_fraction = issued.replace('Z', ".000Z");
+    let body = |issued_at: &str| {
+        serde_json::json!({
+            "id": "urn:uuid:replay-spelling",
+            "type": "https://trusttasks.org/spec/acl/list/0.3",
+            "issuer": "did:web:alice.example",
+            "recipient": SERVER_VID,
+            "issuedAt": issued_at,
+            "payload": {},
+        })
+        .to_string()
+    };
+
+    let (first_status, _) = post_raw(addr, &body(&issued)).await;
+    let (status, reply) = post_raw(addr, &body(&with_fraction)).await;
+
+    assert_eq!(first_status, 200);
+    assert_eq!(status, 409);
+    let doc: serde_json::Value = serde_json::from_str(&reply).unwrap();
+    assert_eq!(doc["payload"]["code"], serde_json::json!("idConflict"));
+    assert_eq!(calls.load(AtomicOrdering::SeqCst), 1);
+}
+
+/// §7.2 item 11: a member the handler does not read — here an unrecognised
+/// top-level member — is part of the document, so adding one under a reused
+/// `id` is an `idConflict`, not a retry.
+#[tokio::test]
+async fn an_added_member_under_a_reused_id_is_an_id_conflict() {
+    let (addr, calls) = spawn_replay_server(|b| b, HandlerBehaviour::Succeed).await;
+    let original = replay_body("urn:uuid:replay-extra", Utc::now(), None);
+    let mut extended: serde_json::Value = serde_json::from_str(&original).unwrap();
+    extended["trace"] = serde_json::json!("abc");
+
+    let (first_status, _) = post_raw(addr, &original).await;
+    let (status, reply) = post_raw(addr, &extended.to_string()).await;
+
+    assert_eq!(first_status, 200);
+    assert_eq!(status, 409);
+    let doc: serde_json::Value = serde_json::from_str(&reply).unwrap();
+    assert_eq!(doc["payload"]["code"], serde_json::json!("idConflict"));
+    assert_eq!(calls.load(AtomicOrdering::SeqCst), 1);
+}

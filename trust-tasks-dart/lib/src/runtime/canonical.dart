@@ -29,9 +29,13 @@
 ///   alongside names in `U+E000..U+FFFF`, and it reorders both documents being
 ///   compared identically, so it cannot make two JCS-identical documents differ
 ///   nor two JCS-differing documents agree.
-/// * Number formatting is Dart's, which distinguishes `1` from `1.0` because a
-///   decoded JSON `1` is an `int` and `1.0` is a `double`. The same value always
-///   formats the same way, so the induced equality is unchanged.
+/// * Number formatting. Every number is read as the IEEE 754 double JCS reads
+///   it as, so `1`, `1.0` and `1e0` — an `int` and two `double`s once decoded
+///   — are one number, as they are to the TypeScript and Go runtimes. An
+///   integral value below `1e21` is written as an integer, as ECMAScript's
+///   `Number::toString` writes it; anything else in Dart's shortest
+///   round-trip form, whose exponent spelling may differ from JCS's. The same
+///   double always formats the same way, so the induced equality is JCS's.
 ///
 /// The item-11 digest is **consumer-local**: it goes into this consumer's own
 /// replay record and never onto the wire, into a citation, or into a proof. Only
@@ -98,7 +102,7 @@ void _writeCanonical(StringBuffer out, Object? value) {
   } else if (value is bool) {
     out.write(value ? 'true' : 'false');
   } else if (value is num) {
-    out.write(jsonEncode(value));
+    _writeCanonicalNumber(out, value);
   } else if (value is String) {
     _writeCanonicalString(out, value);
   } else if (value is List) {
@@ -126,6 +130,19 @@ void _writeCanonical(StringBuffer out, Object? value) {
       'value',
       'canonicalJson expects a decoded JSON tree',
     );
+  }
+}
+
+/// A number as the IEEE 754 double RFC 8785 §3.2.2.3 reads it as: integral
+/// values below `1e21` as integers (`1.0` and `1e2` are `1` and `100`), and
+/// everything else in Dart's shortest round-trip form.
+void _writeCanonicalNumber(StringBuffer out, num value) {
+  final d = value.toDouble();
+  if (d.isFinite && d == d.truncateToDouble() && d.abs() < 1e21) {
+    // Exact for every integral double; `-0.0` is `0`.
+    out.write(BigInt.from(d).toString());
+  } else {
+    out.write(jsonEncode(d));
   }
 }
 

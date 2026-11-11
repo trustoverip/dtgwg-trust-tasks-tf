@@ -401,16 +401,19 @@ export async function consumeInbound<P, R>(
   const malformedEnvelope =
     validateEnvelope(received) ?? (received === doc ? null : validateEnvelope(doc));
   if (malformedEnvelope !== null) {
-    const error = reject(
-      transport,
-      envelopeForRefusal(received),
-      newErrorId(),
-      malformedEnvelope,
-      clock,
-    );
-    return error === undefined
-      ? { kind: "suppressed", reason: malformedEnvelope }
-      : { kind: "rejected", error };
+    const addressable = envelopeForRefusal(received);
+    // With neither a string `id` nor a string `type` there is nothing the
+    // response could say it is about (§8.2), so nothing is emitted.
+    if (addressable.id === undefined && addressable.type === undefined) {
+      return { kind: "suppressed", reason: malformedEnvelope };
+    }
+    const error = reject(transport, addressable, newErrorId(), malformedEnvelope, clock);
+    if (error === undefined) return { kind: "suppressed", reason: malformedEnvelope };
+    // `inResponseTo.typeUri` is required where `inResponseTo` is present; with
+    // no string `type` to name, leave `inResponseTo` out rather than send it
+    // without one.
+    if (addressable.type === undefined) delete error.payload.inResponseTo;
+    return { kind: "rejected", error };
   }
 
   // §7.2 item 2 — payload schema. Runs first, in the spec's own order, and

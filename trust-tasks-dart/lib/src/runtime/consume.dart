@@ -358,6 +358,22 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
   Object? Function(R response)? responseToJson,
   Map<String, dynamic>? received,
 }) async {
+  // §7.2 item 1, as far as every step below relies on it: the document is
+  // shallow enough for them to walk. The payload validator, the proof's
+  // canonical form and the item-11 digest recurse, and a body nested far deeper
+  // than any document needs would otherwise exhaust the stack — a
+  // StackOverflowError, which is an Error and escapes a caller catching
+  // Exceptions. First, so nothing has walked the document yet.
+  if (exceedsNestingDepth(received ?? doc.toJson(payloadToJson))) {
+    const reason = RejectReason(
+      code: StandardCode.malformedRequest,
+      message: 'document is not a well-formed Trust Task document '
+          '(SPEC §7.2 item 1): nested more than $maxNestingDepth levels deep',
+    );
+    final error = reject(transport, doc, newErrorId(), reason, clock: clock);
+    return error == null ? Suppressed<R>(reason) : Rejected<R>(error);
+  }
+
   ConsumeOutcome<R> route(RejectReason reason) {
     final error = reject(transport, doc, newErrorId(), reason, clock: clock);
     return error == null ? Suppressed<R>(reason) : Rejected<R>(error);
@@ -390,21 +406,6 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
         ),
       );
     }
-  }
-
-  // §7.2 item 1, as far as the steps below rely on it: the document is
-  // shallow enough for them to walk. The proof's canonical form and the item-11
-  // digest recurse, and a body nested far deeper than any document needs would
-  // otherwise exhaust the stack — a StackOverflowError, which is an Error and
-  // escapes a caller catching Exceptions.
-  if (exceedsNestingDepth(received ?? doc.toJson(payloadToJson))) {
-    return route(
-      const RejectReason(
-        code: StandardCode.malformedRequest,
-        message: 'document is not a well-formed Trust Task document '
-            '(SPEC §7.2 item 1): nested more than $maxNestingDepth levels deep',
-      ),
-    );
   }
 
   // §7.2 items 4 + 5a — expiry and wrong-recipient.

@@ -193,8 +193,9 @@ pub enum ProofPolicy<'a, V: ProofVerifier + ?Sized> {
     ///
     /// The §7.2 item 11 digest is taken over this value too, with or without
     /// a proof, so two documents under one `id` that differ only in a member
-    /// `P` does not model are an `idConflict`. Under every other policy the
-    /// digest is of `doc`'s serialisation, which cannot see such a member.
+    /// `P` does not model are an `idConflict`. Under a policy that carries no
+    /// received document the digest is of `doc`'s serialisation, which cannot
+    /// see such a member.
     VerifyReceived(&'a V, &'a Value),
 
     /// Reject documents that carry an in-band proof with
@@ -213,22 +214,41 @@ pub enum ProofPolicy<'a, V: ProofVerifier + ?Sized> {
     /// counterparty). This is the explicit opt-out — the variant name
     /// is deliberately uncomfortable to type.
     AcceptUnverified,
+
+    /// [`RejectIfPresent`](Self::RejectIfPresent), carrying the document as
+    /// it was received — the `&Value` `doc` was parsed from — so the §7.2
+    /// item 11 digest is taken over it rather than over `doc`'s
+    /// serialisation. What [`with_received`](Self::with_received) makes of
+    /// `RejectIfPresent`.
+    RejectIfPresentReceived(&'a Value),
+
+    /// [`AcceptUnverified`](Self::AcceptUnverified), carrying the document as
+    /// it was received for the §7.2 item 11 digest. What
+    /// [`with_received`](Self::with_received) makes of `AcceptUnverified`.
+    AcceptUnverifiedReceived(&'a Value),
 }
 
 impl<'a, V: ProofVerifier + ?Sized> ProofPolicy<'a, V> {
     /// Bind this policy to the document as received: [`Verify`](Self::Verify)
-    /// becomes [`VerifyReceived`](Self::VerifyReceived) over `received`, and
-    /// every other policy is returned unchanged.
+    /// becomes [`VerifyReceived`](Self::VerifyReceived) over `received`,
+    /// [`RejectIfPresent`](Self::RejectIfPresent) becomes
+    /// [`RejectIfPresentReceived`](Self::RejectIfPresentReceived) and
+    /// [`AcceptUnverified`](Self::AcceptUnverified) becomes
+    /// [`AcceptUnverifiedReceived`](Self::AcceptUnverifiedReceived). A policy
+    /// already bound to a received document is returned unchanged.
     ///
     /// For a pipeline that takes a caller's policy and parses the document
     /// itself — every transport binding's `receive` — so the caller asks for
-    /// verification and gets it over the bytes that were signed.
+    /// verification and gets it over the bytes that were signed, and the
+    /// item-11 record compares those bytes whichever policy was asked for.
     pub fn with_received<'b>(self, received: &'b Value) -> ProofPolicy<'b, V>
     where
         'a: 'b,
     {
         match self {
             ProofPolicy::Verify(v) => ProofPolicy::VerifyReceived(v, received),
+            ProofPolicy::RejectIfPresent => ProofPolicy::RejectIfPresentReceived(received),
+            ProofPolicy::AcceptUnverified => ProofPolicy::AcceptUnverifiedReceived(received),
             other => other,
         }
     }
@@ -707,10 +727,14 @@ where
     // digest below is taken over it, because both concern the whole received
     // document — members `doc`'s type does not model included.
     let received = match &policy {
-        ProofPolicy::VerifyReceived(_, received) => {
+        ProofPolicy::VerifyReceived(_, received)
+        | ProofPolicy::RejectIfPresentReceived(received)
+        | ProofPolicy::AcceptUnverifiedReceived(received) => {
             Some((*received, is_received_form(received, &doc)))
         }
-        _ => None,
+        ProofPolicy::Verify(_) | ProofPolicy::RejectIfPresent | ProofPolicy::AcceptUnverified => {
+            None
+        }
     };
 
     // §7.2 item 7, clause B — apply the consumer's chosen proof policy.
@@ -742,7 +766,7 @@ where
                 );
             }
         }
-        (ProofPolicy::RejectIfPresent, Some(_)) => {
+        (ProofPolicy::RejectIfPresent | ProofPolicy::RejectIfPresentReceived(_), Some(_)) => {
             return route_rejection(
                 transport,
                 &doc,
@@ -756,8 +780,8 @@ where
         // RejectIfPresent-with-no-proof — all accept and fall through.
         (ProofPolicy::Verify(_), None)
         | (ProofPolicy::VerifyReceived(..), None)
-        | (ProofPolicy::RejectIfPresent, None)
-        | (ProofPolicy::AcceptUnverified, _) => {}
+        | (ProofPolicy::RejectIfPresent | ProofPolicy::RejectIfPresentReceived(_), None)
+        | (ProofPolicy::AcceptUnverified | ProofPolicy::AcceptUnverifiedReceived(_), _) => {}
     }
 
     // §7.2 items 5b + 7A + 8 — the flag-driven per-spec checks, in one place

@@ -1,5 +1,5 @@
 {
-  "description": "Item-11 duplicate-execution vectors (SPEC §7.2 item 11, Keying and comparison). For each case, consume `first`, then `second`, under the same `id` against one replay guard, with a payload type that models only `payload.subject`, passing each document as received. `expect` is the outcome of the second.",
+  "description": "Item-11 duplicate-execution vectors (SPEC §7.2 item 11, Keying and comparison). For each case, consume the case's `first` (the top-level `first` when the case has none), then its `second`, under the same `id` against one replay guard, with a payload type that models only `payload.subject`, passing each document as received. `expect` is the outcome of the second.",
   "spec": "https://trusttasks.org/spec/conformance/widget/0.1",
   "consumer": "did:web:consumer.example",
   "now": "2026-11-01T00:00:30Z",
@@ -40,6 +40,27 @@
       "second": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000001\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:bob.example\"}}",
       "expect": "idConflict",
       "why": "Control case: a difference every reading sees."
+    },
+    {
+      "name": "integral number written with a fraction",
+      "first": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000001\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:alice.example\",\"amount\":1}}",
+      "second": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000001\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:alice.example\",\"amount\":1.0}}",
+      "expect": "duplicate",
+      "why": "RFC 8785 reads every number as an IEEE 754 double: 1 and 1.0 are one number, written 1."
+    },
+    {
+      "name": "number written with an exponent",
+      "first": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000001\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:alice.example\",\"amount\":100}}",
+      "second": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000001\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:alice.example\",\"amount\":1e2}}",
+      "expect": "duplicate",
+      "why": "1e2 and 100 are one double, written 100."
+    },
+    {
+      "name": "different number",
+      "first": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000001\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:alice.example\",\"amount\":1}}",
+      "second": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000001\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:alice.example\",\"amount\":1.5}}",
+      "expect": "idConflict",
+      "why": "Control case for the two above."
     }
   ]
 }

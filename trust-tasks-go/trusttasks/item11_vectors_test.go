@@ -22,6 +22,7 @@ type item11Vectors struct {
 	First    string `json:"first"`
 	Cases    []struct {
 		Name   string `json:"name"`
+		First  string `json:"first"`
 		Second string `json:"second"`
 		Expect string `json:"expect"`
 	} `json:"cases"`
@@ -105,7 +106,11 @@ func TestItem11SharedVectorsCompareTheDocumentAsReceived(t *testing.T) {
 	for _, c := range v.Cases {
 		t.Run(c.Name, func(t *testing.T) {
 			guard := tt.NewInMemoryReplayGuard(16)
-			if first := consumeVector(t, v, guard, v.First, true); first.Kind != tt.OutcomeHandled {
+			firstBody := v.First
+			if c.First != "" {
+				firstBody = c.First
+			}
+			if first := consumeVector(t, v, guard, firstBody, true); first.Kind != tt.OutcomeHandled {
 				t.Fatalf("first: %s %+v", first.Kind, first.Error)
 			}
 			if got := verdictOf(consumeVector(t, v, guard, c.Second, true)); got != c.Expect {
@@ -134,4 +139,50 @@ func TestItem11WithoutReceivedDigestsTheTypedView(t *testing.T) {
 		return
 	}
 	t.Fatal("vector not found")
+}
+
+// A Received that is not a reading of Doc vouches for nothing about Doc, so the
+// digest falls back to Doc's own re-encoding rather than keying the record on
+// another document.
+func TestItem11IgnoresAReceivedThatIsNotTheDocumentBeingConsumed(t *testing.T) {
+	v := loadItem11Vectors(t)
+	now, err := time.Parse(time.RFC3339, v.Now)
+	if err != nil {
+		t.Fatal(err)
+	}
+	guard := tt.NewInMemoryReplayGuard(16)
+	consume := func(received string) tt.ConsumeOutcome[response] {
+		var doc tt.Document[widget]
+		if err := json.Unmarshal([]byte(v.First), &doc); err != nil {
+			t.Fatal(err)
+		}
+		out, err := tt.ConsumeInbound(context.Background(), tt.ConsumeOptions[widget, response]{
+			Transport:     tt.UnauthenticatedTransport{},
+			Spec:          tt.SpecPolicy{TypeURI: v.Spec},
+			ProofPolicy:   tt.ProofPolicy{Kind: tt.ProofRejectIfPresent},
+			PayloadPolicy: tt.PayloadPolicy{Kind: tt.PayloadAcceptUnvalidated},
+			Checks:        tt.ConsequentialChecks(guard),
+			Doc:           &doc,
+			Received:      json.RawMessage(received),
+			MyVID:         v.Consumer,
+			Now:           now,
+			NewErrorID:    func() string { return "err-1" },
+			Clock:         fixedClock,
+			Handler: func(_ context.Context, d *tt.Document[widget], _ tt.ResolvedParties) (*tt.Document[response], error) {
+				return tt.RespondWith[widget, response](d, "resp-1", response{OK: true}, fixedClock), nil
+			},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		return out
+	}
+	// Another document entirely: a different subject, so not a reading.
+	other := `{"id":"elsewhere","type":"` + v.Spec + `","payload":{"subject":"did:web:bob.example"}}`
+	if first := consume(other); first.Kind != tt.OutcomeHandled {
+		t.Fatalf("first: %s %+v", first.Kind, first.Error)
+	}
+	if got := verdictOf(consume(v.First)); got != "duplicate" {
+		t.Fatalf("got %s: the record was keyed on the unrelated Received", got)
+	}
 }

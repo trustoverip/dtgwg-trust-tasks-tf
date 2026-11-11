@@ -174,6 +174,67 @@ void main() {
     });
   });
 
+  group('nesting depth before the payload validator', () {
+    test(
+        'a deep payload is refused before a recursive validator walks it, '
+        'and the message names no stack', () async {
+      final d = base()
+        ..['payload'] = <String, dynamic>{
+          'subject': 's',
+          'deep': nestedLists(100000),
+        };
+      var validated = false;
+      final outcome =
+          await consumeInbound<Map<String, dynamic>, Map<String, dynamic>>(
+        transport: const UnauthenticatedTransport(),
+        spec: const SpecPolicy(
+          typeUri: 'https://trusttasks.org/spec/acl/list/0.1',
+          payloadSchema: '{"type":"object"}',
+        ),
+        proofPolicy: const ProofPolicy.rejectIfPresent(),
+        payloadPolicy: PayloadPolicy.validate(
+          _RecursiveValidator(() => validated = true),
+        ),
+        checks: notConsequentialChecks(),
+        doc: TrustTaskDocument<Map<String, dynamic>>.fromJson(
+          d,
+          (p) => p! as Map<String, dynamic>,
+        ),
+        received: d,
+        myVid: me,
+        now: DateTime.utc(2026, 1, 1, 0, 0, 30),
+        newErrorId: () => 'err-1',
+        clock: fixedClock,
+        payloadToJson: (p) => p,
+        handler: (accepted, _) async => null,
+      );
+      expect(validated, isFalse);
+      expect(outcome, isA<Rejected<Map<String, dynamic>>>());
+      final payload = (outcome as Rejected<Map<String, dynamic>>).error.payload;
+      expect(payload.code, 'malformedRequest');
+      expect(payload.message, isNot(contains('Stack')));
+    });
+  });
+
+  group('canonical numbers', () {
+    test('1, 1.0 and 1e0 are one number, as RFC 8785 reads them', () {
+      String canon(String json) => canonicalJson(jsonDecode(json));
+      for (final (spellings, expected) in [
+        (['1', '1.0', '1e0', '10e-1'], '1'),
+        (['100', '100.0', '1e2', '1E+2'], '100'),
+        (['-0', '-0.0', '0'], '0'),
+        (['-7', '-7.0'], '-7'),
+        (['1.5', '15e-1'], '1.5'),
+      ]) {
+        for (final s in spellings) {
+          expect(canon(s), expected, reason: s);
+        }
+      }
+      expect(canon('1e20'), '100000000000000000000');
+      expect(canon('1e21'), canon('1000000000000000000000'));
+    });
+  });
+
   group('shared item-11 vectors (fixtures/consume)', () {
     final vectors = jsonDecode(
       File('../fixtures/consume/item11-digest.json').readAsStringSync(),
@@ -197,7 +258,7 @@ void main() {
       test(c['name'], () async {
         final guard = InMemoryReplayGuard();
         expect(
-          await run(guard, vectors['first'] as String),
+          await run(guard, (c['first'] ?? vectors['first']) as String),
           isA<Handled<Map<String, dynamic>>>(),
         );
         final second = await run(guard, c['second'] as String);
@@ -211,4 +272,22 @@ void main() {
       });
     }
   });
+}
+
+/// Stands in for a JSON Schema engine that walks the payload recursively.
+class _RecursiveValidator implements PayloadValidator {
+  _RecursiveValidator(this.onValidate);
+  final void Function() onValidate;
+
+  @override
+  String? validate(String schemaJson, Object? payload) {
+    onValidate();
+    int depth(Object? v) => v is List
+        ? 1 + v.fold<int>(0, (m, e) => depth(e) > m ? depth(e) : m)
+        : v is Map
+            ? 1 + v.values.fold<int>(0, (m, e) => depth(e) > m ? depth(e) : m)
+            : 0;
+    depth(payload);
+    return null;
+  }
 }
