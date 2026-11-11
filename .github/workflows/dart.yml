@@ -28,7 +28,7 @@ jobs:
   # spare for the next Release PR's section.
   changelog-size:
     name: Dart CHANGELOG.md under pub.dev's limit
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
       - name: Check sizes
@@ -55,7 +55,7 @@ jobs:
   # installed.
   bindings-drift:
     name: build-dart-bindings drift
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
       - name: Setup Node
@@ -81,7 +81,7 @@ jobs:
 
   analyze:
     name: dart analyze + format (${{ matrix.sdk }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -134,7 +134,7 @@ jobs:
   # runtime tests do.
   test:
     name: dart test (${{ matrix.sdk }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -161,7 +161,7 @@ jobs:
   # declaration by declaration) and fails on anything else.
   consumer-generation:
     name: consumer generation matches the prebuilt tree
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
@@ -190,7 +190,7 @@ jobs:
   # as well, where `dart format` has no --language-version.
   consumer-app:
     name: example application (${{ matrix.sdk }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -229,7 +229,7 @@ jobs:
   api-compatibility:
     name: Dart API compatibility
     if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       pull-requests: read
@@ -270,7 +270,7 @@ jobs:
   # YAML was valid, so only a failed release showed it.
   package-lists:
     name: Dart package lists agree
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
@@ -299,7 +299,7 @@ jobs:
   # asked by `tag-dart` in publish.yml.
   packages:
     name: ${{ matrix.package }} (${{ matrix.sdk }}${{ matrix.ssi && format(', ssi {0}', matrix.ssi) || '' }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:

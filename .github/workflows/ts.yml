@@ -36,7 +36,7 @@ jobs:
   # guard: regenerate and fail if the committed output differs.
   bindings-drift:
     name: build-ts-bindings drift
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
       - name: Setup Node
@@ -75,7 +75,7 @@ jobs:
 
   typecheck:
     name: tsc --noEmit
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
       - name: Setup Node
@@ -97,7 +97,7 @@ jobs:
   # reference implementations must reach the same verdict on the same document.
   test:
     name: node --test (runtime)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
       - name: Setup Node
@@ -129,7 +129,7 @@ jobs:
   # `packages` job.
   packages:
     name: ${{ matrix.package }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -165,7 +165,7 @@ jobs:
   api-compat:
     name: ts API compatibility
     if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       pull-requests: read
@@ -211,7 +211,7 @@ jobs:
   # from, and do the two languages agree with each other.
   conformance:
     name: bindings match specs
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
       - name: Setup Node
@@ -238,7 +238,7 @@ jobs:
   # differences it explains: trust-tasks-ts-gen/scripts/equivalence.mjs.
   gen-equivalence:
     name: trust-tasks-gen-ts equivalence
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
       - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
@@ -270,7 +270,7 @@ jobs:
   # release. The TypeScript twin of rust.yml's `consumer-app`.
   consumer-app-ts:
     name: example application (trust-tasks-gen-ts)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
       - name: Setup Node

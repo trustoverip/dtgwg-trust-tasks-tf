@@ -54,7 +54,7 @@ jobs:
     # version is not yet on crates.io — which in practice means immediately
     # after the Release PR merges. An ordinary feature merge is a no-op.
     name: Release-plz release (crates.io)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     permissions:
       contents: write
@@ -124,7 +124,7 @@ jobs:
     # Publishes only from main, including a manual re-run.
     if: github.ref == 'refs/heads/main'
     name: Publish ${{ matrix.name }} to npm
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # 30, not 20: the publish is followed by up to 8 minutes of waiting for the
     # version to become public ("Confirm the version is public on npm").
     timeout-minutes: 30
@@ -286,7 +286,7 @@ jobs:
     # Publishes only from main, including a manual re-run.
     if: github.ref == 'refs/heads/main'
     name: Publish ${{ matrix.name }} (tag + module proxy)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
       # The tag IS the publication, so this is the one permission that matters.
@@ -422,7 +422,7 @@ jobs:
     # Publishes only from main, including a manual re-run.
     if: github.ref == 'refs/heads/main'
     name: Tag ${{ matrix.name }} for pub.dev
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
       contents: write
@@ -534,7 +534,7 @@ jobs:
   # and its CI restarted — every time another one merged.
   release-pr:
     name: Release PR
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # The API checks moved to every pull request (`rs API compatibility` in
     # rust.yml), so this job no longer builds rustdoc and finishes in about a
     # minute. It took 8-13 minutes, and was repeatedly killed for memory, while

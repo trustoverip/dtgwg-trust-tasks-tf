@@ -59,7 +59,7 @@ jobs:
   # its tag — and without this check that tag would run a publish pub.dev is
   # certain to refuse, leaving a red run on a release that in fact succeeded.
   resolve:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     outputs:

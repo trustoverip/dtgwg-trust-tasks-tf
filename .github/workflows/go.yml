@@ -41,7 +41,7 @@ jobs:
   # contributor cannot introduce drift merely by not having Go installed.
   bindings-drift:
     name: build-go-bindings drift
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
       - name: Setup Node
@@ -70,7 +70,7 @@ jobs:
 
   build:
     name: go build + vet (${{ matrix.go }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -117,7 +117,7 @@ jobs:
   api-compat:
     name: go API compatibility
     if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
@@ -162,7 +162,7 @@ jobs:
   # the drift check nor the runtime tests do.
   test:
     name: go test (${{ matrix.go }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -190,7 +190,7 @@ jobs:
   # the public repo.
   tsp:
     name: go test trust-tasks-go/tsp (${{ matrix.go }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -230,7 +230,7 @@ jobs:
   # blocking a release; wiring one is a follow-up.
   proof:
     name: go test trust-tasks-go/proof (${{ matrix.go }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -270,7 +270,7 @@ jobs:
   # third-party code and needs only the core module. Not release-wired yet.
   didcomm:
     name: go test trust-tasks-go/didcomm (${{ matrix.go }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -309,7 +309,7 @@ jobs:
   # module). The core `./...` jobs do not reach a nested module.
   capabilityclient:
     name: go test trust-tasks-go/capabilityclient (${{ matrix.go }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -354,7 +354,7 @@ jobs:
   # every other difference fails it.
   consumer-generation-equivalence:
     name: trust-tasks-gen ≡ build-go-bindings (whole registry)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
       - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
@@ -384,7 +384,7 @@ jobs:
   # the module's floor, because an application on 1.22 runs the generator on 1.22.
   consumer-app:
     name: example application (trust-tasks-gen, ${{ matrix.go }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
