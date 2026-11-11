@@ -981,6 +981,9 @@ mod messaging {
         mod attach {
             mod v0_1;
         }
+        mod connections {
+            mod v0_1;
+        }
         mod detach {
             mod v0_1;
         }

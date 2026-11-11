@@ -14,4 +14,4 @@ export interface MessagingMuxSharedDefinitionsForDIDMultiplexingAtAMediator {
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../../../_shared/components.js".
  */
-export type { AttachStatement, AttachView, DetachReason, GrantId, GrantRef, GrantState, GrantStatement, GrantView, MemberChangeReason, MuxDataIntegrityProof, MuxDid, MuxNonce, MuxRole, MuxScope, MuxScopeValue, RevokeAllStatement, SessionId_MessagingMuxV0_1 as SessionId, StatementScope } from "../../../../_shared/components.js";
+export type { AttachStatement, AttachView, DetachReason, GrantId, GrantRef, GrantState, GrantStatement, GrantView, MemberChangeReason, MuxDataIntegrityProof, MuxDid, MuxNonce, MuxRole, MuxScope, MuxScopeValue, MuxSource, RevokeAllStatement, SessionId_MessagingMuxV0_1 as SessionId, StatementScope } from "../../../../_shared/components.js";

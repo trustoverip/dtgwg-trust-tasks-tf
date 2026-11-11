@@ -1528,6 +1528,10 @@ export type MuxScope =
  */
 export type MuxScopeValue = "receive" | "pickup" | "delete" | "send";
 /**
+ * How a member came to be on a connection: through a stored grant, or through a session attach bound to that connection.
+ */
+export type MuxSource = "grant" | "attach";
+/**
  * Scopes one application's records within a context, so several tools can share a context without colliding — `openvtc`, `cnm`, an agent runtime. The maintainer MUST NOT interpret the value; it is an opaque partition name. Namespaces are first-come and unreserved, so an application SHOULD pick a stable, specific one: a future per-namespace ACL would grant on this exact string, which makes renaming a namespace a migration rather than an edit.
  */
 export type Namespace = string;
