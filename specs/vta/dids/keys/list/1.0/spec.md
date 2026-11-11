@@ -86,7 +86,9 @@ A conforming **consumer** (the VTA) **MUST**:
    ([§7](../../../_shared/0.1/CONVENTIONS.md#7-authorization)), and withhold from the public
    projection everything §11 lists.
 3. Return one `KeyRoleSummary` per role asked for, including an empty one, and for `update`
-   report `recoveryCommitted` truthfully.
+   report `recoveryCommitted` truthfully, and `assuranceLevel` as a verifier would establish it
+   (VTI-KEY-199) — below the level the document declares, if its structure does not support
+   it, which is a defect the VTA reports rather than hides.
 4. Always include a `revoked` key the document still lists.
 
 ## Authorization

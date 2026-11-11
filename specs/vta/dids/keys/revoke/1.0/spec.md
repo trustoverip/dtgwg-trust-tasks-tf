@@ -81,6 +81,9 @@ errorCodes:
   - code: "vta/dids/keys/revoke:noSoundSuccessor"
     meaning: "`scope: key` was asked for, but no uncompromised routine successor is committed; use `scope: boundary`, or deactivate the identity if the recovery key is also lost."
     retryable: false
+  - code: "vta/dids:assuranceLevelMismatch"
+    meaning: "`scope: boundary` for an identity below level 3, which has no recovery key: deactivate it and create a successor identity."
+    retryable: false
 related:
   - vta/dids/keys/list
   - vta/dids/keys/retire
@@ -110,7 +113,10 @@ For the `update` role, `scope` says how far the compromise reaches
 ([§9.4](../../../_shared/0.1/CONVENTIONS.md#94-compromise-of-the-change-authority)):
 
 - `key` — one routine key; the authority moves to the committed routine successor.
-- `boundary` — the VTA itself may be compromised, so its routine successor is too. The VTA
+- `boundary` — level 3 only. The VTA itself may be compromised, so its routine successor is
+  too. (Below level 3 there is no recovery key: the request is refused with
+  `vta/dids:assuranceLevelMismatch`, and the identity is to be deactivated and replaced,
+  [conventions §9.4](../../../_shared/0.1/CONVENTIONS.md#94-compromise-of-the-change-authority).) The VTA
   computes one change revealing the recovery key, revoking the routine keys, replacing every
   key the boundary held, and committing a fresh routine successor and the fresh recovery key
   the caller supplies; it answers `awaitingRecoveryProof` with the change for the recovery
