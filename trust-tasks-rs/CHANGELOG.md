@@ -31,6 +31,25 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.37.15](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.37.14...trust-tasks-rs-v0.37.15) — 2026-11-11
+
+
+### Added
+
+- **vta/webs/dids**: Level-1 did:webs identities for personas, relationships and integrations (0.1) ([#1082](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1082))
+
+create, get, list, update, rotate-keys and delete at 0.1, with the family's
+  conventions and shared record under vta/webs/_shared/0.1. KERI v2 with JSON
+  bodies; one Ed25519 signing key (kt 1) and one pre-rotated successor (nt 1),
+  both derived by the VTA; aliases, key agreement and services as designations
+  anchored by interaction events; hosted only, through a did-hosting server with
+  method webs; remote first, rotations staged. Never a node's service DID
+  (VTI-KEY-001). Draft; the did:webs integration is alpha.
+
+  Bindings regenerated for Rust, TS, Go and Dart.
+
+
+
 ## [0.37.14](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.37.13...trust-tasks-rs-v0.37.14) — 2026-11-10
 
 

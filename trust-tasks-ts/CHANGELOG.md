@@ -11,6 +11,44 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.28.28 — 2026-11-11
+
+
+### Added
+
+- **vta/webs/dids**: Level-1 did:webs identities for personas, relationships and integrations (0.1) (#1082)
+
+create, get, list, update, rotate-keys and delete at 0.1, with the family's
+  conventions and shared record under vta/webs/_shared/0.1. KERI v2 with JSON
+  bodies; one Ed25519 signing key (kt 1) and one pre-rotated successor (nt 1),
+  both derived by the VTA; aliases, key agreement and services as designations
+  anchored by interaction events; hosted only, through a did-hosting server with
+  method webs; remote first, rotations staged. Never a node's service DID
+  (VTI-KEY-001). Draft; the did:webs integration is alpha.
+
+  Bindings regenerated for Rust, TS, Go and Dart.
+
+
+
+### Specifications
+
+- **vtc/rooms/community/update**: Item 10 carries every profile member the community does not manage, recordMembers included (#1080)
+
+Item 10 listed the members to carry over on a re-write as `tags`, `emoji`,
+  `ext`, a list written before the room profile gained `recordMembers`. A
+  community following it to the letter drops `recordMembers` on the next
+  label or description edit, and the room's writers lose replies and
+  reactions (`kind`, `inReplyTo`, `writtenAt`).
+
+  Item 10 (0.2 and 0.3, identically) now names the rule rather than a list:
+  carry over every member but `name` and `description`, naming the four
+  there are today and any a later profile version adds. And a community that
+  cannot read the current profile SHOULD NOT write one without them; the
+  write is then pending under item 11, so it is retried rather than written
+  blind.
+
+  Prose only: no schema, bundle or generated type changes.
+
 ## 0.28.27 — 2026-11-10
 
 
