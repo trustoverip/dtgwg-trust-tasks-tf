@@ -1,0 +1,22 @@
+[
+  {
+    "note": "A signal delay as a number of milliseconds. A room chooses only whether its host delays its watch signals, never the interval, so that no room can pick one that marks its writes as plainly as none would.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:standup",
+      "host": "did:web:rooms.northwind.example",
+      "visibility": "attributed",
+      "signalDelay": 500
+    }
+  },
+  {
+    "note": "A record retention of zero days, passed through to rooms/create, whose schema refuses it: every record would be eligible for removal the moment it was written.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:standup",
+      "host": "did:web:rooms.northwind.example",
+      "visibility": "attributed",
+      "recordRetention": {
+        "recordDays": 0
+      }
+    }
+  }
+]

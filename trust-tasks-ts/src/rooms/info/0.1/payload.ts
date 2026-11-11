@@ -9,7 +9,7 @@ import type { AuthorityPresentation, Ext, RetentionPolicy, RoomLimits, ScopeLimi
 /**
  * A member asks a room's host what it holds about the room: its tier, its current epoch, the limits the host applies to its files, and how much of them the room and the member have used.
  *
- * @deprecated superseded by rooms/info/0.3
+ * @deprecated superseded by rooms/info/0.4
  */
 export interface RoomsInfoPayload {
   /**
@@ -28,7 +28,7 @@ export interface RoomsInfoPayload {
 /**
  * Success response to rooms/info. Type https://trusttasks.org/spec/rooms/info/0.1#response.
  *
- * @deprecated superseded by rooms/info/0.3
+ * @deprecated superseded by rooms/info/0.4
  */
 export interface RoomsInfoResponsePayload {
   /**
@@ -87,12 +87,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by rooms/info/0.3";
+export const DEPRECATION: string | null = "superseded by rooms/info/0.4";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by rooms/info/0.3
+ * @deprecated superseded by rooms/info/0.4
  */
 export type Payload = RoomsInfoPayload;
 
@@ -102,7 +102,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/rooms/info/0.1#res
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by rooms/info/0.3
+ * @deprecated superseded by rooms/info/0.4
  */
 export type Response = RoomsInfoResponsePayload;
 

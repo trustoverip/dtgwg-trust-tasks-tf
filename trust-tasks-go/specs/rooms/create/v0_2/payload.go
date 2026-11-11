@@ -13,6 +13,8 @@ import (
 
 // Response Success response to rooms/create. Type
 // https://trusttasks.org/spec/rooms/create/0.2#response.
+//
+// Deprecated: superseded by rooms/create/0.3
 type Response struct {
 	RoomID string `json:"roomId"`
 
@@ -140,6 +142,8 @@ const (
 // Payload An owner registers a data room with a host. 0.2 adds `recordRetention`: how
 // long the room keeps its records by age, stated at creation so that no record is ever
 // removed under a rule its readers could not have read.
+//
+// Deprecated: superseded by rooms/create/0.3
 type Payload struct {
 	// The room's identifier, minted by its owner before this call. A host is told the
 	// identifier; it does not assign one, because a room whose identity the host chose could
@@ -194,7 +198,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by rooms/create/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/rooms/create/0.2#response"

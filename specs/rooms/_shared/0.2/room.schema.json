@@ -1133,6 +1133,15 @@
         "newestFirst"
       ],
       "description": "The order in which a listing returns a room's records (`rooms/records/list/0.7`, `rooms/keys/browse/0.5`). `oldestFirst`, the default when the member is absent: ascending `version`, the order an incremental sync reads in. `newestFirst`: descending `version`, so a reader that opens a conversation at its newest messages reads the room's head first and pages backwards; `sinceVersion` still bounds the listing from below. A cursor continues the listing in the order it was issued under, and a host refuses it under the other."
+    },
+    "SignalDelay": {
+      "title": "SignalDelay",
+      "type": "string",
+      "enum": [
+        "randomised",
+        "none"
+      ],
+      "description": "Whether a room's host waits a randomised interval before sending a `rooms/changed` signal: the room's **signal delay**.\n\n`randomised` is the default and what a room without one has: the host waits a few seconds after the change that fires a watch, so that the signal's time does not mark one write exactly (`rooms/changed`, producer item 4). `none` is for a room where members expect to see a write as soon as it is made, such as a conversation: the host sends the signal as soon as the change that fires it is stored, with no wait of its own.\n\n**A room's setting, not a member's.** The delay protects the room's writers as much as its watchers. A watcher whose signal is sent at once marks, to anyone who sees both the writer's request reach the host and the signal leave it, the moment of the write and that the two parties share the room. So one watcher cannot opt out for itself without giving away something about everyone who writes, and the setting is the room's: changed by a holder of `admin` (`rooms/signal-delay/set`) and served to every member (`rooms/info`).\n\n**What `none` gives up.** Little in a busy room, where writes are frequent enough that their rhythm is visible anyway; most in a quiet one, where a single write and a single signal line up. A surface that offers the setting SHOULD say so.\n\nAbsent means `randomised`."
     }
   }
 }

@@ -2990,6 +2990,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/rooms/create/0.2#response" => <crate::specs::rooms::create::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/create/0.3" => <crate::specs::rooms::create::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/create/0.3#response" => <crate::specs::rooms::create::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/epoch/chain/0.1" => <crate::specs::rooms::epoch::chain::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -3042,6 +3048,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/info/0.3#response" => <crate::specs::rooms::info::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/info/0.4" => <crate::specs::rooms::info::v0_4::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/info/0.4#response" => <crate::specs::rooms::info::v0_4::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/act/0.1" => <crate::specs::rooms::keys::act::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -3446,6 +3458,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/rooms/owner/register/0.2#response" => <crate::specs::rooms::owner::register::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/owner/register/0.3" => <crate::specs::rooms::owner::register::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/owner/register/0.3#response" => <crate::specs::rooms::owner::register::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/owner/revoke/0.1" => <crate::specs::rooms::owner::revoke::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -3588,6 +3606,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/revocations/put/0.1#response" => <crate::specs::rooms::revocations::put::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/signal-delay/set/0.1" => <crate::specs::rooms::signal_delay::set::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/signal-delay/set/0.1#response" => <crate::specs::rooms::signal_delay::set::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/usage/0.1" => <crate::specs::rooms::usage::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -11019,6 +11043,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/create/0.3" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::create::v0_3::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/epoch/chain/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::rooms::epoch::chain::v0_1::Payload,
         >()),
@@ -11061,6 +11090,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/info/0.3" => Some(crate::SpecPolicy::of::<
             crate::specs::rooms::info::v0_3::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/info/0.4" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::info::v0_4::Payload,
         >()),
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -11428,6 +11462,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/owner/register/0.3" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::owner::register::v0_3::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/owner/revoke/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::rooms::owner::revoke::v0_1::Payload,
         >()),
@@ -11547,6 +11586,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/revocations/put/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::rooms::revocations::put::v0_1::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/signal-delay/set/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::signal_delay::set::v0_1::Payload,
         >()),
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -18502,6 +18546,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/create/0.3" => {
+            Some(crate::specs::rooms::create::v0_3::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/epoch/chain/0.1" => {
             Some(crate::specs::rooms::epoch::chain::v0_1::ERROR_CODES)
         }
@@ -18544,6 +18593,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/info/0.3" => {
             Some(crate::specs::rooms::info::v0_3::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/info/0.4" => {
+            Some(crate::specs::rooms::info::v0_4::ERROR_CODES)
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -18887,6 +18941,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/owner/register/0.3" => {
+            Some(crate::specs::rooms::owner::register::v0_3::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/owner/revoke/0.1" => {
             Some(crate::specs::rooms::owner::revoke::v0_1::ERROR_CODES)
         }
@@ -19004,6 +19063,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/revocations/put/0.1" => {
             Some(crate::specs::rooms::revocations::put::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/signal-delay/set/0.1" => {
+            Some(crate::specs::rooms::signal_delay::set::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]

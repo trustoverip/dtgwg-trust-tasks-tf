@@ -250,7 +250,7 @@ class ResponseUsage {
 
 /// Success response to rooms/info. Type
 /// https://trusttasks.org/spec/rooms/info/0.1#response.
-@Deprecated('superseded by rooms/info/0.3')
+@Deprecated('superseded by rooms/info/0.4')
 class Response {
   const Response({
     required this.roomId,
@@ -379,7 +379,7 @@ class AuthorityPresentation {
 /// A member asks a room's host what it holds about the room: its tier, its current
 /// epoch, the limits the host applies to its files, and how much of them the room and
 /// the member have used.
-@Deprecated('superseded by rooms/info/0.3')
+@Deprecated('superseded by rooms/info/0.4')
 class Payload {
   const Payload({
     required this.roomId,
@@ -420,7 +420,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by rooms/info/0.3';
+const String? deprecation = 'superseded by rooms/info/0.4';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/rooms/info/0.1';

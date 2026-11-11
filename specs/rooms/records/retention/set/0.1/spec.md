@@ -75,7 +75,7 @@ A room's **administrator** changes the room's **record retention** — how long 
 retracted records' tombstones, and how long it keeps records at all, by age
 ([`RecordRetention`](../../../../_shared/0.1/room.schema.json)).
 
-A room states its first record retention at [`rooms/create`](../../../../create/0.2/spec.md).
+A room states its first record retention at [`rooms/create`](../../../../create/0.3/spec.md).
 Unlike the key chain's `retentionPolicy`, which is fixed because key material either exists for
 an epoch or it does not, how long a room keeps its meeting notes is a decision it is entitled to
 revisit. This is how it does.
@@ -106,7 +106,7 @@ A conforming **host** (`recipient`):
    shortened is records removed under a rule nobody stated.
 4. **MUST** replace the retention in force with `recordRetention` whole. A member it leaves out
    is no longer stated; `{}` clears the retention, after which no record is eligible by age.
-5. **MUST** serve the new retention from then on in [`rooms/info`](../../../../info/0.3/spec.md)
+5. **MUST** serve the new retention from then on in [`rooms/info`](../../../../info/0.4/spec.md)
    0.2 and apply it to the next prune, and **MUST** keep in the room's audit trail the retention
    replaced, the one recorded, the `reason`, and the requester where the tier discloses one.
 6. **MUST NOT** remove any record because of this task.

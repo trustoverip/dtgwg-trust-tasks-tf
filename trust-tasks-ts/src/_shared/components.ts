@@ -2341,6 +2341,18 @@ export type SessionId_MessagingMuxV0_1 = string;
  */
 export type SignAlgorithm = "EdDSA" | "ES256" | "ML-DSA-44" | "ML-DSA-65";
 /**
+ * Whether a room's host waits a randomised interval before sending a `rooms/changed` signal: the room's **signal delay**.
+ *
+ * `randomised` is the default and what a room without one has: the host waits a few seconds after the change that fires a watch, so that the signal's time does not mark one write exactly (`rooms/changed`, producer item 4). `none` is for a room where members expect to see a write as soon as it is made, such as a conversation: the host sends the signal as soon as the change that fires it is stored, with no wait of its own.
+ *
+ * **A room's setting, not a member's.** The delay protects the room's writers as much as its watchers. A watcher whose signal is sent at once marks, to anyone who sees both the writer's request reach the host and the signal leave it, the moment of the write and that the two parties share the room. So one watcher cannot opt out for itself without giving away something about everyone who writes, and the setting is the room's: changed by a holder of `admin` (`rooms/signal-delay/set`) and served to every member (`rooms/info`).
+ *
+ * **What `none` gives up.** Little in a busy room, where writes are frequent enough that their rhythm is visible anyway; most in a quiet one, where a single write and a single signal line up. A surface that offers the setting SHOULD say so.
+ *
+ * Absent means `randomised`.
+ */
+export type SignalDelay = "randomised" | "none";
+/**
  * The delegated key, as a `did:key` — an Ed25519 multikey (`z6Mk…`) derived from the public half of a keypair the holder generated for itself, typically a non-extractable browser key. `did:key` only, because its document is a function of the key and resolves with no network: a key whose DID document could be rewritten after enrolment is not the key that was enrolled.
  */
 export type SigningKeyDid = string;

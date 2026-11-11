@@ -50,6 +50,7 @@ related:
   - rooms/records/list
   - rooms/keys/read
   - rooms/keys/browse
+  - rooms/signal-delay/set
   - push/wake
 ---
 
@@ -90,8 +91,12 @@ A conforming **producer** (the host) **MUST**:
 3. Send it over a transport binding the address's DID document advertises, preferring one that
    hides the sender from the address's mediator where both parties speak it.
 4. **SHOULD** wait a short, randomised interval — a few seconds — after the change that fires the
-   watch before sending, so that the signal's time does not mark one write exactly. It **MUST NOT**
-   hold a signal back to wait for a later change, or send a second for the same arming.
+   watch before sending, so that the signal's time does not mark one write exactly, unless the
+   room's signal delay is `none` ([`rooms/signal-delay/set`](../../signal-delay/set/0.1/spec.md)),
+   when it **MUST** send without a wait of its own. A host **MUST** apply the signal delay it serves
+   in [`rooms/info`](../../info/0.4/spec.md), never a watcher's preference: the wait protects the
+   room's writers as much as the watcher (*Correlation*). It **MUST NOT** hold a signal back to wait
+   for a later change, or send a second for the same arming.
 5. Treat delivery as the delivery layer's: a signal that is lost costs the member nothing it cannot
    recover, because its next listing catches up. A host **MUST NOT** queue signals per change or
    re-send one the delivery layer accepted.
@@ -202,6 +207,13 @@ that something arrived, and when, and nothing of the room. One signal per arming
 room was, and producer item 4 keeps their timing from marking single writes. The host learns
 nothing from sending one, because there is no reply. What the host does learn — the address, and
 when the member re-arms — is described in [`rooms/watch`](../../watch/0.1/spec.md#correlation).
+
+A room whose signal delay is `none` gives up the protection of producer item 4, for every member
+at once: a party who sees a writer's request reach the host and a signal leave it soon after can
+match the two, and learn when the writer wrote and that the writer and the watcher share the room.
+That is why the setting is the room's, decided by a holder of `admin` and served to every member,
+and why no watch request can change it
+([`rooms/signal-delay/set`](../../signal-delay/set/0.1/spec.md)).
 
 ### Retention
 
