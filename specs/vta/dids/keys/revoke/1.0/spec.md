@@ -144,7 +144,8 @@ A conforming **consumer** (the VTA) **MUST**:
    derived role (§9.3).
 5. For `update` with `scope: key`, move to the routine successor, or refuse with
    `noSoundSuccessor` when none is sound. With `scope: boundary`, require
-   `recoveryCommitment`, compute the change, answer `awaitingRecoveryProof` with
+   `recoveryCommitment` or, for a threshold custodian, `thresholdRecoveryCommitment` —
+   exactly one ([conventions §5.7](../../../_shared/0.1/CONVENTIONS.md#57-threshold-custodians)) — compute the change, answer `awaitingRecoveryProof` with
    `preview.recoverySigning`, and on the apply request verify `recoveryProof` over exactly
    that change under the committed recovery key before publishing
    (`vta/dids:recoveryProofInvalid` otherwise).

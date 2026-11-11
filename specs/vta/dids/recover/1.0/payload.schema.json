@@ -48,8 +48,8 @@
       "description": "Validated against the profile's `UpdateParameters`, for a recovery that also moves hosting or witnesses."
     },
     "recoveryCommitment": {
-      "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/RecoveryCommitmentOrThreshold",
-      "description": "The fresh recovery key that replaces the one this recovery uses (VTI-KEY-128)."
+      "$ref": "../../_shared/0.1/key-roles.schema.json#/$defs/RecoveryCommitment",
+      "description": "The fresh recovery key that replaces the one this recovery uses (VTI-KEY-128). One key, whatever custodian held the recovery key used: an identity whose recovery key was held by a threshold custodian commits a single key here, and returns to a threshold custodian afterwards with `keys/rotate` (`thresholdRecoveryCommitment`)."
     },
     "recoveryProof": {
       "type": "object",

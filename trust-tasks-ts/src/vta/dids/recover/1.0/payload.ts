@@ -3,7 +3,7 @@
  * Source: specs/vta/dids/recover/1.0/payload.schema.json
  */
 
-import type { ApprovalEvidenceKind, DidMethodName, DidVerificationRelationship, Ext, IdentityChange, IdentityChangePreview, IdentityKeyCustody, IdentityKeyRole, IdentityRoleKey, KeyAssuranceLevel, KeyChangeApprovalState, KeyChangeKind, KeyChangeOutcome, KeyChangeRecord, KeyChangeState, KeyLifecycleState, KeyOrigin, KeyType, PreviewWarning, ProtectionClass, Publication, PublishedArtifact, RecordedApproval, RecoveryCommitment, RecoveryCommitmentOrThreshold, RecoveryCustodian, RecoveryCustodianKind, RecoverySigningRequest, ReissuanceFollowUp, ThresholdRecoveryCommitment, ThresholdRecoveryMember, UpdateKeyClass } from "../../../../_shared/components.js";
+import type { ApprovalEvidenceKind, DidMethodName, DidVerificationRelationship, Ext, IdentityChange, IdentityChangePreview, IdentityKeyCustody, IdentityKeyRole, IdentityRoleKey, KeyAssuranceLevel, KeyChangeApprovalState, KeyChangeKind, KeyChangeOutcome, KeyChangeRecord, KeyChangeState, KeyLifecycleState, KeyOrigin, KeyType, PreviewWarning, ProtectionClass, Publication, PublishedArtifact, RecordedApproval, RecoveryCommitment, RecoveryCustodian, RecoveryCustodianKind, RecoverySigningRequest, ReissuanceFollowUp, UpdateKeyClass } from "../../../../_shared/components.js";
 
 
 /**
@@ -37,9 +37,9 @@ export interface VTADIDsRecoverPayload {
    */
   methodParameters?: {};
   /**
-   * The fresh recovery key that replaces the one this recovery uses (VTI-KEY-128).
+   * The fresh recovery key that replaces the one this recovery uses (VTI-KEY-128). One key, whatever custodian held the recovery key used: an identity whose recovery key was held by a threshold custodian commits a single key here, and returns to a threshold custodian afterwards with `keys/rotate` (`thresholdRecoveryCommitment`).
    */
-  recoveryCommitment: RecoveryCommitmentOrThreshold;
+  recoveryCommitment: RecoveryCommitment;
   /**
    * The recovery custodian's proof over `preview.recoverySigning.unsignedChange`, in the method profile's form. Absent until the custodian has signed; a request without it is answered `awaitingRecoveryProof`.
    */
@@ -91,7 +91,7 @@ export interface VTADIDsRecoverResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { ApprovalEvidenceKind, DidMethodName, DidVerificationRelationship, Ext, IdentityChange, IdentityChangePreview, IdentityKeyCustody, IdentityKeyRole, IdentityRoleKey, KeyAssuranceLevel, KeyChangeApprovalState, KeyChangeKind, KeyChangeOutcome, KeyChangeRecord, KeyChangeState, KeyLifecycleState, KeyOrigin, KeyType, PreviewWarning, ProtectionClass, Publication, PublishedArtifact, RecordedApproval, RecoveryCommitment, RecoveryCommitmentOrThreshold, RecoveryCustodian, RecoveryCustodianKind, RecoverySigningRequest, ReissuanceFollowUp, ThresholdRecoveryCommitment, ThresholdRecoveryMember, UpdateKeyClass };
+export type { ApprovalEvidenceKind, DidMethodName, DidVerificationRelationship, Ext, IdentityChange, IdentityChangePreview, IdentityKeyCustody, IdentityKeyRole, IdentityRoleKey, KeyAssuranceLevel, KeyChangeApprovalState, KeyChangeKind, KeyChangeOutcome, KeyChangeRecord, KeyChangeState, KeyLifecycleState, KeyOrigin, KeyType, PreviewWarning, ProtectionClass, Publication, PublishedArtifact, RecordedApproval, RecoveryCommitment, RecoveryCustodian, RecoveryCustodianKind, RecoverySigningRequest, ReissuanceFollowUp, UpdateKeyClass };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/dids/recover/1.0" as const;
@@ -180,8 +180,8 @@ export const PAYLOAD_SCHEMA = {
       "description": "Validated against the profile's `UpdateParameters`, for a recovery that also moves hosting or witnesses."
     },
     "recoveryCommitment": {
-      "$ref": "#/$defs/RecoveryCommitmentOrThreshold",
-      "description": "The fresh recovery key that replaces the one this recovery uses (VTI-KEY-128)."
+      "$ref": "#/$defs/RecoveryCommitment",
+      "description": "The fresh recovery key that replaces the one this recovery uses (VTI-KEY-128). One key, whatever custodian held the recovery key used: an identity whose recovery key was held by a threshold custodian commits a single key here, and returns to a threshold custodian afterwards with `keys/rotate` (`thresholdRecoveryCommitment`)."
     },
     "recoveryProof": {
       "type": "object",
@@ -972,82 +972,6 @@ export const PAYLOAD_SCHEMA = {
         "awaitingRecoveryProof"
       ],
       "description": "`preview` — nothing was written; the response carries the plan. `applied` — the change was made (and published, unless `publication.selfPublish`). `pendingApproval` — the plan is recorded and awaits further approvals. `awaitingRecoveryProof` — the plan is approved and waits for the recovery custodian's proof (`preview.recoverySigning`); nothing is published until it arrives."
-    },
-    "RecoveryCommitmentOrThreshold": {
-      "title": "RecoveryCommitmentOrThreshold",
-      "oneOf": [
-        {
-          "$ref": "#/$defs/RecoveryCommitment"
-        },
-        {
-          "$ref": "#/$defs/ThresholdRecoveryCommitment"
-        }
-      ],
-      "description": "A single recovery key (§5.6 kinds `separateKey` and `vta`) or a threshold custodian (§5.7)."
-    },
-    "ThresholdRecoveryCommitment": {
-      "title": "ThresholdRecoveryCommitment",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "threshold",
-        "members"
-      ],
-      "description": "A threshold custodian offered for commitment at level 3 (CONVENTIONS.md §5.7, VTI-KEY-210): n members, each a whole recovery key of its own, of which t must authorize a recovery. The VTA computes one commitment per member, verifies every proof of possession over the same `previewId`, refuses any member key it generated or can derive, and renders `keyAssurance.recoveryCommitment` as `{ threshold, commitments }`. A condition over whole keys: nothing is shared, nothing is assembled.",
-      "properties": {
-        "threshold": {
-          "type": "integer",
-          "minimum": 2,
-          "description": "t: how many distinct members must sign a recovery entry. MUST be less than the number of `members`."
-        },
-        "members": {
-          "type": "array",
-          "minItems": 3,
-          "items": {
-            "$ref": "#/$defs/ThresholdRecoveryMember"
-          },
-          "description": "The n members, n ≥ 3, each in its own protection boundary (VTI-KEY-211)."
-        },
-        "label": {
-          "type": "string",
-          "maxLength": 256,
-          "description": "Operator-facing name of the group. Custody projection only; never published."
-        }
-      }
-    },
-    "ThresholdRecoveryMember": {
-      "title": "ThresholdRecoveryMember",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "keyType",
-        "publicKeyMultibase"
-      ],
-      "description": "One member of a threshold custodian: a whole recovery key of its own, with its own proof of possession over the same `previewId`, held by a `separateKey` or `vta` custodian (CONVENTIONS.md §5.7).",
-      "properties": {
-        "keyType": {
-          "$ref": "#/$defs/KeyType"
-        },
-        "publicKeyMultibase": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The recovery key's public half. Not published by the VTA where the method commits by hash."
-        },
-        "proofOfPossession": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Multibase signature by the recovery key over the UTF-8 bytes of `vta-dids-recovery-commitment/v1`, a zero byte, and the request's `previewId`. Absent on a dry run, which is how the `previewId` is obtained; REQUIRED on the apply request, and the only member besides `previewId`, `dryRun` and `recoveryProof` that may differ between the two."
-        },
-        "label": {
-          "type": "string",
-          "maxLength": 256,
-          "description": "Operator-facing name of the custodian. Custody projection only; never published."
-        },
-        "custodian": {
-          "$ref": "#/$defs/RecoveryCustodian",
-          "description": "Who holds this member's key: `separateKey` or `vta` (never `thresholdGroup`), with `did` for a VTA member. Custody projection only; never published."
-        }
-      }
     },
     "RecoveryCommitment": {
       "title": "RecoveryCommitment",
@@ -1851,82 +1775,6 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "awaitingRecoveryProof"
       ],
       "description": "`preview` — nothing was written; the response carries the plan. `applied` — the change was made (and published, unless `publication.selfPublish`). `pendingApproval` — the plan is recorded and awaits further approvals. `awaitingRecoveryProof` — the plan is approved and waits for the recovery custodian's proof (`preview.recoverySigning`); nothing is published until it arrives."
-    },
-    "RecoveryCommitmentOrThreshold": {
-      "title": "RecoveryCommitmentOrThreshold",
-      "oneOf": [
-        {
-          "$ref": "#/$defs/RecoveryCommitment"
-        },
-        {
-          "$ref": "#/$defs/ThresholdRecoveryCommitment"
-        }
-      ],
-      "description": "A single recovery key (§5.6 kinds `separateKey` and `vta`) or a threshold custodian (§5.7)."
-    },
-    "ThresholdRecoveryCommitment": {
-      "title": "ThresholdRecoveryCommitment",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "threshold",
-        "members"
-      ],
-      "description": "A threshold custodian offered for commitment at level 3 (CONVENTIONS.md §5.7, VTI-KEY-210): n members, each a whole recovery key of its own, of which t must authorize a recovery. The VTA computes one commitment per member, verifies every proof of possession over the same `previewId`, refuses any member key it generated or can derive, and renders `keyAssurance.recoveryCommitment` as `{ threshold, commitments }`. A condition over whole keys: nothing is shared, nothing is assembled.",
-      "properties": {
-        "threshold": {
-          "type": "integer",
-          "minimum": 2,
-          "description": "t: how many distinct members must sign a recovery entry. MUST be less than the number of `members`."
-        },
-        "members": {
-          "type": "array",
-          "minItems": 3,
-          "items": {
-            "$ref": "#/$defs/ThresholdRecoveryMember"
-          },
-          "description": "The n members, n ≥ 3, each in its own protection boundary (VTI-KEY-211)."
-        },
-        "label": {
-          "type": "string",
-          "maxLength": 256,
-          "description": "Operator-facing name of the group. Custody projection only; never published."
-        }
-      }
-    },
-    "ThresholdRecoveryMember": {
-      "title": "ThresholdRecoveryMember",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "keyType",
-        "publicKeyMultibase"
-      ],
-      "description": "One member of a threshold custodian: a whole recovery key of its own, with its own proof of possession over the same `previewId`, held by a `separateKey` or `vta` custodian (CONVENTIONS.md §5.7).",
-      "properties": {
-        "keyType": {
-          "$ref": "#/$defs/KeyType"
-        },
-        "publicKeyMultibase": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The recovery key's public half. Not published by the VTA where the method commits by hash."
-        },
-        "proofOfPossession": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Multibase signature by the recovery key over the UTF-8 bytes of `vta-dids-recovery-commitment/v1`, a zero byte, and the request's `previewId`. Absent on a dry run, which is how the `previewId` is obtained; REQUIRED on the apply request, and the only member besides `previewId`, `dryRun` and `recoveryProof` that may differ between the two."
-        },
-        "label": {
-          "type": "string",
-          "maxLength": 256,
-          "description": "Operator-facing name of the custodian. Custody projection only; never published."
-        },
-        "custodian": {
-          "$ref": "#/$defs/RecoveryCustodian",
-          "description": "Who holds this member's key: `separateKey` or `vta` (never `thresholdGroup`), with `did` for a VTA member. Custody projection only; never published."
-        }
-      }
     },
     "RecoveryCommitment": {
       "title": "RecoveryCommitment",

@@ -569,9 +569,15 @@ own**, of which any t — 2 ≤ t < n — must authorize a recovery. It is a con
 keys, not a threshold signature scheme: nothing is shared, nothing is assembled, each member
 signs the exact entry with its own key, and every proof names its signer. For this family:
 
-- the group is offered as a `RecoveryCommitment` in its **threshold form**: `threshold`, and
-  `members`, each a key with its own `keyType`, `publicKeyMultibase`, `proofOfPossession` and
-  `custodian` (`separateKey` or `vta`). The VTA computes **n** commitments, verifies every
+- the group is offered as a `ThresholdRecoveryCommitment`: `threshold`, and `members`, each
+  a key with its own `keyType`, `publicKeyMultibase`, `proofOfPossession` and `custodian`
+  (`separateKey` or `vta`). `create/1.1` and `upgrade/1.0` take it in `recoveryCommitment`,
+  which accepts either form. `keys/rotate/1.0` and `keys/revoke/1.0` were released with
+  `recoveryCommitment` a single key, so they take a group in a separate, optional
+  `thresholdRecoveryCommitment`, never beside `recoveryCommitment` (a request carrying both
+  is `malformedRequest`). `recover/1.0`, whose `recoveryCommitment` is required, commits a
+  single key; an identity recovered with a threshold custodian's proofs returns to a
+  threshold custodian afterwards with `keys/rotate`. The VTA computes **n** commitments, verifies every
   proof of possession over the same `previewId`, refuses any member key it generated or can
   derive, and keeps only the commitments and the custody records;
 - `keyAssurance.recoveryCommitment` is rendered as `{ "threshold": t, "commitments": [...] }`

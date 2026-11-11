@@ -3,7 +3,7 @@
  * Source: specs/vta/dids/keys/revoke/1.0/payload.schema.json
  */
 
-import type { ApprovalEvidenceKind, DidMethodName, DidVerificationRelationship, Ext, IdentityChange, IdentityChangePreview, IdentityKeyCustody, IdentityKeyRole, IdentityRoleKey, KeyAssuranceLevel, KeyChangeApprovalState, KeyChangeKind, KeyChangeOutcome, KeyChangeRecord, KeyChangeState, KeyLifecycleState, KeyOrigin, KeyType, PreviewWarning, ProtectionClass, Publication, PublishedArtifact, RecordedApproval, RecoveryCommitment, RecoveryCommitmentOrThreshold, RecoveryCustodian, RecoveryCustodianKind, RecoverySigningRequest, ReissuanceFollowUp, ThresholdRecoveryCommitment, ThresholdRecoveryMember, UpdateKeyClass } from "../../../../../_shared/components.js";
+import type { ApprovalEvidenceKind, DidMethodName, DidVerificationRelationship, Ext, IdentityChange, IdentityChangePreview, IdentityKeyCustody, IdentityKeyRole, IdentityRoleKey, KeyAssuranceLevel, KeyChangeApprovalState, KeyChangeKind, KeyChangeOutcome, KeyChangeRecord, KeyChangeState, KeyLifecycleState, KeyOrigin, KeyType, PreviewWarning, ProtectionClass, Publication, PublishedArtifact, RecordedApproval, RecoveryCommitment, RecoveryCustodian, RecoveryCustodianKind, RecoverySigningRequest, ReissuanceFollowUp, ThresholdRecoveryCommitment, ThresholdRecoveryMember, UpdateKeyClass } from "../../../../../_shared/components.js";
 
 
 /**
@@ -36,7 +36,11 @@ export interface VTADIDsKeysRevokePayload {
   /**
    * REQUIRED with `scope: boundary`: the fresh recovery key that replaces the one the change uses.
    */
-  recoveryCommitment?: RecoveryCommitmentOrThreshold;
+  recoveryCommitment?: RecoveryCommitment;
+  /**
+   * With `scope: boundary`, in place of `recoveryCommitment` and never with it (a request carrying both is refused as the framework's `malformedRequest`): a threshold custodian (CONVENTIONS.md §5.7) to replace the recovery key the change uses. With `scope: boundary`, exactly one of the two is REQUIRED.
+   */
+  thresholdRecoveryCommitment?: ThresholdRecoveryCommitment;
   /**
    * `scope: boundary` only: the recovery custodian's proof over `preview.recoverySigning.unsignedChange`, in the method profile's form.
    */
@@ -88,7 +92,7 @@ export interface VTADIDsKeysRevokeResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { ApprovalEvidenceKind, DidMethodName, DidVerificationRelationship, Ext, IdentityChange, IdentityChangePreview, IdentityKeyCustody, IdentityKeyRole, IdentityRoleKey, KeyAssuranceLevel, KeyChangeApprovalState, KeyChangeKind, KeyChangeOutcome, KeyChangeRecord, KeyChangeState, KeyLifecycleState, KeyOrigin, KeyType, PreviewWarning, ProtectionClass, Publication, PublishedArtifact, RecordedApproval, RecoveryCommitment, RecoveryCommitmentOrThreshold, RecoveryCustodian, RecoveryCustodianKind, RecoverySigningRequest, ReissuanceFollowUp, ThresholdRecoveryCommitment, ThresholdRecoveryMember, UpdateKeyClass };
+export type { ApprovalEvidenceKind, DidMethodName, DidVerificationRelationship, Ext, IdentityChange, IdentityChangePreview, IdentityKeyCustody, IdentityKeyRole, IdentityRoleKey, KeyAssuranceLevel, KeyChangeApprovalState, KeyChangeKind, KeyChangeOutcome, KeyChangeRecord, KeyChangeState, KeyLifecycleState, KeyOrigin, KeyType, PreviewWarning, ProtectionClass, Publication, PublishedArtifact, RecordedApproval, RecoveryCommitment, RecoveryCustodian, RecoveryCustodianKind, RecoverySigningRequest, ReissuanceFollowUp, ThresholdRecoveryCommitment, ThresholdRecoveryMember, UpdateKeyClass };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/dids/keys/revoke/1.0" as const;
@@ -177,8 +181,12 @@ export const PAYLOAD_SCHEMA = {
       "description": "Mint a replacement in the same role, in the same change. Absent means: replace only if the role would otherwise be empty, with the revoked key's algorithm. Not for `update` or `authenticator`."
     },
     "recoveryCommitment": {
-      "$ref": "#/$defs/RecoveryCommitmentOrThreshold",
+      "$ref": "#/$defs/RecoveryCommitment",
       "description": "REQUIRED with `scope: boundary`: the fresh recovery key that replaces the one the change uses."
+    },
+    "thresholdRecoveryCommitment": {
+      "$ref": "#/$defs/ThresholdRecoveryCommitment",
+      "description": "With `scope: boundary`, in place of `recoveryCommitment` and never with it (a request carrying both is refused as the framework's `malformedRequest`): a threshold custodian (CONVENTIONS.md §5.7) to replace the recovery key the change uses. With `scope: boundary`, exactly one of the two is REQUIRED."
     },
     "recoveryProof": {
       "type": "object",
@@ -969,18 +977,6 @@ export const PAYLOAD_SCHEMA = {
         "awaitingRecoveryProof"
       ],
       "description": "`preview` — nothing was written; the response carries the plan. `applied` — the change was made (and published, unless `publication.selfPublish`). `pendingApproval` — the plan is recorded and awaits further approvals. `awaitingRecoveryProof` — the plan is approved and waits for the recovery custodian's proof (`preview.recoverySigning`); nothing is published until it arrives."
-    },
-    "RecoveryCommitmentOrThreshold": {
-      "title": "RecoveryCommitmentOrThreshold",
-      "oneOf": [
-        {
-          "$ref": "#/$defs/RecoveryCommitment"
-        },
-        {
-          "$ref": "#/$defs/ThresholdRecoveryCommitment"
-        }
-      ],
-      "description": "A single recovery key (§5.6 kinds `separateKey` and `vta`) or a threshold custodian (§5.7)."
     },
     "ThresholdRecoveryCommitment": {
       "title": "ThresholdRecoveryCommitment",
@@ -1848,18 +1844,6 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "awaitingRecoveryProof"
       ],
       "description": "`preview` — nothing was written; the response carries the plan. `applied` — the change was made (and published, unless `publication.selfPublish`). `pendingApproval` — the plan is recorded and awaits further approvals. `awaitingRecoveryProof` — the plan is approved and waits for the recovery custodian's proof (`preview.recoverySigning`); nothing is published until it arrives."
-    },
-    "RecoveryCommitmentOrThreshold": {
-      "title": "RecoveryCommitmentOrThreshold",
-      "oneOf": [
-        {
-          "$ref": "#/$defs/RecoveryCommitment"
-        },
-        {
-          "$ref": "#/$defs/ThresholdRecoveryCommitment"
-        }
-      ],
-      "description": "A single recovery key (§5.6 kinds `separateKey` and `vta`) or a threshold custodian (§5.7)."
     },
     "ThresholdRecoveryCommitment": {
       "title": "ThresholdRecoveryCommitment",

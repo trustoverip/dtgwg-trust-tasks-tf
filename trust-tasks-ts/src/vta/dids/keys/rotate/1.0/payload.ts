@@ -3,7 +3,7 @@
  * Source: specs/vta/dids/keys/rotate/1.0/payload.schema.json
  */
 
-import type { ApprovalEvidenceKind, DidMethodName, DidVerificationRelationship, Ext, IdentityChange, IdentityChangePreview, IdentityKeyCustody, IdentityKeyRole, IdentityRoleKey, KeyAssuranceLevel, KeyChangeApprovalState, KeyChangeKind, KeyChangeOutcome, KeyChangeRecord, KeyChangeState, KeyLifecycleState, KeyOrigin, KeyType, PreviewWarning, ProtectionClass, Publication, PublishedArtifact, RecordedApproval, RecoveryCommitment, RecoveryCommitmentOrThreshold, RecoveryCustodian, RecoveryCustodianKind, RecoverySigningRequest, ThresholdRecoveryCommitment, ThresholdRecoveryMember, UpdateKeyClass } from "../../../../../_shared/components.js";
+import type { ApprovalEvidenceKind, DidMethodName, DidVerificationRelationship, Ext, IdentityChange, IdentityChangePreview, IdentityKeyCustody, IdentityKeyRole, IdentityRoleKey, KeyAssuranceLevel, KeyChangeApprovalState, KeyChangeKind, KeyChangeOutcome, KeyChangeRecord, KeyChangeState, KeyLifecycleState, KeyOrigin, KeyType, PreviewWarning, ProtectionClass, Publication, PublishedArtifact, RecordedApproval, RecoveryCommitment, RecoveryCustodian, RecoveryCustodianKind, RecoverySigningRequest, ThresholdRecoveryCommitment, ThresholdRecoveryMember, UpdateKeyClass } from "../../../../../_shared/components.js";
 
 
 /**
@@ -43,7 +43,11 @@ export interface VTADIDsKeysRotatePayload {
   /**
    * `update` only, level 3 only (`vta/dids:assuranceLevelMismatch` below it): replace the recovery commitment with this key (CONVENTIONS.md §5.3, §6.5), authorized by the current recovery key (`useRecoveryKey`) or, where that key is lost, by a quorum. Absent moves the routine authority and carries the recovery commitment forward.
    */
-  recoveryCommitment?: RecoveryCommitmentOrThreshold;
+  recoveryCommitment?: RecoveryCommitment;
+  /**
+   * `update` only, level 3 only, in place of `recoveryCommitment` and never with it (a request carrying both is refused as the framework's `malformedRequest`): replace the recovery commitment with a threshold custodian (CONVENTIONS.md §5.7), authorized as `recoveryCommitment` would be.
+   */
+  thresholdRecoveryCommitment?: ThresholdRecoveryCommitment;
   /**
    * `update` with `recoveryCommitment` only, level 3: `true` has the current recovery key authorize the replacement — the change reveals it and commits the new one, and the VTA answers `awaitingRecoveryProof` until the custodian's `recoveryProof` arrives; no quorum is then required (VTI-KEY-181). Absent or `false`, for a recovery key that is lost: the replacement is authorized by the routine key with the quorum of CONVENTIONS.md §6.5.
    */
@@ -99,7 +103,7 @@ export interface VTADIDsKeysRotateResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { ApprovalEvidenceKind, DidMethodName, DidVerificationRelationship, Ext, IdentityChange, IdentityChangePreview, IdentityKeyCustody, IdentityKeyRole, IdentityRoleKey, KeyAssuranceLevel, KeyChangeApprovalState, KeyChangeKind, KeyChangeOutcome, KeyChangeRecord, KeyChangeState, KeyLifecycleState, KeyOrigin, KeyType, PreviewWarning, ProtectionClass, Publication, PublishedArtifact, RecordedApproval, RecoveryCommitment, RecoveryCommitmentOrThreshold, RecoveryCustodian, RecoveryCustodianKind, RecoverySigningRequest, ThresholdRecoveryCommitment, ThresholdRecoveryMember, UpdateKeyClass };
+export type { ApprovalEvidenceKind, DidMethodName, DidVerificationRelationship, Ext, IdentityChange, IdentityChangePreview, IdentityKeyCustody, IdentityKeyRole, IdentityRoleKey, KeyAssuranceLevel, KeyChangeApprovalState, KeyChangeKind, KeyChangeOutcome, KeyChangeRecord, KeyChangeState, KeyLifecycleState, KeyOrigin, KeyType, PreviewWarning, ProtectionClass, Publication, PublishedArtifact, RecordedApproval, RecoveryCommitment, RecoveryCustodian, RecoveryCustodianKind, RecoverySigningRequest, ThresholdRecoveryCommitment, ThresholdRecoveryMember, UpdateKeyClass };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/dids/keys/rotate/1.0" as const;
@@ -188,8 +192,12 @@ export const PAYLOAD_SCHEMA = {
       "description": "Whether the VTA retires predecessors itself at `overlapUntil`. Absent reads as true. Not for `update`."
     },
     "recoveryCommitment": {
-      "$ref": "#/$defs/RecoveryCommitmentOrThreshold",
+      "$ref": "#/$defs/RecoveryCommitment",
       "description": "`update` only, level 3 only (`vta/dids:assuranceLevelMismatch` below it): replace the recovery commitment with this key (CONVENTIONS.md §5.3, §6.5), authorized by the current recovery key (`useRecoveryKey`) or, where that key is lost, by a quorum. Absent moves the routine authority and carries the recovery commitment forward."
+    },
+    "thresholdRecoveryCommitment": {
+      "$ref": "#/$defs/ThresholdRecoveryCommitment",
+      "description": "`update` only, level 3 only, in place of `recoveryCommitment` and never with it (a request carrying both is refused as the framework's `malformedRequest`): replace the recovery commitment with a threshold custodian (CONVENTIONS.md §5.7), authorized as `recoveryCommitment` would be."
     },
     "useRecoveryKey": {
       "type": "boolean",
@@ -967,18 +975,6 @@ export const PAYLOAD_SCHEMA = {
         "awaitingRecoveryProof"
       ],
       "description": "`preview` — nothing was written; the response carries the plan. `applied` — the change was made (and published, unless `publication.selfPublish`). `pendingApproval` — the plan is recorded and awaits further approvals. `awaitingRecoveryProof` — the plan is approved and waits for the recovery custodian's proof (`preview.recoverySigning`); nothing is published until it arrives."
-    },
-    "RecoveryCommitmentOrThreshold": {
-      "title": "RecoveryCommitmentOrThreshold",
-      "oneOf": [
-        {
-          "$ref": "#/$defs/RecoveryCommitment"
-        },
-        {
-          "$ref": "#/$defs/ThresholdRecoveryCommitment"
-        }
-      ],
-      "description": "A single recovery key (§5.6 kinds `separateKey` and `vta`) or a threshold custodian (§5.7)."
     },
     "ThresholdRecoveryCommitment": {
       "title": "ThresholdRecoveryCommitment",
@@ -1825,18 +1821,6 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "awaitingRecoveryProof"
       ],
       "description": "`preview` — nothing was written; the response carries the plan. `applied` — the change was made (and published, unless `publication.selfPublish`). `pendingApproval` — the plan is recorded and awaits further approvals. `awaitingRecoveryProof` — the plan is approved and waits for the recovery custodian's proof (`preview.recoverySigning`); nothing is published until it arrives."
-    },
-    "RecoveryCommitmentOrThreshold": {
-      "title": "RecoveryCommitmentOrThreshold",
-      "oneOf": [
-        {
-          "$ref": "#/$defs/RecoveryCommitment"
-        },
-        {
-          "$ref": "#/$defs/ThresholdRecoveryCommitment"
-        }
-      ],
-      "description": "A single recovery key (§5.6 kinds `separateKey` and `vta`) or a threshold custodian (§5.7)."
     },
     "ThresholdRecoveryCommitment": {
       "title": "ThresholdRecoveryCommitment",

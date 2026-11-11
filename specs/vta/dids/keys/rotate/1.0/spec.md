@@ -112,8 +112,10 @@ For `update` there is no overlap, and two things can be asked for:
   committed routine successor and a fresh one is committed, as the method profile says. Under
   did:webvh every change does this anyway; under did:webs this is a rotation event, which
   needs the recovery custodian.
-- **Replace the recovery commitment** (`recoveryCommitment` given; level 3 only): the
-  identity commits to a new recovery key, with its proof of possession, in place of the old.
+- **Replace the recovery commitment** (`recoveryCommitment` given, or
+  `thresholdRecoveryCommitment` for a threshold custodian; level 3 only): the identity
+  commits to a new recovery key, or a new group of member keys, with proofs of possession,
+  in place of the old.
   This is the one change that, made by an adversary, silently disarms recovery. So the
   current recovery key authorizes it (`useRecoveryKey: true`): the change reveals that key,
   the custodian checks and signs it as for a recovery
@@ -148,9 +150,10 @@ A conforming **consumer** (the VTA) **MUST**:
    `keys/retire` would, under this request's authorization, destroying an `attestation` or
    `messaging` predecessor, and audit `did.keys.autoRetire`.
 6. For `update`, refuse the schedule members, `replace` and `keyType`; move the authority as
-   the profile says; and with `recoveryCommitment` — refused below level 3
-   (`vta/dids:assuranceLevelMismatch`) — verify its proof of possession over the
-   `previewId`, refuse a key in its own boundary, and replace the commitment — never
+   the profile says; and with `recoveryCommitment` or `thresholdRecoveryCommitment` (never
+   both; [conventions §5.7](../../../_shared/0.1/CONVENTIONS.md#57-threshold-custodians)) —
+   refused below level 3 (`vta/dids:assuranceLevelMismatch`) — verify every proof of
+   possession over the `previewId`, refuse a key in its own boundary, and replace the commitment — never
    otherwise. With `useRecoveryKey: true`, compute the change as one the recovery key
    authorizes, answer `awaitingRecoveryProof` with `preview.recoverySigning`, and verify
    `recoveryProof` over exactly that change before publishing
