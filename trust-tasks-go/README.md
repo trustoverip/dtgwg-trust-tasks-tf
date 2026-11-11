@@ -128,6 +128,16 @@ members and does not require a single REQUIRED one, so a payload missing
 everything unmarshals cleanly into a generated struct. Go is closer to
 TypeScript than to Rust here; run a validator.
 
+**Member names are matched exactly — more strictly than the other runtimes.**
+`encoding/json` matches a member to a field without regard to case, so
+`"Issuer"` would be read as `issuer`. Decoding a `Document` (and a `Proof`)
+therefore refuses a member whose name differs from a declared one only by case,
+envelope and payload alike; call `trusttasks.CheckMemberNames[T]` when you decode
+a payload yourself. Rust, TypeScript and Dart keep such a member as an
+unrecognised one, so a Go consumer refuses `{"issuer":"a","Issuer":"b"}` where
+they accept it with issuer `"a"`. A name differing in any other way
+(`"thread_id"`) is an ordinary unrecognised member everywhere.
+
 ## Absent is not empty
 
 Optional members are pointers, including optional slices and maps. `*[]string` is

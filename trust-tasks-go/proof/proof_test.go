@@ -359,3 +359,60 @@ func TestSharedProofVectors(t *testing.T) {
 		})
 	}
 }
+
+// A signed document carrying a member that differs from a framework member only
+// by case is refused: encoding/json reads "Issuer" as issuer, so a Go consumer
+// would decode a different issuer from the one the proof is bound to.
+func TestCaseVariantMembersAreRefused(t *testing.T) {
+	v := NewVerifier(WithClock(laterClock()))
+	signer := seededSigner(t, Ed25519, 2)
+	other := seededSigner(t, Ed25519, 3)
+	for name, add := range map[string]func(doc map[string]any){
+		"envelope": func(doc map[string]any) { doc["Issuer"] = other.DID },
+		"envelope, folded rune": func(doc map[string]any) {
+			doc["iſſuer"] = other.DID
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			var doc map[string]any
+			_ = json.Unmarshal(grant(t, signer.DID, "admin"), &doc)
+			add(doc)
+			unsigned, _ := json.Marshal(doc)
+			signed, err := signer.Sign(unsigned, SignOptions{})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got := kindOf(t, v.Verify(context.Background(), signed)); got != MalformedProof {
+				t.Errorf("kind = %s, want malformedProof", got)
+			}
+		})
+	}
+
+	t.Run("proof", func(t *testing.T) {
+		signed, err := signer.Sign(grant(t, signer.DID, "admin"), SignOptions{})
+		if err != nil {
+			t.Fatal(err)
+		}
+		var doc map[string]any
+		_ = json.Unmarshal(signed, &doc)
+		doc["proof"].(map[string]any)["VerificationMethod"] = other.DID + "#k"
+		b, _ := json.Marshal(doc)
+		if got := kindOf(t, v.Verify(context.Background(), b)); got != MalformedProof {
+			t.Errorf("kind = %s, want malformedProof", got)
+		}
+	})
+
+	t.Run("an unrelated member still verifies", func(t *testing.T) {
+		var doc map[string]any
+		_ = json.Unmarshal(grant(t, signer.DID, "admin"), &doc)
+		doc["issuerNote"] = "kept"
+		unsigned, _ := json.Marshal(doc)
+		signed, err := signer.Sign(unsigned, SignOptions{})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := v.Verify(context.Background(), signed); err != nil {
+			t.Fatalf("verify: %v", err)
+		}
+	})
+}

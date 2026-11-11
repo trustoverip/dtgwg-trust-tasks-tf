@@ -206,6 +206,9 @@ func unpackAuthcrypt(wire []byte, recipientPriv *ecdh.PrivateKey, recipientKid s
 	}
 
 	senderPub, err := resolve(header.Skid)
+	if err == nil && senderPub == nil {
+		err = errors.New("resolver returned no key")
+	}
 	if err != nil {
 		return nil, &EnvelopeError{Failure: FailSenderUnresolved, Detail: fmt.Sprintf("cannot resolve sender %s: %v", header.Skid, err), Sender: header.Skid}
 	}

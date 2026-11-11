@@ -2,7 +2,7 @@
 slug: messaging/mux/revoke-all
 version: "0.1"
 title: "Messaging — Mux Revoke All"
-summary: "The hand-over switch: a member DID proves current control with a signed revoke-all statement and advances its epoch at the mediator, voiding every grant on it at once and detaching it from every principal before the mediator answers."
+summary: "The hand-over switch: a member DID proves current control with a signed revoke-all statement and advances its epoch at the mediator, voiding every grant on it at once, ending its session attaches, and detaching it from every principal before the mediator answers."
 status: draft
 targetFrameworkVersion: "0.6.0"
 category: messaging
@@ -31,10 +31,11 @@ issuedAtRequirement:
 sideEffects:
   level: destructive
   rationale: >-
-    Advances the member DID's epoch, so every grant signed under that epoch or an earlier one becomes `epochRevoked` and can never be resumed. Every principal carrying the DID through a grant is detached before the response.
+    Advances the member DID's epoch, so every grant signed under that epoch or an earlier one becomes `epochRevoked` and can never be resumed, and ends every session attach of the DID admitted before it. Every principal carrying the DID, through a grant or an attach, is detached before the response.
 consequences:
-  - Every principal holding a grant on this DID stops receiving its messages, on every connection, before this request is answered — including principals the requester does not know about.
-  - Each affected principal receives a durable grantsRevoked notice; new grants must be signed under the new epoch.
+  - Every principal carrying this DID, through a grant or a session attach, stops receiving its messages, on every connection, before this request is answered — including principals the requester does not know about.
+  - A principal that carried the DID through a session attach must attach again with a new attach statement.
+  - Each principal whose grant was voided receives a durable grantsRevoked notice; new grants must be signed under the new epoch.
 subjectPath: /revocation/issuer
 exposure:
   discloses: metadata
@@ -91,7 +92,7 @@ related:
 
 ## Abstract
 
-The **Messaging — Mux Revoke All** Trust Task is the **hand-over switch**. Every stored grant ([`messaging/mux/grant`](../../grant/0.1/spec.md)) embeds the member DID's **epoch** at the mediator, and a grant whose epoch is not the current one is dead. This task advances the epoch. With one message, whoever controls a DID *now* voids every delegation of it, including delegations to principals it has never heard of, and detaches the DID from every principal carrying it **before** the mediator answers.
+The **Messaging — Mux Revoke All** Trust Task is the **hand-over switch**. Every stored grant ([`messaging/mux/grant`](../../grant/0.1/spec.md)) embeds the member DID's **epoch** at the mediator, and a grant whose epoch is not the current one is dead. This task advances the epoch. With one message, whoever controls a DID *now* voids every delegation of it, including delegations to principals it has never heard of, ends every session attach of it, and detaches the DID from every principal carrying it **before** the mediator answers.
 
 The authority is a statement signed, with an embedded Data Integrity proof, by a key currently in the member DID's `authentication` relationship, naming the epoch to void. It is typically sent by the DID's new controller, after [`messaging/mux/list`](../../list/0.1/spec.md) as `member` has shown it what existed. Revoking one principal's grants, rather than all of them, is [`messaging/mux/revoke`](../../revoke/0.1/spec.md).
 
@@ -137,10 +138,10 @@ A conforming **consumer** (the mediator) **MUST**:
 
 1. Answer `unsupportedType` ([SPEC §8.3](/SPEC.md#83-standard-error-codes)) when mux is not enabled.
 2. Check the statement's **shape** and **type** as part of validating the payload ([SPEC §7.2](/SPEC.md#72-consumer-requirements)) — a closed `RevokeAllStatement` whose `type` is `muxRevokeAll`, else `malformedRequest` — and then, **in this order**, respond with the first failure's code: **proof purpose** is `authentication` (`messaging/mux:proofPurposeInvalid`); **Data Integrity verification** — the proof verifies, its verification method is controlled by `issuer` and listed in the issuer's **current** `authentication` relationship (`messaging/mux:statementProofInvalid`, or `messaging/mux:didUnresolvable`); **audience** is this mediator's DID (`messaging/mux:audienceMismatch`); **validity window** — `iat` no more than 60 seconds in the future (`messaging/mux:notYetValid`), `exp` in the future (`messaging/mux:statementExpired`), `exp` within the mediator's bound for such statements (`messaging/mux:lifetimeTooLong`); **epoch** not later than the current epoch (`messaging/mux/revoke-all:epochMismatch`, with `currentEpoch` in `details`).
-3. Where `epoch` equals the current epoch: advance it by one, in one atomic write to the member DID's record (where that write cannot complete under concurrent writes after a bounded number of attempts, change nothing and respond `messaging/mux/revoke-all:contended`); move every grant on the member DID signed under an earlier epoch and still `active` to `epochRevoked`; and detach the member from every connection carrying it through such a grant, synchronously — remove the streaming entry, wait for the streaming path to confirm, drop any frame for the member still queued on the connection. Only then respond. On a clustered mediator, publish the detach to every node; correctness on another node comes from the epoch comparison every pickup and delete makes, and the remaining window is bounded to live pushes already in flight there. A frame for the member **MUST NOT** leave a local connection through a voided grant after the response.
+3. Where `epoch` equals the current epoch: advance it by one, in one atomic write to the member DID's record (where that write cannot complete under concurrent writes after a bounded number of attempts, change nothing and respond `messaging/mux/revoke-all:contended`); move every grant on the member DID signed under an earlier epoch and still `active` to `epochRevoked`; and detach the member from every connection carrying it through such a grant, or through a session attach admitted before this request, synchronously — remove the streaming entry, wait for the streaming path to confirm, drop any frame for the member still queued on the connection. Only then respond. On a clustered mediator, publish the detach to every node; correctness on another node comes from the epoch comparison every pickup and delete makes for a grant, and from the published detach for an attach, and the remaining window is bounded to live pushes already in flight there. A session attach admitted after this request is unaffected. A frame for the member **MUST NOT** leave a local connection through a voided grant or an ended attach after the response.
 4. Where `epoch` is earlier than the current epoch, change nothing and succeed with `epochAdvanced: false`: every grant under that epoch is already void, so the requested state holds.
-5. Emit a `detached` [`messaging/mux/event`](../../event/0.1/spec.md) with reason `epochBumped` to each affected principal that is connected, store a `grantsRevoked` [`messaging/mux/notice`](../../notice/0.1/spec.md) with that reason in each one's inbox, and write an audit record.
-6. Respond with the epoch now in force, whether it advanced, and how many grants were voided. Session attaches are unaffected: each is bound to its own connection and lapses with it.
+5. Emit a `detached` [`messaging/mux/event`](../../event/0.1/spec.md) with reason `epochBumped` to each affected principal that is connected, store a `grantsRevoked` [`messaging/mux/notice`](../../notice/0.1/spec.md) with that reason in the inbox of each principal whose grant was voided, and write an audit record. A principal that carried the DID only through a session attach was connected when it ended, so the `detached` event is its report; it gets no notice.
+6. Respond with the epoch now in force, whether it advanced, and how many grants were voided. Session attaches ended under rule 3 are not counted in `revokedGrants`; they are reported to their principals by the `detached` event of rule 5. Where the epoch did not advance (rule 4), no attach is ended.
 
 Correctness rests on the epoch comparison, not on deleting grants: voided grants are kept, in state `epochRevoked`, for the mediator's retention window after their effective expiries, and are then pruned. A member DID's epoch is never forgotten while its account exists, since forgetting it would revive the grants it voided.
 
