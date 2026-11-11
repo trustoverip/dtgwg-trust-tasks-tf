@@ -12,6 +12,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/trusttasks"
 )
@@ -129,6 +131,16 @@ func (v *Verifier) Verify(_ context.Context, doc json.RawMessage) error {
 		return failf(MalformedProof, "document is not a JSON object")
 	}
 
+	// The binding below reads the exact-case "issuer" and "proof". A Go consumer
+	// decoding the same bytes with encoding/json would match "Issuer" or "PROOF"
+	// to those members too, so a document carrying such a variant means one thing
+	// here and another to the handler. Refuse it rather than vouch for either —
+	// stricter than the Rust, TypeScript and Dart verifiers, which have no such
+	// reader to disagree with.
+	if name, variant := caseVariantOf(obj, envelopeMembers); variant != "" {
+		return failf(MalformedProof, "document member %q differs from %q only by case", variant, name)
+	}
+
 	rawProof, present := obj["proof"]
 	if !present || rawProof == nil {
 		return failf(MalformedProof, "document carries no proof member")
@@ -136,6 +148,9 @@ func (v *Verifier) Verify(_ context.Context, doc json.RawMessage) error {
 	proof, ok := rawProof.(map[string]any)
 	if !ok {
 		return failf(MalformedProof, "proof is not an object")
+	}
+	if name, variant := caseVariantOf(proof, proofMembers); variant != "" {
+		return failf(MalformedProof, "proof member %q differs from %q only by case", variant, name)
 	}
 	if s, _ := proof["type"].(string); s != "DataIntegrityProof" {
 		return failf(MalformedProof, "proof type must be DataIntegrityProof")
@@ -301,4 +316,56 @@ func requireString(m map[string]any, member string) (string, error) {
 		return "", failf(MalformedProof, "proof.%s must be a non-empty string", member)
 	}
 	return s, nil
+}
+
+// envelopeMembers are the framework's top-level document members (SPEC §4).
+var envelopeMembers = []string{
+	"id", "threadId", "parentThreadId", "ceremony", "type", "issuer", "recipient",
+	"issuedAt", "expiresAt", "payload", "@context", "proof",
+}
+
+// proofMembers are the Data Integrity proof members this verifier reads.
+var proofMembers = []string{
+	"type", "cryptosuite", "verificationMethod", "created", "proofPurpose", "proofValue",
+}
+
+// caseVariantOf returns a member of obj that is not one of names but folds to
+// one — as encoding/json's case-insensitive matching would read it — and the
+// name it folds to. '_' and '-' are significant, as they are to encoding/json.
+func caseVariantOf(obj map[string]any, names []string) (name, variant string) {
+	folded := make(map[string]string, len(names))
+	exact := make(map[string]bool, len(names))
+	for _, n := range names {
+		folded[foldMemberName(n)] = n
+		exact[n] = true
+	}
+	for member := range obj {
+		if exact[member] {
+			continue
+		}
+		if n, ok := folded[foldMemberName(member)]; ok {
+			return n, member
+		}
+	}
+	return "", ""
+}
+
+func foldMemberName(name string) string {
+	var out strings.Builder
+	for _, r := range name {
+		if r < utf8.RuneSelf {
+			out.WriteRune(unicode.ToUpper(r))
+			continue
+		}
+		for {
+			next := unicode.SimpleFold(r)
+			if next <= r {
+				r = next
+				break
+			}
+			r = next
+		}
+		out.WriteRune(r)
+	}
+	return out.String()
 }

@@ -101,7 +101,11 @@ type Received[R any] struct {
 //
 // The Go TSP library resolves no VIDs, so the caller supplies the sender
 // identity — look it up from [AdvertisedSender] in your own store. decode reads
-// the request payload from JSON. handler returns the response document (build it
+// the request payload from JSON. A document holding two members whose names
+// differ only by case is refused malformedRequest before decode runs; decode
+// itself sees exact names only as far as it checks them — pass one built on
+// trusttasks.CheckMemberNames once this module requires a core that has it.
+// handler returns the response document (build it
 // with [tt.RespondWith]) or nil for a fire-and-forget spec, or a [tt.Refusal]
 // error.
 //
@@ -159,6 +163,15 @@ func Consume[P, R any](
 			Outcome:   tt.ConsumeOutcome[R]{Kind: tt.OutcomeRejected},
 			Transport: transport,
 		}, err
+	}
+
+	// Two members differing only by case would be read as one by encoding/json
+	// and as two by every other reader; see caseFoldedDuplicate.
+	if _, dup := caseFoldedDuplicate(unpacked.Document); dup {
+		return refused(&raw, tt.RejectReason{
+			Code:    tt.CodeMalformedRequest,
+			Message: "document has two members whose names differ only by case",
+		}), nil
 	}
 
 	payload, err := decode(raw.Payload)

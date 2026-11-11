@@ -153,20 +153,23 @@ extension type const AttachReason(String value) {
 
 /// Why a member left a connection, or why a stored grant did not attach on connect.
 /// `revokedByMember` / `revokedByPrincipal`: messaging/mux/revoke by that side.
-/// `epochBumped`: the member DID ran messaging/mux/revoke-all. `suspendedUnknownKey`:
-/// the unknown-key rule suspended the grant. `keyRotated`: the grant's signing key
-/// left the member DID's current authentication relationship (grant state `staleKey`).
-/// `expired`: the grant or attach reached its effective expiry. `accountBlocked`: the
-/// member's account was blocked. `superseded`: the member DID's own direct connection,
-/// or a newer connection of the same kind, now receives its live traffic; the member
-/// stays on this connection inactive. `admin`: an operator acted. `detachRequested`:
-/// the principal removed a session attach with messaging/mux/detach. `accountRemoved`:
-/// the member's account, or the principal's, was removed. `resolutionFailed`: the
-/// member DID could not be resolved when the grant was re-validated; the grant is not
-/// changed and is re-checked later. `connectionFull`: the grant is valid and stays
-/// stored, but this connection already carries `maxDidsPerConnection` members, so it
-/// was not attached here; it attaches on a connection with room, including this one's
-/// successor once the principal makes room and reconnects.
+/// `epochBumped`: the member DID ran messaging/mux/revoke-all, which ends its grants
+/// and its session attaches. `suspendedUnknownKey`: the unknown-key rule suspended the
+/// grant. `keyRotated`: the grant's signing key left the member DID's current
+/// authentication relationship (grant state `staleKey`). `expired`: the grant or
+/// attach reached its effective expiry. `accountBlocked`: the member's account was
+/// blocked, or its access-control capabilities no longer cover the member's scope; the
+/// member leaves rather than being narrowed. `superseded`: the member DID's own direct
+/// connection, or a newer connection of the same kind, now receives its live traffic;
+/// the member stays on this connection inactive. `admin`: an operator acted.
+/// `detachRequested`: the principal removed a session attach with
+/// messaging/mux/detach. `accountRemoved`: the member's account, or the principal's,
+/// was removed. `resolutionFailed`: the member DID could not be resolved when the
+/// grant was re-validated; the grant is not changed and is re-checked later.
+/// `connectionFull`: the grant is valid and stays stored, but this connection already
+/// carries `maxDidsPerConnection` members, so it was not attached here; it attaches on
+/// a connection with room, including this one's successor once the principal makes
+/// room and reconnects.
 ///
 /// An extension type rather than an enum: a value from a newer MINOR of this
 /// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.

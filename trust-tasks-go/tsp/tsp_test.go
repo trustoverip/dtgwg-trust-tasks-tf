@@ -466,3 +466,19 @@ func upper(s string) string {
 	}
 	return string(b)
 }
+
+// Two members differing only by case would be one field to encoding/json and
+// two to every other reader, so the document is refused before decode.
+func TestConsumerCaseFoldedDuplicateMembers(t *testing.T) {
+	for name, edit := range map[string]func(map[string]any){
+		"payload":  func(m map[string]any) { m["payload"] = map[string]any{"text": "reader", "Text": "admin"} },
+		"envelope": func(m map[string]any) { m["IssuedAt"] = fixedIssuedAt },
+	} {
+		t.Run(name, func(t *testing.T) {
+			h := newHarness(t)
+			if code := codeOf(t, h.receive(t, h.seal(t, echoDoc(defaultID, "hello", edit)))); code != "malformedRequest" {
+				t.Fatalf("code = %q, want malformedRequest", code)
+			}
+		})
+	}
+}
