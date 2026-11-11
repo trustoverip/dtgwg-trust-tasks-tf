@@ -13,6 +13,8 @@ import (
 
 // Response Success response to vta/webs/dids/create. Type
 // https://trusttasks.org/spec/vta/webs/dids/create/0.1#response.
+//
+// Deprecated: superseded by vta/webs/dids/create/0.2
 type Response struct {
 	// The new DID, `did:webs:<domain>:<path segments>:<AID>`.
 	DID string `json:"did"`
@@ -104,6 +106,8 @@ type WebsSlotPath = string
 // VTA derives the keys, writes the KERI v2 inception and designation events, and
 // publishes keri.cesr through a hosting server. Never a node's service DID (VTI-KEY-001).
 // Alpha.
+//
+// Deprecated: superseded by vta/webs/dids/create/0.2
 type Payload struct {
 	// Context the DID belongs to. Its keys are derived here, and deleting the context
 	// destroys them.
@@ -162,7 +166,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by vta/webs/dids/create/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/webs/dids/create/0.1#response"

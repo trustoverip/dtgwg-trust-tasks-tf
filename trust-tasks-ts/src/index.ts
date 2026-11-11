@@ -2997,9 +2997,15 @@ export import VtaServicesUpdate_v1_2 = _VtaServicesUpdate_v1_2;
 import * as _WebsRecordsShared_v0_1 from "./vta/webs/_shared/0.1/webs-records.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import WebsRecordsShared_v0_1 = _WebsRecordsShared_v0_1;
+import * as _WebsRecordsShared_v0_2 from "./vta/webs/_shared/0.2/webs-records.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import WebsRecordsShared_v0_2 = _WebsRecordsShared_v0_2;
 import * as _VtaWebsDidsCreate_v0_1 from "./vta/webs/dids/create/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtaWebsDidsCreate_v0_1 = _VtaWebsDidsCreate_v0_1;
+import * as _VtaWebsDidsCreate_v0_2 from "./vta/webs/dids/create/0.2/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import VtaWebsDidsCreate_v0_2 = _VtaWebsDidsCreate_v0_2;
 import * as _VtaWebsDidsDelete_v0_1 from "./vta/webs/dids/delete/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import VtaWebsDidsDelete_v0_1 = _VtaWebsDidsDelete_v0_1;

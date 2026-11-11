@@ -2964,6 +2964,10 @@ export type Visibility = "open" | "attributed" | "private";
  */
 export type WallVisibility = "members" | "nobody";
 /**
+ * The DID class the DID belongs to (VTI specification, DID classes, VTI-KEY-190 – 193), stated when it is created and fixed for its life. `relationship`: an identifier for one relationship, one community or one trust context, and nothing else. `persona`: a person's own identity. `service`: the durable identity of a node or a service — the VTA itself, a VTC, a VTN, a trust registry, a host service, a mediator, or an integration the VTA provisions — at key assurance level 1. A DID belongs to one class only (VTI-KEY-193): a persona or relationship DID is never adopted as a node's identity, and a service DID is never used as a person's. A service did:webs is alpha: see CONVENTIONS.md §1.
+ */
+export type WebsDidClass = "relationship" | "persona" | "service";
+/**
  * The path segments a did:webs DID's slot carries before its AID, separated by `/`: lowercase letters, digits and hyphens. The VTA appends the AID as the final segment, and the hosting server checks that the published stream establishes exactly that AID. `people/alice` on `example.com` gives the slot `people/alice/<AID>` and the DID `did:webs:example.com:people:alice:<AID>`. The caller never writes the AID: it is the digest of an inception event that does not exist until the VTA writes it.
  */
 export type WebsSlotPath = string;

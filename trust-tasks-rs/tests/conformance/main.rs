@@ -2109,6 +2109,7 @@ mod vta {
         mod dids {
             mod create {
                 mod v0_1;
+                mod v0_2;
             }
             mod delete {
                 mod v0_1;
