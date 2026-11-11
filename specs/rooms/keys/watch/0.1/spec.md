@@ -133,7 +133,7 @@ A conforming **producer** (the member's own client) **MUST**:
 1. Use this task only when it acts **as** the member, as for [`rooms/keys/act`](../../act/0.12/spec.md)
    Producer item 1. A party acting under a chain the member attenuated to it is an agent, and
    watches for itself.
-2. Name the member in `member` — one of the members [`rooms/keys/list`](../../list/0.2/spec.md)
+2. Name the member in `member` — one of the members [`rooms/keys/list`](../../list/0.3/spec.md)
    says it reads the rooms as — and name each room at most once.
 3. Set each room's `sinceVersion` to the highest version it has read the room to, when it has one.
 4. Re-arm a room's watch only after it has read the room since the signal it last received — or

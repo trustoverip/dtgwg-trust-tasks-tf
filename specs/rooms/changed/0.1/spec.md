@@ -155,9 +155,15 @@ a signal can wake a device for a reaction exactly as for a message, and whether 
 7. **Advance its watermark and re-arm.** The new watermark is the highest version it has read,
    which is what it gives `rooms/watch` as `sinceVersion`.
 
-The read marker of step 4 is the reader's own: where its member has seen the conversation up to,
-kept by the member's client and never sent to the host or to any member. Nothing in this family
-records or shares it.
+The read marker of step 4 is the member's own: where its member has seen the conversation up to.
+A reader keeps it itself, or **MAY** keep it with its member's key holder through
+[`rooms/keys/read-marker/set`](../../keys/read-marker/set/0.1/spec.md), so that every one of the
+member's devices counts against the same marker — reading it back with
+[`rooms/keys/list/0.3`](../../keys/list/0.3/spec.md) and told when another device moves it by
+[`rooms/keys/read-marker/moved`](../../keys/read-marker/moved/0.1/spec.md). Either way it is
+**never sent to the host, the room or any other member**: nothing in this family records it at a
+host or shares it beyond the member's own clients and key holder, and a reader **MUST NOT** derive
+a read receipt from it.
 
 ## Request
 

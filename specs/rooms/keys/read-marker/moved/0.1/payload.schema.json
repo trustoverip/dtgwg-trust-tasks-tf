@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/keys/read-marker/moved/0.1",
+  "title": "Rooms Keys Read Marker Moved — payload",
+  "description": "One-way notice from a member's key holder to the member's other clients watching a room (rooms/keys/watch): the member's read marker for the room moved (rooms/keys/read-marker/set). The room, the member and the marker now in force — nothing about which device moved it or when. The client takes the marker as the one in force and clears what it shows as unread at or before it. There is no #response form. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["roomId", "member", "readMarker"],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "description": "The room, exactly as the client named it when it armed its watch."
+    },
+    "member": {
+      "type": "string",
+      "pattern": "^did:",
+      "maxLength": 2048,
+      "description": "The member whose marker moved, as the client named it when it armed its watch."
+    },
+    "readMarker": {
+      "$ref": "../../../../_shared/0.1/read-marker.schema.json#/$defs/ReadMarker",
+      "description": "The marker now in force. The client takes it as its own, whether it is further on than the one it held or behind it (the member marked the room unread)."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1. A key holder MUST NOT put here which client moved the marker, or when."
+    }
+  }
+}

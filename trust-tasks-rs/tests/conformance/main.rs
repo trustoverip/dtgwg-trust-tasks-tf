@@ -1319,6 +1319,7 @@ mod rooms {
         mod list {
             mod v0_1;
             mod v0_2;
+            mod v0_3;
         }
         mod profile {
             mod read {
@@ -1332,6 +1333,14 @@ mod rooms {
             mod v0_1;
             mod v0_2;
             mod v0_3;
+        }
+        mod read_marker {
+            mod moved {
+                mod v0_1;
+            }
+            mod set {
+                mod v0_1;
+            }
         }
         mod seal {
             mod v0_1;

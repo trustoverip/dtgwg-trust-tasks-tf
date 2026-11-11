@@ -1675,6 +1675,9 @@ export import BlobsShared_v0_1 = _BlobsShared_v0_1;
 import * as _PersonalLabelShared_v0_1 from "./rooms/_shared/0.1/personal-label.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import PersonalLabelShared_v0_1 = _PersonalLabelShared_v0_1;
+import * as _ReadMarkerShared_v0_1 from "./rooms/_shared/0.1/read-marker.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import ReadMarkerShared_v0_1 = _ReadMarkerShared_v0_1;
 import * as _RoomShared_v0_1 from "./rooms/_shared/0.1/room.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomShared_v0_1 = _RoomShared_v0_1;
@@ -1849,6 +1852,9 @@ export import RoomsKeysList_v0_1 = _RoomsKeysList_v0_1;
 import * as _RoomsKeysList_v0_2 from "./rooms/keys/list/0.2/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomsKeysList_v0_2 = _RoomsKeysList_v0_2;
+import * as _RoomsKeysList_v0_3 from "./rooms/keys/list/0.3/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import RoomsKeysList_v0_3 = _RoomsKeysList_v0_3;
 import * as _RoomsKeysOpen_v0_1 from "./rooms/keys/open/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomsKeysOpen_v0_1 = _RoomsKeysOpen_v0_1;
@@ -1870,6 +1876,12 @@ export import RoomsKeysProfileRead_v0_1 = _RoomsKeysProfileRead_v0_1;
 import * as _RoomsKeysProfileWrite_v0_1 from "./rooms/keys/profile/write/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomsKeysProfileWrite_v0_1 = _RoomsKeysProfileWrite_v0_1;
+import * as _RoomsKeysReadMarkerMoved_v0_1 from "./rooms/keys/read-marker/moved/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import RoomsKeysReadMarkerMoved_v0_1 = _RoomsKeysReadMarkerMoved_v0_1;
+import * as _RoomsKeysReadMarkerSet_v0_1 from "./rooms/keys/read-marker/set/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import RoomsKeysReadMarkerSet_v0_1 = _RoomsKeysReadMarkerSet_v0_1;
 import * as _RoomsKeysRead_v0_1 from "./rooms/keys/read/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import RoomsKeysRead_v0_1 = _RoomsKeysRead_v0_1;

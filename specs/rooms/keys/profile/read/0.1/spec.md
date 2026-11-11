@@ -249,7 +249,7 @@ The request carries two identifiers. The response carries the room's profile —
 
 ### Correlation
 
-To the host, this is a member reading, which is what the presentation says; on an `attributed` room it learns which member, as with any read. The informative part is frequency: a surface that fetches the profile on every display turns an access pattern into a timeline. A producer **SHOULD** cache the answer for the life of a view and **SHOULD NOT** poll; the profile changes rarely, and an epoch advance — which [`rooms/keys/list`](../../../list/0.2/spec.md) shows — is the signal that it may have.
+To the host, this is a member reading, which is what the presentation says; on an `attributed` room it learns which member, as with any read. The informative part is frequency: a surface that fetches the profile on every display turns an access pattern into a timeline. A producer **SHOULD** cache the answer for the life of a view and **SHOULD NOT** poll; the profile changes rarely, and an epoch advance — which [`rooms/keys/list`](../../../list/0.3/spec.md) shows — is the signal that it may have.
 
 ### Retention
 

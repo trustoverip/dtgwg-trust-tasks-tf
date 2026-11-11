@@ -13601,6 +13601,19 @@ export interface QueueSummary {
   send: QueueDepth;
 }
 /**
+ * Where a member has seen one room's conversation up to: the room version they have seen it to, and the host's `createdAt` of the newest message they have seen. A reader that keeps a copy of the room counts as unread a message first stored after `version`; a reader that keeps no copy counts one whose `createdAt` (else `updatedAt`) is after `createdAt` (rooms/changed, What a reader does with a signal, step 4). Markers are ordered by `version`, then by `createdAt` (an absent `createdAt` before any present one): the greater is further on. Carries nothing about which messages, who wrote them, or when the member read them.
+ */
+export interface ReadMarker {
+  /**
+   * The highest room version the member has seen the conversation to: every message the room held at or below this version has been shown to them. `0` means none: the member has seen nothing in the room, which is what marking a whole room unread sets. A room version as rooms/records/list returns it, never a count of messages.
+   */
+  version: number;
+  /**
+   * The host's `createdAt` of the newest message the member has seen, the member's own included — else its `updatedAt` where the host kept no `createdAt` for it — exactly as the host returned it. For a reader that keeps no copy of the room. Absent when the member has seen no message in the room. Never the author's `writtenAt`, which a writer chooses, and never when the member read it.
+   */
+  createdAt?: string;
+}
+/**
  * What the agent checked on the member's behalf, and what it found.
  *
  * **A verdict, never an error.** None of these values fails the task, including the ones that report a host caught out. A member's own agent refusing to hand over a record because the *host* misbehaved punishes the member for somebody else's act — and locks them out of the room holding the records that would show what happened, at the moment they most need them. The consequence belongs on the **write** path, where continuing to hand material to a party you have caught is what compounds the damage.

@@ -1,0 +1,33 @@
+[
+  {
+    "note": "No member. A key holder may hold one room as two members, each with its own marker, and the client must apply the one it watches as.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "readMarker": { "version": 415, "createdAt": "2027-02-01T10:14:02Z" }
+    }
+  },
+  {
+    "note": "No marker. The document exists to carry it; a bare \"something moved\" would make every client list the room to find out what.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "member": "did:webvh:QmAlice:personas.example:northwind"
+    }
+  },
+  {
+    "note": "Which client moved the marker. The recipient has no use for it, and it would tell every watching device which of the member's devices they read on.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "member": "did:webvh:QmAlice:personas.example:northwind",
+      "readMarker": { "version": 415, "createdAt": "2027-02-01T10:14:02Z" },
+      "movedBy": "did:key:z6MkPhoneHolderExample"
+    }
+  },
+  {
+    "note": "A marker carrying when the member read. A marker is where they read to, never when.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "member": "did:webvh:QmAlice:personas.example:northwind",
+      "readMarker": { "version": 415, "createdAt": "2027-02-01T10:14:02Z", "readAt": "2027-02-01T10:19:58Z" }
+    }
+  }
+]

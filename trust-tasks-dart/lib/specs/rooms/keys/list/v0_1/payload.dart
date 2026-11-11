@@ -55,7 +55,7 @@ class ResponseRoomsItem {
 /// membership is a credential the room issued, and this is key custody. A room whose
 /// group state was never delivered is absent here and the principal may still hold a
 /// perfectly good VMC for it.
-@Deprecated('superseded by rooms/keys/list/0.2')
+@Deprecated('superseded by rooms/keys/list/0.3')
 class Response {
   const Response({
     required this.rooms,
@@ -82,7 +82,7 @@ class Response {
 }
 
 /// Rooms Keys List — payload
-@Deprecated('superseded by rooms/keys/list/0.2')
+@Deprecated('superseded by rooms/keys/list/0.3')
 class Payload {
   const Payload({
     this.ext,
@@ -109,7 +109,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by rooms/keys/list/0.2';
+const String? deprecation = 'superseded by rooms/keys/list/0.3';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/rooms/keys/list/0.1';
