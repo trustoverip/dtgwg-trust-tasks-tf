@@ -34,6 +34,7 @@ import {
   sha256Hex,
   type PayloadValidator,
   type ProofVerifier,
+  type SpecPolicy,
   type TrustTaskDocument,
 } from "../src/_runtime/index.js";
 import * as V01 from "./specimens/authenticate-0.1.js";
@@ -112,11 +113,15 @@ function doc03(over: Partial<TrustTaskDocument<V03.Payload>> = {}): TrustTaskDoc
   };
 }
 
-async function consume01(doc: TrustTaskDocument<V01.Payload>, guard = new InMemoryReplayGuard()) {
+async function consume01(
+  doc: TrustTaskDocument<V01.Payload>,
+  guard = new InMemoryReplayGuard(),
+  spec: SpecPolicy = V01.SPEC,
+) {
   let seen: TrustTaskDocument<V01.Payload> | undefined;
   const outcome = await consumeInbound<V01.Payload, V01.Response>({
     transport: new StaticTransport({ issuer: PEER }),
-    spec: V01.SPEC,
+    spec,
     proofPolicy: { kind: "verify", verify: hashVerifier },
     payloadPolicy: { kind: "validate", validate: closedRootValidator },
     checks: consequentialChecks(guard),
@@ -362,6 +367,16 @@ describe("consumeInbound on a re-read document", () => {
     if (read.kind !== "accepted") return;
     const { outcome } = await consume01(read.doc);
     assert.equal(outcome.kind === "rejected" && outcome.error.payload.code, "proofInvalid");
+  });
+
+  it("a re-reading made for one spec is checked when consumed under another", async () => {
+    const read = readForSpec<V01.Payload>(sign(doc03()), V01.SPEC, { index: INDEX });
+    assert.equal(read.kind, "accepted");
+    if (read.kind !== "accepted") return;
+    const other: SpecPolicy = { ...V01.SPEC, typeUri: "https://trusttasks.org/spec/chat/message/1.0" };
+    const { outcome, seen } = await consume01(read.doc, new InMemoryReplayGuard(), other);
+    assert.equal(outcome.kind === "rejected" && outcome.error.payload.code, "unsupportedType");
+    assert.equal(seen, undefined, "the other spec's handler must not run");
   });
 
   it("without readForSpec, a 0.3 document is not consumed as 0.1", async () => {

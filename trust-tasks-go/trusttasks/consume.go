@@ -365,7 +365,10 @@ type ConsumeOptions[P, R any] struct {
 
 	// Extends is the [ExtendsLookup] the §7.2 item 3 type check follows when
 	// Doc's type is a later version than Spec's. Nil means [RegistryExtends].
-	// Pass the lookup Doc was read with, when [ReadForSpecWith] was given one.
+	// A caller that re-read Doc with [ReadForSpecWith] and its own lookup MUST
+	// pass that lookup here too: the check does not know how Doc was read, and
+	// under [RegistryExtends] a chain only the caller's lookup declares is refused
+	// unsupportedVersion.
 	Extends ExtendsLookup
 
 	// MyVID is this consumer's own VID, for the §7.2 item 5 recipient check.

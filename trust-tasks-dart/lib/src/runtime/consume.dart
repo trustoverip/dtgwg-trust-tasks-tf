@@ -350,8 +350,10 @@ Refusal refuse<P>(
 ///
 /// [extendsIndex] is the `extends` index the §7.2 item 3 type check follows
 /// when [doc]'s `type` is a later version than [spec]'s; it defaults to the
-/// generated one. Pass the index [readForVersion] was given, when it was given
-/// one.
+/// generated one. A caller that re-read [doc] with [readForVersion] and its own
+/// index MUST pass that index here too: the check does not know how [doc] was
+/// read, and under the generated index a chain only the caller's index declares
+/// is refused `unsupportedVersion`.
 Future<ConsumeOutcome<R>> consumeInbound<P, R>({
   required TransportHandler transport,
   required SpecPolicy spec,

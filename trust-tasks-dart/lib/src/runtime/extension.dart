@@ -52,9 +52,9 @@ import 'type_uri.dart';
 ///
 /// [index] defaults to the generated one, which covers the public registry; a
 /// consumer of third-party (§6.5) specifications passes its own, keyed the
-/// same way, by bare request Type URI. A cycle — which the build refuses,
-/// since `extends` must name an earlier version — ends the walk rather than
-/// looping, as does a link that is not a `MAJOR.MINOR`.
+/// same way, by bare request Type URI. A link that is not a strictly earlier
+/// MINOR of the same MAJOR (which the build refuses, and which includes any
+/// cycle) ends the walk, as does a link that is not a `MAJOR.MINOR`.
 List<String> extensionChain(
   String typeUri, {
   Map<String, String> index = generated.extendsIndex,
@@ -69,6 +69,9 @@ List<String> extensionChain(
     if (next == null) break;
     final version = parseTypeUriVersion(next);
     if (version == null) break;
+    // Only a strictly earlier MINOR of the same MAJOR is a link SPEC §5.2
+    // permits; anything else ends the walk, as in Rust and TypeScript.
+    if (version.$1 != current.major || version.$2 >= current.minor) break;
     current = current.withVersion(version.$1, version.$2);
     if (!seen.add(current.version)) break;
     chain.add(current.version);

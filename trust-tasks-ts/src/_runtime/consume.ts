@@ -81,7 +81,7 @@ import {
   validateFreshness,
   type FreshnessPolicy,
 } from "./freshness.js";
-import { receivedDocumentOf, typeRefusalFor } from "./extends.js";
+import { readingSpecOf, receivedDocumentOf, typeRefusalFor } from "./extends.js";
 import {
   documentDigest,
   type ReplayGuard,
@@ -385,11 +385,13 @@ export async function consumeInbound<P, R>(
   // §7.2 item 3 — the document's `type` is the one `spec` describes. Nothing
   // upstream of this function compares them: a document of another
   // specification whose payload satisfies `spec` would otherwise run under
-  // `spec`'s policy and handler. A `readForSpec` re-reading has already been
-  // routed (with whatever `extends` index the caller gave it); anything else is
-  // checked here, before the item-11 claim, so a refused document never burns
-  // its `id`.
-  if (receivedDocumentOf(doc) === undefined) {
+  // `spec`'s policy and handler. A `readForSpec` re-reading made for this same
+  // `spec` has already been routed (with whatever `extends` index the caller
+  // gave it); anything else — including a re-reading made for another spec — is
+  // checked here, against the generated index plus `declareExtends` (this
+  // function takes no index of its own), before the item-11 claim, so a refused
+  // document never burns its `id`.
+  if (readingSpecOf(doc) !== spec.typeUri) {
     const refusal = typeRefusalFor((doc as { type?: unknown } | null)?.type, spec);
     if (refusal !== null) return route(refusal);
   }

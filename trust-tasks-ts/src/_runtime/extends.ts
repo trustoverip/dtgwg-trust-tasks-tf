@@ -171,7 +171,7 @@ export type ReadForSpecResult<P> =
   | { kind: "refused"; reason: RejectReason };
 
 /** The pruned copy → the document it was read from. Written only by {@link readForSpec}. */
-const RECEIVED = new WeakMap<object, TrustTaskDocument<unknown>>();
+const RECEIVED = new WeakMap<object, { received: TrustTaskDocument<unknown>; readFor: string }>();
 
 /**
  * The document as received, when `doc` is a re-reading of it produced by
@@ -188,7 +188,16 @@ const RECEIVED = new WeakMap<object, TrustTaskDocument<unknown>>();
  * over the pruned payload and fails — closed, not open.
  */
 export function receivedDocumentOf<P>(doc: TrustTaskDocument<P>): TrustTaskDocument<unknown> | undefined {
-  return typeof doc === "object" && doc !== null ? RECEIVED.get(doc) : undefined;
+  return typeof doc === "object" && doc !== null ? RECEIVED.get(doc)?.received : undefined;
+}
+
+/**
+ * The `spec.typeUri` a {@link readForSpec} re-reading was made for, or
+ * `undefined` when `doc` is not one. `consumeInbound` skips its own §7.2 item 3
+ * check only when this is the spec it is consuming under.
+ */
+export function readingSpecOf<P>(doc: TrustTaskDocument<P>): string | undefined {
+  return typeof doc === "object" && doc !== null ? RECEIVED.get(doc)?.readFor : undefined;
 }
 
 /**
@@ -244,7 +253,7 @@ export function readForSpec<P>(
     ...doc,
     payload: (spec.payloadSchema === undefined ? doc.payload : prunePayload(doc.payload, spec.payloadSchema)) as P,
   };
-  RECEIVED.set(pruned, doc);
+  RECEIVED.set(pruned, { received: doc, readFor: spec.typeUri });
   return { kind: "accepted", doc: pruned, received: doc, extended: true };
 }
 

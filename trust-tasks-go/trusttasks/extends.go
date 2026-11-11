@@ -126,6 +126,11 @@ func chainReaches(from, to TypeURI, lookup ExtendsLookup) bool {
 		if !ok {
 			return false // no declaration, or not a MAJOR.MINOR
 		}
+		// Only a strictly earlier MINOR of the same MAJOR is a link SPEC §5.2
+		// permits; anything else ends the walk, as in Rust and TypeScript.
+		if major != at.Major() || minor >= at.Minor() {
+			return false
+		}
 		at = at.WithVersion(major, minor)
 	}
 	return false

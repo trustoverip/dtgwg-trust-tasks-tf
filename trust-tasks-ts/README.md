@@ -137,9 +137,12 @@ duplicate-execution record, then calls your handler. Item 3 is a check that the
 document's `type` is `spec.typeUri` (`#request` and no fragment alike), or a
 later version whose `extends` chain reaches it: anything else is refused
 `unsupportedVersion` (the same specification) or `unsupportedType` (another
-one), before the item-11 record. A document re-read with `readForSpec` has been
-routed already and is not checked again. Item 1 (framework schema) belongs to
-your parse.
+one), before the item-11 record. The chain is read from the generated index
+plus any `declareExtends` tables — `consumeInbound` takes no index of its own. A
+document re-read with `readForSpec` for the same `spec` has been routed already
+(with whatever index you gave `readForSpec`) and is not checked again; one
+re-read for a different spec is checked like any other. Item 1 (framework
+schema) belongs to your parse.
 
 ```ts
 import {
