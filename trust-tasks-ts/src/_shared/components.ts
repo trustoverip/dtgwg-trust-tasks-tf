@@ -1266,6 +1266,10 @@ export type ListName = string;
  */
 export type ListOrder = number;
 /**
+ * The order in which a listing returns a room's records (`rooms/records/list/0.7`, `rooms/keys/browse/0.5`). `oldestFirst`, the default when the member is absent: ascending `version`, the order an incremental sync reads in. `newestFirst`: descending `version`, so a reader that opens a conversation at its newest messages reads the room's head first and pages backwards; `sinceVersion` still bounds the listing from below. A cursor continues the listing in the order it was issued under, and a host refuses it under the other.
+ */
+export type ListOrder_RoomsV0_2 = "oldestFirst" | "newestFirst";
+/**
  * Whether members can find the entry. `listed`: it appears when members browse. `findable`: it does not appear when browsing, but a search that matches it under `search` returns it. `hidden`: no member finds it by browsing or searching; administrators still see it, and members who share a group that shows its members see it in that group's member list.
  */
 export type Listing = "listed" | "findable" | "hidden";
@@ -1527,6 +1531,10 @@ export type MuxScope =
  * One capability a member DID extends to a principal's connection. `receive`: live delivery of the member's inbound messages on the connection. `pickup`: message-pickup status and delivery requests naming the member as `recipient_did`, and inclusion in a raw-TSP inbox drain. `delete`: deleting the member's stored messages, including delete-on-ack and delete-on-send; a member without `delete` keeps its messages in its inbox until something holding `delete` collects them. `send`: the mediator accepts on this connection frames whose sender is the member DID — the frame is still signed or authcrypted with the member's own keys; the scope only lets the mediator accept it on this socket.
  */
 export type MuxScopeValue = "receive" | "pickup" | "delete" | "send";
+/**
+ * How a member came to be on a connection: through a stored grant, or through a session attach bound to that connection.
+ */
+export type MuxSource = "grant" | "attach";
 /**
  * Scopes one application's records within a context, so several tools can share a context without colliding — `openvtc`, `cnm`, an agent runtime. The maintainer MUST NOT interpret the value; it is an opaque partition name. Namespaces are first-come and unreserved, so an application SHOULD pick a stable, specific one: a future per-namespace ACL would grant on this exact string, which makes renaming a namespace a migration rather than an edit.
  */
@@ -13595,6 +13603,19 @@ export interface QueueSummary {
   accountType?: AccountType;
   receive: QueueDepth;
   send: QueueDepth;
+}
+/**
+ * Where a member has seen one room's conversation up to: the room version they have seen it to, and the host's `createdAt` of the newest message they have seen. A reader that keeps a copy of the room counts as unread a message first stored after `version`; a reader that keeps no copy counts one whose `createdAt` (else `updatedAt`) is after `createdAt` (rooms/changed, What a reader does with a signal, step 4). Markers are ordered by `version`, then by `createdAt` (an absent `createdAt` before any present one): the greater is further on. Carries nothing about which messages, who wrote them, or when the member read them.
+ */
+export interface ReadMarker {
+  /**
+   * The highest room version the member has seen the conversation to: every message the room held at or below this version has been shown to them. `0` means none: the member has seen nothing in the room, which is what marking a whole room unread sets. A room version as rooms/records/list returns it, never a count of messages.
+   */
+  version: number;
+  /**
+   * The host's `createdAt` of the newest message the member has seen, the member's own included — else its `updatedAt` where the host kept no `createdAt` for it — exactly as the host returned it. For a reader that keeps no copy of the room. Absent when the member has seen no message in the room. Never the author's `writtenAt`, which a writer chooses, and never when the member read it.
+   */
+  createdAt?: string;
 }
 /**
  * What the agent checked on the member's behalf, and what it found.

@@ -131,13 +131,13 @@ a signal can wake a device for a reaction exactly as for a message, and whether 
 
 1. **Skip a signal it has caught up past.** If `latestVersion` is at or below the reader's
    watermark, there is nothing to read; it re-arms and stops.
-2. **List what changed.** [`rooms/records/list/0.6`](../../records/list/0.6/spec.md) with
+2. **List what changed.** [`rooms/records/list/0.7`](../../records/list/0.7/spec.md) with
    `sinceVersion` set to its watermark, to the end, applying *After a prune* where a page carries
    `lastPrune`.
 3. **Learn each changed record's kind.** On an `open` room the row carries it. On the sealed tiers
    the reader opens the new and changed records through its member's key holder, several at a time
    ([`rooms/keys/read/0.2`](../../keys/read/0.2/spec.md), or
-   [`rooms/keys/browse/0.4`](../../keys/browse/0.4/spec.md)), and applies the `SealedRecordBody`
+   [`rooms/keys/browse/0.5`](../../keys/browse/0.5/spec.md)), and applies the `SealedRecordBody`
    reading rules to each.
 4. **Count as unread** only a record that, as the reader shows it, is a message — `kind: message`,
    or an untitled record without a kind where the reader shows those as messages
@@ -166,9 +166,15 @@ a signal can wake a device for a reaction exactly as for a message, and whether 
    which is what it gives `rooms/watch` as `sinceVersion`. Under a live watch it only advances the
    watermark: the next signal comes without re-arming.
 
-The read marker of step 4 is the reader's own: where its member has seen the conversation up to,
-kept by the member's client and never sent to the host or to any member. Nothing in this family
-records or shares it.
+The read marker of step 4 is the member's own: where its member has seen the conversation up to.
+A reader keeps it itself, or **MAY** keep it with its member's key holder through
+[`rooms/keys/read-marker/set`](../../keys/read-marker/set/0.1/spec.md), so that every one of the
+member's devices counts against the same marker — reading it back with
+[`rooms/keys/list/0.3`](../../keys/list/0.3/spec.md) and told when another device moves it by
+[`rooms/keys/read-marker/moved`](../../keys/read-marker/moved/0.1/spec.md). Either way it is
+**never sent to the host, the room or any other member**: nothing in this family records it at a
+host or shares it beyond the member's own clients and key holder, and a reader **MUST NOT** derive
+a read receipt from it.
 
 ## Request
 

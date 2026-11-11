@@ -8,6 +8,8 @@ import type { AnchorCadence, Ext, RecordRetention, RetentionPolicy, Visibility }
 
 /**
  * An owner registers a data room with a host. 0.2 adds `recordRetention`: how long the room keeps its records by age, stated at creation so that no record is ever removed under a rule its readers could not have read.
+ *
+ * @deprecated superseded by rooms/create/0.3
  */
 export interface RoomsCreatePayload {
   /**
@@ -42,6 +44,8 @@ export interface RoomsCreatePayload {
 }
 /**
  * Success response to rooms/create. Type https://trusttasks.org/spec/rooms/create/0.2#response.
+ *
+ * @deprecated superseded by rooms/create/0.3
  */
 export interface RoomsCreateResponsePayload {
   roomId: string;
@@ -80,15 +84,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by rooms/create/0.3";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by rooms/create/0.3
+ */
 export type Payload = RoomsCreatePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/rooms/create/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by rooms/create/0.3
+ */
 export type Response = RoomsCreateResponsePayload;
 
 /**

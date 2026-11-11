@@ -122,7 +122,7 @@ A conforming **consumer** (the member's client) **MUST**:
 
 Exactly what [`rooms/changed`](../../../changed/0.1/spec.md#what-a-reader-does-with-a-signal) says
 a reader does, read as `member` at `host` through the key holder: skip a signal at or below its
-watermark; list what changed with [`rooms/keys/browse/0.4`](../../browse/0.4/spec.md) and
+watermark; list what changed with [`rooms/keys/browse/0.5`](../../browse/0.5/spec.md) and
 `sinceVersion`; open the new and changed records with
 [`rooms/keys/read/0.2`](../../read/0.2/spec.md) where the tier seals them; count as unread only a
 current message, new to the reader, that is not the member's own; alert only on what it found, with

@@ -2981,6 +2981,25 @@ typedef Purpose = String;
 /// is a statement, not a grant.
 typedef RecordPurpose = Purpose;
 
+/// The order in which a listing returns a room's records (`rooms/records/list/0.7`,
+/// `rooms/keys/browse/0.5`). `oldestFirst`, the default when the member is absent:
+/// ascending `version`, the order an incremental sync reads in. `newestFirst`:
+/// descending `version`, so a reader that opens a conversation at its newest messages
+/// reads the room's head first and pages backwards; `sinceVersion` still bounds the
+/// listing from below. A cursor continues the listing in the order it was issued
+/// under, and a host refuses it under the other.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const ListOrder(String value) {
+  static const ListOrder oldestFirst = ListOrder('oldestFirst');
+  static const ListOrder newestFirst = ListOrder('newestFirst');
+
+  /// Every value this specification's schema permits.
+  static const List<ListOrder> values = <ListOrder>[oldestFirst, newestFirst];
+}
+
 /// Whether a room's host waits a randomised interval before sending a `rooms/changed`
 /// signal: the room's **signal delay**. `randomised` is the default and what a room
 /// without one has: the host waits a few seconds after the change that fires a watch,

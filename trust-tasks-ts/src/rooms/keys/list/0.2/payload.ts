@@ -8,6 +8,8 @@ import type { Ext, PersonalLabel, PersonalLabelDescription, PersonalLabelName, P
 
 /**
  * List the rooms the key holder can open for members the caller may act as. `includePersonal` asks for each entry's personal label as well; absent, none is returned. Carries no filter: the recipient answers for the members its caller acts as, and there is nothing to ask it about. The outer document members are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by rooms/keys/list/0.3
  */
 export interface RoomsKeysListPayload {
   /**
@@ -21,6 +23,8 @@ export interface RoomsKeysListPayload {
 }
 /**
  * Success response to rooms/keys/list. Type https://trusttasks.org/spec/rooms/keys/list/0.2#response. The rooms this key holder can open, one entry per room and member, for the members the caller may act as. This is key custody, not membership: a room whose group state was never delivered is absent here and the member may still hold a perfectly good VMC for it.
+ *
+ * @deprecated superseded by rooms/keys/list/0.3
  */
 export interface RoomsKeysListResponsePayload {
   /**
@@ -71,15 +75,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by rooms/keys/list/0.3";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by rooms/keys/list/0.3
+ */
 export type Payload = RoomsKeysListPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/rooms/keys/list/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by rooms/keys/list/0.3
+ */
 export type Response = RoomsKeysListResponsePayload;
 
 /**

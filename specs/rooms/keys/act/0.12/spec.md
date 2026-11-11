@@ -135,7 +135,7 @@ A member of a data room is a DID — the identifier the room admitted, issued it
 Until this task such a surface had two ways to reach a room's host, and both were wrong:
 
 - ask for a presentation with [`rooms/keys/present`](../../present/0.2/spec.md), which grants the leaf to **the caller**, then sign the request with the caller's own key. The host then records the caller — a key on one laptop — as the actor and, on an `attributed` room, as the author of every record it writes. The room never admitted that identifier, and every other member reads the member's words under it.
-- not reach the host at all, and ask the key holder to do the whole operation. That serves reads ([`rooms/keys/read`](../../read/0.2/spec.md), [`rooms/keys/browse`](../../browse/0.4/spec.md)), and cannot serve writes of files, whose bytes must never pass through the key holder.
+- not reach the host at all, and ask the key holder to do the whole operation. That serves reads ([`rooms/keys/read`](../../read/0.2/spec.md), [`rooms/keys/browse`](../../browse/0.5/spec.md)), and cannot serve writes of files, whose bytes must never pass through the key holder.
 
 This task is the third way. The client builds the room request it means to send, without a presentation or a proof, and hands it to the key holder. The key holder completes it **as the member**: it inserts the member's own authority narrowed to the one action the request needs and granted to the member itself, sets the member as `issuer`, and signs it with a key of the member's DID. The client sends the result to the host unchanged. The host sees the member — as the presenter, as the signer and, on an `attributed` room, as the author — and nothing of the client or of the key holder.
 

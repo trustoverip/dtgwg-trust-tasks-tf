@@ -100,7 +100,7 @@ A watch is one of two kinds:
 
 The signal carries the room and its latest version, and nothing else. What changed, who changed
 it, and on the sealed tiers even what kind of record it was, the member learns the way it always
-has: by listing the room with `sinceVersion` ([`rooms/records/list`](../../records/list/0.6/spec.md))
+has: by listing the room with `sinceVersion` ([`rooms/records/list`](../../records/list/0.7/spec.md))
 and opening what it finds. A watch adds no new way to read a room; it only says when reading is
 worth doing.
 
@@ -156,7 +156,7 @@ given up the protection a per-change signal would undo (*Live watches and the si
 A conforming **producer** (the member) **MUST**:
 
 1. Present a chain conferring `read` at the room's scope, exactly as for
-   [`rooms/records/list`](../../records/list/0.6/spec.md).
+   [`rooms/records/list`](../../records/list/0.7/spec.md).
 2. Name in `address` a DID whose keys it, or its own agent, holds, and through which it receives
    Trust Task documents. On a `private` room the address **MUST** be a DID it uses for nothing
    else: not the persona it presents as, not the address of a watch on another room, and not one

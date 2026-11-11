@@ -13,6 +13,8 @@ import (
 
 // Response Success response to rooms/keys/browse. Type
 // https://trusttasks.org/spec/rooms/keys/browse/0.4#response.
+//
+// Deprecated: superseded by rooms/keys/browse/0.5
 type Response struct {
 	RoomID string `json:"roomId"`
 
@@ -487,6 +489,8 @@ type BlobRef = DigestMultibase
 // Payload TODO: what the request payload of rooms/keys/browse carries. The outer document
 // members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the
 // framework — SPEC §6.3.
+//
+// Deprecated: superseded by rooms/keys/browse/0.5
 type Payload struct {
 	// The room to list. The recipient MUST already hold group state for it.
 	RoomID string `json:"roomId"`
@@ -527,7 +531,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by rooms/keys/browse/0.5"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/rooms/keys/browse/0.4#response"

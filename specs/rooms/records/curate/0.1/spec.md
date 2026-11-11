@@ -98,7 +98,7 @@ and epoch. Both halves matter:
 - Retaining the key and version is what makes **incremental sync converge**. A caller
   synchronising on `sinceVersion` learns about the retraction by seeing the tombstone; a
   caller that never saw it would resurrect the record on its next full rebuild. This is why
-  [`rooms/records/list`](../../list/0.6/spec.md) returns tombstones rather than filtering
+  [`rooms/records/list`](../../list/0.7/spec.md) returns tombstones rather than filtering
   them out.
 
 A host **MUST NOT** accept `status: "active"` for a retracted record. The body is gone, and

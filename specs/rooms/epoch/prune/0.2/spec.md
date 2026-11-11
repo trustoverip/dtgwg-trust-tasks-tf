@@ -63,7 +63,7 @@ related:
 
 A room's **owner** asks its **host** to drop the epoch key chain below a given epoch. Rungs below it are erased, and the history sealed under those epochs becomes unopenable — for everyone, permanently.
 
-This is the verb behind [`rooms/create`](../../../create/0.2/spec.md)'s `retentionPolicy`. A room that chose `chained` keeps its whole history readable; this is how such a room decides, later and deliberately, that some of it should stop being.
+This is the verb behind [`rooms/create`](../../../create/0.3/spec.md)'s `retentionPolicy`. A room that chose `chained` keeps its whole history readable; this is how such a room decides, later and deliberately, that some of it should stop being.
 
 Version 0.2 makes the prune **reach members**. Each member's key holder keeps its own copy of
 the chain — that is what lets it open old records without asking anybody — so erasing the

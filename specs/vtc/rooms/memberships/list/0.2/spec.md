@@ -100,7 +100,7 @@ A conforming **community** (`recipient`):
 
 A conforming **surface** (the member's own client, which builds the request and consumes the response — a member portal page through the member's wallet, a terminal client, or any other):
 
-1. **MUST** treat this list, together with its key holder's [`rooms/keys/list`](../../../../../rooms/keys/list/0.2/spec.md), as the whole of what it shows of the member's rooms in this community, and **MUST NOT** keep a record of its own of which rooms the member has accepted. It **MAY** cache either list to draw a screen, and **MUST** read both again before it acts on what it shows.
+1. **MUST** treat this list, together with its key holder's [`rooms/keys/list`](../../../../../rooms/keys/list/0.3/spec.md), as the whole of what it shows of the member's rooms in this community, and **MUST NOT** keep a record of its own of which rooms the member has accepted. It **MAY** cache either list to draw a screen, and **MUST** read both again before it acts on what it shows.
 2. **MUST** derive what it shows for each entry as *One record, every surface* sets out, and **MUST** act the same way for the same pair of answers.
 3. **MUST**, before accepting an offer on an `attributed` or `private` room, ask its key holder for the room's KeyPackage with [`rooms/keys/key-package`](../../../../../rooms/keys/key-package/0.2/spec.md) at `0.2` or later, so that an acceptance another surface began is finished with the same KeyPackage and answered with the same Welcome.
 4. **MUST** treat [`rooms/keys/welcome`](../../../../../rooms/keys/welcome/0.1/spec.md)'s `alreadyJoined` as success, for the member the invitation names: another surface finished the join first.
@@ -112,7 +112,7 @@ A conforming **surface** (the member's own client, which builds the request and 
 Two parties hold what a surface needs, and each holds a different half:
 
 - **the community** holds the admission — whether the member was offered the room, accepted it, is suspended from it, or was removed — and where the room stands, and answers this task;
-- **the member's key holder** holds the custody — whether it has the room's group state for the member, and so can open it — and answers [`rooms/keys/list`](../../../../../rooms/keys/list/0.2/spec.md).
+- **the member's key holder** holds the custody — whether it has the room's group state for the member, and so can open it — and answers [`rooms/keys/list`](../../../../../rooms/keys/list/0.3/spec.md).
 
 Neither is the surface's, and every surface reads both, so every surface reaches the same result for the same room:
 

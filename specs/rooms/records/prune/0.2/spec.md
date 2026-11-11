@@ -81,7 +81,7 @@ tombstone — and every blob only those records named is released.
 
 The rule is the room's, stated in advance and readable by every member
 ([`RecordRetention`](../../../_shared/0.2/room.schema.json), set at
-[`rooms/create`](../../../create/0.2/spec.md) and changed with
+[`rooms/create`](../../../create/0.3/spec.md) and changed with
 [`rooms/records/retention/set`](../../retention/set/0.1/spec.md), served by
 [`rooms/info`](../../../info/0.4/spec.md)). The act is the administrator's, made deliberately
 with a reason. The host does neither on its own: it measures age and removes what it is asked
@@ -141,13 +141,13 @@ A conforming **host** (`recipient`):
 
    A prune that removed nothing takes no version and leaves no mark.
 6. **MUST** return `lastPrune` thereafter wherever a response can carry it
-   ([`rooms/records/list`](../../list/0.6/spec.md) 0.3, [`rooms/keys/browse`](../../../keys/browse/0.4/spec.md)
+   ([`rooms/records/list`](../../list/0.7/spec.md) 0.3, [`rooms/keys/browse`](../../../keys/browse/0.5/spec.md)
    0.2 through it, [`rooms/info`](../../../info/0.4/spec.md) 0.2).
 7. **MUST** keep the audit trail below, and **MUST NOT** keep anything else of a removed
    record.
 8. **MUST NOT** remove a record by age in any other way — on a timer, at a quota, on a
    lapse short of reclamation — and **MUST NOT** prune on its own initiative. Reclaiming a whole
-   room after `retentionDays` ([`rooms/create`](../../../create/0.2/spec.md)) is a different
+   room after `retentionDays` ([`rooms/create`](../../../create/0.3/spec.md)) is a different
    act and is unaffected.
 
 A conforming **producer** **SHOULD** make a dry run first and show its result to whoever is
@@ -216,7 +216,7 @@ the same way a short listing is.
 
 **A prune removes records from the host, not from the world.** A member who read a record has
 it; a member's agent that cached it holds it until it next synchronises, when
-[`rooms/records/list`](../../list/0.6/spec.md) 0.3's `lastPrune` tells it to rebuild and drop
+[`rooms/records/list`](../../list/0.7/spec.md) 0.3's `lastPrune` tells it to rebuild and drop
 what is gone. An export is beyond the room entirely. On the sealed tiers the ciphertext of a
 removed record may survive in a backup, a mirror or a store that publishes ciphertext; to make
 such copies unreadable, the room prunes its key chain

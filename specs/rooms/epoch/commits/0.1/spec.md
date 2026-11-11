@@ -87,7 +87,7 @@ A host **MUST** return the commits above `sinceEpoch` in ascending epoch order. 
 
 It is deliberately **not** `sinceEpoch` plus the number of commits returned, and a consumer **MUST NOT** compute it that way.
 
-The two differ whenever the host is missing a commit or the page ended early, and **that difference is the useful part**: a member who applies everything served and finds themselves still behind knows a delivery is missing, rather than concluding their own group state is broken. That is the distinction [`rooms/keys/list`](../../../keys/list/0.2/spec.md) already draws between "a commit was not delivered" and "the key chain has not arrived", and it needs the same care.
+The two differ whenever the host is missing a commit or the page ended early, and **that difference is the useful part**: a member who applies everything served and finds themselves still behind knows a delivery is missing, rather than concluding their own group state is broken. That is the distinction [`rooms/keys/list`](../../../keys/list/0.3/spec.md) already draws between "a commit was not delivered" and "the key chain has not arrived", and it needs the same care.
 
 ## What this does not do
 

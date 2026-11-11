@@ -981,6 +981,9 @@ mod messaging {
         mod attach {
             mod v0_1;
         }
+        mod connections {
+            mod v0_1;
+        }
         mod detach {
             mod v0_1;
         }
@@ -1246,6 +1249,7 @@ mod rooms {
     mod create {
         mod v0_1;
         mod v0_2;
+        mod v0_3;
     }
     mod epoch {
         mod chain {
@@ -1293,6 +1297,7 @@ mod rooms {
             mod v0_2;
             mod v0_3;
             mod v0_4;
+            mod v0_5;
         }
         mod chain {
             mod v0_1;
@@ -1315,6 +1320,7 @@ mod rooms {
         mod list {
             mod v0_1;
             mod v0_2;
+            mod v0_3;
         }
         mod profile {
             mod read {
@@ -1328,6 +1334,14 @@ mod rooms {
             mod v0_1;
             mod v0_2;
             mod v0_3;
+        }
+        mod read_marker {
+            mod moved {
+                mod v0_1;
+            }
+            mod set {
+                mod v0_1;
+            }
         }
         mod seal {
             mod v0_1;
@@ -1377,6 +1391,7 @@ mod rooms {
         mod register {
             mod v0_1;
             mod v0_2;
+            mod v0_3;
         }
         mod revoke {
             mod v0_1;
@@ -1394,6 +1409,7 @@ mod rooms {
             mod v0_4;
             mod v0_5;
             mod v0_6;
+            mod v0_7;
         }
         mod prune {
             mod v0_1;
