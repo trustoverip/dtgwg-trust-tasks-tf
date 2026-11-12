@@ -5393,7 +5393,7 @@ dependencies = [
  "serde",
  "serde-saphyr",
  "serde_json",
- "sha2 0.10.9",
+ "sha2 0.11.0",
  "syn 2.0.117",
  "toml",
  "typify",
@@ -5420,7 +5420,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_json_canonicalizer 0.4.1",
- "sha2 0.10.9",
+ "sha2 0.11.0",
  "thiserror",
 ]
 
@@ -5434,7 +5434,7 @@ dependencies = [
  "rustls",
  "serde",
  "serde_json",
- "sha2 0.10.9",
+ "sha2 0.11.0",
  "tempfile",
  "toml",
  "toml_edit",
