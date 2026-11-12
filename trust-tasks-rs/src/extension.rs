@@ -730,7 +730,7 @@ mod tests {
         .to_string()
     }
 
-    fn chain(depth: u32, extra: bool) -> Value {
+    fn nested_chain(depth: u32, extra: bool) -> Value {
         let mut v = json!({ "v": 0 });
         if extra {
             v["added"] = json!(true);
@@ -746,40 +746,33 @@ mod tests {
 
     #[test]
     fn a_shallow_payload_is_pruned_within_the_work_limit() {
-        let mut payload = chain(3, true);
+        let mut payload = nested_chain(3, true);
         prune_payload(&mut payload, &fan_out_schema());
-        assert_eq!(payload, chain(3, false));
+        assert_eq!(payload, nested_chain(3, false));
     }
 
     #[test]
     fn a_payload_beyond_the_work_limit_is_left_as_it_was() {
         let started = std::time::Instant::now();
-        let mut payload = chain(40, true);
+        let mut payload = nested_chain(40, true);
         prune_payload(&mut payload, &fan_out_schema());
-        assert_eq!(payload, chain(40, true));
+        assert_eq!(payload, nested_chain(40, true));
         assert!(started.elapsed() < std::time::Duration::from_secs(5));
     }
 
     #[test]
     fn a_forward_read_beyond_the_work_limit_is_refused_as_malformed() {
-        let doc: TrustTask<Value> = serde_json::from_value(json!({
-            "id": "req-ext",
-            "type": "https://trusttasks.org/spec/acl/show/0.9",
-            "issuer": "did:web:org.example",
-            "recipient": "did:web:maintainer.example",
-            "payload": chain(40, true),
-        }))
-        .unwrap();
-        let schema = fan_out_schema();
-        let err = forward::<crate::specs::acl::show::v0_2::Payload>(doc, Some(&schema))
-            .err()
-            .expect("refused");
+        let mut payload = nested_chain(40, true);
+        let err = prune_forward(&mut payload, &fan_out_schema()).expect_err("refused");
         match err {
             RejectReason::MalformedRequest { reason } => {
                 assert!(reason.contains("too complex to re-read"), "{reason}")
             }
             other => panic!("expected MalformedRequest, got {other:?}"),
         }
+        let mut shallow = nested_chain(3, true);
+        prune_forward(&mut shallow, &fan_out_schema()).unwrap();
+        assert_eq!(shallow, nested_chain(3, false));
     }
 
     #[test]

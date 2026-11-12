@@ -487,11 +487,13 @@ describe("prunePayload work limit", () => {
     return v;
   };
 
+  // 25 levels is inside the walk's 64-deep schema limit (each level is two
+  // steps deep), and 4^25 prunes without the memo.
   it("decides each nested oneOf once, so a deep recursive payload prunes in linear-ish time", () => {
     const started = Date.now();
-    const pruned = prunePayload(nested(60, true), exprSchema);
-    assert.deepEqual(pruned, nested(60, false));
-    assert.ok(Date.now() - started < 5_000, "pruning a 60-level expression should not take seconds");
+    const pruned = prunePayload(nested(25, true), exprSchema);
+    assert.deepEqual(pruned, nested(25, false));
+    assert.ok(Date.now() - started < 5_000, "pruning a 25-level expression should not take seconds");
   });
 
   // Two applicators naming the same recursive member make every level prune
