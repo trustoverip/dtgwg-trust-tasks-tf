@@ -32,6 +32,7 @@ Future<ConsumeOutcome<acl_grant.Response>> consume(
     now: DateTime.parse('2026-01-01T00:00:30Z'),
     newErrorId: () => 'urn:uuid:9b2c1e34-0000-4000-8000-0000000000ff',
     payloadToJson: (p) => p.toJson(),
+    responseToJson: (r) => r.toJson(),
     handler: (accepted, parties) async =>
         respondWith<acl_grant.Payload, acl_grant.Response>(
       accepted,

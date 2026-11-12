@@ -8,6 +8,9 @@ library;
 import 'dart:async';
 import 'dart:io';
 
+import 'package:trust_tasks/trust_tasks.dart'
+    show InternalFailure, emitServerEvent;
+
 import 'trust_tasks_https.dart';
 
 export 'trust_tasks_https.dart';
@@ -54,7 +57,11 @@ Future<void> handleIoRequest(
     if (body != null) response.add(body);
   } on TimeoutException {
     response.statusCode = HttpStatus.requestTimeout;
-  } on Object {
+  } on Object catch (error, stackTrace) {
+    emitServerEvent(
+      server.onEvent,
+      InternalFailure(error: error, stackTrace: stackTrace),
+    );
     response.statusCode = HttpStatus.internalServerError;
   }
   try {
@@ -66,14 +73,17 @@ Future<void> handleIoRequest(
 
 Future<HttpsReply> _answer(HttpsServer server, HttpRequest request) async {
   // Check the declared length before reading a byte, then enforce the limit
-  // while reading, since a chunked body declares none.
-  if (request.contentLength > maxBodyBytes) {
+  // while reading, since a chunked body declares none. The limit is the
+  // server's: the largest bound among its registered specifications, never
+  // under its default (HttpsServer.bodyLimitBytes).
+  final limit = server.bodyLimitBytes;
+  if (request.contentLength > limit) {
     return const HttpsReply(HttpStatus.requestEntityTooLarge);
   }
   final body = <int>[];
   await for (final chunk in request) {
     body.addAll(chunk);
-    if (body.length > maxBodyBytes) {
+    if (body.length > limit) {
       return const HttpsReply(HttpStatus.requestEntityTooLarge);
     }
   }

@@ -60,4 +60,37 @@ void main() {
     await response.drain<void>();
     raw.close(force: true);
   });
+
+  test('reads past 256 KiB when a registered specification declares more',
+      () async {
+    const bigType = 'https://trusttasks.org/spec/example/big/0.1';
+    final big = HttpsServer(
+      localVid: server,
+      auth: StaticBearerAuth({aliceToken: alice}),
+      clock: () => fixedNow,
+    )..on<Echo, Echo>(
+        spec: const SpecPolicy(typeUri: bigType, maxDocumentBytes: 400 * 1024),
+        decode: Echo.fromJson,
+        encode: (p) => p.toJson(),
+        encodeResponse: (r) => r.toJson(),
+        handler: (doc, ctx) async => const Echo('ok'),
+      );
+    final bigHttp = await serve(big);
+    final raw = HttpClient();
+    try {
+      final request = await raw.postUrl(Uri.parse(
+          'http://${bigHttp.address.host}:${bigHttp.port}/trust-tasks'));
+      request.headers.contentType = ContentType.json;
+      request.headers.set('authorization', 'Bearer $aliceToken');
+      request.add(utf8.encode(jsonEncode(
+        echoDoc(type: bigType, text: 'x' * (300 * 1024)),
+      )));
+      final response = await request.close();
+      expect(response.statusCode, 200);
+      await response.drain<void>();
+    } finally {
+      raw.close(force: true);
+      await bigHttp.close(force: true);
+    }
+  });
 }

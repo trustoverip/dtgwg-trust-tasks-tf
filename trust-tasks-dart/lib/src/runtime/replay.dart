@@ -72,8 +72,9 @@ final class Fresh extends ReplayVerdict {
 final class Duplicate extends ReplayVerdict {
   const Duplicate({this.priorResponse, this.inFlight = false});
 
-  /// The response the first execution produced, where one was retained.
-  final Object? priorResponse;
+  /// The response document the first execution produced, as the JSON map
+  /// [ReplayGuard.recordResponse] was given, where one was retained.
+  final Map<String, dynamic>? priorResponse;
 
   /// Whether that first execution is still running.
   final bool inFlight;
@@ -125,11 +126,12 @@ abstract interface class ReplayGuard {
   /// happen twice — and is the right shape for a fire-and-forget specification,
   /// which has no response to return.
   ///
-  /// [response] is a JSON map for a refusal, and for a success when the caller
-  /// passed `responseToJson` to `consumeInbound`; otherwise a success arrives
-  /// as the [TrustTaskDocument] itself. A guard that persists the response
-  /// needs the map, so its callers must pass `responseToJson`.
-  Future<void> recordResponse(String id, Object? response);
+  /// [response] is always the response document as a JSON map — a success
+  /// response or an error response — or null when there is none to return
+  /// (a fire-and-forget specification). So a guard that persists the record
+  /// can store it as it is, and hand it back unchanged as
+  /// [Duplicate.priorResponse].
+  Future<void> recordResponse(String id, Map<String, dynamic>? response);
 
   /// Release a claim whose execution is not to stand — for example a refusal the
   /// consumer marked `retryable`, where §8.4 has just invited the producer to
@@ -184,7 +186,7 @@ class _Entry {
   final String? issuer;
   final String digest;
   final DateTime? retainUntil;
-  Object? response;
+  Map<String, dynamic>? response;
   bool completed = false;
 }
 
@@ -392,7 +394,7 @@ class InMemoryReplayGuard implements IssuerScopedReplayGuard {
   }
 
   @override
-  Future<void> recordResponse(String id, Object? response) async {
+  Future<void> recordResponse(String id, Map<String, dynamic>? response) async {
     final entry = _entries[id];
     if (entry == null) return;
     entry.response = response;
