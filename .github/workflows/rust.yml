@@ -38,6 +38,10 @@ on:
       - "Cargo.toml"
       - "Cargo.lock"
       - "specs/**"
+      # The shared cross-runtime vectors (fixtures/consume, fixtures/proof)
+      # are read by trust-tasks-rs's integration tests, so a change to one
+      # must run them.
+      - "fixtures/**"
       # GETTING-STARTED.md's Rust is asserted equal to
       # examples/getting-started/src/main.rs by a test in trust-tasks,
       # so a doc-only edit still has to run cargo test.
