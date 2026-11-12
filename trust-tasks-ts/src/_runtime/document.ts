@@ -244,14 +244,48 @@ export const TRUST_TASK_ERROR_TYPE_URI = "https://trusttasks.org/spec/trust-task
  * as *local* time and accepts forms RFC 3339 does not (a bare date, `Jan 1
  * 2026`). The Rust and Go runtimes refuse both, and an instant that depends on
  * the consumer's time zone is not one instant at all.
+ *
+ * Every field must also be in range: month 1-12, a day the month has (leap
+ * years included), hour 0-23, minute and second 0-59 (no leap second), and an
+ * offset of at most 23:59. `Date.parse` rolls `2026-02-30` over into March and
+ * reads `24:00` as the next day, so it is only consulted once the fields are
+ * known to name a real instant. The Rust, Go and Dart runtimes apply the same
+ * ranges, and `fixtures/consume/timestamps.json` holds the shared cases.
  */
 export function parseRfc3339(value: string): number {
-  if (!RFC3339.test(value)) return NaN;
+  const m = RFC3339.exec(value);
+  if (m === null) return NaN;
+  const [year, month, day, hour, minute, second] = m.slice(1, 7).map(Number) as [
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+  ];
+  if (
+    month < 1 ||
+    month > 12 ||
+    day < 1 ||
+    day > daysInMonth(year, month) ||
+    hour > 23 ||
+    minute > 59 ||
+    second > 59
+  ) {
+    return NaN;
+  }
+  if (m[8] !== undefined && (Number(m[9]) > 23 || Number(m[10]) > 59)) return NaN;
   return Date.parse(value.toUpperCase());
 }
 
 const RFC3339 =
-  /^\d{4}-\d{2}-\d{2}[Tt]\d{2}:\d{2}:\d{2}(\.\d+)?([Zz]|[+-]\d{2}:\d{2})$/;
+  /^(\d{4})-(\d{2})-(\d{2})[Tt](\d{2}):(\d{2}):(\d{2})(\.\d+)?(?:[Zz]|([+-])(\d{2}):(\d{2}))$/;
+
+/** Days in `month` (1-12) of the proleptic Gregorian `year`. */
+function daysInMonth(year: number, month: number): number {
+  if (month === 2) return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0 ? 29 : 28;
+  return month === 4 || month === 6 || month === 9 || month === 11 ? 30 : 31;
+}
 
 export function validateBasic<P>(
   doc: TrustTaskDocument<P>,

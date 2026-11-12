@@ -113,11 +113,6 @@ func NewVerifier(opts ...Option) *Verifier {
 	return v
 }
 
-// dateTimeStamp matches an XSD dateTimeStamp: a date-time with an explicit zone
-// designator (Z or ±hh:mm). An offset-less value is refused, not read as local
-// time — as the Rust and TypeScript verifiers refuse it.
-var dateTimeStamp = regexp.MustCompile(`^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$`)
-
 // Verify implements trusttasks.ProofVerifier. It returns nil when doc's proof
 // verifies against the in-band issuer, and a typed *[Error] otherwise. It never
 // panics on malformed input.
@@ -182,13 +177,15 @@ func (v *Verifier) Verify(_ context.Context, doc json.RawMessage) error {
 
 	// created, when present, is a dateTimeStamp within the skew allowance.
 	if created, hasCreated := proof["created"]; hasCreated {
+		// Every field in range, as for expires: time.Parse alone takes an
+		// offset of +24:00 or +23:60.
 		s, ok := created.(string)
-		if !ok || !dateTimeStamp.MatchString(s) {
-			return failf(MalformedProof, "proof.created must be a dateTimeStamp with Z or an offset: %v", created)
+		var t time.Time
+		if ok {
+			t, ok = parseDateTimeStamp(s)
 		}
-		t, perr := time.Parse(time.RFC3339, s)
-		if perr != nil {
-			return failf(MalformedProof, "proof.created does not parse: %v", perr)
+		if !ok {
+			return failf(MalformedProof, "proof.created must be a dateTimeStamp with Z or an offset: %v", created)
 		}
 		if t.After(v.now().Add(v.clockSkew)) {
 			return failf(MalformedProof, "proof.created is more than %s in the future", v.clockSkew)

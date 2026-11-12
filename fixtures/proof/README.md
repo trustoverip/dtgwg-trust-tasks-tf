@@ -11,6 +11,8 @@ The `purpose-` and `expired` entries are correctly signed and must still fail: a
 
 The `expires-` entries carry an `expires` whose fields are out of range (February 30, hour 24, a leap second, offsets beyond ±14:00 or with minute 60). Each runtime checks the ranges itself after the shared pattern, because each language's date parser accepts or rolls over a different subset. `expires-future` is valid, with a Rust exception: see `exceptions` in its manifest entry.
 
+The `created-` entries carry a `created` out of range in the same ways (February 30, hour 24, month 13, a leap second, an offset of 24 hours). Every runtime applies the `expires` ranges to `created` too. Before, TypeScript accepted month 13, because `Date.parse` gives `NaN` and `NaN` is never later than the clock-skew horizon. Dart rolled it over, and Go accepted `+24:00`.
+
 The `small-order-key`, `non-canonical-key` and `mixed-order-r` entries pin Ed25519 strictness. Every verifier refuses a public key of small order or a non-canonical encoding, and checks the cofactorless equation.
 
 An entry's optional `exceptions` object names a runtime whose result differs today, with the reason. That runtime's test asserts the exception, so the test fails once the gap is fixed and the exception can be deleted.

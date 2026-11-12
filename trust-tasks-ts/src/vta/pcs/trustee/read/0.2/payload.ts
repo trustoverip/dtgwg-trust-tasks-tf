@@ -50,8 +50,7 @@ export interface VTAPCSTrusteeReadResponsePayload {
 export interface ReadDocument {
   id: string;
   type:
-    | "https://trusttasks.org/spec/voting/trustees/status/0.1"
-    | "https://trusttasks.org/spec/voting/election/show/0.2";
+    "https://trusttasks.org/spec/voting/trustees/status/0.1" | "https://trusttasks.org/spec/voting/election/show/0.2";
   /**
    * The request's `trustee`.
    */

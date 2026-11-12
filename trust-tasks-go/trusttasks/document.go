@@ -26,6 +26,7 @@ package trusttasks
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
 	"time"
 )
@@ -617,8 +618,26 @@ func bareTypeURI(typeURI string) string {
 
 // parseTimestamp reads an RFC 3339 timestamp, accepting the fractional-second
 // form every producer in this ecosystem emits.
+//
+// Every field must be in range: month 1-12, a day the month has, hour 0-23,
+// minute and second 0-59 (no leap second), and an offset of at most 23:59.
+// time.Parse refuses all of these but the offset, where it accepts +24:00 and
+// +23:60, so the offset is checked here. The Rust, TypeScript and Dart
+// runtimes apply the same ranges, and fixtures/consume/timestamps.json holds
+// the shared cases.
 func parseTimestamp(s string) (time.Time, error) {
-	return time.Parse(time.RFC3339, s)
+	t, err := time.Parse(time.RFC3339, s)
+	if err != nil {
+		return time.Time{}, err
+	}
+	if n := len(s); n >= 6 && (s[n-6] == '+' || s[n-6] == '-') && s[n-3] == ':' {
+		hours := int(s[n-5]-'0')*10 + int(s[n-4]-'0')
+		minutes := int(s[n-2]-'0')*10 + int(s[n-1]-'0')
+		if hours > 23 || minutes > 59 {
+			return time.Time{}, fmt.Errorf("parsing time %q: time zone offset out of range", s)
+		}
+	}
+	return t, nil
 }
 
 func strPtr(s string) *string { return &s }
