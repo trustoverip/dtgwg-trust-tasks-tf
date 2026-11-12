@@ -79,8 +79,9 @@ pub use async_dispatch::AsyncDispatcher;
 pub use canonical::{canonical_json, sha256_hex};
 pub use ceremony::{Ceremony, CeremonyPrev};
 pub use consume::{
-    consume_dispatched, consume_inbound, ConsumeChecks, ConsumeOutcome, NoValidator, PayloadPolicy,
-    PayloadValidator, ProofPolicy, PROOF_NOT_ACCEPTED_BY_POLICY,
+    consume_dispatched, consume_dispatched_answer, consume_inbound, AnswerOutcome, ConsumeChecks,
+    ConsumeOutcome, NoValidator, PayloadPolicy, PayloadValidator, ProofPolicy,
+    PROOF_NOT_ACCEPTED_BY_POLICY,
 };
 pub use dispatcher::Dispatcher;
 pub use document::{

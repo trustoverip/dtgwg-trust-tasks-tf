@@ -521,6 +521,16 @@ needs the type-erased half of every binding:
   cannot hold **before** the item-11 record is written, and otherwise runs
   `consume_inbound`'s own body (`consume_core`). Do not give it a second copy
   of the checks. The synchronous `Dispatcher` has no such path.
+  `consume_dispatched_answer` is the same function for a dispatcher whose
+  handlers answer with something other than a response document — an
+  `Option`, where `None` acknowledges a fire-and-forget task and is recorded
+  as *no response*. **`trust-tasks-https`'s server is built on it** (#1089):
+  the server keeps only the body limit, content type, bearer auth and status
+  mapping, and every check it had alone is a `ConsumeChecks` option —
+  `require_attribution`, `proof_did_methods`, `received_bytes` (the per-type
+  `maxDocumentBytes` bound) — and the identity-first order with no
+  authenticated sender is `consume_core`'s own. A check a binding needs goes
+  there, not into the binding.
 - **TypeScript, Go, Dart.** No dispatcher: their consume functions take the
   specification's policy as a value (`spec`), and their binding unpack is
   already untyped, so the caller unpacks, looks up the spec for `type`, and
@@ -865,14 +875,20 @@ are not obvious:
   `HttpsReply` out); `dart:io` lives only in `lib/io.dart`. Keep it that way:
   importing `dart:io` from the main library would take the web away from the
   client, which is the half a Flutter web app wants.
-- **Its request pipeline mirrors `trust-tasks-https/src/server.rs` step for
-  step**, including running expiry, freshness and identity (in §7.2 order, as
+- **Its request pipeline mirrors the Rust HTTPS server's as it was before
+  #1089**, including running expiry, freshness and identity (in §7.2 order, as
   `consumeInbound` does — except that with no authenticated sender identity
   runs first, so a misaddressed document stays suppressed per §8.1) *before*
   the attribution gate — `consumeInbound`
   repeats them afterwards, harmlessly. A reorder in one server changes which
   code a document that fails two checks is refused with, and the servers would
-  then disagree with each other and with `consumeInbound`.
+  then disagree with each other and with `consumeInbound`. ⚠️ The Rust server
+  now runs `consume_dispatched_answer` (see "Consumers that route on the Type
+  URI"), so the two currently differ: Rust routes forward along `extends` and
+  answers `unsupportedVersion`, enforces each type's `maxDocumentBytes`, parses
+  the payload and applies the per-spec policy *before* the item-11 claim, and
+  records a handler's non-retryable refusal. Bringing this server into line is
+  the Dart half of #1117/#1121 (decision brief group D).
 - **Proofs are verified over the JSON as received**, not the typed re-encoding
   `consumeInbound` would hand the verifier, which drops payload members the
   generated type does not model and so breaks valid signatures.

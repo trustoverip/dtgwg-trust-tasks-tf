@@ -7,6 +7,16 @@
 //! is consulted before framework validation; the resulting VID becomes the
 //! transport-authenticated sender for §4.8.1 precedence.
 //!
+//! ## One pipeline
+//!
+//! The server owns only what is HTTP: the body limit, the content type, the
+//! bearer token and the mapping of an outcome onto a status line. Every
+//! framework check — routing, the per-spec policy, freshness, identity, the
+//! attribution gate, the proof, the §7.2 item 11 record — is
+//! [`trust_tasks_rs::consume_dispatched_answer`], the pipeline every other
+//! Rust binding runs, configured through [`ConsumeChecks`]. The same document
+//! gets the same answer whichever Rust entry point receives it.
+//!
 //! ## Request pipeline order
 //!
 //! The order below is load-bearing, not incidental. Every step that can
@@ -15,28 +25,41 @@
 //! is an outbound HTTPS request to a host named in the request body —
 //! runs **after** the cheap, local rejections:
 //!
-//! 1. `Content-Type` must be `application/json` (binding spec §2), else 415.
-//! 2. Body parses as a Trust Task document.
-//! 3. Bearer token → transport-authenticated peer (local lookup).
-//! 4. **Route lookup** — an unregistered `type` is `unsupportedType` here,
-//!    before anything else touches the network.
-//! 5. `validate_basic` (expiry, recipient), the **freshness bound** over
+//! 1. The body is buffered under the limit [`HttpsServer::into_router`]
+//!    applies (413 past it).
+//! 2. `Content-Type` must be `application/json` (binding spec §2), else 415.
+//! 3. Body parses as a Trust Task document.
+//! 4. Bearer token → transport-authenticated peer ([`AsyncAuth`]).
+//! 5. **Route lookup** (§7.2 item 3) — an unregistered slug is
+//!    `unsupportedType`, a registered slug at a version that neither has a
+//!    handler nor reaches one along its declared `extends` chain is
+//!    `unsupportedVersion`, and a version that does reach one is routed to it
+//!    with its payload pruned (SPEC §5.2). Before anything touches the network.
+//! 6. The **per-type size bound**: a document larger than the `maxDocumentBytes`
+//!    its specification declares — [`MAX_BODY_BYTES`] for one that declares
+//!    none — is `malformedRequest`.
+//! 7. The payload deserializes into the registered type, and, with
+//!    [`HttpsServerBuilder::with_payload_validator`], passes its schema
+//!    (§7.2 item 2).
+//! 8. `validate_basic` (expiry, recipient), the **freshness bound** over
 //!    `issuedAt` / `expiresAt` (§7.2 item 13) — see
-//!    [`HttpsServerBuilder::freshness`] — and `resolve_parties` (§4.8.1), in
-//!    `consume_inbound`'s order. With no authenticated peer, `resolve_parties`
-//!    runs first, so a misaddressed document is suppressed (§8.1).
-//! 6. **Attribution gate** — see [`HttpsServerBuilder::require_attribution`].
-//! 7. `proof.verificationMethod` DID-method pre-screen — see
-//!    [`HttpsServerBuilder::allowed_did_methods`]. With a verifier
-//!    configured and no explicit choice, only `did:key` passes.
-//! 8. Proof verification (the only step that may egress).
-//! 9. **Duplicate-execution claim** (§7.2 item 11) — see
-//!    [`HttpsServerBuilder::replay_protection`].
-//! 10. Per-spec policy + the registered handler.
+//!    [`HttpsServerBuilder::freshness`] — and `resolve_parties` (§4.8.1). With
+//!    no authenticated peer, `resolve_parties` runs first, so a misaddressed
+//!    document is suppressed (§8.1).
+//! 9. **Attribution gate** — see [`HttpsServerBuilder::require_attribution`].
+//! 10. `proof.verificationMethod` DID-method pre-screen — see
+//!     [`HttpsServerBuilder::allowed_did_methods`]. With a verifier
+//!     configured and no explicit choice, only `did:key` passes.
+//! 11. Proof verification, over the body as received (the only step that may
+//!     egress).
+//! 12. Per-spec policy (§7.2 items 5b, 7A, 8; §7.3 item 17).
+//! 13. **Duplicate-execution claim** (§7.2 item 11) — see
+//!     [`HttpsServerBuilder::replay_protection`].
+//! 14. The registered handler.
 //!
 //! ## Where the replay claim sits, and why
 //!
-//! Step 9 is the `validated → accepted` transition: the last instant at
+//! Step 13 is the `validated → accepted` transition: the last instant at
 //! which the server can still refuse a document for a reason that has nothing
 //! to do with having seen it before, and the first at which it has committed
 //! to execute. Claiming any earlier would write a record for documents the
@@ -46,12 +69,35 @@
 //! merely observed. Claiming any later is not a claim at all: the effect
 //! would already have happened.
 //!
-//! The one check that runs *after* the claim is the per-spec policy inside
-//! the dispatch closure (`enforce_spec_policy`), which needs the typed
-//! payload the closure alone can produce. A refusal there releases the claim
-//! (see [`ReplayGuard::release`]), so nothing is burned by it either.
+//! What the handler answers settles the claim as `consume_inbound` settles
+//! it: a success is recorded and a duplicate answered with it; a
+//! **retryable** refusal releases the claim, so the bit-for-bit resend SPEC
+//! §8.4 invites is evaluated afresh; a **non-retryable** refusal is the
+//! determination for that document, recorded and returned to a resend with
+//! its own status. A handler that panics, or whose request is abandoned
+//! mid-handler, releases the claim.
+//!
+//! ## Handlers and blocking
+//!
+//! [`HttpsServerBuilder::on_async`] / [`HttpsServerBuilder::on_ack_async`]
+//! register handlers that `await` — a database, an ACL store, a signing
+//! service. [`HttpsServerBuilder::on`] / [`HttpsServerBuilder::on_ack`] take
+//! a synchronous closure, which may block: on a multi-threaded Tokio runtime
+//! it runs under [`tokio::task::block_in_place`], so the worker's other tasks
+//! move elsewhere while it does; on a current-thread runtime it runs inline.
+//!
+//! Not `spawn_blocking`, deliberately. A request abandoned by the
+//! [`TimeoutLayer`] (or a client disconnect) releases its item-11 claim, and a
+//! closure on the blocking pool would carry on executing after the release —
+//! so a resend could execute the effect a second time while the first was
+//! still running. A synchronous handler therefore runs to completion inside
+//! its request, and [`HttpsServerBuilder::request_timeout`] does **not**
+//! bound it: the timeout fires only at an `await`. Write a handler that can
+//! take long as an async one.
 
-use std::collections::{BTreeSet, HashMap};
+use std::collections::BTreeSet;
+use std::future::Future;
+use std::pin::Pin;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, OnceLock};
 use std::time::Duration;
@@ -69,15 +115,15 @@ use tower::limit::ConcurrencyLimitLayer;
 use tower::timeout::TimeoutLayer;
 use tower::ServiceBuilder;
 use trust_tasks_rs::{
-    discovery::DiscoveryRegistry, erase_verifier, received_document_digest,
-    specs::trust_task_discovery::v0_4 as discovery, DocumentDigest, DynProofVerifier, ErrorPayload,
-    ErrorResponse, FreshnessPolicy, InMemoryReplayGuard, Payload, ProofVerifier, RejectReason,
-    ReplayGuard, ReplayVerdict, RequestPayload, ResolvedParties, StaleReason, StandardCode,
-    TransportHandler, TrustTask, PROOF_NOT_ACCEPTED_BY_POLICY,
+    consume_dispatched_answer, discovery::DiscoveryRegistry, erase_verifier,
+    specs::trust_task_discovery::v0_4 as discovery, AnswerOutcome, AsyncDispatcher, ConsumeChecks,
+    DynProofVerifier, ErrorPayload, ErrorResponse, FreshnessPolicy, InMemoryReplayGuard, Payload,
+    PayloadPolicy, PayloadValidator, ProofPolicy, ProofVerifier, RejectReason, ReplayGuard,
+    ReplayPolicy, RequestPayload, ResolvedParties, TransportHandler, TrustTask,
 };
 use uuid::Uuid;
 
-use crate::auth::{Auth, BearerAuth};
+use crate::auth::{AsyncAuth, BearerAuth};
 
 // --- trust-task-discovery 0.1 / 0.2 / 0.3 (superseded) ----------------------
 // 0.1 and 0.2 are superseded by 0.3 and served until they are withdrawn; the
@@ -88,12 +134,18 @@ mod superseded_discovery;
 use crate::handler::HttpsHandler;
 use crate::status::status_for_code;
 
-/// Maximum accepted request-body size (SPEC §12.2), applied by
-/// [`HttpsServer::into_router`]. Trust Task payloads are small; 256 KiB is
-/// generous headroom while bounding pre-auth memory use. Callers needing a
-/// different bound can rebuild the router with their own
-/// [`DefaultBodyLimit`] layer — which is why the value is public: a caller
-/// replacing the layer wants to know what it is replacing.
+/// The transport bound on a Trust Task document (SPEC §12.2, §12.4): the
+/// smallest request-body limit [`HttpsServer::into_router`] applies, and the
+/// size bound held against a document whose specification declares no
+/// `maxDocumentBytes`. Trust Task payloads are small; 256 KiB is generous
+/// headroom while bounding pre-auth memory use.
+///
+/// The router's limit is the larger of this and the largest
+/// `maxDocumentBytes` among the registered request types
+/// ([`Payload::MAX_DOCUMENT_BYTES`]) — so a server that registers a task
+/// whose specification promises to accept a larger document can, and one
+/// that does not never buffers more than this — unless
+/// [`HttpsServerBuilder::max_body_bytes`] sets it outright.
 pub const MAX_BODY_BYTES: usize = 256 * 1024;
 
 /// Default per-request wall-clock budget applied by [`HttpsServer::into_router`].
@@ -127,40 +179,36 @@ pub struct RequestContext {
     pub resolved: ResolvedParties,
 }
 
-/// A spec-specific handler stored type-erased in the dispatch table.
-///
-/// Inputs: the parsed (but untyped) inbound document and the request
-/// context. Output: the JSON body of a success response (a fully-formed
-/// `#response` document); `None` where the specification defines no success
-/// response and the handler acknowledged instead; or a [`RejectReason`] the
-/// server converts into a `trust-task-error` response via §8.1 routing.
-///
-/// `Option` rather than an empty `Value`: SPEC §4.4.1 distinguishes "a
-/// `#response` document whose payload happens to be empty" from "this
-/// specification defines no response at all", and the two earn different
-/// statuses (200 with a body, 204 without). Collapsing them would make a
-/// fire-and-forget acknowledgement indistinguishable on the wire from a
-/// `#response` carrying `{}`.
-type DispatchFn = Box<
-    dyn Fn(TrustTask<Value>, &RequestContext) -> Result<Option<Value>, RejectReason> + Send + Sync,
->;
+/// What a registered handler answers once the pipeline has accepted the
+/// document: the JSON body of a `#response` document, `None` where the
+/// specification defines no success response and the handler acknowledged
+/// (SPEC §4.4.1 — 204, and recorded as *no response*, so a duplicate is
+/// absorbed in silence), or the §8.1-routed error document of a refusal.
+type Answer = Result<Option<Value>, ErrorResponse>;
 
-struct Route {
-    dispatch: DispatchFn,
-}
+/// The routing table: every handler, behind the dispatcher the pipeline
+/// routes, prunes and polices with.
+type Routes = AsyncDispatcher<RequestContext, Answer>;
+
+/// A handler's own outcome, before the server wraps it: the response body (or
+/// `None` for an acknowledgement), or a refusal.
+type HandlerFuture = Pin<Box<dyn Future<Output = Result<Option<Value>, RejectReason>> + Send>>;
 
 /// Internal state shared by every axum request handler.
 struct ServerState {
     local_vid: Option<String>,
-    auth: Box<dyn Auth>,
-    routes: HashMap<String, Route>,
+    auth: Box<dyn AsyncAuth>,
+    routes: Routes,
     verifier: Option<Arc<dyn DynProofVerifier>>,
+    payload_validator: Option<Box<dyn PayloadValidator + Send + Sync>>,
     require_attribution: bool,
     allowed_did_methods: Option<BTreeSet<String>>,
     /// `None` only when the deployment called
     /// `replay_protection(false)` — see that method's warning.
     replay_guard: Option<Arc<dyn ReplayGuard>>,
     freshness: FreshnessPolicy,
+    /// The bound for a document whose specification declares none.
+    default_document_bound: usize,
 }
 
 /// Which DID methods `proof.verificationMethod` may name, as configured.
@@ -184,9 +232,13 @@ pub const DEFAULT_ALLOWED_DID_METHODS: &[&str] = &["key"];
 /// Builder for [`HttpsServer`].
 pub struct HttpsServerBuilder {
     local_vid: Option<String>,
-    auth: Option<Box<dyn Auth>>,
-    routes: HashMap<String, Route>,
+    auth: Option<Box<dyn AsyncAuth>>,
+    routes: Routes,
+    /// The largest `maxDocumentBytes` among the registered request types.
+    largest_declared_bound: usize,
+    max_body_bytes: Option<usize>,
     verifier: Option<Arc<dyn DynProofVerifier>>,
+    payload_validator: Option<Box<dyn PayloadValidator + Send + Sync>>,
     require_attribution: bool,
     did_methods: DidMethodPolicy,
     replay_protection: bool,
@@ -213,29 +265,30 @@ impl HttpsServerBuilder {
         self
     }
 
-    /// Plug in an [`Auth`] implementation. Defaults to a [`BearerAuth`]
-    /// with no tokens — every request is treated as unauthenticated and
-    /// the framework falls back entirely to in-band identity.
-    pub fn with_auth(mut self, auth: impl Auth) -> Self {
+    /// Plug in an authenticator. Defaults to a [`BearerAuth`] with no tokens
+    /// — every request is treated as unauthenticated and the framework falls
+    /// back entirely to in-band identity.
+    ///
+    /// Takes any [`AsyncAuth`], which every [`Auth`](crate::Auth) is: a
+    /// synchronous lookup (a token map, a JWT signature check) is called
+    /// directly, and one that must `await` — a session store, an
+    /// introspection endpoint — implements [`AsyncAuth`] itself.
+    pub fn with_auth(mut self, auth: impl AsyncAuth) -> Self {
         self.auth = Some(Box::new(auth));
         self
     }
 
     /// Plug in an in-band [`ProofVerifier`]. When configured, the
     /// server verifies the `proof` member of every proof-bearing
-    /// document and rejects with `proofInvalid` on failure; when
-    /// absent, the server rejects proof-bearing documents with
-    /// `malformedRequest` (the
+    /// document — over the request body as received — and rejects with
+    /// `proofInvalid` on failure; when absent, the server rejects
+    /// proof-bearing documents with `malformedRequest` (the
     /// [`PROOF_NOT_ACCEPTED_BY_POLICY`](trust_tasks_rs::PROOF_NOT_ACCEPTED_BY_POLICY)
-    /// rule — matches `consume_inbound` under
-    /// [`ProofPolicy::RejectIfPresent`](trust_tasks_rs::ProofPolicy::RejectIfPresent)).
+    /// rule — [`ProofPolicy::RejectIfPresentReceived`]).
     ///
-    /// The verifier is invoked between identity resolution (§7.2 item
-    /// 6) and the per-spec dispatch closure (`IS_PROOF_REQUIRED` check
-    /// and audience binding), so a failed signature short-circuits
-    /// before the user handler runs. It is deliberately the **last**
-    /// step before dispatch: it is the only one that may egress, so
-    /// route lookup, transport auth and the attribution gate all run
+    /// The verifier is the **last** check before the per-spec policy and
+    /// the duplicate-execution claim: it is the only one that may egress,
+    /// so route lookup, transport auth and the attribution gate all run
     /// ahead of it. See [`Self::allowed_did_methods`] for the pre-screen
     /// that bounds where that egress can go.
     ///
@@ -251,6 +304,36 @@ impl HttpsServerBuilder {
         self
     }
 
+    /// Check every payload against its specification's schema (SPEC §7.2
+    /// item 2) with `validator` — the residue deserialization cannot express
+    /// (`minProperties`, `minItems` on an optional array, conditional
+    /// subschemas); see [`PayloadPolicy`]. Without it the payload is accepted
+    /// on the strength of deserializing into the registered type.
+    ///
+    /// The `validate` feature of `trust-tasks-rs` provides
+    /// `validate::SchemaValidator`.
+    pub fn with_payload_validator<W>(mut self, validator: W) -> Self
+    where
+        W: PayloadValidator + Send + Sync + 'static,
+    {
+        self.payload_validator = Some(Box::new(validator));
+        self
+    }
+
+    /// Set the request-body limit [`HttpsServer::into_router`] applies,
+    /// outright, replacing the one derived from the registered types (see
+    /// [`MAX_BODY_BYTES`]). It is also then the bound held against a document
+    /// whose specification declares no `maxDocumentBytes`.
+    ///
+    /// The body is buffered before authentication, so this is the memory an
+    /// unauthenticated sender can make each request cost. A limit below a
+    /// registered type's declared bound refuses documents that specification
+    /// says a consumer **MUST NOT** refuse on size alone.
+    pub fn max_body_bytes(mut self, limit: usize) -> Self {
+        self.max_body_bytes = Some(limit);
+        self
+    }
+
     /// Register a handler for the request payload type `P`. The handler
     /// receives the typed request and a [`RequestContext`]; it returns
     /// either the response payload (which the server wraps in a
@@ -258,41 +341,88 @@ impl HttpsServerBuilder {
     /// [`RejectReason`] (which the server wraps in a `trust-task-error`
     /// document via [`TransportHandler::reject`], applying SPEC §8.1
     /// routing).
-    pub fn on<P, F>(mut self, handler: F) -> Self
+    ///
+    /// The handler is synchronous and may block — see the module docs,
+    /// *Handlers and blocking*: it runs to completion inside its request,
+    /// under `block_in_place` on a multi-threaded runtime, and the request
+    /// timeout does not bound it. A handler that does I/O is better written
+    /// with [`Self::on_async`].
+    ///
+    /// The handler also receives documents of a later version of `P`'s
+    /// specification that declares an `extends` chain reaching `P`'s, when
+    /// that version has no handler of its own (SPEC §5.2), with the payload
+    /// pruned to what `P` knows and `type` as received — so the response is
+    /// the received version's `#response`.
+    pub fn on<P, F>(self, handler: F) -> Self
     where
-        P: RequestPayload + 'static,
+        P: RequestPayload + Send + 'static,
         P::Response: Serialize + 'static,
         F: Fn(&TrustTask<P>, &RequestContext) -> Result<P::Response, RejectReason>
             + Send
             + Sync
             + 'static,
     {
-        let dispatch: DispatchFn = Box::new(move |doc: TrustTask<Value>, ctx: &RequestContext| {
-            // Downcast payload to P.
-            let typed = downcast::<P>(doc)?;
+        self.on_sync(handler, true)
+    }
 
-            // SPEC §7.2 items 5b + 7A + 8 — the flag-driven per-spec checks
-            // (recipient-REQUIRED, proof-REQUIRED, audience binding). This is
-            // the first point where the typed payload (and its codegen-emitted
-            // flags) is available. It calls the SAME method as the library
-            // `consume_inbound` path (`TrustTask::enforce_spec_policy`) so the
-            // two pipelines cannot diverge on the check set. The non-typed
-            // checks (expiry, cross-check, proof verification) ran upstream in
-            // `dispatch_handler`.
-            typed.enforce_spec_policy()?;
+    /// [`Self::on`] for a handler that runs no longer than its arguments take
+    /// to read — the discovery handlers — called inline, without
+    /// `block_in_place`.
+    pub(crate) fn on_sync<P, F>(self, handler: F, may_block: bool) -> Self
+    where
+        P: RequestPayload + Send + 'static,
+        P::Response: Serialize + 'static,
+        F: Fn(&TrustTask<P>, &RequestContext) -> Result<P::Response, RejectReason>
+            + Send
+            + Sync
+            + 'static,
+    {
+        let handler = Arc::new(handler);
+        self.register::<P>(move |req, ctx| {
+            let handler = Arc::clone(&handler);
+            Box::pin(async move {
+                let response = run_sync(may_block, || handler(&req, &ctx))?;
+                respond(&req, response).map(Some)
+            })
+        })
+    }
 
-            // Invoke user handler.
-            let response_payload = handler(&typed, ctx)?;
-            let new_id = format!("urn:uuid:{}", Uuid::new_v4());
-            let response_doc = typed.respond_with(new_id, response_payload);
-            Ok(Some(
-                serde_json::to_value(&response_doc).expect("response serialises (typed structs)"),
-            ))
-        });
-
-        let key = P::type_uri().for_routing().to_string();
-        self.routes.insert(key, Route { dispatch });
-        self
+    /// Register an **async** handler for the request payload type `P` —
+    /// [`Self::on`] for a handler that `await`s.
+    ///
+    /// The handler takes the typed request and the [`RequestContext`] by
+    /// value and returns a future of the response payload or a
+    /// [`RejectReason`]. The future runs on the request's task, so
+    /// [`Self::request_timeout`] bounds it; a request abandoned mid-handler
+    /// (the timeout, a client disconnect) drops the future and releases the
+    /// duplicate-execution claim, as a handler that never ran — make the
+    /// effect atomic, or idempotent, across a cancellation point.
+    ///
+    /// ```rust,ignore
+    /// HttpsServer::builder()
+    ///     .on_async::<grant::Payload, _, _>(move |req, ctx| {
+    ///         let store = store.clone();
+    ///         async move {
+    ///             store.grant(&req.payload.entry, ctx.resolved.issuer.as_deref()).await?;
+    ///             Ok(grant::Response { entry: req.payload.entry, ext: None })
+    ///         }
+    ///     })
+    /// ```
+    pub fn on_async<P, F, Fut>(self, handler: F) -> Self
+    where
+        P: RequestPayload + Send + 'static,
+        P::Response: Serialize + 'static,
+        F: Fn(TrustTask<P>, RequestContext) -> Fut + Send + Sync + 'static,
+        Fut: Future<Output = Result<P::Response, RejectReason>> + Send + 'static,
+    {
+        self.register::<P>(move |req, ctx| {
+            let head = head_of(&req);
+            let answer = handler(req, ctx);
+            Box::pin(async move {
+                let response = answer.await?;
+                respond(&head, response).map(Some)
+            })
+        })
     }
 
     /// Register a handler for a **fire-and-forget** specification — one that
@@ -309,22 +439,64 @@ impl HttpsServerBuilder {
     /// refuse; an acknowledgement is answered `204 No Content`, matching the
     /// status the binding already uses for a duplicate of a completed
     /// fire-and-forget execution ([§5.1](https://trusttasks.org/binding/https/0.2)).
-    pub fn on_ack<P, F>(mut self, handler: F) -> Self
+    /// Synchronous, with [`Self::on`]'s blocking rules; see
+    /// [`Self::on_ack_async`].
+    pub fn on_ack<P, F>(self, handler: F) -> Self
     where
-        P: Payload + 'static,
+        P: Payload + Send + 'static,
         F: Fn(&TrustTask<P>, &RequestContext) -> Result<(), RejectReason> + Send + Sync + 'static,
     {
-        let dispatch: DispatchFn = Box::new(move |doc: TrustTask<Value>, ctx: &RequestContext| {
-            let typed = downcast::<P>(doc)?;
-            // Same §7.2 items 5b/7A/8 gate as `on`; a fire-and-forget task is
-            // no less consequential for having nothing to say back.
-            typed.enforce_spec_policy()?;
-            handler(&typed, ctx)?;
-            Ok(None)
-        });
+        let handler = Arc::new(handler);
+        self.register::<P>(move |req, ctx| {
+            let handler = Arc::clone(&handler);
+            Box::pin(async move {
+                run_sync(true, || handler(&req, &ctx))?;
+                Ok(None)
+            })
+        })
+    }
 
-        let key = P::type_uri().for_routing().to_string();
-        self.routes.insert(key, Route { dispatch });
+    /// [`Self::on_ack`] for a handler that `await`s, with
+    /// [`Self::on_async`]'s cancellation rules.
+    pub fn on_ack_async<P, F, Fut>(self, handler: F) -> Self
+    where
+        P: Payload + Send + 'static,
+        F: Fn(TrustTask<P>, RequestContext) -> Fut + Send + Sync + 'static,
+        Fut: Future<Output = Result<(), RejectReason>> + Send + 'static,
+    {
+        self.register::<P>(move |req, ctx| {
+            let answer = handler(req, ctx);
+            Box::pin(async move {
+                answer.await?;
+                Ok(None)
+            })
+        })
+    }
+
+    /// Put a handler in the routing table. The pipeline has run every check
+    /// by the time it is called; what is left is turning a refusal into the
+    /// §8.1-routed error document the record and the wire carry.
+    fn register<P>(
+        mut self,
+        handler: impl Fn(TrustTask<P>, RequestContext) -> HandlerFuture + Send + Sync + 'static,
+    ) -> Self
+    where
+        P: Payload + Send + 'static,
+    {
+        if let Some(bound) = P::MAX_DOCUMENT_BYTES {
+            self.largest_declared_bound = self.largest_declared_bound.max(bound);
+        }
+        let routes = std::mem::take(&mut self.routes);
+        self.routes = routes.on_async::<P, _, _>(move |req: TrustTask<P>, ctx: RequestContext| {
+            let head = head_of(&req);
+            let transport = HttpsHandler::new(ctx.local.clone(), ctx.authenticated_sender.clone());
+            let answer = handler(req, ctx);
+            async move {
+                answer
+                    .await
+                    .map_err(|reason| routed_error(&transport, &head, reason))
+            }
+        });
         self
     }
 
@@ -568,7 +740,7 @@ impl HttpsServerBuilder {
     ///     .build();
     /// ```
     pub fn enable_discovery(self) -> Self {
-        let mut registry: DiscoveryRegistry = self.routes.keys().cloned().collect();
+        let mut registry: DiscoveryRegistry = self.routes.registered_uris().into_iter().collect();
         // Always advertise discovery itself — otherwise a discoverer who
         // somehow guessed they could ask wouldn't see their own protocol
         // listed back.
@@ -589,21 +761,24 @@ impl HttpsServerBuilder {
         // --- trust-task-discovery 0.1 / 0.2 / 0.3 (superseded) ----------------------
         let this = this.with_superseded_discovery(registry.clone(), advertise_freshness);
         // --- end trust-task-discovery 0.1 / 0.2 / 0.3 (superseded) ------------------
-        this.on::<discovery::Payload, _>(move |req, ctx| {
-            refuse_unauthenticated_discovery(&public, ctx.authenticated_sender.is_none())?;
-            Ok(match applied_freshness.get() {
-                Some(policy) if advertise_freshness => registry
-                    .clone()
-                    .acceptance_window_from(policy)
-                    .respond_to_v0_4(&req.payload),
-                _ => registry.respond_to_v0_4(&req.payload),
-            })
-        })
+        this.on_sync::<discovery::Payload, _>(
+            move |req, ctx| {
+                refuse_unauthenticated_discovery(&public, ctx.authenticated_sender.is_none())?;
+                Ok(match applied_freshness.get() {
+                    Some(policy) if advertise_freshness => registry
+                        .clone()
+                        .acceptance_window_from(policy)
+                        .respond_to_v0_4(&req.payload),
+                    _ => registry.respond_to_v0_4(&req.payload),
+                })
+            },
+            false,
+        )
     }
 
     /// Build the server. Run it with [`HttpsServer::serve`].
     ///
-    /// Note the default [`Auth`] is a [`BearerAuth`] with an empty token
+    /// Note the default authenticator is a [`BearerAuth`] with an empty token
     /// table, so every request is unauthenticated unless
     /// [`Self::with_auth`] was called. That is survivable only because
     /// [`Self::require_attribution`] defaults to `true`; read its
@@ -623,12 +798,20 @@ impl HttpsServerBuilder {
                     .collect()
             }),
         };
+        // SPEC §12.4: the body is buffered before anything else, so the limit
+        // is what an unauthenticated sender can make a request cost. It grows
+        // past the transport default only as far as a registered task's own
+        // declaration requires.
+        let body_limit = self
+            .max_body_bytes
+            .unwrap_or_else(|| MAX_BODY_BYTES.max(self.largest_declared_bound));
         HttpsServer {
             state: Arc::new(ServerState {
                 local_vid: self.local_vid,
                 auth,
                 routes: self.routes,
                 verifier: self.verifier,
+                payload_validator: self.payload_validator,
                 require_attribution: self.require_attribution,
                 allowed_did_methods,
                 // Secure by default: the record is kept unless the deployment
@@ -638,7 +821,9 @@ impl HttpsServerBuilder {
                         .unwrap_or_else(|| Arc::new(InMemoryReplayGuard::default()))
                 }),
                 freshness: self.freshness,
+                default_document_bound: self.max_body_bytes.unwrap_or(MAX_BODY_BYTES),
             }),
+            body_limit,
             request_timeout: self.request_timeout.unwrap_or(DEFAULT_REQUEST_TIMEOUT),
             max_concurrent_requests: self
                 .max_concurrent_requests
@@ -650,9 +835,11 @@ impl HttpsServerBuilder {
 /// An HTTPS Trust Tasks server.
 ///
 /// Build with [`HttpsServer::builder`], register handlers via
-/// [`HttpsServerBuilder::on`], then [`Self::serve`].
+/// [`HttpsServerBuilder::on`] / [`HttpsServerBuilder::on_async`], then
+/// [`Self::serve`].
 pub struct HttpsServer {
     state: Arc<ServerState>,
+    body_limit: usize,
     request_timeout: Duration,
     max_concurrent_requests: usize,
 }
@@ -663,8 +850,11 @@ impl HttpsServer {
         HttpsServerBuilder {
             local_vid: None,
             auth: None,
-            routes: HashMap::new(),
+            routes: AsyncDispatcher::new(),
+            largest_declared_bound: 0,
+            max_body_bytes: None,
             verifier: None,
+            payload_validator: None,
             // Secure by default: see `HttpsServerBuilder::require_attribution`.
             require_attribution: true,
             did_methods: DidMethodPolicy::Default,
@@ -679,16 +869,24 @@ impl HttpsServer {
         }
     }
 
+    /// The request-body limit [`Self::into_router`] applies: [`MAX_BODY_BYTES`],
+    /// or the largest `maxDocumentBytes` a registered request type declares if
+    /// that is larger, or what [`HttpsServerBuilder::max_body_bytes`] set.
+    pub fn body_limit(&self) -> usize {
+        self.body_limit
+    }
+
     /// Build the axum [`Router`] without starting a listener — useful for
     /// integration tests that want to spawn the app inline.
     ///
     /// The router applies an explicit [`DefaultBodyLimit`] of
-    /// [`MAX_BODY_BYTES`] (256 KiB) as an audited DoS control (SPEC §12.2): the body is
+    /// [`Self::body_limit`] as an audited DoS control (SPEC §12.2): the body is
     /// buffered and parsed *before* authentication, so an unbounded body would
     /// otherwise be a pre-auth memory-exhaustion vector. JSON nesting depth is
     /// separately bounded by `serde_json`'s default 128-level recursion limit,
     /// so a pathologically nested body within the size budget fails to parse
-    /// (→ `malformedRequest`) rather than overflowing the stack.
+    /// (→ `malformedRequest`) rather than overflowing the stack. Once the type
+    /// is known, the document is held to its own specification's bound.
     ///
     /// It also applies two liveness controls, both configurable on the
     /// builder ([`HttpsServerBuilder::request_timeout`],
@@ -696,7 +894,9 @@ impl HttpsServer {
     ///
     /// * a [`TimeoutLayer`] — a request that outlives its budget is
     ///   abandoned with `408 Request Timeout` rather than holding a
-    ///   connection and a task open indefinitely (slowloris);
+    ///   connection and a task open indefinitely (slowloris). It fires at an
+    ///   `await`, so it bounds async handlers and not synchronous ones — see
+    ///   the module docs, *Handlers and blocking*;
     /// * a [`ConcurrencyLimitLayer`] — requests past the ceiling wait for a
     ///   permit instead of each pinning a parse buffer, bounding the memory
     ///   a flood can commit.
@@ -708,7 +908,7 @@ impl HttpsServer {
         let concurrency = self.max_concurrent_requests;
         Router::new()
             .route("/trust-tasks", post(dispatch_handler))
-            .layer(DefaultBodyLimit::max(MAX_BODY_BYTES))
+            .layer(DefaultBodyLimit::max(self.body_limit))
             .layer(
                 ServiceBuilder::new()
                     // Outermost: the inner layers are fallible, axum's
@@ -745,7 +945,7 @@ async fn dispatch_handler(
     headers: HeaderMap,
     body: Bytes,
 ) -> Response {
-    // ─── 0. Content-Type. The binding spec (§2) makes
+    // ─── Content-Type. The binding spec (§2) makes
     // `Content-Type: application/json` a MUST on the request. Enforcing it
     // is not pedantry: `text/plain` is one of the three media types a
     // cross-origin `fetch`/form POST can send *without* a preflight, so
@@ -757,7 +957,7 @@ async fn dispatch_handler(
         return StatusCode::UNSUPPORTED_MEDIA_TYPE.into_response();
     }
 
-    // ─── 1. Parse the body into a TrustTask<Value>.
+    // ─── Parse the body into a TrustTask<Value>.
     let doc: TrustTask<Value> = match serde_json::from_slice(&body) {
         Ok(d) => d,
         // `RejectReason::malformed_from_serde` rather than `format!("{e}")`:
@@ -768,371 +968,189 @@ async fn dispatch_handler(
         // §10.4 leak. The category is what a producer can act on; the detail
         // belongs in the operator's log.
         Err(e) => {
-            return reject_response(None, None, RejectReason::malformed_from_serde(&e));
+            return error_response(free_standing_error(RejectReason::malformed_from_serde(&e)))
         }
     };
-    // The same bytes as a plain `Value`, for step 8: a proof is verified over
-    // the document as received, not over `doc` re-serialised, which re-renders
-    // the framework timestamps. Parsed separately rather than `doc` being built
-    // from it, because the typed parse is the one that refuses a duplicated
-    // top-level member, which a `Value` silently resolves to the last.
+    // The same bytes as a plain `Value`: a proof is verified over the document
+    // as received, not over `doc` re-serialised, which re-renders the
+    // framework timestamps, and the item-11 digest is taken over it for the
+    // same reason. Parsed separately rather than `doc` being built from it,
+    // because the typed parse is the one that refuses a duplicated top-level
+    // member, which a `Value` silently resolves to the last.
     let received: Value = match serde_json::from_slice(&body) {
         Ok(v) => v,
         Err(e) => {
-            return reject_response(None, None, RejectReason::malformed_from_serde(&e));
+            return error_response(free_standing_error(RejectReason::malformed_from_serde(&e)))
         }
     };
 
-    // ─── 2. Authenticate the bearer token (if any) into a peer VID. Purely
-    // local — an in-process map, a JWT signature check, a database lookup.
-    // No network egress the sender can steer.
-    let peer_vid = extract_bearer(&headers).and_then(|tok| state.auth.resolve(tok));
-
-    // ─── 3. Build the per-request HttpsHandler.
-    let handler = HttpsHandler::new(state.local_vid.clone(), peer_vid);
-
-    // ─── 4. Routing FIRST — deliberately ahead of every step that can cost
-    // this server work an unauthenticated sender chose. Proof verification
-    // (step 8) resolves the `verificationMethod` DID, which for `did:web` is
-    // an outbound HTTPS request to a host named in the request body. With
-    // routing last, a stranger could aim this endpoint at an arbitrary host
-    // by POSTing a document whose `type` we do not even implement, and get
-    // an amplifier for free. There is no rate limit here; the ordering is
-    // the control.
-    let routing_key = doc.type_uri.for_routing().to_string();
-    let Some(route) = state.routes.get(&routing_key) else {
-        return reject_response(
-            Some(&handler),
-            Some(&doc),
-            RejectReason::UnsupportedType {
-                type_uri: routing_key,
-            },
-        );
+    // ─── Authenticate the bearer token (if any) into a peer VID — before any
+    // framework check, so the pipeline knows whether a sender is
+    // authenticated (§8.1 suppression, the attribution gate).
+    let peer_vid = match extract_bearer(&headers) {
+        Some(token) => state.auth.resolve_async(token).await,
+        None => None,
     };
+    let transport = HttpsHandler::new(state.local_vid.clone(), peer_vid);
 
-    // ─── 5. The framework-level checks, in §7.2 order and so in
-    // `consume_inbound`'s: expiry + recipient (items 4 and 5a), freshness
-    // (item 4), then identity resolution (item 6). A document that fails two
-    // of them is refused for the same reason by every consumer.
-    //
-    // Except with no authenticated sender. Then the only identity that can
-    // disagree is the recipient, and §8.1 suppresses that refusal: there is
-    // nobody to address it to, and a `wrongRecipient` answer would tell an
-    // unauthenticated prober which VIDs this server is not. So identity runs
-    // first, and a misaddressed document stays indistinguishable from one that
-    // did not parse.
-    let mut resolved = None;
-    if handler.peer().is_none() {
-        match handler.resolve_parties(&doc) {
-            Ok(r) => resolved = Some(r),
-            Err(consistency) => {
-                return reject_response(Some(&handler), Some(&doc), consistency.into());
-            }
-        }
-    }
-    let now = chrono::Utc::now();
-    let my_vid = state.local_vid.as_deref().unwrap_or("");
-    if let Err(reason) = doc.validate_basic(now, my_vid) {
-        return reject_response(Some(&handler), Some(&doc), reason);
-    }
-
-    // ─── 5b. Freshness (§7.2 item 13). `validate_basic` honours `expiresAt`,
-    // which is optional and which a producer sets for its own reasons; on its
-    // own it leaves a document stamped years ago — or years hence — acceptable
-    // forever. This is also the bound the replay record at step 9 is retained
-    // for: §7.2 (*Bounding the record*) makes the acceptance window and the
-    // record's retention one bound, not two.
-    if let Err(reason) = doc.validate_freshness(now, &state.freshness) {
-        return reject_response(Some(&handler), Some(&doc), reason);
-    }
-
-    // ─── 5c. Identity resolution (§4.8.1, §7.2 item 6), unless step 5 ran it.
-    let resolved = match resolved {
-        Some(r) => r,
-        None => match handler.resolve_parties(&doc) {
-            Ok(r) => r,
-            Err(consistency) => {
-                return reject_response(Some(&handler), Some(&doc), consistency.into());
-            }
-        },
+    // ─── The §7.2 pipeline: `consume_dispatched_answer`, configured with
+    // what this binding adds.
+    let replay = match &state.replay_guard {
+        Some(guard) => ReplayPolicy::Guard(guard.as_ref()),
+        None => ReplayPolicy::NotConsequential,
     };
-
-    // ─── 6. Attribution gate. A document with neither a transport-
-    // authenticated peer nor a `proof` is attributable to nobody: the
-    // §4.8.1 fallback hands the handler whatever `issuer` string the sender
-    // typed. The binding spec does not permit `proof` to be omitted
-    // (`bindings/https/0.2` §5); this is that rule at runtime. See
-    // `HttpsServerBuilder::require_attribution`.
-    if state.require_attribution && handler.peer().is_none() && doc.proof.is_none() {
-        return reject_response(Some(&handler), Some(&doc), RejectReason::ProofRequired);
+    let mut checks = ConsumeChecks {
+        freshness: state.freshness,
+        replay,
+        ..ConsumeChecks::not_consequential()
     }
+    .require_attribution(state.require_attribution)
+    .with_received_bytes(body.len(), Some(state.default_document_bound));
+    checks.proof_did_methods = state.allowed_did_methods.clone();
 
-    // ─── 7. DID-method pre-screen on `proof.verificationMethod`, ahead of
-    // the verifier so an unacceptable method never reaches a resolver.
-    if let (Some(allowed), Some(proof)) = (&state.allowed_did_methods, &doc.proof) {
-        if !did_method_allowed(&proof.verification_method, allowed) {
-            return reject_response(
-                Some(&handler),
-                Some(&doc),
-                RejectReason::ProofInvalid {
-                    // Does not name the accepted methods: that set is
-                    // deployment configuration, and echoing it would let a
-                    // probe fingerprint the fleet.
-                    reason: "verification method is not acceptable under this consumer's \
-                             proof policy"
-                        .to_string(),
-                },
-            );
-        }
-    }
-
-    // ─── 8. Proof handling (SPEC §7.2 item 7 + §4.7.1). The dispatch
-    // pipeline applies one of two policies based on builder
-    // configuration:
-    //
-    //   * Verifier configured (`HttpsServerBuilder::with_verifier`):
-    //     mirror `ProofPolicy::Verify` — proof-bearing documents are
-    //     verified, failure rejects `proofInvalid`. Proofless
-    //     documents proceed; the per-spec `IS_PROOF_REQUIRED` check in
-    //     the dispatch closure catches REQUIRED specs.
-    //
-    //   * No verifier (default): mirror `ProofPolicy::RejectIfPresent`
-    //     — proof-bearing documents are rejected `malformedRequest`
-    //     with the framework-shared `PROOF_NOT_ACCEPTED_BY_POLICY`
-    //     wire message. Silently dropping a producer's proof would
-    //     mislead them about the exchange's integrity guarantees, and
-    //     naming the server's configuration on the wire would let a
-    //     probe enumerate verifier coverage across a fleet.
-    if doc.proof.is_some() {
-        match &state.verifier {
-            Some(v) => {
-                if let Err(err) = v.verify_received(&received).await {
-                    return reject_response(
-                        Some(&handler),
-                        Some(&doc),
-                        RejectReason::ProofInvalid {
-                            reason: err.to_string(),
-                        },
-                    );
-                }
-            }
-            None => {
-                return reject_response(
-                    Some(&handler),
-                    Some(&doc),
-                    RejectReason::MalformedRequest {
-                        reason: PROOF_NOT_ACCEPTED_BY_POLICY.to_string(),
-                    },
-                );
-            }
-        }
-    }
-
-    // ─── 9. SPEC §7.2 item 11 — claim this document `id` for execution.
-    //
-    // This is the `validated → accepted` transition: every check that could
-    // still refuse the document for a reason unrelated to having seen it
-    // before has run, and the next thing that happens is the effect. See the
-    // module docs for why claiming earlier is wrong.
-    let mut claim: Option<DocumentDigest> = None;
-    if let Some(guard) = &state.replay_guard {
-        // Keyed on `id`, compared on a digest of the whole canonical document
-        // (`proof` included) — §7.2's *Keying and comparison*. An `id` alone
-        // cannot tell the §8.4 retry it must absorb from the conflict it must
-        // reject. Over `received`, the body as it arrived, not `doc`
-        // re-serialised: that re-renders `issuedAt` and `expiresAt`, so two
-        // bodies spelling one instant differently would compare equal.
-        let digest = received_document_digest(&received);
-
-        // §7.2 (*Bounding the record*): "A *consumer* that can establish
-        // neither an `expiresAt` nor an age for a document has no window in
-        // which to place it, and MUST NOT execute a *consequential Trust Task*
-        // on it." A guard asked to retain a record forever is not a guard.
-        let Some(retain_until) = state.freshness.record_expiry(&doc, now) else {
-            return reject_response(
-                Some(&handler),
-                Some(&doc),
-                RejectReason::Stale {
-                    detail: StaleReason::Unboundable,
-                },
-            );
+    let proof_policy: ProofPolicy<'_, dyn DynProofVerifier> = match &state.verifier {
+        Some(verifier) => ProofPolicy::VerifyReceived(verifier.as_ref(), &received),
+        // Silently dropping a producer's proof would mislead them about the
+        // exchange's integrity guarantees, and naming the server's
+        // configuration on the wire would let a probe enumerate verifier
+        // coverage across a fleet — so a proof is refused with the
+        // framework-shared wording.
+        None => ProofPolicy::RejectIfPresentReceived(&received),
+    };
+    let payload_policy: PayloadPolicy<'_, dyn PayloadValidator + Send + Sync> =
+        match &state.payload_validator {
+            Some(validator) => PayloadPolicy::Validate(validator.as_ref()),
+            None => PayloadPolicy::AcceptUnvalidated,
         };
 
-        match guard.claim(&doc.id, &digest, Some(retain_until), now).await {
-            // First sight. Execute, then record the result at step 10 so the
-            // next arrival is answered with it rather than re-executed.
-            Ok(ReplayVerdict::Fresh) => claim = Some(digest),
+    let authenticated_sender = transport.peer().map(str::to_string);
+    let local = transport.local().map(str::to_string);
+    let outcome = consume_dispatched_answer(
+        &transport,
+        proof_policy,
+        payload_policy,
+        checks,
+        &state.routes,
+        doc,
+        state.local_vid.as_deref().unwrap_or(""),
+        chrono::Utc::now(),
+        new_id,
+        |resolved| RequestContext {
+            authenticated_sender,
+            local,
+            resolved,
+        },
+    )
+    .await;
 
-            // Already executed, and the result was retained. §7.2
-            // (*Disposition of a duplicate*): "the consumer SHOULD return the
-            // previously determined result". Same 200, same body, no second
-            // dispatch — which is what makes a §8.4 bit-for-bit retry safe for
-            // the producer to send.
-            Ok(ReplayVerdict::Duplicate {
-                prior_response: Some(prior),
-                ..
-            }) => return success_response(prior),
+    match outcome {
+        AnswerOutcome::Handled(Some(body)) => success_response(body),
+        // SPEC §4.4.1 fire-and-forget: nothing to return, and the absence of
+        // a `trust-task-error` is itself the success signal. 204 is the same
+        // answer the binding gives a duplicate of a completed fire-and-forget
+        // execution.
+        AnswerOutcome::Handled(None) => StatusCode::NO_CONTENT.into_response(),
+        AnswerOutcome::Rejected(error) => error_response(error),
+        // §8.1: no response SHOULD be emitted. HTTP has no way not to answer,
+        // so the answer is the one a body that did not parse gets — see
+        // `suppressed_error_response`.
+        AnswerOutcome::Suppressed => error_response(suppressed_error_response()),
 
-            // Already accepted; the original execution has not finished. SPEC:
-            // "the consumer SHOULD return or expose the existing execution
-            // state rather than begin another." HTTP's word for *accepted,
-            // outcome not yet available* is `202 Accepted`, and it is the
-            // honest one here: the document was accepted (it is being executed
-            // right now, by the first delivery), there is no result to return
-            // yet, and nothing failed. 200 would be a lie about having a
-            // result, 409 would claim a conflict that does not exist, and any
-            // error code would report a failure that did not happen.
-            Ok(ReplayVerdict::Duplicate {
-                in_flight: true, ..
-            }) => return StatusCode::ACCEPTED.into_response(),
+        // Already executed, and the result was retained. §7.2 (*Disposition
+        // of a duplicate*): "the consumer SHOULD return the previously
+        // determined result" — the same body, with the status it had: a
+        // response document is 200, a recorded non-retryable refusal its own
+        // error status. No second dispatch, which is what makes a §8.4
+        // bit-for-bit retry safe for the producer to send.
+        AnswerOutcome::Duplicate {
+            prior_response: Some(prior),
+            ..
+        } => replayed_response(prior),
 
-            // Already executed, and no result was retained — the
-            // fire-and-forget shape (§4.4.1), or a guard that keeps only the
-            // claim. §7.2: "where the specification defines no success
-            // response, silence is the correct disposition", and "in no case
-            // is a duplicate reported as `taskFailed`; the task did not fail,
-            // it already happened." `204 No Content` is silence with a status
-            // line, which is the most HTTP will allow.
-            Ok(ReplayVerdict::Duplicate { .. }) => return StatusCode::NO_CONTENT.into_response(),
+        // Already accepted; the original execution has not finished. SPEC:
+        // "the consumer SHOULD return or expose the existing execution state
+        // rather than begin another." HTTP's word for *accepted, outcome not
+        // yet available* is `202 Accepted`, and it is the honest one here: the
+        // document was accepted (it is being executed right now, by the first
+        // delivery), there is no result to return yet, and nothing failed. 200
+        // would be a lie about having a result, 409 would claim a conflict
+        // that does not exist, and any error code would report a failure that
+        // did not happen.
+        AnswerOutcome::Duplicate {
+            in_flight: true, ..
+        } => StatusCode::ACCEPTED.into_response(),
 
-            // A different document under a reused `id`. §7.2 item 11 requires
-            // `idConflict` and forbids treating it as a retry of the original.
-            Ok(ReplayVerdict::Conflict) => {
-                return reject_response(Some(&handler), Some(&doc), RejectReason::IdConflict);
-            }
-
-            // `ReplayVerdict` is `#[non_exhaustive]`. A verdict this binding
-            // does not understand is not a licence to execute; fail closed on
-            // the same `unavailable` path as a guard error.
-            Ok(_) => {
-                return reject_response(
-                    Some(&handler),
-                    Some(&doc),
-                    RejectReason::Unavailable { retry_after: None },
-                );
-            }
-
-            // Fail closed. A consumer that cannot consult its record has not
-            // satisfied item 11, and executing anyway is precisely the double
-            // execution the rule forbids. `unavailable` is `retryable`, which
-            // is the honest answer: the producer's bit-for-bit resend will be
-            // absorbed correctly once the store is back. The store's identity
-            // and failure mode stay in the log — `From<ReplayGuardError>`
-            // discards them rather than putting them on the wire (§10.4).
-            Err(e) => return reject_response(Some(&handler), Some(&doc), e.into()),
-        }
+        // Already executed, and no result was retained — the fire-and-forget
+        // shape (§4.4.1), or a guard that keeps only the claim. §7.2: "where
+        // the specification defines no success response, silence is the
+        // correct disposition", and "in no case is a duplicate reported as
+        // `taskFailed`; the task did not fail, it already happened." `204 No
+        // Content` is silence with a status line, which is the most HTTP will
+        // allow.
+        AnswerOutcome::Duplicate { .. } => StatusCode::NO_CONTENT.into_response(),
     }
+}
 
-    // ─── 10. Dispatch to the registered handler (which runs the per-spec
-    // §7.2 policy checks first).
-    let ctx = RequestContext {
-        authenticated_sender: handler.peer().map(str::to_string),
-        local: handler.local().map(str::to_string),
-        resolved,
-    };
-    let dispatched = doc.clone();
-    // A panicking handler must not leave the claim standing: the `id` would be
-    // burned until `retain_until` and every honest resend absorbed in silence,
-    // which is worse than the risk of re-running an effect whose completion
-    // nobody can establish anyway. The panic itself is re-raised unchanged, so
-    // this changes nothing a caller observes except the state of the record.
-    let dispatch_result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-        (route.dispatch)(dispatched, &ctx)
-    }));
-    let dispatch_result = match dispatch_result {
-        Ok(result) => result,
-        Err(panic) => {
-            release_claim(&state, &doc.id, claim.as_ref()).await;
-            std::panic::resume_unwind(panic);
-        }
-    };
-
-    match dispatch_result {
-        Ok(success_body) => {
-            if claim.is_some() {
-                if let Some(guard) = &state.replay_guard {
-                    // Best-effort: the effect has already happened, so failing
-                    // to cache the response cannot un-happen it. The claim —
-                    // which is what item 11 needs — is already written, so a
-                    // duplicate is still absorbed; all that is lost is the
-                    // ability to hand back the same body.
-                    // `None` records that the execution completed with no
-                    // response to hand back — a later duplicate is absorbed
-                    // and answered 204, not re-executed.
-                    let _ = guard.record_response(&doc.id, success_body.as_ref()).await;
-                }
-            }
-            match success_body {
-                Some(body) => success_response(body),
-                // SPEC §4.4.1 fire-and-forget: nothing to return, and the
-                // absence of a `trust-task-error` is itself the success
-                // signal. 204 is the same answer the binding gives a
-                // duplicate of a completed fire-and-forget execution.
-                None => StatusCode::NO_CONTENT.into_response(),
+/// Run a synchronous handler. One that may block runs under
+/// `block_in_place` on a multi-threaded runtime, so the worker's other tasks
+/// are moved off it, and inline otherwise — never on the blocking pool, where
+/// it would outlive a cancelled request and the claim that request released
+/// (module docs, *Handlers and blocking*).
+fn run_sync<T>(may_block: bool, handler: impl FnOnce() -> T) -> T {
+    if may_block {
+        if let Ok(runtime) = tokio::runtime::Handle::try_current() {
+            if runtime.runtime_flavor() == tokio::runtime::RuntimeFlavor::MultiThread {
+                return tokio::task::block_in_place(handler);
             }
         }
-        Err(reason) => {
-            // Nothing was executed, so nothing may be remembered as executed.
-            // Holding the claim would answer a corrected — or merely
-            // better-timed — resend under this `id` with silence or
-            // `idConflict` for the whole retention window, which is a denial
-            // of service manufactured out of a refusal.
-            release_claim(&state, &doc.id, claim.as_ref()).await;
-            reject_response(Some(&handler), Some(&doc), reason)
+    }
+    handler()
+}
+
+/// The `#response` document answering `request` with `payload`, as JSON.
+fn respond<P, R: Serialize>(request: &TrustTask<P>, payload: R) -> Result<Value, RejectReason> {
+    serde_json::to_value(request.respond_with(new_id(), payload)).map_err(|_| {
+        RejectReason::InternalError {
+            reason: "the response could not be serialised".to_string(),
         }
+    })
+}
+
+/// The envelope of `doc` without its payload: what an error or response
+/// document is built from once the payload has been handed to a handler.
+fn head_of<P>(doc: &TrustTask<P>) -> TrustTask<()> {
+    TrustTask {
+        id: doc.id.clone(),
+        thread_id: doc.thread_id.clone(),
+        parent_thread_id: doc.parent_thread_id.clone(),
+        ceremony: doc.ceremony.clone(),
+        type_uri: doc.type_uri.clone(),
+        issuer: doc.issuer.clone(),
+        recipient: doc.recipient.clone(),
+        issued_at: doc.issued_at,
+        expires_at: doc.expires_at,
+        payload: (),
+        context: doc.context.clone(),
+        proof: doc.proof.clone(),
+        extra: doc.extra.clone(),
     }
 }
 
-/// Drop a claim whose execution produced no recorded response. Best-effort: a
-/// guard that cannot release leaves the record standing until `retain_until`,
-/// which is safe (item 11 still holds) but unkind to a legitimate retry.
-///
-/// Cancellation-safe: if the request future is dropped while the release is
-/// awaited (a timeout layer, a client disconnect), [`AbandonedRelease`]
-/// finishes it through [`ReplayGuard::release_abandoned`] rather than leaving
-/// the claim in flight.
-async fn release_claim(state: &ServerState, id: &str, digest: Option<&DocumentDigest>) {
-    if let (Some(guard), Some(digest)) = (&state.replay_guard, digest) {
-        release_with(guard.as_ref(), id, digest).await;
-    }
+/// A handler's refusal as the error document §8.1 routes: addressed by
+/// [`TransportHandler::reject`], or — where that suppresses the answer — the
+/// generic one HTTP sends instead.
+fn routed_error(
+    transport: &HttpsHandler,
+    request: &TrustTask<()>,
+    reason: RejectReason,
+) -> ErrorResponse {
+    transport
+        .reject(request, new_id(), reason)
+        .unwrap_or_else(suppressed_error_response)
 }
 
-/// [`release_claim`]'s body, over the guard alone.
-async fn release_with(guard: &dyn ReplayGuard, id: &str, digest: &DocumentDigest) {
-    let pending = AbandonedRelease {
-        guard,
-        id,
-        digest,
-        armed: true,
-    };
-    let _ = guard.release(id, digest).await;
-    pending.disarm();
-}
-
-/// Releases a claim from its destructor unless disarmed — see [`release_claim`].
-struct AbandonedRelease<'a> {
-    guard: &'a dyn ReplayGuard,
-    id: &'a str,
-    digest: &'a DocumentDigest,
-    armed: bool,
-}
-
-impl AbandonedRelease<'_> {
-    fn disarm(mut self) {
-        self.armed = false;
-    }
-}
-
-impl Drop for AbandonedRelease<'_> {
-    fn drop(&mut self) {
-        if self.armed {
-            // A guard that panics here loses only this release; a panic from a
-            // destructor during another unwind would abort the process.
-            let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                self.guard.release_abandoned(self.id, self.digest);
-            }));
-        }
-    }
+fn new_id() -> String {
+    format!("urn:uuid:{}", Uuid::new_v4())
 }
 
 /// `true` when the request declares `application/json` (parameters such as
@@ -1151,67 +1169,12 @@ fn is_json_content_type(headers: &HeaderMap) -> bool {
     media_type.eq_ignore_ascii_case("application/json")
 }
 
-/// `true` when `verification_method` is a DID URL whose method is in
-/// `allowed`. Anything that is not a DID URL (`did:<method>:<rest>`) fails —
-/// an `https://…` verification method would hand the resolver an arbitrary
-/// URL directly.
-fn did_method_allowed(verification_method: &str, allowed: &BTreeSet<String>) -> bool {
-    let Some(rest) = verification_method.strip_prefix("did:") else {
-        return false;
-    };
-    let Some((method, remainder)) = rest.split_once(':') else {
-        return false;
-    };
-    if method.is_empty() || remainder.is_empty() {
-        return false;
-    }
-    allowed.contains(method)
-}
-
 fn extract_bearer(headers: &HeaderMap) -> Option<&str> {
     let value = headers.get(header::AUTHORIZATION)?.to_str().ok()?;
     let token = value
         .strip_prefix("Bearer ")
         .or_else(|| value.strip_prefix("bearer "))?;
     Some(token.trim())
-}
-
-fn downcast<P: Payload>(doc: TrustTask<Value>) -> Result<TrustTask<P>, RejectReason> {
-    let TrustTask {
-        id,
-        thread_id,
-        parent_thread_id,
-        ceremony,
-        type_uri,
-        issuer,
-        recipient,
-        issued_at,
-        expires_at,
-        payload,
-        context,
-        proof,
-        extra,
-    } = doc;
-    // Same §10.4 rule as the body parse above: the deserializer's rendering
-    // names the missing or unexpected member and its offset. The Type URI the
-    // sender itself chose is safe to omit, and the category is what it needs.
-    let payload: P =
-        serde_json::from_value(payload).map_err(|e| RejectReason::malformed_from_serde(&e))?;
-    Ok(TrustTask {
-        id,
-        thread_id,
-        parent_thread_id,
-        ceremony,
-        type_uri,
-        issuer,
-        recipient,
-        issued_at,
-        expires_at,
-        payload,
-        context,
-        proof,
-        extra,
-    })
 }
 
 fn success_response(body: Value) -> Response {
@@ -1224,67 +1187,61 @@ fn success_response(body: Value) -> Response {
         .into_response()
 }
 
-fn reject_response(
-    handler: Option<&HttpsHandler>,
-    request: Option<&TrustTask<Value>>,
-    reason: RejectReason,
-) -> Response {
+/// A duplicate's recorded answer, with the status it was first given: a
+/// recorded `trust-task-error` (a non-retryable refusal) keeps its error
+/// status, anything else is the 200 of a response document.
+fn replayed_response(prior: Value) -> Response {
+    let is_error = prior
+        .get("type")
+        .and_then(Value::as_str)
+        .and_then(|t| t.parse::<trust_tasks_rs::TypeUri>().ok())
+        .is_some_and(|t| {
+            t.for_routing() == trust_tasks_rs::trust_task_error_type_uri().for_routing()
+        });
+    if is_error {
+        if let Ok(error) = serde_json::from_value::<ErrorResponse>(prior.clone()) {
+            return error_response(error);
+        }
+    }
+    success_response(prior)
+}
+
+fn error_response(error_doc: ErrorResponse) -> Response {
     // Status follows the error document actually emitted, not the inbound
     // reason. The suppressed identity-mismatch path rewrites the body to a
     // generic `malformedRequest` (SPEC §12.4); the status MUST match so it is
     // indistinguishable from a plain parse failure (no 403-vs-400 oracle for an
     // unauthenticated prober).
-    let error_doc = build_error_response(handler, request, reason);
     let status = status_for_code(&error_doc.payload.code);
     let status = StatusCode::from_u16(status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);
     let body = serde_json::to_vec(&error_doc).expect("serialise error response");
     (status, [(header::CONTENT_TYPE, "application/json")], body).into_response()
 }
 
-fn build_error_response(
-    handler: Option<&HttpsHandler>,
-    request: Option<&TrustTask<Value>>,
-    reason: RejectReason,
-) -> ErrorResponse {
-    let new_id = format!("urn:uuid:{}", Uuid::new_v4());
-    match (handler, request) {
-        (Some(h), Some(req)) => {
-            // Apply §8.1 routing — identityMismatch goes to the
-            // transport-authenticated peer (or is suppressed; we still
-            // synthesise the document for the HTTP body, but route the
-            // outbound recipient correctly).
-            match h.reject(req, new_id.clone(), reason.clone()) {
-                Some(resp) => resp,
-                None => suppressed_error_response(&new_id),
-            }
-        }
-        (_, Some(req)) => req.reject_with(new_id, reason),
-        _ => {
-            // No request context — synthesise a free-standing error doc.
-            // This branch is hit when the body failed to deserialise into
-            // a TrustTask at all.
-            // `trust_task_error_type_uri()` rather than a version spelled out
-            // here: this crate emitted `trust-task-error/0.2` on these two
-            // fallback paths while `trust-tasks-rs` and the TypeScript runtime
-            // both emitted `0.5`, so the version a producer saw depended on
-            // which branch of this function it hit. One definition, one answer.
-            let mut doc = TrustTask::new(
-                new_id,
-                trust_tasks_rs::trust_task_error_type_uri(),
-                ErrorPayload::from(reason),
-            );
-            doc.issued_at = Some(trust_tasks_rs::issued_at_now());
-            doc
-        }
-    }
+/// An error document for a body that did not parse into a Trust Task at all,
+/// so there is nothing to address it to.
+///
+/// `trust_task_error_type_uri()` rather than a version spelled out here: this
+/// crate once emitted `trust-task-error/0.2` on its fallback paths while
+/// `trust-tasks-rs` and the TypeScript runtime both emitted `0.5`, so the
+/// version a producer saw depended on which branch it hit. One definition,
+/// one answer.
+fn free_standing_error(reason: RejectReason) -> ErrorResponse {
+    let mut doc = TrustTask::new(
+        new_id(),
+        trust_tasks_rs::trust_task_error_type_uri(),
+        ErrorPayload::from(reason),
+    );
+    doc.issued_at = Some(trust_tasks_rs::issued_at_now());
+    doc
 }
 
-/// When `TransportHandler::reject` returns `None` (no transport-
-/// authenticated sender under identityMismatch), the framework rule
-/// (SPEC §8.1) is that the consumer SHOULD NOT emit a response. HTTP
-/// gives us no way to "not emit" — the TCP connection already exists and
-/// the peer is waiting for a status line. We therefore emit the *same*
-/// generic `malformedRequest`/400 that a body parse failure produces.
+/// When the pipeline suppresses an answer (§8.1: an `identityMismatch` with
+/// no transport-authenticated sender), the framework rule is that the
+/// consumer SHOULD NOT emit a response. HTTP gives us no way to "not emit" —
+/// the TCP connection already exists and the peer is waiting for a status
+/// line. We therefore emit the *same* generic `malformedRequest`/400 that a
+/// body parse failure produces.
 ///
 /// Crucially we MUST NOT echo the `identityMismatch` code or status here
 /// (SPEC §12.4): an unauthenticated prober who POSTs a spoofed in-band
@@ -1293,22 +1250,10 @@ fn build_error_response(
 /// identity-probing oracle. Collapsing to the indistinguishable generic
 /// rejection removes that signal; the diagnostic loss for honest peers is
 /// the deliberate, safer trade.
-fn suppressed_error_response(new_id: &str) -> ErrorResponse {
-    let mut doc = TrustTask::new(
-        new_id.to_string(),
-        trust_tasks_rs::trust_task_error_type_uri(),
-        ErrorPayload::from(RejectReason::MalformedRequest {
-            reason: String::new(),
-        }),
-    );
-    doc.issued_at = Some(trust_tasks_rs::issued_at_now());
-    doc
-}
-
-/// Make sure StandardCode → TrustTaskCode conversion is available where
-/// we map status codes.
-fn _verify_standard_code_into() {
-    let _: trust_tasks_rs::TrustTaskCode = StandardCode::Expired.into();
+fn suppressed_error_response() -> ErrorResponse {
+    free_standing_error(RejectReason::MalformedRequest {
+        reason: String::new(),
+    })
 }
 
 /// Unless discovery is public, refuse a caller with no transport-authenticated
@@ -1327,54 +1272,4 @@ fn refuse_unauthenticated_discovery(
         });
     }
     Ok(())
-}
-
-#[cfg(test)]
-mod release_tests {
-    use super::*;
-    use std::future::Future;
-    use trust_tasks_rs::{ReplayGuardError, ReplayVerdict};
-
-    /// `release` never completes, as a store round trip in progress when the
-    /// request is cancelled; `release_abandoned` releases at once.
-    struct StalledRelease(InMemoryReplayGuard);
-
-    #[async_trait::async_trait]
-    impl ReplayGuard for StalledRelease {
-        async fn claim(
-            &self,
-            id: &str,
-            digest: &DocumentDigest,
-            retain_until: Option<chrono::DateTime<chrono::Utc>>,
-            now: chrono::DateTime<chrono::Utc>,
-        ) -> Result<ReplayVerdict, ReplayGuardError> {
-            self.0.claim(id, digest, retain_until, now).await
-        }
-        async fn release(&self, _: &str, _: &DocumentDigest) -> Result<(), ReplayGuardError> {
-            std::future::pending().await
-        }
-        fn release_abandoned(&self, id: &str, digest: &DocumentDigest) {
-            self.0.release_abandoned(id, digest);
-        }
-    }
-
-    /// A request dropped while its claim's release is awaited (a timeout
-    /// layer, a client disconnect) still releases the claim.
-    #[test]
-    fn a_release_cancelled_mid_await_still_releases_the_claim() {
-        let guard = StalledRelease(InMemoryReplayGuard::new(8));
-        let digest = trust_tasks_rs::received_document_digest(&serde_json::json!({"id": "req-1"}));
-        let now = chrono::Utc::now();
-        let mut cx = std::task::Context::from_waker(std::task::Waker::noop());
-        let claimed = std::pin::pin!(guard.claim("req-1", &digest, None, now)).poll(&mut cx);
-        assert!(matches!(
-            claimed,
-            std::task::Poll::Ready(Ok(ReplayVerdict::Fresh))
-        ));
-
-        let released = std::pin::pin!(release_with(&guard, "req-1", &digest)).poll(&mut cx);
-        assert!(released.is_pending());
-        // The pinned future was dropped at the end of the statement above.
-        assert_eq!(guard.0.len(), 0, "the claim was left in flight");
-    }
 }

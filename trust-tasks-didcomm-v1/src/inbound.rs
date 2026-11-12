@@ -229,6 +229,7 @@ impl DidcommV1Consumer {
                 Some(guard) => ReplayPolicy::Guard(guard),
                 None => ReplayPolicy::NotConsequential,
             },
+            ..ConsumeChecks::not_consequential()
         }
     }
 

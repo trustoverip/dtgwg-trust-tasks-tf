@@ -394,6 +394,7 @@ async fn an_unboundable_document_is_refused_rather_than_executed() {
     let checks = ConsumeChecks {
         freshness: FreshnessPolicy::default().with_max_age(TimeDelta::minutes(5)),
         replay: ReplayPolicy::Guard(&guard),
+        ..ConsumeChecks::not_consequential()
     };
     let outcome: ConsumeOutcome<grant::Response> = consume_inbound(
         &NoopHandler::new(),

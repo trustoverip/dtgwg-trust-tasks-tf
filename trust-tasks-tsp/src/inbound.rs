@@ -230,6 +230,7 @@ impl TspConsumer {
                 Some(guard) => ReplayPolicy::Guard(guard),
                 None => ReplayPolicy::NotConsequential,
             },
+            ..ConsumeChecks::not_consequential()
         }
     }
 
