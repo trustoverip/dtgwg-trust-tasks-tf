@@ -983,6 +983,15 @@ mod messaging {
         mod ack {
             mod v0_1;
         }
+        mod admin_list {
+            mod v0_1;
+        }
+        mod admin_revoke {
+            mod v0_1;
+        }
+        mod admin_revoke_all {
+            mod v0_1;
+        }
         mod attach {
             mod v0_1;
         }
