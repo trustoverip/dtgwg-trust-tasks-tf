@@ -154,6 +154,10 @@ jobs:
           git config user.name "$(jq -r '.name // .login' <<<"$author_json")"
           git config user.email "$(jq -r '.id' <<<"$author_json")+$(jq -r '.login' <<<"$author_json")@users.noreply.github.com"
           branch="withdraw/$AS_OF"
+          # Only the spec folders and the generated trees, checked from this
+          # checkout before the patch is applied. After `git apply` nothing from
+          # the working tree runs: the push below is inline for that reason.
+          ./scripts/check-patch-paths.sh withdraw "$batch/changes.patch"
           git switch -C "$branch"
           git apply --index --binary "$batch/changes.patch"
           # A sibling package whose (superseded) block this batch deletes breaks too,
@@ -193,5 +197,11 @@ jobs:
           } > "$RUNNER_TEMP/body.md"
           { echo "$title"; echo; cat "$RUNNER_TEMP/body.md"; } > "$RUNNER_TEMP/message.txt"
           git commit -s -q -F "$RUNNER_TEMP/message.txt"
-          ./scripts/git-push-with-token.sh -f origin "$branch"
+          { set +x; } 2>/dev/null
+          auth=$(printf 'x-access-token:%s' "$PUSH_TOKEN" | base64 | tr -d '\n')
+          echo "::add-mask::$auth"
+          GIT_CONFIG_COUNT=1 \
+            GIT_CONFIG_KEY_0="http.https://github.com/.extraheader" \
+            GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $auth" \
+            git push -f origin "$branch"
           gh pr create --base main --head "$branch" --title "$title" --body-file "$RUNNER_TEMP/body.md"

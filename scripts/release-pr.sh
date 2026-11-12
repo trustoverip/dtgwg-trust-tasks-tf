@@ -41,7 +41,9 @@
 #                               table as DIR/summary.md.
 #   release-pr.sh open DIR      step 3. Applies DIR/changes.patch to the same
 #                               commit, commits it and pushes the branch and the
-#                               PR. Runs only git, gh, jq and sed.
+#                               PR. Runs only git, gh, jq and sed, and refuses a
+#                               patch outside scripts/check-patch-paths.sh's
+#                               release allowlist before applying it.
 #   release-pr.sh               both, one after the other (by hand).
 #
 # publish.yml runs the two phases in separate jobs, `release-pr` and
@@ -50,8 +52,7 @@
 # Run from the repository root, on a full-history checkout of `main`, with
 # `release-plz`, `git-cliff`, `node` and `jq` on PATH for `prepare`, and `gh`
 # authenticated (GH_TOKEN) for `open`. When PUSH_TOKEN is set, `open` pushes
-# with it (scripts/git-push-with-token.sh); otherwise with git's own
-# credentials.
+# with it; otherwise with git's own credentials.
 
 set -euo pipefail
 
@@ -146,12 +147,37 @@ prepare() {
 }
 
 # ── open: commit, push and open the PR (the token, and nothing else) ─────────
+
+# `git push "$@"`, authenticated with $PUSH_TOKEN when it is set (the release
+# workflow), or with git's own credentials when it is not (by hand). Defined
+# here rather than calling scripts/git-push-with-token.sh, because by the time
+# `open` pushes, the working tree is the patch's, and nothing from it may run
+# while the token is in the environment.
+push_branch() {
+  { set +x; } 2>/dev/null
+  if [ -z "${PUSH_TOKEN:-}" ]; then
+    git push "$@"
+    return
+  fi
+  local auth
+  auth=$(printf 'x-access-token:%s' "$PUSH_TOKEN" | base64 | tr -d '\n')
+  echo "::add-mask::$auth"
+  GIT_CONFIG_COUNT=1 \
+    GIT_CONFIG_KEY_0="http.https://github.com/.extraheader" \
+    GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $auth" \
+    git push "$@"
+}
+
 open_pr() {
   local out="$1"
   if [ "$(git rev-parse HEAD)" != "$(cat "$out/base")" ]; then
     echo "::error::the release change was computed against $(cat "$out/base"), not $(git rev-parse HEAD)" >&2
     exit 1
   fi
+  # Before anything else, and from this checkout as it stands: the patch may
+  # touch only the files a release changes (scripts/check-patch-paths.sh).
+  # After `git apply` below, nothing from the working tree runs.
+  ./scripts/check-patch-paths.sh release "$out/changes.patch"
 
   # ── Commit identity ───────────────────────────────────────────────────────────
   # Author as the identity behind the release token, not as the bot. EasyCLA
@@ -211,11 +237,7 @@ open_pr() {
   # -s: DCO sign-off is mandatory on every commit in this repo.
   git commit -q -s -m "$title" -m "$(cat "$table_file")" -m \
     "Automated by scripts/release-pr.sh. Merging this PR publishes every package listed."
-  if [ -n "${PUSH_TOKEN:-}" ]; then
-    ./scripts/git-push-with-token.sh --force origin "$BRANCH"
-  else
-    git push --force origin "$BRANCH"
-  fi
+  push_branch --force origin "$BRANCH"
 
   # ── Open or refresh the PR ───────────────────────────────────────────────────
   # Written to a file rather than captured in `$(cat <<EOF)`: bash scans a

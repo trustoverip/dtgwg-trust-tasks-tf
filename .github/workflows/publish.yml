@@ -75,10 +75,11 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      # The binding crates pull in Affinidi's TDK (keyring / secret-storage),
-      # whose build scripts probe for libdbus-1 via pkg-config. `cargo publish`
-      # compiles the packaged tarball, so the release job needs them too — same
-      # as the `test` / `package` jobs in rust.yml.
+      # Kept from when this job compiled what it published, for the TDK
+      # dependencies' build scripts, which probe for libdbus-1 via pkg-config.
+      # It no longer compiles anything (`publish_no_verify = true` in
+      # release-plz.toml), so it is probably unneeded. Dropping it is left to a
+      # change of its own: the install is seconds, and a failed release is not.
       - name: Install libdbus-1-dev
         run: |
           # `apt-get update` exits non-zero when ANY configured source fails, and
@@ -258,6 +259,35 @@ jobs:
           name: npm-${{ matrix.dir }}
           path: ${{ runner.temp }}/npm-pack
 
+      # The tarball comes from a job that ran third-party code, so check it is
+      # the package and version this job decided to publish, from its own
+      # checkout, and that it carries no `publishConfig` (which could send it
+      # to another registry or tag) before it goes anywhere.
+      - name: Check the tarball is the package decided on
+        if: steps.decide.outputs.should_publish == 'true'
+        env:
+          NAME: ${{ matrix.name }}
+          VERSION: ${{ steps.decide.outputs.version }}
+        run: |
+          set -euo pipefail
+          tarballs=("$RUNNER_TEMP"/npm-pack/*.tgz)
+          if [ "${#tarballs[@]}" -ne 1 ] || [ ! -f "${tarballs[0]}" ]; then
+            echo "::error::expected exactly one tarball from build-npm, found: ${tarballs[*]}"
+            exit 1
+          fi
+          manifest=$(tar -xzOf "${tarballs[0]}" package/package.json)
+          got_name=$(jq -r '.name' <<<"$manifest")
+          got_version=$(jq -r '.version' <<<"$manifest")
+          if [ "$got_name" != "$NAME" ] || [ "$got_version" != "$VERSION" ]; then
+            echo "::error::the tarball is $got_name@$got_version, not $NAME@$VERSION"
+            exit 1
+          fi
+          if jq -e 'has("publishConfig")' <<<"$manifest" >/dev/null; then
+            echo "::error::the tarball's package.json has a publishConfig; refusing to publish it"
+            exit 1
+          fi
+          echo "TARBALL=${tarballs[0]}" >> "$GITHUB_ENV"
+
       # Trusted publishing (OIDC) requires npm >= 11.5.1; Node 20 ships older.
       - name: Update npm
         if: steps.decide.outputs.should_publish == 'true'
@@ -276,12 +306,7 @@ jobs:
           VERSION: ${{ steps.decide.outputs.version }}
         run: |
           set -uo pipefail
-          tarballs=("$RUNNER_TEMP"/npm-pack/*.tgz)
-          if [ "${#tarballs[@]}" -ne 1 ] || [ ! -f "${tarballs[0]}" ]; then
-            echo "::error::expected exactly one tarball from build-npm, found: ${tarballs[*]}"
-            exit 1
-          fi
-          npm publish "${tarballs[0]}" --access public 2>&1 | tee "$RUNNER_TEMP/npm-publish.log"
+          npm publish "$TARBALL" --access public 2>&1 | tee "$RUNNER_TEMP/npm-publish.log"
           status=${PIPESTATUS[0]}
           if [ "$status" -ne 0 ] && grep -q 'previously staged version' "$RUNNER_TEMP/npm-publish.log"; then
             echo "::error::$NAME@$VERSION is already STAGED on npm, awaiting a maintainer. Approve it (npm stage list $NAME, then npm stage approve <stage-id>, with 2FA) or reject it (npm stage reject <stage-id>), then re-run this job."
@@ -483,6 +508,17 @@ jobs:
           name: go-verified-${{ strategy.job-index }}
           path: ${{ runner.temp }}/verified
 
+      # The marker names the commit it verified. Artifacts outlive an attempt,
+      # so a re-run must not tag on the strength of another commit's marker.
+      - &verified-sha
+        name: Require the marker to be for this commit
+        if: steps.decide.outputs.should_publish == 'true' || steps.decide.outputs.should_tag == 'true'
+        run: |
+          if [ "$(cat "$RUNNER_TEMP/verified/sha")" != "$GITHUB_SHA" ]; then
+            echo "::error::the verify marker is for $(cat "$RUNNER_TEMP/verified/sha"), not $GITHUB_SHA"
+            exit 1
+          fi
+
       # For `go list` in the proxy warm-up only; nothing here builds the module.
       - *go-setup
 
@@ -672,6 +708,8 @@ jobs:
         with:
           name: dart-verified-${{ matrix.dir }}
           path: ${{ runner.temp }}/verified
+
+      - *verified-sha
 
       - name: Tag the release
         if: steps.decide.outputs.should_tag == 'true'
