@@ -113,7 +113,8 @@ func didOf(verificationMethod string) string {
 // Sign returns a copy of doc with a proof over everything else in it. It refuses
 // — returning an error — to sign a document whose issuer is absent or is not the
 // signer's did:key: such a document could never verify (SPEC §4.7). An existing
-// proof is replaced.
+// proof is replaced. A document carrying @context gets a proof carrying the
+// same @context, as the cryptosuites' Create Proof algorithm requires.
 func (s *Signer) Sign(doc json.RawMessage, opts SignOptions) (json.RawMessage, error) {
 	tree, err := decode(doc)
 	if err != nil {
@@ -155,6 +156,14 @@ func (s *Signer) Sign(doc json.RawMessage, opts SignOptions) (json.RawMessage, e
 		"created":            created.UTC().Format(time.RFC3339),
 		"verificationMethod": s.VerificationMethod,
 		"proofPurpose":       purpose,
+	}
+	// eddsa-jcs-2022 / ecdsa-jcs-2019 §3.3.1 step 2: "If
+	// unsecuredDocument.@context is present, set proof.@context to
+	// unsecuredDocument.@context." The proof configuration is hashed with it and
+	// the emitted proof carries it. A document without @context (the usual
+	// Trust Task) gets exactly the proof it got before.
+	if context, ok := body["@context"]; ok {
+		config["@context"] = context
 	}
 
 	configBytes, err := canonicalize(config)

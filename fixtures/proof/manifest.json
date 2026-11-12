@@ -36,6 +36,48 @@
       "why": "ecdsa-jcs-2019 over P-384, signed by the Go backend with a high S, which every verifier must accept (Go's ecdsa.Sign does not normalise S)."
     },
     {
+      "file": "eddsa-jcs-2022-context.json",
+      "cryptosuite": "eddsa-jcs-2022",
+      "expect": "valid",
+      "why": "The baseline document with an `@context` array, which SPEC §4.6 permits. eddsa-jcs-2022 §3.3.1 step 2 copies the document's `@context` into the proof, so the proof carries the same array and the proof configuration hash covers it. Its proofValue is reproduced byte for byte by the Rust, TypeScript, Dart and Go signers."
+    },
+    {
+      "file": "eddsa-jcs-2022-context-proof-omits.json",
+      "cryptosuite": "eddsa-jcs-2022",
+      "expect": "valid",
+      "why": "The same document signed with no `@context` in the proof, as every signer here emitted before #1113. §3.3.2 step 4 applies only when the proof carries `@context`, so the proof configuration is hashed as received and the proof verifies. The Dart verifier used to refuse it, because ssi copies the document's `@context` into the configuration before hashing."
+    },
+    {
+      "file": "eddsa-jcs-2022-context-string.json",
+      "cryptosuite": "eddsa-jcs-2022",
+      "expect": "valid",
+      "exceptions": {
+        "rust": {
+          "expect": "invalid",
+          "why": "Known gap: affinidi-data-integrity 0.8's proof type holds `@context` only as an array of strings, so a proof whose `@context` is a single string does not parse. The Rust signer emits no proof `@context` for such a document (the -proof-omits form), which every verifier accepts."
+        }
+      },
+      "why": "A document whose `@context` is a single string, signed with the same string in the proof (§3.3.1 step 2 copies the value as it is)."
+    },
+    {
+      "file": "eddsa-jcs-2022-context-extended.json",
+      "cryptosuite": "eddsa-jcs-2022",
+      "expect": "invalid",
+      "why": "Signed with `@context` [credentials/v2] in both the document and the proof; a second entry was then appended to the document's `@context`. The cryptosuite accepts this (§3.3.2 step 4 checks only that the document's `@context` starts with the proof's, then hashes the proof's in its place). The Trust Tasks verifiers require the two to be equal: a ProofVerifier returns no verified document, so the consumer would act on a `@context` entry no signature covers. Every verifier refused it before #1113 too."
+    },
+    {
+      "file": "eddsa-jcs-2022-context-mismatch.json",
+      "cryptosuite": "eddsa-jcs-2022",
+      "expect": "invalid",
+      "why": "The proof's `@context` is not a prefix of the document's, although the signature over the two as they stand is correct. §3.3.2 step 4.1 sets verified to false."
+    },
+    {
+      "file": "eddsa-jcs-2022-context-proof-only.json",
+      "cryptosuite": "eddsa-jcs-2022",
+      "expect": "invalid",
+      "why": "The proof carries `@context` and the document none, with a signature correct over both as they stand. §3.3.2 step 4.1 fails: the document has no `@context` to start with the proof's."
+    },
+    {
       "file": "eddsa-jcs-2022-timestamp-spellings.json",
       "cryptosuite": "eddsa-jcs-2022",
       "expect": "valid",

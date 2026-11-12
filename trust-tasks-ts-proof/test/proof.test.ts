@@ -88,6 +88,52 @@ test("interop: reproduces the Rust eddsa-jcs-2022 signature byte for byte", () =
   assert.deepEqual(signed.proof, rustProof);
 });
 
+// The shared `@context` vector (fixtures/proof/eddsa-jcs-2022-context.json):
+// eddsa-jcs-2022 §3.3.1 step 2 copies the document's `@context` into the proof,
+// and every signer reproduces its proofValue byte for byte.
+test("interop: reproduces the shared @context vector byte for byte", () => {
+  const vector = JSON.parse(
+    readFileSync(fileURLToPath(new URL("../../../fixtures/proof/eddsa-jcs-2022-context.json", import.meta.url)), "utf8"),
+  ) as TrustTaskDocument<unknown>;
+  const signer = signerFromPrivateKey("ed25519", new Uint8Array(32).fill(7));
+  const proof = vector.proof as Record<string, unknown>;
+  const signed = signTrustTask(vector, signer, {
+    created: new Date(proof.created as string),
+    proofPurpose: proof.proofPurpose as string,
+  });
+  assert.deepEqual(signed.proof, proof);
+  assert.deepEqual((signed.proof as Record<string, unknown>)["@context"], (vector as Record<string, unknown>)["@context"]);
+});
+
+test("a document without @context gets a proof without @context", () => {
+  const signer = seededSigner("ed25519", 1);
+  const signed = signTrustTask(grant(signer.did), signer);
+  assert.equal(Object.prototype.hasOwnProperty.call(signed.proof, "@context"), false);
+});
+
+for (const [name, mutate] of [
+  ["removed from the document", (d: Record<string, unknown>) => delete d["@context"]],
+  ["reordered in the document", (d: Record<string, unknown>) => (d["@context"] as unknown[]).reverse()],
+  ["changed in the proof", (d: Record<string, unknown>) => ((d.proof as Record<string, unknown>)["@context"] = ["https://example.org/other"])],
+] as const) {
+  test(`@context ${name}: malformedProof`, async () => {
+    const signer = seededSigner("ed25519", 1);
+    const signed = structuredClone(
+      signTrustTask({ "@context": ["https://www.w3.org/ns/credentials/v2", "https://example.org/v1"], ...grant(signer.did) } as TrustTaskDocument<unknown>, signer),
+    ) as Record<string, unknown>;
+    mutate(signed);
+    const r = await verifier.verifyDetailed(signed as TrustTaskDocument<unknown>);
+    assert.equal(r.failure, "malformedProof", r.detail);
+  });
+}
+
+test("an inline object @context round-trips", async () => {
+  const signer = seededSigner("ed25519", 1);
+  const doc = { "@context": [{ ex: "https://example.org/#" }], ...grant(signer.did) } as TrustTaskDocument<unknown>;
+  const r = await verifier.verifyDetailed(signTrustTask(doc, signer));
+  assert.equal(r.valid, true, r.detail);
+});
+
 // ecdsa-jcs-2019 against node:crypto, an ECDSA that is not noble: ECDSA with
 // the suite hash over hashData, r‖s encoded — what Go's ecdsa.Sign produces.
 // The round trips above cannot catch a hashing mistake made on both sides.
