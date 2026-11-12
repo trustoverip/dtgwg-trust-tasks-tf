@@ -80,7 +80,8 @@ pub use status::status_for_code;
 
 #[cfg(feature = "client")]
 pub use client::{
-    ClientError, HttpsClient, HttpsClientBuilder, DEFAULT_CONNECT_TIMEOUT, DEFAULT_TIMEOUT,
+    ClientError, HttpsClient, HttpsClientBuilder, DEFAULT_CONNECT_TIMEOUT,
+    DEFAULT_MAX_RESPONSE_BYTES, DEFAULT_TIMEOUT,
 };
 
 #[cfg(feature = "server")]

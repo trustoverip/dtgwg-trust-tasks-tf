@@ -43,14 +43,23 @@ to this request: same thread, the request's type with `#response`, issued by
 |---|---|
 | `TrustTaskErrorException` | The server refused with a `trust-task-error`; the code is authoritative |
 | `DuplicateAbsorbedException` | `202`/`204`: the server had already accepted this document. **Not a failure** |
-| `HttpStatusException` | A non-2xx with no error document — a proxy, a `401`. Says nothing about the task |
-| `TransportException` | No answer at all. Retry by re-sending the same bytes (SPEC §8.4) |
+| `HttpStatusException` | A non-2xx with no error document — a proxy, a `401`, a redirect. Says nothing about the task |
+| `TransportException` | No answer at all — connection, TLS, timeout or any other client error. Retry by re-sending the same bytes (SPEC §8.4) |
 | `ResponseMismatchException` | A response, but not to this request, or not from this server |
+| `ResponseTooLargeException` | The body exceeded `maxResponseBytes` (256 KiB by default); reading stopped there |
 | `ResponseDecodeException`, `ResponseProofException` | A response this client cannot accept |
 
 Use `sendAck` for a specification that defines no success response. Pass
-`responseVerifier` to require a verified proof on every response. The client
-uses `package:http`, so it runs on the web and in Flutter.
+`responseVerifier` to require a verified proof on every response; it requires
+`serverVid`. The client uses `package:http`, so it runs on the web and in
+Flutter.
+
+The base must be `https`. A plain `http` base is accepted on loopback, or
+elsewhere with `allowInsecureHttp: true` — but a `token` is never sent over
+non-loopback `http`. Redirects are not followed (the signed document is never
+re-posted to another URL), the response body is capped at `maxResponseBytes`,
+and `timeout` covers reading the body as well as connecting. Exception
+messages do not quote the response body.
 
 ## Server
 
