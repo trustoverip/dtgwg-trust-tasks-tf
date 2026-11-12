@@ -22,6 +22,12 @@ stays free of any crypto dependency.
 npm install @openvtc/trust-tasks-capability-client
 ```
 
+Requires **Node.js 20.19 or later** (`engines`), or a browser or React Native
+runtime with the global Web Crypto API (`crypto.randomUUID`, which browsers
+expose only in a secure context). The package is ESM; its `exports` carry a
+`default` condition, so `require()` also works on a Node.js that can load ESM
+synchronously (20.19+, 22.12+).
+
 ## Build a request, hold its thread, act on the reply
 
 ```ts
