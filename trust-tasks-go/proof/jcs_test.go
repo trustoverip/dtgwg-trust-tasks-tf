@@ -63,6 +63,20 @@ func TestLessUTF16(t *testing.T) {
 	}
 }
 
+// The member sort in canonicalize (which precomputes each name's UTF-16 units)
+// orders an astral key before a U+E000..U+FFFF key, as lessUTF16 does.
+func TestCanonicalizeOrdersMembersByUTF16(t *testing.T) {
+	astral, bmp := "\U00010000", ""
+	got, err := canonicalize(map[string]any{bmp: "b", "a": "a", astral: "x"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := `{"a":"a","` + astral + `":"x","` + bmp + `":"b"}`
+	if string(got) != want {
+		t.Errorf("canonicalize = %q, want %q", got, want)
+	}
+}
+
 func TestCanonicalizeSortsMembersAndEscapes(t *testing.T) {
 	tree, err := decode([]byte(`{"b":1,"a":"x\ty","c":[3,2,1]}`))
 	if err != nil {
