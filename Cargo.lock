@@ -5513,7 +5513,6 @@ name = "trust-tasks-example-getting-started"
 version = "0.0.0"
 dependencies = [
  "affinidi-secrets-resolver",
- "chrono",
  "tokio",
  "trust-tasks",
  "trust-tasks-build",

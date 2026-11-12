@@ -24,7 +24,10 @@ String _freshId() {
   return s.toString();
 }
 
-String _now() => DateTime.now().toUtc().toIso8601String();
+/// `issuedAt` for a built document: UTC in whole seconds, through the core's
+/// [systemClock]. A full-precision timestamp is the SPEC §13.1 item 3
+/// fingerprint, and readers with a narrower RFC 3339 profile refuse it (#970).
+String _now() => systemClock();
 
 /// Build a capability Trust Task addressed [issuerDid] → [recipientDid].
 ///

@@ -85,13 +85,20 @@ func writeCanonical(b *strings.Builder, value any) error {
 		}
 		b.WriteByte(']')
 	case map[string]any:
-		names := make([]string, 0, len(v))
-		for name := range v {
-			names = append(names, name)
+		// Each name's UTF-16 encoding is computed once, not twice per
+		// comparison inside the sort.
+		type member struct {
+			name  string
+			units []uint16
 		}
-		sort.Slice(names, func(i, j int) bool { return lessUTF16(names[i], names[j]) })
+		members := make([]member, 0, len(v))
+		for name := range v {
+			members = append(members, member{name, utf16.Encode([]rune(name))})
+		}
+		sort.Slice(members, func(i, j int) bool { return lessUnits(members[i].units, members[j].units) })
 		b.WriteByte('{')
-		for i, name := range names {
+		for i, m := range members {
+			name := m.name
 			if i > 0 {
 				b.WriteByte(',')
 			}
@@ -115,8 +122,11 @@ func writeCanonical(b *strings.Builder, value any) error {
 // astral-plane character (encoded as a surrogate pair, 0xD800..0xDFFF) sorts
 // against a BMP character in U+E000..U+FFFF.
 func lessUTF16(a, b string) bool {
-	ua := utf16.Encode([]rune(a))
-	ub := utf16.Encode([]rune(b))
+	return lessUnits(utf16.Encode([]rune(a)), utf16.Encode([]rune(b)))
+}
+
+// lessUnits compares two UTF-16 code-unit sequences lexicographically.
+func lessUnits(ua, ub []uint16) bool {
 	n := len(ua)
 	if len(ub) < n {
 		n = len(ub)

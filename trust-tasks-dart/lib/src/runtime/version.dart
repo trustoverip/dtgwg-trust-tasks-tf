@@ -5,7 +5,7 @@
 /// the manifest — this is a convenience: a consumer can log which binding
 /// version produced a document without reading the package metadata.
 ///
-/// DO NOT EDIT BY HAND. `scripts/release-dart-pr.sh` rewrites it alongside the
+/// DO NOT EDIT BY HAND. `scripts/release-bump-dart.sh` rewrites it alongside the
 /// pubspec, and `npm run check-bindings` fails if the two disagree. See
 /// RELEASING.md — a version in a feature PR collides with every other open PR.
 library;

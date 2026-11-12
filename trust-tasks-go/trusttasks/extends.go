@@ -38,7 +38,9 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
+	"sort"
 	"strings"
+	"sync"
 
 	"github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/specs"
 )
@@ -240,9 +242,9 @@ func ReadForSpecWith(
 		// own terms.
 		return received, nil, nil
 	}
-	var schema any
-	if err := json.Unmarshal([]byte(spec.PayloadSchema), &schema); err != nil {
-		return nil, nil, fmt.Errorf("trusttasks: spec.PayloadSchema is not JSON: %w", err)
+	schema, err := parsedSchema(spec.PayloadSchema)
+	if err != nil {
+		return nil, nil, err
 	}
 	value, err := decodeNumbers(payload)
 	if err != nil {
@@ -271,6 +273,40 @@ func decodeNumbers(data []byte) (any, error) {
 		return nil, err
 	}
 	return value, nil
+}
+
+// parsedSchemas caches each payload schema's parse, keyed by the schema text
+// itself rather than the Type URI, so two policies naming one Type URI with
+// different schemas cannot read each other's. The pruner only reads a schema,
+// so a cached value is shared safely across goroutines.
+var parsedSchemas sync.Map // string -> any
+
+func parsedSchema(text string) (any, error) {
+	if cached, ok := parsedSchemas.Load(text); ok {
+		return cached, nil
+	}
+	var schema any
+	if err := json.Unmarshal([]byte(text), &schema); err != nil {
+		return nil, fmt.Errorf("trusttasks: spec.PayloadSchema is not JSON: %w", err)
+	}
+	cached, _ := parsedSchemas.LoadOrStore(text, schema)
+	return cached, nil
+}
+
+// compiledPatterns caches each patternProperties pattern's compilation; a
+// pattern RE2 cannot compile is cached as a nil *regexp.Regexp.
+var compiledPatterns sync.Map // string -> *regexp.Regexp
+
+func compiledPattern(pattern string) *regexp.Regexp {
+	if cached, ok := compiledPatterns.Load(pattern); ok {
+		return cached.(*regexp.Regexp)
+	}
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		re = nil
+	}
+	compiledPatterns.Store(pattern, re)
+	return re
 }
 
 // maxPruneDepth bounds schema recursion that consumes no value — a `$ref` cycle.
@@ -425,16 +461,27 @@ func (p *pruner) evaluates(schema any, name string, depth int) bool {
 }
 
 // matchPattern returns the subschema of the first patternProperties entry
-// matching name. A pattern Go's regexp cannot compile (ECMA-262 has constructs
-// RE2 lacks) is treated as matching, so its member is kept rather than dropped.
+// matching name, the patterns taken in sorted order so the choice between two
+// matching patterns with different subschemas is deterministic (a Go map's
+// iteration order is not). A pattern Go's regexp cannot compile (ECMA-262 has
+// constructs RE2 lacks) is treated as matching, so its member is kept rather
+// than dropped.
 func matchPattern(patterns map[string]any, name string) (any, bool) {
-	for pattern, sub := range patterns {
-		re, err := regexp.Compile(pattern)
-		if err != nil {
+	if len(patterns) == 0 {
+		return nil, false
+	}
+	keys := make([]string, 0, len(patterns))
+	for pattern := range patterns {
+		keys = append(keys, pattern)
+	}
+	sort.Strings(keys)
+	for _, pattern := range keys {
+		re := compiledPattern(pattern)
+		if re == nil {
 			return true, true
 		}
 		if re.MatchString(name) {
-			return sub, true
+			return patterns[pattern], true
 		}
 	}
 	return nil, false

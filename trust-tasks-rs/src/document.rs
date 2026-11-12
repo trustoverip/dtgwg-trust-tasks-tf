@@ -154,7 +154,7 @@ impl<P> TrustTask<P> {
 
     /// Apply the SPEC.md §7.2 item 8 / §4.8.2 audience-binding rule: when
     /// `proof` is present and `recipient` is absent in-band, reject the
-    /// document with `malformed_request` unless the originating
+    /// document with `malformedRequest` unless the originating
     /// specification is a *bearer specification* (§4.8.3).
     ///
     /// This check requires the payload type implement [`Payload`] so the
@@ -237,8 +237,8 @@ impl<P> TrustTask<P> {
     ///
     /// # ⚠ This is *not* the full §7.2 check
     ///
-    /// A conforming consumer pipeline runs all six (now eight) items of
-    /// §7.2. This method covers items 4 and 5 only:
+    /// A conforming consumer pipeline runs every item of §7.2. This method
+    /// covers items 4 and 5 only:
     ///
     /// | §7.2 item | What it checks                                              | Where it lives                                      |
     /// |-----------|-------------------------------------------------------------|-----------------------------------------------------|
@@ -250,10 +250,13 @@ impl<P> TrustTask<P> {
     /// | 6         | In-band vs transport identity                               | [`TransportHandler::resolve_parties`](crate::TransportHandler::resolve_parties) |
     /// | 7         | Proof handling (`IS_PROOF_REQUIRED` + verification policy)  | [`consume_inbound`](crate::consume_inbound) + [`ProofVerifier`](crate::ProofVerifier) (cryptosuite in a companion crate) |
     /// | 8         | Audience binding (proof+no-recipient on non-bearer specs)   | [`enforce_audience_binding`](Self::enforce_audience_binding) |
+    /// | 9, 10, 12 | No authority from `ceremony`; validation is not authorization; re-evaluate before effects | the caller's handler |
+    /// | 11        | Duplicate-execution record                                  | [`consume_inbound`](crate::consume_inbound), per its [`ConsumeChecks`](crate::ConsumeChecks) |
+    /// | 13        | Acceptance window over `issuedAt`                           | [`validate_freshness`](Self::validate_freshness), run by `consume_inbound` |
     ///
-    /// The full §7.2 pipeline is bundled in
-    /// [`consume_inbound`](crate::consume_inbound) — items 4–8 in one
-    /// call. Direct use of `validate_basic` is for callers that have
+    /// The framework's share of the §7.2 pipeline is bundled in
+    /// [`consume_inbound`](crate::consume_inbound) — items 2–8, 11 and 13
+    /// in one call. Direct use of `validate_basic` is for callers that have
     /// their own composition.
     ///
     /// Treat `validate_basic(now, my_vid)?` as **stage 2** of a multi-stage
@@ -283,7 +286,8 @@ impl<P> TrustTask<P> {
     ///
     /// Wires:
     ///
-    /// * `type` → `https://trusttasks.org/spec/trust-task-error/0.1`
+    /// * `type` → [`TRUST_TASK_ERROR_TYPE_URI`], the one `trust-task-error`
+    ///   version this library emits.
     /// * `threadId` → this request's `threadId`, falling back to its `id`
     ///   per SPEC.md §4.9.
     /// * `issuer` → this request's `recipient` (the rejecting consumer).
@@ -328,7 +332,7 @@ impl<P> TrustTask<P> {
     /// the in-band (contested) issuer.
     ///
     /// `recipient = None` is conformant: SPEC.md §8.1 permits a consumer
-    /// faced with an `identity_mismatch` rejection and no transport-
+    /// faced with an `identityMismatch` rejection and no transport-
     /// authenticated sender to suppress the response entirely; the caller
     /// can choose to drop the returned `ErrorResponse` in that case.
     pub fn reject_with_recipient(
@@ -535,10 +539,11 @@ pub(crate) mod rfc3339 {
 /// The TypeScript counterpart is `TRUST_TASK_ERROR_TYPE_URI` in
 /// `trust-tasks-ts/src/_runtime/document.ts`, kept equal to this value.
 ///
-/// `0.6` because this library populates the `inResponseTo` member of §8.2 and
-/// can emit every standard code `0.6` lists. Per §5.2 forward-minor
-/// compatibility a consumer of an earlier `0.x` SHOULD accept it, and `0.6`
-/// declares `extends: "0.5"`.
+/// The version is the one whose schema covers what this library writes: the
+/// `inResponseTo` member of §8.2 and every standard code it can emit. Per §5.2
+/// forward-minor compatibility a consumer of an earlier `0.x` SHOULD accept it.
+/// Moving it is a change to [`TRUST_TASK_ERROR_TYPE_URI`] alone; do not restate
+/// the number in prose, here or elsewhere.
 ///
 /// The value is [`TRUST_TASK_ERROR_TYPE_URI`], which is also
 /// [`ErrorPayload`]'s [`Payload::TYPE_URI`], so the URI an error response is

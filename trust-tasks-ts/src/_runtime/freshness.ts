@@ -4,12 +4,12 @@
  * Mirrors `freshness.rs` in trust-tasks-rs, deliberately closely: a TypeScript
  * consumer and a Rust one must reach the same verdict on the same document.
  *
- * Until this module, the only temporal check either runtime made was §7.2
- * item 4 — `expiresAt`, and only where the producer chose to set it.
- * `issuedAt` was carried on the type and looked at by nobody. That accepted a
- * document stamped a year in the future (for the whole of that year), and one
- * whose `expiresAt` sat at or before its own `issuedAt` — a validity interval
- * that never contained a valid instant.
+ * §7.2 item 4 (`expiresAt`) bounds a document only where the producer chose to
+ * set it. This module adds item 13: it bounds `issuedAt` — refusing a document
+ * stamped in the future beyond the skew tolerance, or older than the
+ * acceptance window where the policy sets one — and refuses one whose
+ * `expiresAt` sits at or before its own `issuedAt`, a validity interval that
+ * contains no valid instant.
  *
  * It is also what makes {@link ReplayGuard} implementable. SPEC §7.2
  * (*Bounding the record*) ties the duplicate-execution record to the

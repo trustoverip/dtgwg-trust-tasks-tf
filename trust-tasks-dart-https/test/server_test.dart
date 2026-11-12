@@ -428,6 +428,31 @@ void main() {
       expect(calls, ['crash', 'crash']);
     });
 
+    // #1119: handle() is documented "Never throws". An encoder whose output
+    // jsonEncode cannot write used to escape it from outside the try.
+    for (final (name, encodeResponse) in <(String, Object? Function(Echo))>[
+      ('throws', (_) => throw StateError('encoder failed')),
+      ('returns what jsonEncode cannot write', (_) => Object()),
+    ]) {
+      test('a response encoder that $name is internalError, not a throw',
+          () async {
+        final s = HttpsServer(
+          localVid: server,
+          auth: StaticBearerAuth({aliceToken: alice}),
+          clock: () => fixedNow,
+        )..on<Echo, Echo>(
+            spec: echoSpec,
+            decode: Echo.fromJson,
+            encode: (p) => p.toJson(),
+            encodeResponse: encodeResponse,
+            handler: (doc, ctx) async => doc.payload,
+          );
+        final reply = await s.handle(post(echoDoc()));
+        expect(reply.status, 500);
+        expect(codeOf(reply), 'internalError');
+      });
+    }
+
     test('a store that cannot be consulted fails closed with unavailable/503',
         () async {
       final calls = <String>[];

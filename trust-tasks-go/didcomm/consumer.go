@@ -94,8 +94,9 @@ type Received[R any] struct {
 }
 
 // Receive opens wire addressed to the consumer's Recipient, resolving the
-// sender's key from the envelope's authenticated skid via resolve, and runs the
-// document through §7.2 for the specification spec.
+// sender's key via resolve from the bare DID of the envelope's skid, and runs the
+// document through §7.2 for the specification spec. The skid is authenticated
+// by that key: a forged one derives a key-encryption key that fails to unwrap.
 //
 // decode reads the request payload from JSON. A document holding two members
 // whose names differ only by case is refused malformedRequest before decode

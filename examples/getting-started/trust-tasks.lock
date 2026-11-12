@@ -4,6 +4,6 @@ registry = "https://trusttasks.org"
 
 [[task]]
 slug = "acl/grant"
-version = "0.2"
-type_uri = "https://trusttasks.org/spec/acl/grant/0.2"
-digest = "sha256:c0a13be9c8038a5507f41517f7b92ef36a83d91506c525e8f8d7b7d0123c71a6"
+version = "0.3"
+type_uri = "https://trusttasks.org/spec/acl/grant/0.3"
+digest = "sha256:0b99efcbe3c646a6895c10271f3de13ff0e3c4b56be9eaf7de9104cac9a7b141"

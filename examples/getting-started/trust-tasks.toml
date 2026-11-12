@@ -4,4 +4,4 @@
 # Tasks from a third-party source are named "<source>:<slug>", with the
 # source declared as [sources.<source>] url = "https://…" (or path = "…").
 [tasks]
-"acl/grant" = "0.2"
+"acl/grant" = "0.3"

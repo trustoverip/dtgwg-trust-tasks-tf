@@ -74,8 +74,10 @@ commit_parsers = [
   # from the conventional-commit TYPE, and an unrecognised type is scored as a
   # patch. That is right for an in-place schema edit and wrong for a new spec
   # family, which is additive API surface. Use `feat(spec-name):` when adding a
-  # family, and `spec(...)` for edits within one. cargo-semver-checks is the
-  # backstop for a genuine break — see release-plz.toml.
+  # family, and `spec(...)` for edits within one. A genuine break is caught on
+  # the pull request instead: the API compatibility jobs (`rs`/`ts`/`go`/`Dart
+  # API compatibility`) and `published schemas change only additively` — see
+  # RELEASING.md. (release-plz's own semver_check is off; release-plz.toml.)
   { message = "^spec", group = "Specifications" },
 
   { message = "^perf", group = "Performance" },

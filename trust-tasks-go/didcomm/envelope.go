@@ -205,9 +205,12 @@ func PackTrustTask(doc json.RawMessage, sender *Identity, recipient *PeerKey) ([
 	return packAuthcrypt(plaintext, sender.priv, sender.Kid, recipient.pub, recipient.Kid)
 }
 
-// ResolveSender maps an authenticated sender DID to its X25519 key-agreement
-// key. The binding does no DID resolution itself (the Go-style model): the
-// caller supplies this, looking the DID up in its own store.
+// ResolveSender maps a sender DID — the bare DID of the envelope's skid, as
+// claimed and not yet authenticated — to its X25519 key-agreement key. The key
+// returned is what authenticates the skid: a forged one derives a
+// key-encryption key that fails to unwrap. The binding does no DID resolution
+// itself (the Go-style model): the caller supplies this, looking the DID up in
+// its own store.
 //
 // Return a non-nil error for a DID the store does not know. A nil *PeerKey, or
 // one not built with [NewPeerKey], is treated the same way: the envelope is
@@ -314,7 +317,12 @@ func NewMessageID() string {
 
 func uuidV4() string {
 	var b [16]byte
-	_, _ = rand.Read(b[:])
+	if _, err := rand.Read(b[:]); err != nil {
+		// A document id needs entropy. Ignoring the error would mint the same
+		// all-zero id every time, which the peer's item-11 record then reads as
+		// an idConflict; fail loudly instead, as the tsp module's NewURNUUID does.
+		panic("trust-tasks: crypto/rand failed: " + err.Error())
+	}
 	b[6] = (b[6] & 0x0f) | 0x40
 	b[8] = (b[8] & 0x3f) | 0x80
 	const hexd = "0123456789abcdef"

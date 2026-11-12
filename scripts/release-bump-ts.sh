@@ -62,8 +62,8 @@ case "$PKG" in
     SCOPES="ts-capability-client"
     ;;
   @openvtc/trust-tasks-gen)
-    # Not in release-pr.sh's TS_PACKAGES (nor publish.yml's publish-npm
-    # matrix) until its manual first publish and tag seed — RELEASING.md.
+    # First published by hand at 0.1.0 (anchor tag trust-tasks-ts-gen-v0.1.0);
+    # released like the other npm packages since — RELEASING.md.
     PKG_DIR="trust-tasks-ts-gen"
     TAG_PREFIX="trust-tasks-ts-gen-v"
     WATCH=("$PKG_DIR")
@@ -83,7 +83,7 @@ current=$(node -p "require('./$MANIFEST').version")
 # ── Where the last release was ───────────────────────────────────────────────
 tag=$(git tag -l "${TAG_PREFIX}*" --sort=-version:refname | head -1)
 if [ -z "$tag" ]; then
-  echo "::error::No ${TAG_PREFIX}* tag exists, so there is no anchor to measure this release from. Seed it once at the currently-published version — see RELEASING.md, 'One-time migration'."
+  echo "::error::No ${TAG_PREFIX}* tag exists, so there is no anchor to measure this release from. Seed it once at the currently-published version — see RELEASING.md, 'Release anchor tags' (and the new-package steps above it)."
   exit 1
 fi
 last="${tag#"$TAG_PREFIX"}"

@@ -479,5 +479,25 @@ void main() {
       expect(stale.existsSync(), isFalse);
       expect(Directory('${out.path}/old').existsSync(), isFalse);
     });
+
+    // #1119: the output is swapped in by renames from a sibling directory, so
+    // nothing but the output itself is left beside it, however the path is
+    // spelled.
+    test('swaps the output in and leaves no sibling behind', () async {
+      final dir = workspace();
+      final before = dir.listSync().map((e) => e.path).toSet();
+      final out = Directory('${dir.path}/gen');
+      for (final spelling in [
+        out.path,
+        '${out.path}/',
+        '${dir.path}/./x/../gen',
+      ]) {
+        await generate(
+            lockPath: '${dir.path}/trust-tasks.lock', outDir: spelling);
+        expect(File('${out.path}/$markerFileName').existsSync(), isTrue);
+        expect(
+            dir.listSync().map((e) => e.path).toSet(), {...before, out.path});
+      }
+    });
   });
 }

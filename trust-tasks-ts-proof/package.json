@@ -13,8 +13,11 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "default": "./dist/index.js"
     }
+  },
+  "engines": {
+    "node": ">=20.19.0"
   },
   "files": [
     "dist"

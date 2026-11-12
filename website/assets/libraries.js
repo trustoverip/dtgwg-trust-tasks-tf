@@ -35,6 +35,19 @@
    a registry package — and only where a binding is actually built
    on it (Dart today).
 
+   A `transports` entry may carry `unreleased: "<why>"` for a
+   package that is built and tested here but has no release a
+   reader can install yet; the matrix shows it as built, not
+   shipped. (Go's TSP module waits on a tagged affinidi-tsp-go.)
+
+   bindings.js names the same packages under each binding's
+   `implementations`; `checkBindingImplementations()` holds the
+   two lists to each other.
+
+   ⚠️ NO COUNTS IN PROSE. "Two sibling packages", "nine crates"
+   and "a fourth nested module" all went stale here. Name the
+   packages instead; the pages derive any count they show.
+
    ⚠️ NO VERSION NUMBERS LIVE HERE. Every install line uses its
    registry's own "latest" idiom, so the page cannot go stale
    between releases — the previous ecosystem entry claimed
@@ -52,7 +65,7 @@ window.TT_LIBRARY_CAPABILITIES = [
     id: "types",
     group: "Core",
     label: "Generated payload types",
-    note: "A typed request and response for every specification in the registry, regenerated from the schemas and guarded against drift in CI.",
+    note: "A typed request and response for each specification an application pins, generated from the registry's content-addressed bundles. The prebuilt module for every specification that each library still ships is deprecated in favour of generating your own.",
   },
   {
     id: "pipeline",
@@ -155,9 +168,12 @@ window.TT_LIBRARIES = [
     packageUrl: "https://crates.io/crates/trust-tasks-rs",
     docsUrl: "https://docs.rs/trust-tasks-rs",
     install: "cargo add trust-tasks --features https,proof-affinidi",
-    tagline: "The reference implementation, and the only one with DIDComm v1 and the capability client.",
+    // Consumer-side generation: the package that turns the bundles an
+    // application pins (trust-tasks.lock) into types, and how it is run.
+    generate: { package: "trust-tasks-build", how: "cargo add --build trust-tasks-build   # then trust_tasks_build::Config::new().compile() in build.rs" },
+    tagline: "The reference implementation, and the only one with DIDComm v1.",
     summary:
-      "A workspace of nine published crates: the core library and its generated payload types, four transport bindings, a W3C Data Integrity proof backend, and a shared capability wire client. The trust-tasks facade re-exports the rest behind Cargo features, so you pick a transport rather than a set of version numbers.",
+      "A workspace of published crates: the core library, the TSP, HTTPS, DIDComm v2 and DIDComm v1 transport bindings, a W3C Data Integrity proof backend, a shared capability wire client, Trust Ceremony helpers, and the consumer-side generator (trust-tasks-build) with its CLI (trust-tasks-cli). The trust-tasks facade re-exports the runtime crates behind Cargo features, so you pick a transport rather than a set of version numbers.",
     detail: "rust",
     capabilities: [
       "types", "pipeline", "schemas", "freshness", "replay", "errors",
@@ -183,9 +199,10 @@ window.TT_LIBRARIES = [
     registry: "npm",
     packageUrl: "https://www.npmjs.com/package/@openvtc/trust-tasks",
     install: "npm install @openvtc/trust-tasks",
+    generate: { package: "@openvtc/trust-tasks-gen", how: "npm install -D @openvtc/trust-tasks-gen && npx trust-tasks-gen-ts --lock trust-tasks.lock --out src/tasks" },
     tagline: "Types, the §7.2 pipeline, a TSP binding and a Data Integrity proof backend, for Node, browsers and workers.",
     summary:
-      "Generated types for every specification plus the hand-written §7.2 consumer pipeline. The core has zero runtime dependencies — the cryptosuite and the JSON Schema engine are interfaces you supply, which is what keeps it usable in a browser or a worker. Two sibling packages build on it and interoperate with their Rust counterparts: @openvtc/trust-tasks-proof puts a W3C Data Integrity verifier and signer — rolled on @noble, byte-compatible with the Rust proof library — behind the ProofVerifier seam, and @openvtc/trust-tasks-tsp is the TSP binding on @openvtc/vti-tsp-js, sealing a document into a Trust Spanning Protocol message and running the pipeline over it with the duplicate-execution guard a mediated transport needs on by default.",
+      "The hand-written §7.2 consumer pipeline, with types generated for the specifications you pin by @openvtc/trust-tasks-gen. The core has zero runtime dependencies — the cryptosuite and the JSON Schema engine are interfaces you supply, which is what keeps it usable in a browser or a worker. Sibling packages build on it and interoperate with their Rust counterparts: @openvtc/trust-tasks-proof puts a W3C Data Integrity verifier and signer — rolled on @noble, byte-compatible with the Rust proof library — behind the ProofVerifier seam; @openvtc/trust-tasks-tsp is the TSP binding on @openvtc/vti-tsp-js, sealing a document into a Trust Spanning Protocol message and running the pipeline over it with the duplicate-execution guard a mediated transport needs on by default; and @openvtc/trust-tasks-capability-client builds and parses the governance/capability/* and git-trust/* documents (no crypto).",
     capabilities: [
       "types", "pipeline", "schemas", "freshness", "replay", "errors",
       "transport-seam",
@@ -211,9 +228,10 @@ window.TT_LIBRARIES = [
     registry: "Go module proxy",
     packageUrl: "https://pkg.go.dev/github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go",
     install: "go get github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go",
-    tagline: "Types, the §7.2 pipeline, TSP and DIDComm v2 transport bindings, and a Data Integrity proof backend.",
+    generate: { package: "trust-tasks-go/cmd/trust-tasks-gen", how: "go run github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/cmd/trust-tasks-gen --lock trust-tasks.lock --out tasks" },
+    tagline: "Types, the §7.2 pipeline, a DIDComm v2 transport binding, and a Data Integrity proof backend.",
     summary:
-      "One package per specification, each self-contained, plus the §7.2 pipeline in the trusttasks package — with no dependencies beyond the standard library. Optional members are pointers throughout, including slices, so a member that is present and empty stays distinguishable from one that is absent. Three separate nested modules keep the core dependency-free: trust-tasks-go/tsp seals a document into a ToIP Trust Spanning Protocol message; trust-tasks-go/didcomm carries one in a DIDComm v2.1 authcrypt envelope (ECDH-1PU key agreement rolled on the standard library's crypto/ecdh); and trust-tasks-go/proof puts a W3C Data Integrity verifier and signer behind the ProofVerifier seam — the eddsa-jcs-2022 and ecdsa-jcs-2019 cryptosuites, also on the standard library. A fourth nested module, trust-tasks-go/capabilityclient, builds and parses the governance/capability/* and git-trust/* documents (no crypto). Each interoperates with its Rust counterpart.",
+      "One package per specification, each self-contained, plus the §7.2 pipeline in the trusttasks package — with no dependencies beyond the standard library. Optional members are pointers throughout, including slices, so a member that is present and empty stays distinguishable from one that is absent. Separate nested modules keep the core dependency-free: trust-tasks-go/didcomm carries a document in a DIDComm v2.1 authcrypt envelope (ECDH-1PU key agreement rolled on the standard library's crypto/ecdh); trust-tasks-go/proof puts a W3C Data Integrity verifier and signer behind the ProofVerifier seam — the eddsa-jcs-2022 and ecdsa-jcs-2019 cryptosuites, also on the standard library; and trust-tasks-go/capabilityclient builds and parses the governance/capability/* and git-trust/* documents (no crypto). trust-tasks-go/tsp, which seals a document into a ToIP Trust Spanning Protocol message, is built and tested but not yet released: it waits on a tagged affinidi-tsp-go. Each interoperates with its Rust counterpart.",
     detail: "go",
     capabilities: [
       "types", "pipeline", "schemas", "freshness", "replay", "errors",
@@ -223,7 +241,9 @@ window.TT_LIBRARIES = [
     ],
     transports: {
       // Separate nested modules, so the core stays dependency-free.
-      "binding:tsp": { package: "trust-tasks-go/tsp", dir: "trust-tasks-go/tsp" },
+      // Untagged: it requires affinidi-tsp-go at a pseudo-version, and has no
+      // release wiring until that library is tagged (CLAUDE.md).
+      "binding:tsp": { package: "trust-tasks-go/tsp", dir: "trust-tasks-go/tsp", unreleased: "not yet tagged — waits on a tagged affinidi-tsp-go" },
       "binding:didcomm": { package: "trust-tasks-go/didcomm", dir: "trust-tasks-go/didcomm" },
       proof: { package: "trust-tasks-go/proof", dir: "trust-tasks-go/proof" },
       "capability-client": { package: "trust-tasks-go/capabilityclient", dir: "trust-tasks-go/capabilityclient" },
@@ -242,10 +262,11 @@ window.TT_LIBRARIES = [
     packageUrl: "https://pub.dev/packages/trust_tasks",
     docsUrl: "https://pub.dev/documentation/trust_tasks/latest/",
     install: "dart pub add trust_tasks",
+    generate: { package: "trust_tasks (bin/generate.dart)", how: "dart run trust_tasks:generate --lock trust-tasks.lock --out lib/tasks" },
     detail: "dart",
     tagline: "Types and the §7.2 pipeline, for Dart and Flutter.",
     summary:
-      "One library per specification plus the §7.2 pipeline, with no dependencies. Outcomes are a sealed hierarchy, so a switch over them is exhaustive; closed value sets are extension types rather than enums, so a value from a newer MINOR is carried through instead of throwing (§5.2). Two packages build on it and interoperate with their Rust counterparts: trust_tasks_proof puts a Data Integrity verifier and signer built on Affinidi's ssi behind the ProofVerifier seam, trust_tasks_https is the HTTPS binding — a client that runs on the web and a server that runs the §7.2 pipeline per request — and trust_tasks_didcomm is the DIDComm v2.1 binding on Affinidi's didcomm, with the duplicate-execution guard a mediated transport needs on by default.",
+      "One library per specification plus the §7.2 pipeline, with no dependencies. Outcomes are a sealed hierarchy, so a switch over them is exhaustive; closed value sets are extension types rather than enums, so a value from a newer MINOR is carried through instead of throwing (§5.2). Companion packages build on it and interoperate with their Rust counterparts: trust_tasks_proof puts a Data Integrity verifier and signer built on Affinidi's ssi behind the ProofVerifier seam; trust_tasks_https is the HTTPS binding — a client that runs on the web and a server that runs the §7.2 pipeline per request; trust_tasks_didcomm is the DIDComm v2.1 binding on Affinidi's didcomm, with the duplicate-execution guard a mediated transport needs on by default; and trust_tasks_capability_client builds and parses the governance/capability/* and git-trust/* documents (no crypto).",
     capabilities: [
       "types", "pipeline", "schemas", "freshness", "replay", "errors",
       "transport-seam",

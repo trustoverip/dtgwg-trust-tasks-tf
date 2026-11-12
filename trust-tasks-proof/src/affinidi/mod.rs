@@ -353,8 +353,8 @@ fn parse_date_time_stamp(s: &str) -> Option<chrono::DateTime<chrono::Utc>> {
 
 /// Map [`DataIntegrityError`] variants into the framework's
 /// [`VerificationError`] taxonomy. The mapping aligns with SPEC.md §8.3:
-/// every failure surfaces as `proof_invalid` to the wire, distinguished
-/// from `proof_required` (which our caller raises) — `VerificationError`
+/// every failure surfaces as `proofInvalid` to the wire, distinguished
+/// from `proofRequired` (which our caller raises) — `VerificationError`
 /// is what the framework returns when a proof IS present but fails to
 /// verify.
 fn map_error(err: DataIntegrityError) -> VerificationError {
