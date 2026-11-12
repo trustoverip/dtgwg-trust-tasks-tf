@@ -54,15 +54,7 @@ export interface TimelineEvent {
    * `composed` — the face was made. `worn` / `unworn` — a persona began or stopped wearing it in a context. `expired` — a binding's `until` passed. `disclosed` — it told a party something (`verifierDid`, `claimTypes`). `valueChanged` — a value it shows changed (`claimTypes`, `version`). `promoted` — it moved from one context into the pool. `retired` / `reinstated`.
    */
   kind:
-    | "composed"
-    | "worn"
-    | "unworn"
-    | "expired"
-    | "disclosed"
-    | "valueChanged"
-    | "promoted"
-    | "retired"
-    | "reinstated";
+    "composed" | "worn" | "unworn" | "expired" | "disclosed" | "valueChanged" | "promoted" | "retired" | "reinstated";
   contextId?: string;
   personaDid?: string;
   verifierDid?: string;
