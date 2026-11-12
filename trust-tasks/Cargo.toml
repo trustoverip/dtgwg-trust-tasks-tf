@@ -4,7 +4,7 @@ name = "trust-tasks"
 # crates that expose its types, so this crate's version is theirs: one number at
 # the front door. (`trust-tasks-ceremony` versions on its own; its requirement
 # is in `[dependencies]` below.) Never edit it by hand — RELEASING.md.
-version = "0.37.15"
+version = "0.38.0"
 edition.workspace = true
 rust-version = "1.95"
 license.workspace = true
@@ -71,15 +71,15 @@ capability-client = ["dep:trust-tasks-capability-client"]
 [dependencies]
 # Core is unconditional: there is no useful configuration of this crate that
 # does not include it, and gating it would just be a feature everyone turns on.
-trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.37", default-features = false }
+trust-tasks-rs = { path = "../trust-tasks-rs", version = "0.38", default-features = false }
 
-trust-tasks-https = { path = "../trust-tasks-https", version = "0.37", optional = true }
-trust-tasks-didcomm = { path = "../trust-tasks-didcomm", version = "0.37", optional = true }
-trust-tasks-didcomm-v1 = { path = "../trust-tasks-didcomm-v1", version = "0.37", optional = true }
-trust-tasks-tsp = { path = "../trust-tasks-tsp", version = "0.37", optional = true }
-trust-tasks-proof = { path = "../trust-tasks-proof", version = "0.37", optional = true, default-features = false }
+trust-tasks-https = { path = "../trust-tasks-https", version = "0.38", optional = true }
+trust-tasks-didcomm = { path = "../trust-tasks-didcomm", version = "0.38", optional = true }
+trust-tasks-didcomm-v1 = { path = "../trust-tasks-didcomm-v1", version = "0.38", optional = true }
+trust-tasks-tsp = { path = "../trust-tasks-tsp", version = "0.38", optional = true }
+trust-tasks-proof = { path = "../trust-tasks-proof", version = "0.38", optional = true, default-features = false }
 trust-tasks-ceremony = { path = "../trust-tasks-ceremony", version = "0.2", optional = true }
-trust-tasks-capability-client = { path = "../trust-tasks-capability-client", version = "0.37", optional = true }
+trust-tasks-capability-client = { path = "../trust-tasks-capability-client", version = "0.38", optional = true }
 
 # Every feature but the spec families (`all-specs`, the default): those are
 # trust-tasks-rs's prebuilt modules, all deprecated, and documenting them costs

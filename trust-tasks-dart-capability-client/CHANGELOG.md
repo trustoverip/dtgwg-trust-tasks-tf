@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.1.2 — 2026-11-12
+
+
+### Fixed
+
+- **ts,go,dart,rs**: Whole-second capability-client issuedAt, tested Dart core floors, TS default export condition, Go schema caching (#1214)
+
+* fix(dart-capability-client,go-capabilityclient,go-didcomm): stamp issuedAt in whole seconds and fail on entropy failure
+
+  The Dart capability client stamped issuedAt with toIso8601String (full
+  precision); it now uses the core's systemClock. The Go port now stamps
+  through trusttasks.SystemClock. The TS port already stamped whole seconds.
+
+  The Go capabilityclient and didcomm UUIDv4 generators ignored crypto/rand
+  errors and would mint an all-zero id; they now panic, as tsp's does.
+
+### Dependencies
+
+- Requires `trust_tasks` ^0.10.0 (was ^0.9.3), the core released beside it.
+
 ## 0.1.1 — 2026-10-23
 
 

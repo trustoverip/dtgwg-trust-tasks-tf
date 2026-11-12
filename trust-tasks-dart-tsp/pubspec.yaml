@@ -19,7 +19,7 @@ dependencies:
   # `dart pub downgrade`. Raise it when this package starts using newer core API.
   # 0.9.23: the example uses trust_task_discovery/v0_4 (added in 0.9.22;
   # 0.9.11-0.9.22 never reached pub.dev). lib/ needs 0.9.6 (`received:`).
-  trust_tasks: ^0.9.23
+  trust_tasks: ^0.10.0
   # ToIP TSP for Dart: CESR framing, HPKE-Base sealing, ssi-integrated VIDs.
   affinidi_tsp: ^0.1.0
   # For DidManager, DidDocument and the resolver types affinidi_tsp's API is

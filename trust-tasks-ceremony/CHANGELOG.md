@@ -7,6 +7,55 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 **Versioning follows [Semantic Versioning](https://semver.org/) over this
 library's own API — not the framework's.**
 
+## [0.2.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-ceremony-v0.2.0...trust-tasks-ceremony-v0.2.1) — 2026-11-12
+
+
+### Documentation
+
+- Fix drifted counts, release runbook, licences and stale examples across the four libraries ([#1224](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1224))
+
+* docs(getting-started): move the worked example to acl/grant/0.3 and stamp issuedAt with issued_at_now()
+
+  The example pinned acl/grant/0.2, superseded by 0.3, and stamped issuedAt
+  with chrono::Utc::now(), the full-precision form #970 removed from the
+  libraries. The TS consumer example wrote toISOString() milliseconds into
+  document fields the same way. The dependency snippet now uses cargo add,
+  so it cannot name a stale version, and §4.4 describes the shared version
+  group instead of versions from 0.14.
+
+
+
+### Fixed
+
+- **ceremony**: Decode the salt as multibase in every build, and compare digests by their decoded bytes ([#1232](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1232))
+
+A default-features = false build hashed the salt's string bytes, so its digests changed whenever anything else in the graph enabled affinidi. trust-ceremony-receipt/0.1 defines the salt as decoded from multibase; multibase is now an unconditional dependency and the salt is decoded under every feature set.
+
+  Step, prev and definition digests are compared as decoded multihash bytes (length-bounded, constant-time over equal lengths), so the same digest in another multibase base matches, and a malformed digest never matches a well-formed one. The fixture suite now runs without the affinidi backend, and CI runs it that way.
+
+- **proof, ts-proof, dart-proof, dart-didcomm, ceremony**: Bound multibase decoding of unauthenticated values ([#1167](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1167))
+
+* fix(proof, ts-proof, dart-proof): bound base58 decoding of proofValue and did:key
+
+  The Rust, TypeScript and Dart proof verifiers decode a proof's proofValue
+  and its did:key multikey with base58btc decoders whose cost grows with
+  the square of the input length, and they do so before any signature is
+  checked. A 1 MiB value took about 50 s per field in trust-tasks-proof
+  (release build), and would take minutes in the Dart package and in the
+  TypeScript package on @scure/base 2.0-2.3 (2.4 refuses over 4096
+  characters itself).
+
+  Each verifier now refuses a base58btc value longer than 175 characters
+  before decoding it, or one that decodes to more than 128 bytes - the
+  bounds the Go module adopts in #1166. The largest value any of them reads
+  is a 96-byte P-384 signature; a did:key multikey is at most 51 bytes;
+  175 = ceil(128 * log 256 / log 58).
+
+  Nothing that could verify before is refused: a value over the bounds
+  always decoded to more bytes than any supported key or signature.
+
+
+
 ## [0.2.0] - 2026-08-26
 
 **Breaking.** Receipts that verified as `Outcome::Complete` under 0.1.x now

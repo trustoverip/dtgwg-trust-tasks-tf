@@ -4,7 +4,7 @@ name: trust_tasks_didcomm
 description: >-
   The Trust Tasks DIDComm v2.1 transport binding for Dart: authcrypt envelopes
   in and out, and the SPEC section 7.2 pipeline with duplicate-execution guard.
-version: 0.1.3
+version: 0.1.4
 repository: https://github.com/trustoverip/dtgwg-trust-tasks-tf
 issue_tracker: https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues
 documentation: https://trusttasks.org/implementations
@@ -19,7 +19,7 @@ dependencies:
   # `dart pub downgrade`. Raise it when this package starts using newer core API.
   # 0.9.23: the example uses trust_task_discovery/v0_4 (added in 0.9.22;
   # 0.9.11-0.9.22 never reached pub.dev). lib/ needs 0.9.6 (`received:`).
-  trust_tasks: ^0.9.23
+  trust_tasks: ^0.10.0
   # Affinidi's DIDComm v2.1 implementation: ECDH-1PU authcrypt, and the
   # addressing-consistency checks between the envelope and the message.
   didcomm: ^2.3.4

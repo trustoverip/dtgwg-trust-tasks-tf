@@ -11,6 +11,564 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.11.0 — 2026-11-12
+
+
+### Added
+
+- **messaging/mux/ack**: Acknowledge frames on the mux connection they were delivered on (0.1) (#1174)
+
+* feat(messaging/mux/ack): acknowledge frames on the mux connection they were delivered on (0.1)
+
+- **vta/dids**: Key assurance levels — create/1.1 and upgrade/1.0, recovery only at level 3, threshold custodians (#993)
+
+* feat(vta/dids): key assurance levels — create/1.1 and upgrade/1.0, recovery only at level 3, threshold custodians
+
+  Key roles were all-or-nothing: every key-role identity needed an external
+  recovery key, and an identity without roles was not served at all. The VTI
+  specification now gives every service DID a key assurance level its operator
+  chooses (VTI-KEY-194): 1 single key, 2 role-separated, 3 recoverable.
+
+  - vta/dids/create/1.1: `assuranceLevel` (2 or 3) is required;
+    `recoveryCommitment` is required at level 3 and refused at level 2; a level-3
+    identity under a method with witnesses needs one (witnessRequired); a
+    template MAY set a level floor (assuranceLevelBelowTemplate). create/1.0 is
+    released, so the changed shape is a new version rather than an in-place edit.
+  - vta/dids/upgrade/1.0 (new): raise an identity's level in place, from 1 to
+    2 or 3 or from 2 to 3, with fresh keys for every tightened role; never lower.
+    `previousKeys` is retire (RECOMMENDED), revoke, or, from level 1, keep.
+  - _shared/0.1 (additive): KeyAssuranceLevel, RecoveryCustodian and its kind,
+    ThresholdRecoveryCommitment (a condition over whole keys, VTI-KEY-210–221),
+    the declareAssuranceLevel change, the roleKeysInBackups warning; CONVENTIONS
+    §3.4 (levels and the `keyAssurance` member), §3.5 (raising), §5.6–§5.7
+    (recovery custodians, threshold custodians), §19, two family error codes
+    (assuranceLevelMismatch, witnessRequired), and level-scoped custody, witness
+    and approval rules.
+  - 1.0 tasks, additively: keys/rotate gains `useRecoveryKey` and
+    `recoveryProof`; keys/list reports `assuranceLevel`; keys/revoke
+    `scope: boundary` and recover are level 3 only; update refuses
+    `keyAssurance` and the removal of a level-3 identity's last witness.
+  - Method profiles: did:webvh names the recovery commitment in
+    `state.keyAssurance`; did:webs maps the levels onto its next-key threshold,
+    every rotation exposes K and commits a fresh K′.
+  - vta/webs/dids/create/0.2 now links vta/dids/create/1.1.
+
+  Rebased onto main as one commit (was five, including a merge of main).
+  Bindings regenerated (Rust, TS, Go, Dart).
+
+- **vta/webs/dids/create**: DID classes, service DIDs and DID templates (0.2) (#1159)
+
+create 0.2 takes a required didClass (relationship, persona or service,
+  VTI-KEY-190 - 193) and records it. A service did:webs - the durable identity
+  of the VTA, a VTC, a VTN, a host service or an integration - is allowed at
+  level 1 as an optional, alpha method (VTI-KEY-001 / VTI-KEY-003 as being
+  amended, dtgwg-vti-spec#120), enabled separately in the VTA's configuration
+  (serviceDidNotPermitted when it is off); didClassConflict holds VTI-KEY-193.
+
+  A DID may be shaped by a DID template (template, templateContext,
+  templateVars), exclusive of the explicit service and alias members. The VTA
+  renders it and maps its document onto the did:webs derivation: one Ed25519
+  signing key in authentication and assertionMethod, one designated X25519 key
+  agreement key, designated services and aliases; anything else is refused
+  with templateNotRepresentable (details.reason, details.members), and
+  templateNotFound / templateVarsInvalid as for the other template consumers.
+
+  Family conventions move to vta/webs/_shared/0.2 (CONVENTIONS.md section 1
+  rewritten for classes and service DIDs, section 9 the template mapping;
+  webs-records adds WebsDidClass and an optional didClass on the record).
+  0.1 is unchanged and now superseded.
+
+  Bindings regenerated for Rust, TS, Go and Dart.
+
+- **rooms/watch**: A live watch for an open conversation (0.2), and rooms/keys/watch 0.2 (#1087)
+
+* feat(rooms/signal-delay/set): a room may turn off the watch signal's randomised delay (0.1), served by rooms/info 0.4
+
+  A host waits a randomised few seconds before sending a rooms/changed
+  signal (producer item 4), so that a signal's time does not mark one
+  write. In a room used as a conversation that is a few seconds between
+  one member writing and another seeing it, on every message.
+
+  rooms/signal-delay/set/0.1 lets a holder of `admin` set the room's
+  signal delay to `randomised` (the default) or `none`. It is the room's
+  setting, not a watcher's: an undelayed signal lets a party who sees both
+  the write reach the host and the signal leave it match the two, which
+  gives away every writer, so one watcher cannot opt out for itself. The
+  request carries a reason and a proof; the host audits each change and
+  may refuse a setting its governance will not apply
+  (`signalDelayNotPermitted`). A room can choose only whether there is a
+  delay, never its interval.
+
+  rooms/info/0.4 serves `signalDelay` to every member, always present.
+  rooms/changed/0.1 producer item 4 applies the setting the host serves
+  and never a watcher's preference, and its Correlation section says what
+  `none` gives up. `SignalDelay` is a new definition in
+  rooms/_shared/0.2. Links to rooms/info/0.3 move to 0.4.
+
+- **rooms/signal-delay/set**: A room may turn off the watch signal's randomised delay (0.1), set at rooms/create 0.3 and served by rooms/info 0.4 (#1084)
+
+* feat(rooms/signal-delay/set): a room may turn off the watch signal's randomised delay (0.1), served by rooms/info 0.4
+
+  A host waits a randomised few seconds before sending a rooms/changed
+  signal (producer item 4), so that a signal's time does not mark one
+  write. In a room used as a conversation that is a few seconds between
+  one member writing and another seeing it, on every message.
+
+  rooms/signal-delay/set/0.1 lets a holder of `admin` set the room's
+  signal delay to `randomised` (the default) or `none`. It is the room's
+  setting, not a watcher's: an undelayed signal lets a party who sees both
+  the write reach the host and the signal leave it match the two, which
+  gives away every writer, so one watcher cannot opt out for itself. The
+  request carries a reason and a proof; the host audits each change and
+  may refuse a setting its governance will not apply
+  (`signalDelayNotPermitted`). A room can choose only whether there is a
+  delay, never its interval.
+
+  rooms/info/0.4 serves `signalDelay` to every member, always present.
+  rooms/changed/0.1 producer item 4 applies the setting the host serves
+  and never a watcher's preference, and its Correlation section says what
+  `none` gives up. `SignalDelay` is a new definition in
+  rooms/_shared/0.2. Links to rooms/info/0.3 move to 0.4.
+
+- **rooms/records/list**: Newest-first listing for a conversation's head (0.7), and rooms/keys/browse 0.5 (#1088)
+
+Chat clients open a conversation at its newest messages, but a room
+  listing only paged forward from sinceVersion, so a client opening a room
+  with tens of thousands of records had to page from the start.
+
+  rooms/records/list 0.7 adds an optional `order` (`oldestFirst`, the
+  default, or `newestFirst`), defined once as `ListOrder` in
+  rooms/_shared/0.2. Newest first returns rows in descending version;
+  sinceVersion still bounds from below; tombstones and lastPrune are
+  unchanged; a cursor is valid only under the order it was issued for
+  (invalidCursor otherwise). The spec states what makes it correct for chat
+  although edits move a record's version: a newest-first listing whose
+  lowest version is V holds every record whose current version is above V,
+  so every message created since V; a reader orders by createdAt, not by
+  row order. A record changed mid-listing moves above the listing's first
+  row, so a catching-up reader takes the first page's highest version as
+  its watermark, and only after reading to the end.
+
+  rooms/keys/browse 0.5 passes `order` through, and adds `maxPages`,
+  `cursor` and response `nextCursor`: a 0.4 recipient always reads the
+  host's listing to its end, so order alone would still read the whole
+  room before answering. The MemberProfile "Near the room's head" rule
+  now says how a newest-first reader finds names (500 rows below the
+  earliest record it shows reach at least 500 versions).
+
+- **rooms/keys/read-marker**: A member's read marker kept by their key holder, so every device agrees on unread (0.1), and rooms/keys/list 0.3 (#1086)
+
+rooms/changed 0.1 counts unread messages against a read marker that was each
+  client's own, so a member's phone and laptop disagreed about what is unread and
+  a notification read on one device stayed on the other.
+
+  - rooms/keys/read-marker/set 0.1: a member's client tells their key holder
+    where the member has seen a room up to (room version + host createdAt of the
+    newest message seen). The marker only moves forward (greater version; at equal
+    version, later createdAt) unless `rewind: true` ("mark as unread"); the answer
+    is the marker in force and `moved`, so racing devices converge without a
+    precondition. Acting as the member, delegates refused, notHeld as for
+    rooms/keys/label. Idempotent; retry class two.
+  - rooms/keys/read-marker/moved 0.1: one-way, key holder to the member's other
+    clients holding a rooms/keys/watch on the room as that member (never the
+    setter), so a device can clear a notification.
+  - rooms/keys/list 0.3: each entry may carry `readMarker`, returned under
+    includePersonal beside the personal label.
+  - ReadMarker in rooms/_shared/0.1/read-marker.schema.json.
+  - rooms/changed 0.1 (draft, prose): a reader MAY keep its marker with its key
+    holder; it is still never sent to the host, the room or another member.
+
+- **messaging/mux**: Connections, an administrator's view of live mux connections (#1083)
+
+Adds messaging/mux/connections/0.1: an administrator lists a mediator's live mux connections — principal, wire (didcomm | tsp), openedAt, exact memberCount, and members with source, grantId, scope, expiresAt and deliveryActive — paged by cursor/limit with a per-page member budget that splits a large connection across pages, and a required coverage (allInstances | thisInstance) so a horizontally scaled mediator never implies completeness it lacks. Regenerates the Rust, TypeScript, Go and Dart bindings.
+
+
+
+### Documentation
+
+- Fix drifted counts, release runbook, licences and stale examples across the four libraries (#1224)
+
+* docs(getting-started): move the worked example to acl/grant/0.3 and stamp issuedAt with issued_at_now()
+
+  The example pinned acl/grant/0.2, superseded by 0.3, and stamped issuedAt
+  with chrono::Utc::now(), the full-precision form #970 removed from the
+  libraries. The TS consumer example wrote toISOString() milliseconds into
+  document fields the same way. The dependency snippet now uses cargo add,
+  so it cannot name a stale version, and §4.4 describes the shared version
+  group instead of versions from 0.14.
+
+- **vta/webs**: Every node resolves did:webs; drop the resolvedMethods gate (#1180)
+
+Follows dtgwg-vti-spec#123: did:webs is a method every VTI node resolves
+  (VTI-KEY-003) and VTI-KEY-008 is withdrawn. vta/webs/_shared/0.2 CONVENTIONS
+  §1 and §9.2, vta/webs/dids/create/0.2 and the vta/dids webs method profile no
+  longer tell a node to check a peer's resolvedMethods or to keep a did:webvh
+  identity for peers that have not declared did:webs. resolvedMethods in a
+  template stays ignored, not refused. Prose only; no schema changes.
+
+
+
+### Fixed
+
+- **runtime**: Bound the work of pruning a payload read forward along extends (#1209)
+
+* fix(runtime): bound the work of pruning a payload read forward along extends
+
+  Pruning a later version's payload to the implemented version's schema runs
+  before any proof is checked. Its cost could grow exponentially with the
+  payload's nesting depth: in TypeScript, choosing a oneOf/anyOf branch pruned
+  the whole subtree once per branch, at every level; in all four runtimes, a
+  recursive member named from more than one place (properties and an allOf
+  branch) was pruned once per place, at every level.
+
+  Each runtime now gives a prune at most 100,000 steps plus 64 per value in
+  the payload. readForSpec (TS), ReadForSpec (Go), readForVersion (Dart), and
+  read_as, the dispatchers and consume_dispatched (Rust) refuse a payload
+  that needs more as malformedRequest, saying why. prunePayload /
+  prune_payload on their own return the payload untouched instead.
+
+  TypeScript also remembers, for the rest of a walk, the branch chosen for
+  each value and the structural matcher's answers, so a value under nested
+  oneOfs is decided once rather than once per enclosing branch, and compiles
+  each patternProperties pattern once per walk.
+
+- **proof,ts-proof,go-proof,dart-proof**: Follow the JCS cryptosuites' @context rule in all four proof backends (#1233)
+
+Signers copy a document's @context into the proof (eddsa-jcs-2022 /
+  ecdsa-jcs-2019 section 3.3.1 step 2). Verifiers hash the proof
+  configuration as received, and refuse a proof whose @context is not
+  exactly the document's (section 3.3.2 step 4, held to equality because a
+  ProofVerifier returns no verified document). The Dart verifier no longer
+  lets ssi copy the document's @context into the configuration, which made
+  it refuse what the other three signers emit. Documents without @context
+  get byte-identical proofs. Six shared vectors in fixtures/proof pin the
+  behaviour in every library.
+
+- **ts-gen**: Generate locks that pin acl/grant/0.3, and move the consumer apps to it (#1229)
+
+* fix(ts-gen): accept a bare component's numbered intersection parts
+
+  A component whose schema has a type beside an anyOf (acl's Purpose, from
+  acl/_shared/0.3) compiles to Purpose = Purpose1 & Purpose2. A lock that
+  reaches one shape of Purpose names it bare, and the counter-suffixed
+  duplicate check then refused its own parts, so any lock pinning
+  acl/grant/0.3 failed to generate. The package names it Purpose_AclV0_3
+  over the whole registry and never hit it; build-ts-bindings.mjs gets the
+  same exclusion so the two checks stay diffable.
+
+- **go**: Rename schema definitions that collide with the generated file's own declarations (#1231)
+
+Both Go generators reserve the identifiers the package tail declares (TypeURI, Extends, Deprecation, ResponseTypeURI, PayloadSchemaJSON, ResponsePayloadSchemaJSON, Spec, ResponseSpec) before any schema-derived name, and take each enum constant in the same name table, so a colliding $defs name, path-derived inline type or enum constant is suffixed instead of redeclaring one. No existing generated output changes.
+
+- **go-tsp**: Answer an authenticated unparsable body with malformedRequest (#1226)
+
+Consume returned a non-nil *Received and an error when an authenticated body's id and type were strings but another member (issuedAt, threadId, …) did not parse. Binding tsp/0.1 §4 maps a document that fails to deserialise to malformedRequest, and the sender is authenticated, so it is now answered: the reply is addressed from whichever routing members did parse, as the Dart TSP consumer does, and the Go DIDComm consumer already answers malformedRequest.
+
+  Part of #1110.
+
+- **ts,go,dart,rs**: Whole-second capability-client issuedAt, tested Dart core floors, TS default export condition, Go schema caching (#1214)
+
+* fix(dart-capability-client,go-capabilityclient,go-didcomm): stamp issuedAt in whole seconds and fail on entropy failure
+
+  The Dart capability client stamped issuedAt with toIso8601String (full
+  precision); it now uses the core's systemClock. The Go port now stamps
+  through trusttasks.SystemClock. The TS port already stamped whole seconds.
+
+  The Go capabilityclient and didcomm UUIDv4 generators ignored crypto/rand
+  errors and would mint an all-zero id; they now panic, as tsp's does.
+
+- **dart-https**: Advertise the expiry horizon, and pin all four runtimes' freshness to shared vectors (#1212)
+
+* test(runtime): shared freshness vectors run by all four runtimes
+
+  fixtures/consume/freshness.json pins SPEC §7.2's acceptance window (items 4
+  and 13, *Bounding the record*): now / policy / issuedAt / expiresAt to a
+  verdict and, for an accepted document, the replay record's expiry. It covers
+  a stated expiresAt replacing the maximum age, the 30-day expiry horizon and
+  its clamp on the record, a zero horizon, the half-open edges to the
+  millisecond, skew on both sides, a missing issuedAt with and without
+  requireIssuedAt, offsets, fractions and calendar-invalid timestamps, and
+  holds each runtime's default and consequential policies to the same values.
+
+  Run by trust-tasks-rs (tests/freshness_vectors.rs), @openvtc/trust-tasks
+  (test/freshness-vectors.test.ts), trust-tasks-go
+  (trusttasks/freshness_vectors_test.go) and trust_tasks
+  (test/freshness_vectors_test.dart). The Rust workflow now runs on a change
+  under fixtures/, which its integration tests read.
+
+- **rs,ts,go,dart,proof,ts-proof,go-proof,dart-proof**: Refuse out-of-range timestamp fields instead of rolling them over (#1210)
+
+issuedAt and expiresAt, and a proof's created, are now read with every
+  field range-checked after the shared pattern: month 1-12, a day the month
+  has, hour 0-23, minute and second 0-59 (no leap second), and an offset of
+  at most 23:59 (14:00 for a proof's dateTimeStamp, as for expires).
+
+  Before, the four runtimes disagreed on the same bytes. TypeScript's
+  Date.parse read 2026-02-30 as 2 March and 24:00 as the next day; Dart's
+  DateTime.tryParse rolled 2026-13-45T25:61:61Z over into 2027 and took any
+  offset; Rust's chrono read :60 as a leap second and accepted a space for
+  the T; Go's time.Parse accepted +24:00 and +23:60. In the TypeScript proof
+  verifier a regex-valid but unparseable created (month 13) gave NaN, which
+  never compares later than the clock-skew horizon, so it was accepted.
+
+  New shared vectors: fixtures/consume/timestamps.json, run by all four
+  runtimes, and five correctly signed created-* proof vectors.
+
+- **go-proof**: Decode documents as I-JSON and refuse out-of-range ECDSA private keys (#1208)
+
+The JCS decoder now refuses input that encoding/json would accept only by
+  rewriting or dropping part of it: invalid UTF-8, an unpaired surrogate
+  escape, two members with the same name in one object, and data after the
+  first JSON value. Such input canonicalized to the same bytes as a different
+  document, so one proof covered both. The verifier reports it as
+  malformedProof; Sign returns an error.
+
+  SignerFromPrivateKey now requires an ECDSA scalar of the curve's exact byte
+  length in [1, n-1], and derives the public key through crypto/ecdh instead
+  of elliptic.Curve.ScalarBaseMult. A zero, short, long or out-of-range key
+  is refused at construction instead of producing a signer.
+
+- **messaging/mux/ack**: NotPermitted only for a member whose mail the connection reads (0.1) (#1179)
+- **rs,ts,go,dart**: The in-memory replay guard refuses when full instead of dropping live records (#1163)
+
+* fix(runtime): the in-memory replay guard refuses when full instead of dropping live records
+
+  InMemoryReplayGuard (Rust, TypeScript, Go, Dart) made room for a new id by
+  dropping the least-recently-used record, whether or not that record was
+  still inside its retention window. A document whose record was dropped that
+  way was then accepted again inside its window, with nothing logged.
+
+  - When every slot holds a live record, a claim for a new id now fails
+    (Rust ReplayGuardError, TS ReplayGuardFullError, Go ErrReplayGuardFull,
+    Dart ReplayGuardFullException), which the pipeline answers `unavailable`
+    (retryable). Records whose window has closed are reclaimed first; a
+    record is never dropped to make room. Duplicates and conflicts are still
+    recognised while full.
+  - The default capacity is 100 000 live records (was 10 000), documented as
+    a ceiling on distinct documents per retention window, and exported as
+    DEFAULT_REPLAY_CAPACITY / DefaultReplayCapacity / defaultReplayCapacity.
+  - TypeScript, Go and Dart gain the expiry horizon Rust already had
+    (`expiryHorizonMs` / `ExpiryHorizon` / `expiryHorizon`, 30 days in the
+    consequential policy): a stated expiresAt bounds the acceptance window in
+    place of the maximum age, up to issuedAt + horizon, and the retained
+    record's expiry is clamped to the same instant, so a producer can no
+    longer pin a record indefinitely with a distant expiresAt.
+
+- **runtime**: Settle or release the item-11 claim on every remaining path (#1177)
+
+- Rust: the claim stays armed across a retryable refusal's awaited
+    release and is disarmed on the next statement, so a pipeline dropped
+    mid-release still releases it. A response or refusal whose `Serialize`
+    panics is recorded with no response before the panic continues.
+  - HTTPS server: `release_claim` holds a drop guard across its awaited
+    release, on both the refusal and the panic branch.
+  - `ReplayGuard::release_abandoned` documents that it must not block,
+    require a runtime context or panic, and the default's degradation for a
+    `release` that suspends, which a test now pins.
+  - Go: a `MarshalJSON` panic in `settle` records the claim with no
+    response, then the panic continues.
+  - Dart: a final refusal that cannot be encoded releases the claim, so a
+    resend is evaluated again, before the error is rethrown.
+
+- **messaging/mux/ack**: An id held for a DID off the connection is notFound (0.1) (#1176)
+- **rs,ts,go,dart**: Refuse a document whose type is not the spec it is consumed under (#1162)
+
+* fix(runtime): refuse a document whose type is not the spec it is consumed under
+
+  The typed consume functions took the document's payload type, or a spec
+  policy, as given and never compared the document's `type` with it. A
+  document of another specification whose payload happened to fit was run
+  under the consumed spec's policy and handler, and answered as its own type.
+  SPEC §7.2 item 3 assigns that check to the consumer.
+
+  Each runtime's typed path now checks it before any other step, so a refused
+  document never reaches the item-11 record:
+
+  - accepted: the spec's own Type URI (`#request` and no fragment alike), or a
+    later version of the same specification and variant whose declared
+    `extends` chain reaches it (SPEC §5.2);
+  - `unsupportedVersion`: the same specification and variant at any other
+    version;
+  - `unsupportedType`: anything else — another slug, the same slug under
+    another authority or form, the `#response` variant, or a `type` that is not
+    a Type URI.
+
+- **runtime**: Release the item-11 claim when a handler does not return, and end the acceptance window where the record does (#1175)
+
+* fix(runtime): release the item-11 claim when a handler does not return, and close the window where the record expires
+
+  A handler that panicked (Rust, Go) or whose future was dropped mid-await
+  (Rust: a request timeout, a client disconnect) left its item-11 claim in
+  flight until the record expired, so every resend of the document was
+  absorbed as an in-flight duplicate and never ran. The claim is now
+  released on those paths exactly once:
+
+  - Rust: `consume_core` holds the claim in a drop guard across the handler
+    await. A panic or cancellation releases it through the new defaulted
+    `ReplayGuard::release_abandoned` (synchronous, as it runs from a
+    destructor); a returned handler settles it as before. The default polls
+    `release` once; `InMemoryReplayGuard` releases directly.
+  - Go: a deferred release covers a panicking handler without recovering, so
+    the panic continues unchanged. Release and settle run on a context
+    detached from the request's cancellation (bounded at five seconds), so a
+    store-backed guard is not handed an already-cancelled context.
+  - Dart: when the response encoder throws after the handler returned, the
+    claim is settled with no cached response before the error is rethrown,
+    rather than left in flight. The effect happened, so a resend is absorbed.
+  - TypeScript already released the claim on a throwing handler.
+
+  The acceptance window over `issuedAt` (and the expiry horizon in Rust) now
+  ends exclusively, at the instant `recordExpiry` returns, in all four
+  runtimes. A guard drops a record once `retainUntil <= now`, while a
+  document was still accepted at exactly `retainUntil`, so at that instant
+  it could be accepted with no record and executed again. The window is now
+  half-open, as `expiresAt` already was.
+
+  The shared `fixtures/consume/item11-digest.json` vectors gain an optional
+  per-case `secondAt` and two boundary cases, run by all four runtimes.
+
+- **go-proof, ts-proof, dart-proof**: Check proofPurpose and expires, and sign with authentication by default (#1168)
+
+* fix(go-proof, ts-proof, dart-proof)!: check proofPurpose and expires, and sign with authentication by default
+
+  The Go, TypeScript and Dart proof verifiers accepted any non-empty
+  proofPurpose, including keyAgreement, and none of the four read a proof's
+  expires. They now apply the rule trust-tasks-proof (Rust) already applies
+  (SPEC §4.7.3):
+
+  - proofPurpose must be authentication, assertionMethod,
+    capabilityInvocation or capabilityDelegation; keyAgreement and any other
+    value are malformedProof.
+  - Dart's withResolver path checks that the issuer's DID document lists the
+    exact verificationMethod under the relationship proofPurpose names (by
+    absolute reference, relative fragment, or embedded), defines it under
+    verificationMethod, and names the issuer as its controller. The document
+    is resolved once per verification and shared with ssi.
+  - expires, when present, must be a dateTimeStamp (Z or an explicit offset)
+    that has not passed; no clock-skew allowance. All four runtimes.
+  - The Go, TypeScript and Dart signers default proofPurpose to
+    authentication, as the Rust signer does, and refuse a purpose naming no
+    signing relationship.
+  - TypeScript verifies Ed25519 with RFC 8032 decoding ({ zip215: false }),
+    as Go, Rust and Dart do.
+
+  Three shared vectors (fixtures/proof) are correctly signed and must fail in
+  every runtime: proofPurpose keyAgreement, an unrecognised proofPurpose, and
+  a passed expires.
+
+- **runtime**: Digest item 11 over the received document, and check envelope types and nesting depth (#1171)
+
+* fix(runtime)!: digest item 11 over the received document, and check envelope types and nesting depth
+
+  Item 11's duplicate-execution digest is now taken over the document as
+  received wherever a pipeline holds it, so two documents under one id that
+  differ only in a member the payload type does not model, or in the spelling
+  of a timestamp, are an idConflict rather than a duplicate:
+
+  - Go ConsumeInbound digests ConsumeOptions.Received when set.
+  - Dart consumeInbound digests `received` whenever it is passed (it did only
+    for a forward read), and the HTTPS server, DIDComm and TSP consumers pass it.
+  - Rust consume_inbound / consume_dispatched digest the received JSON under
+    ProofPolicy::VerifyReceived, with or without a proof; the HTTPS server
+    digests the body. New received_document_digest.
+
+  TypeScript consumeInbound now checks the envelope before anything reads it:
+  member types (string id/type and string-valued optional members, object
+  payload/proof/ceremony, @context string/array/object) and a nesting bound of
+  128 levels, refused malformedRequest and addressed only from string members.
+  validateEnvelope and MAX_NESTING_DEPTH are exported.
+
+  Dart consumeInbound refuses a document nested beyond maxNestingDepth (128)
+  with malformedRequest instead of overflowing the stack, and the new
+  parseTrustTaskDocument decodes a received value without throwing, returning
+  a malformedRequest reason for a mistyped member.
+
+  Shared vectors in fixtures/consume/item11-digest.json run in all four
+  runtimes.
+
+- **go-didcomm**: Validate and bind the JWE header, and take the local DID from the opening identity (#1169)
+
+* fix(go-didcomm)!: validate and bind the JWE header, and take the local DID from the opening identity
+
+  UnpackTrustTask now checks the authcrypt JWE before opening it, following
+  DIDComm v2 and RFC 7516:
+
+  - apu must be base64url(skid) and apv base64url(SHA-256 of the sorted
+    recipient kids). The per-recipient kids are unprotected; apv is what binds
+    them to the protected header. A base64url error in either is refused
+    instead of becoming an empty KDF input.
+  - Every recipient entry must carry a kid, and only the entry whose kid is
+    exactly the identity's Kid is opened. The single-unlabelled-entry fallback
+    is gone.
+  - Transport.Local is the DID of the identity the envelope was opened with,
+    never the kid read from the envelope.
+  - crit and zip are refused, as is a typ other than
+    application/didcomm-encrypted+json, a shared unprotected header, aad, the
+    flattened header/encrypted_key form, a per-recipient header repeating a
+    protected parameter, and JSON member names differing only by case.
+  - After decryption, a plaintext from that is not the authenticated sender is
+    FailDecrypt, and a to that does not name the recipient is
+    FailNotForThisRecipient.
+
+  Envelopes packed by this module and by affinidi-messaging-didcomm (the
+  interop fixture) still open.
+
+- **vta/webs/_shared**: A template's resolvedMethods is ignored, not refused (0.2 §9.2) (#1170)
+
+VTI-KEY-008 (dtgwg-vti-spec#121) puts a top-level resolvedMethods member
+  in every VTI node's own DID document, and VTI's built-in node templates
+  carry it. §9.2 refused it as documentMember, so none of them could be
+  used with vta/webs/dids/create/0.2. A did:webs document cannot render
+  the member anyway: a did:webs node declares did:webs by using it (the
+  open issue under VTI-KEY-009), so refusing the template protected
+  nothing. It is now ignored, as @context is.
+
+  Also notes that a post-quantum second signing key (vtc-host's ML-DSA-44
+  pq-signing slot) has no did:webs representation at level 1 or under the
+  key-role designation.
+
+- **go**: Bound base58 decoding and refuse a nil sender key in didcomm (#1166)
+
+* fix(go): bound base58 decoding and refuse a nil sender key in didcomm
+
+- **messaging/mux**: Revoke-all ends session attaches; accountBlocked covers ACLs narrowed below scope (#1165)
+
+messaging/mux/revoke-all 0.1 (draft) now ends the member DID's session
+  attaches admitted before it, on every connection, before answering, with
+  reason epochBumped; a principal that carried the DID only through an
+  attach gets the live detached event and no notice. The attach spec lists
+  revoke-all and a blocked or removed account among the ways an attach
+  ends. DetachReason's description says accountBlocked also covers ACLs
+  that no longer cover the member's scope. Bindings regenerated
+  (descriptions only).
+
+- **go**: Refuse member names that differ from a declared one only by case (#1161)
+
+* fix(go): refuse member names that differ from a declared one only by case
+
+  encoding/json matches object member names to struct fields without regard
+  to case, so `{"issuer":"a","Issuer":"b"}` decoded with Issuer "b", while a
+  proof verifier, a JSON Schema validator and the Rust, TypeScript and Dart
+  runtimes all read the exact-case "issuer" and see "a". A document must mean
+  one thing to every reader.
+
+  - trusttasks: Document and Proof decoding now refuse a member whose name is
+    not one the envelope, the proof or the payload type declares but which
+    encoding/json would match to one (case, Unicode simple folding, and the
+    '_'/'-' insensitivity of encoding/json/v2's matcher). The check follows
+    the payload type into nested structs, slices, arrays and map values.
+    CheckMemberNames[T] exposes the same check for a payload decoded outside
+    a Document.
+  - Because ConsumeInbound decodes Received when checking that Doc is a
+    reading of it, a Received carrying such a member is now refused
+    proofInvalid instead of vouching for a differently-decoded Doc.
+  - proof: the Data Integrity verifier refuses a document or proof object
+    carrying such a member (malformedProof), since the issuer binding reads
+    the exact-case member.
+
+  The didcomm and tsp modules pick the envelope check up when their core
+  requirement moves to a release containing it.
+
 ## 0.10.27 — 2026-11-11
 
 

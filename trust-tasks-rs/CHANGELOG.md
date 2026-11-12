@@ -31,6 +31,461 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.38.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.37.15...trust-tasks-rs-v0.38.0) — 2026-11-12
+
+
+### Added
+
+- **messaging/mux/ack**: Acknowledge frames on the mux connection they were delivered on (0.1) ([#1174](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1174))
+
+* feat(messaging/mux/ack): acknowledge frames on the mux connection they were delivered on (0.1)
+
+- **vta/dids**: Key assurance levels — create/1.1 and upgrade/1.0, recovery only at level 3, threshold custodians ([#993](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/993))
+
+* feat(vta/dids): key assurance levels — create/1.1 and upgrade/1.0, recovery only at level 3, threshold custodians
+
+  Key roles were all-or-nothing: every key-role identity needed an external
+  recovery key, and an identity without roles was not served at all. The VTI
+  specification now gives every service DID a key assurance level its operator
+  chooses (VTI-KEY-194): 1 single key, 2 role-separated, 3 recoverable.
+
+  - vta/dids/create/1.1: `assuranceLevel` (2 or 3) is required;
+    `recoveryCommitment` is required at level 3 and refused at level 2; a level-3
+    identity under a method with witnesses needs one (witnessRequired); a
+    template MAY set a level floor (assuranceLevelBelowTemplate). create/1.0 is
+    released, so the changed shape is a new version rather than an in-place edit.
+  - vta/dids/upgrade/1.0 (new): raise an identity's level in place, from 1 to
+    2 or 3 or from 2 to 3, with fresh keys for every tightened role; never lower.
+    `previousKeys` is retire (RECOMMENDED), revoke, or, from level 1, keep.
+  - _shared/0.1 (additive): KeyAssuranceLevel, RecoveryCustodian and its kind,
+    ThresholdRecoveryCommitment (a condition over whole keys, VTI-KEY-210–221),
+    the declareAssuranceLevel change, the roleKeysInBackups warning; CONVENTIONS
+    §3.4 (levels and the `keyAssurance` member), §3.5 (raising), §5.6–§5.7
+    (recovery custodians, threshold custodians), §19, two family error codes
+    (assuranceLevelMismatch, witnessRequired), and level-scoped custody, witness
+    and approval rules.
+  - 1.0 tasks, additively: keys/rotate gains `useRecoveryKey` and
+    `recoveryProof`; keys/list reports `assuranceLevel`; keys/revoke
+    `scope: boundary` and recover are level 3 only; update refuses
+    `keyAssurance` and the removal of a level-3 identity's last witness.
+  - Method profiles: did:webvh names the recovery commitment in
+    `state.keyAssurance`; did:webs maps the levels onto its next-key threshold,
+    every rotation exposes K and commits a fresh K′.
+  - vta/webs/dids/create/0.2 now links vta/dids/create/1.1.
+
+  Rebased onto main as one commit (was five, including a merge of main).
+  Bindings regenerated (Rust, TS, Go, Dart).
+
+- **vta/webs/dids/create**: DID classes, service DIDs and DID templates (0.2) ([#1159](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1159))
+
+create 0.2 takes a required didClass (relationship, persona or service,
+  VTI-KEY-190 - 193) and records it. A service did:webs - the durable identity
+  of the VTA, a VTC, a VTN, a host service or an integration - is allowed at
+  level 1 as an optional, alpha method (VTI-KEY-001 / VTI-KEY-003 as being
+  amended, dtgwg-vti-spec#120), enabled separately in the VTA's configuration
+  (serviceDidNotPermitted when it is off); didClassConflict holds VTI-KEY-193.
+
+  A DID may be shaped by a DID template (template, templateContext,
+  templateVars), exclusive of the explicit service and alias members. The VTA
+  renders it and maps its document onto the did:webs derivation: one Ed25519
+  signing key in authentication and assertionMethod, one designated X25519 key
+  agreement key, designated services and aliases; anything else is refused
+  with templateNotRepresentable (details.reason, details.members), and
+  templateNotFound / templateVarsInvalid as for the other template consumers.
+
+  Family conventions move to vta/webs/_shared/0.2 (CONVENTIONS.md section 1
+  rewritten for classes and service DIDs, section 9 the template mapping;
+  webs-records adds WebsDidClass and an optional didClass on the record).
+  0.1 is unchanged and now superseded.
+
+  Bindings regenerated for Rust, TS, Go and Dart.
+
+- **rooms/watch**: A live watch for an open conversation (0.2), and rooms/keys/watch 0.2 ([#1087](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1087))
+
+* feat(rooms/signal-delay/set): a room may turn off the watch signal's randomised delay (0.1), served by rooms/info 0.4
+
+  A host waits a randomised few seconds before sending a rooms/changed
+  signal (producer item 4), so that a signal's time does not mark one
+  write. In a room used as a conversation that is a few seconds between
+  one member writing and another seeing it, on every message.
+
+  rooms/signal-delay/set/0.1 lets a holder of `admin` set the room's
+  signal delay to `randomised` (the default) or `none`. It is the room's
+  setting, not a watcher's: an undelayed signal lets a party who sees both
+  the write reach the host and the signal leave it match the two, which
+  gives away every writer, so one watcher cannot opt out for itself. The
+  request carries a reason and a proof; the host audits each change and
+  may refuse a setting its governance will not apply
+  (`signalDelayNotPermitted`). A room can choose only whether there is a
+  delay, never its interval.
+
+  rooms/info/0.4 serves `signalDelay` to every member, always present.
+  rooms/changed/0.1 producer item 4 applies the setting the host serves
+  and never a watcher's preference, and its Correlation section says what
+  `none` gives up. `SignalDelay` is a new definition in
+  rooms/_shared/0.2. Links to rooms/info/0.3 move to 0.4.
+
+- **rooms/signal-delay/set**: A room may turn off the watch signal's randomised delay (0.1), set at rooms/create 0.3 and served by rooms/info 0.4 ([#1084](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1084))
+
+* feat(rooms/signal-delay/set): a room may turn off the watch signal's randomised delay (0.1), served by rooms/info 0.4
+
+  A host waits a randomised few seconds before sending a rooms/changed
+  signal (producer item 4), so that a signal's time does not mark one
+  write. In a room used as a conversation that is a few seconds between
+  one member writing and another seeing it, on every message.
+
+  rooms/signal-delay/set/0.1 lets a holder of `admin` set the room's
+  signal delay to `randomised` (the default) or `none`. It is the room's
+  setting, not a watcher's: an undelayed signal lets a party who sees both
+  the write reach the host and the signal leave it match the two, which
+  gives away every writer, so one watcher cannot opt out for itself. The
+  request carries a reason and a proof; the host audits each change and
+  may refuse a setting its governance will not apply
+  (`signalDelayNotPermitted`). A room can choose only whether there is a
+  delay, never its interval.
+
+  rooms/info/0.4 serves `signalDelay` to every member, always present.
+  rooms/changed/0.1 producer item 4 applies the setting the host serves
+  and never a watcher's preference, and its Correlation section says what
+  `none` gives up. `SignalDelay` is a new definition in
+  rooms/_shared/0.2. Links to rooms/info/0.3 move to 0.4.
+
+- **rooms/records/list**: Newest-first listing for a conversation's head (0.7), and rooms/keys/browse 0.5 ([#1088](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1088))
+
+Chat clients open a conversation at its newest messages, but a room
+  listing only paged forward from sinceVersion, so a client opening a room
+  with tens of thousands of records had to page from the start.
+
+  rooms/records/list 0.7 adds an optional `order` (`oldestFirst`, the
+  default, or `newestFirst`), defined once as `ListOrder` in
+  rooms/_shared/0.2. Newest first returns rows in descending version;
+  sinceVersion still bounds from below; tombstones and lastPrune are
+  unchanged; a cursor is valid only under the order it was issued for
+  (invalidCursor otherwise). The spec states what makes it correct for chat
+  although edits move a record's version: a newest-first listing whose
+  lowest version is V holds every record whose current version is above V,
+  so every message created since V; a reader orders by createdAt, not by
+  row order. A record changed mid-listing moves above the listing's first
+  row, so a catching-up reader takes the first page's highest version as
+  its watermark, and only after reading to the end.
+
+  rooms/keys/browse 0.5 passes `order` through, and adds `maxPages`,
+  `cursor` and response `nextCursor`: a 0.4 recipient always reads the
+  host's listing to its end, so order alone would still read the whole
+  room before answering. The MemberProfile "Near the room's head" rule
+  now says how a newest-first reader finds names (500 rows below the
+  earliest record it shows reach at least 500 versions).
+
+- **rooms/keys/read-marker**: A member's read marker kept by their key holder, so every device agrees on unread (0.1), and rooms/keys/list 0.3 ([#1086](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1086))
+
+rooms/changed 0.1 counts unread messages against a read marker that was each
+  client's own, so a member's phone and laptop disagreed about what is unread and
+  a notification read on one device stayed on the other.
+
+  - rooms/keys/read-marker/set 0.1: a member's client tells their key holder
+    where the member has seen a room up to (room version + host createdAt of the
+    newest message seen). The marker only moves forward (greater version; at equal
+    version, later createdAt) unless `rewind: true` ("mark as unread"); the answer
+    is the marker in force and `moved`, so racing devices converge without a
+    precondition. Acting as the member, delegates refused, notHeld as for
+    rooms/keys/label. Idempotent; retry class two.
+  - rooms/keys/read-marker/moved 0.1: one-way, key holder to the member's other
+    clients holding a rooms/keys/watch on the room as that member (never the
+    setter), so a device can clear a notification.
+  - rooms/keys/list 0.3: each entry may carry `readMarker`, returned under
+    includePersonal beside the personal label.
+  - ReadMarker in rooms/_shared/0.1/read-marker.schema.json.
+  - rooms/changed 0.1 (draft, prose): a reader MAY keep its marker with its key
+    holder; it is still never sent to the host, the room or another member.
+
+- **messaging/mux**: Connections, an administrator's view of live mux connections ([#1083](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1083))
+
+Adds messaging/mux/connections/0.1: an administrator lists a mediator's live mux connections — principal, wire (didcomm | tsp), openedAt, exact memberCount, and members with source, grantId, scope, expiresAt and deliveryActive — paged by cursor/limit with a per-page member budget that splits a large connection across pages, and a required coverage (allInstances | thisInstance) so a horizontally scaled mediator never implies completeness it lacks. Regenerates the Rust, TypeScript, Go and Dart bindings.
+
+
+
+### Build & CI
+
+- Guard version edits, release lists, crate size and released spec policy; one-pass registry dates ([#1213](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1213))
+
+* ci: guard version edits, release lists, crate size and released spec policy; one-pass registry dates
+
+  Pipeline fixes from the 2026-11-11 repository review.
+
+  - Crate size ([#1097](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1097)): the `package` job fails when the trust-tasks-rs .crate
+    exceeds 9.9 MiB and warns above 9.5 MiB; CHANGELOG.md is excluded from the
+    package. Measured here at 10,308,682 bytes (9.83 MiB) after the exclusion.
+  - deploy.yml ([#1133](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1133)): the deploy job joins one `deploy-production`
+    concurrency group (never cancelled) and skips a queued deploy whose commit
+    main has moved past, so an older run cannot roll the site back.
+  - check-published-schemas ([#1134](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1134)): front matter parsed as YAML; the full
+    derived per-variant policy (proof and issuedAt request/response,
+    parties[].requirement, bearer) is compared; a deleted or renamed released
+    file fails. Regression fixtures and tests in scripts/test-checks/.
+  - rust.yml ([#1135](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1135)): the path filter covers fixtures/, ceremonies/,
+    check-rs-api-compat.sh and release-plz.toml; published-schemas moved to the
+    unfiltered checks.yml.
+  - build-registry.mjs ([#1136](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1136)): created/updated dates and git authors come from
+    one `git log` over specs/, skipped under --validate-only. Build 1m43s -> 6s
+    with identical output; validate 2.6s.
+  - Release rules ([#1137](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1137)): checks.yml refuses a version-declaration change in
+    any PR but the Release PR; commit-lint refuses a BREAKING CHANGE line in the
+    commits or description and accepts only an explicit list of `!` scopes.
+  - check-release-lists.mjs ([#1139](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1139)): the npm, Go and crate release lists, and
+    commit-lint's scopes against the release scripts', held in agreement.
+  - timeout-minutes on every job that had none; rust-cache in ts.yml
+    gen-equivalence ([#1141](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1141)).
+  - `npm run check`, `npm run regen`, .nvmrc, new-spec's closing message, and a
+    readable reserved-slug failure ([#1142](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1142)).
+  - Drift checks use `git status --porcelain`; release-plz-release has a
+    concurrency group; a withdraw re-run updates its existing PR ([#1143](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1143)).
+
+
+
+### Documentation
+
+- Fix drifted counts, release runbook, licences and stale examples across the four libraries ([#1224](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1224))
+
+* docs(getting-started): move the worked example to acl/grant/0.3 and stamp issuedAt with issued_at_now()
+
+  The example pinned acl/grant/0.2, superseded by 0.3, and stamped issuedAt
+  with chrono::Utc::now(), the full-precision form #970 removed from the
+  libraries. The TS consumer example wrote toISOString() milliseconds into
+  document fields the same way. The dependency snippet now uses cargo add,
+  so it cannot name a stale version, and §4.4 describes the shared version
+  group instead of versions from 0.14.
+
+
+
+### Fixed
+
+- **runtime**: Bound the work of pruning a payload read forward along extends ([#1209](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1209))
+
+* fix(runtime): bound the work of pruning a payload read forward along extends
+
+  Pruning a later version's payload to the implemented version's schema runs
+  before any proof is checked. Its cost could grow exponentially with the
+  payload's nesting depth: in TypeScript, choosing a oneOf/anyOf branch pruned
+  the whole subtree once per branch, at every level; in all four runtimes, a
+  recursive member named from more than one place (properties and an allOf
+  branch) was pruned once per place, at every level.
+
+  Each runtime now gives a prune at most 100,000 steps plus 64 per value in
+  the payload. readForSpec (TS), ReadForSpec (Go), readForVersion (Dart), and
+  read_as, the dispatchers and consume_dispatched (Rust) refuse a payload
+  that needs more as malformedRequest, saying why. prunePayload /
+  prune_payload on their own return the payload untouched instead.
+
+  TypeScript also remembers, for the rest of a walk, the branch chosen for
+  each value and the structural matcher's answers, so a value under nested
+  oneOfs is decided once rather than once per enclosing branch, and compiles
+  each patternProperties pattern once per walk.
+
+- **rs,build,cli,codegen**: Review fixes — declared guard code, SchemaValidator, keyword slugs, generate --lang rs, registry hints, docs.rs ([#1215](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1215))
+
+* fix(rs): declared acl/revoke code in the guard, a caching SchemaValidator, docs.rs metadata
+
+  - guards::acl::reject_last_authority returns acl/revoke:lastAuthorityProtected,
+    the code every acl/revoke version declares (was snake_case); new
+    LAST_AUTHORITY_PROTECTED constant, pinned to the generated declarations ([#1093](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1093)).
+  - validate::SchemaValidator: a PayloadValidator compiling each schema once,
+    cached by the schema text's address and confirmed against its content;
+    validate_value and check_details use a shared one; prune_payload reuses a
+    parsed-schema cache; PayloadPolicy::accept_unvalidated() ([#1091](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1091)).
+  - docs.rs builds trust-tasks-rs with validate + acl and the facade with its
+    non-spec features, and trust-tasks-rs / trust-tasks-https enable doc_cfg
+    under docsrs, without which the docs.rs build cannot compile ([#1106](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1106)).
+
+- **ts,go,dart,rs**: Whole-second capability-client issuedAt, tested Dart core floors, TS default export condition, Go schema caching ([#1214](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1214))
+
+* fix(dart-capability-client,go-capabilityclient,go-didcomm): stamp issuedAt in whole seconds and fail on entropy failure
+
+  The Dart capability client stamped issuedAt with toIso8601String (full
+  precision); it now uses the core's systemClock. The Go port now stamps
+  through trusttasks.SystemClock. The TS port already stamped whole seconds.
+
+  The Go capabilityclient and didcomm UUIDv4 generators ignored crypto/rand
+  errors and would mint an all-zero id; they now panic, as tsp's does.
+
+- **dart-https**: Advertise the expiry horizon, and pin all four runtimes' freshness to shared vectors ([#1212](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1212))
+
+* test(runtime): shared freshness vectors run by all four runtimes
+
+  fixtures/consume/freshness.json pins SPEC §7.2's acceptance window (items 4
+  and 13, *Bounding the record*): now / policy / issuedAt / expiresAt to a
+  verdict and, for an accepted document, the replay record's expiry. It covers
+  a stated expiresAt replacing the maximum age, the 30-day expiry horizon and
+  its clamp on the record, a zero horizon, the half-open edges to the
+  millisecond, skew on both sides, a missing issuedAt with and without
+  requireIssuedAt, offsets, fractions and calendar-invalid timestamps, and
+  holds each runtime's default and consequential policies to the same values.
+
+  Run by trust-tasks-rs (tests/freshness_vectors.rs), @openvtc/trust-tasks
+  (test/freshness-vectors.test.ts), trust-tasks-go
+  (trusttasks/freshness_vectors_test.go) and trust_tasks
+  (test/freshness_vectors_test.dart). The Rust workflow now runs on a change
+  under fixtures/, which its integration tests read.
+
+- **rs,ts,go,dart,proof,ts-proof,go-proof,dart-proof**: Refuse out-of-range timestamp fields instead of rolling them over ([#1210](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1210))
+
+issuedAt and expiresAt, and a proof's created, are now read with every
+  field range-checked after the shared pattern: month 1-12, a day the month
+  has, hour 0-23, minute and second 0-59 (no leap second), and an offset of
+  at most 23:59 (14:00 for a proof's dateTimeStamp, as for expires).
+
+  Before, the four runtimes disagreed on the same bytes. TypeScript's
+  Date.parse read 2026-02-30 as 2 March and 24:00 as the next day; Dart's
+  DateTime.tryParse rolled 2026-13-45T25:61:61Z over into 2027 and took any
+  offset; Rust's chrono read :60 as a leap second and accepted a space for
+  the T; Go's time.Parse accepted +24:00 and +23:60. In the TypeScript proof
+  verifier a regex-valid but unparseable created (month 13) gave NaN, which
+  never compares later than the clock-skew horizon, so it was accepted.
+
+  New shared vectors: fixtures/consume/timestamps.json, run by all four
+  runtimes, and five correctly signed created-* proof vectors.
+
+- **messaging/mux/ack**: NotPermitted only for a member whose mail the connection reads (0.1) ([#1179](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1179))
+- **rs,ts,go,dart**: The in-memory replay guard refuses when full instead of dropping live records ([#1163](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1163))
+
+* fix(runtime): the in-memory replay guard refuses when full instead of dropping live records
+
+  InMemoryReplayGuard (Rust, TypeScript, Go, Dart) made room for a new id by
+  dropping the least-recently-used record, whether or not that record was
+  still inside its retention window. A document whose record was dropped that
+  way was then accepted again inside its window, with nothing logged.
+
+  - When every slot holds a live record, a claim for a new id now fails
+    (Rust ReplayGuardError, TS ReplayGuardFullError, Go ErrReplayGuardFull,
+    Dart ReplayGuardFullException), which the pipeline answers `unavailable`
+    (retryable). Records whose window has closed are reclaimed first; a
+    record is never dropped to make room. Duplicates and conflicts are still
+    recognised while full.
+  - The default capacity is 100 000 live records (was 10 000), documented as
+    a ceiling on distinct documents per retention window, and exported as
+    DEFAULT_REPLAY_CAPACITY / DefaultReplayCapacity / defaultReplayCapacity.
+  - TypeScript, Go and Dart gain the expiry horizon Rust already had
+    (`expiryHorizonMs` / `ExpiryHorizon` / `expiryHorizon`, 30 days in the
+    consequential policy): a stated expiresAt bounds the acceptance window in
+    place of the maximum age, up to issuedAt + horizon, and the retained
+    record's expiry is clamped to the same instant, so a producer can no
+    longer pin a record indefinitely with a distant expiresAt.
+
+- **runtime**: Settle or release the item-11 claim on every remaining path ([#1177](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1177))
+
+- Rust: the claim stays armed across a retryable refusal's awaited
+    release and is disarmed on the next statement, so a pipeline dropped
+    mid-release still releases it. A response or refusal whose `Serialize`
+    panics is recorded with no response before the panic continues.
+  - HTTPS server: `release_claim` holds a drop guard across its awaited
+    release, on both the refusal and the panic branch.
+  - `ReplayGuard::release_abandoned` documents that it must not block,
+    require a runtime context or panic, and the default's degradation for a
+    `release` that suspends, which a test now pins.
+  - Go: a `MarshalJSON` panic in `settle` records the claim with no
+    response, then the panic continues.
+  - Dart: a final refusal that cannot be encoded releases the claim, so a
+    resend is evaluated again, before the error is rethrown.
+
+- **messaging/mux/ack**: An id held for a DID off the connection is notFound (0.1) ([#1176](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1176))
+- **rs,ts,go,dart**: Refuse a document whose type is not the spec it is consumed under ([#1162](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1162))
+
+* fix(runtime): refuse a document whose type is not the spec it is consumed under
+
+  The typed consume functions took the document's payload type, or a spec
+  policy, as given and never compared the document's `type` with it. A
+  document of another specification whose payload happened to fit was run
+  under the consumed spec's policy and handler, and answered as its own type.
+  SPEC §7.2 item 3 assigns that check to the consumer.
+
+  Each runtime's typed path now checks it before any other step, so a refused
+  document never reaches the item-11 record:
+
+  - accepted: the spec's own Type URI (`#request` and no fragment alike), or a
+    later version of the same specification and variant whose declared
+    `extends` chain reaches it (SPEC §5.2);
+  - `unsupportedVersion`: the same specification and variant at any other
+    version;
+  - `unsupportedType`: anything else — another slug, the same slug under
+    another authority or form, the `#response` variant, or a `type` that is not
+    a Type URI.
+
+- **runtime**: Release the item-11 claim when a handler does not return, and end the acceptance window where the record does ([#1175](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1175))
+
+* fix(runtime): release the item-11 claim when a handler does not return, and close the window where the record expires
+
+  A handler that panicked (Rust, Go) or whose future was dropped mid-await
+  (Rust: a request timeout, a client disconnect) left its item-11 claim in
+  flight until the record expired, so every resend of the document was
+  absorbed as an in-flight duplicate and never ran. The claim is now
+  released on those paths exactly once:
+
+  - Rust: `consume_core` holds the claim in a drop guard across the handler
+    await. A panic or cancellation releases it through the new defaulted
+    `ReplayGuard::release_abandoned` (synchronous, as it runs from a
+    destructor); a returned handler settles it as before. The default polls
+    `release` once; `InMemoryReplayGuard` releases directly.
+  - Go: a deferred release covers a panicking handler without recovering, so
+    the panic continues unchanged. Release and settle run on a context
+    detached from the request's cancellation (bounded at five seconds), so a
+    store-backed guard is not handed an already-cancelled context.
+  - Dart: when the response encoder throws after the handler returned, the
+    claim is settled with no cached response before the error is rethrown,
+    rather than left in flight. The effect happened, so a resend is absorbed.
+  - TypeScript already released the claim on a throwing handler.
+
+  The acceptance window over `issuedAt` (and the expiry horizon in Rust) now
+  ends exclusively, at the instant `recordExpiry` returns, in all four
+  runtimes. A guard drops a record once `retainUntil <= now`, while a
+  document was still accepted at exactly `retainUntil`, so at that instant
+  it could be accepted with no record and executed again. The window is now
+  half-open, as `expiresAt` already was.
+
+  The shared `fixtures/consume/item11-digest.json` vectors gain an optional
+  per-case `secondAt` and two boundary cases, run by all four runtimes.
+
+- **runtime**: Digest item 11 over the received document, and check envelope types and nesting depth ([#1171](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1171))
+
+* fix(runtime)!: digest item 11 over the received document, and check envelope types and nesting depth
+
+  Item 11's duplicate-execution digest is now taken over the document as
+  received wherever a pipeline holds it, so two documents under one id that
+  differ only in a member the payload type does not model, or in the spelling
+  of a timestamp, are an idConflict rather than a duplicate:
+
+  - Go ConsumeInbound digests ConsumeOptions.Received when set.
+  - Dart consumeInbound digests `received` whenever it is passed (it did only
+    for a forward read), and the HTTPS server, DIDComm and TSP consumers pass it.
+  - Rust consume_inbound / consume_dispatched digest the received JSON under
+    ProofPolicy::VerifyReceived, with or without a proof; the HTTPS server
+    digests the body. New received_document_digest.
+
+  TypeScript consumeInbound now checks the envelope before anything reads it:
+  member types (string id/type and string-valued optional members, object
+  payload/proof/ceremony, @context string/array/object) and a nesting bound of
+  128 levels, refused malformedRequest and addressed only from string members.
+  validateEnvelope and MAX_NESTING_DEPTH are exported.
+
+  Dart consumeInbound refuses a document nested beyond maxNestingDepth (128)
+  with malformedRequest instead of overflowing the stack, and the new
+  parseTrustTaskDocument decodes a received value without throwing, returning
+  a malformedRequest reason for a mistyped member.
+
+  Shared vectors in fixtures/consume/item11-digest.json run in all four
+  runtimes.
+
+- **messaging/mux**: Revoke-all ends session attaches; accountBlocked covers ACLs narrowed below scope ([#1165](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1165))
+
+messaging/mux/revoke-all 0.1 (draft) now ends the member DID's session
+  attaches admitted before it, on every connection, before answering, with
+  reason epochBumped; a principal that carried the DID only through an
+  attach gets the live detached event and no notice. The attach spec lists
+  revoke-all and a blocked or removed account among the ways an attach
+  ends. DetachReason's description says accountBlocked also covers ACLs
+  that no longer cover the member's scope. Bindings regenerated
+  (descriptions only).
+
+
+
 ## [0.37.15](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.37.14...trust-tasks-rs-v0.37.15) — 2026-11-11
 
 
