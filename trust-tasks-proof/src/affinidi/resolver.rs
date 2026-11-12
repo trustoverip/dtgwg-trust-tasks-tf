@@ -39,13 +39,35 @@
 //! [`PurposeBound::new(&resolver, purpose)`](super::PurposeBound), which
 //! implements that trait for one proof's purpose.
 //!
+//! ## Where resolution may go
+//!
+//! Resolving `did:web`, `did:webvh`, `did:webs` or `did:scid` fetches from a
+//! host the DID names — and the DID comes from the document being verified,
+//! so whoever sent it chooses where this resolver sends requests. Two limits
+//! apply to every resolution:
+//!
+//! * **A deadline** — [`DEFAULT_RESOLUTION_TIMEOUT`] unless
+//!   [`CachedDidResolver::with_timeout`] sets another. A resolution that has
+//!   not finished by then fails, however many fetches it involves.
+//! * **A host policy** — a DID whose host is `localhost`, a loopback,
+//!   private-network, link-local, shared-address or unspecified IP literal is
+//!   refused before the client is called.
+//!   [`CachedDidResolver::allow_private_hosts`] lifts that (local development,
+//!   or DID hosts on a trusted private network), and
+//!   [`CachedDidResolver::with_host_filter`] adds an allow-list of your own.
+//!   This screens what the DID *names*; a public hostname that resolves to a
+//!   private address is the client's to refuse, which the SDK's
+//!   `DIDCacheConfigBuilder::with_host_policy` does by default.
+//!
 //! ## What isn't (yet)
 //!
 //! * Anything beyond Ed25519 / X25519 / P-256 / P-384 / secp256k1 —
 //!   post-quantum multicodecs (ML-DSA, SLH-DSA) would slot in here
 //!   under the same feature flags `affinidi-crypto` exposes.
 
+use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use std::sync::Arc;
+use std::time::Duration;
 
 use affinidi_crypto::KeyType;
 #[allow(unused_imports)] // doc links
@@ -59,18 +81,92 @@ use async_trait::async_trait;
 
 use super::purpose::{split_vm, ProofPurpose, ProofPurposeResolver};
 
+/// How long one resolution may take, unless
+/// [`CachedDidResolver::with_timeout`] says otherwise.
+pub const DEFAULT_RESOLUTION_TIMEOUT: Duration = Duration::from_secs(10);
+
+/// A caller-supplied predicate over the host a DID names; see
+/// [`CachedDidResolver::with_host_filter`].
+type HostFilter = Arc<dyn Fn(&str) -> bool + Send + Sync>;
+
 /// A [`ProofPurposeResolver`] that delegates DID resolution to the Affinidi DID resolver cache, then walks
 /// the resulting DID document to pull out the named verification method's
 /// key material.
+///
+/// Every resolution has a deadline and a host policy — see the
+/// [module documentation](self).
 #[derive(Clone)]
 pub struct CachedDidResolver {
     client: Arc<DIDCacheClient>,
+    timeout: Duration,
+    allow_private_hosts: bool,
+    host_filter: Option<HostFilter>,
 }
 
 impl CachedDidResolver {
-    /// Wrap a configured [`DIDCacheClient`].
+    /// Wrap a configured [`DIDCacheClient`], with
+    /// [`DEFAULT_RESOLUTION_TIMEOUT`] and the default host policy (DIDs
+    /// naming a loopback or private host are refused).
     pub fn new(client: Arc<DIDCacheClient>) -> Self {
-        Self { client }
+        Self {
+            client,
+            timeout: DEFAULT_RESOLUTION_TIMEOUT,
+            allow_private_hosts: false,
+            host_filter: None,
+        }
+    }
+
+    /// The deadline for one resolution. A zero duration is raised to one
+    /// millisecond rather than taken as "no deadline".
+    pub fn with_timeout(mut self, timeout: Duration) -> Self {
+        self.timeout = timeout.max(Duration::from_millis(1));
+        self
+    }
+
+    /// Accept DIDs naming `localhost` or a loopback, private-network or
+    /// link-local address. Off by default: those hosts are this machine and
+    /// its network, which a sender should not be able to point the verifier
+    /// at. Turn it on for local development, or where the DID hosts are
+    /// trusted and private. The client's own host policy
+    /// (`DIDCacheConfigBuilder::with_host_policy`) applies independently.
+    pub fn allow_private_hosts(mut self, allow: bool) -> Self {
+        self.allow_private_hosts = allow;
+        self
+    }
+
+    /// Resolve only DIDs whose host `filter` accepts — an allow-list of the
+    /// hosts this deployment expects to meet. The host is passed lowercased,
+    /// without port, brackets or path. It applies to DIDs that name a host;
+    /// `did:key`, `did:peer` and `did:jwk` resolve locally and are not
+    /// screened. Runs after the private-host check.
+    pub fn with_host_filter<F>(mut self, filter: F) -> Self
+    where
+        F: Fn(&str) -> bool + Send + Sync + 'static,
+    {
+        self.host_filter = Some(Arc::new(filter));
+        self
+    }
+
+    /// The host policy, applied before any resolution.
+    fn check_host(&self, did: &str) -> Result<(), DataIntegrityError> {
+        let Some(host) = did_host(did) else {
+            return Ok(());
+        };
+        if !self.allow_private_hosts && is_non_public_host(&host) {
+            return Err(DataIntegrityError::Resolver(
+                "the verificationMethod's DID names a host this resolver does not contact"
+                    .to_string(),
+            ));
+        }
+        if let Some(filter) = &self.host_filter {
+            if !filter(&host) {
+                return Err(DataIntegrityError::Resolver(
+                    "the verificationMethod's DID names a host this resolver does not contact"
+                        .to_string(),
+                ));
+            }
+        }
+        Ok(())
     }
 
     /// Borrow the underlying cache client (useful for sharing the same
@@ -87,9 +183,17 @@ impl CachedDidResolver {
         purpose: ProofPurpose,
     ) -> Result<ResolvedKey, DataIntegrityError> {
         let (did, _) = split_vm(vm)?;
-        let resolve = self.client.resolve(did).await.map_err(|e| {
-            DataIntegrityError::Resolver(format!("resolve the verificationMethod's DID: {e}"))
-        })?;
+        self.check_host(did)?;
+        let resolve = tokio::time::timeout(self.timeout, self.client.resolve(did))
+            .await
+            .map_err(|_| {
+                DataIntegrityError::Resolver(
+                    "resolving the verificationMethod's DID did not finish in time".to_string(),
+                )
+            })?
+            .map_err(|e| {
+                DataIntegrityError::Resolver(format!("resolve the verificationMethod's DID: {e}"))
+            })?;
         let method = authorised_method(&resolve.doc, did, vm, purpose)?;
 
         // Multikey `publicKeyMultibase` or `publicKeyJwk`.
@@ -114,6 +218,102 @@ impl ProofPurposeResolver for CachedDidResolver {
     ) -> Result<ResolvedKey, DataIntegrityError> {
         self.resolve_for(vm, purpose).await
     }
+}
+
+/// The host a DID fetches its document from, lowercased and without port,
+/// brackets or path: `did:web:<host>…`, `did:webs:<host>…`,
+/// `did:webvh:<scid>:<host>…`, or a `src=` locator (`did:scid`). `None` for a
+/// DID that names no host.
+fn did_host(did: &str) -> Option<String> {
+    let (base, query) = match did.split_once('?') {
+        Some((b, q)) => (b, Some(q)),
+        None => (did, None),
+    };
+    let from_query = query.and_then(|q| {
+        q.split('&')
+            .find_map(|kv| kv.strip_prefix("src="))
+            .map(|v| v.split('/').next().unwrap_or(v))
+    });
+    let mut parts = base.split(':');
+    let authority = match (parts.next(), parts.next()) {
+        (Some("did"), Some("web" | "webs")) => parts.next(),
+        (Some("did"), Some("webvh")) => parts.nth(1),
+        _ => None,
+    };
+    let raw = authority.or(from_query)?;
+    let decoded = percent_decode(raw).to_ascii_lowercase();
+    let host = if let Some(v6) = decoded.strip_prefix('[') {
+        v6.split_once(']').map_or(v6, |(h, _)| h).to_string()
+    } else {
+        decoded.split(':').next().unwrap_or("").to_string()
+    };
+    (!host.is_empty()).then_some(host)
+}
+
+/// `%XX` decoding, enough for the `%3A` (port) and `%5B`/`%5D` (IPv6
+/// brackets) a DID uses in its host; an invalid escape is kept as written.
+fn percent_decode(s: &str) -> String {
+    let bytes = s.as_bytes();
+    let mut out = Vec::with_capacity(bytes.len());
+    let mut i = 0;
+    while i < bytes.len() {
+        if bytes[i] == b'%'
+            && i + 2 < bytes.len()
+            && bytes[i + 1].is_ascii_hexdigit()
+            && bytes[i + 2].is_ascii_hexdigit()
+        {
+            let hex = |c: u8| (c as char).to_digit(16).unwrap_or(0) as u8;
+            out.push(hex(bytes[i + 1]) << 4 | hex(bytes[i + 2]));
+            i += 3;
+            continue;
+        }
+        out.push(bytes[i]);
+        i += 1;
+    }
+    String::from_utf8_lossy(&out).into_owned()
+}
+
+/// `localhost` (and names under it), or an IP literal that is not a public
+/// unicast address.
+fn is_non_public_host(host: &str) -> bool {
+    let host = host.trim_end_matches('.');
+    if host == "localhost" || host.ends_with(".localhost") {
+        return true;
+    }
+    match host.parse::<IpAddr>() {
+        Ok(IpAddr::V4(ip)) => is_non_public_v4(ip),
+        Ok(IpAddr::V6(ip)) => is_non_public_v6(ip),
+        Err(_) => false,
+    }
+}
+
+fn is_non_public_v4(ip: Ipv4Addr) -> bool {
+    let [a, b, ..] = ip.octets();
+    ip.is_loopback()
+        || ip.is_private()
+        || ip.is_link_local()
+        || ip.is_unspecified()
+        || ip.is_broadcast()
+        || ip.is_documentation()
+        || a == 0
+        // 100.64.0.0/10, shared address space (carrier-grade NAT).
+        || (a == 100 && (b & 0xc0) == 64)
+        // 198.18.0.0/15, benchmarking.
+        || (a == 198 && (b & 0xfe) == 18)
+        || a >= 240
+}
+
+fn is_non_public_v6(ip: Ipv6Addr) -> bool {
+    if let Some(v4) = ip.to_ipv4_mapped() {
+        return is_non_public_v4(v4);
+    }
+    let first = ip.segments()[0];
+    ip.is_loopback()
+        || ip.is_unspecified()
+        // fc00::/7, unique local.
+        || (first & 0xfe00) == 0xfc00
+        // fe80::/10, link-local.
+        || (first & 0xffc0) == 0xfe80
 }
 
 /// The relationship list a purpose names.
@@ -208,5 +408,75 @@ fn codec_to_key_type(codec: u64) -> Option<KeyType> {
         c if c == P384_PUB => Some(KeyType::P384),
         c if c == SECP256K1_PUB => Some(KeyType::Secp256k1),
         _ => None,
+    }
+}
+
+#[cfg(test)]
+mod host_tests {
+    use super::*;
+
+    #[test]
+    fn did_host_reads_each_method() {
+        assert_eq!(
+            did_host("did:web:example.com").as_deref(),
+            Some("example.com")
+        );
+        assert_eq!(
+            did_host("did:web:Example.COM%3A8443:users:alice").as_deref(),
+            Some("example.com")
+        );
+        assert_eq!(
+            did_host("did:webvh:QmScid:host.example:a").as_deref(),
+            Some("host.example")
+        );
+        assert_eq!(
+            did_host("did:webs:127.0.0.1%3A7676:Eaid").as_deref(),
+            Some("127.0.0.1")
+        );
+        assert_eq!(did_host("did:web:%5B::1%5D%3A80").as_deref(), Some("::1"));
+        assert_eq!(
+            did_host("did:scid:vh:1:QmScid?src=10.0.0.5%3A8000").as_deref(),
+            Some("10.0.0.5")
+        );
+        assert_eq!(did_host("did:key:z6MkExample"), None);
+        assert_eq!(did_host("did:peer:2.Ez6L"), None);
+    }
+
+    #[test]
+    fn non_public_hosts() {
+        for host in [
+            "localhost",
+            "api.localhost",
+            "127.0.0.1",
+            "10.1.2.3",
+            "172.16.0.1",
+            "192.168.1.1",
+            "169.254.169.254",
+            "100.64.0.1",
+            "0.0.0.0",
+            "::1",
+            "::",
+            "fd00::1",
+            "fe80::1",
+            "::ffff:127.0.0.1",
+        ] {
+            assert!(is_non_public_host(host), "{host}");
+        }
+        for host in [
+            "example.com",
+            "8.8.8.8",
+            "2001:4860::8888",
+            "localhost.example",
+        ] {
+            assert!(!is_non_public_host(host), "{host}");
+        }
+    }
+
+    #[test]
+    fn percent_decode_keeps_invalid_escapes() {
+        assert_eq!(percent_decode("a%3Ab"), "a:b");
+        assert_eq!(percent_decode("a%3"), "a%3");
+        assert_eq!(percent_decode("a%zzb"), "a%zzb");
+        assert_eq!(percent_decode("é%"), "é%");
     }
 }

@@ -35,7 +35,7 @@ mod resolver;
 mod sign;
 pub use bounds::check_proof_bounds;
 pub use purpose::{ProofPurpose, ProofPurposeResolver, PurposeBound};
-pub use resolver::CachedDidResolver;
+pub use resolver::{CachedDidResolver, DEFAULT_RESOLUTION_TIMEOUT};
 pub use sign::{sign_trust_task, SignError};
 
 use std::sync::Arc;

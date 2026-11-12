@@ -43,7 +43,9 @@ The binding specification is explicit that [it "does not permit `proof` to be om
 
 A guard that cannot be consulted fails **closed**: the server answers `unavailable` (retryable) and does not execute, because a consumer that cannot establish whether a document is a duplicate has not satisfied item 11.
 
-Optionally, `.allowed_did_methods(["key"])` pre-screens `proof.verificationMethod` before the verifier resolves it, and `HttpsClient::builder().with_response_verifier(..)` requires signed responses.
+With a verifier configured, `proof.verificationMethod` is pre-screened before the verifier resolves it: by default only `did:key` passes (`DEFAULT_ALLOWED_DID_METHODS`), since resolving any other method can mean a fetch from a host the sender names. Widen it with `.allowed_did_methods(["key", "web"])`, or lift it with `.allow_any_did_method()` for a verifier whose resolver bounds its own egress.
+
+`HttpsClient::builder().with_response_verifier(..)` requires signed responses. The proof is verified over the body as received, and error responses are held to it too: an error without a valid proof from the configured server comes back as `ClientError::UnverifiedErrorResponse`, not as the server's answer.
 
 ## Quickstart
 
