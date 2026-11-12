@@ -54,7 +54,7 @@ export interface MessagingMuxAckResponsePayload {
 export interface AckRefusal {
   messageId: MessageId;
   /**
-   * `notFound`: the mediator holds no message with this id for the principal or a member of the connection (already deleted, expired, or never delivered here). `notPermitted`: the message is a member's, and the member is not on the connection or lacks the `delete` scope; it stays in the member's inbox.
+   * `notPermitted`: the message is held for a member this connection carries, which lacks the `delete` scope (or whose account no longer stands); it stays in the member's inbox. `notFound`: anything else — already deleted, expired, never delivered here, or held for a DID the connection does not carry, which is not told apart from a message that does not exist.
    */
   reason: "notFound" | "notPermitted";
 }
@@ -151,7 +151,7 @@ export const PAYLOAD_SCHEMA = {
             "notFound",
             "notPermitted"
           ],
-          "description": "`notFound`: the mediator holds no message with this id for the principal or a member of the connection (already deleted, expired, or never delivered here). `notPermitted`: the message is a member's, and the member is not on the connection or lacks the `delete` scope; it stays in the member's inbox."
+          "description": "`notPermitted`: the message is held for a member this connection carries, which lacks the `delete` scope (or whose account no longer stands); it stays in the member's inbox. `notFound`: anything else — already deleted, expired, never delivered here, or held for a DID the connection does not carry, which is not told apart from a message that does not exist."
         }
       }
     },
@@ -231,7 +231,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "notFound",
             "notPermitted"
           ],
-          "description": "`notFound`: the mediator holds no message with this id for the principal or a member of the connection (already deleted, expired, or never delivered here). `notPermitted`: the message is a member's, and the member is not on the connection or lacks the `delete` scope; it stays in the member's inbox."
+          "description": "`notPermitted`: the message is held for a member this connection carries, which lacks the `delete` scope (or whose account no longer stands); it stays in the member's inbox. `notFound`: anything else — already deleted, expired, never delivered here, or held for a DID the connection does not carry, which is not told apart from a message that does not exist."
         }
       }
     },
