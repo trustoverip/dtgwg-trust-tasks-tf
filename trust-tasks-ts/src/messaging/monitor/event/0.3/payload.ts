@@ -75,8 +75,13 @@ export type Payload = MessagingTrafficMonitorEventPayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/messaging/monitor/event/0.3",
   "title": "Messaging — Traffic Monitor Event — payload",
@@ -394,7 +399,7 @@ export const PAYLOAD_SCHEMA = {
       "description": "`inbound`: arriving at the mediator. `outbound`: leaving it (delivery to a recipient, or a forward to another mediator). `internal`: a state change with no wire traffic (expiry, deletion, purge)."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

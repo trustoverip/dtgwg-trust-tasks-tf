@@ -130,8 +130,13 @@ export type Response = MessagingMuxGrantResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/messaging/mux/grant/0.1",
   "title": "Messaging — Mux Grant — payload",
@@ -414,10 +419,10 @@ export const PAYLOAD_SCHEMA = {
       "description": "One capability a member DID extends to a principal's connection. `receive`: live delivery of the member's inbound messages on the connection. `pickup`: message-pickup status and delivery requests naming the member as `recipient_did`, and inclusion in a raw-TSP inbox drain. `delete`: deleting the member's stored messages, including delete-on-ack and delete-on-send; a member without `delete` keeps its messages in its inbox until something holding `delete` collects them. `send`: the mediator accepts on this connection frames whose sender is the member DID — the frame is still signed or authcrypted with the member's own keys; the scope only lets the mediator accept it on this socket."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -678,7 +683,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "One capability a member DID extends to a principal's connection. `receive`: live delivery of the member's inbound messages on the connection. `pickup`: message-pickup status and delivery requests naming the member as `recipient_did`, and inclusion in a raw-TSP inbox drain. `delete`: deleting the member's stored messages, including delete-on-ack and delete-on-send; a member without `delete` keeps its messages in its inbox until something holding `delete` collects them. `send`: the mediator accepts on this connection frames whose sender is the member DID — the frame is still signed or authcrypted with the member's own keys; the scope only lets the mediator accept it on this socket."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's
