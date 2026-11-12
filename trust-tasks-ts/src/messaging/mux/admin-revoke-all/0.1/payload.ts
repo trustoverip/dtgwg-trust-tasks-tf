@@ -85,8 +85,13 @@ export type Response = MessagingMuxAdminRevokeAllResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/messaging/mux/admin-revoke-all/0.1",
   "title": "Messaging — Mux Admin Revoke All — payload",
@@ -168,10 +173,10 @@ export const PAYLOAD_SCHEMA = {
       "description": "A DID, carried verbatim and compared by exact string equality. Unlike the messaging family's `Vid`, never a hash: the mediator resolves it to verify a statement signed by it. For a member DID reached over TSP, the TSP VID is the DID itself."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -230,7 +235,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "A DID, carried verbatim and compared by exact string equality. Unlike the messaging family's `Vid`, never a hash: the mediator resolves it to verify a statement signed by it. For a member DID reached over TSP, the TSP VID is the DID itself."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's
