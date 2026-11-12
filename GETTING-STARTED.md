@@ -376,6 +376,14 @@ switch (outcome.kind) {
 }
 ```
 
+A consumer may keep its record for less time than a producer's `expiresAt`
+asks, provided it stops accepting the document when it stops remembering it
+(SPEC §7.2, *Bounding the record*): the consequential policies in all four
+libraries honour an `expiresAt` up to 30 days after `issuedAt` and treat the
+document as expiring there. The in-memory guard refuses new documents
+`unavailable` when full of live records, and lets no single issuer hold more
+than a tenth of it; size it for your retention window, or use a shared store.
+
 `consequentialChecks(guard)` is correct for any task whose execution grants
 access, moves value, discloses a secret, or is otherwise irreversible — SPEC
 §7.2 item 11 makes duplicate-execution protection normative for those, and every

@@ -103,6 +103,7 @@ export { EXTENDS_BY_TYPE_URI } from "../_extends.js";
 export {
   CONSEQUENTIAL_FRESHNESS,
   DEFAULT_FRESHNESS,
+  DEFAULT_EXPIRY_HORIZON_MS,
   DEFAULT_MAX_AGE_MS,
   DEFAULT_SKEW_MS,
   EXPIRY_NOT_AFTER_ISSUANCE,
@@ -115,7 +116,9 @@ export {
 } from "./freshness.js";
 
 export {
+  DEFAULT_REPLAY_CAPACITY,
   InMemoryReplayGuard,
+  ReplayGuardFullError,
   documentDigest,
   type ReplayGuard,
   type ReplayPolicy,
