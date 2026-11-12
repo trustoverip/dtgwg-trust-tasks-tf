@@ -35,7 +35,7 @@
         "key",
         "boundary"
       ],
-      "description": "`update` only, REQUIRED there (CONVENTIONS.md §9.4). `key` — one routine key is exposed; the VTA moves to its routine successor. `boundary` — the VTA's protection boundary may be compromised; only the recovery key may authorize the change, and every key the boundary held is replaced."
+      "description": "`update` only, REQUIRED there (CONVENTIONS.md §9.4). `key` — one routine key is exposed; the VTA moves to its routine successor. `boundary` — the VTA's protection boundary may be compromised; only the recovery key may authorize the change, and every key the boundary held is replaced. `boundary` is for a level-3 identity only (`vta/dids:assuranceLevelMismatch` below it): a level-2 identity whose VTA may be compromised is deactivated and replaced (CONVENTIONS.md §9.4)."
     },
     "replacement": {
       "type": "object",
@@ -50,6 +50,10 @@
     "recoveryCommitment": {
       "$ref": "../../../_shared/0.1/key-roles.schema.json#/$defs/RecoveryCommitment",
       "description": "REQUIRED with `scope: boundary`: the fresh recovery key that replaces the one the change uses."
+    },
+    "thresholdRecoveryCommitment": {
+      "$ref": "../../../_shared/0.1/key-roles.schema.json#/$defs/ThresholdRecoveryCommitment",
+      "description": "With `scope: boundary`, in place of `recoveryCommitment` and never with it (a request carrying both is refused as the framework's `malformedRequest`): a threshold custodian (CONVENTIONS.md §5.7) to replace the recovery key the change uses. With `scope: boundary`, exactly one of the two is REQUIRED."
     },
     "recoveryProof": {
       "type": "object",

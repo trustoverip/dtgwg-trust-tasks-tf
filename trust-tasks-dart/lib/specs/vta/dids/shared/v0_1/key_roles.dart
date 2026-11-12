@@ -224,6 +224,80 @@ extension type const KeyOrigin(String value) {
   ];
 }
 
+/// The kinds of recovery custodian VTI-KEY-205 admits (CONVENTIONS.md §5.6).
+/// `separateKey` — a key held away from every VTA of the identity: an offline key
+/// file, a hardware token, a key service whose credentials no such VTA holds, or a key
+/// from a recovery mnemonic no such VTA has seen. `vta` — a second VTA with its own
+/// seed, operator and host. `thresholdGroup` — a threshold custodian: n members, each
+/// a `separateKey` or `vta` custodian holding a whole key of its own, of which t must
+/// authorize (§5.7); offered as a `ThresholdRecoveryCommitment`.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const RecoveryCustodianKind(String value) {
+  static const RecoveryCustodianKind separateKey =
+      RecoveryCustodianKind('separateKey');
+  static const RecoveryCustodianKind vta = RecoveryCustodianKind('vta');
+  static const RecoveryCustodianKind thresholdGroup =
+      RecoveryCustodianKind('thresholdGroup');
+
+  /// Every value this specification's schema permits.
+  static const List<RecoveryCustodianKind> values = <RecoveryCustodianKind>[
+    separateKey,
+    vta,
+    thresholdGroup
+  ];
+}
+
+/// What the operator declares about who holds a recovery key. The VTA cannot verify it
+/// — it verifies the proof of possession and refuses a key it generated or can derive
+/// — and uses it to route a recovery signing request and to report custody. Custody
+/// projection only; never published (VTI-KEY-150, VTI-KEY-206).
+class RecoveryCustodian {
+  const RecoveryCustodian({
+    required this.kind,
+    this.did,
+    this.participants,
+    this.threshold,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory RecoveryCustodian.fromJson(Map<String, dynamic> json) =>
+      RecoveryCustodian(
+        kind: RecoveryCustodianKind(json['kind'] as String),
+        did: json['did'] as String?,
+        participants: json['participants'] == null
+            ? null
+            : (json['participants'] as List<dynamic>)
+                .map((e) => e as String)
+                .toList(),
+        threshold: json['threshold'] as int?,
+      );
+
+  final RecoveryCustodianKind kind;
+
+  /// `vta` only: the custodian VTA's DID, to which the recovering or revoking VTA MAY
+  /// send the recovery signing request. Absent, the request is carried out of band.
+  final String? did;
+
+  /// `thresholdGroup` only, in custody records: the members' VTA DIDs where members are
+  /// VTAs. n is at least three, because 2 ≤ t &lt; n (VTI-KEY-210).
+  final List<String>? participants;
+
+  /// `thresholdGroup` only: t, the number of members that must authorize. MUST be less
+  /// than the number of members.
+  final int? threshold;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'kind': kind.value,
+        if (did != null) 'did': did!,
+        if (participants != null) 'participants': participants!,
+        if (threshold != null) 'threshold': threshold!,
+      };
+}
+
 /// How a key is held. Present only in the custody projection. Carries no key material,
 /// and a conforming VTA MUST NOT place any in `ext`.
 class IdentityKeyCustody {
@@ -236,6 +310,7 @@ class IdentityKeyCustody {
     required this.protection,
     this.boundary,
     this.destroyed,
+    this.custodian,
   });
 
   /// Read this payload from a decoded JSON object.
@@ -250,6 +325,10 @@ class IdentityKeyCustody {
         protection: ProtectionClass(json['protection'] as String),
         boundary: json['boundary'] as String?,
         destroyed: json['destroyed'] as bool?,
+        custodian: json['custodian'] == null
+            ? null
+            : RecoveryCustodian.fromJson(
+                json['custodian'] as Map<String, dynamic>),
       );
 
   /// The custodian record identifier (`keys/*`'s `keyId`) behind this key. Absent for a
@@ -257,8 +336,9 @@ class IdentityKeyCustody {
   final String? keyId;
   final KeyOrigin? origin;
 
-  /// Whether the custodian would release the private half. Always `false` for
-  /// `attestation` and `update` keys. Stated explicitly, never absent.
+  /// Whether the custodian would release the private half by any operation other than
+  /// the VTA's own backup. Always `false` for `attestation` and `update` keys. Stated
+  /// explicitly, never absent.
   final bool exportable;
 
   /// True when no authority can make the key exportable. `true` implies `exportable:
@@ -267,7 +347,8 @@ class IdentityKeyCustody {
 
   /// Whether the key, or material it can be re-derived or decrypted from, is in the
   /// VTA's backups or any state transfer. Always `false` for `attestation` and `update`
-  /// keys (VTI-KEY-112).
+  /// keys of a level-3 identity (VTI-KEY-112); at level 2 such a key may be in the VTA's
+  /// own backup and nowhere else (CONVENTIONS.md §5.5).
   final bool inBackups;
   final ProtectionClass protection;
 
@@ -282,6 +363,10 @@ class IdentityKeyCustody {
   /// attributable.
   final bool? destroyed;
 
+  /// The recovery update key only: the kind of recovery custodian the operator declared
+  /// when committing it (CONVENTIONS.md §5.6). Custody projection only; never published.
+  final RecoveryCustodian? custodian;
+
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
         if (keyId != null) 'keyId': keyId!,
@@ -292,6 +377,7 @@ class IdentityKeyCustody {
         'protection': protection.value,
         if (boundary != null) 'boundary': boundary!,
         if (destroyed != null) 'destroyed': destroyed!,
+        if (custodian != null) 'custodian': custodian!.toJson(),
       };
 }
 
@@ -500,8 +586,9 @@ class KeyRoleSummary {
   final List<IdentityRoleKey> keys;
 
   /// `update` only: whether the identifier's latest version commits to a recovery key in
-  /// a boundary other than the VTA's (CONVENTIONS.md §5.3). `false` is a defect the VTA
-  /// reports rather than hides.
+  /// a boundary other than the VTA's (CONVENTIONS.md §5.3). Always `true` at level 3,
+  /// where `false` is a defect the VTA reports rather than hides; always `false` at
+  /// level 2.
   final bool? recoveryCommitted;
 
   /// `update` only, where the method has one: the signing threshold over the current
@@ -802,6 +889,14 @@ class KeyChangeRecord {
       };
 }
 
+/// A service DID's key assurance level (VTI-KEY-194; CONVENTIONS.md §3.4). `1` —
+/// single key: no `keyRoles`, one key signs everything. `2` — role-separated:
+/// `keyRoles`, with the `attestation` and `update` keys held by the VTA, which may
+/// derive them and back them up. `3` — recoverable: level 2 with those keys generated
+/// and in no backup, a recovery key held by a recovery custodian outside the VTA, and
+/// a witness enforcing it. Declared in the document's `keyAssurance` member.
+typedef KeyAssuranceLevel = int;
+
 /// `addKey` — a verification method joins its role's relationship and `keyRoles`.
 /// `retireKey` — a verification method leaves its relationship, `keyRoles` and the
 /// document. `revokeKey` — a verification method leaves its relationship and
@@ -810,7 +905,9 @@ class KeyChangeRecord {
 /// moves to a committed routine successor. `commitUpdateKey` — a new routine successor
 /// is committed. `replaceRecoveryCommitment` — the recovery commitment changes.
 /// `useRecoveryKey` — the change is authorized by the recovery key, which the
-/// identifier then reveals.
+/// identifier then reveals. `declareAssuranceLevel` — the document's `keyAssurance`
+/// declares a new, higher key assurance level (CONVENTIONS.md §3.4); `role` is
+/// `update`, and `assuranceLevel` carries the level.
 ///
 /// An extension type rather than an enum: a value from a newer MINOR of this
 /// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
@@ -827,6 +924,8 @@ extension type const IdentityChangeOp(String value) {
       IdentityChangeOp('replaceRecoveryCommitment');
   static const IdentityChangeOp useRecoveryKey =
       IdentityChangeOp('useRecoveryKey');
+  static const IdentityChangeOp declareAssuranceLevel =
+      IdentityChangeOp('declareAssuranceLevel');
 
   /// Every value this specification's schema permits.
   static const List<IdentityChangeOp> values = <IdentityChangeOp>[
@@ -836,7 +935,8 @@ extension type const IdentityChangeOp(String value) {
     rotateUpdateKey,
     commitUpdateKey,
     replaceRecoveryCommitment,
-    useRecoveryKey
+    useRecoveryKey,
+    declareAssuranceLevel
   ];
 }
 
@@ -850,6 +950,7 @@ class IdentityChange {
     this.publicKeyMultibase,
     this.commitment,
     this.relationships,
+    this.assuranceLevel,
   });
 
   /// Read this payload from a decoded JSON object.
@@ -866,6 +967,7 @@ class IdentityChange {
             : (json['relationships'] as List<dynamic>)
                 .map((e) => DidVerificationRelationship(e as String))
                 .toList(),
+        assuranceLevel: json['assuranceLevel'] as int?,
       );
 
   /// `addKey` — a verification method joins its role's relationship and `keyRoles`.
@@ -876,7 +978,9 @@ class IdentityChange {
   /// moves to a committed routine successor. `commitUpdateKey` — a new routine successor
   /// is committed. `replaceRecoveryCommitment` — the recovery commitment changes.
   /// `useRecoveryKey` — the change is authorized by the recovery key, which the
-  /// identifier then reveals.
+  /// identifier then reveals. `declareAssuranceLevel` — the document's `keyAssurance`
+  /// declares a new, higher key assurance level (CONVENTIONS.md §3.4); `role` is
+  /// `update`, and `assuranceLevel` carries the level.
   final IdentityChangeOp op;
   final IdentityKeyRole role;
   final String? verificationMethod;
@@ -884,6 +988,9 @@ class IdentityChange {
   final String? publicKeyMultibase;
   final String? commitment;
   final List<DidVerificationRelationship>? relationships;
+
+  /// `declareAssuranceLevel` only: the level declared.
+  final KeyAssuranceLevel? assuranceLevel;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
@@ -897,6 +1004,7 @@ class IdentityChange {
         if (commitment != null) 'commitment': commitment!,
         if (relationships != null)
           'relationships': relationships!.map((e) => e.value).toList(),
+        if (assuranceLevel != null) 'assuranceLevel': assuranceLevel!,
       };
 }
 
@@ -907,11 +1015,14 @@ class IdentityChange {
 /// this attestation key obliges re-issuance and re-signed status lists (VTI-KEY-133).
 /// `selfPublish` — the VTA will not publish the change; the operator must.
 /// `noWitnesses` — the identifier has no witnesses, so a party holding the VTA's
-/// routine update key can drop the recovery commitment unobserved (CONVENTIONS.md
-/// §5.3). `protectionBelowPolicy` — a key will be held at a `ProtectionClass` below
-/// what the VTA's policy recommends for its role (a plain VTA holding an attestation
-/// key). `recoveryKeyRevealed` — this change uses the recovery key, which must be
-/// replaced by a fresh recovery commitment in the same change.
+/// routine update key can lower its level unobserved (CONVENTIONS.md §5.4); a level-3
+/// identity is refused instead (`vta/dids:witnessRequired`). `protectionBelowPolicy` —
+/// a key will be held at a `ProtectionClass` below what the VTA's policy recommends
+/// for its role (a plain VTA holding an attestation key). `recoveryKeyRevealed` — this
+/// change uses the recovery key, which must be replaced by a fresh recovery commitment
+/// in the same change. `roleKeysInBackups` — at level 2, the identity's `attestation`
+/// and `update` keys will be in this VTA's backups, so a backup and what unlocks it
+/// are a copy of the identity's seal and change authority (CONVENTIONS.md §3.4).
 ///
 /// An extension type rather than an enum: a value from a newer MINOR of this
 /// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
@@ -930,6 +1041,8 @@ extension type const PreviewWarning(String value) {
       PreviewWarning('protectionBelowPolicy');
   static const PreviewWarning recoveryKeyRevealed =
       PreviewWarning('recoveryKeyRevealed');
+  static const PreviewWarning roleKeysInBackups =
+      PreviewWarning('roleKeysInBackups');
 
   /// Every value this specification's schema permits.
   static const List<PreviewWarning> values = <PreviewWarning>[
@@ -940,7 +1053,8 @@ extension type const PreviewWarning(String value) {
     selfPublish,
     noWitnesses,
     protectionBelowPolicy,
-    recoveryKeyRevealed
+    recoveryKeyRevealed,
+    roleKeysInBackups
   ];
 }
 
@@ -1058,17 +1172,19 @@ class RecoverySigningRequest {
       };
 }
 
-/// A recovery key offered for commitment (CONVENTIONS.md §5.3). The VTA computes the
-/// method's commitment from it, verifies `proofOfPossession`, and then keeps only the
-/// commitment. The key MUST be held by a custodian in a protection boundary other than
-/// the VTA's; a VTA MUST refuse one it generated or can derive
-/// (`vta/dids:recoveryCommitmentRequired`).
+/// A recovery key offered for commitment at level 3 (CONVENTIONS.md §5.3). The VTA
+/// computes the method's commitment from it, verifies `proofOfPossession`, and then
+/// keeps only the commitment. The key MUST be held by a recovery custodian in a
+/// protection boundary other than the VTA's (§5.6); a VTA MUST refuse one it generated
+/// or can derive (`vta/dids:recoveryCommitmentRequired`). For a threshold custodian,
+/// offer a `ThresholdRecoveryCommitment` instead (§5.7).
 class RecoveryCommitment {
   const RecoveryCommitment({
     required this.keyType,
     required this.publicKeyMultibase,
     this.proofOfPossession,
     this.label,
+    this.custodian,
   });
 
   /// Read this payload from a decoded JSON object.
@@ -1078,6 +1194,10 @@ class RecoveryCommitment {
         publicKeyMultibase: json['publicKeyMultibase'] as String,
         proofOfPossession: json['proofOfPossession'] as String?,
         label: json['label'] as String?,
+        custodian: json['custodian'] == null
+            ? null
+            : RecoveryCustodian.fromJson(
+                json['custodian'] as Map<String, dynamic>),
       );
 
   final KeyType keyType;
@@ -1095,6 +1215,7 @@ class RecoveryCommitment {
 
   /// Operator-facing name of the custodian. Custody projection only; never published.
   final String? label;
+  final RecoveryCustodian? custodian;
 
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
@@ -1102,6 +1223,7 @@ class RecoveryCommitment {
         'publicKeyMultibase': publicKeyMultibase,
         if (proofOfPossession != null) 'proofOfPossession': proofOfPossession!,
         if (label != null) 'label': label!,
+        if (custodian != null) 'custodian': custodian!.toJson(),
       };
 }
 
@@ -1119,6 +1241,7 @@ class IdentityChangePreview {
     this.warnings,
     required this.updateKeyRotates,
     this.recoverySigning,
+    this.assuranceLevel,
   });
 
   /// Read this payload from a decoded JSON object.
@@ -1142,6 +1265,7 @@ class IdentityChangePreview {
             ? null
             : RecoverySigningRequest.fromJson(
                 json['recoverySigning'] as Map<String, dynamic>),
+        assuranceLevel: json['assuranceLevel'] as int?,
       );
 
   /// Opaque, unguessable identifier of this exact plan. Carried back by the apply
@@ -1170,6 +1294,9 @@ class IdentityChangePreview {
   final bool updateKeyRotates;
   final RecoverySigningRequest? recoverySigning;
 
+  /// The key assurance level the resulting document declares (CONVENTIONS.md §3.4).
+  final KeyAssuranceLevel? assuranceLevel;
+
   /// Serialize to a JSON-encodable map, omitting absent members.
   Map<String, dynamic> toJson() => <String, dynamic>{
         'previewId': previewId,
@@ -1183,6 +1310,7 @@ class IdentityChangePreview {
         'updateKeyRotates': updateKeyRotates,
         if (recoverySigning != null)
           'recoverySigning': recoverySigning!.toJson(),
+        if (assuranceLevel != null) 'assuranceLevel': assuranceLevel!,
       };
 }
 
@@ -1277,3 +1405,105 @@ class ReissuanceFollowUp {
           'artefactsToReissue': artefactsToReissue!,
       };
 }
+
+/// One member of a threshold custodian: a whole recovery key of its own, with its own
+/// proof of possession over the same `previewId`, held by a `separateKey` or `vta`
+/// custodian (CONVENTIONS.md §5.7).
+class ThresholdRecoveryMember {
+  const ThresholdRecoveryMember({
+    required this.keyType,
+    required this.publicKeyMultibase,
+    this.proofOfPossession,
+    this.label,
+    this.custodian,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory ThresholdRecoveryMember.fromJson(Map<String, dynamic> json) =>
+      ThresholdRecoveryMember(
+        keyType: KeyType(json['keyType'] as String),
+        publicKeyMultibase: json['publicKeyMultibase'] as String,
+        proofOfPossession: json['proofOfPossession'] as String?,
+        label: json['label'] as String?,
+        custodian: json['custodian'] == null
+            ? null
+            : RecoveryCustodian.fromJson(
+                json['custodian'] as Map<String, dynamic>),
+      );
+
+  final KeyType keyType;
+
+  /// The recovery key's public half. Not published by the VTA where the method commits
+  /// by hash.
+  final String publicKeyMultibase;
+
+  /// Multibase signature by the recovery key over the UTF-8 bytes of
+  /// `vta-dids-recovery-commitment/v1`, a zero byte, and the request's `previewId`.
+  /// Absent on a dry run, which is how the `previewId` is obtained; REQUIRED on the
+  /// apply request, and the only member besides `previewId`, `dryRun` and
+  /// `recoveryProof` that may differ between the two.
+  final String? proofOfPossession;
+
+  /// Operator-facing name of the custodian. Custody projection only; never published.
+  final String? label;
+
+  /// Who holds this member's key: `separateKey` or `vta` (never `thresholdGroup`), with
+  /// `did` for a VTA member. Custody projection only; never published.
+  final RecoveryCustodian? custodian;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'keyType': keyType.value,
+        'publicKeyMultibase': publicKeyMultibase,
+        if (proofOfPossession != null) 'proofOfPossession': proofOfPossession!,
+        if (label != null) 'label': label!,
+        if (custodian != null) 'custodian': custodian!.toJson(),
+      };
+}
+
+/// A threshold custodian offered for commitment at level 3 (CONVENTIONS.md §5.7,
+/// VTI-KEY-210): n members, each a whole recovery key of its own, of which t must
+/// authorize a recovery. The VTA computes one commitment per member, verifies every
+/// proof of possession over the same `previewId`, refuses any member key it generated
+/// or can derive, and renders `keyAssurance.recoveryCommitment` as `{ threshold,
+/// commitments }`. A condition over whole keys: nothing is shared, nothing is
+/// assembled.
+class ThresholdRecoveryCommitment {
+  const ThresholdRecoveryCommitment({
+    required this.threshold,
+    required this.members,
+    this.label,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory ThresholdRecoveryCommitment.fromJson(Map<String, dynamic> json) =>
+      ThresholdRecoveryCommitment(
+        threshold: json['threshold'] as int,
+        members: (json['members'] as List<dynamic>)
+            .map((e) =>
+                ThresholdRecoveryMember.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        label: json['label'] as String?,
+      );
+
+  /// t: how many distinct members must sign a recovery entry. MUST be less than the
+  /// number of `members`.
+  final int threshold;
+
+  /// The n members, n ≥ 3, each in its own protection boundary (VTI-KEY-211).
+  final List<ThresholdRecoveryMember> members;
+
+  /// Operator-facing name of the group. Custody projection only; never published.
+  final String? label;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'threshold': threshold,
+        'members': members.map((e) => e.toJson()).toList(),
+        if (label != null) 'label': label!,
+      };
+}
+
+/// A single recovery key (§5.6 kinds `separateKey` and `vta`) or a threshold custodian
+/// (§5.7).
+typedef RecoveryCommitmentOrThreshold = Object?;
