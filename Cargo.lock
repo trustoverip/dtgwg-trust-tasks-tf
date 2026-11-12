@@ -5264,7 +5264,7 @@ dependencies = [
  "multibase",
  "serde",
  "serde_json",
- "serde_json_canonicalizer 0.3.2",
+ "serde_json_canonicalizer 0.4.1",
  "sha2 0.10.9",
  "thiserror",
 ]
