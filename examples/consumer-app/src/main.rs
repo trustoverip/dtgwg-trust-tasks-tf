@@ -1,6 +1,6 @@
 //! An application that speaks four Trust Tasks and compiles only those.
 //!
-//! `trust-tasks.lock` pins `acl/grant/0.2`, `keys/list/0.2` and `vault/get/0.3`
+//! `trust-tasks.lock` pins `acl/grant/0.3`, `keys/list/0.2` and `vault/get/0.3`
 //! from the registry, and `acme:vault/get/0.3` from a third-party source —
 //! acme's registry, `[sources.acme]` in `trust-tasks.toml`, here the fixture
 //! under `fixture-registry/`. acme's `vault/get` 0.3 has the registry's slug
@@ -33,7 +33,7 @@ mod tasks {
     include!(concat!(env!("OUT_DIR"), "/trust_tasks_generated.rs"));
 }
 
-use tasks::acl::grant::v0_2 as grant;
+use tasks::acl::grant::v0_3 as grant;
 use tasks::acme::vault::get::v0_3 as acme_vault_get;
 use tasks::keys::list::v0_2 as keys_list;
 use tasks::vault::get::v0_3 as vault_get;
@@ -116,7 +116,7 @@ fn main() -> Result<(), Error> {
     //    one is refused by the policy the bundle carried.
     let unsigned: Value = serde_json::json!({
         "id": "urn:uuid:00000000-0000-4000-8000-000000000003",
-        "type": "https://trusttasks.org/spec/acl/grant/0.2#request",
+        "type": "https://trusttasks.org/spec/acl/grant/0.3#request",
         "issuer": PRODUCER,
         "recipient": CONSUMER,
         "issuedAt": "2026-10-02T10:00:00Z",
@@ -127,6 +127,7 @@ fn main() -> Result<(), Error> {
                 "act": { "scope": "contexts", "contexts": ["ctx/payments"] },
                 "keys": { "scope": "all" },
                 "capabilities": { "scope": "ceiling" },
+                "purposes": { "scope": "any" },
                 "label": "Alice — payments context admin"
             },
             "reason": "Owns the payments integration."

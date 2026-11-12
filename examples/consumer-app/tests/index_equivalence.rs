@@ -13,7 +13,7 @@
 use trust_tasks_rs::schema_index as prebuilt;
 use trust_tasks_rs::type_index::{lookup, IndexEntry};
 
-/// The example's own lock: acl/grant 0.2, keys/list 0.2, vault/get 0.3, and
+/// The example's own lock: acl/grant 0.3, keys/list 0.2, vault/get 0.3, and
 /// acme's vault/get 0.3.
 mod tasks {
     include!(concat!(env!("OUT_DIR"), "/trust_tasks_generated.rs"));
@@ -191,7 +191,7 @@ fn the_wide_lock_matches_the_prebuilt_index() {
 fn the_example_lock_matches_the_prebuilt_index() {
     let g = generated!(tasks::schema_index);
     let official = [
-        "https://trusttasks.org/spec/acl/grant/0.2",
+        "https://trusttasks.org/spec/acl/grant/0.3",
         "https://trusttasks.org/spec/keys/list/0.2",
         "https://trusttasks.org/spec/vault/get/0.3",
     ];

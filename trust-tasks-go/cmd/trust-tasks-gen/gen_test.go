@@ -15,7 +15,7 @@ import (
 )
 
 // copyApp copies testdata/app (a lock pinning acl/grant 0.2, keys/list 0.2 and
-// vault/get 0.3, as examples/consumer-app does) into a temporary directory.
+// vault/get 0.3) into a temporary directory.
 func copyApp(t *testing.T) string {
 	t.Helper()
 	dst := t.TempDir()

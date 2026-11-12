@@ -71,7 +71,7 @@ describe("parseLock", () => {
     const lock = parseLock(fs.readFileSync(path.join(EXAMPLE, "trust-tasks.lock"), "utf8"));
     assert.equal(lock.version, 1);
     // One slug, two authorities: a slug is unique only within its source (SPEC §6.5).
-    assert.deepEqual(lock.tasks.map(taskLabel), ["acl/grant/0.2", "keys/list/0.2", "vault/get/0.3", "@acme/vault/get/0.3"]);
+    assert.deepEqual(lock.tasks.map(taskLabel), ["acl/grant/0.3", "keys/list/0.2", "vault/get/0.3", "@acme/vault/get/0.3"]);
     assert.deepEqual(lock.sources.get("acme"), { path: "fixture-registry/site" });
 
     const sourced = parseLock(
@@ -118,7 +118,8 @@ describe("generate", () => {
     assert.deepEqual(result.files, [
       ".trust-tasks-generated",
       "_extends.ts",
-      "acl/grant/0.2/payload.ts",
+      "_shared/components.ts",
+      "acl/grant/0.3/payload.ts",
       "acme/index.ts",
       "acme/payments/settle/1.0/payload.ts",
       "index.ts",
@@ -126,7 +127,7 @@ describe("generate", () => {
       "vault/get/0.3/payload.ts",
     ]);
     const index = fs.readFileSync(path.join(out, "index.ts"), "utf8");
-    assert.match(index, /^export \* as AclGrant_v0_2 from "\.\/acl\/grant\/0\.2\/payload\.js";$/m);
+    assert.match(index, /^export \* as AclGrant_v0_3 from "\.\/acl\/grant\/0\.3\/payload\.js";$/m);
     assert.match(index, /^export \* as Acme from "\.\/acme\/index\.js";$/m);
     assert.match(index, /from "@openvtc\/trust-tasks\/runtime";/);
     assert.doesNotMatch(index, /\.\.\/|_runtime/, "the runtime is imported by package, never by a relative path");
@@ -187,7 +188,7 @@ describe("generate", () => {
     const { lock } = app([edited(first!, (b) => (b.status = "withdrawn")), framework]);
     const { modules, skipped } = await generateFiles({ lock, log: (l) => notes.push(l) });
     assert.equal(modules.length, 0);
-    assert.match(skipped.get("acl/grant/0.2")!, /withdrawn/);
+    assert.match(skipped.get("acl/grant/0.3")!, /withdrawn/);
     assert.match(skipped.get("trust-task-ok/0.1")!, /framework specification/);
     assert.equal(notes.length, 2);
   });
@@ -196,17 +197,14 @@ describe("generate", () => {
     const FRAMEWORK_EXT = "https://trusttasks.org/spec/trust-task/0.4/framework#/$defs/Ext";
     const money = (version: string) => `https://tasks.example.com/spec/payments/_shared/${version}/money#/$defs/Amount`;
 
-    /** acl/grant 0.2 as a current bundle carries it: every definition but Response is shared. */
+    /** The example's acl/grant 0.3, as vendored: every definition but Response is shared. */
     function aclWithOrigins(): Task {
       const acl = exampleTasks().find((t) => t.slug === "acl/grant")!;
-      return edited(acl, (b) => {
-        const defs = (b.schema as { $defs: Record<string, unknown> }).$defs;
-        b.defOrigins = Object.fromEntries(
-          Object.keys(defs)
-            .filter((k) => k !== "Response")
-            .map((k) => [k, k === "Ext" ? FRAMEWORK_EXT : `https://trusttasks.org/spec/acl/_shared/0.2/acl-entry#/$defs/${k}`]),
-        );
-      });
+      const bundle = JSON.parse(acl.bytes.toString());
+      const defs = Object.keys(bundle.schema.$defs).filter((k) => k !== "Response");
+      assert.deepEqual(Object.keys(bundle.defOrigins ?? {}).sort(), defs.sort(), "the vendored bundle carries defOrigins");
+      assert.equal(bundle.defOrigins.Ext, FRAMEWORK_EXT);
+      return acl;
     }
 
     /** The sourced fixture with the framework's Ext (as acl/grant carries it) and a shared Amount. */
@@ -234,8 +232,11 @@ describe("generate", () => {
       assert.equal(components.match(/^export interface Ext \{$/gm)?.length, 1, "Ext, reached by both tasks, is declared once");
       assert.match(components, /^export interface AclEntry \{$/m);
       assert.match(components, /^export interface Amount \{$/m);
+      // `Purpose` is a `type` beside an `anyOf`: its numbered parts are its own,
+      // not counter-suffixed duplicates, and a bare name must not be refused for them.
+      assert.match(components, /^export type Purpose = Purpose1 & Purpose2;$/m);
 
-      const acl = files.get("acl/grant/0.2/payload.ts")!;
+      const acl = files.get("acl/grant/0.3/payload.ts")!;
       assert.match(acl, /^import type \{ [^}]*\bAclEntry\b[^}]* \} from "\.\.\/\.\.\/\.\.\/_shared\/components\.js";$/m);
       assert.match(acl, /^export type \{ [^}]*\bAclEntry\b[^}]* \};$/m, "re-exported under its own name");
       assert.doesNotMatch(acl, /^export (interface|type) (AclEntry|Ext)\b/m);
@@ -264,15 +265,15 @@ describe("generate", () => {
 
     it("falls back to declaring definitions in the module for a bundle without defOrigins", async () => {
       const keys = exampleTasks().find((t) => t.slug === "keys/list")!;
-      assert.equal("defOrigins" in JSON.parse(keys.bytes.toString()), false, "the example's vendored bundles predate defOrigins");
+      assert.equal("defOrigins" in JSON.parse(keys.bytes.toString()), false, "the example's keys/list bundle predates defOrigins");
       const { lock } = app([aclWithOrigins(), keys]);
       const { files } = await generateFiles({ lock, ...quiet });
-      assert.match(files.get("acl/grant/0.2/payload.ts")!, /from "\.\.\/\.\.\/\.\.\/_shared\/components\.js";$/m);
+      assert.match(files.get("acl/grant/0.3/payload.ts")!, /from "\.\.\/\.\.\/\.\.\/_shared\/components\.js";$/m);
       const list = files.get("keys/list/0.2/payload.ts")!;
       assert.doesNotMatch(list, /_shared\/components/);
       assert.match(list, /^export interface Ext \{$/m, "an older bundle's module declares its definitions itself");
 
-      const { files: old } = await generateFiles({ lock: app(exampleTasks()).lock, ...quiet });
+      const { files: old } = await generateFiles({ lock: app(exampleTasks().filter((t) => t.slug !== "acl/grant")).lock, ...quiet });
       assert.equal(old.has("_shared/components.ts"), false, "only older bundles: no components module");
     });
 
@@ -290,7 +291,7 @@ describe("generate", () => {
   describe("third-party sources", () => {
     it("refuses a source named like an official task's first segment", async () => {
       const { lock } = app([...exampleTasks(), fixtureTask({ source: "acl" })], { acl: "https://tasks.example.com" });
-      await assert.rejects(generateFiles({ lock, ...quiet }), /source "acl" .* official task acl\/grant\/0\.2/);
+      await assert.rejects(generateFiles({ lock, ...quiet }), /source "acl" .* official task acl\/grant\/0\.3/);
     });
 
     it("refuses a sourced bundle under the official authority", async () => {
