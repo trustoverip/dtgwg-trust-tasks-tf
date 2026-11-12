@@ -191,6 +191,7 @@ const SpecPolicy spec = SpecPolicy(
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: payloadSchemaJson,
+  maxDocumentBytes: 65536,
 );
 
 /// The SPEC §7.2 policy for the success-response variant.
@@ -204,4 +205,5 @@ const SpecPolicy responseSpec = SpecPolicy(
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: responsePayloadSchemaJson,
+  maxDocumentBytes: 131072,
 );

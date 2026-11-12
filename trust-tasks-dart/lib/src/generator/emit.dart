@@ -224,6 +224,26 @@ class Bundle {
     if (b is! bool) throw BundleError('`policy.bearer` is not a boolean');
     return b;
   }
+
+  /// `policy.maxDocumentBytes.<variant>`: the declared bound, or null when the
+  /// variant declares none. A bundle older than the member carries no
+  /// `maxDocumentBytes` at all, which declares nothing — never a reason to
+  /// refuse the bundle. Each variant stands alone: an absent `response` does
+  /// not inherit the request's bound.
+  int? _maxDocumentBytes(String variant) {
+    final group = policy['maxDocumentBytes'];
+    if (group == null) return null;
+    if (group is! Map) {
+      throw BundleError('`policy.maxDocumentBytes` is not an object');
+    }
+    final n = group[variant];
+    if (n == null) return null;
+    if (n is! int || n < 0) {
+      throw BundleError(
+          '`policy.maxDocumentBytes.$variant` is not a non-negative integer');
+    }
+    return n;
+  }
 }
 
 /* ── Dart identifiers ────────────────────────────────────────────────────── */
@@ -925,14 +945,20 @@ List<String> _emitTail(Bundle b, bool hasResponse) {
     ].join('\n'));
   }
 
-  String block(String uriConst, String variant, String schemaConst) => [
-        '  typeUri: $uriConst,',
-        '  isBearer: ${b._isBearer},',
-        '  isProofRequired: ${b._flag('proofRequired', variant)},',
-        '  isRecipientRequired: ${b._flag('recipientRequired', variant)},',
-        '  isIssuedAtRequired: ${b._flag('issuedAtRequired', variant)},',
-        '  payloadSchema: $schemaConst,',
-      ].join('\n');
+  // `maxDocumentBytes` only where the variant declares one, as Rust emits
+  // MAX_DOCUMENT_BYTES only then: the constructor's default is null.
+  String block(String uriConst, String variant, String schemaConst) {
+    final maxBytes = b._maxDocumentBytes(variant);
+    return [
+      '  typeUri: $uriConst,',
+      '  isBearer: ${b._isBearer},',
+      '  isProofRequired: ${b._flag('proofRequired', variant)},',
+      '  isRecipientRequired: ${b._flag('recipientRequired', variant)},',
+      '  isIssuedAtRequired: ${b._flag('issuedAtRequired', variant)},',
+      '  payloadSchema: $schemaConst,',
+      if (maxBytes != null) '  maxDocumentBytes: $maxBytes,',
+    ].join('\n');
+  }
 
   out.add([
     '/// The SPEC §7.2 policy for the request variant, taken from this',
