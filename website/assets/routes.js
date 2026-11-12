@@ -95,7 +95,8 @@
     }
     let u;
     try { u = new URL(href, "https://trusttasks.invalid" + prosePath); } catch (e) { return { href, kind: "unchanged" }; }
-    const p = decodeURIComponent(u.pathname);
+    let p;
+    try { p = decodeURIComponent(u.pathname); } catch (e) { return { href, kind: "unchanged" }; }
     const hash = u.hash;
     if (p === "/SPEC.md") return { href: "/specification" + hash, kind: "framework" };
     let m = /^\/specs\/(.+)\/(\d+\.\d+)(?:\/(?:spec\.md)?)?$/.exec(p);
