@@ -47,9 +47,12 @@ pub fn normalize(url: &str) -> String {
 /// also be reached.
 pub const CA_FILE_ENV: &str = "TRUST_TASKS_CA_FILE";
 
-fn http_agent() -> Result<ureq::Agent> {
+/// `https_only` refuses every plain-http request the agent would make,
+/// redirects included, so an https origin cannot hand a fetch over to http.
+fn http_agent(https_only: bool) -> Result<ureq::Agent> {
     let mut config = ureq::Agent::config_builder()
         .timeout_global(Some(Duration::from_secs(120)))
+        .https_only(https_only)
         .user_agent(concat!("trust-tasks-cli/", env!("CARGO_PKG_VERSION")));
     if let Some(path) = std::env::var_os(CA_FILE_ENV).filter(|p| !p.is_empty()) {
         let pem = std::fs::read(&path)
@@ -103,6 +106,57 @@ pub fn check_identity(id: &TaskId, v: Version, type_uri: &str) -> Result<()> {
         ),
         _ => Ok(()),
     }
+}
+
+/// The host of an `http://` or `https://` URL, without brackets, port or
+/// userinfo; `None` when it has none.
+fn url_host(url: &str) -> Option<&str> {
+    let rest = url.split_once("://")?.1;
+    let authority = rest.split(['/', '?', '#']).next()?;
+    let host_port = authority.rsplit_once('@').map_or(authority, |(_, h)| h);
+    let host = if let Some(v6) = host_port.strip_prefix('[') {
+        v6.split_once(']')?.0
+    } else {
+        host_port.split(':').next()?
+    };
+    (!host.is_empty()).then_some(host)
+}
+
+/// Whether `url` names this machine: `localhost` or a loopback address.
+fn is_loopback_url(url: &str) -> bool {
+    match url_host(url) {
+        Some(host) if host.eq_ignore_ascii_case("localhost") => true,
+        Some(host) => host
+            .parse::<std::net::IpAddr>()
+            .is_ok_and(|ip| ip.is_loopback()),
+        None => false,
+    }
+}
+
+/// Validates the scheme of an `http(s)://` registry. `https://` always
+/// passes. Plain `http://` passes only for a loopback host (a local mirror
+/// or a test server) or with `allow_http`: over http anyone on the network
+/// path could serve both the index — the digests a pin records — and the
+/// bundles they name.
+fn check_registry_url(url: &str, allow_http: bool) -> Result<()> {
+    let Some((scheme, _)) = url.split_once("://") else {
+        return Ok(());
+    };
+    if scheme.eq_ignore_ascii_case("https") || !scheme.eq_ignore_ascii_case("http") {
+        return Ok(());
+    }
+    if is_loopback_url(url) {
+        return Ok(());
+    }
+    if allow_http {
+        eprintln!(
+            "warning: registry {url} is plain http (--allow-http-registry): its index and bundles are not protected in transit"
+        );
+        return Ok(());
+    }
+    bail!(
+        "registry {url} is http — a registry must be https://, because over http anyone on the network path could choose both the digests you pin and the bundles they name. A loopback http:// registry is accepted; pass --allow-http-registry to use this one anyway"
+    )
 }
 
 enum Source {
@@ -281,13 +335,16 @@ pub struct Fetched {
 
 impl Registry {
     /// The official registry (or a mirror of it): `--registry`, the manifest's
-    /// `registry`, or trusttasks.org.
-    pub fn open(url: &str) -> Result<Registry> {
+    /// `registry`, or trusttasks.org. An `http://` registry is refused
+    /// unless it is on loopback or `allow_http` is set.
+    pub fn open(url: &str, allow_http: bool) -> Result<Registry> {
         let url = normalize(url);
-        let source = if url.starts_with("https://") || url.starts_with("http://") {
+        let scheme = url.split_once("://").map(|(s, _)| s.to_ascii_lowercase());
+        let source = if let Some(scheme @ ("https" | "http")) = scheme.as_deref() {
+            check_registry_url(&url, allow_http)?;
             Source::Http {
                 base: url.clone(),
-                agent: http_agent()?,
+                agent: http_agent(scheme == "https")?,
             }
         } else {
             let path = url.strip_prefix("file://").unwrap_or(&url);
@@ -312,7 +369,7 @@ impl Registry {
                 check_source_url(name, url)?;
                 Source::Http {
                     base: normalize(url),
-                    agent: http_agent()?,
+                    agent: http_agent(true)?,
                 }
             }
             SourceLoc::Path(p) => Source::Dir(project_root.join(p)),
@@ -496,4 +553,54 @@ pub fn check_bundle(bytes: &[u8], id: &TaskId, v: Version) -> Result<BundleHead>
     }
     check_identity(id, v, &head.type_uri)?;
     Ok(head)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn url_host_strips_userinfo_port_and_brackets() {
+        assert_eq!(url_host("http://example.org"), Some("example.org"));
+        assert_eq!(url_host("http://example.org:8080/x"), Some("example.org"));
+        assert_eq!(url_host("http://u:p@127.0.0.1:9/x"), Some("127.0.0.1"));
+        assert_eq!(url_host("http://[::1]:9"), Some("::1"));
+        assert_eq!(url_host("http://"), None);
+    }
+
+    #[test]
+    fn loopback_urls() {
+        for url in [
+            "http://localhost",
+            "http://LOCALHOST:3000",
+            "http://127.0.0.1:9",
+            "http://127.1.2.3",
+            "http://[::1]:8080/specs",
+        ] {
+            assert!(is_loopback_url(url), "{url}");
+        }
+        for url in [
+            "http://example.org",
+            "http://10.0.0.1",
+            "http://localhost.example.org",
+            "http://127.0.0.1.example.org",
+            "http://[::2]",
+        ] {
+            assert!(!is_loopback_url(url), "{url}");
+        }
+    }
+
+    #[test]
+    fn http_registry_refused_unless_loopback_or_allowed() {
+        let err = Registry::open("http://registry.example", false)
+            .err()
+            .expect("plain http is refused");
+        assert!(err.to_string().contains("--allow-http-registry"), "{err}");
+        assert!(Registry::open("HTTP://registry.example", false).is_err());
+        assert!(Registry::open("http://registry.example", true).is_ok());
+        assert!(Registry::open("http://127.0.0.1:9", false).is_ok());
+        assert!(Registry::open("http://localhost:9/", false).is_ok());
+        assert!(Registry::open("https://registry.example", false).is_ok());
+        assert!(Registry::open("file:///tmp/registry", false).is_ok());
+    }
 }
