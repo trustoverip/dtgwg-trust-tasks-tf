@@ -50,9 +50,12 @@ pub trait ValidatedPayload: Payload {
     /// carries no schema (`PAYLOAD_SCHEMA` is `None` — the hand-modelled
     /// `trust-task-error`), there is nothing to check and this succeeds:
     /// the Rust type the value deserialized into is itself the constraint.
+    ///
+    /// The compiled schema is cached process-wide (see [`SchemaValidator`]),
+    /// so only the first call for a type pays for compiling it.
     fn validate_value(value: &Value) -> Result<(), ValidationError> {
         match Self::PAYLOAD_SCHEMA {
-            Some(schema) => against_schema(schema, value),
+            Some(schema) => SHARED.check(schema, value),
             None => Ok(()),
         }
     }
@@ -70,9 +73,8 @@ impl<P: Payload> ValidatedPayload for P {}
 
 /// Compile `schema_json` as a JSON Schema and validate `value` against it.
 ///
-/// Compilation is performed every call. Callers in a hot path should keep a
-/// compiled schema around themselves; this helper is intended for the
-/// once-per-request pattern that consumer pipelines use.
+/// Compilation is performed every call. To validate many documents, use a
+/// [`SchemaValidator`], which compiles each schema once and keeps it.
 ///
 /// # ⚠ Schema-validation DoS surface (SPEC §12.3)
 ///
@@ -90,18 +92,90 @@ impl<P: Payload> ValidatedPayload for P {}
 /// SPEC §6.5, etc. — you MUST authenticate the schema's source and
 /// SHOULD apply a per-validation timeout outside this call.
 pub fn against_schema(schema_json: &str, value: &Value) -> Result<(), ValidationError> {
+    run(&compile(schema_json)?, value)
+}
+
+fn compile(schema_json: &str) -> Result<jsonschema::Validator, ValidationError> {
     let schema_value: Value =
         serde_json::from_str(schema_json).map_err(ValidationError::schema_parse)?;
-    let compiled = jsonschema::options()
+    jsonschema::options()
         .with_draft(jsonschema::Draft::Draft202012)
         .build(&schema_value)
-        .map_err(|e| ValidationError::schema_compile(e.to_string()))?;
+        .map_err(|e| ValidationError::schema_compile(e.to_string()))
+}
 
+fn run(compiled: &jsonschema::Validator, value: &Value) -> Result<(), ValidationError> {
     let messages: Vec<String> = compiled.iter_errors(value).map(|e| e.to_string()).collect();
     if !messages.is_empty() {
         return Err(ValidationError::instance(messages));
     }
     Ok(())
+}
+
+/// The cache [`ValidatedPayload::validate_value`] and
+/// [`DeclaredErrorCode::check_details`](crate::DeclaredErrorCode::check_details) share.
+pub(crate) static SHARED: SchemaValidator = SchemaValidator::new();
+
+/// A [`PayloadValidator`] over the `jsonschema` crate (JSON Schema draft
+/// 2020-12) that compiles each schema once and keeps it — the validator
+/// [`PayloadPolicy::Validate`] wants.
+///
+/// The schemas it is handed are `Payload::PAYLOAD_SCHEMA` constants, which
+/// never move; the compiled validator is cached by the schema text's address
+/// and confirmed against its content, so a document pays for evaluation only,
+/// never for parsing and compiling a schema of tens of KB and its `pattern`
+/// regexes. One instance serves every task; keep it for the life of the
+/// consumer — a `static` works:
+///
+/// ```rust
+/// use trust_tasks_rs::{validate::SchemaValidator, PayloadPolicy};
+///
+/// static VALIDATOR: SchemaValidator = SchemaValidator::new();
+/// let policy = PayloadPolicy::Validate(&VALIDATOR);
+/// # let _ = policy;
+/// ```
+///
+/// The SPEC §12.3 caution on [`against_schema`] applies: hand it only
+/// schemas whose source you trust.
+///
+/// [`PayloadValidator`]: crate::PayloadValidator
+/// [`PayloadPolicy::Validate`]: crate::PayloadPolicy::Validate
+pub struct SchemaValidator {
+    compiled: crate::schema_cache::SchemaCache<jsonschema::Validator>,
+}
+
+impl SchemaValidator {
+    /// An empty cache.
+    pub const fn new() -> Self {
+        Self {
+            compiled: crate::schema_cache::SchemaCache::new(),
+        }
+    }
+
+    /// Validate `value` against `schema_json`, compiling the schema on first
+    /// use.
+    pub fn check(&self, schema_json: &str, value: &Value) -> Result<(), ValidationError> {
+        let compiled = self.compiled.get_or_try_insert(schema_json, compile)?;
+        run(&compiled, value)
+    }
+}
+
+impl Default for SchemaValidator {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl fmt::Debug for SchemaValidator {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("SchemaValidator").finish_non_exhaustive()
+    }
+}
+
+impl crate::PayloadValidator for SchemaValidator {
+    fn validate(&self, schema_json: &str, payload: &Value) -> Result<(), String> {
+        self.check(schema_json, payload).map_err(|e| e.to_string())
+    }
 }
 
 /// One or more schema-validation problems encountered while checking a value.
@@ -157,5 +231,56 @@ impl fmt::Display for ValidationError {
             ErrorKind::Instance => "payload failed schema validation",
         };
         write!(f, "{label}: {}", self.messages.join("; "))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::PayloadValidator;
+    use serde_json::json;
+
+    static SCHEMA: &str = r#"{
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "required": ["name"],
+        "properties": { "name": { "type": "string", "pattern": "^[a-z]+$" } }
+    }"#;
+
+    #[test]
+    fn schema_validator_accepts_and_refuses_as_against_schema_does() {
+        let validator = SchemaValidator::new();
+        for value in [json!({"name": "ok"}), json!({"name": "NO"}), json!({})] {
+            assert_eq!(
+                validator.check(SCHEMA, &value).is_ok(),
+                against_schema(SCHEMA, &value).is_ok(),
+                "{value}"
+            );
+        }
+        assert!(validator.validate(SCHEMA, &json!({"name": "ok"})).is_ok());
+        let reason = validator.validate(SCHEMA, &json!({})).unwrap_err();
+        assert!(
+            reason.contains("payload failed schema validation"),
+            "{reason}"
+        );
+    }
+
+    #[test]
+    fn schema_validator_compiles_each_schema_once() {
+        let validator = SchemaValidator::new();
+        for _ in 0..3 {
+            validator.check(SCHEMA, &json!({"name": "ok"})).unwrap();
+        }
+        assert_eq!(validator.compiled.len(), 1);
+    }
+
+    #[test]
+    fn a_schema_that_does_not_parse_is_an_error_every_time() {
+        let validator = SchemaValidator::new();
+        for _ in 0..2 {
+            let err = validator.check("{", &json!({})).unwrap_err();
+            assert!(err.to_string().contains("did not parse"), "{err}");
+        }
+        assert_eq!(validator.compiled.len(), 0);
     }
 }

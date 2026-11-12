@@ -280,8 +280,12 @@ pub(crate) fn forward<P: Payload>(
 /// (under `unevaluatedProperties`). What is left in place is then the
 /// deserializer's to accept or refuse, as it would be with no pruning at all.
 /// An unparsable schema prunes nothing.
+///
+/// The parsed schema is cached by the text's address (and confirmed against
+/// its content), so forwarding a stream of documents to one implemented
+/// version parses its `PAYLOAD_SCHEMA` once.
 pub fn prune_payload(payload: &mut Value, schema_json: &str) {
-    let Ok(root) = serde_json::from_str::<Value>(schema_json) else {
+    let Some(root) = crate::schema_cache::parsed(schema_json) else {
         return;
     };
     prune(payload, &root, &root, 0);

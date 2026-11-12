@@ -41,6 +41,7 @@
 //! `release-plz.toml`.
 
 #![warn(missing_docs)]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #![warn(rust_2018_idioms)]
 
 mod async_dispatch;
@@ -53,6 +54,7 @@ mod error;
 mod extends_index;
 mod payload;
 mod proof;
+mod schema_cache;
 mod transport;
 mod type_uri;
 
