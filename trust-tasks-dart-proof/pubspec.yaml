@@ -15,7 +15,11 @@ environment:
   sdk: ^3.6.0
 
 dependencies:
-  trust_tasks: ^0.9.3
+  # The floor is the oldest published core this package's lib/ and example/
+  # compile against; the `packages` job in dart.yml checks it with
+  # `dart pub downgrade`. Raise it when this package starts using newer core API.
+  # 0.9.6: `received:`, which the example passes to consumeInbound.
+  trust_tasks: ^0.9.6
 
   # A range spanning two majors, deliberately.
   #

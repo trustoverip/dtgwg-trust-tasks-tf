@@ -139,15 +139,23 @@ impl AcceptanceWindow {
     /// second, which the wire form cannot state. The policy's
     /// `expiry_horizon`, where it sets one, is the horizon: `validate_freshness`
     /// honours a stated `expiresAt` up to it in place of the maximum age.
+    ///
+    /// Also `None` when the policy sets a horizon below one second (or a
+    /// negative one). The wire form cannot state it, and leaving
+    /// `expiryHorizonSeconds` out would say "the maximum age applies to every
+    /// document" — wider than the policy, which holds a document stating
+    /// `expiresAt` to that sub-second horizon instead. No window is better
+    /// than a wider one.
     fn of_policy(policy: &FreshnessPolicy) -> Option<Self> {
         let max_age_seconds = u64::try_from(policy.max_age?.num_seconds()).ok()?;
+        let expiry_horizon_seconds = match policy.expiry_horizon {
+            None => None,
+            Some(h) => Some(NonZeroU64::new(u64::try_from(h.num_seconds()).ok()?)?),
+        };
         Some(Self {
             max_age_seconds: NonZeroU64::new(max_age_seconds)?,
             clock_skew_seconds: u64::try_from(policy.skew.num_seconds()).unwrap_or(0),
-            expiry_horizon_seconds: policy
-                .expiry_horizon
-                .and_then(|h| u64::try_from(h.num_seconds()).ok())
-                .and_then(NonZeroU64::new),
+            expiry_horizon_seconds,
         })
     }
 
@@ -275,9 +283,10 @@ impl DiscoveryRegistry {
     /// rounded down to whole seconds so the claim is never wider than the
     /// policy.
     ///
-    /// A policy that bounds no age (`max_age: None`), or bounds it below one
-    /// second, has no window the wire form can state, and leaves the registry
-    /// unchanged — absence tells a discoverer it has learnt nothing, which is
+    /// A policy that bounds no age (`max_age: None`), bounds it below one
+    /// second, or sets an `expiry_horizon` below one second, has no window the
+    /// wire form can state without claiming more than it enforces, and leaves
+    /// the registry unchanged — absence tells a discoverer it has learnt nothing, which is
     /// the truth.
     pub fn acceptance_window_from(mut self, policy: &FreshnessPolicy) -> Self {
         if let Some(window) = AcceptanceWindow::of_policy(policy) {
@@ -842,6 +851,38 @@ mod tests {
             (window.max_age_seconds.get(), window.clock_skew_seconds),
             (90, 1)
         );
+    }
+
+    /// Responder rule 1: a sub-second (or zero, or negative) horizon cannot be
+    /// stated, and dropping it alone would advertise "the maximum age applies
+    /// to every document" — wider than the policy, which holds a document
+    /// stating `expiresAt` to that horizon. So no window is advertised at all.
+    #[test]
+    fn a_sub_second_expiry_horizon_advertises_no_window() {
+        for horizon in [
+            chrono::TimeDelta::zero(),
+            chrono::TimeDelta::milliseconds(999),
+            chrono::TimeDelta::seconds(-5),
+        ] {
+            let policy = FreshnessPolicy::consequential().with_expiry_horizon(horizon);
+            assert!(
+                DiscoveryRegistry::new()
+                    .acceptance_window_from(&policy)
+                    .respond_to_v0_4(&everything())
+                    .acceptance_window
+                    .is_none(),
+                "horizon {horizon:?} must not advertise a window"
+            );
+        }
+        // One whole second is stated, and a fraction above it rounds down.
+        let policy = FreshnessPolicy::consequential()
+            .with_expiry_horizon(chrono::TimeDelta::milliseconds(1_500));
+        let window = DiscoveryRegistry::new()
+            .acceptance_window_from(&policy)
+            .respond_to_v0_4(&everything())
+            .acceptance_window
+            .expect("a whole-second horizon is advertised");
+        assert_eq!(window.expiry_horizon_seconds.map(NonZeroU64::get), Some(1));
     }
 
     /// 0.4: a policy that honours a stated `expiresAt` up to a horizon
