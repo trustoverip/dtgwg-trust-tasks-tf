@@ -196,7 +196,9 @@ const Set<String> defaultAllowedDidMethods = {'key'};
 ///    version of a registered specification is `unsupportedVersion`; a
 ///    specification with no registered version is `unsupportedType`.
 /// 6. The body against the route's `maxDocumentBytes` (or
-///    [defaultMaxDocumentBytes]), else `malformedRequest`.
+///    [defaultMaxDocumentBytes]), else `malformedRequest`. A document read
+///    forward along `extends` is held only to [bodyLimitBytes]: its own
+///    version may declare a larger bound than the one it is read as.
 /// 7. Payload decode; expiry and recipient; freshness; identity cross-check
 ///    (§4.8.1) — §7.2 order, as `consumeInbound` runs them. With no
 ///    authenticated sender the identity cross-check runs first, so a
@@ -725,10 +727,15 @@ final class HttpsServer {
 
     // SPEC §12.4, two-sided: within the declared bound a document MUST NOT be
     // refused for its size, and above it SHOULD be refused `malformedRequest`.
-    // For a document read forward along `extends`, the bound is the
-    // implemented version's — the one whose schema the payload is read as.
+    //
+    // A document read forward along `extends` is NOT held to the implemented
+    // version's bound: its own (later) version may declare a larger one, and
+    // a document within that must not be refused for its size. This server has
+    // no index of other versions' bounds, so such a document is held only to
+    // [bodyLimitBytes], already checked before parsing.
+    final forward = routingKey(route.spec.typeUri) != routingKey(envelope.type);
     final bound = route.spec.maxDocumentBytes ?? defaultMaxDocumentBytes;
-    if (request.body.length > bound) {
+    if (!forward && request.body.length > bound) {
       return _reject(
         exchange.transport,
         envelope,

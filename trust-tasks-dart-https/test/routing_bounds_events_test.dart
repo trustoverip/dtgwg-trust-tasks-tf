@@ -207,14 +207,27 @@ void main() {
       expect(huge.status, 413);
     });
 
-    test('a forward document is held to the implemented version\'s bound',
-        () async {
+    test(
+        'a forward document is not held to the implemented version\'s '
+        'narrower bound, only to the body limit', () async {
+      // echo/0.1 declares 2 KiB; echo/0.2 (extends 0.1) may declare more, and
+      // a document within its own bound must not be refused for size.
       final s = bare()
         ..echo(const SpecPolicy(typeUri: echoType, maxDocumentBytes: 2048));
-      final reply = await s.handle(
+      final between = await s.handle(
         post(echoDoc(type: echo2Type, text: padded(4096))),
       );
-      expect(codeOf(reply), 'malformedRequest');
+      expect(between.status, 200);
+      // The implemented version itself is still held to its bound.
+      expect(
+        codeOf(await s.handle(post(echoDoc(text: padded(4096))))),
+        'malformedRequest',
+      );
+      // Above bodyLimitBytes it is refused before parsing.
+      final huge = await s.handle(
+        post(echoDoc(type: echo2Type, text: padded(s.bodyLimitBytes))),
+      );
+      expect(huge.status, 413);
     });
   });
 
