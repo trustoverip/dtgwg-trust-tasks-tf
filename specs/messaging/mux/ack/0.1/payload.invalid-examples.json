@@ -1,0 +1,14 @@
+[
+  {
+    "note": "Empty messageIds.",
+    "payload": {
+      "messageIds": []
+    }
+  },
+  {
+    "note": "An id that is not a lowercase hex SHA-256.",
+    "payload": {
+      "messageIds": ["9F86D081884C7D659A2FEAA0C55AD015A3BF4F1B2B0B822CD15D6C15B0F00A08"]
+    }
+  }
+]
