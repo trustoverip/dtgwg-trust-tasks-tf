@@ -263,18 +263,24 @@ pub trait ReplayGuard: Send + Sync {
 
     /// Release a claim whose handler never returned — it panicked, or the
     /// future running [`consume_inbound`](crate::consume_inbound) was dropped
-    /// (a request timeout, a client disconnect) while the handler was awaited.
+    /// (a request timeout, a client disconnect) while the handler, or the
+    /// release of a refused document's claim, was awaited.
     ///
     /// Nothing says the effect happened, and holding the claim would answer
     /// every resend with an in-flight duplicate until `retain_until`. This is
-    /// called from a destructor, at most once per claim, so it cannot `.await`
-    /// and **MUST NOT** panic or block.
+    /// called from a destructor, possibly while a panic unwinds, at most once
+    /// per claim, so it cannot `.await`. It **MUST NOT** block, **MUST NOT**
+    /// require a runtime context (it may run on a thread with no async runtime
+    /// current, or while one shuts down), and **MUST NOT** panic.
     ///
-    /// The default polls [`release`](Self::release) once and drops it, which
-    /// completes for a guard whose `release` does not suspend
-    /// ([`InMemoryReplayGuard`] among them). A guard backed by a network store
-    /// should override it to hand the release to its own runtime (for
-    /// example `tokio::spawn`), or the record stays until `retain_until`.
+    /// The default polls [`release`](Self::release) once with a no-op waker
+    /// and drops it. That completes for a guard whose `release` does not
+    /// suspend ([`InMemoryReplayGuard`] among them). For one whose `release`
+    /// suspends — a network store — the release is abandoned and the record
+    /// stays until `retain_until`: no worse than without this hook, and still
+    /// safe for item 11. Such a guard should override this to hand the release
+    /// to something that outlives the call, such as a channel to a task the
+    /// guard owns, without assuming a runtime is current.
     fn release_abandoned(&self, id: &str, digest: &DocumentDigest) {
         let mut release = self.release(id, digest);
         let mut cx = std::task::Context::from_waker(std::task::Waker::noop());
@@ -858,6 +864,62 @@ mod tests {
                 ReplayVerdict::Duplicate { .. }
             ));
         }
+    }
+
+    /// The documented degradation of the default `release_abandoned`: a guard
+    /// whose `release` suspends (as a network round trip does) is polled once,
+    /// returns `Pending`, and is dropped. The call returns without blocking and
+    /// without a runtime, and the claim stays until its retention deadline.
+    #[test]
+    fn the_default_release_abandoned_gives_up_on_a_release_that_suspends() {
+        use std::future::Future;
+        use std::sync::atomic::{AtomicUsize, Ordering};
+
+        struct SuspendingGuard {
+            inner: InMemoryReplayGuard,
+            polls: AtomicUsize,
+        }
+
+        #[async_trait::async_trait]
+        impl ReplayGuard for SuspendingGuard {
+            async fn claim(
+                &self,
+                id: &str,
+                digest: &DocumentDigest,
+                retain_until: Option<DateTime<Utc>>,
+                now: DateTime<Utc>,
+            ) -> Result<ReplayVerdict, ReplayGuardError> {
+                self.inner.claim(id, digest, retain_until, now).await
+            }
+            async fn release(
+                &self,
+                id: &str,
+                digest: &DocumentDigest,
+            ) -> Result<(), ReplayGuardError> {
+                self.polls.fetch_add(1, Ordering::SeqCst);
+                // A store round trip that never completes within one poll.
+                std::future::pending::<()>().await;
+                self.inner.release(id, digest).await
+            }
+        }
+
+        let guard = SuspendingGuard {
+            inner: InMemoryReplayGuard::new(8),
+            polls: AtomicUsize::new(0),
+        };
+        let now = t("2026-08-26T12:00:00Z");
+        let digest = document_digest(&doc("req-1", json!({}))).unwrap();
+        let mut cx = std::task::Context::from_waker(std::task::Waker::noop());
+        let claimed = std::pin::pin!(guard.claim("req-1", &digest, None, now)).poll(&mut cx);
+        assert!(matches!(
+            claimed,
+            std::task::Poll::Ready(Ok(ReplayVerdict::Fresh))
+        ));
+
+        // No runtime is current here; the call must still return at once.
+        guard.release_abandoned("req-1", &digest);
+        assert_eq!(guard.polls.load(Ordering::SeqCst), 1, "polled exactly once");
+        assert_eq!(guard.inner.len(), 1, "the record stays until retain_until");
     }
 
     /// The seam has to be usable as a trait object, or a deployment cannot

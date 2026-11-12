@@ -892,39 +892,65 @@ where
         digest: Some(digest),
     });
     let outcome = handler(doc, parties).await;
-    let claim = claim.map(HeldClaim::settle);
     match outcome {
         Ok(response) => {
-            if let Some((guard, _)) = claim {
-                // Best-effort: the effect has already happened, so a failure
-                // to cache the response cannot un-happen it. The record of the
-                // *claim* is what item 11 needs and it is already written; all
-                // that is lost is the ability to hand the same response back,
-                // and the duplicate is still absorbed. Guards should log their
-                // own failures — there is nowhere to report this from here.
-                let value = serde_json::to_value(&response).ok();
-                let _ = guard.record_response(&doc_id, value.as_ref()).await;
+            if let Some(claim) = claim {
+                // The effect has happened, so from here the claim is never
+                // released: a resend must be absorbed, not executed again.
+                // Best-effort recording: a failure to cache the response cannot
+                // un-happen the effect. The record of the *claim* is what item
+                // 11 needs and it is already written; all that is lost is the
+                // ability to hand the same response back, and the duplicate is
+                // still absorbed. Guards should log their own failures — there
+                // is nowhere to report this from here.
+                let (guard, _) = claim.settle();
+                record_settled(guard, &doc_id, &response).await;
             }
             ConsumeOutcome::Handled(response)
         }
         Err(error_response) => {
-            if let Some((guard, digest)) = claim {
+            if let Some(claim) = claim {
                 if error_response.payload.retryable {
                     // §8.4: the consumer has just told the producer it MAY
                     // re-send this document bit-for-bit. Holding the claim
                     // would make that retry come back as an absorbed duplicate
                     // carrying the same failure forever — the consumer would
                     // have invited a retry it had already decided to refuse.
-                    let _ = guard.release(&doc_id, &digest).await;
+                    //
+                    // `claim` stays armed across the await, so a pipeline
+                    // dropped mid-release still releases through its
+                    // destructor, and is disarmed on the very next statement.
+                    let _ = claim.guard.release(&doc_id, claim.digest()).await;
+                    claim.settle();
                 } else {
                     // A non-retryable refusal is final for this document, so
                     // the record stands and a replay is answered with the same
                     // determination rather than re-evaluated.
-                    let value = serde_json::to_value(&error_response).ok();
-                    let _ = guard.record_response(&doc_id, value.as_ref()).await;
+                    let (guard, _) = claim.settle();
+                    record_settled(guard, &doc_id, &error_response).await;
                 }
             }
             ConsumeOutcome::Rejected(error_response)
+        }
+    }
+}
+
+/// Record `response` against a claim whose handler returned, best-effort.
+///
+/// A `Serialize` impl that panics still settles the claim — with no response
+/// to hand back, so a resend is absorbed rather than left in flight until the
+/// record expires — before the panic continues unchanged.
+async fn record_settled<T: Serialize>(guard: &dyn ReplayGuard, id: &str, response: &T) {
+    let encoded = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        serde_json::to_value(response)
+    }));
+    match encoded {
+        Ok(value) => {
+            let _ = guard.record_response(id, value.ok().as_ref()).await;
+        }
+        Err(panic) => {
+            let _ = guard.record_response(id, None).await;
+            std::panic::resume_unwind(panic);
         }
     }
 }
@@ -946,8 +972,13 @@ struct HeldClaim<'g> {
 }
 
 impl<'g> HeldClaim<'g> {
-    /// The handler returned: hand the claim to the normal settle path, which
-    /// records or releases it, and disarm the destructor.
+    /// The digest the claim was made with.
+    fn digest(&self) -> &DocumentDigest {
+        self.digest.as_ref().expect("an armed claim has a digest")
+    }
+
+    /// The handler returned and the claim is being recorded or has been
+    /// released: disarm the destructor.
     fn settle(mut self) -> (&'g dyn ReplayGuard, DocumentDigest) {
         let digest = self.digest.take().expect("a claim is settled once");
         (self.guard, digest)

@@ -637,3 +637,133 @@ async fn the_window_closes_at_the_instant_the_record_may_be_dropped() {
     }
     assert_eq!(executions.count(), 1);
 }
+
+/// A response whose `Serialize` impl panics.
+struct UnserialisableResponse;
+
+impl serde::Serialize for UnserialisableResponse {
+    fn serialize<S: serde::Serializer>(&self, _: S) -> Result<S::Ok, S::Error> {
+        panic!("response cannot be serialised");
+    }
+}
+
+/// The handler returned, so the effect happened. A response that panics while
+/// being serialised for the record still settles the claim — with no response
+/// to hand back — and the panic still reaches the caller. A resend is absorbed
+/// as a completed duplicate, neither left in flight nor executed again.
+#[tokio::test]
+async fn a_panicking_response_serialiser_settles_the_claim() {
+    let guard = InMemoryReplayGuard::new(64);
+    let now = t("2026-08-26T12:00:00Z");
+    let doc = request("req-1", "admin", now);
+    let executions = AtomicUsize::new(0);
+    let executions = &executions;
+
+    let panicked = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        poll_once(consume_inbound(
+            &NoopHandler::new(),
+            ProofPolicy::<NoVerifier>::AcceptUnverified,
+            PayloadPolicy::<NoValidator>::AcceptUnvalidated,
+            ConsumeChecks::consequential(&guard),
+            doc.clone(),
+            ME,
+            now,
+            || "err-1".to_string(),
+            |req: TrustTask<grant::Payload>, _parties| async move {
+                executions.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, ErrorResponse>(req.respond_with("resp-1", UnserialisableResponse))
+            },
+        ))
+    }));
+    assert!(panicked.is_err(), "the serialiser's panic must propagate");
+    assert_eq!(executions.load(Ordering::SeqCst), 1);
+
+    let unused = Executions::default();
+    match consume(&guard, &unused, doc, now).await {
+        ConsumeOutcome::Duplicate {
+            prior_response: None,
+            in_flight: false,
+        } => {}
+        other => panic!("expected a settled duplicate with no response, got {other:?}"),
+    }
+    assert_eq!(unused.count(), 0);
+}
+
+/// A guard whose `release` suspends until told to finish, standing in for a
+/// store round trip that is in progress when the pipeline is dropped.
+struct SlowReleaseGuard {
+    inner: InMemoryReplayGuard,
+}
+
+#[async_trait::async_trait]
+impl ReplayGuard for SlowReleaseGuard {
+    async fn claim(
+        &self,
+        id: &str,
+        digest: &trust_tasks_rs::DocumentDigest,
+        retain_until: Option<DateTime<Utc>>,
+        now: DateTime<Utc>,
+    ) -> Result<trust_tasks_rs::ReplayVerdict, trust_tasks_rs::ReplayGuardError> {
+        self.inner.claim(id, digest, retain_until, now).await
+    }
+    async fn record_response(
+        &self,
+        id: &str,
+        response: Option<&serde_json::Value>,
+    ) -> Result<(), trust_tasks_rs::ReplayGuardError> {
+        self.inner.record_response(id, response).await
+    }
+    async fn release(
+        &self,
+        _id: &str,
+        _digest: &trust_tasks_rs::DocumentDigest,
+    ) -> Result<(), trust_tasks_rs::ReplayGuardError> {
+        std::future::pending().await
+    }
+    fn release_abandoned(&self, id: &str, digest: &trust_tasks_rs::DocumentDigest) {
+        self.inner.release_abandoned(id, digest);
+    }
+}
+
+/// A retryable refusal releases the claim with an awaited `release`. If the
+/// pipeline is dropped while that release is pending, the claim is still
+/// released, through `release_abandoned`, so the invited retry runs.
+#[tokio::test]
+async fn a_pipeline_dropped_mid_release_still_releases_the_claim() {
+    let guard = SlowReleaseGuard {
+        inner: InMemoryReplayGuard::new(64),
+    };
+    let now = t("2026-08-26T12:00:00Z");
+    let doc = request("req-1", "admin", now);
+
+    let pending = poll_once(consume_inbound(
+        &NoopHandler::new(),
+        ProofPolicy::<NoVerifier>::AcceptUnverified,
+        PayloadPolicy::<NoValidator>::AcceptUnvalidated,
+        ConsumeChecks::consequential(&guard),
+        doc.clone(),
+        ME,
+        now,
+        || "err-1".to_string(),
+        |req: TrustTask<grant::Payload>, _parties| async move {
+            Err::<TrustTask<grant::Response>, _>(req.reject_with(
+                "err-1",
+                trust_tasks_rs::RejectReason::Unavailable { retry_after: None },
+            ))
+        },
+    ));
+    assert!(
+        pending.is_pending(),
+        "the release should still be in progress"
+    );
+    assert_eq!(
+        guard.inner.len(),
+        0,
+        "the claim was left in flight when the release was cancelled"
+    );
+
+    let executions = Executions::default();
+    let resend = consume(&guard.inner, &executions, doc, now).await;
+    assert!(matches!(resend, ConsumeOutcome::Handled(_)), "{resend:?}");
+    assert_eq!(executions.count(), 1);
+}
