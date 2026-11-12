@@ -347,6 +347,14 @@ caret below 1.0 admits one minor and `check-sibling-core-ranges` refuses a
 sibling that excludes the core. Those siblings' verify legs then fail on the
 merge until the new core is on pub.dev — the same re-run.
 
+That raise is the *upper* end. The *lower* end — a floor old enough that the
+sibling no longer compiles against it — is a feature PR's to keep: when a
+sibling starts using core API newer than its floor, raise the floor in the same
+PR. The `downgrade` legs of the `packages` job in `dart.yml` check it (the
+override dropped, `dart pub downgrade`, `dart analyze lib example`), and warn
+rather than fail while the floor names a core not yet on pub.dev, which is
+exactly the Release PR's case above.
+
 `publish-dart.yml` looks up the tag's version on
 pub.dev before publishing and does nothing when it is already there, which is
 what keeps the tag written after a hand-published first version from turning
