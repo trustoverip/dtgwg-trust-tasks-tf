@@ -76,7 +76,11 @@ runs:
         fi
         if [ -n "$changed" ]; then
           echo "Changed inputs of this job:"
-          echo "$changed" | head -50
+          # Not `echo … | head`: under pipefail, head closing the pipe early
+          # fails the step once more than 50 inputs changed.
+          n=$(printf '%s\n' "$changed" | wc -l)
+          printf '%s\n' "$changed" | sed -n '1,50p'
+          [ "$n" -gt 50 ] && echo "… and $((n - 50)) more"
           decide true "Running every step."
         fi
         echo "Watched paths:"
