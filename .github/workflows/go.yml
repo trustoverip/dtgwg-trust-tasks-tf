@@ -223,19 +223,42 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      # A PR touching none of this module's inputs skips the steps below and
+      # the job still reports success (it may be a required check, so the job
+      # itself always runs). The inputs: this module, the core module (its
+      # go.mod pins the published core, so this is a margin), the shared
+      # fixtures, and this workflow. Push, dispatch and the Release PR always
+      # run in full; see .github/actions/changed-paths (#1141).
+      - name: Did this PR change this job's inputs?
+        id: changes
+        uses: ./.github/actions/changed-paths
+        with:
+          paths: |
+            trust-tasks-go
+            :(exclude)trust-tasks-go/proof
+            :(exclude)trust-tasks-go/didcomm
+            :(exclude)trust-tasks-go/capabilityclient
+            fixtures
+            .github/workflows/go.yml
       - name: Setup Go
+        if: steps.changes.outputs.run == 'true'
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: ${{ matrix.go }}
-          cache: false
+          # The one nested module with third-party dependencies (affinidi-tsp-go
+          # and its PQ crypto); key the module cache on its own go.sum (#1141).
+          cache: true
+          cache-dependency-path: trust-tasks-go/tsp/go.sum
       - name: Build
+        if: steps.changes.outputs.run == 'true'
         working-directory: trust-tasks-go/tsp
         run: go build ./...
       - name: Vet
+        if: steps.changes.outputs.run == 'true'
         working-directory: trust-tasks-go/tsp
         run: go vet ./...
       - name: gofmt
-        if: matrix.go == 'stable'
+        if: steps.changes.outputs.run == 'true' && (matrix.go == 'stable')
         working-directory: trust-tasks-go/tsp
         run: |
           unformatted=$(gofmt -l .)
@@ -245,6 +268,7 @@ jobs:
             exit 1
           fi
       - name: Test
+        if: steps.changes.outputs.run == 'true'
         working-directory: trust-tasks-go/tsp
         run: go test -race ./...
 
@@ -266,19 +290,35 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      # Skips the steps below when this PR touches none of the job's inputs;
+      # see the `tsp` job.
+      - name: Did this PR change this job's inputs?
+        id: changes
+        uses: ./.github/actions/changed-paths
+        with:
+          paths: |
+            trust-tasks-go
+            :(exclude)trust-tasks-go/tsp
+            :(exclude)trust-tasks-go/didcomm
+            :(exclude)trust-tasks-go/capabilityclient
+            fixtures
+            .github/workflows/go.yml
       - name: Setup Go
+        if: steps.changes.outputs.run == 'true'
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: ${{ matrix.go }}
           cache: false
       - name: Build
+        if: steps.changes.outputs.run == 'true'
         working-directory: trust-tasks-go/proof
         run: go build ./...
       - name: Vet
+        if: steps.changes.outputs.run == 'true'
         working-directory: trust-tasks-go/proof
         run: go vet ./...
       - name: gofmt
-        if: matrix.go == 'stable'
+        if: steps.changes.outputs.run == 'true' && (matrix.go == 'stable')
         working-directory: trust-tasks-go/proof
         run: |
           unformatted=$(gofmt -l .)
@@ -288,6 +328,7 @@ jobs:
             exit 1
           fi
       - name: Test
+        if: steps.changes.outputs.run == 'true'
         working-directory: trust-tasks-go/proof
         run: go test -race ./...
 
@@ -310,19 +351,35 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      # Skips the steps below when this PR touches none of the job's inputs;
+      # see the `tsp` job.
+      - name: Did this PR change this job's inputs?
+        id: changes
+        uses: ./.github/actions/changed-paths
+        with:
+          paths: |
+            trust-tasks-go
+            :(exclude)trust-tasks-go/tsp
+            :(exclude)trust-tasks-go/proof
+            :(exclude)trust-tasks-go/capabilityclient
+            fixtures
+            .github/workflows/go.yml
       - name: Setup Go
+        if: steps.changes.outputs.run == 'true'
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: ${{ matrix.go }}
           cache: false
       - name: Build
+        if: steps.changes.outputs.run == 'true'
         working-directory: trust-tasks-go/didcomm
         run: go build ./...
       - name: Vet
+        if: steps.changes.outputs.run == 'true'
         working-directory: trust-tasks-go/didcomm
         run: go vet ./...
       - name: gofmt
-        if: matrix.go == 'stable'
+        if: steps.changes.outputs.run == 'true' && (matrix.go == 'stable')
         working-directory: trust-tasks-go/didcomm
         run: |
           unformatted=$(gofmt -l .)
@@ -332,6 +389,7 @@ jobs:
             exit 1
           fi
       - name: Test
+        if: steps.changes.outputs.run == 'true'
         working-directory: trust-tasks-go/didcomm
         run: go test -race ./...
 
@@ -352,19 +410,35 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      # Skips the steps below when this PR touches none of the job's inputs;
+      # see the `tsp` job.
+      - name: Did this PR change this job's inputs?
+        id: changes
+        uses: ./.github/actions/changed-paths
+        with:
+          paths: |
+            trust-tasks-go
+            :(exclude)trust-tasks-go/tsp
+            :(exclude)trust-tasks-go/proof
+            :(exclude)trust-tasks-go/didcomm
+            fixtures
+            .github/workflows/go.yml
       - name: Setup Go
+        if: steps.changes.outputs.run == 'true'
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: ${{ matrix.go }}
           cache: false
       - name: Build
+        if: steps.changes.outputs.run == 'true'
         working-directory: trust-tasks-go/capabilityclient
         run: go build ./...
       - name: Vet
+        if: steps.changes.outputs.run == 'true'
         working-directory: trust-tasks-go/capabilityclient
         run: go vet ./...
       - name: gofmt
-        if: matrix.go == 'stable'
+        if: steps.changes.outputs.run == 'true' && (matrix.go == 'stable')
         working-directory: trust-tasks-go/capabilityclient
         run: |
           unformatted=$(gofmt -l .)
@@ -374,6 +448,7 @@ jobs:
             exit 1
           fi
       - name: Test
+        if: steps.changes.outputs.run == 'true'
         working-directory: trust-tasks-go/capabilityclient
         run: go test -race ./...
 

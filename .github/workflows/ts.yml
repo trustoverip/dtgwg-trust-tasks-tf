@@ -157,20 +157,40 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      # A PR touching none of this package's inputs skips the steps below and
+      # the job still reports success (it may be a required check, so the job
+      # itself always runs). The inputs: the package, the core (installed from
+      # npm, so this is a margin), the shared fixtures, and this workflow.
+      # Push, dispatch and the Release PR always run in full; see
+      # .github/actions/changed-paths (#1141).
+      - name: Did this PR change this job's inputs?
+        id: changes
+        uses: ./.github/actions/changed-paths
+        with:
+          paths: |
+            ${{ matrix.package }}
+            trust-tasks-ts
+            fixtures
+            .github/workflows/ts.yml
       - name: Setup Node
+        if: steps.changes.outputs.run == 'true'
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "24"
       - name: Install
+        if: steps.changes.outputs.run == 'true'
         working-directory: ${{ matrix.package }}
         run: npm ci --no-audit --no-fund
       - name: Build
+        if: steps.changes.outputs.run == 'true'
         working-directory: ${{ matrix.package }}
         run: npm run build
       - name: Typecheck tests
+        if: steps.changes.outputs.run == 'true'
         working-directory: ${{ matrix.package }}
         run: npm run typecheck:test
       - name: Test
+        if: steps.changes.outputs.run == 'true'
         working-directory: ${{ matrix.package }}
         run: npm test
 
