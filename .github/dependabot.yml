@@ -1,4 +1,17 @@
-# Weekly dependency updates, one grouped pull request per ecosystem.
+# Weekly dependency updates: one grouped pull request per ecosystem for minor
+# and patch updates, and one pull request per dependency for a major update.
+#
+# Only minor and patch updates are grouped, so one breaking update cannot hold
+# back all the others. A major update comes on its own and usually needs a
+# fix-up commit (a new lint to satisfy, a tsconfig change) before it is merged.
+# Dependabot decides minor or major from the version number alone, so on a 0.x
+# crate or package a minor step (0.2 -> 0.4) is a "minor" update and is
+# grouped, even when it breaks the API. A 0.x dependency that has broken CI that
+# way is ignored below.
+#
+# `ignore` is for a dependency that cannot move without a deliberate migration.
+# Each entry says what breaks. To take the update, make the change by hand in
+# its own PR and remove the entry.
 #
 # github-actions: keeps the commit-SHA pins in .github/workflows current. Each
 # `uses:` is pinned to a full commit SHA with the release it corresponds to in
@@ -23,6 +36,7 @@ updates:
     groups:
       github-actions:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
     commit-message:
       prefix: ci
 
@@ -33,6 +47,21 @@ updates:
     groups:
       cargo:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
+    ignore:
+      # trust-tasks-build and trust-tasks-codegen convert each normalized schema
+      # into a `schemars::schema::RootSchema` and give it to typify. schemars 1.x
+      # makes that module private, and typify 0.8 takes schemars 1.x types, so
+      # the two move together, and moving them changes the code generation that
+      # `trust-tasks-codegen drift`, the bundles and the consumer-generation
+      # checks depend on. The first grouped PR failed every one of those jobs
+      # with `cannot find type RootSchema in schemars::schema`.
+      - dependency-name: schemars
+        update-types: ["version-update:semver-major"]
+      # typify is 0.x, so 0.6 -> 0.7 counts as a minor update and would stay in
+      # the group without this entry.
+      - dependency-name: typify
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
     commit-message:
       prefix: chore
       include: scope
@@ -49,8 +78,36 @@ updates:
     schedule:
       interval: weekly
     groups:
+      # The TypeScript generators' own dependencies. A new version, even a
+      # patch, can change the generated text: prettier 3.8.3 -> 3.9.10 reflows
+      # union types, so `build-ts-bindings drift` and `trust-tasks-gen-ts
+      # equivalence` both fail until the output is regenerated. This group
+      # keeps those updates out of the `npm` group, which can then pass on its
+      # own. A PR from it needs `npm run build-ts-bindings` committed, and the
+      # root lockfile's prettier (a transitive dependency of
+      # json-schema-to-typescript) moved to the version trust-tasks-ts-gen
+      # pins, because the equivalence check compares the two generators.
+      # A dependency goes in the first group that matches, so this must come
+      # before `npm`.
+      ts-generator:
+        patterns: ["json-schema-to-typescript", "prettier"]
+        update-types: ["minor", "patch"]
       npm:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
+    ignore:
+      # json-schema-to-typescript 16 names types differently. The generators
+      # then produce counter-suffixed duplicates (DecryptionTarget1,
+      # EncryptedCast1, ...), which scripts/build-ts-bindings.mjs and
+      # trust-tasks-ts-gen both refuse to emit. Adopting it means changing the
+      # generators and regenerating.
+      - dependency-name: json-schema-to-typescript
+        update-types: ["version-update:semver-major"]
+      # 0.x: 0.2 -> 0.4 counts as a minor update. 0.4 removes
+      # `senderEncryptionKey` from `PackKeys`/`UnpackKeys`, so
+      # trust-tasks-ts-tsp does not compile until it is ported.
+      - dependency-name: "@openvtc/vti-tsp-js"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
     commit-message:
       prefix: chore
       include: scope
@@ -68,6 +125,7 @@ updates:
     groups:
       gomod:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
     commit-message:
       prefix: chore
       include: scope
@@ -86,6 +144,7 @@ updates:
     groups:
       pub:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
     commit-message:
       prefix: chore
       include: scope
