@@ -18,6 +18,7 @@
     "check-bundles": "node scripts/check-bundles.mjs",
     "test:infra": "node --test infra/cloudfront/*.test.mjs",
     "test:website": "node --test scripts/test/*.test.mjs",
+    "test:release-scripts": "node --test scripts/test-release/*.test.mjs",
     "validate-ceremonies": "node scripts/validate-ceremonies.mjs",
     "test-ceremonies": "node scripts/validate-ceremonies.mjs --test",
     "check-dart-packages": "node scripts/check-dart-packages.mjs",

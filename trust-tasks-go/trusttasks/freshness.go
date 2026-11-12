@@ -32,6 +32,16 @@ const DefaultSkew = 60 * time.Second
 // match — §7.2 makes them one bound.
 const DefaultMaxAge = 5 * time.Minute
 
+// DefaultExpiryHorizon is the expiry horizon [ConsequentialFreshness] applies:
+// the furthest after issuedAt a stated expiresAt is honoured.
+//
+// A document's expiresAt fixes its acceptance window and the replay record's
+// retention (SPEC §7.2, *Bounding the record*), so without a horizon the
+// producer alone decides how long the consumer must remember its id. Thirty days
+// covers a store-and-forward delivery to a recipient offline for weeks; a later
+// expiresAt is clamped to it, not refused. Mirrors Rust's DEFAULT_EXPIRY_HORIZON.
+const DefaultExpiryHorizon = 30 * 24 * time.Hour
+
 // FreshnessPolicy is how a consumer bounds a document in time before acting on
 // it.
 type FreshnessPolicy struct {
@@ -42,9 +52,27 @@ type FreshnessPolicy struct {
 	Skew time.Duration
 
 	// MaxAge is the oldest issuedAt this consumer accepts, measured back from
-	// now. Zero means unbounded — and is the only setting under which a document
-	// carrying neither timestamp is acceptable.
+	// now, for a document that carries no expiresAt. Zero means unbounded — and
+	// is the only setting under which a document carrying neither timestamp is
+	// acceptable.
+	//
+	// A document that states an expiresAt is bounded by it instead (SPEC §7.2,
+	// *Bounding the record*: the maximum age applies "where expiresAt is
+	// absent"), up to ExpiryHorizon.
 	MaxAge time.Duration
+
+	// ExpiryHorizon is the furthest after issuedAt a stated expiresAt is
+	// honoured. A document whose expiresAt lies beyond issuedAt + ExpiryHorizon
+	// is treated as expiring there: accepted until then (plus Skew) and refused
+	// as expired after, never refused for stating the later instant; its replay
+	// record is kept until the same instant. Nil honours any expiresAt; a zero
+	// horizon clamps at issuedAt — as None / undefined / null and zero do in the
+	// Rust, TypeScript and Dart runtimes. Unlike MaxAge, zero is not "unbounded".
+	//
+	// The horizon runs from issuedAt, so it does not apply to a document without
+	// one: that is bounded by its expiresAt alone. Set RequireIssuedAt to refuse
+	// such documents.
+	ExpiryHorizon *time.Duration
 
 	// RequireIssuedAt rejects a document carrying no issuedAt, with
 	// malformedRequest.
@@ -70,9 +98,20 @@ func ConsequentialFreshness() FreshnessPolicy {
 	return FreshnessPolicy{
 		Skew:            DefaultSkew,
 		MaxAge:          DefaultMaxAge,
+		ExpiryHorizon:   ptrTo(DefaultExpiryHorizon),
 		RequireIssuedAt: true,
 	}
 }
+
+// horizonEnd is issuedAt + ExpiryHorizon; false with no horizon.
+func (p FreshnessPolicy) horizonEnd(issuedAt time.Time) (time.Time, bool) {
+	if p.ExpiryHorizon == nil {
+		return time.Time{}, false
+	}
+	return issuedAt.Add(*p.ExpiryHorizon), true
+}
+
+func ptrTo[T any](v T) *T { return &v }
 
 // Wire-safe reasons for the freshness rejections. Constants so the same text
 // reaches the wire from every call site, and so a test can assert on them.
@@ -130,6 +169,15 @@ func ValidateFreshness[P any](
 				if !expiresAt.After(issuedAt) {
 					return malformed(ExpiryNotAfterIssuance)
 				}
+				// The producer's expiresAt is the window, and MaxAge does not
+				// apply. Past the horizon it is clamped there, not refused: the
+				// document was acceptable, and is now merely older than this
+				// consumer will remember it.
+				if end, ok := policy.horizonEnd(issuedAt); ok &&
+					expiresAt.After(end) && !end.Add(policy.Skew).After(now) {
+					return stale()
+				}
+				return nil
 			}
 		}
 
@@ -159,9 +207,14 @@ func ValidateFreshness[P any](
 // the end of this consumer's willingness to execute it, which SPEC §7.2 makes the
 // same instant as the end of the record's required retention.
 //
-// expiresAt fixes it where present; otherwise issuedAt + MaxAge + Skew — the same
-// bound [ValidateFreshness] accepts up to, so a replay arriving inside the skew
-// allowance still finds the record. The second
+// expiresAt fixes it where present, clamped to issuedAt + ExpiryHorizon + Skew
+// where it lies beyond the horizon; otherwise issuedAt + MaxAge + Skew. Each is
+// the same bound [ValidateFreshness] refuses from, so a replay arriving inside
+// the skew allowance still finds the record — and a producer cannot pin a record
+// past the horizon by stating a distant expiresAt. The window is half-open — a
+// document is acceptable strictly before this instant and refused at it, as for
+// expiresAt — so a guard that drops a record once retainUntil is not after now
+// never drops one the pipeline would still execute. The second
 // return is false when this policy places no bound on the document, in which case
 // a consumer MUST NOT execute a consequential task on it — there is no window in
 // which to keep the record.
@@ -172,6 +225,14 @@ func RecordExpiry[P any](
 ) (time.Time, bool) {
 	if doc.ExpiresAt != nil {
 		if expiresAt, err := parseTimestamp(*doc.ExpiresAt); err == nil {
+			// No issuedAt, no horizon: see ExpiryHorizon.
+			if doc.IssuedAt != nil {
+				if issuedAt, err := parseTimestamp(*doc.IssuedAt); err == nil {
+					if end, ok := policy.horizonEnd(issuedAt); ok && expiresAt.After(end) {
+						return end.Add(policy.Skew), true
+					}
+				}
+			}
 			return expiresAt, true
 		}
 	}

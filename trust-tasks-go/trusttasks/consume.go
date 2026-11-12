@@ -590,7 +590,16 @@ func ConsumeInbound[P, R any](
 			return route(&RejectReason{Code: CodeExpired, Message: StaleWireMessage}), nil
 		}
 
-		verdict, err := guard.Claim(ctx, doc.ID, digest, retainUntil, opts.Now)
+		var verdict ReplayVerdict
+		if scoped, ok := guard.(IssuerScopedReplayGuard); ok {
+			issuer := ""
+			if parties.Issuer != nil {
+				issuer = *parties.Issuer
+			}
+			verdict, err = scoped.ClaimFor(ctx, issuer, doc.ID, digest, retainUntil, opts.Now)
+		} else {
+			verdict, err = guard.Claim(ctx, doc.ID, digest, retainUntil, opts.Now)
+		}
 		if err != nil {
 			// Fail closed. A consumer that cannot consult its record has not
 			// satisfied item 11, and executing anyway is exactly the double
