@@ -667,12 +667,15 @@ void main() {
       final end = DateTime.utc(2026, 1, 1).add(defaultExpiryHorizon);
       // The record is not pinned for the producer's millennia.
       expect(recordExpiry(d, policy, testNow), end.add(policy.skew));
-      // Accepted inside the horizon (plus skew), refused after.
-      expect(validateFreshness(d, end.add(policy.skew), policy), isNull);
+      // Accepted inside the horizon (plus skew), refused from its end — the
+      // instant the record may be dropped — so never accepted once it could be.
       expect(
         validateFreshness(
-                d, end.add(policy.skew + const Duration(seconds: 1)), policy)
-            ?.code,
+            d, end.add(policy.skew - const Duration(milliseconds: 1)), policy),
+        isNull,
+      );
+      expect(
+        validateFreshness(d, end.add(policy.skew), policy)?.code,
         StandardCode.expired,
       );
       // A zero horizon clamps at issuedAt; only null means none.

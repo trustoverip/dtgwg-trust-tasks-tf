@@ -526,10 +526,10 @@ describe("SPEC §4.2 / §7.2 — freshness bounds", () => {
     const horizonEnd = Date.parse(issuedAt) + DEFAULT_EXPIRY_HORIZON_MS;
     // The record is not pinned for the producer's millennia.
     assert.equal(recordExpiry(d, policy, NOW), horizonEnd + policy.skewMs);
-    // Accepted inside the horizon (plus skew), refused after — never accepted
-    // once the record could have been dropped.
-    assert.equal(validateFreshness(d, horizonEnd + policy.skewMs, policy), null);
-    assert.equal(validateFreshness(d, horizonEnd + policy.skewMs + 1, policy)?.code, "expired");
+    // Accepted inside the horizon (plus skew), refused from its end — the
+    // instant the record may be dropped — so never accepted once it could be.
+    assert.equal(validateFreshness(d, horizonEnd + policy.skewMs - 1, policy), null);
+    assert.equal(validateFreshness(d, horizonEnd + policy.skewMs, policy)?.code, "expired");
     // With no horizon, the stated expiresAt stands.
     const unbounded = { skewMs: 60_000, maxAgeMs: 5 * 60_000 };
     assert.equal(recordExpiry(d, unbounded, NOW), Date.parse("9999-12-31T23:59:59Z"));

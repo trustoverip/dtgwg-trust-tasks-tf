@@ -569,12 +569,14 @@ func TestFreshnessClampsADistantExpiresAtToTheHorizon(t *testing.T) {
 	if !bounded || !got.Equal(end.Add(policy.Skew)) {
 		t.Errorf("record kept until %v, want %v", got, end.Add(policy.Skew))
 	}
-	if reason := tt.ValidateFreshness(d, end.Add(policy.Skew), policy); reason != nil {
-		t.Errorf("expected acceptance at the horizon, got %q", reason.Message)
+	// Accepted inside the horizon (plus skew), refused from its end — the
+	// instant the record may be dropped — so never accepted once it could be.
+	if reason := tt.ValidateFreshness(d, end.Add(policy.Skew-time.Millisecond), policy); reason != nil {
+		t.Errorf("expected acceptance just inside the horizon, got %q", reason.Message)
 	}
-	if reason := tt.ValidateFreshness(d, end.Add(policy.Skew+time.Second), policy); reason == nil ||
+	if reason := tt.ValidateFreshness(d, end.Add(policy.Skew), policy); reason == nil ||
 		reason.Code != tt.CodeExpired {
-		t.Errorf("expected expired past the horizon, got %v", reason)
+		t.Errorf("expected expired at the horizon's end, got %v", reason)
 	}
 
 	// A zero horizon clamps at issuedAt; only nil means none, as in the other

@@ -401,7 +401,7 @@ pub enum ReplayPolicy<'a> {
 /// the number of distinct documents your consumers will accept inside that
 /// window; [`InMemoryReplayGuard::default`] is sized for a short window, and a
 /// deployment admitting long-lived documents should either raise it, lower
-/// the expiry horizon ([`FreshnessPolicy`](crate::FreshnessPolicy)), or back
+/// the expiry horizon ([`FreshnessPolicy`]), or back
 /// [`ReplayGuard`] with a store that can hold the window.
 ///
 /// A document carrying an `expiresAt` but no `issuedAt` is not bounded by the

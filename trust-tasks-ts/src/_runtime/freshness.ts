@@ -179,7 +179,7 @@ export function validateFreshness<P>(
         // document was acceptable, and is now merely older than this consumer
         // will remember it.
         const end = horizonEnd(issuedAt, policy);
-        if (end !== undefined && expiresAt > end && end + policy.skewMs < now) return stale();
+        if (end !== undefined && expiresAt > end && end + policy.skewMs <= now) return stale();
         return null;
       }
     }
@@ -210,9 +210,12 @@ export function validateFreshness<P>(
  * `expiresAt` fixes it where present, clamped to
  * `issuedAt + expiryHorizonMs + skewMs` where it lies beyond the horizon;
  * otherwise `issuedAt + maxAgeMs + skewMs`. Each is the same bound
- * {@link validateFreshness} accepts up to, so a replay arriving inside the skew
+ * {@link validateFreshness} refuses from, so a replay arriving inside the skew
  * allowance still finds the record — and a producer cannot pin a record past
- * the horizon by stating a distant `expiresAt`.
+ * the horizon by stating a distant `expiresAt`. The window is half-open — a
+ * document is acceptable strictly before this instant and refused at it, as for
+ * `expiresAt` — so a guard that drops a record once `retainUntil <= now` never
+ * drops one the pipeline would still execute.
  * `undefined` means this policy places no bound on the document, in which case
  * a consumer **MUST NOT** execute a consequential task on it — there is no
  * window in which to keep the record.

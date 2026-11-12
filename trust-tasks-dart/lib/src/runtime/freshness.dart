@@ -177,7 +177,7 @@ RejectReason? validateFreshness<P>(
         final end = policy._horizonEnd(issuedAt);
         if (end != null &&
             expiresAt.isAfter(end) &&
-            end.add(policy.skew).isBefore(now)) {
+            !end.add(policy.skew).isAfter(now)) {
           return stale();
         }
         return null;
@@ -210,9 +210,12 @@ RejectReason? validateFreshness<P>(
 /// `expiresAt` fixes it where present, clamped to
 /// `issuedAt + expiryHorizon + skew` where it lies beyond the horizon; otherwise
 /// `issuedAt + maxAge + skew`. Each is the same bound [validateFreshness]
-/// accepts up to, so a replay arriving inside the skew allowance still finds the
+/// refuses from, so a replay arriving inside the skew allowance still finds the
 /// record — and a producer cannot pin a record past the horizon by stating a
-/// distant `expiresAt`. Null means
+/// distant `expiresAt`. The window is half-open — a document is acceptable
+/// strictly before this instant and refused at it, as for `expiresAt` — so a
+/// guard that drops a record once `retainUntil` is not after `now` never drops
+/// one the pipeline would still execute. Null means
 /// this policy places no bound on the document, in which case a consumer **MUST
 /// NOT** execute a consequential task on it — there is no window in which to
 /// keep the record.
