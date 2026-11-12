@@ -37,8 +37,12 @@ package trusttasks
 //	    }
 //	}
 //
-// Items 1 (framework schema) and 3 (unknown type) are not attempted here — they
-// belong to the caller's parse and dispatch.
+// Item 1 (framework schema) is not attempted here — it belongs to the caller's
+// parse. Item 3 is: a document whose type is neither Spec.TypeURI (`#request` and
+// no fragment alike) nor a later version whose declared extension chain reaches
+// it (SPEC §5.2, see [ConsumeOptions.Extends]) is refused unsupportedVersion for
+// the same specification and unsupportedType for another, as [ReadForSpec]
+// refuses it.
 //
 // Item 2 (payload schema) is. Go's encoding/json enforces less than it looks like
 // it does: it ignores unknown members by default and does not enforce a single
@@ -359,6 +363,14 @@ type ConsumeOptions[P, R any] struct {
 	// such a member.
 	Received json.RawMessage
 
+	// Extends is the [ExtendsLookup] the §7.2 item 3 type check follows when
+	// Doc's type is a later version than Spec's. Nil means [RegistryExtends].
+	// A caller that re-read Doc with [ReadForSpecWith] and its own lookup MUST
+	// pass that lookup here too: the check does not know how Doc was read, and
+	// under [RegistryExtends] a chain only the caller's lookup declares is refused
+	// unsupportedVersion.
+	Extends ExtendsLookup
+
 	// MyVID is this consumer's own VID, for the §7.2 item 5 recipient check.
 	MyVID string
 
@@ -435,6 +447,15 @@ func ConsumeInbound[P, R any](
 			return ConsumeOutcome[R]{Kind: OutcomeSuppressed, Reason: reason}
 		}
 		return ConsumeOutcome[R]{Kind: OutcomeRejected, Error: errorResponse}
+	}
+
+	// §7.2 item 3 — Doc's type is the specification Spec describes. Decoding into
+	// Document[P] does not look at the type, so a document of another
+	// specification whose payload happens to decode as P would otherwise run under
+	// Spec's policy and Handler. Refused before the item-11 claim, so a refused
+	// document never burns its id.
+	if reason := typeRefusalFor(doc.Type, opts.Spec, opts.Extends); reason != nil {
+		return route(reason), nil
 	}
 
 	// §7.2 item 2 — payload schema. Runs first, in the spec's own order, and

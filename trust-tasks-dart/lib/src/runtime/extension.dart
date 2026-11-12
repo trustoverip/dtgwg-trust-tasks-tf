@@ -52,9 +52,9 @@ import 'type_uri.dart';
 ///
 /// [index] defaults to the generated one, which covers the public registry; a
 /// consumer of third-party (§6.5) specifications passes its own, keyed the
-/// same way, by bare request Type URI. A cycle — which the build refuses,
-/// since `extends` must name an earlier version — ends the walk rather than
-/// looping, as does a link that is not a `MAJOR.MINOR`.
+/// same way, by bare request Type URI. A link that is not a strictly earlier
+/// MINOR of the same MAJOR (which the build refuses, and which includes any
+/// cycle) ends the walk, as does a link that is not a `MAJOR.MINOR`.
 List<String> extensionChain(
   String typeUri, {
   Map<String, String> index = generated.extendsIndex,
@@ -69,6 +69,9 @@ List<String> extensionChain(
     if (next == null) break;
     final version = parseTypeUriVersion(next);
     if (version == null) break;
+    // Only a strictly earlier MINOR of the same MAJOR is a link SPEC §5.2
+    // permits; anything else ends the walk, as in Rust and TypeScript.
+    if (version.$1 != current.major || version.$2 >= current.minor) break;
     current = current.withVersion(version.$1, version.$2);
     if (!seen.add(current.version)) break;
     chain.add(current.version);
@@ -231,6 +234,42 @@ VersionRead<P> readForVersion<P>(
     received: received,
     forward: true,
   );
+}
+
+/// The SPEC §7.2 item 3 check `consumeInbound` runs: null when a document typed
+/// [type] may be consumed under [spec], otherwise the reason to refuse it.
+///
+/// It may when [type] is [spec]'s Type URI (`#request` and no fragment are one
+/// variant), or a later version of the same specification and variant whose
+/// `extends` chain, per [index], reaches [spec]'s (SPEC §5.2). Otherwise
+/// `unsupportedVersion` for the same specification and variant, and
+/// `unsupportedType` for anything else — the refusals [readForVersion] gives.
+RejectReason? typeRefusalFor(
+  String type,
+  SpecPolicy spec, {
+  Map<String, String> index = generated.extendsIndex,
+}) {
+  if (type == spec.typeUri) return null;
+  final receivedBare = bareTypeUri(type);
+  final implementedBare = bareTypeUri(spec.typeUri);
+  final sameVariant = _variantOf(type) == _variantOf(spec.typeUri);
+  if (sameVariant && receivedBare == implementedBare) return null;
+  final r = TypeUri.tryParse(receivedBare);
+  final i = TypeUri.tryParse(implementedBare);
+  if (!sameVariant || r == null || i == null || !r.isSameSpecification(i)) {
+    return RejectReason(
+      code: StandardCode.unsupportedType,
+      message: 'this consumer does not implement $type',
+    );
+  }
+  if (!extendsTo(receivedBare, implementedBare, index: index)) {
+    return RejectReason(
+      code: StandardCode.unsupportedVersion,
+      message: 'version ${r.version} is not supported, and does not declare '
+          'that it extends ${i.version} (SPEC §5.2)',
+    );
+  }
+  return null;
 }
 
 /// [payload] with every object member [schemaJson] does not know removed, where
