@@ -6,6 +6,7 @@ rust-version = "1.95"
 license.workspace = true
 repository.workspace = true
 description = "Client-side wire helpers for the capability Trust Task families (governance/capability/*, git-trust/*): document builders, envelope parsing, reply classification. Shared by capability producers (community services) and management UIs so the two cannot drift."
+readme = "README.md"
 keywords = ["trust-tasks", "capability", "governance", "did", "client"]
 categories = ["encoding", "web-programming"]
 publish = true

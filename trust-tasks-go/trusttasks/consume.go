@@ -1,8 +1,8 @@
 package trusttasks
 
-// Inbound-document orchestration for SPEC.md §7.2 item 2, items 4–8, and the two
-// stateful checks — the freshness bound of item 4 and the duplicate-execution
-// record of item 11.
+// Inbound-document orchestration for SPEC.md §7.2 items 2–8 and the two stateful
+// checks — the duplicate-execution record of item 11 and the freshness bound of
+// item 13.
 //
 // Mirrors consume.rs in trust-tasks-rs and consume.ts in @openvtc/trust-tasks,
 // deliberately closely: a Go consumer and a Rust or TypeScript one must reach the
@@ -11,18 +11,18 @@ package trusttasks
 //
 //	guard := trusttasks.NewInMemoryReplayGuard(0) // one guard per consumer: it IS the record
 //
-//	outcome, err := trusttasks.ConsumeInbound(ctx, trusttasks.ConsumeOptions[aclgrantv0_2.Payload, aclgrantv0_2.Response]{
+//	outcome, err := trusttasks.ConsumeInbound(ctx, trusttasks.ConsumeOptions[aclgrantv0_3.Payload, aclgrantv0_3.Response]{
 //	    Transport:     transport,
-//	    Spec:          aclgrantv0_2.Spec,
+//	    Spec:          aclgrantv0_3.Spec,
 //	    ProofPolicy:   trusttasks.ProofPolicy{Kind: trusttasks.ProofVerify, Verifier: myVerifier},
 //	    PayloadPolicy: trusttasks.PayloadPolicy{Kind: trusttasks.PayloadValidate, Validator: myValidator},
 //	    Checks:        trusttasks.ConsequentialChecks(guard), // acl/grant is consequential
 //	    Doc:           doc,
 //	    MyVID:         "did:web:maintainer.example",
 //	    Now:           time.Now(),
-//	    NewErrorID:    uuid.NewString,
-//	    Handler: func(ctx context.Context, doc *trusttasks.Document[aclgrantv0_2.Payload], parties trusttasks.ResolvedParties) (*trusttasks.Document[aclgrantv0_2.Response], error) {
-//	        return trusttasks.RespondWith(doc, uuid.NewString(), buildResponse(parties), nil), nil
+//	    NewErrorID:    newID, // any func() string minting a unique id
+//	    Handler: func(ctx context.Context, doc *trusttasks.Document[aclgrantv0_3.Payload], parties trusttasks.ResolvedParties) (*trusttasks.Document[aclgrantv0_3.Response], error) {
+//	        return trusttasks.RespondWith(doc, newID(), buildResponse(parties), nil), nil
 //	    },
 //	})
 //

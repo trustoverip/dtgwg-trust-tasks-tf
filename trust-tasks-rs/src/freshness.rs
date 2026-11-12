@@ -26,8 +26,13 @@
 //! # Choosing a policy
 //!
 //! [`FreshnessPolicy::default`] enforces only the two internal-consistency
-//! rules, which no conforming producer can fail. It is the policy
-//! [`consume_inbound`](crate::consume_inbound) applies.
+//! rules, which no conforming producer can fail. It is **not** what
+//! [`consume_inbound`](crate::consume_inbound) applies on its own:
+//! `consume_inbound` applies whatever the caller's
+//! [`ConsumeChecks`](crate::ConsumeChecks) carries —
+//! [`ConsumeChecks::consequential`](crate::ConsumeChecks::consequential)
+//! carries [`FreshnessPolicy::consequential`], and so, by default, do the
+//! guarded consumers of the binding crates.
 //!
 //! [`FreshnessPolicy::consequential`] is the posture §7.2's bounding paragraph
 //! describes: `issuedAt` REQUIRED, and a bounded acceptance window. Use it —

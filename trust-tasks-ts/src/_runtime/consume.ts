@@ -1,7 +1,7 @@
 /**
- * Inbound-document orchestration for SPEC.md §7.2 item 2, items 4–8, and the
- * two stateful checks — the freshness bound of item 4 and the
- * duplicate-execution record of item 11.
+ * Inbound-document orchestration for SPEC.md §7.2 items 2–8 and the two
+ * stateful checks — the duplicate-execution record of item 11 and the
+ * freshness bound of item 13.
  *
  * Hand-written. Mirrors `consume.rs` in trust-tasks-rs, deliberately closely:
  * a TypeScript consumer and a Rust one must reach the same verdict on the same
@@ -10,15 +10,16 @@
  * ```ts
  * import {
  *   consequentialChecks, consumeInbound, InMemoryReplayGuard,
- *   StaticTransport, AclGrant_v0_2,
- * } from "@openvtc/trust-tasks";
+ *   respondWith, StaticTransport,
+ * } from "@openvtc/trust-tasks/runtime";
+ * import { AclGrant_v0_3 } from "./trust-tasks/index.js"; // trust-tasks-gen-ts
  *
  * // One guard per consumer, not one per document: it *is* the record.
  * const guard = new InMemoryReplayGuard();
  *
  * const outcome = await consumeInbound({
  *   transport,
- *   spec: AclGrant_v0_2.SPEC,
+ *   spec: AclGrant_v0_3.SPEC,
  *   proofPolicy: { kind: "verify", verify: myVerifier },
  *   // ajv, or whatever validator you already run — see PayloadPolicy.
  *   payloadPolicy: { kind: "validate", validate: myValidator },
@@ -48,19 +49,17 @@
  * Item 1 (framework schema) is checked only as far as every later step relies
  * on it: the envelope members' types and a nesting bound (`validateEnvelope`),
  * refused `malformedRequest` before anything else reads the document. Formats
- * are left to the steps that read them. Item 3 (unknown `type`) is not
- * attempted here — it belongs to the caller's dispatch.
+ * are left to the steps that read them. Item 3 is checked here: a document
+ * whose `type` is neither `spec.typeUri` nor a later version whose `extends`
+ * chain reaches it is refused `unsupportedVersion` (same specification) or
+ * `unsupportedType` (another), before the item-11 record is written.
  *
- * Item 2 (payload schema) used to be on that list, on the same reasoning: "by
- * the time you hold a typed document it has already succeeded." That was never
- * true in TypeScript. `TrustTaskDocument<P>` is a compile-time type and erases
- * to nothing; a `JSON.parse` result cast to it has been checked by no one. The
- * package also shipped no schema a caller could have validated against even if
- * they had wanted to, so the step was delegated to a caller who had no way to
- * perform it — and every REQUIRED payload member was optional in practice.
- *
- * The schema now travels on the generated `SPEC` / `RESPONSE_SPEC`, and
- * `payloadPolicy` decides what to do with it. See {@link PayloadPolicy}.
+ * Item 2 (payload schema) is checked here too, as `payloadPolicy` directs.
+ * `TrustTaskDocument<P>` is a compile-time type and erases to nothing — a
+ * `JSON.parse` result cast to it has been checked by no one — so holding a
+ * typed document establishes nothing about its payload. The schema travels on
+ * the generated `SPEC` / `RESPONSE_SPEC` as `payloadSchema`. See
+ * {@link PayloadPolicy}.
  */
 
 import {

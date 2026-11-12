@@ -107,7 +107,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut request = request;
     request.issuer = Some(my_did.clone());
     request.recipient = Some("did:web:maintainer.example".into());
-    request.issued_at = Some(chrono::Utc::now());
+    request.issued_at = Some(trust_tasks_rs::issued_at_now());
     request.sign(&secret, SignOptions::new()).await?;
 
     println!(

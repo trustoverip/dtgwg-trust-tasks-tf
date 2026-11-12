@@ -1,6 +1,6 @@
 # trust-tasks-https
 
-HTTPS transport binding for the [Trust Tasks](https://trusttasks.org/) framework. A typed [`HttpsClient`](src/client.rs) (reqwest) and an axum-based [`HttpsServer`](src/server.rs) that together implement [SPEC.md §9](../SPEC.md#9-transport-bindings) over HTTP/1.1 with bearer-token identity authentication — enough for demos, mockups, and end-to-end testing without standing up mTLS or DIDComm.
+HTTPS transport binding for the [Trust Tasks](https://trusttasks.org/) framework. A typed [`HttpsClient`](src/client.rs) (reqwest) and an axum-based [`HttpsServer`](src/server.rs) that together implement [SPEC.md §9](../SPEC.md#9-transport-bindings) over HTTP/1.1 with bearer-token identity authentication. Both ends are secure by default (see [Security defaults](#security-defaults)); the one demo-grade part is the static `BearerAuth` token map, which a deployment replaces with its own `Auth`.
 
 ## Binding URI
 
@@ -127,4 +127,4 @@ The crate's name says HTTPS but the server- and client-side examples use plain H
 
 ## Security notes
 
-The bearer-auth model in this crate is intentionally simple, intended for demos and end-to-end testing. Production deployments SHOULD plug in a real [`Auth`](src/auth.rs) implementation backed by a token-issuing identity provider, JWT verification, or peer-certificate validation. Several of the framework-level security properties (audience binding, identity-mismatch routing, retry semantics, error-message sanitisation) are enforced regardless of which `Auth` you use; see [`SPEC.md` §12](../SPEC.md#12-security-considerations) and [`trust-tasks-rs`](../trust-tasks-rs/README.md).
+`BearerAuth`, the static token map, is intentionally simple, intended for demos and end-to-end testing. Production deployments SHOULD plug in a real [`Auth`](src/auth.rs) implementation backed by a token-issuing identity provider, JWT verification, or peer-certificate validation. Several of the framework-level security properties (audience binding, identity-mismatch routing, retry semantics, error-message sanitisation) are enforced regardless of which `Auth` you use; see [`SPEC.md` §12](../SPEC.md#12-security-considerations) and [`trust-tasks-rs`](../trust-tasks-rs/README.md).

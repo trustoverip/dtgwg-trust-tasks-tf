@@ -15,10 +15,12 @@ Contributing rather than releasing? You only need
 
 **Two rules.**
 
-1. **Never edit a `version = ` field in a `Cargo.toml`, or `"version"` in
-   `trust-tasks-ts/package.json`.** Versions are assigned by the Release PR,
-   not by you. A version in a feature PR collides with every other PR touching
-   that package.
+1. **Never edit a package version.** That is `version = ` in a `Cargo.toml`,
+   `"version"` in any `package.json`, `const Version` in a Go module's
+   `version.go`, and `version:` in a `pubspec.yaml` (with its mirror
+   `packageVersion` in `trust-tasks-dart/lib/src/runtime/version.dart`).
+   Versions are assigned by the Release PR, not by you. A version in a feature
+   PR collides with every other PR touching that package.
 2. **Write a conventional-commit PR title.** PRs squash-merge, so the title
    becomes the commit subject — and that subject is both the changelog entry
    published to crates.io and npm, and the signal that decides how far the
@@ -36,7 +38,8 @@ Types: `feat` `fix` `docs` `test` `ci` `build` `perf` `refactor` `chore`
 under `website/`; it reaches no published package.)
 
 **`!` is for a package's API, not for wire behaviour — and CI enforces it.**
-All eight core crates release as one group, and the npm, Go and Dart bump
+The core crates (the `core` version group in `release-plz.toml`) release as
+one version, and the npm, Go and Dart bump
 scripts read the same `!`, so one `!` makes every package a breaking release.
 Write it only when a library's public API breaks — a removed or renamed type,
 member or function, a changed signature — and scope it to the package
@@ -99,13 +102,14 @@ no hand-written entries.
 
 ## What gets published
 
-**Ten crates, one npm package, one Go module and four Dart packages.**
-`trust-tasks-codegen` sets
-`publish = false` in its own `Cargo.toml` — it is the internal generator.
+Every package in the table below. `trust-tasks-codegen` sets `publish = false`
+in its own `Cargo.toml` — it is the internal generator. The authoritative lists
+are the manifests (for crates) and the package arrays at the top of
+`scripts/release-pr.sh` (for everything else); this table describes them.
 
 | Package | Registry |
 |---|---|
-| `trust-tasks` | crates.io — the facade; re-exports the other eight behind features |
+| `trust-tasks` | crates.io — the facade; re-exports `trust-tasks-rs` and the transport, proof, ceremony and capability-client crates behind features |
 | `trust-tasks-rs` | crates.io — the generated types and the §7.2 consumer pipeline |
 | `trust-tasks-https`, `trust-tasks-didcomm`, `trust-tasks-didcomm-v1`, `trust-tasks-tsp` | crates.io — transport bindings |
 | `trust-tasks-proof` | crates.io — proof verification backend |
@@ -118,6 +122,16 @@ no hand-written entries.
 | `@openvtc/trust-tasks-tsp` | npm — the TSP transport binding, on `@openvtc/vti-tsp-js` |
 | `@openvtc/trust-tasks-capability-client` | npm — capability/`git-trust` document builders + reply parsing, no crypto |
 | `@openvtc/trust-tasks-gen` | npm — `trust-tasks-gen-ts`: generates TypeScript modules for the versions pinned in `trust-tasks.lock`, importing the runtime from `@openvtc/trust-tasks/runtime` (0.27.8 or later). First published by hand at 0.1.0 (anchor tag `trust-tasks-ts-gen-v0.1.0`); released like the other npm packages since |
+| `trust-tasks-go` | none — a Go module is published by pushing a `trust-tasks-go/vX.Y.Z` tag, after which `proxy.golang.org` serves it |
+| `trust-tasks-go/proof` | none — a **separate** nested Go module (Data Integrity proofs), released on its own `trust-tasks-go/proof/vX.Y.Z` tag, independently of the core. It has a `version.go`, a `publish-go` matrix leg and a `GO_MODULES` entry in `scripts/release-pr.sh` like the core. No manual first publish — a Go tag is self-bootstrapping. |
+| `trust-tasks-go/didcomm` | none — a **separate** nested Go module (DIDComm v2 binding), released on its own `trust-tasks-go/didcomm/vX.Y.Z` tag, the same way as `proof`. |
+| `trust-tasks-go/capabilityclient` | none — a **separate** nested Go module (capability wire client), released on its own `trust-tasks-go/capabilityclient/vX.Y.Z` tag, the same way as `proof`. |
+| `trust-tasks-go/tsp` | none — a **separate** nested Go module for the TSP binding, published by pushing a `trust-tasks-go/tsp/vX.Y.Z` tag. **Not released yet**: its dependency `affinidi-tsp-go` has no tag, so it is required at a pseudo-version and a release waits until that is tagged. `go get` of the module already resolves the pseudo-version from the public repo. It is a separate module so the core stays dependency-free. |
+| `trust_tasks` | pub.dev — the Dart bindings, published by pushing a `trust-tasks-dart-vX.Y.Z` tag, which triggers the publishing workflow |
+| `trust_tasks_proof` | pub.dev — Data Integrity proof verification for `trust_tasks`, published the same way from a `trust-tasks-dart-proof-vX.Y.Z` tag |
+| `trust_tasks_https` | pub.dev — the HTTPS transport binding, from a `trust-tasks-dart-https-vX.Y.Z` tag |
+| `trust_tasks_didcomm` | pub.dev — the DIDComm v2.1 transport binding, from a `trust-tasks-dart-didcomm-vX.Y.Z` tag |
+| `trust_tasks_capability_client` | pub.dev — capability/`git-trust` document builders + reply parsing, no crypto, from a `trust-tasks-dart-capability-client-vX.Y.Z` tag |
 
 > ⚠️ **First publish of each new npm package is manual**, the same chicken-and-egg
 > as pub.dev: npm trusted publishing cannot create a package that does not exist.
@@ -140,15 +154,6 @@ no hand-written entries.
 > After that the package rides along: `release-pr` bumps it and `publish-npm`
 > publishes it, once per package (keyed on its directory and `<prefix>-v` tag), and the first
 > *automated* release is the version after the manual one.
-| `trust-tasks-go` | none — a Go module is published by pushing a `trust-tasks-go/vX.Y.Z` tag, after which `proxy.golang.org` serves it |
-| `trust-tasks-go/proof` | none — a **separate** nested Go module (Data Integrity proofs), released on its own `trust-tasks-go/proof/vX.Y.Z` tag, independently of the core. It has a `version.go`, a `publish-go` matrix leg and a `GO_MODULES` entry in `scripts/release-pr.sh` like the core. No manual first publish — a Go tag is self-bootstrapping. |
-| `trust-tasks-go/didcomm` | none — a **separate** nested Go module (DIDComm v2 binding), released on its own `trust-tasks-go/didcomm/vX.Y.Z` tag, the same way as `proof`. |
-| `trust-tasks-go/capabilityclient` | none — a **separate** nested Go module (capability wire client), released on its own `trust-tasks-go/capabilityclient/vX.Y.Z` tag, the same way as `proof`. |
-| `trust-tasks-go/tsp` | none — a **separate** nested Go module for the TSP binding, published by pushing a `trust-tasks-go/tsp/vX.Y.Z` tag. **Not released yet**: its dependency `affinidi-tsp-go` has no tag, so it is required at a pseudo-version and a release waits until that is tagged. `go get` of the module already resolves the pseudo-version from the public repo. It is a separate module so the core stays dependency-free. |
-| `trust_tasks` | pub.dev — the Dart bindings, published by pushing a `trust-tasks-dart-vX.Y.Z` tag, which triggers the publishing workflow |
-| `trust_tasks_proof` | pub.dev — Data Integrity proof verification for `trust_tasks`, published the same way from a `trust-tasks-dart-proof-vX.Y.Z` tag |
-| `trust_tasks_https` | pub.dev — the HTTPS transport binding, from a `trust-tasks-dart-https-vX.Y.Z` tag |
-| `trust_tasks_didcomm` | pub.dev — the DIDComm v2.1 transport binding, from a `trust-tasks-dart-didcomm-vX.Y.Z` tag |
 
 > ⚠️ **A green `npm publish` can still leave the version unpublished.** npm
 > *stages* a CI upload, holding it out of public view until a maintainer
@@ -318,17 +323,20 @@ recomputes.
 
 That's the release.
 
-Merging the crates PR triggers `release-plz-release`, which tags each crate
+Merging it runs, on the push to `main`, one publish path per language; each
+does nothing for a package whose version is already on its registry.
+
+**Crates.** `release-plz-release` tags each crate
 (`<crate>-v<version>`), publishes to crates.io in dependency order, and creates
 a GitHub Release per crate carrying its changelog section.
 
-Merging the npm PR triggers `build-npm`, which builds and packs the package,
-then `publish-npm`, which publishes that tarball with OIDC provenance and pushes the `trust-tasks-ts-v<version>` tag that the
-*next* Release PR measures the npm package from.
+**npm.** `build-npm` builds and packs each package, then `publish-npm`
+publishes that tarball with OIDC provenance and pushes the `<prefix>-v<version>`
+tag (`trust-tasks-ts-v<version>` for the core) that the *next* Release PR
+measures the package from.
 
-Merging the Dart PR triggers `verify-dart`, which checks the package analyses,
-tests and dry-run-publishes, then `tag-dart`, which pushes
-`trust-tasks-dart-v<version>`. That tag
+**Dart.** `verify-dart` checks each package analyses, tests and
+dry-run-publishes, then `tag-dart` pushes `trust-tasks-dart[-<name>]-v<version>`. That tag
 triggers `publish-dart.yml`, which publishes to pub.dev over OIDC. **pub.dev only
 accepts a publish from a tag-triggered workflow** — it checks that in the OIDC
 token's claims — which is why Dart needs two workflows where the others need one.
@@ -366,8 +374,8 @@ into a failed run.
 > to delete and re-push the tag from a workstation, which is an ordinary
 > authenticated push and does trigger the workflow.
 
-Merging the Go PR triggers `verify-go`, which checks the module builds and
-its tests pass, then `publish-go`, which pushes the `trust-tasks-go/v<version>` tag, and asks
+**Go.** `verify-go` checks each module builds and its tests pass, then
+`publish-go` pushes the `trust-tasks-go[/<name>]/v<version>` tag and asks
 `proxy.golang.org` to index it. That tag is both the publication and the anchor
 the *next* Release PR measures the Go module from — unlike the other two, there is no
 separate release tag, because the go tooling requires this exact spelling for a
@@ -503,8 +511,9 @@ usually fixes it, because the missing crate is on crates.io by then.
   tag proves nothing. `0.1.1` is the first release the automation actually
   performs end to end.
 
-  **The same applies to every new Dart package.** For `trust_tasks_proof` and
-  `trust_tasks_https` (both done 2026-09-16) and `trust_tasks_didcomm`: once its PR has merged, run
+  **The same applies to every new Dart package.** (`trust_tasks_proof`,
+  `trust_tasks_https`, `trust_tasks_didcomm` and `trust_tasks_capability_client`
+  have all had theirs.) Once its PR has merged, run
   `dart pub publish` from the package's directory
   signed in as a user. Leave `pubspec_overrides.yaml` where it is — pub never
   uploads it, and says so with a hint rather than a warning. Then enable
@@ -531,12 +540,6 @@ usually fixes it, because the missing crate is on crates.io by then.
   pub.dev: remove the git override from `trust-tasks-dart-tsp/pubspec_overrides.yaml`,
   add the four release entries, and do the manual first publish.
 
-  **`trust_tasks_capability_client` is also tested-but-unreleased**, but for a
-  different reason: nothing blocks it (it depends only on the published
-  `trust_tasks`). It is in the `dart.yml` `packages` job and left out of the
-  release entries purely because its first pub.dev publish is manual — do that
-  publish, add the five entries above, and flip its website matrix cell to
-  shipped, as one follow-up.
 - **Nothing at all for Go.** A Go module is published by pushing a tag to a
   public repository; `proxy.golang.org` does the rest. There is no account to
   own, no token to rotate and no Trusted Publisher to misconfigure. The one
@@ -544,37 +547,17 @@ usually fixes it, because the missing crate is on crates.io by then.
   cannot fetch a private one, and `go get` would fall back to a direct clone
   that most consumers cannot authenticate.
 
-### One-time migration
+### Release anchor tags
 
 release-plz decides *whether* a crate changed by comparing its packaged files
-against the tarball on crates.io, so it will find the right bump with no tags at
-all. It decides *what the changelog says* from the commits since that crate's
-`<crate>-v<version>` tag — and `scripts/release-bump-ts.sh` uses its tag for both.
-No such tags exist in this repo. Seed them once at the current `main` — every
-version there is already published — **before trusting the first Release PR**:
-
-```bash
-git switch main && git pull
-for c in trust-tasks trust-tasks-rs trust-tasks-https trust-tasks-didcomm \
-         trust-tasks-didcomm-v1 trust-tasks-proof trust-tasks-tsp \
-         trust-tasks-capability-client trust-tasks-ceremony; do
-  v=$(grep -m1 '^version = ' "$c/Cargo.toml" | cut -d'"' -f2)
-  git tag -s "$c-v$v" -m "$c $v"
-done
-v=$(node -p "require('./trust-tasks-ts/package.json').version")
-git tag -s "trust-tasks-ts-v$v" -m "@openvtc/trust-tasks $v"
-git push origin --tags
-```
-
-**Do not hand-seed the Go tag.** It is not in the list above on purpose — see
-the next section.
-
-Without these:
-
-- the first Release PR bumps crate versions correctly but produces **empty
-  changelog sections** — there is no range for it to read commits from;
-- the `release-pr` job **fails loudly** with "No trust-tasks-ts-v\* tag
-  exists", by design, rather than proposing a bump from nothing.
+against the tarball on crates.io, but *what the changelog says* from the
+commits since that crate's `<crate>-v<version>` tag; the npm and Dart bump
+scripts use their package's tag for both. Every released package has its tag —
+they were seeded once when this flow was adopted, and each release writes the
+next. A **new** package gets its first tag from its manual first publish (the
+steps above). If a tag is ever missing, the first Release PR after it produces
+an empty changelog section for a crate, and `release-pr` fails loudly for an npm
+or Dart package rather than propose a bump from nothing.
 
 ### The Go module seeds itself — do not tag it by hand
 
@@ -600,22 +583,6 @@ That asymmetry is why `publish-go` runs `go build`, `go vet` and `go test`
 from a local checkout skips those checks and can publish a tree that was never
 verified. If a release is genuinely stuck, fix `Version` and let the workflow
 tag it.
-
-At the time of writing the tree and both registries agree exactly, which is what
-makes this migration clean:
-
-| | manifest | registry |
-|---|---|---|
-| `trust-tasks` | 0.2.0 | 0.2.0 |
-| `trust-tasks-rs` | 0.14.0 | 0.14.0 |
-| `trust-tasks-https` | 0.16.0 | 0.16.0 |
-| `trust-tasks-didcomm` | 0.15.0 | 0.15.0 |
-| `trust-tasks-didcomm-v1` | 0.14.0 | 0.14.0 |
-| `trust-tasks-proof` | 0.13.0 | 0.13.0 |
-| `trust-tasks-tsp` | 0.14.0 | 0.14.0 |
-| `trust-tasks-capability-client` | 0.14.0 | 0.14.0 |
-| `trust-tasks-ceremony` | 0.2.0 | 0.2.0 |
-| `@openvtc/trust-tasks` | 0.15.0 | 0.15.0 |
 
 ---
 
