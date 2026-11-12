@@ -26,22 +26,22 @@ anyhow = "1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 toml = "1"
-sha2 = "0.10"
-typify = "0.6"
+sha2 = "0.11"
+typify = "0.8"
 # Pinned to 0.8 by `typify`: the root schema is handed to typify as a
 # `schemars::RootSchema`, so the majors must match (see trust-tasks-codegen).
-schemars = "0.8"
-prettyplease = "0.2"
-syn = { version = "2", features = ["full", "visit-mut"] }
+schemars = "1.2"
+prettyplease = "0.3"
+syn = { version = "3", features = ["full", "visit-mut"] }
 proc-macro2 = "1"
 quote = "1"
 heck = "0.5"
 # Front matter (`publish` only). Safe-Rust YAML; serde_yaml pulls the
 # unmaintained unsafe-libyaml (RUSTSEC-2024-0449).
-serde-saphyr = { version = "1", optional = true }
+serde-saphyr = { version = "2", optional = true }
 
 [dev-dependencies]
-serde-saphyr = "1"
+serde-saphyr = "2"
 
 [package.metadata.docs.rs]
 all-features = true

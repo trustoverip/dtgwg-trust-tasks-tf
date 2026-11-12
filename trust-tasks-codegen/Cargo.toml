@@ -22,14 +22,14 @@ anyhow = "1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 toml = "1"
-typify = "0.6"
+typify = "0.8"
 # Pinned to 0.8 by `typify`: this crate hands typify a `schemars::RootSchema`,
 # so our schemars major must match typify's. typify (through 0.7) still depends
 # on schemars 0.8, so schemars 1.x is not adoptable here until typify migrates.
 # This is a `publish = false` build tool with no security advisory on schemars.
-schemars = "0.8"
-prettyplease = "0.2"
-syn = { version = "2", features = ["full", "visit-mut"] }
+schemars = "1.2"
+prettyplease = "0.3"
+syn = { version = "3", features = ["full", "visit-mut"] }
 proc-macro2 = "1"
 quote = "1"
 heck = "0.5"
