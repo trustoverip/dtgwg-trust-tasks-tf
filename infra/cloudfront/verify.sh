@@ -67,8 +67,17 @@ check /ceremonies/vtc/member-onboarding/0.1/ceremony.json application/json json 
 # it failed to parse if both arrive as the site shell under a 200.
 check_status /ceremony/does-not-exist/9.9 application/json 404
 # A Type URI asked for as plain JSON is not a definition — the two subtrees must
-# not leak into each other. The SPA shell is the correct answer here.
-check_status /spec/acl/grant/0.1 application/json 200
+# not leak into each other. It names nothing negotiable, so it is a 404 (#1152);
+# it used to be the SPA shell under a 200.
+check_status /spec/acl/grant/0.1 application/json 404
+# Malformed Type URIs asked for as a schema: outside the slug grammar, and with
+# no version. A browser still gets the shell for both.
+check_status /spec/Nope/0.1 application/schema+json 404
+check_status /spec/acl/grant application/schema+json 404
+check_status /spec/acl/grant 'text/html' 200
+# Root files the build writes (#1150); without a ROOT_FILES entry each is the shell.
+check /robots.txt '*/*' 'text/plain' 'Sitemap:'
+check /sitemap.xml '*/*' 'xml' '<urlset'
 
 if (( fails )); then
   echo "$fails check(s) failed — if the function is not yet associated, that is expected (see README.md)."
