@@ -128,10 +128,6 @@ final class DataIntegrityProofVerifier implements ProofVerifier {
   final ssi.DidResolver _resolver;
   final DateTime Function() _clock;
 
-  static final _dateTimeStamp = RegExp(
-    r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$',
-  );
-
   @override
   Future<bool> verify(Map<String, dynamic> doc) async =>
       (await verifyDetailed(doc)).isValid;
@@ -178,16 +174,19 @@ final class DataIntegrityProofVerifier implements ProofVerifier {
     // offset. An offset-less value is refused rather than guessed at, which is
     // also what the Rust verifier does; DateTime.parse would read it as *local*
     // time, while the specification says to read it as UTC.
+    // Every field must be in range, as for `expires`: DateTime.parse rolls
+    // month 13 or February 30 over into a later date instead of refusing it.
     final created = proof['created'];
     if (created != null) {
-      if (created is! String || !_dateTimeStamp.hasMatch(created)) {
+      final at = created is String ? parseDateTimeStamp(created) : null;
+      if (at == null) {
         return _malformed(
           'proof.created must be a dateTimeStamp with Z or an offset: $created',
         );
       }
       final horizon =
           _clock().add(clockSkew.isNegative ? Duration.zero : clockSkew);
-      if (DateTime.parse(created).isAfter(horizon)) {
+      if (at.isAfter(horizon)) {
         return _malformed(
           'proof.created is in the future beyond the '
           '${clockSkew.inSeconds}s clock-skew allowance',

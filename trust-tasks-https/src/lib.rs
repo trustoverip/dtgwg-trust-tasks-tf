@@ -80,11 +80,12 @@ pub use status::status_for_code;
 
 #[cfg(feature = "client")]
 pub use client::{
-    ClientError, HttpsClient, HttpsClientBuilder, DEFAULT_CONNECT_TIMEOUT, DEFAULT_TIMEOUT,
+    ClientError, HttpsClient, HttpsClientBuilder, DEFAULT_CONNECT_TIMEOUT,
+    DEFAULT_MAX_RESPONSE_BYTES, DEFAULT_TIMEOUT,
 };
 
 #[cfg(feature = "server")]
 pub use server::{
-    HttpsServer, HttpsServerBuilder, RequestContext, DEFAULT_MAX_CONCURRENT_REQUESTS,
-    DEFAULT_REQUEST_TIMEOUT, MAX_BODY_BYTES,
+    HttpsServer, HttpsServerBuilder, RequestContext, DEFAULT_ALLOWED_DID_METHODS,
+    DEFAULT_MAX_CONCURRENT_REQUESTS, DEFAULT_REQUEST_TIMEOUT, MAX_BODY_BYTES,
 };

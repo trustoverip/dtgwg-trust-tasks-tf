@@ -126,6 +126,36 @@
       "why": "`expires` carries the offset +99:00; an offset is at most 14:00. Every runtime checks each field of `expires` against its range after the shared pattern, rather than relying on its language's own date parser, which in one runtime or another rolls the value over or accepts it."
     },
     {
+      "file": "eddsa-jcs-2022-created-february-30.json",
+      "cryptosuite": "eddsa-jcs-2022",
+      "expect": "invalid",
+      "why": "`created` is 2026-02-30T10:34:46Z: a day February does not have. `Date.parse` rolls it over into March. Correctly signed. Every runtime applies the ranges it applies to `expires` to `created` too, and refuses it as malformed."
+    },
+    {
+      "file": "eddsa-jcs-2022-created-hour-24.json",
+      "cryptosuite": "eddsa-jcs-2022",
+      "expect": "invalid",
+      "why": "`created` is 2026-09-15T24:00:00Z: hour 24. `Date.parse` reads it as the next day. Correctly signed. Every runtime applies the ranges it applies to `expires` to `created` too, and refuses it as malformed."
+    },
+    {
+      "file": "eddsa-jcs-2022-created-month-13.json",
+      "cryptosuite": "eddsa-jcs-2022",
+      "expect": "invalid",
+      "why": "`created` is 2026-13-45T25:61:61Z: month 13, day 45, hour 25, minute and second 61. `Date.parse` gives NaN, which compares false with the clock-skew horizon, and `DateTime.parse` rolls it over into 2027. Correctly signed. Every runtime applies the ranges it applies to `expires` to `created` too, and refuses it as malformed."
+    },
+    {
+      "file": "eddsa-jcs-2022-created-leap-second.json",
+      "cryptosuite": "eddsa-jcs-2022",
+      "expect": "invalid",
+      "why": "`created` is 2026-06-30T23:59:60Z: a leap second. chrono reads it as one. Correctly signed. Every runtime applies the ranges it applies to `expires` to `created` too, and refuses it as malformed."
+    },
+    {
+      "file": "eddsa-jcs-2022-created-offset-24-hours.json",
+      "cryptosuite": "eddsa-jcs-2022",
+      "expect": "invalid",
+      "why": "`created` is 2026-09-16T10:34:46+24:00: an offset of 24 hours. Go's `time.Parse` accepts it. Correctly signed. Every runtime applies the ranges it applies to `expires` to `created` too, and refuses it as malformed."
+    },
+    {
       "file": "eddsa-jcs-2022-small-order-key.json",
       "cryptosuite": "eddsa-jcs-2022",
       "expect": "invalid",

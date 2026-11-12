@@ -11,14 +11,17 @@
 package proof
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"math"
 	"sort"
 	"strconv"
 	"strings"
 	"unicode/utf16"
+	"unicode/utf8"
 )
 
 // canonicalize returns the RFC 8785 (JSON Canonicalization Scheme) form of
@@ -204,12 +207,156 @@ func format8785Number(f float64) (string, error) {
 // decode parses JSON into the generic tree canonicalize walks, keeping numbers
 // as json.Number so their exact lexical value survives to the canonicaliser
 // rather than being flattened through float64 twice.
+//
+// It is stricter than encoding/json, which keeps the last of two members with
+// the same name and silently replaces invalid UTF-8 and an unpaired surrogate
+// escape with U+FFFD. Either would let two different byte strings canonicalize
+// to the same JCS input, so one proof would cover both, while a reader of the
+// original bytes saw something else. RFC 8785 §3.1 requires I-JSON (RFC 7493),
+// which forbids all three, so decode refuses:
+//
+//   - input that is not valid UTF-8;
+//   - a \u escape naming a high surrogate not followed by a \u escape naming a
+//     low surrogate, or a low surrogate on its own;
+//   - an object with two members whose names are equal after unescaping;
+//   - anything after the first JSON value other than whitespace.
 func decode(data []byte) (any, error) {
-	dec := json.NewDecoder(strings.NewReader(string(data)))
+	if !utf8.Valid(data) {
+		return nil, errors.New("jcs: input is not valid UTF-8")
+	}
+	dec := json.NewDecoder(bytes.NewReader(data))
 	dec.UseNumber()
 	var v any
 	if err := dec.Decode(&v); err != nil {
 		return nil, err
 	}
+	if _, err := dec.Token(); err != io.EOF {
+		return nil, errors.New("jcs: unexpected data after the JSON value")
+	}
+	if err := checkSurrogateEscapes(data); err != nil {
+		return nil, err
+	}
+	if err := checkUniqueMemberNames(data); err != nil {
+		return nil, err
+	}
 	return v, nil
+}
+
+// checkSurrogateEscapes refuses an unpaired UTF-16 surrogate written as a \u
+// escape inside a string. data has already been parsed as JSON, so every
+// escape is well formed.
+func checkSurrogateEscapes(data []byte) error {
+	inString := false
+	for i := 0; i < len(data); i++ {
+		c := data[i]
+		if !inString {
+			if c == '"' {
+				inString = true
+			}
+			continue
+		}
+		switch c {
+		case '"':
+			inString = false
+		case '\\':
+			i++
+			if i >= len(data) || data[i] != 'u' {
+				continue
+			}
+			unit, ok := hex4(data, i+1)
+			if !ok {
+				return errors.New("jcs: malformed \\u escape")
+			}
+			i += 4
+			switch {
+			case unit >= 0xDC00 && unit <= 0xDFFF:
+				return fmt.Errorf("jcs: unpaired low surrogate \\u%04x", unit)
+			case unit >= 0xD800 && unit <= 0xDBFF:
+				if i+2 >= len(data) || data[i+1] != '\\' || data[i+2] != 'u' {
+					return fmt.Errorf("jcs: unpaired high surrogate \\u%04x", unit)
+				}
+				low, ok := hex4(data, i+3)
+				if !ok || low < 0xDC00 || low > 0xDFFF {
+					return fmt.Errorf("jcs: unpaired high surrogate \\u%04x", unit)
+				}
+				i += 6
+			}
+		}
+	}
+	return nil
+}
+
+func hex4(data []byte, at int) (uint16, bool) {
+	if at+4 > len(data) {
+		return 0, false
+	}
+	var u uint16
+	for _, c := range data[at : at+4] {
+		u <<= 4
+		switch {
+		case c >= '0' && c <= '9':
+			u |= uint16(c - '0')
+		case c >= 'a' && c <= 'f':
+			u |= uint16(c-'a') + 10
+		case c >= 'A' && c <= 'F':
+			u |= uint16(c-'A') + 10
+		default:
+			return 0, false
+		}
+	}
+	return u, true
+}
+
+// checkUniqueMemberNames refuses an object, at any depth, with two members
+// whose names are equal once unescaped ("a" and "\u0061" are the same name).
+func checkUniqueMemberNames(data []byte) error {
+	type frame struct {
+		object    bool
+		expectKey bool
+		names     map[string]struct{}
+	}
+	dec := json.NewDecoder(bytes.NewReader(data))
+	dec.UseNumber()
+	var stack []*frame
+	// valueDone records that the current container received a complete value,
+	// so an object's next token is a member name again.
+	valueDone := func() {
+		if n := len(stack); n > 0 && stack[n-1].object {
+			stack[n-1].expectKey = true
+		}
+	}
+	for {
+		tok, err := dec.Token()
+		if err == io.EOF {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+		if n := len(stack); n > 0 && stack[n-1].object && stack[n-1].expectKey {
+			if name, ok := tok.(string); ok {
+				top := stack[n-1]
+				if _, dup := top.names[name]; dup {
+					return fmt.Errorf("jcs: duplicate member name %q", name)
+				}
+				top.names[name] = struct{}{}
+				top.expectKey = false
+				continue
+			}
+		}
+		switch t := tok.(type) {
+		case json.Delim:
+			switch t {
+			case '{':
+				stack = append(stack, &frame{object: true, expectKey: true, names: map[string]struct{}{}})
+			case '[':
+				stack = append(stack, &frame{})
+			case '}', ']':
+				stack = stack[:len(stack)-1]
+				valueDone()
+			}
+		default:
+			valueDone()
+		}
+	}
 }

@@ -21,6 +21,7 @@ affinidi = [
     "dep:affinidi-encoding",
     "dep:affinidi-did-resolver-cache-sdk",
     "dep:affinidi-did-common",
+    "dep:tokio",
 ]
 # `ml-dsa` — switches on `affinidi-data-integrity`'s ML-DSA cryptosuites
 # (`mldsa44-jcs-2024`, `mldsa44-rdfc-2024`). An application that enables that
@@ -48,6 +49,9 @@ affinidi-encoding = { version = "0.1", optional = true }
 affinidi-did-resolver-cache-sdk = { version = "0.8.42", optional = true }
 # 0.4.2: `VerificationMethod::decode_public_key` (Multikey and JWK).
 affinidi-did-common = { version = "0.4.4", optional = true }
+# `CachedDidResolver`'s per-resolution deadline. Already in every graph that
+# enables `affinidi`, through the resolver cache SDK.
+tokio = { version = "1", default-features = false, features = ["time"], optional = true }
 
 [dev-dependencies]
 # The tests, examples and doc examples build real tasks.
