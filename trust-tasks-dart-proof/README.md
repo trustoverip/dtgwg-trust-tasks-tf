@@ -70,7 +70,15 @@ library, verified and then tampered with.
    small-order key satisfies the verification equation for any message with a
    chosen signature; ssi 4 refuses it, and ssi 3.9 does not, so this package
    checks it whichever ssi resolves.
-8. The signature verifies over the document minus its `proof`, using that key.
+8. A proof that carries `@context` carries the document's `@context`, exactly
+   (eddsa-jcs-2022 / ecdsa-jcs-2019 §3.3.2 step 4 checks only that the
+   document's starts with the proof's; this verifier returns no document, so
+   it does not accept `@context` entries the signature does not cover).
+   Otherwise the proof is refused as `malformedProof`.
+9. The signature verifies over the proof configuration (the proof minus
+   `proofValue`, exactly as received) and the document minus its `proof`,
+   using that key. `signTrustTask` copies a document's `@context` into the
+   proof, as the cryptosuites' Create Proof algorithm requires.
 
 Two cases where this package refuses what `trust-tasks-proof` (Rust) accepts:
 
@@ -103,7 +111,7 @@ you accept `did:web`, prefer a resolver that caches and bounds its fetches.
 |---|---|
 | `eddsa-jcs-2022` | ✓ |
 | `ecdsa-jcs-2019` | ✓ P-256. P-384 too, but the Rust crate (through `affinidi-data-integrity` 0.7.11) accepts only P-256 for this suite, so use P-256 when a Rust peer must verify |
-| `eddsa-rdfc-2022`, `ecdsa-rdfc-2019` | — a Trust Task document has no JSON-LD `@context`, so there is nothing for RDF canonicalization to expand |
+| `eddsa-rdfc-2022`, `ecdsa-rdfc-2019` | — a Trust Task document is JSON whether or not it carries `@context` (SPEC §4.7.1), so it is never expanded for RDF canonicalization |
 | ML-DSA suites | — see below |
 
 Pass `cryptosuites:` to either constructor to accept a subset.

@@ -153,6 +153,101 @@ func TestInteropReproducesRustSignatureByteForByte(t *testing.T) {
 	}
 }
 
+// The shared @context vector: eddsa-jcs-2022 §3.3.1 step 2 copies the
+// document's @context into the proof, and every signer reproduces its
+// proofValue byte for byte.
+func TestReproducesSharedContextVectorByteForByte(t *testing.T) {
+	b, err := os.ReadFile("../../fixtures/proof/eddsa-jcs-2022-context.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	signer, err := SignerFromPrivateKey(Ed25519, bytes.Repeat([]byte{7}, 32))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var vector map[string]any
+	if err := json.Unmarshal(b, &vector); err != nil {
+		t.Fatal(err)
+	}
+	want := vector["proof"].(map[string]any)
+	created, err := time.Parse(time.RFC3339, want["created"].(string))
+	if err != nil {
+		t.Fatal(err)
+	}
+	signed, err := signer.Sign(b, SignOptions{Created: created, ProofPurpose: want["proofPurpose"].(string)})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var out map[string]any
+	if err := json.Unmarshal(signed, &out); err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(out["proof"], want) {
+		t.Errorf("reproduced proof does not match the shared vector\n got: %#v\nwant: %#v", out["proof"], want)
+	}
+}
+
+func TestDocumentWithoutContextGetsProofWithoutContext(t *testing.T) {
+	signer := seededSigner(t, Ed25519, 1)
+	signed, err := signer.Sign(grant(t, signer.DID, "admin"), SignOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var out map[string]any
+	if err := json.Unmarshal(signed, &out); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := out["proof"].(map[string]any)["@context"]; ok {
+		t.Error("proof carries @context for a document without one")
+	}
+}
+
+func TestProofContextMustEqualDocumentContext(t *testing.T) {
+	v := NewVerifier(WithClock(laterClock()))
+	signer := seededSigner(t, Ed25519, 1)
+	var doc map[string]any
+	if err := json.Unmarshal(grant(t, signer.DID, "admin"), &doc); err != nil {
+		t.Fatal(err)
+	}
+	doc["@context"] = []any{"https://www.w3.org/ns/credentials/v2", map[string]any{"ex": "https://example.org/#"}}
+	raw, err := json.Marshal(doc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	signed, err := signer.Sign(raw, SignOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := v.Verify(context.Background(), signed); err != nil {
+		t.Fatalf("verify signed @context document: %v", err)
+	}
+	for name, mutate := range map[string]func(map[string]any){
+		"removed from the document": func(d map[string]any) { delete(d, "@context") },
+		"reordered in the document": func(d map[string]any) {
+			c := d["@context"].([]any)
+			d["@context"] = []any{c[1], c[0]}
+		},
+		"changed in the proof": func(d map[string]any) {
+			d["proof"].(map[string]any)["@context"] = []any{"https://example.org/other"}
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			var d map[string]any
+			if err := json.Unmarshal(signed, &d); err != nil {
+				t.Fatal(err)
+			}
+			mutate(d)
+			b, err := json.Marshal(d)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got := kindOf(t, v.Verify(context.Background(), b)); got != MalformedProof {
+				t.Errorf("kind = %s, want malformedProof", got)
+			}
+		})
+	}
+}
+
 func TestSignThenVerifyEachCurve(t *testing.T) {
 	v := NewVerifier(WithClock(laterClock()))
 	for _, curve := range []Curve{Ed25519, P256, P384} {

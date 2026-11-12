@@ -108,9 +108,10 @@ final class DataIntegrityProofVerifier implements ProofVerifier {
 
   /// The cryptosuites this package can verify.
   ///
-  /// Only the JCS suites: a Trust Task document carries no JSON-LD `@context`,
-  /// so the RDF canonicalization the `-rdfc-` suites depend on has nothing to
-  /// expand. ML-DSA is absent because its verifiers exist only in `ssi` 4,
+  /// Only the JCS suites: a Trust Task document is processed as JSON whether
+  /// or not it carries the optional `@context` (SPEC §4.7.1), so it is never
+  /// expanded and the RDF canonicalization the `-rdfc-` suites depend on does
+  /// not apply. ML-DSA is absent because its verifiers exist only in `ssi` 4,
   /// and this package also supports `ssi` 3 — see the README.
   static const supportedCryptosuites = {'eddsa-jcs-2022', 'ecdsa-jcs-2019'};
 
@@ -252,16 +253,19 @@ final class DataIntegrityProofVerifier implements ProofVerifier {
       }
     }
 
+    final contextError = _proofContextError(doc, proof);
+    if (contextError != null) return _malformed(contextError);
+
     // One resolution per verification: the relationship check below and ssi
     // read the same document.
     final resolver = _OnceResolver(_resolver);
     final suite = switch (cryptosuite) {
-      'eddsa-jcs-2022' => ssi.DataIntegrityEddsaJcsVerifier(
+      'eddsa-jcs-2022' => _EddsaJcsAsReceived(
           verifierDid: issuer,
           didResolver: resolver,
           getNow: _clock,
         ),
-      'ecdsa-jcs-2019' => ssi.DataIntegrityEcdsaJcsVerifier(
+      'ecdsa-jcs-2019' => _EcdsaJcsAsReceived(
           verifierDid: issuer,
           didResolver: resolver,
           getNow: _clock,
@@ -450,6 +454,95 @@ final class DataIntegrityProofVerifier implements ProofVerifier {
         List() => [for (final v in value) _copyValue(v)],
         _ => value,
       };
+}
+
+/// Why [proof]'s `@context` disagrees with [doc]'s, or `null` when it does
+/// not. eddsa-jcs-2022 / ecdsa-jcs-2019 §3.3.2 step 4: "If
+/// proofOptions.@context exists: Check that the securedDocument.@context
+/// starts with all values contained in the proofOptions.@context in the same
+/// order. Otherwise, set verified to false". A proof without `@context` is
+/// hashed as received (step 4 does not apply).
+///
+/// This verifier requires the two to be **equal**, not only the proof's to be
+/// a prefix. The cryptosuite verifies a longer document `@context` by hashing
+/// the proof's in its place (step 4.2) and returning that rewritten document
+/// as the verified one; a [ProofVerifier] returns no document, so the caller
+/// would go on to act on `@context` entries no signature covers. The Rust, Go
+/// and TypeScript verifiers apply the same rule.
+String? _proofContextError(
+  Map<String, dynamic> doc,
+  Map<String, dynamic> proof,
+) {
+  if (!proof.containsKey('@context')) return null;
+  if (!doc.containsKey('@context')) {
+    return 'proof carries @context but the document has none';
+  }
+  try {
+    if (ssi.JcsUtil.canonicalize(proof['@context']) !=
+        ssi.JcsUtil.canonicalize(doc['@context'])) {
+      return "proof @context does not equal the document's @context";
+    }
+  } on Object catch (e) {
+    return '@context cannot be canonicalized: $e';
+  }
+  return null;
+}
+
+/// ssi's eddsa-jcs-2022 verifier, hashing the proof configuration **as
+/// received**.
+///
+/// ssi's JCS verifiers copy the document's `@context` into the proof
+/// configuration before hashing it, whether or not the proof carries one. A
+/// proof without `@context` over a document with one — what the Rust, Go and
+/// TypeScript signers emitted before #1113, and what eddsa-jcs-2022 §3.3.2
+/// verifies, since its step 4 applies only when the proof carries `@context` —
+/// then failed here. [_proofContextError] has already checked a proof
+/// `@context` against the document's, so ssi's own prefix check, which
+/// compares inline contexts by identity, is not repeated.
+final class _EddsaJcsAsReceived extends ssi.DataIntegrityEddsaJcsVerifier {
+  _EddsaJcsAsReceived({
+    required super.verifierDid,
+    super.getNow,
+    super.didResolver,
+  });
+
+  @override
+  Map<String, dynamic> prepareProofForVerification(
+    Map<String, dynamic> proof,
+    Map<String, dynamic> document,
+  ) =>
+      Map<String, dynamic>.of(proof);
+
+  @override
+  Future<ssi.VerificationResult> validateCryptosuite(
+    Map<String, dynamic> document,
+    Map<String, dynamic> proof,
+  ) async =>
+      ssi.VerificationResult.ok();
+}
+
+/// ssi's ecdsa-jcs-2019 verifier, hashing the proof configuration as
+/// received; see [_EddsaJcsAsReceived].
+final class _EcdsaJcsAsReceived extends ssi.DataIntegrityEcdsaJcsVerifier {
+  _EcdsaJcsAsReceived({
+    required super.verifierDid,
+    super.getNow,
+    super.didResolver,
+  });
+
+  @override
+  Map<String, dynamic> prepareProofForVerification(
+    Map<String, dynamic> proof,
+    Map<String, dynamic> document,
+  ) =>
+      Map<String, dynamic>.of(proof);
+
+  @override
+  Future<ssi.VerificationResult> validateCryptosuite(
+    Map<String, dynamic> document,
+    Map<String, dynamic> proof,
+  ) async =>
+      ssi.VerificationResult.ok();
 }
 
 /// The `proofPurpose` values a proof may carry: the verification relationships

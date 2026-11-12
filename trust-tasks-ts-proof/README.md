@@ -56,7 +56,13 @@ taxonomy as the Rust and Dart libraries.
    `verificationMethod` must equal `issuer` exactly, with no normalization (SPEC
    §4.8), or the document is `issuerMismatch`. A valid signature proves only
    that *some* key signed.
-6. The signature verifies over the document minus its `proof`. Ed25519 is
+6. A proof that carries `@context` carries the document's `@context`, exactly,
+   or it is `malformedProof`. eddsa-jcs-2022 / ecdsa-jcs-2019 §3.3.2 step 4
+   checks only that the document's starts with the proof's; this verifier
+   returns no document, so it does not accept `@context` entries the signature
+   does not cover.
+7. The signature verifies over the proof configuration (the proof minus
+   `proofValue`, as received) and the document minus its `proof`. Ed25519 is
    checked as the Go, Rust and Dart libraries check it: RFC 8032 point
    decoding (not ZIP-215's wider rules), a small-order public key refused, and
    the cofactorless equation, so an `R` with a small-order component fails.
@@ -74,7 +80,9 @@ const signed = signTrustTask(doc, signer);
 
 `signTrustTask` refuses to sign a document with no `issuer`, or one whose
 `issuer` is not the signer's `did:key` — such a document could never verify —
-or a `proofPurpose` outside `SIGNING_PURPOSES`. It replaces any existing `proof`.
+or a `proofPurpose` outside `SIGNING_PURPOSES`. It replaces any existing `proof`,
+and copies a document's `@context` into the proof, as the cryptosuites' Create
+Proof algorithm requires.
 `proofPurpose` defaults to `authentication`, the purpose SPEC §4.7.3 recommends
 for a Trust Task document; pass `assertionMethod` only where a specification
 defines the proof as an attestation.
@@ -85,7 +93,7 @@ defines the proof as an attestation.
 |---|---|
 | `eddsa-jcs-2022` | ✓ Ed25519 |
 | `ecdsa-jcs-2019` | ✓ P-256, P-384 |
-| `eddsa-rdfc-2022`, `ecdsa-rdfc-2019` | — a Trust Task document has no JSON-LD `@context` for RDF canonicalization to expand |
+| `eddsa-rdfc-2022`, `ecdsa-rdfc-2019` | — a Trust Task document is JSON whether or not it carries `@context` (SPEC §4.7.1), so it is never expanded for RDF canonicalization |
 
 ML-DSA (post-quantum) suites will follow; the `@noble` foundation is chosen so
 they can be added without a JSON-LD toolchain.
