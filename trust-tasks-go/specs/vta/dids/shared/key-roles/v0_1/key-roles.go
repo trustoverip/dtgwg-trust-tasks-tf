@@ -141,16 +141,18 @@ type IdentityKeyCustody struct {
 	KeyID  *string    `json:"keyId,omitempty"`
 	Origin *KeyOrigin `json:"origin,omitempty"`
 
-	// Whether the custodian would release the private half. Always `false` for `attestation`
-	// and `update` keys. Stated explicitly, never absent.
+	// Whether the custodian would release the private half by any operation other than the
+	// VTA's own backup. Always `false` for `attestation` and `update` keys. Stated
+	// explicitly, never absent.
 	Exportable bool `json:"exportable"`
 
 	// True when no authority can make the key exportable. `true` implies `exportable: false`.
 	NeverExportable bool `json:"neverExportable"`
 
 	// Whether the key, or material it can be re-derived or decrypted from, is in the VTA's
-	// backups or any state transfer. Always `false` for `attestation` and `update` keys
-	// (VTI-KEY-112).
+	// backups or any state transfer. Always `false` for `attestation` and `update` keys of a
+	// level-3 identity (VTI-KEY-112); at level 2 such a key may be in the VTA's own backup
+	// and nowhere else (CONVENTIONS.md §5.5).
 	InBackups  bool            `json:"inBackups"`
 	Protection ProtectionClass `json:"protection"`
 
@@ -163,6 +165,10 @@ type IdentityKeyCustody struct {
 	// True once the private half has been destroyed — a retired `attestation` or `messaging`
 	// key. The record survives so the key's past signatures stay attributable.
 	Destroyed *bool `json:"destroyed,omitempty"`
+
+	// The recovery update key only: the kind of recovery custodian the operator declared when
+	// committing it (CONVENTIONS.md §5.6). Custody projection only; never published.
+	Custodian *RecoveryCustodian `json:"custodian,omitempty"`
 }
 
 // IdentityRoleKey One key in one role. A key is in exactly one role for its whole life; a
@@ -233,8 +239,8 @@ type KeyRoleSummary struct {
 	Keys []IdentityRoleKey `json:"keys"`
 
 	// `update` only: whether the identifier's latest version commits to a recovery key in a
-	// boundary other than the VTA's (CONVENTIONS.md §5.3). `false` is a defect the VTA
-	// reports rather than hides.
+	// boundary other than the VTA's (CONVENTIONS.md §5.3). Always `true` at level 3, where
+	// `false` is a defect the VTA reports rather than hides; always `false` at level 2.
 	RecoveryCommitted *bool `json:"recoveryCommitted,omitempty"`
 
 	// `update` only, where the method has one: the signing threshold over the current update
@@ -371,6 +377,9 @@ type KeyChangeApprovalState struct {
 // committed routine successor. `commitUpdateKey` — a new routine successor is committed.
 // `replaceRecoveryCommitment` — the recovery commitment changes. `useRecoveryKey` — the
 // change is authorized by the recovery key, which the identifier then reveals.
+// `declareAssuranceLevel` — the document's `keyAssurance` declares a new, higher key
+// assurance level (CONVENTIONS.md §3.4); `role` is `update`, and `assuranceLevel` carries
+// the level.
 type IdentityChangeOp string
 
 // Values IdentityChangeOp may take, per this specification's schema.
@@ -382,6 +391,7 @@ const (
 	IdentityChangeOpCommitUpdateKey           IdentityChangeOp = "commitUpdateKey"
 	IdentityChangeOpReplaceRecoveryCommitment IdentityChangeOp = "replaceRecoveryCommitment"
 	IdentityChangeOpUseRecoveryKey            IdentityChangeOp = "useRecoveryKey"
+	IdentityChangeOpDeclareAssuranceLevel     IdentityChangeOp = "declareAssuranceLevel"
 )
 
 // IdentityChange IdentityChange
@@ -394,6 +404,9 @@ type IdentityChange struct {
 	// committed routine successor. `commitUpdateKey` — a new routine successor is committed.
 	// `replaceRecoveryCommitment` — the recovery commitment changes. `useRecoveryKey` — the
 	// change is authorized by the recovery key, which the identifier then reveals.
+	// `declareAssuranceLevel` — the document's `keyAssurance` declares a new, higher key
+	// assurance level (CONVENTIONS.md §3.4); `role` is `update`, and `assuranceLevel` carries
+	// the level.
 	Op                 IdentityChangeOp               `json:"op"`
 	Role               IdentityKeyRole                `json:"role"`
 	VerificationMethod *string                        `json:"verificationMethod,omitempty"`
@@ -401,6 +414,9 @@ type IdentityChange struct {
 	PublicKeyMultibase *string                        `json:"publicKeyMultibase,omitempty"`
 	Commitment         *string                        `json:"commitment,omitempty"`
 	Relationships      *[]DIDVerificationRelationship `json:"relationships,omitempty"`
+
+	// `declareAssuranceLevel` only: the level declared.
+	AssuranceLevel *KeyAssuranceLevel `json:"assuranceLevel,omitempty"`
 }
 
 // PreviewWarning Conditions a human should be shown before approving. `singleKeyRole` —
@@ -410,11 +426,14 @@ type IdentityChange struct {
 // attestation key obliges re-issuance and re-signed status lists (VTI-KEY-133).
 // `selfPublish` — the VTA will not publish the change; the operator must. `noWitnesses` —
 // the identifier has no witnesses, so a party holding the VTA's routine update key can
-// drop the recovery commitment unobserved (CONVENTIONS.md §5.3). `protectionBelowPolicy`
-// — a key will be held at a `ProtectionClass` below what the VTA's policy recommends for
-// its role (a plain VTA holding an attestation key). `recoveryKeyRevealed` — this change
-// uses the recovery key, which must be replaced by a fresh recovery commitment in the
-// same change.
+// lower its level unobserved (CONVENTIONS.md §5.4); a level-3 identity is refused instead
+// (`vta/dids:witnessRequired`). `protectionBelowPolicy` — a key will be held at a
+// `ProtectionClass` below what the VTA's policy recommends for its role (a plain VTA
+// holding an attestation key). `recoveryKeyRevealed` — this change uses the recovery key,
+// which must be replaced by a fresh recovery commitment in the same change.
+// `roleKeysInBackups` — at level 2, the identity's `attestation` and `update` keys will
+// be in this VTA's backups, so a backup and what unlocks it are a copy of the identity's
+// seal and change authority (CONVENTIONS.md §3.4).
 type PreviewWarning string
 
 // Values PreviewWarning may take, per this specification's schema.
@@ -427,6 +446,7 @@ const (
 	PreviewWarningNoWitnesses                   PreviewWarning = "noWitnesses"
 	PreviewWarningProtectionBelowPolicy         PreviewWarning = "protectionBelowPolicy"
 	PreviewWarningRecoveryKeyRevealed           PreviewWarning = "recoveryKeyRevealed"
+	PreviewWarningRoleKeysInBackups             PreviewWarning = "roleKeysInBackups"
 )
 
 // PublishedArtifact A file the identifier's method publishes, as the method profile names
@@ -472,11 +492,12 @@ type RecoverySigningRequest struct {
 	ExpiresAt    *string                    `json:"expiresAt,omitempty"`
 }
 
-// RecoveryCommitment A recovery key offered for commitment (CONVENTIONS.md §5.3). The VTA
-// computes the method's commitment from it, verifies `proofOfPossession`, and then keeps
-// only the commitment. The key MUST be held by a custodian in a protection boundary other
-// than the VTA's; a VTA MUST refuse one it generated or can derive
-// (`vta/dids:recoveryCommitmentRequired`).
+// RecoveryCommitment A recovery key offered for commitment at level 3 (CONVENTIONS.md
+// §5.3). The VTA computes the method's commitment from it, verifies `proofOfPossession`,
+// and then keeps only the commitment. The key MUST be held by a recovery custodian in a
+// protection boundary other than the VTA's (§5.6); a VTA MUST refuse one it generated or
+// can derive (`vta/dids:recoveryCommitmentRequired`). For a threshold custodian, offer a
+// `ThresholdRecoveryCommitment` instead (§5.7).
 type RecoveryCommitment struct {
 	KeyType KeyType `json:"keyType"`
 
@@ -492,7 +513,8 @@ type RecoveryCommitment struct {
 	ProofOfPossession *string `json:"proofOfPossession,omitempty"`
 
 	// Operator-facing name of the custodian. Custody projection only; never published.
-	Label *string `json:"label,omitempty"`
+	Label     *string            `json:"label,omitempty"`
+	Custodian *RecoveryCustodian `json:"custodian,omitempty"`
 }
 
 // IdentityChangePreview What a change would publish, computed by the VTA by running the
@@ -523,6 +545,9 @@ type IdentityChangePreview struct {
 	// Stated as its own member because it is the consequence a reviewer most often misses.
 	UpdateKeyRotates bool                    `json:"updateKeyRotates"`
 	RecoverySigning  *RecoverySigningRequest `json:"recoverySigning,omitempty"`
+
+	// The key assurance level the resulting document declares (CONVENTIONS.md §3.4).
+	AssuranceLevel *KeyAssuranceLevel `json:"assuranceLevel,omitempty"`
 }
 
 // KeyChangeOutcome `preview` — nothing was written; the response carries the plan.
@@ -566,6 +591,97 @@ type ReissuanceFollowUp struct {
 	// signed, which the node MUST re-issue with identical claims and expiry.
 	ArtefactsToReissue *int64 `json:"artefactsToReissue,omitempty"`
 }
+
+// KeyAssuranceLevel A service DID's key assurance level (VTI-KEY-194; CONVENTIONS.md
+// §3.4). `1` — single key: no `keyRoles`, one key signs everything. `2` — role-separated:
+// `keyRoles`, with the `attestation` and `update` keys held by the VTA, which may derive
+// them and back them up. `3` — recoverable: level 2 with those keys generated and in no
+// backup, a recovery key held by a recovery custodian outside the VTA, and a witness
+// enforcing it. Declared in the document's `keyAssurance` member.
+type KeyAssuranceLevel = int64
+
+// RecoveryCustodianKind The kinds of recovery custodian VTI-KEY-205 admits
+// (CONVENTIONS.md §5.6). `separateKey` — a key held away from every VTA of the identity:
+// an offline key file, a hardware token, a key service whose credentials no such VTA
+// holds, or a key from a recovery mnemonic no such VTA has seen. `vta` — a second VTA
+// with its own seed, operator and host. `thresholdGroup` — a threshold custodian: n
+// members, each a `separateKey` or `vta` custodian holding a whole key of its own, of
+// which t must authorize (§5.7); offered as a `ThresholdRecoveryCommitment`.
+type RecoveryCustodianKind string
+
+// Values RecoveryCustodianKind may take, per this specification's schema.
+const (
+	RecoveryCustodianKindSeparateKey    RecoveryCustodianKind = "separateKey"
+	RecoveryCustodianKindVta            RecoveryCustodianKind = "vta"
+	RecoveryCustodianKindThresholdGroup RecoveryCustodianKind = "thresholdGroup"
+)
+
+// RecoveryCustodian What the operator declares about who holds a recovery key. The VTA
+// cannot verify it — it verifies the proof of possession and refuses a key it generated
+// or can derive — and uses it to route a recovery signing request and to report custody.
+// Custody projection only; never published (VTI-KEY-150, VTI-KEY-206).
+type RecoveryCustodian struct {
+	Kind RecoveryCustodianKind `json:"kind"`
+
+	// `vta` only: the custodian VTA's DID, to which the recovering or revoking VTA MAY send
+	// the recovery signing request. Absent, the request is carried out of band.
+	DID *string `json:"did,omitempty"`
+
+	// `thresholdGroup` only, in custody records: the members' VTA DIDs where members are
+	// VTAs. n is at least three, because 2 ≤ t < n (VTI-KEY-210).
+	Participants *[]string `json:"participants,omitempty"`
+
+	// `thresholdGroup` only: t, the number of members that must authorize. MUST be less than
+	// the number of members.
+	Threshold *int64 `json:"threshold,omitempty"`
+}
+
+// ThresholdRecoveryMember One member of a threshold custodian: a whole recovery key of
+// its own, with its own proof of possession over the same `previewId`, held by a
+// `separateKey` or `vta` custodian (CONVENTIONS.md §5.7).
+type ThresholdRecoveryMember struct {
+	KeyType KeyType `json:"keyType"`
+
+	// The recovery key's public half. Not published by the VTA where the method commits by
+	// hash.
+	PublicKeyMultibase string `json:"publicKeyMultibase"`
+
+	// Multibase signature by the recovery key over the UTF-8 bytes of
+	// `vta-dids-recovery-commitment/v1`, a zero byte, and the request's `previewId`. Absent
+	// on a dry run, which is how the `previewId` is obtained; REQUIRED on the apply request,
+	// and the only member besides `previewId`, `dryRun` and `recoveryProof` that may differ
+	// between the two.
+	ProofOfPossession *string `json:"proofOfPossession,omitempty"`
+
+	// Operator-facing name of the custodian. Custody projection only; never published.
+	Label *string `json:"label,omitempty"`
+
+	// Who holds this member's key: `separateKey` or `vta` (never `thresholdGroup`), with
+	// `did` for a VTA member. Custody projection only; never published.
+	Custodian *RecoveryCustodian `json:"custodian,omitempty"`
+}
+
+// ThresholdRecoveryCommitment A threshold custodian offered for commitment at level 3
+// (CONVENTIONS.md §5.7, VTI-KEY-210): n members, each a whole recovery key of its own, of
+// which t must authorize a recovery. The VTA computes one commitment per member, verifies
+// every proof of possession over the same `previewId`, refuses any member key it
+// generated or can derive, and renders `keyAssurance.recoveryCommitment` as `{ threshold,
+// commitments }`. A condition over whole keys: nothing is shared, nothing is assembled.
+type ThresholdRecoveryCommitment struct {
+	// t: how many distinct members must sign a recovery entry. MUST be less than the number
+	// of `members`.
+	Threshold int64 `json:"threshold"`
+
+	// The n members, n ≥ 3, each in its own protection boundary (VTI-KEY-211).
+	Members []ThresholdRecoveryMember `json:"members"`
+
+	// Operator-facing name of the group. Custody projection only; never published.
+	Label *string `json:"label,omitempty"`
+}
+
+// RecoveryCommitmentOrThreshold A single recovery key (§5.6 kinds `separateKey` and
+// `vta`) or a threshold custodian (§5.7).
+type RecoveryCommitmentOrThreshold = json.RawMessage
 
 // KeyType Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA),
 // `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44`
