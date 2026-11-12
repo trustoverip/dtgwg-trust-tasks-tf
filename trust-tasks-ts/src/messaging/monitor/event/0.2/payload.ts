@@ -6,6 +6,7 @@
 import type { Ext, MonitorEvent_MessagingV0_3 as MonitorEvent, TrafficChannel, TrafficDirection, TrafficOutcome, TrafficStage, Vid, WireProtocol } from "../../../../_shared/components.js";
 
 
+/** @deprecated superseded by messaging/monitor/event/0.3 */
 export interface MessagingTrafficMonitorEventPayload {
   subscriptionId: string;
   /**
@@ -52,9 +53,13 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by messaging/monitor/event/0.3";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by messaging/monitor/event/0.3
+ */
 export type Payload = MessagingTrafficMonitorEventPayload;
 
 /**

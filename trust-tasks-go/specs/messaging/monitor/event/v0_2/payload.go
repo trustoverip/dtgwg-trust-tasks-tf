@@ -126,6 +126,8 @@ const (
 type VID = string
 
 // Payload Messaging — Traffic Monitor Event — payload
+//
+// Deprecated: superseded by messaging/monitor/event/0.3
 type Payload struct {
 	SubscriptionID string `json:"subscriptionId"`
 
@@ -162,7 +164,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by messaging/monitor/event/0.3"
 
 // PayloadSchemaJSON is this specification's payload schema, as JSON text.
 //
