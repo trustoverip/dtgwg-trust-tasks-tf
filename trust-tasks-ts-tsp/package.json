@@ -26,6 +26,6 @@
     "@noble/curves": "^2.0.0",
     "@noble/hashes": "^2.0.0",
     "@types/node": "^22.0.0",
-    "typescript": "^5.6.0"
+    "typescript": "^7.0.2"
   }
 }
