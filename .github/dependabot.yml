@@ -1,6 +1,19 @@
-# Keeps the commit-SHA pins in .github/workflows current. Each `uses:` is
-# pinned to a full commit SHA with the release it corresponds to in a comment;
-# Dependabot moves both together.
+# Weekly dependency updates, one grouped pull request per ecosystem.
+#
+# github-actions: keeps the commit-SHA pins in .github/workflows current. Each
+# `uses:` is pinned to a full commit SHA with the release it corresponds to in
+# a comment; Dependabot moves both together.
+#
+# The package ecosystems are titled `chore(deps):`, which cliff.toml leaves out
+# of every changelog. The Release PR still sizes a package's bump from its
+# watched paths, so an update inside a package directory (its lockfile, go.mod
+# or pubspec) still gives that package a patch release with no changelog line.
+# When an update changes what a published package requires of its consumers,
+# retitle the PR `fix(<scope>):` before merging so the changelog says so.
+#
+# The Go modules declare a `go` floor (1.22 for the core and the published
+# nested modules) that CI builds and tests on; an update that raises it fails
+# there and needs a decision, not a merge.
 version: 2
 updates:
   - package-ecosystem: github-actions
@@ -12,3 +25,67 @@ updates:
         patterns: ["*"]
     commit-message:
       prefix: ci
+
+  - package-ecosystem: cargo
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      cargo:
+        patterns: ["*"]
+    commit-message:
+      prefix: chore
+      include: scope
+
+  - package-ecosystem: npm
+    directories:
+      - /
+      - /trust-tasks-ts
+      - /trust-tasks-ts-proof
+      - /trust-tasks-ts-tsp
+      - /trust-tasks-ts-capability-client
+      - /trust-tasks-ts-gen
+      - /examples/consumer-app-ts
+    schedule:
+      interval: weekly
+    groups:
+      npm:
+        patterns: ["*"]
+    commit-message:
+      prefix: chore
+      include: scope
+
+  - package-ecosystem: gomod
+    directories:
+      - /trust-tasks-go
+      - /trust-tasks-go/proof
+      - /trust-tasks-go/didcomm
+      - /trust-tasks-go/capabilityclient
+      - /trust-tasks-go/tsp
+      - /examples/consumer-app-go
+    schedule:
+      interval: weekly
+    groups:
+      gomod:
+        patterns: ["*"]
+    commit-message:
+      prefix: chore
+      include: scope
+
+  - package-ecosystem: pub
+    directories:
+      - /trust-tasks-dart
+      - /trust-tasks-dart-proof
+      - /trust-tasks-dart-https
+      - /trust-tasks-dart-didcomm
+      - /trust-tasks-dart-tsp
+      - /trust-tasks-dart-capability-client
+      - /examples/consumer-app-dart
+    schedule:
+      interval: weekly
+    groups:
+      pub:
+        patterns: ["*"]
+    commit-message:
+      prefix: chore
+      include: scope

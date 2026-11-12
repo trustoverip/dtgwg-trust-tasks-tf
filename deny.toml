@@ -11,99 +11,18 @@
 all-features = true
 
 # ─── Advisories ────────────────────────────────────────────────────────────
-# Fail on any RUSTSEC advisory affecting our dep graph. `notice` is downgraded
-# to `warn` so an upstream advisory with no fix yet doesn't immediately wedge
-# main; we still see it in the log.
+# Fail on any RUSTSEC advisory affecting our dep graph, and on a yanked crate.
+#
+# An ignore needs a comment saying why the advisory cannot be fixed here and
+# what clears it. `unused-ignored-advisory = "deny"` fails the check once an
+# ignored advisory no longer matches anything in Cargo.lock, so an entry is
+# removed when its reason goes away rather than staying to cover the advisory
+# if the crate comes back.
 [advisories]
 version = 2
 yanked = "deny"
-ignore = [
-    # proc-macro-error 1.0.4 is unmaintained. It's a transitive dep
-    # (typify → serde_tokenstream → proc-macro-error) and the
-    # upstream replacement proc-macro-error2 hasn't been wired through
-    # the typify dep chain yet. No active CVE, just maintenance status.
-    "RUSTSEC-2024-0370",
-    # rustls-pemfile is unmaintained. Transitive via the Affinidi
-    # messaging/TDK dep chain (affinidi-tdk → … → rustls-pemfile), so it
-    # can't be dropped from here — it goes when those crates move to
-    # rustls-pki-types' own PEM parsing. No active CVE, maintenance status
-    # only.
-    "RUSTSEC-2025-0134",
-    # smallstr 0.3.1 is unmaintained. 0.3.1 IS the newest release, so there
-    # is no upgrade to take. It arrives deep in the JSON-LD/SSI stack
-    # (smallstr → json-syntax → json-ld → ssi-json-ld → ssi-* → the Affinidi
-    # TDK), and reaches this workspace only through the
-    # affinidi-messaging-test-mediator DEV-dependency — nothing we publish
-    # links it. No active CVE, maintenance status only. It goes when
-    # json-syntax drops it or the SSI stack moves off json-ld 0.21.
-    "RUSTSEC-2026-0215",
-    # clear_on_drop 0.2.5 is unmaintained, and the advisory is explicit that
-    # there is no safe upgrade: 0.2.5 IS the last release, and the replacement
-    # is a different crate with a different API (zeroize's `Zeroizing`).
-    #
-    # It arrives by the same chain as the h2 0.3 entry below — ssi-jws 0.3.1 →
-    # ssi-dids-core 0.1.3 → affinidi-did-resolver-cache-sdk — and so reaches
-    # crates we publish (trust-tasks-tsp via affinidi-tsp, and
-    # trust-tasks-proof) as a normal dependency rather than a dev one. Nothing
-    # in this repo can shorten it: our requirement on the resolver SDK is
-    # already open, and every 0.8.x pulls ssi-dids-core 0.1.3.
-    #
-    # No CVE — maintenance status only. It goes when the SSI stack moves
-    # ssi-jws off clear_on_drop.
-    "RUSTSEC-2026-0283",
-    # im 15.1.0, and the two crates it exists to use — bitmaps 2.1.0 and
-    # sized-chunks 0.6.5 — are unmaintained. All three were flagged on the same
-    # day and are one finding: `im` is the immutable-collections crate,
-    # `sized-chunks` and `bitmaps` are its own storage primitives, and nothing
-    # else in the graph pulls them.
-    #
-    # Same upstream as the smallstr entry above, one layer out: json-ld 0.21's
-    # `linked-data` uses `im`, `ssi-json-ld` uses json-ld, and the SSI stack
-    # reaches this workspace through the Affinidi crates behind
-    # `trust-tasks-proof` and `trust-tasks-tsp`. Unlike smallstr this is in the
-    # NORMAL graph, not a dev-dependency — crates we publish link it.
-    #
-    # There is no upgrade to take: 15.1.0 / 2.1.0 / 0.6.5 are the newest
-    # releases of each, and the advisories are maintenance status with no
-    # reported vulnerability. It clears when the SSI stack moves off json-ld
-    # 0.21, or when linked-data drops `im` — the same condition that clears
-    # RUSTSEC-2026-0215, so the three should be reviewed together.
-    "RUSTSEC-2026-0247", # bitmaps
-    "RUSTSEC-2026-0248", # im
-    "RUSTSEC-2026-0251", # sized-chunks
-    # h2 "unbounded empty DATA frames" — and unlike every entry above this one
-    # is an actual vulnerability, not a maintenance-status notice. It is here
-    # under protest, so read the reasoning before adding anything beside it.
-    #
-    # The graph carried two h2 lines. 0.4.x is FIXED rather than ignored: this
-    # entry's commit takes 0.4.14 → 0.4.16, the patched release. What remains
-    # is h2 0.3.27, and there is no version of it to move to — 0.3.27 IS the
-    # newest 0.3, and upstream patched only the 0.4 line.
-    #
-    # It arrives as hyper 0.14 → hyper-tls 0.5 → reqwest 0.11 →
-    # ssi-dids-core 0.1.3 → affinidi-did-resolver-cache-sdk, and reaches
-    # crates we publish: trust-tasks-tsp (via affinidi-tsp) and
-    # trust-tasks-proof. This is the NORMAL graph, not a dev-dependency.
-    #
-    # Nothing in this repo can shorten that chain. Our own requirements are
-    # already open (`affinidi-did-resolver-cache-sdk = "0.8"`,
-    # `affinidi-tsp = "0.1"`), and every 0.8.x of the resolver SDK up to and
-    # including the newest, 0.8.22, requires `ssi-dids-core ^0.1` — which is
-    # what pins reqwest 0.11 and so hyper 0.14 and so h2 0.3.
-    #
-    # Exposure, stated plainly rather than waved away: reqwest is an HTTP
-    # *client* here, used to resolve DIDs. The flaw is a peer queueing empty
-    # DATA frames without limit, so reaching it needs a hostile or compromised
-    # resolution endpoint, and the impact is memory growth or a panic —
-    # availability only, with no confidentiality or integrity component.
-    # Upstream rates it Low. That is the whole of the argument for accepting
-    # it, and it is an argument for accepting it *temporarily*.
-    #
-    # Clears when affinidi-did-resolver-cache-sdk moves to ssi-dids-core 0.3+,
-    # which is on reqwest 0.12 / hyper 1.x and so on the patched h2 line.
-    # Worth re-checking whenever the Affinidi crates are bumped.
-    "RUSTSEC-2026-0258",
-]
+unused-ignored-advisory = "deny"
+ignore = []
 
 # ─── Licenses ──────────────────────────────────────────────────────────────
 # The crate is Apache-2.0; transitive deps should be permissively licensed
