@@ -4,7 +4,7 @@
  */
 
 /**
- * Shared $def objects referenced by the messaging/queue/*, messaging/message/*, messaging/stats/*, and messaging/monitor/* specifications: queue depth views, stored-message metadata, the wire-protocol vocabulary, and the traffic-monitor event and filter shapes. 0.3 renames `MonitorEvent.at` to `occurredAt`, the registry's `<event>At` convention, and changes nothing else. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build). Account identifiers reuse `Vid` from the messaging.schema.json component (`_shared/0.1`), so an identifier returned by one family is accepted verbatim by the other.
+ * Shared $def objects referenced by the messaging/queue/*, messaging/message/*, messaging/stats/*, and messaging/monitor/* specifications: queue depth views, stored-message metadata, the wire-protocol vocabulary, and the traffic-monitor event and filter shapes. 0.3 renames `MonitorEvent.at` to `occurredAt`, the registry's `<event>At` convention, and changes nothing else in the shapes 0.1 defines; it adds the mux membership event and its opt-in filter (MembershipChange, MonitorMembershipEvent, MembershipFilter), which messaging/monitor/event 0.3 and messaging/monitor/subscribe 0.2 reference. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build). Account identifiers reuse `Vid` from the messaging.schema.json component (`_shared/0.1`), so an identifier returned by one family is accepted verbatim by the other.
  */
 export interface MessagingOperationsSharedDefinitionsForMediatorQueueMessageStatisticsAndTrafficMonitorTasks {
   [k: string]: unknown | undefined;
@@ -14,4 +14,4 @@ export interface MessagingOperationsSharedDefinitionsForMediatorQueueMessageStat
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../../_shared/components.js".
  */
-export type { MonitorEvent_MessagingV0_3 as MonitorEvent, TrafficChannel, TrafficDirection, TrafficOutcome, TrafficStage, WireProtocol } from "../../../_shared/components.js";
+export type { MembershipChange, MembershipFilter, MonitorEvent_MessagingV0_3 as MonitorEvent, MonitorFilter, MonitorMembershipEvent, TrafficChannel, TrafficDirection, TrafficOutcome, TrafficStage, WireProtocol } from "../../../_shared/components.js";
