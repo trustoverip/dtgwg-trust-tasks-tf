@@ -68,8 +68,9 @@ BRANCH="release"
 #
 # Adding a package means an entry here AND its matrix leg in publish.yml
 # (publish-npm / publish-go / tag-dart). `npm run check-dart-packages` compares
-# DART_PACKAGES against the other Dart lists; its first entry must stay
-# `trust_tasks`, as in tag-dart.
+# DART_PACKAGES against the other Dart lists, and `npm run check-release-lists`
+# TS_PACKAGES and GO_MODULES against theirs; each list's first entry must stay
+# the core, as in the publish matrices.
 TS_PACKAGES=(
   "@openvtc/trust-tasks"
   "@openvtc/trust-tasks-proof"

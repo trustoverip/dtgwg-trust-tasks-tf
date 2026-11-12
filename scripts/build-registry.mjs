@@ -71,34 +71,71 @@ function splitFrontMatter(src) {
   return { data: YAML.parse(yamlBlock), body };
 }
 
-function lastModified(dirRel) {
+/* Per-folder history — newest and oldest commit date, and authors newest
+ * first — for every directory under specs/, from ONE `git log` over specs/.
+ * It used to be two or three `git log` processes per spec version (~2,800 on
+ * a full build), which was ~97% of the build's time (#1136). Computed on first
+ * use, so `--validate-only`, which needs no dates, never runs it.
+ *
+ * `git log` lists commits newest first, so the first commit seen touching a
+ * folder is its last modification and the last one seen is its creation —
+ * what `git log -1` and `git log --reverse | head -1` per folder gave. Every
+ * ancestor directory of a changed file is credited, so any folder under
+ * specs/ can be looked up. Rename-aware tracking would need --follow per
+ * file (which does not apply to folders): the per-version folder is the unit,
+ * and a rename produces a new "created" date, which matches how versions are
+ * independently editable. */
+let specHistoryCache = null;
+function specHistory() {
+  if (specHistoryCache) return specHistoryCache;
+  specHistoryCache = new Map(); // dirRel -> { newest, oldest, authors: Set }
+  let out = '';
   try {
-    const iso = execSync(
-      `git log -1 --format=%cI -- "${dirRel}"`,
-      { cwd: ROOT, encoding: 'utf8' }
-    ).trim();
-    if (iso) return iso.slice(0, 10); // YYYY-MM-DD
+    // \x1f cannot appear in a date or (in practice) an author name, and a
+    // commit header line is told from a path by its leading \x1e.
+    out = execSync('git log --format=%x1e%cI%x1f%an --name-only -- specs', {
+      cwd: ROOT,
+      encoding: 'utf8',
+      maxBuffer: 1 << 30,
+    });
   } catch {
-    /* ignore — fall through */
+    return specHistoryCache; // not a git checkout: every lookup falls back
   }
-  return new Date().toISOString().slice(0, 10);
+  let date = null;
+  let author = null;
+  for (const line of out.split('\n')) {
+    if (line.startsWith('\x1e')) {
+      [date, author] = line.slice(1).split('\x1f');
+      date = date.slice(0, 10); // YYYY-MM-DD
+      continue;
+    }
+    if (!line || !date) continue;
+    const parts = line.split('/');
+    for (let i = 1; i < parts.length; i++) {
+      const dir = parts.slice(0, i).join('/');
+      let h = specHistoryCache.get(dir);
+      if (!h) specHistoryCache.set(dir, (h = { newest: date, oldest: date, authors: new Set() }));
+      h.oldest = date;
+      if (author) h.authors.add(author);
+    }
+  }
+  // A commit touching several files in one folder credits it once per file;
+  // `oldest` is simply overwritten by each older commit, so that is harmless.
+  return specHistoryCache;
+}
+
+const gitKey = (dirRel) => dirRel.split(path.sep).join('/');
+const today = () => new Date().toISOString().slice(0, 10);
+
+function lastModified(dirRel) {
+  if (validateOnly) return today(); // discarded: nothing is written
+  return specHistory().get(gitKey(dirRel))?.newest ?? today();
 }
 
 function firstAdded(dirRel) {
   // Oldest commit that touched the spec folder; treated as the spec's creation date.
-  // Rename-aware tracking would require --follow per file (which doesn't apply to
-  // folders) — for now the per-version folder is the unit and renames produce a
-  // new "created" date, which matches how versions are independently editable.
-  try {
-    const out = execSync(
-      `git log --reverse --format=%cI -- "${dirRel}"`,
-      { cwd: ROOT, encoding: 'utf8' }
-    ).trim();
-    if (out) return out.split('\n')[0].slice(0, 10);
-  } catch {
-    /* ignore — fall through */
-  }
-  return new Date().toISOString().slice(0, 10);
+  if (validateOnly) return today(); // discarded: nothing is written
+  return specHistory().get(gitKey(dirRel))?.oldest ?? today();
 }
 
 /* Spec discovery lives in scripts/lib/specs.mjs — one rule, shared with
@@ -1436,13 +1473,9 @@ function handleToAuthor(handle) {
 }
 
 function gitAuthorsFor(dirRel) {
-  try {
-    const out = execSync(`git log --format=%an -- "${dirRel}"`, { cwd: ROOT, encoding: 'utf8' }).trim();
-    if (!out) return [];
-    return [...new Set(out.split('\n').map((s) => s.trim()).filter(Boolean))];
-  } catch {
-    return [];
-  }
+  // Newest first, each once — from the same single pass as the dates.
+  const authors = specHistory().get(gitKey(dirRel))?.authors;
+  return authors ? [...authors].map((s) => s.trim()).filter(Boolean) : [];
 }
 
 function deriveAuthors(meta, entry) {
@@ -2118,7 +2151,24 @@ function main() {
       fail(`${rel}/spec.md`, `front matter version '${meta.version}' does not match folder '${version}'`);
     }
     if (!validate(meta)) {
+      // A slug in the reserved namespace that is not on the allowlist fails the
+      // `anyOf` as "/slug must NOT be valid" and "must be equal to one of the
+      // allowed values" — the schema's least helpful phrasing, pointing at the
+      // spec rather than at the list to edit. Say what it means instead
+      // (scripts/new-spec.mjs words it the same way).
+      const reserved = typeof meta.slug === 'string' && /^trust-(task|ceremony)($|-|\/)/.test(meta.slug);
+      const isReservedSlugError = (err) => reserved && err.instancePath === '/slug' && ['not', 'enum', 'anyOf'].includes(err.keyword);
+      if (reserved && (validate.errors || []).some(isReservedSlugError)) {
+        fail(
+          `${rel}/spec.md`,
+          `/slug '${meta.slug}' is in the framework-reserved namespace (SPEC §6.1 reserves every slug matching ` +
+            `^trust-(task|ceremony)($|-|/)) and is not on the allowlist. A framework slug must be documented in ` +
+            `SPEC §6.1 (the canonical framework repository) AND added to specs/spec.meta.schema.json ` +
+            `#/properties/slug/anyOf[1]/enum; any other specification needs a different slug.`
+        );
+      }
       for (const err of validate.errors || []) {
+        if (isReservedSlugError(err)) continue;
         fail(`${rel}/spec.md`, `${err.instancePath || '/'} ${err.message}`);
       }
       continue;

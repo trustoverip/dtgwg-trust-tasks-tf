@@ -36,7 +36,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          fetch-depth: 0  # build script reads `git log` per spec folder for `updated` dates
+          fetch-depth: 0  # build script reads one `git log` over specs/ for the created/updated dates
 
       - name: Setup Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -137,8 +137,34 @@ jobs:
     permissions:
       contents: read
       id-token: write # GitHub OIDC, exchanged for the deploy role's credentials
+    # The workflow-level group is per commit, so two merges a minute apart build
+    # in parallel — which is fine — but must not deploy in parallel: the older
+    # run's `sync --delete` finishing last would remove what the newer build
+    # added and serve the older tree until the next push. One production group,
+    # never cancelled, queues the deploys; the step below then skips a deploy
+    # that `main` has already moved past.
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
     steps:
+      # A queued deploy whose commit is no longer the head of `main` would roll
+      # the site back over a newer one; that newer commit's own run deploys it.
+      - name: Skip a deploy that main has moved past
+        id: fresh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          head=$(gh api "repos/$GITHUB_REPOSITORY/commits/main" --jq .sha)
+          if [ "$head" = "$GITHUB_SHA" ]; then
+            echo "current=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::main is at $head, not $GITHUB_SHA; its own run deploys it. Skipping."
+            echo "current=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Download website artifact
+        if: steps.fresh.outputs.current == 'true'
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: website
@@ -151,7 +177,7 @@ jobs:
       # role works, delete AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY and the
       # second step.
       - name: Configure AWS credentials (OIDC role)
-        if: vars.AWS_DEPLOY_ROLE_ARN != ''
+        if: steps.fresh.outputs.current == 'true' && vars.AWS_DEPLOY_ROLE_ARN != ''
         uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
           role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
@@ -159,7 +185,7 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Configure AWS credentials (access keys)
-        if: vars.AWS_DEPLOY_ROLE_ARN == ''
+        if: steps.fresh.outputs.current == 'true' && vars.AWS_DEPLOY_ROLE_ARN == ''
         uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -173,6 +199,7 @@ jobs:
       # size is the same bytes — without it every deploy would re-upload all of
       # them for their fresh mtimes. Immutable for the same reason.
       - name: Deploy the by-digest store to S3 (append-only)
+        if: steps.fresh.outputs.current == 'true'
         run: >-
           aws s3 sync website/specs/by-digest/
           s3://${{ secrets.AWS_S3_BUCKET }}/website/specs/by-digest/
@@ -182,10 +209,11 @@ jobs:
       # `--exclude` keeps the by-digest prefix out of this sync entirely —
       # neither uploaded (done above) nor deleted by `--delete`.
       - name: Deploy to S3
+        if: steps.fresh.outputs.current == 'true'
         run: aws s3 sync website/ s3://${{ secrets.AWS_S3_BUCKET }}/website/ --delete --exclude "specs/by-digest/*"
 
       - name: Invalidate CloudFront Cache
-        if: env.CLOUDFRONT_DISTRIBUTION_ID != ''
+        if: steps.fresh.outputs.current == 'true' && env.CLOUDFRONT_DISTRIBUTION_ID != ''
         env:
           CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
         run: aws cloudfront create-invalidation --distribution-id "$CLOUDFRONT_DISTRIBUTION_ID" --paths "/*"

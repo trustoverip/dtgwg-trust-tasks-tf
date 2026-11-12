@@ -56,6 +56,13 @@ jobs:
     name: Release-plz release (crates.io)
     runs-on: ubuntu-24.04
     timeout-minutes: 60
+    concurrency:
+      # Two pushes landing close together would both see a version absent from
+      # crates.io and both run `release-plz release`; the loser fails on a
+      # duplicate, part-way through the workspace. Queue them instead, as the
+      # npm, Go and Dart publish jobs do.
+      group: release-plz-release-${{ github.ref }}
+      cancel-in-progress: false
     permissions:
       contents: write
       pull-requests: read

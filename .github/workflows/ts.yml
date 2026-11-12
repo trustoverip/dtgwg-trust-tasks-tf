@@ -41,6 +41,7 @@ jobs:
   bindings-drift:
     name: build-ts-bindings drift
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -59,10 +60,15 @@ jobs:
           # The name lock is generator output too: a run that names a new
           # shared component must commit it, or the next shape of that name
           # could rename it.
-          git add -N trust-tasks-ts/component-names.lock.json
-          if ! git diff --quiet trust-tasks-ts/src trust-tasks-ts/component-names.lock.json; then
-            echo "::error::TS bindings are stale. Run \`npm run build-ts-bindings\` and commit the diff (including trust-tasks-ts/component-names.lock.json). Do NOT bump @openvtc/trust-tasks — the Release PR does that; see RELEASING.md."
-            git diff trust-tasks-ts/src trust-tasks-ts/component-names.lock.json
+          #
+          # `git status`, not `git diff`: a module the generator newly wrote is
+          # untracked, and `git diff` cannot see an untracked file (codegen.yml).
+          paths=(trust-tasks-ts/src trust-tasks-ts/component-names.lock.json)
+          if [ -n "$(git status --porcelain -- "${paths[@]}")" ]; then
+            echo "::error::TS bindings are stale. Run \`npm run build-ts-bindings\` and commit the diff (including new files and trust-tasks-ts/component-names.lock.json). Do NOT bump @openvtc/trust-tasks — the Release PR does that; see RELEASING.md."
+            git status --short -- "${paths[@]}"
+            git add -N -- "${paths[@]}"
+            git diff -- "${paths[@]}" | head -400
             exit 1
           fi
 
@@ -82,6 +88,7 @@ jobs:
   typecheck:
     name: tsc --noEmit
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -106,6 +113,7 @@ jobs:
   test:
     name: node --test (runtime)
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -140,6 +148,7 @@ jobs:
   packages:
     name: ${{ matrix.package }}
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -178,6 +187,7 @@ jobs:
     name: ts API compatibility
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     permissions:
       contents: read
       pull-requests: read
@@ -225,6 +235,7 @@ jobs:
   conformance:
     name: bindings match specs
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -254,6 +265,7 @@ jobs:
   gen-equivalence:
     name: trust-tasks-gen-ts equivalence
     runs-on: ubuntu-24.04
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -261,6 +273,12 @@ jobs:
       - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
         with:
           toolchain: stable
+      # The bundles below need a release build of trust-tasks-codegen; it was
+      # the one bundle-building job without a cache, so a cold build every run
+      # (#1141). Save from `main` only, as everywhere else.
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          save-if: ${{ github.ref == 'refs/heads/main' }}
       - name: Setup Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
@@ -288,6 +306,7 @@ jobs:
   consumer-app-ts:
     name: example application (trust-tasks-gen-ts)
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

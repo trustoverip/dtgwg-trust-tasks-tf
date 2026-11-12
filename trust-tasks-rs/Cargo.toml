@@ -22,7 +22,12 @@ publish = true
 # repository's CI and nowhere else: a consumer never compiles another crate's
 # integration tests. Shipping them took the .crate to 9.96 MB of crates.io's
 # 10 MB upload limit.
-exclude = ["tests/conformance/"]
+#
+# CHANGELOG.md (~650 KB, and growing with every release) is excluded for the
+# same reason: the crate grew back to 9.8 MiB (#1097). It is published as each
+# crate's GitHub Release and lives in the repository; the README links there.
+# The `package` job in rust.yml fails above 9.9 MiB and warns above 9.5 MiB.
+exclude = ["tests/conformance/", "CHANGELOG.md"]
 
 [features]
 # Enables runtime payload validation against the JSON Schema bundled with
