@@ -26,7 +26,7 @@ import { parseRfc3339, type RejectReason, type TrustTaskDocument } from "./docum
 export const DEFAULT_SKEW_MS = 60_000;
 
 /**
- * The acceptance window {@link consequentialFreshness} applies, in ms.
+ * The acceptance window {@link CONSEQUENTIAL_FRESHNESS} applies, in ms.
  *
  * Five minutes survives a mediator queue, a retry with backoff and a modest
  * clock disagreement, and keeps the record it bounds small. A deployment whose
@@ -34,6 +34,19 @@ export const DEFAULT_SKEW_MS = 60_000;
  * to match — §7.2 makes them one bound.
  */
 export const DEFAULT_MAX_AGE_MS = 5 * 60_000;
+
+/**
+ * The expiry horizon {@link CONSEQUENTIAL_FRESHNESS} applies, in ms: the
+ * furthest after `issuedAt` a stated `expiresAt` is honoured.
+ *
+ * A document's `expiresAt` fixes its acceptance window and the replay record's
+ * retention (SPEC §7.2, *Bounding the record*), so without a horizon the
+ * producer alone decides how long the consumer must remember its `id`. Thirty
+ * days covers a store-and-forward delivery to a recipient offline for weeks; a
+ * later `expiresAt` is clamped to it, not refused. Mirrors Rust's
+ * `DEFAULT_EXPIRY_HORIZON`.
+ */
+export const DEFAULT_EXPIRY_HORIZON_MS = 30 * 24 * 60 * 60_000;
 
 /** How a consumer bounds a document in time before acting on it. */
 export interface FreshnessPolicy {
@@ -45,11 +58,29 @@ export interface FreshnessPolicy {
    */
   readonly skewMs: number;
   /**
-   * Oldest `issuedAt` this consumer accepts, measured back from `now`.
-   * `undefined` means unbounded — the pre-existing behaviour, and the only
-   * setting under which a document carrying neither timestamp is acceptable.
+   * Oldest `issuedAt` this consumer accepts, measured back from `now`, for a
+   * document that carries **no** `expiresAt`. `undefined` means unbounded —
+   * the pre-existing behaviour, and the only setting under which a document
+   * carrying neither timestamp is acceptable.
+   *
+   * A document that states an `expiresAt` is bounded by it instead (SPEC §7.2,
+   * *Bounding the record*: the maximum age applies "where `expiresAt` is
+   * absent"), up to {@link expiryHorizonMs}.
    */
   readonly maxAgeMs?: number;
+  /**
+   * The furthest after `issuedAt` a stated `expiresAt` is honoured, in ms. A
+   * document whose `expiresAt` lies beyond `issuedAt + expiryHorizonMs` is
+   * treated as expiring there: accepted until then (plus {@link skewMs}) and
+   * refused as `expired` after, never refused for stating the later instant;
+   * its replay record is kept until the same instant. `undefined` honours any
+   * `expiresAt`; `0` clamps at `issuedAt` (as in the other runtimes).
+   *
+   * The horizon runs from `issuedAt`, so it does not apply to a document
+   * without one: that is bounded by its `expiresAt` alone. Set
+   * {@link requireIssuedAt} to refuse such documents.
+   */
+  readonly expiryHorizonMs?: number;
   /** Reject a document carrying no `issuedAt`, with `malformedRequest`. */
   readonly requireIssuedAt?: boolean;
 }
@@ -74,8 +105,14 @@ export const DEFAULT_FRESHNESS: FreshnessPolicy = { skewMs: DEFAULT_SKEW_MS };
 export const CONSEQUENTIAL_FRESHNESS: FreshnessPolicy = {
   skewMs: DEFAULT_SKEW_MS,
   maxAgeMs: DEFAULT_MAX_AGE_MS,
+  expiryHorizonMs: DEFAULT_EXPIRY_HORIZON_MS,
   requireIssuedAt: true,
 };
+
+/** `issuedAt + expiryHorizonMs`, or `undefined` with no horizon. */
+function horizonEnd(issuedAt: number, policy: FreshnessPolicy): number | undefined {
+  return policy.expiryHorizonMs === undefined ? undefined : issuedAt + policy.expiryHorizonMs;
+}
 
 /** Wire-safe reason for a `malformedRequest` from a future-dated `issuedAt`. */
 export const FUTURE_ISSUED_AT =
@@ -135,8 +172,15 @@ export function validateFreshness<P>(
       const expiresAt = parseRfc3339(doc.expiresAt);
       // A malformed `expiresAt` is `validateBasic`'s to report; skip it here
       // rather than raise a second, differently-worded rejection for it.
-      if (!Number.isNaN(expiresAt) && expiresAt <= issuedAt) {
-        return malformed(EXPIRY_NOT_AFTER_ISSUANCE);
+      if (!Number.isNaN(expiresAt)) {
+        if (expiresAt <= issuedAt) return malformed(EXPIRY_NOT_AFTER_ISSUANCE);
+        // The producer's `expiresAt` is the window, and `maxAgeMs` does not
+        // apply. Past the horizon it is clamped there, not refused: the
+        // document was acceptable, and is now merely older than this consumer
+        // will remember it.
+        const end = horizonEnd(issuedAt, policy);
+        if (end !== undefined && expiresAt > end && end + policy.skewMs <= now) return stale();
+        return null;
       }
     }
 
@@ -163,9 +207,15 @@ export function validateFreshness<P>(
  * this consumer's willingness to execute it, which SPEC §7.2 makes the same
  * instant as the end of the record's required retention.
  *
- * `expiresAt` fixes it where present; otherwise `issuedAt + maxAgeMs + skewMs`
- * — the same bound {@link validateFreshness} accepts up to, so a replay arriving
- * inside the skew allowance still finds the record.
+ * `expiresAt` fixes it where present, clamped to
+ * `issuedAt + expiryHorizonMs + skewMs` where it lies beyond the horizon;
+ * otherwise `issuedAt + maxAgeMs + skewMs`. Each is the same bound
+ * {@link validateFreshness} refuses from, so a replay arriving inside the skew
+ * allowance still finds the record — and a producer cannot pin a record past
+ * the horizon by stating a distant `expiresAt`. The window is half-open — a
+ * document is acceptable strictly before this instant and refused at it, as for
+ * `expiresAt` — so a guard that drops a record once `retainUntil <= now` never
+ * drops one the pipeline would still execute.
  * `undefined` means this policy places no bound on the document, in which case
  * a consumer **MUST NOT** execute a consequential task on it — there is no
  * window in which to keep the record.
@@ -177,7 +227,12 @@ export function recordExpiry<P>(
 ): number | undefined {
   if (doc.expiresAt !== undefined) {
     const expiresAt = parseRfc3339(doc.expiresAt);
-    if (!Number.isNaN(expiresAt)) return expiresAt;
+    if (!Number.isNaN(expiresAt)) {
+      // No `issuedAt`, no horizon: see `expiryHorizonMs`.
+      const issuedAt = doc.issuedAt === undefined ? NaN : parseRfc3339(doc.issuedAt);
+      const end = Number.isNaN(issuedAt) ? undefined : horizonEnd(issuedAt, policy);
+      return end !== undefined && expiresAt > end ? end + policy.skewMs : expiresAt;
+    }
   }
   if (policy.maxAgeMs === undefined) return undefined;
   const issuedAt = doc.issuedAt === undefined ? NaN : parseRfc3339(doc.issuedAt);

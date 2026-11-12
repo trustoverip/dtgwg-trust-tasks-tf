@@ -1,5 +1,5 @@
 {
-  "description": "Item-11 duplicate-execution vectors (SPEC §7.2 item 11, Keying and comparison). For each case, consume the case's `first` (the top-level `first` when the case has none), then its `second` (at the case's `secondAt` when it has one, otherwise at `now`), under the same `id` against one replay guard, under the consequential checks (5 min maximum age, 60 s skew), with a payload type that models only `payload.subject`, passing each document as received. `expect` is the outcome of the second: `duplicate`, or the refusal's error code.",
+  "description": "Item-11 duplicate-execution vectors (SPEC §7.2 item 11, Keying and comparison). For each case, consume the case's `first` (the top-level `first` when the case has none), then its `second` (at the case's `secondAt` when it has one, otherwise at `now`), under the same `id` against one replay guard, under the consequential checks (5 min maximum age, 30-day expiry horizon, 60 s skew), with a payload type that models only `payload.subject`, passing each document as received. `expect` is the outcome of the second: `duplicate`, or the refusal's error code.",
   "spec": "https://trusttasks.org/spec/conformance/widget/0.1",
   "consumer": "did:web:consumer.example",
   "now": "2026-11-01T00:00:30Z",
@@ -75,6 +75,22 @@
       "secondAt": "2026-11-01T00:06:00Z",
       "expect": "expired",
       "why": "SPEC §7.2 (Bounding the record): retention and willingness to execute are the same bound. The window is half-open, so at its end the record may be dropped and the document is refused, never executed a second time."
+    },
+    {
+      "name": "distant expiresAt, resend one millisecond before the clamped window closes",
+      "first": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000002\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"expiresAt\":\"2027-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:alice.example\"}}",
+      "second": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000002\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"expiresAt\":\"2027-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:alice.example\"}}",
+      "secondAt": "2026-12-01T00:00:59.999Z",
+      "expect": "duplicate",
+      "why": "An expiresAt a year out is clamped to the 30-day expiry horizon: the window ends at issuedAt + 30 days + 60 s skew. Just inside it the record is still held and the resend is absorbed."
+    },
+    {
+      "name": "distant expiresAt, resend at the instant the clamped window closes",
+      "first": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000002\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"expiresAt\":\"2027-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:alice.example\"}}",
+      "second": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000002\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"expiresAt\":\"2027-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:alice.example\"}}",
+      "secondAt": "2026-12-01T00:01:00Z",
+      "expect": "expired",
+      "why": "The clamped window is half-open like the others: at issuedAt + 30 days + 60 s the record may be dropped, so the document is refused rather than executed a second time."
     }
   ]
 }

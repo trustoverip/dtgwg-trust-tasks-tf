@@ -140,9 +140,9 @@ which derives the DID document from it.
 
 Every DID is created in a stated **DID class** — `relationship`, `persona` or `service` —
 at key assurance level 1. A `service` DID is the durable identity of the VTA itself, a
-VTC, a VTN, a host service or an integration: an **optional, alpha** use of `did:webs`
-that a VTA enables separately, and that peers which have not declared `did:webs`
-resolution may not be able to verify. A key-role identity (level 2 or 3) is created by
+VTC, a VTN, a host service or an integration: an **alpha** use of `did:webs`
+that a VTA enables separately. Every VTI node resolves it (VTI-KEY-003); a party that
+is not a VTI node may not. A key-role identity (level 2 or 3) is created by
 [`vta/dids/create`](../../../../dids/create/1.1/spec.md) with the `webs` method profile,
 not here.
 
@@ -231,9 +231,7 @@ Every request creates a new AID: a create is never answered with an existing DID
 Retrying one is safe only under the framework's duplicate-execution protection (the same
 document `id`); a new request makes a second DID.
 
-A **producer** creating a service DID **SHOULD** check that the peers the node will
-deal with have declared `did:webs` resolution, and keep a `did:webvh` or `did:scid:vh:1`
-identity for those that have not. A producer creating a VTA's own identity, a VTC or a
+A producer creating a VTA's own identity, a VTC or a
 VTN **SHOULD** consider level 2 or higher (VTI-KEY-196), which this task does not create.
 
 ## Authorization
@@ -500,6 +498,5 @@ this task to a person **SHOULD** say that the integration is alpha, and that the
 agreement key and services are designations that resolve in full only for verifiers
 whose `did:webs` resolver implements them
 ([CONVENTIONS.md §4](../../../_shared/0.2/CONVENTIONS.md#4-designations)). For a
-`service` DID it **SHOULD** also say that peers which have not declared `did:webs`
-resolution may not be able to verify the node's identity, and that the identity is at key
-assurance level 1.
+`service` DID it **SHOULD** also say that a party that is not a VTI node may not resolve
+`did:webs`, and that the identity is at key assurance level 1.

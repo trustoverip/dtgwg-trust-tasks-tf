@@ -25,7 +25,7 @@ disagree, that specification is the requirement and this document is the defect.
 **What 0.2 changes from [0.1](../0.1/CONVENTIONS.md).** Two things, and nothing else:
 
 1. **Service DIDs.** A `did:webs` DID may be the durable identity of the VTA itself, a
-   VTC, a VTN or a host service, as an optional, alpha method (§1). 0.1 refused every
+   VTC, a VTN or a host service, as an alpha method (§1). 0.1 refused every
    service DID, because VTI-KEY-001 named only `did:webvh` and `did:scid:vh:1`. Every DID
    is now created in a stated DID class (`WebsDidClass`), which the record keeps.
 2. **DID templates.** A DID may be created from a DID template (§9), whose document shape
@@ -62,10 +62,10 @@ The Verifiable Trust Infrastructure specification names `did:webs` as an **optio
 alpha durable-identity method beside `did:webvh` and `did:scid:vh:1`, never the default
 (VTI-KEY-001, VTI-KEY-003;
 [dtgwg-vti-spec#121](https://github.com/trustoverip/dtgwg-vti-spec/pull/121)). Under
-it, a node **MAY** take a `did:webs` identity, **MUST NOT** require a peer to resolve it,
-and acts as it only toward a peer that has declared `"webs"` in its document's
-`resolvedMethods` (VTI-KEY-008), failing the exchange with `methodNotDeclared` otherwise
-(VTI-KEY-009). These tasks implement that position:
+it, a node **MAY** take a `did:webs` identity, and every node resolves one (VTI-KEY-003, as
+amended by [dtgwg-vti-spec#123](https://github.com/trustoverip/dtgwg-vti-spec/pull/123)),
+so a node acts as it toward any peer, whatever method the peer's own identity uses. These
+tasks implement that position:
 
 1. A VTA **MAY** create a `did:webs` service DID, and **MUST** refuse one, with
    `vta/webs/dids/create:serviceDidNotPermitted`, unless its configuration enables
@@ -74,10 +74,9 @@ and acts as it only toward a peer that has declared `"webs"` in its document's
    affects no service DID already created.
 2. **A service `did:webs` is alpha.** Its key agreement key and its services are
    designations (§4) that resolve in full only for verifiers whose `did:webs` resolver
-   implements them, and a peer that has not declared `did:webs` resolution may not be
-   able to verify it at all. An operator giving a node a `did:webs` identity **SHOULD**
-   keep a `did:webvh` or `did:scid:vh:1` identity for every peer that has not declared
-   `did:webs` resolution, and **SHOULD** say so where the node's identity is configured.
+   implements them, and a party that is not a VTI node may not resolve `did:webs` at all
+   (VTI-KEY-009). An operator giving a node a `did:webs` identity whose artefacts such
+   parties rely on **SHOULD** say so where the node's identity is configured.
 3. **Level 1 only.** VTI-KEY-196 recommends level 2 or higher for a VTA's own identity, a
    VTC and a VTN. A VTA creating such an identity here **SHOULD** say, in its operator
    surface, that the identity is at level 1 and that a higher level is created through
@@ -292,7 +291,7 @@ document that drops, moves or adds anything the template described.
 | `id` | the DID | anything but `{DID}` rendered (`documentId`) |
 | `controller` | absent, or the DID | any other value (`controller`) |
 | `@context` | ignored: the host derives its own | — |
-| `resolvedMethods` | ignored: a did:webs node declares `did:webs` by using it, and the derivation renders no declaration of further methods (VTI-KEY-008, and the open issue under VTI-KEY-009). A template written for any method — a VTI node's — therefore carries it without being refused | — |
+| `resolvedMethods` | ignored: it declared the methods a node resolved under the withdrawn VTI-KEY-008, and every node now resolves `did:webs` (VTI-KEY-003). A template written while it stood may carry it without being refused | — |
 | `verificationMethod` | one entry publishing the signing key and one publishing the key agreement key, rendered by the derivation under its own ids and types (`<did>#<signingKey>`, a `JsonWebKey` for the key agreement key) | any other entry, or an entry publishing either key twice (`verificationMethod`) |
 | `authentication`, `assertionMethod` | the signing key, in both, as the derivation renders it | either relationship without the signing key, or listing anything else (`verificationRelationship`) |
 | `keyAgreement` | the key agreement key, as its designation | no `keyAgreement`, or one listing anything else: every DID of the family designates one key agreement key, and the records of the family require it (`keyAgreementRequired`, `verificationRelationship`) |

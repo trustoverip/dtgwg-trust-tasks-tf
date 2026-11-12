@@ -100,7 +100,7 @@ pub use proof::{
 pub use replay::received_document_digest;
 pub use replay::{
     document_digest, DocumentDigest, InMemoryReplayGuard, ReplayGuard, ReplayGuardError,
-    ReplayPolicy, ReplayVerdict,
+    ReplayPolicy, ReplayVerdict, DEFAULT_REPLAY_CAPACITY,
 };
 pub use transport::{ConsistencyError, ResolvedParties, TransportContext, TransportHandler};
 pub use type_uri::{ParseTypeUriError, TypeUri, Variant};

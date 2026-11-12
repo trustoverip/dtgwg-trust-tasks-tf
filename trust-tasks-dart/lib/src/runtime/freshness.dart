@@ -34,11 +34,23 @@ const Duration defaultSkew = Duration(seconds: 60);
 /// to match — §7.2 makes them one bound.
 const Duration defaultMaxAge = Duration(minutes: 5);
 
+/// The expiry horizon [FreshnessPolicy.consequential] applies: the furthest
+/// after `issuedAt` a stated `expiresAt` is honoured.
+///
+/// A document's `expiresAt` fixes its acceptance window and the replay record's
+/// retention (SPEC §7.2, *Bounding the record*), so without a horizon the
+/// producer alone decides how long the consumer must remember its `id`. Thirty
+/// days covers a store-and-forward delivery to a recipient offline for weeks; a
+/// later `expiresAt` is clamped to it, not refused. Mirrors Rust's
+/// `DEFAULT_EXPIRY_HORIZON`.
+const Duration defaultExpiryHorizon = Duration(days: 30);
+
 /// How a consumer bounds a document in time before acting on it.
 class FreshnessPolicy {
   const FreshnessPolicy({
     this.skew = defaultSkew,
     this.maxAge,
+    this.expiryHorizon,
     this.requireIssuedAt = false,
   });
 
@@ -57,6 +69,7 @@ class FreshnessPolicy {
   /// [ReplayGuard] can retain a record for.
   static const FreshnessPolicy consequential = FreshnessPolicy(
     maxAge: defaultMaxAge,
+    expiryHorizon: defaultExpiryHorizon,
     requireIssuedAt: true,
   );
 
@@ -66,10 +79,33 @@ class FreshnessPolicy {
   /// `now` it is given.
   final Duration skew;
 
-  /// The oldest `issuedAt` this consumer accepts, measured back from `now`. Null
-  /// means unbounded — and is the only setting under which a document carrying
-  /// neither timestamp is acceptable.
+  /// The oldest `issuedAt` this consumer accepts, measured back from `now`, for
+  /// a document that carries **no** `expiresAt`. Null means unbounded — and is
+  /// the only setting under which a document carrying neither timestamp is
+  /// acceptable.
+  ///
+  /// A document that states an `expiresAt` is bounded by it instead (SPEC §7.2,
+  /// *Bounding the record*: the maximum age applies "where `expiresAt` is
+  /// absent"), up to [expiryHorizon].
   final Duration? maxAge;
+
+  /// The furthest after `issuedAt` a stated `expiresAt` is honoured. A document
+  /// whose `expiresAt` lies beyond `issuedAt + expiryHorizon` is treated as
+  /// expiring there: accepted until then (plus [skew]) and refused as `expired`
+  /// after, never refused for stating the later instant; its replay record is
+  /// kept until the same instant. Null honours any `expiresAt`;
+  /// [Duration.zero] clamps at `issuedAt` (as in the other runtimes).
+  ///
+  /// The horizon runs from `issuedAt`, so it does not apply to a document
+  /// without one: that is bounded by its `expiresAt` alone. Set
+  /// [requireIssuedAt] to refuse such documents.
+  final Duration? expiryHorizon;
+
+  /// `issuedAt + expiryHorizon`, or null with no horizon.
+  DateTime? _horizonEnd(DateTime issuedAt) {
+    final horizon = expiryHorizon;
+    return horizon == null ? null : issuedAt.add(horizon);
+  }
 
   /// Reject a document carrying no `issuedAt`, with `malformedRequest`.
   final bool requireIssuedAt;
@@ -130,8 +166,21 @@ RejectReason? validateFreshness<P>(
       // A malformed `expiresAt` is [validateBasic]'s to report; skip it here
       // rather than raise a second, differently-worded rejection for it.
       final expiresAt = parseRfc3339(expiresAtRaw);
-      if (expiresAt != null && !expiresAt.isAfter(issuedAt)) {
-        return malformed(expiryNotAfterIssuance);
+      if (expiresAt != null) {
+        if (!expiresAt.isAfter(issuedAt)) {
+          return malformed(expiryNotAfterIssuance);
+        }
+        // The producer's `expiresAt` is the window, and [FreshnessPolicy.maxAge]
+        // does not apply. Past the horizon it is clamped there, not refused: the
+        // document was acceptable, and is now merely older than this consumer
+        // will remember it.
+        final end = policy._horizonEnd(issuedAt);
+        if (end != null &&
+            expiresAt.isAfter(end) &&
+            !end.add(policy.skew).isAfter(now)) {
+          return stale();
+        }
+        return null;
       }
     }
 
@@ -158,9 +207,15 @@ RejectReason? validateFreshness<P>(
 /// this consumer's willingness to execute it, which SPEC §7.2 makes the same
 /// instant as the end of the record's required retention.
 ///
-/// `expiresAt` fixes it where present; otherwise `issuedAt + maxAge + skew` — the
-/// same bound [validateFreshness] accepts up to, so a replay arriving inside the
-/// skew allowance still finds the record. Null means
+/// `expiresAt` fixes it where present, clamped to
+/// `issuedAt + expiryHorizon + skew` where it lies beyond the horizon; otherwise
+/// `issuedAt + maxAge + skew`. Each is the same bound [validateFreshness]
+/// refuses from, so a replay arriving inside the skew allowance still finds the
+/// record — and a producer cannot pin a record past the horizon by stating a
+/// distant `expiresAt`. The window is half-open — a document is acceptable
+/// strictly before this instant and refused at it, as for `expiresAt` — so a
+/// guard that drops a record once `retainUntil` is not after `now` never drops
+/// one the pipeline would still execute. Null means
 /// this policy places no bound on the document, in which case a consumer **MUST
 /// NOT** execute a consequential task on it — there is no window in which to
 /// keep the record.
@@ -172,7 +227,15 @@ DateTime? recordExpiry<P>(
   final expiresAtRaw = doc.expiresAt;
   if (expiresAtRaw != null) {
     final expiresAt = parseRfc3339(expiresAtRaw);
-    if (expiresAt != null) return expiresAt;
+    if (expiresAt != null) {
+      // No `issuedAt`, no horizon: see [FreshnessPolicy.expiryHorizon].
+      final issuedAtRaw = doc.issuedAt;
+      final issuedAt = issuedAtRaw == null ? null : parseRfc3339(issuedAtRaw);
+      final end = issuedAt == null ? null : policy._horizonEnd(issuedAt);
+      return end != null && expiresAt.isAfter(end)
+          ? end.add(policy.skew)
+          : expiresAt;
+    }
   }
   final maxAge = policy.maxAge;
   if (maxAge == null) return null;

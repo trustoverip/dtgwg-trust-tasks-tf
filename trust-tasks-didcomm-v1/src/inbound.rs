@@ -74,7 +74,7 @@ use crate::pack::unpack_received;
 
 /// Where a [`DidcommV1Consumer`] keeps the SPEC §7.2 item 11 record.
 enum Record {
-    /// The batteries-included default: an in-process LRU.
+    /// The batteries-included default: an in-process, bounded record.
     InProcess(InMemoryReplayGuard),
     /// A caller-supplied guard — the shape a replicated deployment needs.
     Shared(Arc<dyn ReplayGuard>),
