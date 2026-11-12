@@ -54,7 +54,7 @@ export interface MessagingMuxAckResponsePayload {
 export interface AckRefusal {
   messageId: MessageId;
   /**
-   * `notPermitted`: the message is held for a member this connection carries, which lacks the `delete` scope (or whose account no longer stands); it stays in the member's inbox. `notFound`: anything else — already deleted, expired, never delivered here, or held for a DID the connection does not carry, which is not told apart from a message that does not exist.
+   * `notPermitted`: the message is held for a member this connection carries with the `receive` or `pickup` scope, which lacks the `delete` scope (or whose account no longer stands); it stays in the member's inbox. `notFound`: anything else — already deleted, expired, never delivered here, or held for a DID whose mail the connection cannot read (one it does not carry, or carries with neither `receive` nor `pickup`), which is not told apart from a message that does not exist.
    */
   reason: "notFound" | "notPermitted";
 }
@@ -151,7 +151,7 @@ export const PAYLOAD_SCHEMA = {
             "notFound",
             "notPermitted"
           ],
-          "description": "`notPermitted`: the message is held for a member this connection carries, which lacks the `delete` scope (or whose account no longer stands); it stays in the member's inbox. `notFound`: anything else — already deleted, expired, never delivered here, or held for a DID the connection does not carry, which is not told apart from a message that does not exist."
+          "description": "`notPermitted`: the message is held for a member this connection carries with the `receive` or `pickup` scope, which lacks the `delete` scope (or whose account no longer stands); it stays in the member's inbox. `notFound`: anything else — already deleted, expired, never delivered here, or held for a DID whose mail the connection cannot read (one it does not carry, or carries with neither `receive` nor `pickup`), which is not told apart from a message that does not exist."
         }
       }
     },
@@ -231,7 +231,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "notFound",
             "notPermitted"
           ],
-          "description": "`notPermitted`: the message is held for a member this connection carries, which lacks the `delete` scope (or whose account no longer stands); it stays in the member's inbox. `notFound`: anything else — already deleted, expired, never delivered here, or held for a DID the connection does not carry, which is not told apart from a message that does not exist."
+          "description": "`notPermitted`: the message is held for a member this connection carries with the `receive` or `pickup` scope, which lacks the `delete` scope (or whose account no longer stands); it stays in the member's inbox. `notFound`: anything else — already deleted, expired, never delivered here, or held for a DID whose mail the connection cannot read (one it does not carry, or carries with neither `receive` nor `pickup`), which is not told apart from a message that does not exist."
         }
       }
     },
