@@ -49,9 +49,9 @@
 //!
 //! The generated code names the runtime as `::trust_tasks_rs`, and serde,
 //! serde_json, regress and chrono through `trust_tasks_rs::__private`, so an
-//! application needs exactly two dependencies — `trust-tasks-rs` (with
-//! `default-features = false` to leave out the prebuilt specification
-//! modules) and this crate as a build dependency.
+//! application needs exactly two dependencies — `trust-tasks-rs` (its default
+//! features, which leave out every prebuilt specification module) and this
+//! crate as a build dependency.
 //!
 //! # What is checked
 //!

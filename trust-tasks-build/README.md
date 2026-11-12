@@ -15,7 +15,7 @@ for the model.
 ## Use
 
 ```sh
-cargo add trust-tasks-rs --no-default-features   # the runtime, no prebuilt modules
+cargo add trust-tasks-rs                         # the runtime; no prebuilt module is on by default
 cargo add --build trust-tasks-build
 ```
 

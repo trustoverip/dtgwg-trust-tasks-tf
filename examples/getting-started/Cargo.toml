@@ -9,10 +9,10 @@ description = "The worked example behind GETTING-STARTED.md: a signed acl/grant/
 publish = false
 
 [dependencies]
-# The facade without its default `all-specs`: the runtime and the two crates
-# this example uses, and no prebuilt specification module. build.rs generates
-# the one task it speaks.
-trust-tasks = { path = "../../trust-tasks", default-features = false, features = ["https", "proof-affinidi"] }
+# The facade with no spec family (it has no default features): the runtime and
+# the two crates this example uses, and no prebuilt specification module.
+# build.rs generates the one task it speaks.
+trust-tasks = { path = "../../trust-tasks", features = ["https", "proof-affinidi"] }
 tokio = { version = "1", features = ["full"] }
 uuid = { version = "1", features = ["v4"] }
 affinidi-secrets-resolver = "0.5"

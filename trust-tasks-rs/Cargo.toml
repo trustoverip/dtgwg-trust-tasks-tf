@@ -40,10 +40,11 @@ validate = ["dep:jsonschema"]
 # gets its feature from the generator, and
 # `tests/spec_feature_manifest.rs` fails if this table and `specs/` disagree.
 # trust-tasks-codegen:begin
-# One feature per top-level spec family. `default` is the umbrella, so an
-# unconfigured consumer gets every family exactly as before; the saving is
-# `default-features = false, features = ["vault"]` and friends.
-default = ["all-specs"]
+# One feature per top-level spec family, and the `all-specs` umbrella. `default`
+# is empty (#1102): every prebuilt module is deprecated, so a plain dependency
+# compiles the runtime alone. Opt in with `features = ["vault"]` and
+# friends, or `features = ["all-specs"]` for every family.
+default = []
 all-specs = [
     "acl",
     "audit",
@@ -145,6 +146,5 @@ proptest = "1"
 # them costs more memory than docs.rs gives a build. The runtime, `validate`,
 # and one family as a specimen of what generated code looks like.
 [package.metadata.docs.rs]
-no-default-features = true
 features = ["validate", "acl"]
 rustdoc-args = ["--cfg", "docsrs"]

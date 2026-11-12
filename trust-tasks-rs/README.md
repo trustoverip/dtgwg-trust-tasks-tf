@@ -13,8 +13,8 @@ The framework specification this crate implements is [`SPEC.md`](https://github.
 
 > **The prebuilt specification modules under `specs::` are deprecated** (all but
 > the framework's own `trust-task-*` families) and will be removed in a future
-> release. Depend on this crate with `default-features = false` for the runtime
-> alone, pin the tasks you use with the `trust-tasks` CLI, and generate them in
+> release. A plain dependency on this crate is the runtime alone (no family is
+> on by default), pin the tasks you use with the `trust-tasks` CLI, and generate them in
 > `build.rs` with [`trust-tasks-build`](https://crates.io/crates/trust-tasks-build)
 > — see [Generating only the tasks you use](#generating-only-the-tasks-you-use).
 
@@ -251,8 +251,8 @@ codegen can't produce.
 
 | Feature | What it enables |
 |---|---|
-| _(default)_ | `all-specs` — the framework crate plus every generated spec family, which is what the crate has always shipped |
-| `all-specs` | Every top-level spec family |
+| _(default)_ | nothing: the runtime and the framework's own `trust-task-*` modules, no prebuilt spec family. In 0.38 and earlier the default was `all-specs`; a consumer that still uses `specs::<family>` now asks for it |
+| `all-specs` | Every top-level spec family (deprecated, like the modules it compiles) |
 | one per family | `acl`, `vault`, `keys`, … — one per top-level directory under `specs/`, listed in the `[features]` table of this crate's `Cargo.toml`; each is the `specs::<family>` module tree and nothing else |
 | `validate` | Runtime JSON Schema validation. Pulls in [`jsonschema`](https://crates.io/crates/jsonschema) and exposes a `validate` module + `ValidatedPayload` impls for every generated request payload. Belt-and-suspenders over serde's structural decoding — catches `pattern`, `minItems`, and `additionalProperties` constraints that the typed structs can't always encode. |
 
@@ -262,23 +262,23 @@ An application can skip the prebuilt modules entirely: pin the specification
 versions it speaks with the [`trust-tasks`](https://crates.io/crates/trust-tasks-cli)
 command and generate them at build time with
 [`trust-tasks-build`](https://crates.io/crates/trust-tasks-build), depending on
-this crate with `default-features = false` for the runtime alone. Three tasks
-build in about 8 s and 0.4 GB, against minutes and over 16 GB for the default
-features. See the `trust-tasks-build` README.
+this crate with its default features, which are the runtime alone. Three tasks
+build in about 8 s and 0.4 GB, against minutes and over 16 GB for `all-specs`.
+See the `trust-tasks-build` README.
 
 ### Compiling only the families you use
 
 `specs/` is well over a thousand generated modules and over 90 MB of source,
-one feature-gated family per top-level directory. Depending on the crate with
-default features compiles all of it — minutes and over 16 GB of memory for a
-cold build. If you use one family, say so:
+one feature-gated family per top-level directory, and none of them is on by
+default. `all-specs` compiles all of it — minutes and over 16 GB of memory for a
+cold build. If you still use a prebuilt family, name just that one:
 
 ```sh
-cargo add trust-tasks-rs --no-default-features --features vault
+cargo add trust-tasks-rs --features vault
 ```
 
 A single family builds in seconds and about 1 GB (`cargo test -p
-trust-tasks-rs --no-default-features --features vault` takes about 13 s cold,
+trust-tasks-rs --features vault` takes about 13 s cold,
 dependencies cached). These prebuilt modules are deprecated either way; the
 section above is the replacement.
 

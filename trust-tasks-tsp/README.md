@@ -19,7 +19,7 @@ framework VID).
 cargo add trust-tasks-tsp
 ```
 
-or, through the facade, `cargo add trust-tasks --no-default-features --features tsp`
+or, through the facade, `cargo add trust-tasks --features tsp`
 and use `trust_tasks::tsp`.
 
 ## Wire shape
