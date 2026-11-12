@@ -352,9 +352,8 @@ jobs:
             sdk: stable
           # Pure wire logic, no crypto or transport dep. 3.6 is its floor — the
           # minimum `lints` 5.1 (its only dev dependency) allows, same as
-          # trust-tasks-dart-proof. Tested here but NOT in the release matrices
-          # yet: its first pub.dev publish is manual, and the release wiring +
-          # website flip follow that.
+          # trust-tasks-dart-proof. Released like the other siblings (tag-dart
+          # in publish.yml, DART_PACKAGES in scripts/release-pr.sh).
           - package: trust-tasks-dart-capability-client
             sdk: "3.6"
           - package: trust-tasks-dart-capability-client
