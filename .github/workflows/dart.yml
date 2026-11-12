@@ -409,11 +409,29 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      # A PR touching none of this package's inputs skips the steps below and
+      # the job still reports success (it may be a required check, so the job
+      # itself always runs). The inputs: the package, the core it resolves
+      # from the tree (and whose floor the downgrade leg reads from its
+      # pubspec), the shared fixtures, and this workflow. Push, dispatch and
+      # the Release PR always run in full; see .github/actions/changed-paths
+      # (#1141). A downgrade leg skipped here is next run on `main`, where a
+      # newly published core is picked up.
+      - name: Did this PR change this job's inputs?
+        id: changes
+        uses: ./.github/actions/changed-paths
+        with:
+          paths: |
+            ${{ matrix.package }}
+            trust-tasks-dart
+            fixtures
+            .github/workflows/dart.yml
       - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
+        if: steps.changes.outputs.run == 'true'
         with:
           sdk: ${{ matrix.sdk }}
       - name: Pin ssi
-        if: matrix.ssi
+        if: steps.changes.outputs.run == 'true' && (matrix.ssi)
         working-directory: ${{ matrix.package }}
         run: |
           printf '  ssi: %s\n' "${{ matrix.ssi }}" >> pubspec_overrides.yaml
@@ -422,7 +440,7 @@ jobs:
       # a release, so the floor is resolved from pub.dev.
       - name: Use the published core
         id: floor
-        if: matrix.downgrade
+        if: steps.changes.outputs.run == 'true' && (matrix.downgrade)
         working-directory: ${{ matrix.package }}
         run: |
           floor=$(sed -n 's/^  trust_tasks: *\^\([0-9][0-9.]*\).*/\1/p' pubspec.yaml)
@@ -436,19 +454,19 @@ jobs:
           sed -i '/^  trust_tasks:$/,/^    path: /d' pubspec_overrides.yaml
           grep -qE '^  [a-z_]+:' pubspec_overrides.yaml || rm pubspec_overrides.yaml
       - name: Install dependencies
-        if: steps.floor.outputs.skip != 'true'
+        if: steps.changes.outputs.run == 'true' && (steps.floor.outputs.skip != 'true')
         working-directory: ${{ matrix.package }}
         run: |
           if [ "${{ matrix.downgrade }}" = true ]; then dart pub downgrade; else dart pub get; fi
           dart pub deps --style=compact | grep -E '^- (ssi|trust_tasks) '
       - name: Analyze
-        if: '!matrix.downgrade'
+        if: steps.changes.outputs.run == 'true' && (!matrix.downgrade)
         working-directory: ${{ matrix.package }}
         run: dart analyze --fatal-infos
       # lib/ is what a consumer compiles and example/ is what pub.dev shows;
       # test/ may exercise in-tree core the floor predates.
       - name: Analyze at the floors
-        if: matrix.downgrade && steps.floor.outputs.skip != 'true'
+        if: steps.changes.outputs.run == 'true' && (matrix.downgrade && steps.floor.outputs.skip != 'true')
         working-directory: ${{ matrix.package }}
         env:
           HEAD_REF: ${{ github.head_ref }}
@@ -472,13 +490,13 @@ jobs:
           fi
           echo "::warning file=${{ matrix.package }}/pubspec.yaml::lib/ needs core API no published trust_tasks has yet; the floor is tested once that core is released."
       - name: Check formatting
-        if: matrix.sdk == 'stable' && !matrix.ssi && !matrix.downgrade
+        if: steps.changes.outputs.run == 'true' && (matrix.sdk == 'stable' && !matrix.ssi && !matrix.downgrade)
         working-directory: ${{ matrix.package }}
         run: |
           floor=$(sed -n 's/^ *sdk: *^\{0,1\}\([0-9]*\.[0-9]*\).*/\1/p' pubspec.yaml | head -1)
           echo "formatting at language version $floor"
           dart format --output=none --set-exit-if-changed --language-version="$floor" .
       - name: Test
-        if: '!matrix.downgrade'
+        if: steps.changes.outputs.run == 'true' && (!matrix.downgrade)
         working-directory: ${{ matrix.package }}
         run: dart test

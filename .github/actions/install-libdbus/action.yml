@@ -1,0 +1,19 @@
+name: Install libdbus-1-dev
+description: >-
+  Affinidi's TDK pulls in keyring / secret-storage crates whose build scripts
+  probe for `libdbus-1` via pkg-config. Install the dev headers so libdbus-sys
+  finds the system library. Shared by the Rust and release jobs (#1141).
+
+runs:
+  using: composite
+  steps:
+    - name: Install libdbus-1-dev
+      shell: bash
+      run: |
+        # `apt-get update` exits non-zero when ANY configured source fails, and
+        # the runner image ships Google's Chrome repo, which periodically serves
+        # a Packages.gz whose hash does not match its Release file. These jobs
+        # need Ubuntu's archive and nothing else, so a failed update is not
+        # informative — the *install* is the check, and it still fails loudly.
+        sudo apt-get update || true
+        sudo apt-get install -y libdbus-1-dev pkg-config
