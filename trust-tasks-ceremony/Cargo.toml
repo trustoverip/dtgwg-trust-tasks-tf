@@ -29,7 +29,7 @@ thiserror = "2"
 # digest and a proof over the same document stop agreeing on what the document
 # is.
 serde_json_canonicalizer = { version = "0.4", optional = true }
-sha2 = { version = "0.10", optional = true }
+sha2 = { version = "0.11", optional = true }
 multibase = { version = "0.9", optional = true }
 
 [features]
