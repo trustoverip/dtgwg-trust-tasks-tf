@@ -148,8 +148,9 @@ impl Verifier {
     /// member dropped by the payload type — any of those makes a genuine
     /// proof fail. A receiver holding the raw JSON should verify that.
     ///
-    /// Checks, in order: a `proof` member is present and well-formed, and its
-    /// `expires`, if any, has not passed; the document names an `issuer` controlling the proof's verificationMethod
+    /// Checks, in order: a `proof` member is present and well-formed, its
+    /// `created`, if any, has every field in range, and its `expires`, if
+    /// any, has not passed; the document names an `issuer` controlling the proof's verificationMethod
     /// (SPEC §4.8, exact string equality); the `proofPurpose` names a signing
     /// relationship and the issuer lists the verificationMethod under it
     /// (W3C Data Integrity / Controlled Identifiers §3.3); the signature
@@ -164,6 +165,7 @@ impl Verifier {
         // passed one is refused as such; any other is refused as unsupported,
         // because the signature checked below would not cover it.
         check_expires(&proof_value, (self.clock)())?;
+        check_created(&proof_value)?;
         if proof_value.get("expires").is_some() {
             return Err(VerificationError::MalformedProof(
                 UNSUPPORTED_EXPIRES.to_string(),
@@ -261,6 +263,24 @@ fn check_expires(
         )));
     }
     Ok(())
+}
+
+/// Refuse a proof whose `created` is present but is not a `dateTimeStamp`
+/// with every field in range — the rule [`check_expires`] applies, and the
+/// one the Go, TypeScript and Dart verifiers apply to `created`. chrono, which
+/// the upstream proof type parses `created` with, would take a leap second
+/// and a lower-case `t`/`z`. Only the form is checked here; `created` is not
+/// compared with the clock.
+fn check_created(proof: &Value) -> Result<(), VerificationError> {
+    let Some(created) = proof.get("created") else {
+        return Ok(());
+    };
+    match created.as_str().and_then(parse_date_time_stamp) {
+        Some(_) => Ok(()),
+        None => Err(VerificationError::MalformedProof(format!(
+            "proof.created must be a dateTimeStamp with Z or an offset: {created}"
+        ))),
+    }
 }
 
 /// `YYYY-MM-DDThh:mm:ss[.f+](Z|±hh:mm)` with every field in range — month

@@ -80,11 +80,21 @@ pub struct TrustTask<P> {
     pub recipient: Option<String>,
 
     /// Timestamp recording when the document was produced (SPEC.md §4.2).
-    #[serde(rename = "issuedAt", default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "issuedAt",
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "rfc3339::deserialize_opt"
+    )]
     pub issued_at: Option<DateTime<Utc>>,
 
     /// Timestamp after which the document is no longer valid (SPEC.md §4.2).
-    #[serde(rename = "expiresAt", default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "expiresAt",
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "rfc3339::deserialize_opt"
+    )]
     pub expires_at: Option<DateTime<Utc>>,
 
     /// The task-specific body, whose internal structure is defined by the
@@ -433,6 +443,82 @@ impl<P> TrustTask<P> {
 pub fn issued_at_now() -> DateTime<Utc> {
     use chrono::SubsecRound;
     Utc::now().trunc_subsecs(0)
+}
+
+/// Reading `issuedAt` and `expiresAt` (SPEC §4.2, RFC 3339 `date-time`).
+pub(crate) mod rfc3339 {
+    use chrono::{DateTime, Utc};
+    use serde::{de::Error as _, Deserialize, Deserializer};
+
+    /// `YYYY-MM-DD(T|t)hh:mm:ss[.f+](Z|z|±hh:mm)` with every field in range:
+    /// month 1-12, a day the month has (leap years included), hour 0-23,
+    /// minute and second 0-59 (no leap second), and an offset of at most
+    /// 23:59. chrono's parser alone would also take a space for the `T` and a
+    /// leap second. The TypeScript, Go and Dart runtimes apply the same rule,
+    /// and `fixtures/consume/timestamps.json` holds the shared cases.
+    pub(crate) fn parse(s: &str) -> Option<DateTime<Utc>> {
+        let b = s.as_bytes();
+        let num = |r: std::ops::Range<usize>| -> Option<u32> {
+            let d = b.get(r)?;
+            d.iter()
+                .all(u8::is_ascii_digit)
+                .then(|| d.iter().fold(0u32, |n, c| n * 10 + u32::from(c - b'0')))
+        };
+        if b.len() < 20
+            || b[4] != b'-'
+            || b[7] != b'-'
+            || !matches!(b[10], b'T' | b't')
+            || b[13] != b':'
+            || b[16] != b':'
+        {
+            return None;
+        }
+        let (year, month, day) = (num(0..4)?, num(5..7)?, num(8..10)?);
+        let (hour, minute, second) = (num(11..13)?, num(14..16)?, num(17..19)?);
+        if hour > 23 || minute > 59 || second > 59 {
+            return None;
+        }
+        chrono::NaiveDate::from_ymd_opt(i32::try_from(year).ok()?, month, day)?;
+        let mut rest = &b[19..];
+        if let Some(fraction) = rest.strip_prefix(b".") {
+            let n = fraction.iter().take_while(|c| c.is_ascii_digit()).count();
+            if n == 0 {
+                return None;
+            }
+            rest = &fraction[n..];
+        }
+        match rest {
+            [b'Z' | b'z'] => {}
+            [b'+' | b'-', ..] if rest.len() == 6 && rest[3] == b':' => {
+                let oh = num(b.len() - 5..b.len() - 3)?;
+                let om = num(b.len() - 2..b.len())?;
+                if oh > 23 || om > 59 {
+                    return None;
+                }
+            }
+            _ => return None,
+        }
+        // Every field is now known to be in range, so chrono reads the same
+        // instant the other runtimes do.
+        DateTime::parse_from_rfc3339(&s.to_ascii_uppercase())
+            .ok()
+            .map(|t| t.with_timezone(&Utc))
+    }
+
+    /// `deserialize_with` for an optional RFC 3339 member.
+    pub(crate) fn deserialize_opt<'de, D>(d: D) -> Result<Option<DateTime<Utc>>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        match Option::<String>::deserialize(d)? {
+            None => Ok(None),
+            Some(s) => parse(&s).map(Some).ok_or_else(|| {
+                D::Error::custom(format!(
+                    "{s:?} is not an RFC 3339 date-time with every field in range"
+                ))
+            }),
+        }
+    }
 }
 
 /// The `type` URI every error response this library emits carries.
