@@ -18,9 +18,11 @@ giving you a typed `Payload` and (where the spec defines one)
 `index.ts` re-exports every module under a stable name keyed by the
 spec slug.
 
-The Rust counterpart is [`trust-tasks-rs`](https://crates.io/crates/trust-tasks-rs);
-both crates are regenerated together so the Rust and TypeScript wire
-shapes stay byte-identical.
+The Rust, Go and Dart counterparts are
+[`trust-tasks-rs`](https://crates.io/crates/trust-tasks-rs),
+[`trust-tasks-go`](https://pkg.go.dev/github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go)
+and [`trust_tasks`](https://pub.dev/packages/trust_tasks); all four are
+regenerated together so their wire shapes stay identical.
 
 > **The prebuilt specification modules are deprecated** (all but the
 > framework's own `trust-task-*` ones) and will be removed in a future release.
@@ -39,22 +41,42 @@ npm install @openvtc/trust-tasks
 
 ## Usage
 
+Import the runtime from `@openvtc/trust-tasks/runtime`, and the tasks you use
+from the modules `trust-tasks-gen-ts` generated into your own source tree:
+
+```sh
+npm install @openvtc/trust-tasks && npm install -D @openvtc/trust-tasks-gen
+trust-tasks add acl/grant/0.3                           # pins it in trust-tasks.lock
+trust-tasks generate --lang ts --out src/trust-tasks    # writes the modules
+```
+
 ```ts
-import { AclGrant_v0_2, DidManagementDidRegister_v0_1 } from "@openvtc/trust-tasks";
+import { issuedAtNow, type TrustTaskDocument } from "@openvtc/trust-tasks/runtime";
+import { AclGrant_v0_3 } from "./trust-tasks/index.js"; // generated
 
 // Compose a request payload, type-checked against the spec's
 // payload.schema.json. `Payload` is a stable alias every module
 // exports, so you never have to look up the title-derived interface
-// name (here, `ACLGrant02Payload`).
-const grant: AclGrant_v0_2.Payload = {
+// name.
+const grant: AclGrant_v0_3.Payload = {
   entry: {
     subject: "did:key:z6MkAlice",
     role: "admin",
     act: { scope: "contexts", contexts: ["ctx/payments"] },
     keys: { scope: "all" },
     capabilities: { scope: "ceiling" },
+    purposes: { scope: "any" },
   },
   reason: "onboarding",
+};
+
+const request: TrustTaskDocument<AclGrant_v0_3.Payload> = {
+  id: crypto.randomUUID(),
+  type: AclGrant_v0_3.TYPE_URI,
+  issuer: "did:key:z6MkAlice",
+  recipient: "did:web:maintainer.example",
+  issuedAt: issuedAtNow(), // whole seconds — never toISOString() (SPEC §13.1 item 3)
+  payload: grant,
 };
 
 // Each module exports the Response sub-schema too when the spec
@@ -62,28 +84,25 @@ const grant: AclGrant_v0_2.Payload = {
 // Fire-and-forget specs export neither `Response` nor
 // `RESPONSE_TYPE_URI`, because SPEC.md §4.4.1 forbids emitting a
 // `#response` document for them.
-const reply: AclGrant_v0_2.Response = {
+const reply: AclGrant_v0_3.Response = {
   entry: { /* … */ },
-};
-
-// did-management example.
-const register: DidManagementDidRegister_v0_1.Payload = {
-  path: "alice",
-  method: "webvh",
-  didData: "{\"versionId\":\"1-…\",…}",
 };
 ```
 
-For the full list of generated modules, see [`src/index.ts`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/trust-tasks-ts/src/index.ts)
-or the [website index](https://trusttasks.org/).
+A generated module has the same shape as the prebuilt module of the same
+version in this package (`AclGrant_v0_3` from the package root), so moving off
+the prebuilt tree is a change to the import line. The prebuilt modules are
+listed in [`src/index.ts`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/trust-tasks-ts/src/index.ts);
+importing the package root loads every one of them.
 
 ## Module layout
 
-Each spec lands at a stable path:
+Each prebuilt spec module lands at a stable path (`trust-tasks-gen-ts` names the
+modules it generates the same way):
 
 ```
 src/
-├── acl/grant/0.2/payload.ts           // AclGrant_v0_2
+├── acl/grant/0.3/payload.ts           // AclGrant_v0_3
 ├── auth/authenticate/0.3/payload.ts   // AuthAuthenticate_v0_3
 ├── did-management/did/register/0.1/
 │   └── payload.ts                     // DidManagementDidRegister_v0_1
@@ -102,11 +121,11 @@ distinct names — there is no "latest" alias by design.
 A definition several specs `$ref` — `Ext` (the SPEC §4.5.1 extension object),
 `AclEntry`, `VaultEntry`, `DigestMultibase` — is declared **once**, in
 `src/_shared/components.ts`, and re-exported from every spec module that uses
-it under the name that module has always used. So `AclGrant_v0_2.AclEntry` and
-`AclShow_v0_2.AclEntry` are the same type, not two copies of one shape:
+it under the name that module has always used. So `AclGrant_v0_3.AclEntry` and
+`AclShow_v0_3.AclEntry` are the same type, not two copies of one shape:
 
 ```ts
-import { SharedComponents, type AclGrant_v0_2 } from "@openvtc/trust-tasks";
+import { SharedComponents, type AclGrant_v0_3 } from "@openvtc/trust-tasks"; // prebuilt
 
 // Write a helper once, over the shared definition, and it takes any spec's.
 const namespaces = (ext: SharedComponents.Ext) => Object.keys(ext);
@@ -125,15 +144,17 @@ and so on. Those numbered names are gone; see
 
 ## Consuming a document
 
-A conforming *consumer* applies all eight checks in
+A conforming *consumer* applies the checks in
 [SPEC.md §7.2](https://trusttasks.org/SPEC#72-consumer-requirements) before
 acting on an inbound document. Three of them — recipient-REQUIRED, proof-REQUIRED
 and audience binding — are declared *per specification* and cannot be derived
 from the document itself, so every generated module exports the declarations as
 `SPEC` (and `RESPONSE_SPEC`, where the spec defines a response).
 
-`consumeInbound` runs items 2–8, the freshness bound, and item 11's
-duplicate-execution record, then calls your handler. Item 3 is a check that the
+`consumeInbound` runs items 2–8, item 11's duplicate-execution record and item
+13's freshness bound, then calls your handler. Item 2 (payload schema) runs
+through the `payloadPolicy` you pass: `{ kind: "validate", validate }` checks the
+payload against `spec.payloadSchema`, which every generated module carries. Item 3 is a check that the
 document's `type` is `spec.typeUri` (`#request` and no fragment alike), or a
 later version whose `extends` chain reaches it: anything else is refused
 `unsupportedVersion` (the same specification) or `unsupportedType` (another
@@ -151,16 +172,16 @@ import {
   InMemoryReplayGuard,
   respondWith,
   StaticTransport,
-  AclGrant_v0_2,
-} from "@openvtc/trust-tasks";
+} from "@openvtc/trust-tasks/runtime";
+import { AclGrant_v0_3 } from "./trust-tasks/index.js"; // generated
 
 // The guard *is* the duplicate-execution record — one per consumer, held for
 // the process's lifetime. Back it with a shared store if you run replicas.
 const guard = new InMemoryReplayGuard();
 
-const outcome = await consumeInbound<AclGrant_v0_2.Payload, AclGrant_v0_2.Response>({
+const outcome = await consumeInbound<AclGrant_v0_3.Payload, AclGrant_v0_3.Response>({
   transport: new StaticTransport({ issuer: peerVid }), // what the transport authenticated
-  spec: AclGrant_v0_2.SPEC,
+  spec: AclGrant_v0_3.SPEC,
   proofPolicy: { kind: "verify", verify: myVerifier },
   payloadPolicy: { kind: "validate", validate: myValidator }, // or acceptUnvalidated
   // acl/grant is consequential: a replayed envelope must not grant twice.
@@ -247,13 +268,15 @@ itself, not a copy of it.
 
 ## Validating payloads at runtime
 
-This package does not bundle a JSON-Schema validator, so §7.2 items 1–2
-(framework and payload schema validation) are yours to wire up, beyond the
-envelope member types and nesting bound `consumeInbound` checks itself. Fetch the
-`payload.schema.json` from
-`https://trusttasks.org/spec/<slug>/<version>` and feed it to
-[`ajv`](https://www.npmjs.com/package/ajv) or any other Draft 2020-12
-validator.
+Item 2 needs no fetch: every module carries its payload schema, with every
+`$ref` inlined, as `SPEC.payloadSchema` (and `RESPONSE_SPEC.payloadSchema`), and
+`consumeInbound` applies it through `payloadPolicy`. What this package does not
+bundle is the JSON Schema validator itself — pass `{ kind: "validate", validate }`
+with a function over [`ajv`](https://www.npmjs.com/package/ajv) or any other
+Draft 2020-12 validator, or `{ kind: "acceptUnvalidated" }` to say explicitly
+that you rely on another layer. Item 1 (the framework schema) belongs to your
+parse, beyond the envelope member types and nesting bound `consumeInbound`
+checks itself.
 
 ## Versioning
 
@@ -289,15 +312,20 @@ package and a patch on the crate. Narrow with `isStandardCode` and keep a
 
 ## License
 
-Apache-2.0. See [LICENSE.md](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/LICENSE.md)
-at the repo root.
+Apache-2.0 — see [`LICENSE`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/trust-tasks-ts/LICENSE),
+included in the published package.
 
 ## Contributing
 
-This package is generated, not authored by hand. To change the
-exported surface, add or modify a spec under `specs/` in the
-[dtgwg-trust-tasks-tf](https://github.com/trustoverip/dtgwg-trust-tasks-tf)
-repo and run `npm run build-ts-bindings` from the repo root. The
-generator updates this package's `src/` tree atomically. See
+The package has two halves, maintained differently:
+
+- **The specification modules** (`src/<slug>/<version>/`, `src/_shared/`,
+  `src/index.ts`) are generated, never edited by hand. To change them, add or
+  modify a spec under `specs/` in the
+  [dtgwg-trust-tasks-tf](https://github.com/trustoverip/dtgwg-trust-tasks-tf)
+  repo and run `npm run build-ts-bindings` from the repo root.
+- **The runtime** (`src/_runtime/`, exported as `@openvtc/trust-tasks/runtime`)
+  is hand-written: the §7.2 pipeline, the document helpers and the transport
+  types. Change it like any other source, with tests under `test/`. See
 [`CONTRIBUTING-SPECS.md`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/CONTRIBUTING-SPECS.md)
 for the spec authoring guide.

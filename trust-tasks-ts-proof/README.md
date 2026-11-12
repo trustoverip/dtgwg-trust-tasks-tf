@@ -18,7 +18,7 @@ npm install @openvtc/trust-tasks @openvtc/trust-tasks-proof
 ## Verifying
 
 ```ts
-import { consumeInbound } from "@openvtc/trust-tasks";
+import { consumeInbound } from "@openvtc/trust-tasks/runtime";
 import { DataIntegrityProofVerifier } from "@openvtc/trust-tasks-proof";
 
 const outcome = await consumeInbound({
