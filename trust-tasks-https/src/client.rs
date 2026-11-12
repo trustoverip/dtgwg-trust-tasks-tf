@@ -166,6 +166,19 @@ impl HttpsClientBuilder {
     /// because a downgrade that goes unnoticed is worth no more than no
     /// verification at all. Note the bundled [`HttpsServer`](crate::HttpsServer)
     /// does not sign its responses, so this is for peers that do.
+    ///
+    /// The proof is verified over the response body exactly as received,
+    /// never a re-serialisation of it, so a peer's own spelling of a
+    /// timestamp or member order does not break a valid signature.
+    ///
+    /// **Error responses are held to it too.** A `trust-task-error` is
+    /// returned as [`ClientError::TrustTaskError`] only when its proof
+    /// verifies and its `issuer` / `recipient` match the configured VIDs, as a
+    /// success response's must. Anything else — an unsigned error, a bad
+    /// proof, an error from another party — is returned as
+    /// [`ClientError::UnverifiedErrorResponse`]: the body is kept for logging,
+    /// but nothing about it is attested, and it must not be read as the
+    /// server's answer.
     pub fn with_response_verifier<V>(mut self, verifier: V) -> Self
     where
         V: ProofVerifier + Send + Sync + 'static,
@@ -341,7 +354,9 @@ impl HttpsClient {
     ///    binds it to the request** (see below).
     /// 5. On non-2xx, deserialises the body as an [`ErrorResponse`],
     ///    checks its `inResponseTo.id` where present, and returns it via
-    ///    [`ClientError::TrustTaskError`].
+    ///    [`ClientError::TrustTaskError`] — or, with a response verifier
+    ///    configured and the error not attested by it, via
+    ///    [`ClientError::UnverifiedErrorResponse`].
     ///
     /// # Response binding
     ///
@@ -438,21 +453,42 @@ impl HttpsClient {
             }
 
             // Parse untyped first: the proof (if any) is verified over the
-            // JSON form, and the correlation checks below need no payload
-            // types. Only then is the payload downcast to `Resp`.
-            let untyped: TrustTask<Value> = serde_json::from_slice(&body).map_err(decode_error)?;
+            // document as received, and the correlation checks below need
+            // no payload types. Only then is the payload downcast to `Resp`.
+            let received: Value = serde_json::from_slice(&body).map_err(decode_error)?;
+            let untyped: TrustTask<Value> =
+                serde_json::from_value(received.clone()).map_err(decode_error)?;
 
             self.check_response_binding(&request, &untyped)?;
-            self.verify_response_proof(&untyped).await?;
+            self.verify_response_proof(&untyped, &received).await?;
 
             let typed: TrustTask<Req::Response> =
-                serde_json::from_slice(&body).map_err(decode_error)?;
+                serde_json::from_value(received).map_err(decode_error)?;
             Ok(typed)
         } else {
             // Try to parse as a trust-task-error document; fall back to
             // a generic transport error if the body isn't one.
-            match serde_json::from_slice::<ErrorResponse>(&body) {
-                Ok(error_doc) => {
+            let parsed = serde_json::from_slice::<Value>(&body)
+                .ok()
+                .and_then(|received| {
+                    serde_json::from_value::<ErrorResponse>(received.clone())
+                        .ok()
+                        .map(|doc| (received, doc))
+                });
+            match parsed {
+                Some((received, error_doc)) => {
+                    // With a response verifier configured, an error is the
+                    // server's answer only once it is attested as one: a
+                    // valid proof, from the configured server, to this
+                    // client. Otherwise anything on the path could answer
+                    // every request with an unsigned refusal.
+                    if let Err(reason) = self.verify_error_response(&error_doc, &received).await {
+                        return Err(ClientError::UnverifiedErrorResponse {
+                            http_status: status.as_u16(),
+                            reason,
+                            error: Box::new(error_doc),
+                        });
+                    }
                     // §8.2 `inResponseTo.id` names the document being
                     // reported on. Where the responder populated it, it must
                     // be *our* document — otherwise an error about some
@@ -477,7 +513,7 @@ impl HttpsClient {
                         error: Box::new(error_doc),
                     })
                 }
-                Err(_) => Err(ClientError::HttpStatus {
+                None => Err(ClientError::HttpStatus {
                     http_status: status.as_u16(),
                     body: error_body_excerpt(&body),
                 }),
@@ -547,10 +583,15 @@ impl HttpsClient {
         }
     }
 
-    /// Verify the response's `proof` when a response verifier is configured.
-    /// A configured verifier makes a signed response mandatory — see
+    /// Verify the response's `proof` when a response verifier is configured,
+    /// over `received` — the body exactly as it arrived. A configured verifier
+    /// makes a signed response mandatory — see
     /// [`HttpsClientBuilder::with_response_verifier`].
-    async fn verify_response_proof(&self, response: &TrustTask<Value>) -> Result<(), ClientError> {
+    async fn verify_response_proof(
+        &self,
+        response: &TrustTask<Value>,
+        received: &Value,
+    ) -> Result<(), ClientError> {
         let Some(verifier) = &self.response_verifier else {
             return Ok(());
         };
@@ -558,14 +599,51 @@ impl HttpsClient {
             return Err(ClientError::ResponseProofMissing);
         }
         verifier
-            .verify_json(response)
+            .verify_received(received)
             .await
             .map_err(|e| ClientError::ResponseProofInvalid(e.to_string()))
+    }
+
+    /// With a response verifier configured, an error response must carry a
+    /// proof that verifies over the body as received, and name the
+    /// configured server as `issuer` and this client as `recipient` (each
+    /// where configured). `Err` holds why it does not, for
+    /// [`ClientError::UnverifiedErrorResponse`]. Without a verifier there is
+    /// nothing to attest and every error passes.
+    async fn verify_error_response(
+        &self,
+        error: &ErrorResponse,
+        received: &Value,
+    ) -> Result<(), String> {
+        let Some(verifier) = &self.response_verifier else {
+            return Ok(());
+        };
+        if error.proof.is_none() {
+            return Err("the error response carried no proof".to_string());
+        }
+        if let Some(expected) = self.server_vid.as_deref() {
+            if !self.party_matches(error.issuer.as_deref(), expected) {
+                return Err("the error response's issuer is not the configured server".to_string());
+            }
+        }
+        if let Some(expected) = self.my_vid.as_deref() {
+            if !self.party_matches(error.recipient.as_deref(), expected) {
+                return Err("the error response is not addressed to this client".to_string());
+            }
+        }
+        verifier
+            .verify_received(received)
+            .await
+            .map_err(|e| format!("the error response's proof did not verify: {e}"))
     }
 }
 
 /// Errors raised by [`HttpsClient::send`].
+///
+/// `#[non_exhaustive]`: match with a wildcard arm, so a variant added later
+/// is not a breaking change.
 #[derive(Debug, Error)]
+#[non_exhaustive]
 pub enum ClientError {
     /// The client was constructed with missing or invalid configuration.
     #[error("client configuration error: {0}")]
@@ -690,4 +768,22 @@ pub enum ClientError {
     /// The response's `proof` failed verification.
     #[error("response proof verification failed: {0}")]
     ResponseProofInvalid(String),
+
+    /// A non-2xx response carried a `trust-task-error` document that this
+    /// client, configured with a response verifier, could not attest: it had
+    /// no proof, its proof did not verify, or its `issuer` / `recipient` did
+    /// not match. See [`HttpsClientBuilder::with_response_verifier`].
+    ///
+    /// **Untrusted.** `error` is what arrived, kept for diagnostics; anything
+    /// on the path could have written it. Do not act on its `code` as the
+    /// server's verdict — treat the request's outcome as unknown.
+    #[error("unverified error response (HTTP {http_status}): {reason}")]
+    UnverifiedErrorResponse {
+        /// The HTTP status code that accompanied it.
+        http_status: u16,
+        /// Why it could not be attested.
+        reason: String,
+        /// The document as received. Unverified.
+        error: Box<ErrorResponse>,
+    },
 }
