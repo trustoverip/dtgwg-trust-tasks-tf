@@ -22,10 +22,10 @@
     "@openvtc/vti-tsp-js": "^0.2.0"
   },
   "peerDependencies": {
-    "@openvtc/trust-tasks": "^0.28.0"
+    "@openvtc/trust-tasks": "^0.29.0"
   },
   "devDependencies": {
-    "@openvtc/trust-tasks": "^0.28.0",
+    "@openvtc/trust-tasks": "^0.29.0",
     "@noble/curves": "^2.0.0",
     "@noble/hashes": "^2.0.0",
     "@types/node": "^22.0.0",
