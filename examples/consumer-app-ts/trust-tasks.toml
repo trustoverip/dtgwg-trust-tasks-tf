@@ -7,7 +7,7 @@ registry = "https://trusttasks.org"
 url = "https://tasks.example.com"
 
 [tasks]
-"acl/grant" = "0.2"
+"acl/grant" = "0.3"
 "acme:payments/settle" = "1.0"
 "keys/list" = "0.2"
 "vault/get" = "0.3"

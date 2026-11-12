@@ -1,7 +1,7 @@
 // An application that speaks three Trust Tasks and compiles only those — the
 // Go counterpart of examples/consumer-app.
 //
-// trust-tasks.lock pins acl/grant/0.2, keys/list/0.2 and vault/get/0.3, and
+// trust-tasks.lock pins acl/grant/0.3, keys/list/0.2 and vault/get/0.3, and
 // their registry bundles are vendored under trust-tasks/. `go generate` runs
 // trust-tasks-gen, which checks each bundle against its locked digest and
 // writes one package per version into internal/tasks (committed, as go
@@ -27,7 +27,7 @@ import (
 	tt "github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/trusttasks"
 
 	"example.com/trust-tasks-consumer-app-go/internal/tasks"
-	grant "example.com/trust-tasks-consumer-app-go/internal/tasks/acl/grant/v0_2"
+	grant "example.com/trust-tasks-consumer-app-go/internal/tasks/acl/grant/v0_3"
 	keyslist "example.com/trust-tasks-consumer-app-go/internal/tasks/keys/list/v0_2"
 	vaultget "example.com/trust-tasks-consumer-app-go/internal/tasks/vault/get/v0_3"
 )
@@ -112,6 +112,8 @@ func run() error {
 				Role:         "admin",
 				Act:          json.RawMessage(`{"scope":"all"}`),
 				Capabilities: json.RawMessage(`{"scope":"ceiling"}`),
+				Keys:         json.RawMessage(`{"scope":"all"}`),
+				Purposes:     json.RawMessage(`{"scope":"any"}`),
 			}},
 		},
 		MyVID:      consumerVID,
@@ -128,7 +130,7 @@ func run() error {
 	if refused.Kind != tt.OutcomeRejected {
 		return fmt.Errorf("acl/grant: expected rejected, got %s", refused.Kind)
 	}
-	fmt.Printf("acl/grant 0.2: rejected — %s\n", refused.Error.Payload.Code)
+	fmt.Printf("acl/grant 0.3: rejected — %s\n", refused.Error.Payload.Code)
 
 	// 4. vault/get — optional arrays are pointers, so present-and-empty stays
 	// distinct from absent on the wire.

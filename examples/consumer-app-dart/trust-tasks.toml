@@ -7,7 +7,7 @@ registry = "https://trusttasks.org"
 path = "../third-party-registry"
 
 [tasks]
-"acl/grant" = "0.2"
+"acl/grant" = "0.3"
 "example:payments/settle" = "1.0"
 "keys/list" = "latest"
 "vault/get" = "0.3"

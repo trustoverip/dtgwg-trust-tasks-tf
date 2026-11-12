@@ -7,7 +7,7 @@ registry = "https://trusttasks.org"
 path = "fixture-registry/site"
 
 [tasks]
-"acl/grant" = "0.2"
+"acl/grant" = "0.3"
 "acme:vault/get" = "0.3"
 "keys/list" = "latest"
 "vault/get" = "0.3"

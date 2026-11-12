@@ -18,7 +18,7 @@ import 'package:trust_tasks/src/generator/generate.dart';
 import 'package:trust_tasks/src/generator/lock.dart';
 import 'package:trust_tasks/src/generator/sha256.dart';
 
-/// The Dart example application's lock and vendored bundles: acl/grant 0.2,
+/// The Dart example application's lock and vendored bundles: acl/grant 0.3,
 /// keys/list 0.2 and vault/get 0.3 from the registry, and payments/settle 1.0
 /// from the third-party source `example` (https://tasks.example.com).
 final exampleDir = Directory('../examples/consumer-app-dart');
@@ -255,13 +255,21 @@ void main() {
       final legacy = declared(bundle(null));
       expect(legacy, ['Alpha', 'Item', 'Response', 'Zeta', 'Item2', 'Payload']);
       expect(declared(bundle(<String, dynamic>{})), legacy);
-      // The example's vendored bundles predate defsOrder.
-      for (final f in Directory('${exampleDir.path}/trust-tasks')
-          .listSync(recursive: true)
-          .whereType<File>()) {
+      // The example generates bundles from before defsOrder beside one that
+      // carries it (acl/grant 0.3).
+      for (final rel in [
+        'keys/list/0.2.bundle.json',
+        'vault/get/0.3.bundle.json',
+        '@example/payments/settle/1.0.bundle.json',
+      ]) {
+        final f = File('${exampleDir.path}/trust-tasks/$rel');
         expect(f.readAsStringSync(), isNot(contains('"defsOrder"')),
             reason: f.path);
       }
+      expect(
+          File('${exampleDir.path}/trust-tasks/acl/grant/0.3.bundle.json')
+              .readAsStringSync(),
+          contains('"defsOrder"'));
     });
 
     test('refuses one of the wrong shape', () {
@@ -289,7 +297,7 @@ void main() {
       final result = await generate(
           lockPath: '${dir.path}/trust-tasks.lock', outDir: out.path);
       expect(result.generated, [
-        'acl/grant/v0_2/payload.dart',
+        'acl/grant/v0_3/payload.dart',
         'example/payments/settle/v1_0/payload.dart',
         'keys/list/v0_2/payload.dart',
         'vault/get/v0_3/payload.dart',
@@ -300,7 +308,7 @@ void main() {
         'extends_index.dart',
         markerFileName,
       });
-      final grant = first['acl/grant/v0_2/payload.dart']!;
+      final grant = first['acl/grant/v0_3/payload.dart']!;
       expect(grant, contains("import 'package:trust_tasks/trust_tasks.dart';"));
       expect(grant, contains('extension type const'));
 
