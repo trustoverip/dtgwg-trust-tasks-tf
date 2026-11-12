@@ -18,7 +18,9 @@ standard library.
 - **Key-based, like `trust-tasks-go/tsp`.** The binding does no DID resolution:
   the consumer holds the recipient's X25519 private key and takes a
   `ResolveSender(did) → *PeerKey` callback for the sender's public key, looked
-  up in your own store.
+  up in your own store. The callback receives the bare DID of the envelope's
+  `skid` — *claimed*, not yet authenticated: the key you return is what derives
+  the key-encryption key, so a forged `skid` yields one that fails to unwrap.
 
 This is a **separate module** from the core, so the core stays dependency-free.
 
@@ -64,6 +66,9 @@ is accepted.
 ```go
 c := didcomm.NewConsumer(bob) // duplicate-execution record + freshness on by default
 r, err := didcomm.Receive(ctx, c, wire, resolveSender, spec, decodePayload, handler)
+if err != nil {
+    return err // r is nil: an *EnvelopeError (nothing can be answered), a caller mistake or your handler's error
+}
 if r.Reply != nil {
     reply, _ := didcomm.PackReply(bob, senderKey, r.Reply) // sealed back to the sender
 }

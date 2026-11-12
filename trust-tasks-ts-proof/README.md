@@ -23,7 +23,7 @@ Node.js that can load ESM synchronously (20.19+, 22.12+).
 ## Verifying
 
 ```ts
-import { consumeInbound } from "@openvtc/trust-tasks";
+import { consumeInbound } from "@openvtc/trust-tasks/runtime";
 import { DataIntegrityProofVerifier } from "@openvtc/trust-tasks-proof";
 
 const outcome = await consumeInbound({

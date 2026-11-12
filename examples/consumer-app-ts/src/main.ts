@@ -26,8 +26,14 @@ declareExtends();
 
 const ME = "did:web:vault.example";
 const PEER = "did:web:client.example";
-const NOW = Date.parse("2026-10-26T12:00:00Z");
-const ISSUED = new Date(NOW - 1000).toISOString();
+// A fixed clock, so the run is deterministic. Instants a document carries are
+// written in whole seconds (`…Z`, no fraction) — what `issuedAtNow()` from
+// `@openvtc/trust-tasks/runtime` stamps in a real application. Never write
+// `toISOString()` into a document: its milliseconds are a fingerprint
+// (SPEC §13.1 item 3).
+const NOW_ISO = "2026-10-26T12:00:00Z";
+const NOW = Date.parse(NOW_ISO);
+const ISSUED = "2026-10-26T11:59:59Z";
 
 const entry: VaultGet_v0_3.VaultEntry = {
   id: "entry-1",
@@ -51,14 +57,14 @@ async function consume(doc: TrustTaskDocument<VaultGet_v0_3.Payload>, guard = ne
     myVid: ME,
     now: NOW,
     newErrorId: () => "err-1",
-    clock: () => new Date(NOW).toISOString(),
+    clock: () => NOW_ISO,
     handler: (accepted) => ({
       id: "resp-1",
       threadId: accepted.id,
       type: VaultGet_v0_3.RESPONSE_TYPE_URI,
       issuer: ME,
       recipient: accepted.issuer,
-      issuedAt: new Date(NOW).toISOString(),
+      issuedAt: NOW_ISO,
       payload: { entry },
     }),
   });

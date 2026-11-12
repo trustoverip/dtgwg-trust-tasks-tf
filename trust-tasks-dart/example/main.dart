@@ -10,7 +10,11 @@
 
 import 'dart:convert';
 
-import 'package:trust_tasks/specs/acl/grant/v0_2/payload.dart' as acl_grant;
+// An application imports the library `dart run trust_tasks:generate` wrote
+// into its own package (`package:my_app/trust_tasks/acl/grant/v0_3/...`). This
+// example runs inside this package, so it uses the prebuilt library of the same
+// version, which has the same surface.
+import 'package:trust_tasks/specs/acl/grant/v0_3/payload.dart' as acl_grant;
 import 'package:trust_tasks/trust_tasks.dart';
 
 const me = 'did:web:maintainer.example';
@@ -46,6 +50,7 @@ String inboundJson({String role = 'admin'}) => jsonEncode({
           'act': {'scope': 'all'},
           'keys': {'scope': 'all'},
           'capabilities': {'scope': 'ceiling'},
+          'purposes': {'scope': 'any'},
         },
       },
     });

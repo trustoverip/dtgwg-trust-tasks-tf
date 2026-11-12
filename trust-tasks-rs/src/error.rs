@@ -106,7 +106,7 @@ impl ErrorPayload {
         let retryable = match &code {
             TrustTaskCode::Standard(c) => c.default_retryable(),
             // Per SPEC §8.5, an unrecognized extension code is treated as
-            // `task_failed` — which defaults to non-retryable. The producer of
+            // `taskFailed` — which defaults to non-retryable. The producer of
             // the extension MAY override.
             TrustTaskCode::Extended { .. } => false,
         };
@@ -1099,7 +1099,7 @@ mod tests {
 
     #[test]
     fn effective_code_falls_back_for_extensions() {
-        // SPEC §8.5: unrecognized extension codes are treated as task_failed
+        // SPEC §8.5: unrecognized extension codes are treated as taskFailed
         // by consumers that don't implement the originating spec.
         let payload = ErrorPayload::new(TrustTaskCode::Extended {
             slug: "trust-task-control".into(),

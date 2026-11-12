@@ -1,10 +1,10 @@
-//! Inbound-document orchestration for SPEC.md §7.2 item 2 and items 4–8.
+//! Inbound-document orchestration for SPEC.md §7.2: items 2–8, item 11
+//! (the duplicate-execution record) and item 13 (the freshness bound).
 //!
 //! [`consume_inbound`] is the framework-level helper a *consumer* uses to
-//! avoid hand-wiring the eight-step §7.2 list across every spec they
-//! implement. It accepts a typed [`TrustTask<P>`] (items 1 and 3 having
-//! already been handled by the caller's [`Dispatcher`](crate::Dispatcher) /
-//! `serde` pipeline), runs the remaining framework checks, optionally
+//! avoid hand-wiring the §7.2 list across every spec they implement. It
+//! accepts a typed [`TrustTask<P>`] (item 1 having already been handled by the
+//! caller's `serde` pipeline), runs the remaining framework checks, optionally
 //! verifies the `proof` and the payload schema, and either calls the caller's
 //! business handler or builds the [`ErrorResponse`] routed per §8.1.
 //!
@@ -50,7 +50,7 @@
 //!     match outcome {
 //!         ConsumeOutcome::Handled(response) => emit(response),
 //!         ConsumeOutcome::Rejected(error)   => emit(error),
-//!         ConsumeOutcome::Suppressed        => {} // identity_mismatch w/o transport sender
+//!         ConsumeOutcome::Suppressed        => {} // identityMismatch w/o transport sender
 //!         // §7.2 item 11: already executed. Not an error — return the prior
 //!         // result if there is one, otherwise emit nothing.
 //!         ConsumeOutcome::Duplicate { prior_response, .. } => {
@@ -113,7 +113,8 @@ use crate::transport::{ResolvedParties, TransportHandler};
 /// getting it wrong silently — an ACL grant applied twice by a mediator retry
 /// — is not one to discover after the fact.
 pub struct ConsumeChecks<'a> {
-    /// Bounds the document in time (SPEC §4.2, §7.2 item 4).
+    /// Bounds the document in time (SPEC §4.2; §7.2 item 4, expiry, and
+    /// item 13, the acceptance window over `issuedAt`).
     pub freshness: FreshnessPolicy,
     /// Applies (or knowingly disapplies) the duplicate-execution rule of
     /// SPEC §7.2 item 11.
@@ -174,7 +175,7 @@ impl<'a> ConsumeChecks<'a> {
 pub enum ProofPolicy<'a, V: ProofVerifier + ?Sized> {
     /// Verify the proof when present using `V`. When `doc.proof` is
     /// `Some`, the verifier is consulted and failures map to
-    /// `proof_invalid`. This is the safe default for any consumer that
+    /// `proofInvalid`. This is the safe default for any consumer that
     /// expects to honour in-band proofs.
     Verify(&'a V),
 
@@ -201,7 +202,7 @@ pub enum ProofPolicy<'a, V: ProofVerifier + ?Sized> {
     VerifyReceived(&'a V, &'a Value),
 
     /// Reject documents that carry an in-band proof with
-    /// `malformed_request`. Use this when the consumer has integrity
+    /// `malformedRequest`. Use this when the consumer has integrity
     /// guarantees from another layer (e.g. transport-bound signing) and
     /// is deliberately not verifying in-band proofs — silently dropping
     /// a producer-supplied proof would mislead the producer about the
@@ -358,7 +359,7 @@ pub enum ConsumeOutcome<R> {
     /// already addressed per SPEC.md §8.1 — the caller emits it over
     /// the transport.
     Rejected(ErrorResponse),
-    /// SPEC.md §8.1 routing rule for `identity_mismatch`: the in-band
+    /// SPEC.md §8.1 routing rule for `identityMismatch`: the in-band
     /// `issuer` is by definition the contested identity, and the
     /// transport authenticated no sender, so the consumer **SHOULD NOT**
     /// emit any response (doing so would constitute an oracle).
@@ -401,18 +402,20 @@ pub enum ConsumeOutcome<R> {
     },
 }
 
-/// Run SPEC.md §7.2 item 2 and items 4–8 against `doc`, then either call
-/// `handler` or build the routed error response per §8.1.
+/// Run SPEC.md §7.2 items 2–8, 11 and 13 against `doc`, then either call
+/// `handler` or build the routed error response per §8.1. Which freshness
+/// bound and which duplicate-execution record apply is whatever `checks`
+/// carries.
 ///
-/// `P` is the typed payload. Items 1 and 3 happen upstream, in the caller's
-/// parse and dispatch. Item 2 is *shared*: deserializing into `P` performed
+/// `P` is the typed payload. Item 1 happens upstream, in the caller's parse;
+/// item 3 is checked here, against `P`'s Type URI. Item 2 is *shared*: deserializing into `P` performed
 /// most of it, and `payload_policy` decides whether the residue typify cannot
 /// express is checked here too — see [`PayloadPolicy`], which is worth
 /// reading before choosing.
 ///
 /// `transport` supplies the transport-derived identity for the §4.8.1
 /// cross-check (item 6) and the §8.1 routing exception for
-/// `identity_mismatch`.
+/// `identityMismatch`.
 ///
 /// `policy` selects how the consumer handles the document's `proof`
 /// member (item 7); see [`ProofPolicy`] for the three variants and
@@ -713,7 +716,7 @@ where
         return route_rejection(transport, &doc, reason, error_id_factory);
     }
 
-    // §7.2 item 4, the other half — the freshness bound over `issuedAt`.
+    // §7.2 item 13 — the freshness bound over `issuedAt`.
     // `validate_basic` honours `expiresAt`, which is optional and which a
     // producer sets for its own reasons; on its own it leaves a document
     // stamped years ago, or years hence, indefinitely acceptable. It is also
@@ -1801,7 +1804,7 @@ mod tests {
         assert!(matches!(outcome, ConsumeOutcome::Handled(_)));
     }
 
-    /// SPEC §8.1 — `identity_mismatch` with no transport-authenticated
+    /// SPEC §8.1 — `identityMismatch` with no transport-authenticated
     /// sender produces `ConsumeOutcome::Suppressed`, not a routed error
     /// (an addressed error would itself be an oracle).
     #[tokio::test]

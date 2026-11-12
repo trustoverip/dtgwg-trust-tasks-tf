@@ -71,7 +71,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut request = TrustTask::for_payload(format!("urn:uuid:{}", uuid::Uuid::new_v4()), payload);
     request.issuer = Some(alice_did.clone());
     request.recipient = Some(bob_did.clone());
-    request.issued_at = Some(chrono::Utc::now());
+    request.issued_at = Some(trust_tasks_rs::issued_at_now());
 
     let wire = pack_trust_task(&request, &alice_agent, &alice_did, &bob_did)?;
     println!(

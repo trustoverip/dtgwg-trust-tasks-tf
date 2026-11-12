@@ -178,9 +178,13 @@ Future<GenerateResult> generate({
   }
   files['extends_index.dart'] = generateExtendsIndex(extendsEntries);
 
-  // Write and format in a staging directory, so a failure leaves the output
-  // directory as it was, and formatting cannot pick up an application's own
-  // formatter settings (the output is the same in every application).
+  // Write and format in a staging directory, so a failure while writing or
+  // formatting leaves the output directory as it was, and formatting cannot
+  // pick up an application's own formatter settings (the output is the same in
+  // every application). The final step, copying the staged files over the
+  // output directory (`_replaceOutput`), is not covered: it clears the
+  // directory and then copies, so a failure partway through it — a full disk —
+  // can leave the directory partly written. Run the generator again.
   final staging = Directory.systemTemp.createTempSync('trust-tasks-generate-');
   try {
     for (final entry in files.entries) {
