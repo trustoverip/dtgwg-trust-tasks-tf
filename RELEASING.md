@@ -369,9 +369,10 @@ of that: it publishes the tarball or pushes the tag or branch, and only it gets
 credentials; `scripts/git-push-with-token.sh` gives the token to the one
 `git push` that needs it. A leg of the second job runs only if the same leg of
 the first passed, so one package's failure holds back only that package.
-`withdraw.yml` is split the same way. The exception is `release-plz-release`:
-`cargo publish` compiles each crate it uploads, so it runs dependencies' build
-scripts beside the crates.io token.
+`withdraw.yml` is split the same way. The exception is `release-plz-release`,
+where the release-plz action itself holds the crates.io token and
+`contents: write`. It compiles nothing (`publish_no_verify = true` in
+release-plz.toml), so no dependency's build script runs there.
 
 ### 3. If it fails partway
 
