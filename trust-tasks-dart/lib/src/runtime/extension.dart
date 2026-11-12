@@ -147,7 +147,8 @@ final class VersionRefused<P> extends VersionRead<P> {
   /// matches and the received version's `extends` chain does not reach the
   /// implemented one; `unsupportedType` when the document is not of the
   /// implemented specification at all, including the same slug under another
-  /// authority.
+  /// authority; `malformedRequest` when the payload of a later version cannot
+  /// be pruned within [prunePayload]'s step limit.
   final RejectReason reason;
 }
 
@@ -160,7 +161,10 @@ final class VersionRefused<P> extends VersionRead<P> {
 ///   whose `extends` chain, per [index] (which defaults to the generated one;
 ///   pass your own for third-party specifications), reaches [spec]'s: the
 ///   payload is pruned with [prunePayload] against `spec.payloadSchema`, then
-///   read with [payloadFromJson]. The document keeps the received `type`.
+///   read with [payloadFromJson]. The document keeps the received `type`. A
+///   payload that cannot be pruned within [prunePayload]'s step limit is
+///   refused `malformedRequest` — this runs before any proof is checked, so
+///   its work on an unauthenticated document is bounded by the payload's size.
 /// * Anything else: [VersionRefused].
 ///
 /// [received] is never modified, and [VersionAccepted.received] is that same
@@ -224,11 +228,20 @@ VersionRead<P> readForVersion<P>(
   }
 
   final schema = spec.payloadSchema;
-  final payload = received['payload'];
-  final pruned = <String, dynamic>{
-    ...received,
-    'payload': schema == null ? payload : prunePayload(payload, schema),
-  };
+  var payload = received['payload'];
+  if (schema != null) {
+    final pruner = _Pruner.forPayload(_decodeSchema(schema), payload);
+    payload = pruner.prune(payload, pruner.root, 0);
+    if (pruner.exhausted) {
+      return refuse(
+        StandardCode.malformedRequest,
+        'the ${r.version} payload is too complex to re-read as version '
+        '${i.version}: pruning it against that version\'s schema takes more '
+        'than ${pruner.limit} steps',
+      );
+    }
+  }
+  final pruned = <String, dynamic>{...received, 'payload': payload};
   return VersionAccepted<P>(
     doc: TrustTaskDocument<P>.fromJson(pruned, payloadFromJson),
     received: received,
@@ -296,12 +309,43 @@ RejectReason? typeRefusalFor(
 ///   the right one needs, and an unpruned extra member is refused by item 2
 ///   validation rather than silently lost.
 ///
+/// The walk takes at most 100,000 steps plus 64 per value in [payload] (a step
+/// is a value visited against a subschema, or a branch test). A payload and
+/// schema that need more are returned untouched; [readForVersion] refuses such
+/// a document `malformedRequest` instead.
+///
 /// Not followed: `patternProperties`, `prefixItems`, `unevaluatedProperties`,
 /// `if`/`then`/`else`, `dependentSchemas` and remote `$ref`s — no registered
 /// schema uses them. Members they would govern are left untouched.
 Object? prunePayload(Object? payload, String schemaJson) {
-  final root = _decodeSchema(schemaJson);
-  return _Pruner(root).prune(payload, root, 0);
+  final pruner = _Pruner.forPayload(_decodeSchema(schemaJson), payload);
+  final out = pruner.prune(payload, pruner.root, 0);
+  return pruner.exhausted ? payload : out;
+}
+
+/// The work one prune may do, in steps (a value visited against a subschema,
+/// or a branch test): this plus [_pruneStepsPerValue] for every value in the
+/// payload. Ordinary payloads use a small fraction of it. A schema that names
+/// the same recursive member from more than one place (`properties` and an
+/// `allOf` branch, say) makes every level prune its subtree more than once,
+/// so the walk would otherwise grow exponentially with the payload's nesting
+/// depth — and [readForVersion] runs before any proof is checked.
+const int _pruneBaseSteps = 100000;
+const int _pruneStepsPerValue = 64;
+
+int _countValues(Object? value) {
+  var n = 0;
+  final stack = <Object?>[value];
+  while (stack.isNotEmpty) {
+    final v = stack.removeLast();
+    n++;
+    if (v is Map) {
+      stack.addAll(v.values);
+    } else if (v is List) {
+      stack.addAll(v);
+    }
+  }
+  return n;
 }
 
 /* ── internals ──────────────────────────────────────────────────────────── */
@@ -323,15 +367,28 @@ Object? _decodeSchema(String json) {
 }
 
 class _Pruner {
-  _Pruner(this.root);
+  _Pruner.forPayload(this.root, Object? payload)
+      : limit = _pruneBaseSteps + _pruneStepsPerValue * _countValues(payload) {
+    _steps = limit;
+  }
 
   final Object? root;
+
+  /// The step budget this prune started with.
+  final int limit;
+  late int _steps;
+
+  /// Whether the budget ran out. Every call then returns at once, and the
+  /// result must be discarded.
+  bool get exhausted => _steps < 0;
+
+  bool _spend() => --_steps >= 0;
 
   /// Deep enough for any registered payload; a guard, not a limit anyone meets.
   static const int _maxDepth = 128;
 
   Object? prune(Object? value, Object? schema, int depth) {
-    if (depth > _maxDepth) return value;
+    if (depth > _maxDepth || !_spend()) return value;
     final node = _resolve(schema);
     if (node is! Map<String, dynamic>) return value;
 
@@ -394,6 +451,7 @@ class _Pruner {
 
   /// Whether [value] could be an instance of [schema], judged shallowly.
   bool _plausible(Object? value, Object? schema) {
+    if (!_spend()) return false;
     final node = _resolve(schema);
     if (node is bool) return node;
     if (node is! Map<String, dynamic>) return true;
