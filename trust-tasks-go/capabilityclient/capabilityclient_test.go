@@ -2,6 +2,7 @@ package capabilityclient
 
 import (
 	"encoding/json"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -244,5 +245,18 @@ func TestParseEnvelopeReply(t *testing.T) {
 	}
 	if _, ok := ParseEnvelopeReply(body, "wrong"); ok {
 		t.Error("wrong thread must not parse")
+	}
+}
+
+// #1114: issuedAt is UTC in whole seconds, on build and on a new attempt.
+func TestIssuedAtWholeSeconds(t *testing.T) {
+	wholeSeconds := regexp.MustCompile(`^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$`)
+	built := BuildListDocument("did:me", "did:vtc")
+	if built.IssuedAt == nil || !wholeSeconds.MatchString(*built.IssuedAt) {
+		t.Errorf("built issuedAt not whole seconds: %v", built.IssuedAt)
+	}
+	next := NewAttempt(built)
+	if next.IssuedAt == nil || !wholeSeconds.MatchString(*next.IssuedAt) {
+		t.Errorf("new attempt issuedAt not whole seconds: %v", next.IssuedAt)
 	}
 }

@@ -521,7 +521,20 @@ final class HttpsServer {
   }
 
   /// Answer one request. Never throws.
+  ///
+  /// Anything that escapes the pipeline — an encoder that throws on the
+  /// response, a payload `jsonEncode` cannot write, an authenticator or route
+  /// failing in a way the steps below do not anticipate — is answered as
+  /// `internalError` (`500`), never propagated into the caller's HTTP stack.
   Future<HttpsReply> handle(HttpsRequest request) async {
+    try {
+      return await _handle(request);
+    } on Object {
+      return _internalErrorReply();
+    }
+  }
+
+  Future<HttpsReply> _handle(HttpsRequest request) async {
     if (_normalizePath(request.path) != _path) return const HttpsReply(404);
     if (request.method.toUpperCase() != 'POST') {
       return const HttpsReply(405, headers: {'allow': 'POST'});
@@ -713,6 +726,27 @@ final class HttpsServer {
       );
     }
 
+    // Encoding the answer runs the caller's encoder and jsonEncode, either of
+    // which can throw; that is an internalError, not an escape from handle.
+    // consumeInbound has already settled the item-11 claim either way.
+    try {
+      return _replyFor(outcome, encodeResponse);
+    } on Object {
+      return _reject(
+        transport,
+        doc,
+        const RejectReason(
+          code: StandardCode.internalError,
+          message: internalErrorWireMessage,
+        ),
+      );
+    }
+  }
+
+  HttpsReply _replyFor<R>(
+    ConsumeOutcome<R> outcome,
+    Object? Function(R payload) encodeResponse,
+  ) {
     switch (outcome) {
       case Handled(:final response):
         return HttpsReply.json(200, response.toJson(encodeResponse));
@@ -755,6 +789,30 @@ final class HttpsServer {
         statusForCode(error.payload.code),
         error.toJson((p) => p.toJson()),
       );
+
+  /// The last-resort answer when the pipeline itself threw: an
+  /// `internalError` addressed to nobody (the request may not even have
+  /// parsed). Built from constants, so it cannot throw in turn; the bare `500`
+  /// is a belt-and-braces fallback.
+  HttpsReply _internalErrorReply() {
+    try {
+      return HttpsReply.json(
+        statusForCode('internalError'),
+        ErrorResponse(
+          id: newUrnUuid(),
+          type: trustTaskErrorTypeUri,
+          issuedAt: systemClock(),
+          payload: const ErrorPayload(
+            code: 'internalError',
+            retryable: false,
+            message: internalErrorWireMessage,
+          ),
+        ).toJson((p) => p.toJson()),
+      );
+    } on Object {
+      return const HttpsReply(500);
+    }
+  }
 
   HttpsReply _malformedBody() => HttpsReply.json(
         400,
