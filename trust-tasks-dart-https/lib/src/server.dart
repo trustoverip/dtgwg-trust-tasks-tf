@@ -124,6 +124,12 @@ final class _Exchange {
   final DateTime now;
 }
 
+/// The DID methods a server with a [HttpsServer.proofVerifier] accepts in
+/// `proof.verificationMethod` when neither `allowedDidMethods` nor
+/// `allowAnyDidMethod: true` is passed: `did:key`, whose key is in the
+/// identifier, so verifying it never leaves the process.
+const Set<String> defaultAllowedDidMethods = {'key'};
+
 /// A Trust Tasks server for the HTTPS binding (`bindings/https/0.2`).
 ///
 /// Register a handler per specification with [on] (or [onAck] for a
@@ -164,7 +170,8 @@ final class _Exchange {
 ///    authenticated sender the identity cross-check runs first, so a
 ///    misaddressed document is suppressed (§8.1).
 /// 7. Attribution gate — see [requireAttribution].
-/// 8. DID-method pre-screen — see [allowedDidMethods].
+/// 8. DID-method pre-screen — see [allowedDidMethods]. With a verifier and no
+///    explicit choice, only `did:key` passes.
 /// 9. Proof verification, the per-specification policy, the duplicate-execution
 ///    claim (§7.2 item 11), and the handler — `consumeInbound`.
 final class HttpsServer {
@@ -181,15 +188,37 @@ final class HttpsServer {
     this.freshness = FreshnessPolicy.consequential,
     this.requireAttribution = true,
     Set<String>? allowedDidMethods,
+    bool allowAnyDidMethod = false,
     String basePath = '',
     DateTime Function() clock = DateTime.now,
   })  : auth = auth ?? StaticBearerAuth(const {}),
         replayGuard = replayGuard ?? InMemoryReplayGuard(),
-        allowedDidMethods = allowedDidMethods == null
-            ? null
-            : Set.unmodifiable(allowedDidMethods),
+        allowedDidMethods = _didMethodScreen(
+          allowedDidMethods,
+          allowAny: allowAnyDidMethod,
+          hasVerifier: proofVerifier != null,
+        ),
         _path = _normalizePath('$basePath$trustTasksPath'),
         _clock = clock;
+
+  static Set<String>? _didMethodScreen(
+    Set<String>? explicit, {
+    required bool allowAny,
+    required bool hasVerifier,
+  }) {
+    if (explicit != null) {
+      if (allowAny) {
+        throw ArgumentError.value(
+          allowAny,
+          'allowAnyDidMethod',
+          'cannot be combined with allowedDidMethods',
+        );
+      }
+      return Set.unmodifiable(explicit);
+    }
+    if (allowAny || !hasVerifier) return null;
+    return defaultAllowedDidMethods;
+  }
 
   /// This server's VID: the transport-authenticated recipient (§3), and what an
   /// in-band `recipient` is checked against.
@@ -232,10 +261,22 @@ final class HttpsServer {
   /// off only for local development.
   final bool requireAttribution;
 
-  /// When set, a `proof.verificationMethod` whose DID method is not listed
-  /// (`{'key'}`, `{'web', 'webvh'}`) is refused before the verifier runs.
-  /// Verifying means resolving, and resolving a `did:web` is an outbound request
-  /// to a host the sender picked; this bounds where that can go.
+  /// The DID methods a `proof.verificationMethod` may name; any other
+  /// (`{'key'}`, `{'web', 'webvh'}`) is refused before the verifier runs, as is
+  /// a `verificationMethod` that is not a DID URL at all. Verifying means
+  /// resolving, and resolving a `did:web` is an outbound request to a host the
+  /// sender picked; this bounds where that can go. Null screens nothing.
+  ///
+  /// **Default:** with a [proofVerifier] and neither `allowedDidMethods` nor
+  /// `allowAnyDidMethod: true` passed, this is [defaultAllowedDidMethods]
+  /// (`did:key` only) — a method that resolves over the network is opt-in,
+  /// never implied by plugging in a resolving verifier. Pass
+  /// `allowAnyDidMethod: true` to screen nothing, only for a verifier that
+  /// never resolves over the network or whose resolver bounds where it goes
+  /// (a host allow-list, private addresses refused, a deadline per
+  /// resolution). Passing both is an [ArgumentError]. A server with no
+  /// [proofVerifier] screens nothing by default: it refuses proof-bearing
+  /// documents outright and never resolves.
   final Set<String>? allowedDidMethods;
 
   final String _path;
