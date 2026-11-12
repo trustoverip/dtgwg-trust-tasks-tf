@@ -121,8 +121,9 @@ defects three times.
 | `node --test (runtime)`, `cargo test`, `go test`, `dart test` | the hand-written §7.2 pipelines behave | the generated types they operate on |
 | `npm run smoke`, `go test ./smoke`, `dart test test/smoke_test.dart` | the built npm package imports as a consumer imports it; the Go and Dart packages drive a *generated* module through the real pipeline | |
 | `test:infra` | the CloudFront negotiation function's routing decisions | whether the deployed site actually serves them |
-| `test:website` (in `deploy.yml`) | prose rendered through `website/assets/markdown.js` and the `marked` the page loads (fetched from the URL in `index.html` and checked against its `integrity` hash; `MARKED_JS=<file>` to run offline) holds only allow-listed markup, escapes text after an unclosed inline tag, and links only to relative, fragment, `http(s):` and `mailto:` URLs | the rest of the page code |
+| `test:website` (in `deploy.yml`) | prose rendered through `website/assets/markdown.js` and the `marked` the page loads (fetched from the URL in `index.html` and checked against its `integrity` hash; `MARKED_JS=<file>` to run offline) holds only allow-listed markup, escapes text after an unclosed inline tag, and links only to relative, fragment, `http(s):` and `mailto:` URLs; every JSX file and `index.html`'s inline script compiles under the pinned `@babel/standalone`, and (after `npm run build`) the app renders a set of routes through React's server renderer against the real registry (`BABEL_JS`, `REACT_JS`, `REACT_DOM_SERVER_JS` to run offline); `routes.js` maps prose links as `website-routes.test.mjs` pins | effects, real layout, and anything only a browser runs |
 | `checkCategoryTaxonomy`, `checkBindingRegistry` | hand-maintained lists match the tree | other hand-maintained lists nobody has guarded yet |
+| `checkProseLinksAsRendered`, `checkSiteFrameworkLinks`, `checkBindingImplementations` | every link in spec and binding prose, mapped by `website/assets/routes.js` exactly as the page maps it, lands on a registered spec, binding, shared schema or real file; `SPEC_ANCHORS` in `components.jsx` names each section's *current* heading anchor (regenerate it when a canonical change renumbers); `bindings.js` `implementations` and `libraries.js` `transports` name the same packages | whether the prose around them is still true |
 | `npm run check-sibling-core-ranges` (in `bindings match specs`) | every `trust-tasks-ts-*` sibling takes `@openvtc/trust-tasks` as a peer dependency, and every TS and Dart sibling's caret range admits the core version in the checkout (for TS, the newest on npm while the checkout's is unpublished — the Release PR — with a warning) | whether the sibling actually works with that core — its own CI job builds and tests against the newest core its range admits |
 | `npm run check-dart-packages` | the five files naming the Dart packages (`publish.yml`'s `tag-dart` matrix, `release-pr.sh`'s `DART_PACKAGES`, `publish-dart.yml`, `release-bump-dart.sh`, `dart.yml`) name the same packages with the same dirs and tag prefixes | whether a package's first manual publish and trusted-publishing setup happened |
 | `checkBindingFrameworkTarget`, `checkBindingErrorSpecPin` | a binding's prose agrees with its own front matter, and pins no `trust-task-error` version | prose that is stale in a way no other file contradicts |
@@ -930,7 +931,7 @@ npm run check-bundles             # verify them independently of the Rust genera
 ```
 
 The website deploys to S3/CloudFront via `.github/workflows/deploy.yml` on push to
-`main`. Generated website outputs (`website/assets/tasks.generated.js`,
+`main`. Generated website outputs (`website/assets/tasks.generated.js`, `website/robots.txt`, `website/sitemap.xml`,
 `website/specs/` including its `bundle.json`s and `index.json`,
 `website/bindings/`) are `.gitignore`'d and rebuilt in CI — but
 `website/assets/data.js` is **source**, committed by hand.
