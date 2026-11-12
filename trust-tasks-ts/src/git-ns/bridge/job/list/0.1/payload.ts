@@ -18,13 +18,7 @@ export type JobId = string;
  * What the job asks the bridge to do — the same seven kinds git-ns/bridge/job/0.4 defines. Kept as its own enum here, rather than a cross-file $ref, because job/0.4 declares its `kind` inline rather than as a named $def; the two lists change together.
  */
 export type JobKind =
-  | "projectRoles"
-  | "createRepo"
-  | "bootstrap"
-  | "archive"
-  | "inspect"
-  | "beginBind"
-  | "beginAccountLink";
+  "projectRoles" | "createRepo" | "bootstrap" | "archive" | "inspect" | "beginBind" | "beginAccountLink";
 
 /**
  * A namespace's administrators list the bridge jobs queued or run for it — every namespace, for a community administrator — with each job's kind, state and last error. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
