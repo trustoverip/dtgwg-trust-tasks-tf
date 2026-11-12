@@ -1,0 +1,23 @@
+[
+  {
+    "note": "Empty grantIds — name grants or omit the member.",
+    "payload": {
+      "member": "did:web:alice.example",
+      "grantIds": []
+    }
+  },
+  {
+    "note": "limit of zero revokes nothing.",
+    "payload": {
+      "principal": "did:web:phone.example",
+      "limit": 0
+    }
+  },
+  {
+    "note": "Response without remaining — a console must be told whether the selection is done.",
+    "variant": "response",
+    "payload": {
+      "revoked": []
+    }
+  }
+]
