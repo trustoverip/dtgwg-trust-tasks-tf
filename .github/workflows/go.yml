@@ -46,6 +46,7 @@ jobs:
   bindings-drift:
     name: build-go-bindings drift
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -67,16 +68,20 @@ jobs:
         run: npm run build-go-bindings
       - name: Check for drift
         run: |
-          if ! git diff --quiet trust-tasks-go/specs; then
-            echo "::error::Go bindings are stale. Run \`npm run build-go-bindings\` and commit the diff. Do NOT bump a version — the Release PR does that; see RELEASING.md."
-            git diff --stat trust-tasks-go/specs
-            git diff trust-tasks-go/specs | head -200
+          # `git status`, not `git diff`: a package the generator newly wrote is
+          # untracked, and `git diff` cannot see an untracked file (codegen.yml).
+          if [ -n "$(git status --porcelain -- trust-tasks-go/specs)" ]; then
+            echo "::error::Go bindings are stale. Run \`npm run build-go-bindings\` and commit the diff, including any new files. Do NOT bump a version — the Release PR does that; see RELEASING.md."
+            git status --short -- trust-tasks-go/specs
+            git add -N -- trust-tasks-go/specs
+            git diff -- trust-tasks-go/specs | head -200
             exit 1
           fi
 
   build:
     name: go build + vet (${{ matrix.go }})
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -126,6 +131,7 @@ jobs:
     name: go API compatibility
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     # The PR title is read from the API.
     permissions:
       contents: read
@@ -176,6 +182,7 @@ jobs:
   test:
     name: go test (${{ matrix.go }})
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -206,6 +213,7 @@ jobs:
   tsp:
     name: go test trust-tasks-go/tsp (${{ matrix.go }})
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -248,6 +256,7 @@ jobs:
   proof:
     name: go test trust-tasks-go/proof (${{ matrix.go }})
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -291,6 +300,7 @@ jobs:
   didcomm:
     name: go test trust-tasks-go/didcomm (${{ matrix.go }})
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -332,6 +342,7 @@ jobs:
   capabilityclient:
     name: go test trust-tasks-go/capabilityclient (${{ matrix.go }})
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -379,6 +390,7 @@ jobs:
   consumer-generation-equivalence:
     name: trust-tasks-gen ≡ build-go-bindings (whole registry)
     runs-on: ubuntu-24.04
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -411,6 +423,7 @@ jobs:
   consumer-app:
     name: example application (trust-tasks-gen, ${{ matrix.go }})
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:

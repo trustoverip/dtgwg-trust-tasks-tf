@@ -28,6 +28,7 @@
  * compatible, one that changes the shape is not.
  */
 import path from 'node:path';
+import YAML from 'yaml';
 
 // Keywords whose value may change freely: annotations that generate nothing but documentation.
 const ANNOTATIONS = new Set(['description', '$comment', 'examples', '$id', '$schema']);
@@ -182,19 +183,81 @@ export function incompatibilities(before, after, { beforeFile, afterFile, loadBe
 }
 
 /**
+ * Parse a `spec.md`'s YAML front matter. `{}` when there is none or it does not
+ * parse (the registry build reports both).
+ */
+export function parseFrontMatter(text) {
+  const m = text.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  if (!m) return {};
+  try {
+    return YAML.parse(m[1]) ?? {};
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * The §7.2 policy a spec's front matter gives each variant, as the generated
+ * libraries emit it (`IS_BEARER`, `IS_PROOF_REQUIRED`, `IS_RECIPIENT_REQUIRED`,
+ * `IS_ISSUED_AT_REQUIRED`). Derived here independently of the generators and
+ * of check-bindings-conformance.mjs, for the reason CLAUDE.md gives for not
+ * sharing that derivation.
+ *
+ * `proofRequirement` and `issuedAtRequirement` take either one `requirement`
+ * for both variants or a `{request, response}` pair, where an omitted
+ * `response` takes the request's value. A response addresses the original
+ * producer, so its `recipient` requirement is the one declared for the
+ * request's `issuer` party.
+ */
+export function derivedPolicy(meta) {
+  const variants = (decl) => {
+    const d = decl && typeof decl === 'object' ? decl : {};
+    if (typeof d.requirement === 'string') return { request: d.requirement === 'REQUIRED', response: d.requirement === 'REQUIRED' };
+    return { request: d.request === 'REQUIRED', response: (d.response ?? d.request) === 'REQUIRED' };
+  };
+  const parties = Array.isArray(meta?.parties) ? meta.parties : [];
+  const party = (member) => parties.find((p) => p && p.member === member)?.requirement === 'REQUIRED';
+  const proof = variants(meta?.proofRequirement);
+  const issuedAt = variants(meta?.issuedAtRequirement);
+  const isBearer = meta?.bearer === true;
+  return {
+    request: { isBearer, isProofRequired: proof.request, isRecipientRequired: party('recipient'), isIssuedAtRequired: issuedAt.request },
+    response: { isBearer, isProofRequired: proof.response, isRecipientRequired: party('issuer'), isIssuedAtRequired: issuedAt.response },
+  };
+}
+
+// Where each policy flag is declared, for the message.
+const POLICY_SOURCE = {
+  isBearer: () => 'bearer',
+  isProofRequired: (variant) => `proofRequirement (${variant})`,
+  isRecipientRequired: (variant) => `parties[member: ${variant === 'request' ? 'recipient' : 'issuer'}].requirement`,
+  isIssuedAtRequired: (variant) => `issuedAtRequirement (${variant})`,
+};
+
+/**
  * Front-matter changes that alter a released spec's behaviour in the
- * libraries: the proof policy (`IS_PROOF_REQUIRED` and friends) and the
- * declared error codes (`ERROR_CODES` and its constants), which may only grow.
+ * libraries: any flag of the derived per-variant policy (`IS_PROOF_REQUIRED`,
+ * `IS_ISSUED_AT_REQUIRED`, `IS_RECIPIENT_REQUIRED`, `IS_BEARER` — constants
+ * whose value no API-compatibility job can see change) and the declared error
+ * codes (`ERROR_CODES` and its constants), which may only grow. Judged on the
+ * parsed front matter, so a rewrite between the one-`requirement` and the
+ * per-variant forms that keeps the policy passes.
  */
 export function frontMatterIncompatibilities(before, after) {
   const found = [];
-  if (!same(before.proofRequirement?.requirement, after.proofRequirement?.requirement)) {
-    found.push({
-      pointer: 'proofRequirement.requirement',
-      reason: `changed from ${before.proofRequirement?.requirement} to ${after.proofRequirement?.requirement} — a consumer now accepts or refuses documents it did not`,
-    });
+  const b = derivedPolicy(before);
+  const a = derivedPolicy(after);
+  for (const variant of ['request', 'response']) {
+    for (const flag of Object.keys(b[variant])) {
+      if (b[variant][flag] === a[variant][flag]) continue;
+      if (flag === 'isBearer' && variant === 'response') continue; // one declaration, reported once
+      found.push({
+        pointer: POLICY_SOURCE[flag](variant),
+        reason: `the ${variant}'s ${flag} changed from ${b[variant][flag]} to ${a[variant][flag]} — a consumer now accepts or refuses documents it did not`,
+      });
+    }
   }
-  const codes = (fm) => (fm.errorCodes ?? []).map((c) => c.code);
+  const codes = (fm) => (Array.isArray(fm?.errorCodes) ? fm.errorCodes : []).map((c) => c?.code).filter(Boolean);
   const now = new Set(codes(after));
   for (const c of codes(before)) if (!now.has(c)) found.push({ pointer: 'errorCodes', reason: `declared error code \`${c}\` was removed` });
   return found;

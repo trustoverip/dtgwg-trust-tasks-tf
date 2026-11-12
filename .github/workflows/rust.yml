@@ -25,6 +25,16 @@ on:
       - "trust-tasks-cli/**"
       # The by-digest store script the `cli` job builds its registry with.
       - "scripts/write-by-digest-store.sh"
+      # Read by the jobs below but outside every crate (#1135): the shared
+      # proof and consume vectors (`../fixtures`, trust-tasks-proof and
+      # trust-tasks-rs tests), the ceremony `include_str!`ed by
+      # trust-tasks-ceremony's tests, the script `rs API compatibility` runs,
+      # and the release-plz config `package-workspace` stands in for. A PR
+      # changing only one of them ran none of the jobs that consume it.
+      - "fixtures/**"
+      - "ceremonies/**"
+      - "scripts/check-rs-api-compat.sh"
+      - "release-plz.toml"
       - "Cargo.toml"
       - "Cargo.lock"
       - "specs/**"
@@ -68,6 +78,7 @@ jobs:
   test:
     name: cargo test (stable, full workspace)
     runs-on: ubuntu-24.04
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -115,6 +126,7 @@ jobs:
   test-validate:
     name: cargo test (trust-tasks-rs, --features validate)
     runs-on: ubuntu-24.04
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -166,6 +178,7 @@ jobs:
   test-single-family:
     name: cargo test (trust-tasks-rs, one family at a time)
     runs-on: ubuntu-24.04
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -192,6 +205,7 @@ jobs:
   consumer-app:
     name: example application (trust-tasks-build)
     runs-on: ubuntu-24.04
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -227,6 +241,7 @@ jobs:
   doc:
     name: cargo doc
     runs-on: ubuntu-24.04
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -290,29 +305,10 @@ jobs:
   # resolver, a `msrv` job picking a lower toolchain will be
   # appropriate again.
 
-  # A released specification is compiled into every library, so an in-place
-  # edit that changes its generated types is a breaking release of the whole
-  # core version group (#858, #758 and #750 each cost a MINOR; #819's mid-enum
-  # insertion made 0.32.0 breaking). Caught here, on the pull request: a released
-  # version may change only additively, and anything else is a new version.
-  published-schemas:
-    name: published schemas change only additively
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-          # Full history AND tags: the comparison is against the last
-          # trust-tasks-rs-v* release, and the script refuses to run without it.
-          fetch-depth: 0
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: "24"
-      - name: Check every released spec changed only additively
-        env:
-          PUBLISHED_BASE_REF: ${{ github.event.pull_request.base.sha }}
-        run: node scripts/check-published-schemas.mjs
+  # `published schemas change only additively` used to be here. It is node-only
+  # and takes seconds, so it moved to the unfiltered checks.yml (#1135), where
+  # it reports on every PR and can be a required check — a path-filtered job
+  # cannot be.
 
   # The crates' counterpart of `go API compatibility` and friends: each
   # published crate against its own last release, failing an incompatible
@@ -325,6 +321,7 @@ jobs:
     name: rs API compatibility
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
+    timeout-minutes: 60
     # The PR title is read from the API.
     permissions:
       contents: read
@@ -390,6 +387,7 @@ jobs:
   fmt:
     name: cargo fmt
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -406,6 +404,7 @@ jobs:
   clippy:
     name: cargo clippy (${{ matrix.features.name }})
     runs-on: ubuntu-24.04
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
@@ -503,6 +502,7 @@ jobs:
   publication-order:
     name: publication order is satisfiable
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -581,6 +581,7 @@ jobs:
   package:
     name: cargo package (trust-tasks-rs)
     runs-on: ubuntu-24.04
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -655,6 +656,30 @@ jobs:
         env:
           CARGO_BUILD_JOBS: 2
         run: cargo package -p trust-tasks-rs --features validate
+      # crates.io refuses an upload over 10 MiB, and nothing else measures it:
+      # `cargo package` does not enforce the limit and release-plz publishes
+      # with `publish_no_verify`, so an oversize crate was first discovered
+      # mid-release, with other packages already out (#1097). The generated tree
+      # grows with every spec version (~7.5 KB compressed each).
+      - name: The .crate fits crates.io's 10 MiB upload limit
+        run: |
+          set -euo pipefail
+          version=$(cargo metadata --no-deps --format-version 1 \
+            | jq -r '.packages[] | select(.name == "trust-tasks-rs") | .version')
+          crate="target/package/trust-tasks-rs-$version.crate"
+          bytes=$(stat -c %s "$crate")
+          limit=10485760   # 10 MiB, crates.io's default upload limit
+          fail_at=10380902 # 9.9 MiB
+          warn_at=9961472  # 9.5 MiB
+          mib=$(awk -v b="$bytes" 'BEGIN { printf "%.2f", b / 1048576 }')
+          headroom=$(( (limit - bytes) / 1024 ))
+          echo "$crate: $bytes bytes ($mib MiB); ${headroom} KiB below the 10 MiB limit"
+          if [ "$bytes" -gt "$fail_at" ]; then
+            echo "::error::trust-tasks-rs packages to $mib MiB, within 0.1 MiB of crates.io's 10 MiB upload limit. The release would fail at upload. Exclude more from the package (trust-tasks-rs/Cargo.toml \`exclude\`) or schedule the prebuilt-module removal — see docs/design/consumer-side-generation.md."
+            exit 1
+          elif [ "$bytes" -gt "$warn_at" ]; then
+            echo "::warning::trust-tasks-rs packages to $mib MiB of crates.io's 10 MiB upload limit (${headroom} KiB left, roughly $(( headroom * 1024 / 7680 )) more spec versions)."
+          fi
 
   # The publish-time verify build, moved to the Release PR — release-plz.toml
   # sets `publish_no_verify` and says why. Every publishable crate's tarball is
@@ -669,6 +694,7 @@ jobs:
     name: cargo package (every published crate)
     if: github.event_name == 'pull_request' && github.head_ref == 'release'
     runs-on: ubuntu-24.04
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -721,6 +747,7 @@ jobs:
   cli:
     name: cargo test (trust-tasks-cli, against the whole registry)
     runs-on: ubuntu-24.04
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -743,6 +770,7 @@ jobs:
   deny:
     name: cargo deny
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

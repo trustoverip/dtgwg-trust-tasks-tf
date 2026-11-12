@@ -33,6 +33,7 @@ jobs:
   changelog-size:
     name: Dart CHANGELOG.md under pub.dev's limit
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -62,6 +63,7 @@ jobs:
   bindings-drift:
     name: build-dart-bindings drift
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -80,16 +82,20 @@ jobs:
         run: npm run build-dart-bindings
       - name: Check for drift
         run: |
-          if ! git diff --quiet trust-tasks-dart/lib/specs; then
-            echo "::error::Dart bindings are stale. Run \`npm run build-dart-bindings\` and commit the diff. Do NOT bump a version — the Release PR does that; see RELEASING.md."
-            git diff --stat trust-tasks-dart/lib/specs
-            git diff trust-tasks-dart/lib/specs | head -200
+          # `git status`, not `git diff`: a package the generator newly wrote is
+          # untracked, and `git diff` cannot see an untracked file (codegen.yml).
+          if [ -n "$(git status --porcelain -- trust-tasks-dart/lib/specs)" ]; then
+            echo "::error::Dart bindings are stale. Run \`npm run build-dart-bindings\` and commit the diff, including any new files. Do NOT bump a version — the Release PR does that; see RELEASING.md."
+            git status --short -- trust-tasks-dart/lib/specs
+            git add -N -- trust-tasks-dart/lib/specs
+            git diff -- trust-tasks-dart/lib/specs | head -200
             exit 1
           fi
 
   analyze:
     name: dart analyze + format (${{ matrix.sdk }})
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -145,6 +151,7 @@ jobs:
   test:
     name: dart test (${{ matrix.sdk }})
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -174,6 +181,7 @@ jobs:
   consumer-generation:
     name: consumer generation matches the prebuilt tree
     runs-on: ubuntu-24.04
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -205,6 +213,7 @@ jobs:
   consumer-app:
     name: example application (${{ matrix.sdk }})
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -246,6 +255,7 @@ jobs:
     name: Dart API compatibility
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     permissions:
       contents: read
       pull-requests: read
@@ -288,6 +298,7 @@ jobs:
   package-lists:
     name: Dart package lists agree
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -298,6 +309,11 @@ jobs:
           cache: "npm"
       - run: npm ci --no-audit --no-fund
       - run: npm run check-dart-packages
+      # The same guard for the npm, Go and crate release lists, and for
+      # commit-lint's `!` scope vocabulary against the scopes the release
+      # scripts read (#1139, #1137). Here rather than in a job of its own so the
+      # check names stay as they are.
+      - run: npm run check-release-lists
 
   # The hand-written packages built on trust_tasks: the Data Integrity proofs
   # and the HTTPS, DIDComm and TSP bindings.
@@ -332,6 +348,7 @@ jobs:
   packages:
     name: ${{ matrix.package }} (${{ matrix.sdk }}${{ matrix.ssi && format(', ssi {0}', matrix.ssi) || '' }}${{ matrix.downgrade && ', downgrade' || '' }})
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
