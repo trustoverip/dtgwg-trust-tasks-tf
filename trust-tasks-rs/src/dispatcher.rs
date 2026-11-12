@@ -152,7 +152,7 @@ impl<R> Dispatcher<R> {
         match forward_target(&doc.type_uri, &self.handlers) {
             Some(target) => {
                 if let Some(schema) = self.schemas.get(&target).copied().flatten() {
-                    crate::extension::prune_payload(&mut doc.payload, schema);
+                    crate::extension::prune_forward(&mut doc.payload, schema)?;
                 }
                 self.handlers[&target](doc)
             }

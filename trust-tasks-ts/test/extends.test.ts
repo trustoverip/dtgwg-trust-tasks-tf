@@ -455,3 +455,86 @@ describe("prunePayload", () => {
     assert.deepEqual(prunePayload({ a: 1, b: 2, c: 3 }, s), { a: 1, b: 2 });
   });
 });
+
+describe("prunePayload work limit", () => {
+  // A three-branch recursive expression: each branch is closed and names its
+  // operator with a `const`.
+  const exprSchema = {
+    $ref: "#/$defs/Expr",
+    $defs: {
+      Expr: {
+        oneOf: [
+          {
+            type: "object",
+            additionalProperties: false,
+            required: ["op", "arg"],
+            properties: { arg: { $ref: "#/$defs/Expr" }, op: { const: "not" } },
+          },
+          {
+            type: "object",
+            additionalProperties: false,
+            required: ["op", "arg"],
+            properties: { arg: { $ref: "#/$defs/Expr" }, op: { const: "neg" } },
+          },
+          { type: "object", additionalProperties: false, required: ["leaf"], properties: { leaf: { type: "string" } } },
+        ],
+      },
+    },
+  };
+  const nested = (depth: number, extra: boolean): unknown => {
+    let v: Record<string, unknown> = { leaf: "x", ...(extra ? { added: 0 } : {}) };
+    for (let i = 0; i < depth; i++) v = { arg: v, op: i % 2 === 0 ? "not" : "neg", ...(extra ? { added: i } : {}) };
+    return v;
+  };
+
+  // 25 levels is inside the walk's 64-deep schema limit (each level is two
+  // steps deep), and 4^25 prunes without the memo.
+  it("decides each nested oneOf once, so a deep recursive payload prunes in linear-ish time", () => {
+    const started = Date.now();
+    const pruned = prunePayload(nested(25, true), exprSchema);
+    assert.deepEqual(pruned, nested(25, false));
+    assert.ok(Date.now() - started < 5_000, "pruning a 25-level expression should not take seconds");
+  });
+
+  // Two applicators naming the same recursive member make every level prune
+  // its subtree twice: 2^depth steps however the branches are chosen.
+  const fanOutSchema = {
+    $ref: "#/$defs/Node",
+    $defs: {
+      Node: {
+        type: "object",
+        additionalProperties: false,
+        properties: { next: { $ref: "#/$defs/Node" }, v: { type: "integer" } },
+        allOf: [{ properties: { next: { $ref: "#/$defs/Node" } } }],
+      },
+    },
+  };
+  const chain = (depth: number): unknown => {
+    let v: Record<string, unknown> = { v: 0, added: true };
+    for (let i = 1; i <= depth; i++) v = { next: v, v: i, added: true };
+    return v;
+  };
+
+  it("still prunes a shallow payload under a schema whose work doubles per level", () => {
+    assert.deepEqual(prunePayload(chain(3), fanOutSchema), {
+      next: { next: { next: { v: 0 }, v: 1 }, v: 2 },
+      v: 3,
+    });
+  });
+
+  it("returns the payload untouched once the step limit is reached", () => {
+    const payload = chain(40);
+    const started = Date.now();
+    assert.equal(prunePayload(payload, fanOutSchema), payload);
+    assert.ok(Date.now() - started < 5_000, "the limit should stop the walk quickly");
+  });
+
+  it("readForSpec refuses such a document as malformedRequest, saying why", () => {
+    const spec: SpecPolicy = { ...V01.SPEC, payloadSchema: fanOutSchema };
+    const read = readForSpec({ ...doc03(), payload: chain(40) }, spec, { index: INDEX });
+    assert.equal(read.kind, "refused");
+    if (read.kind !== "refused") return;
+    assert.equal(read.reason.code, "malformedRequest");
+    assert.match(read.reason.message, /too complex to re-read/);
+  });
+});

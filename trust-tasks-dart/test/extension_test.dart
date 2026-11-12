@@ -568,4 +568,54 @@ void main() {
       expect(prunePayload(null, schema), isNull);
     });
   });
+  group('prunePayload work limit', () {
+    // `next` is named from both `properties` and an `allOf` branch, so every
+    // level prunes its subtree twice: 2^depth steps.
+    const fanOutSchema = '''
+{
+  "\$ref": "#/\$defs/Node",
+  "\$defs": {
+    "Node": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {"next": {"\$ref": "#/\$defs/Node"}, "v": {"type": "integer"}},
+      "allOf": [{"properties": {"next": {"\$ref": "#/\$defs/Node"}}}]
+    }
+  }
+}''';
+
+    Map<String, dynamic> chain(int depth, {bool extra = true}) {
+      var v = <String, dynamic>{'v': 0, if (extra) 'added': true};
+      for (var i = 1; i <= depth; i++) {
+        v = <String, dynamic>{'next': v, 'v': i, if (extra) 'added': true};
+      }
+      return v;
+    }
+
+    test('a shallow payload is still pruned', () {
+      expect(prunePayload(chain(3), fanOutSchema), chain(3, extra: false));
+    });
+
+    test('a payload beyond the limit is returned untouched, quickly', () {
+      final payload = chain(40);
+      final watch = Stopwatch()..start();
+      expect(identical(prunePayload(payload, fanOutSchema), payload), isTrue);
+      expect(watch.elapsed, lessThan(const Duration(seconds: 5)));
+    });
+
+    test('readForVersion refuses such a document as malformedRequest', () {
+      const spec = SpecPolicy(
+        typeUri: '${base}0.3',
+        payloadSchema: fanOutSchema,
+      );
+      final json = <String, dynamic>{
+        ...authDoc('0.4'),
+        'payload': chain(40),
+      };
+      final reason =
+          refused(readForVersion(json, spec, fromJson, index: chained));
+      expect(reason.code, StandardCode.malformedRequest);
+      expect(reason.message, contains('too complex to re-read'));
+    });
+  });
 }

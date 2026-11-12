@@ -215,7 +215,7 @@ impl<Ctx, R> AsyncDispatcher<Ctx, R> {
         let (target, forwarded) = self.route(&doc.type_uri)?;
         if forwarded {
             if let Some(schema) = self.facts[&target].schema {
-                crate::extension::prune_payload(&mut doc.payload, schema);
+                crate::extension::prune_forward(&mut doc.payload, schema)?;
             }
         }
         self.handlers[&target](doc, ctx).await

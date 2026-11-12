@@ -207,6 +207,11 @@ func ReadForSpec(received json.RawMessage, spec SpecPolicy) (json.RawMessage, *R
 // that is not exactly one branch: an unsure prune could delete what the right
 // branch needs, whereas an unpruned value is refused by item 2, which is the
 // conservative failure. Number literals are carried through verbatim.
+//
+// Pruning runs before any proof is checked, so its work is bounded: at most
+// 100,000 steps plus 64 per value in the payload (a step is a value visited
+// against a subschema, or a branch test). A payload that needs more is refused
+// malformedRequest with [PruneLimitWireMessage].
 func ReadForSpecWith(
 	received json.RawMessage,
 	spec SpecPolicy,
@@ -250,8 +255,12 @@ func ReadForSpecWith(
 	if err != nil {
 		return nil, nil, fmt.Errorf("trusttasks: received payload is not JSON: %w", err)
 	}
-	p := pruner{root: schema}
-	pruned, err := json.Marshal(p.prune(value, schema, 0))
+	p := pruner{root: schema, steps: pruneStepLimit(value)}
+	prunedValue := p.prune(value, schema, 0)
+	if p.steps < 0 {
+		return nil, &RejectReason{Code: CodeMalformedRequest, Message: PruneLimitWireMessage}, nil
+	}
+	pruned, err := json.Marshal(prunedValue)
 	if err != nil {
 		return nil, nil, fmt.Errorf("trusttasks: re-encode pruned payload: %w", err)
 	}
@@ -312,8 +321,55 @@ func compiledPattern(pattern string) *regexp.Regexp {
 // maxPruneDepth bounds schema recursion that consumes no value — a `$ref` cycle.
 const maxPruneDepth = 256
 
+// The work one prune may do, in steps (a value visited against a subschema, or
+// a branch test): pruneBaseSteps plus pruneStepsPerValue for every value in the
+// payload. Ordinary payloads use a small fraction of it. A schema whose `$ref`,
+// `allOf` and `properties` name the same recursive member more than once makes
+// every level prune its subtree more than once, so the walk would otherwise
+// grow exponentially with the payload's nesting depth — and ReadForSpec runs
+// before any proof is checked.
+const (
+	pruneBaseSteps     = 100_000
+	pruneStepsPerValue = 64
+)
+
+// PruneLimitWireMessage is the message [ReadForSpec] refuses a document with
+// (malformedRequest) when its payload cannot be pruned to the implemented
+// version within the step limit.
+const PruneLimitWireMessage = "the payload is too complex to re-read as the implemented " +
+	"specification version: pruning it against that version's schema exceeds the work limit"
+
+// pruneStepLimit is the step budget for pruning value.
+func pruneStepLimit(value any) int {
+	n := 0
+	stack := []any{value}
+	for len(stack) > 0 {
+		v := stack[len(stack)-1]
+		stack = stack[:len(stack)-1]
+		n++
+		switch t := v.(type) {
+		case map[string]any:
+			for _, member := range t {
+				stack = append(stack, member)
+			}
+		case []any:
+			stack = append(stack, t...)
+		}
+	}
+	return pruneBaseSteps + pruneStepsPerValue*n
+}
+
 type pruner struct {
 	root any
+	// steps is the remaining budget. Once it is negative every call returns
+	// at once, and the caller discards the result.
+	steps int
+}
+
+// spend takes one step from the budget and reports whether any was left.
+func (p *pruner) spend() bool {
+	p.steps--
+	return p.steps >= 0
 }
 
 // resolve follows a local JSON Pointer `$ref` ("#/$defs/X") within the root
@@ -349,6 +405,9 @@ func (p *pruner) prune(value, schema any, depth int) any {
 	node, ok := schema.(map[string]any)
 	if !ok || depth > maxPruneDepth {
 		return value // `true`, `false`, or unbounded: nothing to learn
+	}
+	if !p.spend() {
+		return value
 	}
 
 	// Each applicator applies independently, as validation does, so applying
@@ -513,6 +572,9 @@ func (p *pruner) plausible(value, schema any, depth int) bool {
 	node, ok := schema.(map[string]any)
 	if !ok || depth > maxPruneDepth {
 		return schema != false
+	}
+	if !p.spend() {
+		return false
 	}
 	if ref, ok := node["$ref"].(string); ok {
 		if target, found := p.resolve(ref); found && !p.plausible(value, target, depth+1) {

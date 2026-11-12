@@ -572,14 +572,15 @@ where
         Err(reason) => return route_rejection(transport, &doc, reason, error_id_factory),
     };
     let facts = dispatcher.facts(&target);
-    let prune = |payload: &mut Value| {
-        if forwarded {
-            if let Some(schema) = facts.schema {
-                crate::extension::prune_payload(payload, schema);
-            }
+    let prune = |payload: &mut Value| -> Result<(), RejectReason> {
+        match facts.schema {
+            Some(schema) if forwarded => crate::extension::prune_forward(payload, schema),
+            _ => Ok(()),
         }
     };
-    prune(&mut doc.payload);
+    if let Err(reason) = prune(&mut doc.payload) {
+        return route_rejection(transport, &doc, reason, error_id_factory);
+    }
 
     // The typed path's parse, done here so a payload the handler's `P` cannot
     // hold is refused before the record rather than after it.
@@ -619,7 +620,9 @@ where
             else {
                 return false;
             };
-            prune(&mut parsed.payload);
+            if prune(&mut parsed.payload).is_err() {
+                return false;
+            }
             match (serde_json::to_value(&parsed), serde_json::to_value(doc)) {
                 (Ok(a), Ok(b)) => a == b,
                 _ => false,
