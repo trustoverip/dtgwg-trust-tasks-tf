@@ -1,5 +1,5 @@
-// `release-pr.sh open` and `check-patch-paths.sh` against patches that touch
-// what a release or a withdrawal batch never touches.
+// `release-pr.sh open`, `check-patch-paths.sh` and `check-npm-tarball.sh`
+// against changes a release or a withdrawal batch never makes.
 //
 // `open` runs with the release token, after a read-only job computed the patch.
 // These tests build a throwaway repository with a local bare remote and a stub
@@ -41,6 +41,36 @@ function write(file, content) {
   fs.writeFileSync(file, content);
 }
 
+// The manifests a release edits, as the fixture starts and as a test changes them.
+const packageJson = (over = {}) =>
+  JSON.stringify(
+    {
+      name: "x",
+      version: "0.1.0",
+      peerDependencies: { "@openvtc/trust-tasks": "^0.28.0" },
+      devDependencies: { typescript: "^5.6.0" },
+      ...over,
+    },
+    null,
+    2,
+  ) + "\n";
+const goVersion = (v, extra = "") => `// Package proof.\npackage proof\n\nconst Version = "${v}"\n${extra}`;
+const pubspec = ({ version = "0.1.8", trustTasks = "^0.9.3", description = "Proofs." } = {}) =>
+  [
+    "name: trust_tasks_proof",
+    `description: ${description}`,
+    `version: ${version}`,
+    "",
+    "environment:",
+    "  sdk: ^3.6.0",
+    "",
+    "dependencies:",
+    `  trust_tasks: ${trustTasks}`,
+    '  ssi: ">=3.9.6 <5.0.0"',
+    "",
+  ].join("\n");
+const dartVersion = (v) => `/// The package version.\nconst String packageVersion = '${v}';\n`;
+
 // A repository at one commit holding the two scripts under test and a small
 // package tree, a bare remote, and a `gh` that answers `api user` and
 // `pr list` and records every call.
@@ -54,11 +84,14 @@ function fixture() {
   git(dir, "init", "-q", "--bare", remote);
   git(dir, "init", "-q", "-b", "main", repo);
   fs.mkdirSync(path.join(repo, "scripts"));
-  for (const script of ["release-pr.sh", "check-patch-paths.sh"]) {
+  for (const script of ["release-pr.sh", "check-patch-paths.sh", "check-npm-tarball.sh"]) {
     fs.copyFileSync(path.join(ROOT, "scripts", script), path.join(repo, "scripts", script));
     fs.chmodSync(path.join(repo, "scripts", script), 0o755);
   }
-  write(path.join(repo, "trust-tasks-ts/package.json"), '{ "name": "x", "version": "0.1.0" }\n');
+  write(path.join(repo, "trust-tasks-ts/package.json"), packageJson());
+  write(path.join(repo, "trust-tasks-go/proof/version.go"), goVersion("0.1.4"));
+  write(path.join(repo, "trust-tasks-dart-proof/pubspec.yaml"), pubspec());
+  write(path.join(repo, "trust-tasks-dart/lib/src/runtime/version.dart"), dartVersion("0.9.37"));
   write(path.join(repo, "trust-tasks-ts/CHANGELOG.md"), "# Changelog\n");
   write(path.join(repo, "specs/a/0.1/spec.md"), "a\n");
   write(path.join(repo, "scripts/other.sh"), "#!/bin/sh\necho hi\n");
@@ -158,7 +191,7 @@ test("open refuses a patch that touches a file outside the release allowlist", (
 test("open applies, commits and pushes an ordinary release patch", () => {
   const f = fixture();
   patchOf(f, (repo) => {
-    write(path.join(repo, "trust-tasks-ts/package.json"), '{ "name": "x", "version": "0.1.1" }\n');
+    write(path.join(repo, "trust-tasks-ts/package.json"), packageJson({ version: "0.1.1" }));
     fs.appendFileSync(path.join(repo, "trust-tasks-ts/CHANGELOG.md"), "\n## 0.1.1\n");
   });
   const r = open(f);
@@ -189,3 +222,185 @@ test("the withdraw allowlist takes spec folders and generated trees only", () =>
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /trust-tasks-ts\/package\.json is outside the withdraw allowlist/);
 });
+
+// ── What a release may change inside a manifest ─────────────────────────────
+
+// Refused after the patch applied (so after `gh api user` / `pr list`), but
+// before the commit: nothing pushed, no PR opened.
+function refusedContent(f, pattern) {
+  const r = open(f);
+  assert.notEqual(r.status, 0, "open should refuse the change");
+  assert.match(r.stderr, pattern);
+  assert.equal(r.pushed, false, "nothing may be pushed");
+  assert.doesNotMatch(r.gh, /pr (create|close)|api .*PATCH/, "no PR may be opened or changed");
+}
+
+test("open accepts version and dependency-version changes in every manifest", () => {
+  const f = fixture();
+  patchOf(f, (repo) => {
+    write(
+      path.join(repo, "trust-tasks-ts/package.json"),
+      packageJson({ version: "0.2.0", peerDependencies: { "@openvtc/trust-tasks": "^0.29.0" } }),
+    );
+    write(path.join(repo, "trust-tasks-go/proof/version.go"), goVersion("0.2.0"));
+    write(path.join(repo, "trust-tasks-dart-proof/pubspec.yaml"), pubspec({ version: "0.2.0", trustTasks: "^0.10.0" }));
+    write(path.join(repo, "trust-tasks-dart/lib/src/runtime/version.dart"), dartVersion("0.10.0"));
+  });
+  const r = open(f);
+  assert.equal(r.status, 0, r.stderr);
+  assert.equal(r.pushed, true);
+});
+
+test("open refuses a package.json that gains a script", () => {
+  const f = fixture();
+  patchOf(f, (repo) =>
+    write(path.join(repo, "trust-tasks-ts/package.json"), packageJson({ version: "0.1.1", scripts: { postinstall: "node x" } })),
+  );
+  refusedContent(f, /package\.json changes more than its version and dependency versions/);
+});
+
+test("open refuses a package.json dependency moved off a version range", () => {
+  const f = fixture();
+  patchOf(f, (repo) =>
+    write(
+      path.join(repo, "trust-tasks-ts/package.json"),
+      packageJson({ version: "0.1.1", devDependencies: { typescript: "git+https://example.invalid/ts.git" } }),
+    ),
+  );
+  refusedContent(f, /package\.json changes more than its version and dependency versions/);
+});
+
+test("open refuses a version.go that changes more than const Version", () => {
+  const f = fixture();
+  patchOf(f, (repo) =>
+    write(path.join(repo, "trust-tasks-go/proof/version.go"), goVersion("0.1.5", "\nfunc init() {}\n")),
+  );
+  refusedContent(f, /version\.go changes more than `const Version`/);
+});
+
+test("open refuses a version.dart that changes more than packageVersion", () => {
+  const f = fixture();
+  patchOf(f, (repo) =>
+    write(path.join(repo, "trust-tasks-dart/lib/src/runtime/version.dart"), dartVersion("0.9.38") + "final x = 1;\n"),
+  );
+  refusedContent(f, /version\.dart changes more than `packageVersion`/);
+});
+
+test("open refuses a pubspec change outside version: and constraints", () => {
+  const f = fixture();
+  patchOf(f, (repo) =>
+    write(path.join(repo, "trust-tasks-dart-proof/pubspec.yaml"), pubspec({ version: "0.1.9", description: "Other." })),
+  );
+  refusedContent(f, /only `version:` may change at the top level/);
+});
+
+test("open refuses a pubspec dependency moved off a version constraint", () => {
+  const f = fixture();
+  patchOf(f, (repo) =>
+    write(path.join(repo, "trust-tasks-dart-proof/pubspec.yaml"), pubspec({ trustTasks: "any" })),
+  );
+  refusedContent(f, /not a version constraint/);
+});
+
+test("open refuses a pubspec dependency turned into a git source", () => {
+  const f = fixture();
+  patchOf(f, (repo) => {
+    const file = path.join(repo, "trust-tasks-dart-proof/pubspec.yaml");
+    write(file, pubspec().replace("  trust_tasks: ^0.9.3\n", "  trust_tasks:\n    git: https://example.invalid/x.git\n"));
+  });
+  refusedContent(f, /adds or removes lines|not a version/);
+});
+
+// ── check-patch-paths.sh: names, modes and unreadable patches ───────────────
+
+function checkPaths(f, kind = "release") {
+  return spawnSync("./scripts/check-patch-paths.sh", [kind, path.join(f.out, "changes.patch")], {
+    cwd: f.repo,
+    env: GIT_ENV,
+    encoding: "utf8",
+  });
+}
+
+test("a path with a control character is refused even when the allowlist matches it", () => {
+  const f = fixture();
+  patchOf(f, (repo) => write(path.join(repo, "trust-tasks-go/a\tb/CHANGELOG.md"), "# Changelog\n"));
+  const r = checkPaths(f);
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /control character/);
+});
+
+test("a new executable file is refused", () => {
+  const f = fixture();
+  patchOf(f, (repo) => {
+    const file = path.join(repo, "trust-tasks-ts-gen/CHANGELOG.md");
+    write(file, "# Changelog\n");
+    fs.chmodSync(file, 0o755);
+  });
+  const r = checkPaths(f);
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /new executable file/);
+});
+
+test("a file made executable is refused", () => {
+  const f = fixture();
+  patchOf(f, (repo) => fs.chmodSync(path.join(repo, "trust-tasks-ts/CHANGELOG.md"), 0o755));
+  const r = checkPaths(f);
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /made executable/);
+});
+
+test("a patch git cannot read is refused as unreadable", () => {
+  const f = fixture();
+  for (const body of ["not a patch\n", "diff --git a/x b/x\n--- a/x\n+++ b/x\n@@ -1,3 +1,3 @@\n-a\n+b\n"]) {
+    fs.writeFileSync(path.join(f.out, "changes.patch"), body);
+    const r = checkPaths(f);
+    assert.notEqual(r.status, 0);
+    assert.match(r.stderr, /git cannot read it/);
+  }
+});
+
+// ── check-npm-tarball.sh ────────────────────────────────────────────────────
+
+function tarball(f, manifest) {
+  const dir = fs.mkdtempSync(path.join(f.dir, "pack-"));
+  write(path.join(dir, "package/package.json"), JSON.stringify(manifest));
+  const file = path.join(f.dir, `${path.basename(dir)}.tgz`);
+  execFileSync("tar", ["-czf", file, "-C", dir, "package"]);
+  return file;
+}
+
+function checkTarball(f, manifest, name = "x", version = "0.1.1") {
+  return spawnSync("./scripts/check-npm-tarball.sh", [tarball(f, manifest), name, version], {
+    cwd: f.repo,
+    env: GIT_ENV,
+    encoding: "utf8",
+  });
+}
+
+test("the npm tarball check accepts the package decided on", () => {
+  const f = fixture();
+  const r = checkTarball(f, { name: "x", version: "0.1.1", scripts: { build: "tsc", test: "node --test" } });
+  assert.equal(r.status, 0, r.stderr);
+});
+
+test("the npm tarball check refuses another name or version", () => {
+  const f = fixture();
+  assert.match(checkTarball(f, { name: "y", version: "0.1.1" }).stderr, /it is y@0\.1\.1, not x@0\.1\.1/);
+  assert.match(checkTarball(f, { name: "x", version: "9.9.9" }).stderr, /it is x@9\.9\.9, not x@0\.1\.1/);
+});
+
+test("the npm tarball check refuses a publishConfig", () => {
+  const f = fixture();
+  const r = checkTarball(f, { name: "x", version: "0.1.1", publishConfig: { registry: "https://example.invalid" } });
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /publishConfig/);
+});
+
+for (const hook of ["preinstall", "install", "postinstall"]) {
+  test(`the npm tarball check refuses a ${hook} script`, () => {
+    const f = fixture();
+    const r = checkTarball(f, { name: "x", version: "0.1.1", scripts: { [hook]: "node x" } });
+    assert.notEqual(r.status, 0);
+    assert.match(r.stderr, /install-time script/);
+  });
+}

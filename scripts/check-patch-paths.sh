@@ -12,7 +12,11 @@
 #
 #   - any path outside the producer's allowlist below;
 #   - .github/, scripts/, .gitattributes and .gitmodules, whatever the list says;
-#   - a symlink or submodule (mode 120000 / 160000), a rename or a copy.
+#   - a symlink or submodule (mode 120000 / 160000), a rename or a copy;
+#   - a new executable file (mode 100755, created or changed to), unless the
+#     producer's `allow_exec` list names it — neither list names any today;
+#   - a path containing a control character;
+#   - a patch git cannot read.
 #
 # The allowlists are what the producers write. `release` is every file a
 # `release-pr.sh prepare` run changes (release-plz: the manifests, Cargo.lock
@@ -31,6 +35,7 @@ patch="$2"
 
 case "$kind" in
   release)
+    allow_exec=()
     allow=(
       '^Cargo\.(toml|lock)$'
       '^[^/]+/Cargo\.toml$'
@@ -42,6 +47,7 @@ case "$kind" in
     )
     ;;
   withdraw)
+    allow_exec=()
     allow=(
       '^specs/'
       '^trust-tasks-rs/(src|tests)/'
@@ -67,14 +73,40 @@ refuse() {
   errors=$((errors + 1))
 }
 
-# Modes, renames and copies, from git's own reading of the patch.
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+
+# git's own reading of the patch, checked for success: an unreadable patch is
+# refused here, not discovered later as an empty file list.
+if ! git apply --summary "$patch" >"$tmp/summary" 2>"$tmp/err"; then
+  echo "::error::refusing the patch: git cannot read it: $(cat "$tmp/err")" >&2
+  exit 1
+fi
+if ! git apply --numstat -z "$patch" >"$tmp/numstat" 2>"$tmp/err"; then
+  echo "::error::refusing the patch: git cannot read it: $(cat "$tmp/err")" >&2
+  exit 1
+fi
+
+is_allowed_exec() {
+  local re
+  for re in ${allow_exec[@]+"${allow_exec[@]}"}; do
+    [[ "$1" =~ $re ]] && return 0
+  done
+  return 1
+}
+
+# Modes, renames and copies.
 while IFS= read -r line; do
   case "$line" in
     *" 120000 "* | *" 120000" | *"=> 120000"*) refuse "symlink: $line" ;;
     *" 160000 "* | *" 160000" | *"=> 160000"*) refuse "submodule: $line" ;;
     " rename "* | " copy "*) refuse "rename or copy: $line" ;;
+    " create mode 100755 "*)
+      is_allowed_exec "${line# create mode 100755 }" || refuse "new executable file: $line" ;;
+    " mode change "*"=> 100755 "*)
+      is_allowed_exec "${line#*=> 100755 }" || refuse "made executable: $line" ;;
   esac
-done < <(git apply --summary "$patch")
+done <"$tmp/summary"
 [ "$errors" -eq 0 ] || exit 1
 
 # Every path, NUL-separated so no file name can split a record.
@@ -83,6 +115,10 @@ while IFS= read -r -d '' record; do
   path="${record#*$'\t'}"
   path="${path#*$'\t'}"
   count=$((count + 1))
+  if [[ "$path" =~ [[:cntrl:]] ]]; then
+    refuse "a path contains a control character: $(printf '%q' "$path")"
+    continue
+  fi
   if [[ "$path" =~ $never ]]; then
     refuse "$path is never part of this change"
     continue
@@ -92,7 +128,7 @@ while IFS= read -r -d '' record; do
     if [[ "$path" =~ $re ]]; then ok=1; break; fi
   done
   [ "$ok" -eq 1 ] || refuse "$path is outside the $kind allowlist"
-done < <(git apply --numstat -z "$patch")
+done <"$tmp/numstat"
 
 if [ "$count" -eq 0 ]; then
   echo "::error::refusing the patch: git found no file in it" >&2
