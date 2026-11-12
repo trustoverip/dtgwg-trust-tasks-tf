@@ -482,3 +482,42 @@ func TestConsumerCaseFoldedDuplicateMembers(t *testing.T) {
 		})
 	}
 }
+
+// An authenticated body whose id and type are strings but whose other members
+// do not parse is answered malformedRequest (binding §4) — the sender is known —
+// rather than returned as an error with no reply.
+func TestConsumerUnparsableBody(t *testing.T) {
+	for name, edit := range map[string]func(map[string]any){
+		"issuedAt": func(m map[string]any) { m["issuedAt"] = 7 },
+		"threadId": func(m map[string]any) { m["threadId"] = []int{1} },
+	} {
+		t.Run(name, func(t *testing.T) {
+			h := newHarness(t)
+			r := h.receive(t, h.seal(t, echoDoc(defaultID, "hello", edit)))
+			if r.Outcome.Kind != tt.OutcomeRejected {
+				t.Fatalf("outcome = %s, want rejected", r.Outcome.Kind)
+			}
+			if code := codeOf(t, r); code != "malformedRequest" {
+				t.Fatalf("code = %q, want malformedRequest", code)
+			}
+			var reply struct {
+				ThreadID string `json:"threadId"`
+				Payload  struct {
+					InResponseTo struct {
+						ID      string `json:"id"`
+						TypeURI string `json:"typeUri"`
+					} `json:"inResponseTo"`
+				} `json:"payload"`
+			}
+			if err := json.Unmarshal(r.Reply, &reply); err != nil {
+				t.Fatal(err)
+			}
+			if reply.Payload.InResponseTo.ID != defaultID || reply.Payload.InResponseTo.TypeURI != echoType || reply.ThreadID != defaultID {
+				t.Fatalf("reply does not name the request: %s", r.Reply)
+			}
+			if len(*h.calls) != 0 {
+				t.Fatalf("handler ran: %v", *h.calls)
+			}
+		})
+	}
+}

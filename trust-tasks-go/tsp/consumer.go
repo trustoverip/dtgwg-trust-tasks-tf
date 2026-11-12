@@ -155,14 +155,18 @@ func Consume[P, R any](
 		return &Received[R]{Outcome: out, Transport: transport, Reply: reply}
 	}
 
-	// A raw view for the paths that answer before the typed decode. UnpackTrustTask
-	// guarantees string id and type, so this always parses.
+	// A raw view for the paths that answer before the typed decode.
+	// UnpackTrustTask guarantees string id and type, but another member can
+	// still fail to parse (an issuedAt that is not a string, a threadId that is
+	// a number). The sender is authenticated, so that body is answered
+	// malformedRequest (binding §4), not dropped — addressed from whichever
+	// routing members did parse.
 	var raw tt.Document[json.RawMessage]
 	if err := json.Unmarshal(unpacked.Document, &raw); err != nil {
-		return &Received[R]{
-			Outcome:   tt.ConsumeOutcome[R]{Kind: tt.OutcomeRejected},
-			Transport: transport,
-		}, err
+		return refused(routingView(unpacked.Document), tt.RejectReason{
+			Code:    tt.CodeMalformedRequest,
+			Message: "body is not a well-formed Trust Task document",
+		}), nil
 	}
 
 	// Two members differing only by case would be read as one by encoding/json
@@ -239,6 +243,34 @@ func PackReply(sender *tsp.PrivateIdentity, receiver *tsp.Identity, reply json.R
 		return nil, errors.New("tsp: nothing to reply with")
 	}
 	return PackTrustTask(reply, sender, receiver)
+}
+
+// routingView reads the members an error response is addressed from — id,
+// type, issuer, recipient and the thread members — out of a body that did not
+// parse as a whole, keeping each only when it is a string.
+func routingView(body json.RawMessage) *tt.Document[json.RawMessage] {
+	var members map[string]json.RawMessage
+	_ = json.Unmarshal(body, &members) // UnpackTrustTask checked it is an object
+	str := func(key string) *string {
+		var v *string // a JSON null leaves it nil
+		if json.Unmarshal(members[key], &v) != nil {
+			return nil
+		}
+		return v
+	}
+	doc := &tt.Document[json.RawMessage]{
+		Issuer:         str("issuer"),
+		Recipient:      str("recipient"),
+		ThreadID:       str("threadId"),
+		ParentThreadID: str("parentThreadId"),
+	}
+	if id := str("id"); id != nil {
+		doc.ID = *id
+	}
+	if typ := str("type"); typ != nil {
+		doc.Type = *typ
+	}
+	return doc
 }
 
 // documentWith rebuilds a typed document from the raw view and the decoded
