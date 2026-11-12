@@ -136,7 +136,10 @@ RejectReason? validateFreshness<P>(
     }
 
     final maxAge = policy.maxAge;
-    if (maxAge != null && issuedAt.add(maxAge + policy.skew).isBefore(now)) {
+    // The window is half-open: refused from the instant [recordExpiry]
+    // returns, the instant a guard may drop the record, so there is no moment
+    // at which the document is both acceptable and forgotten.
+    if (maxAge != null && !issuedAt.add(maxAge + policy.skew).isAfter(now)) {
       return stale();
     }
     return null;

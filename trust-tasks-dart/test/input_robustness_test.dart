@@ -244,14 +244,15 @@ void main() {
 
     Future<ConsumeOutcome<Map<String, dynamic>>> run(
       ReplayGuard guard,
-      String body,
-    ) =>
+      String body, {
+      DateTime? at,
+    }) =>
         consume(
           jsonDecode(body) as Map<String, dynamic>,
           guard: guard,
           policy: policy,
           myVid: vectors['consumer'] as String,
-          now: now,
+          now: at ?? now,
         );
 
     for (final c in (vectors['cases'] as List).cast<Map<String, dynamic>>()) {
@@ -261,11 +262,15 @@ void main() {
           await run(guard, (c['first'] ?? vectors['first']) as String),
           isA<Handled<Map<String, dynamic>>>(),
         );
-        final second = await run(guard, c['second'] as String);
+        final secondAt = c['secondAt'] as String?;
+        final second = await run(
+          guard,
+          c['second'] as String,
+          at: secondAt == null ? null : DateTime.parse(secondAt),
+        );
         final got = switch (second) {
           DuplicateOutcome() => 'duplicate',
-          Rejected(:final error) when error.payload.code == 'idConflict' =>
-            'idConflict',
+          Rejected(:final error) => error.payload.code,
           _ => second.runtimeType.toString(),
         };
         expect(got, c['expect']);

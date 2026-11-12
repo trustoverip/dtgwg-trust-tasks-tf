@@ -50,6 +50,7 @@ func consequential(
 // consequentialDoc carries the issuedAt that ConsequentialChecks requires.
 func consequentialDoc(mutate func(*tt.Document[payload])) *tt.Document[payload] {
 	return doc(func(d *tt.Document[payload]) {
+		d.Type = relaxedSpec.TypeURI
 		d.Recipient = nil
 		d.IssuedAt = ptr("2026-01-01T00:00:00Z")
 		if mutate != nil {
@@ -171,7 +172,7 @@ func TestItem11RefusesADocumentItCannotPlaceInAnyWindow(t *testing.T) {
 		ProofPolicy:   tt.ProofPolicy{Kind: tt.ProofAcceptUnverified},
 		PayloadPolicy: tt.PayloadPolicy{Kind: tt.PayloadAcceptUnvalidated},
 		Checks:        unbounded,
-		Doc:           doc(func(d *tt.Document[payload]) { d.Recipient = nil }),
+		Doc:           doc(func(d *tt.Document[payload]) { d.Type = relaxedSpec.TypeURI; d.Recipient = nil }),
 		MyVID:         me,
 		Now:           testNow,
 		NewErrorID:    func() string { return "err-1" },
@@ -235,7 +236,7 @@ func TestItem11KeepsNoRecordWhenTheCallerDeclaresTheTaskNotConsequential(t *test
 			ProofPolicy:   tt.ProofPolicy{Kind: tt.ProofAcceptUnverified},
 			PayloadPolicy: tt.PayloadPolicy{Kind: tt.PayloadAcceptUnvalidated},
 			Checks:        tt.NotConsequentialChecks(),
-			Doc:           doc(func(d *tt.Document[payload]) { d.Recipient = nil }),
+			Doc:           doc(func(d *tt.Document[payload]) { d.Type = relaxedSpec.TypeURI; d.Recipient = nil }),
 			MyVID:         me,
 			Now:           testNow,
 			NewErrorID:    func() string { return "err-1" },
@@ -637,5 +638,24 @@ func TestItem11FailsClosedOnAVerdictItDoesNotKnow(t *testing.T) {
 	}
 	if executions != 0 {
 		t.Error("executed without the guard saying the document was fresh")
+	}
+}
+
+// §7.2 item 3 refuses before the claim: a document of another type does not
+// burn the id, so the right document is still served under it.
+func TestItem3RefusalDoesNotBurnTheID(t *testing.T) {
+	guard := tt.NewInMemoryReplayGuard(0)
+	executions := 0
+	wrong := consequential(t, guard, consequentialDoc(func(d *tt.Document[payload]) {
+		d.Type = "https://trusttasks.org/spec/chat/message/1.0"
+	}), &executions, testNow)
+	if wrong.Kind != tt.OutcomeRejected || wrong.Error.Payload.Code != string(tt.CodeUnsupportedType) {
+		t.Fatalf("expected unsupportedType, got %q", wrong.Kind)
+	}
+	if right := consequential(t, guard, consequentialDoc(nil), &executions, testNow); right.Kind != tt.OutcomeHandled {
+		t.Fatalf("expected handled, got %q", right.Kind)
+	}
+	if executions != 1 {
+		t.Fatalf("executions = %d, want 1", executions)
 	}
 }

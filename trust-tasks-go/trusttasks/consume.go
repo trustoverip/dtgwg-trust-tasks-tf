@@ -37,8 +37,12 @@ package trusttasks
 //	    }
 //	}
 //
-// Items 1 (framework schema) and 3 (unknown type) are not attempted here — they
-// belong to the caller's parse and dispatch.
+// Item 1 (framework schema) is not attempted here — it belongs to the caller's
+// parse. Item 3 is: a document whose type is neither Spec.TypeURI (`#request` and
+// no fragment alike) nor a later version whose declared extension chain reaches
+// it (SPEC §5.2, see [ConsumeOptions.Extends]) is refused unsupportedVersion for
+// the same specification and unsupportedType for another, as [ReadForSpec]
+// refuses it.
 //
 // Item 2 (payload schema) is. Go's encoding/json enforces less than it looks like
 // it does: it ignores unknown members by default and does not enforce a single
@@ -359,6 +363,14 @@ type ConsumeOptions[P, R any] struct {
 	// such a member.
 	Received json.RawMessage
 
+	// Extends is the [ExtendsLookup] the §7.2 item 3 type check follows when
+	// Doc's type is a later version than Spec's. Nil means [RegistryExtends].
+	// A caller that re-read Doc with [ReadForSpecWith] and its own lookup MUST
+	// pass that lookup here too: the check does not know how Doc was read, and
+	// under [RegistryExtends] a chain only the caller's lookup declares is refused
+	// unsupportedVersion.
+	Extends ExtendsLookup
+
 	// MyVID is this consumer's own VID, for the §7.2 item 5 recipient check.
 	MyVID string
 
@@ -435,6 +447,15 @@ func ConsumeInbound[P, R any](
 			return ConsumeOutcome[R]{Kind: OutcomeSuppressed, Reason: reason}
 		}
 		return ConsumeOutcome[R]{Kind: OutcomeRejected, Error: errorResponse}
+	}
+
+	// §7.2 item 3 — Doc's type is the specification Spec describes. Decoding into
+	// Document[P] does not look at the type, so a document of another
+	// specification whose payload happens to decode as P would otherwise run under
+	// Spec's policy and Handler. Refused before the item-11 claim, so a refused
+	// document never burns its id.
+	if reason := typeRefusalFor(doc.Type, opts.Spec, opts.Extends); reason != nil {
+		return route(reason), nil
 	}
 
 	// §7.2 item 2 — payload schema. Runs first, in the spec's own order, and
@@ -611,7 +632,21 @@ func ConsumeInbound[P, R any](
 		}
 	}
 
+	// A handler that panics (or calls runtime.Goexit) never returns, so the
+	// settle and release calls below never run. This defer releases the claim on
+	// that path: nothing says the effect happened, and holding the claim would
+	// answer every resend with an in-flight duplicate until the record expired.
+	// It does not recover — the panic continues to the caller unchanged, with its
+	// original stack. Once the handler has returned, exactly one of the calls
+	// below settles the claim instead.
+	handlerReturned := false
+	defer func() {
+		if !handlerReturned {
+			claimed.release(ctx, doc.ID)
+		}
+	}()
 	response, err := opts.Handler(ctx, doc, parties)
+	handlerReturned = true
 	if err != nil {
 		var refusal *Refusal
 		if !errors.As(err, &refusal) {
@@ -652,6 +687,19 @@ type claim struct {
 	digest string
 }
 
+// claimSettleTimeout bounds a settle or release made after the request's own
+// context may have ended.
+const claimSettleTimeout = 5 * time.Second
+
+// settleContext detaches ctx from its cancellation for a settle or release. The
+// handler failing because ctx was cancelled — a client that went away, a
+// deadline — is exactly when the claim most needs releasing, and a guard backed
+// by a network store would refuse a call made on the cancelled context. The
+// values ctx carries are kept, and the call is bounded by claimSettleTimeout.
+func settleContext(ctx context.Context) (context.Context, context.CancelFunc) {
+	return context.WithTimeout(context.WithoutCancel(ctx), claimSettleTimeout)
+}
+
 // settle records the response for a completed execution, best-effort.
 //
 // The effect has already happened, so a guard that cannot cache the response
@@ -669,6 +717,8 @@ func (c *claim) settle(ctx context.Context, id string, response any) {
 			encoded = raw
 		}
 	}
+	ctx, cancel := settleContext(ctx)
+	defer cancel()
 	_ = c.guard.RecordResponse(ctx, id, encoded)
 }
 
@@ -677,6 +727,8 @@ func (c *claim) release(ctx context.Context, id string) {
 	if c == nil {
 		return
 	}
+	ctx, cancel := settleContext(ctx)
+	defer cancel()
 	_ = c.guard.Release(ctx, id, c.digest)
 }
 

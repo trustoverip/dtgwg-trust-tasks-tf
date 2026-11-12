@@ -260,6 +260,7 @@ func consumeWidget(t *testing.T, doc *tt.Document[widgetPayload], received json.
 		Checks:        tt.NotConsequentialChecks(),
 		Doc:           doc,
 		Received:      received,
+		Extends:       widgetChain,
 		MyVID:         me,
 		Now:           testNow,
 		NewErrorID:    func() string { return "err-1" },
@@ -342,5 +343,35 @@ func TestReceivedMustBeTheDocumentBeingConsumed(t *testing.T) {
 	if outcome := consumeWidget(t, &direct, exact); outcome.Kind != tt.OutcomeHandled ||
 		outcome.Response.Type != widgetBase+"0.1#response" {
 		t.Fatalf("exact version: %s %+v", outcome.Kind, outcome.Error)
+	}
+}
+
+// Only a strictly earlier MINOR of the same MAJOR is an extension link (SPEC
+// §5.2), as Rust and TypeScript read it: a caller-supplied lookup declaring an
+// upward or cross-MAJOR link does not route.
+func TestExtendsChainIgnoresLinksThatAreNotStrictlyEarlierMinors(t *testing.T) {
+	for name, c := range map[string]struct {
+		received, implemented, declared string
+	}{
+		"upward":      {"0.2", "0.3", "0.3"},
+		"cross-MAJOR": {"2.1", "1.0", "1.0"},
+		"self":        {"0.2", "0.1", "0.2"},
+	} {
+		t.Run(name, func(t *testing.T) {
+			lookup := func(typeURI string) string {
+				if typeURI == widgetBase+c.received {
+					return c.declared
+				}
+				return ""
+			}
+			if tt.ExtendsChainReaches(widgetBase+c.received, widgetBase+c.implemented, lookup) {
+				t.Fatalf("%s -> %s routed along a link declaring %s", c.received, c.implemented, c.declared)
+			}
+			_, refusal, err := tt.ReadForSpecWith(json.RawMessage(widget03(c.received)),
+				tt.SpecPolicy{TypeURI: widgetBase + c.implemented}, lookup)
+			if err != nil || refusal == nil || refusal.Code != tt.CodeUnsupportedVersion {
+				t.Fatalf("expected unsupportedVersion, got %+v %v", refusal, err)
+			}
+		})
 	}
 }

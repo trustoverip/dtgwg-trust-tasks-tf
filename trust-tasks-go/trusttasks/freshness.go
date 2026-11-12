@@ -133,7 +133,10 @@ func ValidateFreshness[P any](
 			}
 		}
 
-		if policy.MaxAge > 0 && issuedAt.Add(policy.MaxAge+policy.Skew).Before(now) {
+		// The window is half-open: refused from the instant [RecordExpiry] returns,
+		// the instant a guard may drop the record, so there is no moment at which
+		// the document is both acceptable and forgotten.
+		if policy.MaxAge > 0 && !issuedAt.Add(policy.MaxAge+policy.Skew).After(now) {
 			return stale()
 		}
 		return nil

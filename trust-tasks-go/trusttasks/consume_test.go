@@ -179,11 +179,17 @@ func run(t *testing.T, mutate func(*tt.Document[payload]), opts runOpts) tt.Cons
 		ProofPolicy:   proofPolicy,
 		PayloadPolicy: payloadPolicy,
 		Checks:        checks,
-		Doc:           doc(mutate),
-		MyVID:         me,
-		Now:           now,
-		NewErrorID:    func() string { return "err-1" },
-		Clock:         fixedClock,
+		// A document of the spec it is consumed under, unless a test says otherwise.
+		Doc: doc(func(d *tt.Document[payload]) {
+			d.Type = spec.TypeURI
+			if mutate != nil {
+				mutate(d)
+			}
+		}),
+		MyVID:      me,
+		Now:        now,
+		NewErrorID: func() string { return "err-1" },
+		Clock:      fixedClock,
 		Handler: func(_ context.Context, accepted *tt.Document[payload], _ tt.ResolvedParties) (*tt.Document[response], error) {
 			if opts.handlerShouldNotRun {
 				t.Errorf("handler must not run")
@@ -382,7 +388,7 @@ func TestPartyResolutionFillsAbsentMembersFromTheTransport(t *testing.T) {
 		ProofPolicy:   tt.ProofPolicy{Kind: tt.ProofAcceptUnverified},
 		PayloadPolicy: tt.PayloadPolicy{Kind: tt.PayloadAcceptUnvalidated},
 		Checks:        tt.NotConsequentialChecks(),
-		Doc:           doc(func(d *tt.Document[payload]) { d.Issuer = nil; d.Recipient = nil }),
+		Doc:           doc(func(d *tt.Document[payload]) { d.Type = relaxedSpec.TypeURI; d.Issuer = nil; d.Recipient = nil }),
 		MyVID:         me,
 		Now:           testNow,
 		NewErrorID:    func() string { return "err-1" },
@@ -656,7 +662,7 @@ func TestHandlerErrorThatIsNotARefusalPropagates(t *testing.T) {
 		ProofPolicy:   tt.ProofPolicy{Kind: tt.ProofAcceptUnverified},
 		PayloadPolicy: tt.PayloadPolicy{Kind: tt.PayloadAcceptUnvalidated},
 		Checks:        tt.NotConsequentialChecks(),
-		Doc:           doc(func(d *tt.Document[payload]) { d.Recipient = nil }),
+		Doc:           doc(func(d *tt.Document[payload]) { d.Type = relaxedSpec.TypeURI; d.Recipient = nil }),
 		MyVID:         me,
 		Now:           testNow,
 		NewErrorID:    func() string { return "err-1" },
@@ -692,5 +698,44 @@ func TestUnrecognizedTopLevelMembersSurviveARoundTrip(t *testing.T) {
 	}
 	if string(members["x-vendor-hint"]) != `{"keep":"me"}` {
 		t.Errorf("expected the member preserved verbatim, got %s", members["x-vendor-hint"])
+	}
+}
+
+/* ── §7.2 item 3 — the document's type is the spec's ─────────────────────── */
+
+// A payload that decodes as P does not make a document of another specification
+// a document of Spec's.
+func TestItem3RefusesADocumentOfAnotherType(t *testing.T) {
+	for _, c := range []struct {
+		typeURI string
+		code    tt.StandardCode
+	}{
+		{"https://trusttasks.org/spec/chat/message/1.0", tt.CodeUnsupportedType},
+		// The same slug under another authority is another specification.
+		{"https://other.example/spec/acl/grant/0.1", tt.CodeUnsupportedType},
+		// The response variant is not the request.
+		{"https://trusttasks.org/spec/acl/grant/0.1#response", tt.CodeUnsupportedType},
+		{"not a type uri", tt.CodeUnsupportedType},
+		// The same specification at a version that does not reach 0.1.
+		{"https://trusttasks.org/spec/acl/grant/9.9", tt.CodeUnsupportedVersion},
+		{"https://trusttasks.org/spec/acl/grant/0.0", tt.CodeUnsupportedVersion},
+	} {
+		t.Run(c.typeURI, func(t *testing.T) {
+			outcome := run(t, func(d *tt.Document[payload]) {
+				d.Type = c.typeURI
+				d.Proof = testProof
+			}, runOpts{handlerShouldNotRun: true})
+			wantCode(t, outcome, c.code)
+		})
+	}
+}
+
+func TestItem3TreatsRequestFragmentAndBareAsOneType(t *testing.T) {
+	outcome := run(t, func(d *tt.Document[payload]) {
+		d.Type = requiredSpec.TypeURI + "#request"
+		d.Proof = testProof
+	}, runOpts{})
+	if outcome.Kind != tt.OutcomeHandled {
+		t.Fatalf("expected handled, got %q", outcome.Kind)
 	}
 }
