@@ -2198,6 +2198,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/messaging/monitor/unsubscribe/0.1#response" => <crate::specs::messaging::monitor::unsubscribe::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "messaging")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/ack/0.1" => <crate::specs::messaging::mux::ack::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/ack/0.1#response" => <crate::specs::messaging::mux::ack::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/messaging/mux/attach/0.1" => <crate::specs::messaging::mux::attach::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "messaging")]
         #[cfg(not(test))]
@@ -4527,6 +4533,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vta/dids/create/1.0#response" => <crate::specs::vta::dids::create::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/create/1.1" => <crate::specs::vta::dids::create::v1_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/create/1.1#response" => <crate::specs::vta::dids::create::v1_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/dids/keys/add/1.0" => <crate::specs::vta::dids::keys::add::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
@@ -4563,10 +4575,22 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vta/dids/recover/1.0#response" => <crate::specs::vta::dids::recover::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/recover/1.1" => <crate::specs::vta::dids::recover::v1_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/recover/1.1#response" => <crate::specs::vta::dids::recover::v1_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/dids/update/1.0" => <crate::specs::vta::dids::update::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/dids/update/1.0#response" => <crate::specs::vta::dids::update::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/upgrade/1.0" => <crate::specs::vta::dids::upgrade::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/upgrade/1.0#response" => <crate::specs::vta::dids::upgrade::v1_0::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/health/details/0.1" => <crate::specs::vta::health::details::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -10321,6 +10345,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         }
         #[cfg(feature = "messaging")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/ack/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::messaging::mux::ack::v0_1::Payload,
+        >()),
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/messaging/mux/attach/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::messaging::mux::attach::v0_1::Payload,
         >()),
@@ -12494,6 +12523,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/create/1.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::dids::create::v1_1::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/dids/keys/add/1.0" => Some(crate::SpecPolicy::of::<
             crate::specs::vta::dids::keys::add::v1_0::Payload,
         >()),
@@ -12524,8 +12558,18 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/recover/1.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::dids::recover::v1_1::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/dids/update/1.0" => Some(crate::SpecPolicy::of::<
             crate::specs::vta::dids::update::v1_0::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/upgrade/1.0" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::dids::upgrade::v1_0::Payload,
         >()),
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
@@ -17909,6 +17953,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "messaging")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/ack/0.1" => {
+            Some(crate::specs::messaging::mux::ack::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/messaging/mux/attach/0.1" => {
             Some(crate::specs::messaging::mux::attach::v0_1::ERROR_CODES)
         }
@@ -19888,6 +19937,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/create/1.1" => {
+            Some(crate::specs::vta::dids::create::v1_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/dids/keys/add/1.0" => {
             Some(crate::specs::vta::dids::keys::add::v1_0::ERROR_CODES)
         }
@@ -19918,8 +19972,18 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/recover/1.1" => {
+            Some(crate::specs::vta::dids::recover::v1_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/dids/update/1.0" => {
             Some(crate::specs::vta::dids::update::v1_0::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/dids/upgrade/1.0" => {
+            Some(crate::specs::vta::dids::upgrade::v1_0::ERROR_CODES)
         }
         #[cfg(feature = "vta")]
         #[cfg(not(test))]

@@ -79,6 +79,9 @@ errorCodes:
   - code: "vta/dids/recover:alreadyHeld"
     meaning: "This VTA already holds the identity; use the key-role tasks instead."
     retryable: false
+  - code: "vta/dids:assuranceLevelMismatch"
+    meaning: "The identity is below level 3: it commits no recovery key, and is recovered by restoring its VTA's backup."
+    retryable: false
 related:
   - vta/dids/keys/revoke
   - vta/dids/keys/list
@@ -87,7 +90,9 @@ related:
 
 ## Abstract
 
-**VTA DIDs — Recover** is how an identity survives the loss of its VTA (VTI-KEY-117). Its
+**VTA DIDs — Recover** is how a level-3 identity survives the loss of its VTA (VTI-KEY-117).
+An identity at level 1 or 2 has its keys in its VTA's backup and is recovered by restoring
+it; this task refuses it (`vta/dids:assuranceLevelMismatch`). A level-3 identity's
 `attestation` and `update` keys were generated in the lost VTA and are in no backup
 ([conventions §5](../../_shared/0.1/CONVENTIONS.md#5-custody)), so nothing restores them. What
 survives is the **recovery key**, committed in every version and held by a custodian outside
@@ -121,7 +126,9 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-m
 A conforming **consumer** (the recovering VTA) **MUST**:
 
 1. Verify the identity's history in full, whether supplied in `history` or resolved, and
-   refuse one that does not verify, is not a key-role identity, or commits no recovery key.
+   refuse one that does not verify, is not a key-role identity, or commits no recovery key;
+   establish its level as a verifier would (VTI-KEY-199) and refuse one below level 3
+   (`vta/dids:assuranceLevelMismatch`).
 2. Mint every new key by its role's origin, at preview time, and compute the change as above.
 3. Require `compromisedSince` with `lostKeys: mayBeExposed` and refuse it otherwise.
 4. Verify the fresh recovery key's proof of possession and refuse a key in its own boundary.
@@ -131,6 +138,16 @@ A conforming **consumer** (the recovering VTA) **MUST**:
 6. Compute `followUp` where it can (it holds no signing record of the lost VTA, so the counts
    are absent unless the operator supplies the record separately), and audit
    `did.keys.recover`, `did.keys.recoveryRequested` and `did.keys.recoveryProof`.
+
+Whatever the custodian's kind
+([conventions §5.6](../../_shared/0.1/CONVENTIONS.md#56-recovery-custodians)), `recoveryProof`
+has the same form. A separately held key's custodian signs out of band; a second VTA may be
+sent the `RecoverySigningRequest`; for a threshold custodian, this VTA sends it to each `vta`
+member and collects their proofs, each member having fetched the history and checked the
+change itself before signing with its own key (VTI-KEY-214;
+[§5.7](../../_shared/0.1/CONVENTIONS.md#57-threshold-custodians)), and `recoveryProof` is the
+proof set of at least t of them. Fewer than t members reachable means the recovery waits;
+nothing lowers the threshold (VTI-KEY-217).
 
 ## Authorization
 

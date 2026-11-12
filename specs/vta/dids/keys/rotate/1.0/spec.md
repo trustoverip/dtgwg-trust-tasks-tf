@@ -78,6 +78,12 @@ errorCodes:
   - code: "vta/dids/keys/rotate:overlapTooShort"
     meaning: "`activatesAt` is before the publishing change's cache horizon, or `overlapUntil` is not after `activatesAt`."
     retryable: false
+  - code: "vta/dids:assuranceLevelMismatch"
+    meaning: "`recoveryCommitment` for an identity below level 3."
+    retryable: false
+  - code: "vta/dids:recoveryProofInvalid"
+    meaning: "With `useRecoveryKey`, the recovery proof does not verify over the previewed change under the committed recovery key."
+    retryable: false
 related:
   - vta/dids/keys/list
   - vta/dids/keys/retire
@@ -106,10 +112,18 @@ For `update` there is no overlap, and two things can be asked for:
   committed routine successor and a fresh one is committed, as the method profile says. Under
   did:webvh every change does this anyway; under did:webs this is a rotation event, which
   needs the recovery custodian.
-- **Replace the recovery commitment** (`recoveryCommitment` given): the identity commits to a
-  new recovery key, with its proof of possession, in place of the old. This is the one
-  change that, made by an adversary, silently disarms recovery, so the VTI specification
-  requires a quorum for it where two approvers exist (VTI-KEY-181).
+- **Replace the recovery commitment** (`recoveryCommitment` given, or
+  `thresholdRecoveryCommitment` for a threshold custodian; level 3 only): the identity
+  commits to a new recovery key, or a new group of member keys, with proofs of possession,
+  in place of the old.
+  This is the one change that, made by an adversary, silently disarms recovery. So the
+  current recovery key authorizes it (`useRecoveryKey: true`): the change reveals that key,
+  the custodian checks and signs it as for a recovery
+  ([conventions §5.6](../../../_shared/0.1/CONVENTIONS.md#56-recovery-custodians)), and a
+  witness can verify it from the entry alone. A threshold custodian's t members each
+  check, approve and sign it, which is the two-approver rule counted by the witness. Only where
+  the recovery key is lost is the replacement authorized by the routine key, and then the
+  VTI specification requires a quorum where two approvers exist (VTI-KEY-181).
 
 ## Status of this Document
 
@@ -136,11 +150,31 @@ A conforming **consumer** (the VTA) **MUST**:
    `keys/retire` would, under this request's authorization, destroying an `attestation` or
    `messaging` predecessor, and audit `did.keys.autoRetire`.
 6. For `update`, refuse the schedule members, `replace` and `keyType`; move the authority as
-   the profile says; and with `recoveryCommitment`, verify its proof of possession over the
-   `previewId`, refuse a key in its own boundary, and replace the commitment — never
-   otherwise.
+   the profile says; and with `recoveryCommitment` or `thresholdRecoveryCommitment` (never
+   both; [conventions §5.7](../../../_shared/0.1/CONVENTIONS.md#57-threshold-custodians)) —
+   refused below level 3 (`vta/dids:assuranceLevelMismatch`) — verify every proof of
+   possession over the `previewId`, refuse a key in its own boundary, and replace the commitment — never
+   otherwise. With `useRecoveryKey: true`, compute the change as one the recovery key
+   authorizes, answer `awaitingRecoveryProof` with `preview.recoverySigning`, and verify
+   `recoveryProof` over exactly that change before publishing
+   (`vta/dids:recoveryProofInvalid`); without it, require the quorum of
+   [conventions §6.5](../../../_shared/0.1/CONVENTIONS.md#65-what-each-change-requires).
 7. Treat a revocation of any key in this rotation as superseding it (rotation `aborted`).
 8. Refuse `authenticator`.
+
+*Note (non-normative): the VTA's own identity.* A role key's verification method id is
+derived from the key (conventions §2.1 item 7, VTI-KEY-150), and under did:webs it is the
+key itself (`#<CESR key>`, [method profile `webs`
+§4](../../../_shared/0.1/method-profiles/webs.md#4-rendering)). Under did:webs a role rotation is
+a new key-role designation anchored by an interaction event, which the current key state
+signs and the recovery custodian takes no part in. Rotating a role key of the identity the
+VTA itself acts as — its `operational` key (its `authentication` key, the one its Trust Task
+documents and its DIDComm sender prove with), its `messaging` key, or its `attestation`
+key — therefore changes the key ids the VTA signs, encrypts and decrypts under, not only the
+key material. An implementation **may** need to reload the new keys into every component
+that holds them, or restart, at `activatesAt` and again at retirement; peers holding a cached
+document see the new id at the cache horizon, which is why the successor is published
+`staged` first. A rotation of the update authority changes no role key and needs neither.
 
 ## Authorization
 

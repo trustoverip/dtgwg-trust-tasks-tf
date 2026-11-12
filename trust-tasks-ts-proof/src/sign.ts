@@ -4,6 +4,7 @@ import { p256, p384 } from "@noble/curves/nist.js";
 import { sha256, sha384 } from "@noble/hashes/sha2.js";
 import { canonicalBytes } from "./jcs.js";
 import { didKeyFromPublicKey, toMultibase, type Cryptosuite, type Curve, type PublicKey } from "./keys.js";
+import { proofPurposeError } from "./verifier.js";
 
 /** A signer: a private key of a known curve, with the `did:key` it publishes. */
 export interface Signer {
@@ -38,6 +39,9 @@ export function signerFromPrivateKey(curve: Curve, privateKey: Uint8Array): Sign
 }
 
 export interface SignOptions {
+  /** Defaults to `authentication`: a Trust Task proof shows the issuer controls
+   * its identifier (SPEC §4.7.3). `assertionMethod` is for a proof a
+   * specification defines as an attestation. One of `SIGNING_PURPOSES`. */
   proofPurpose?: string;
   /** ISO-8601; defaults to now. Written in UTC without a zero fraction (as the
    * Rust crate writes it), so the same key over the same document and `created`
@@ -70,12 +74,18 @@ export function signTrustTask<P>(
     throw new Error(`document issuer ${body.issuer} is not the signer ${signer.did}`);
   }
 
+  const proofPurpose = options.proofPurpose ?? "authentication";
+  const purposeError = proofPurposeError(proofPurpose);
+  if (purposeError !== undefined) {
+    throw new Error(purposeError);
+  }
+
   const config: Record<string, unknown> = {
     type: "DataIntegrityProof",
     cryptosuite: CURVE_SUITE[signer.curve],
     created: timestamp(options.created ?? new Date()),
     verificationMethod: signer.verificationMethod,
-    proofPurpose: options.proofPurpose ?? "assertionMethod",
+    proofPurpose,
   };
 
   const digest = signer.curve === "p384" ? sha384 : sha256;

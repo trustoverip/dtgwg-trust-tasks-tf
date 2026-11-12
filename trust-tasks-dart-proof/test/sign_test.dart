@@ -41,6 +41,7 @@ void main() {
         rust,
         key.signer,
         created: DateTime.parse(rustProof['created'] as String),
+        proofPurpose: rustProof['proofPurpose'] as String,
       );
       expect(dart['proof'], rustProof);
     });
@@ -109,6 +110,23 @@ void main() {
     await signTrustTask(doc, id.signer);
     expect(jsonEncode(doc), before);
   });
+
+  test('proofPurpose defaults to authentication', () async {
+    final id = TestIdentity.ed25519(1);
+    final signed = await signTrustTask(grant(id.did), id.signer);
+    expect((signed['proof'] as Map)['proofPurpose'], 'authentication');
+    expect(await verifier.verify(signed), isTrue);
+  });
+
+  for (final purpose in ['keyAgreement', 'assertion']) {
+    test('refuses proofPurpose $purpose', () {
+      final id = TestIdentity.ed25519(1);
+      expect(
+        () => signTrustTask(grant(id.did), id.signer, proofPurpose: purpose),
+        throwsArgumentError,
+      );
+    });
+  }
 
   group('refuses a document that could never verify', () {
     final id = TestIdentity.ed25519(1);

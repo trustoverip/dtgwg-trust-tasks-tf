@@ -74,7 +74,10 @@ func SignerFromPrivateKey(curve Curve, privateKey []byte) (*Signer, error) {
 
 // SignOptions tunes a signature.
 type SignOptions struct {
-	// ProofPurpose defaults to "assertionMethod".
+	// ProofPurpose defaults to "authentication": a Trust Task proof shows the
+	// issuer controls its identifier (SPEC §4.7.3). "assertionMethod" is for a
+	// proof a specification defines as an attestation. It must be one of
+	// [SigningPurposes].
 	ProofPurpose string
 	// Created is the proof's timestamp; the zero value means "now". It is
 	// written in UTC, Z-terminated, with no sub-second field — chrono's form, so
@@ -126,7 +129,10 @@ func (s *Signer) Sign(doc json.RawMessage, opts SignOptions) (json.RawMessage, e
 	}
 	purpose := opts.ProofPurpose
 	if purpose == "" {
-		purpose = "assertionMethod"
+		purpose = "authentication"
+	}
+	if err := checkProofPurpose(purpose); err != nil {
+		return nil, fmt.Errorf("proof: %w", err)
 	}
 	config := map[string]any{
 		"type":               "DataIntegrityProof",

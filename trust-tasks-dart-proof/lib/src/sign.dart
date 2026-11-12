@@ -4,6 +4,8 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:ssi/ssi.dart' as ssi;
 
+import 'data_integrity_verifier.dart' show proofPurposeError, signingPurposes;
+
 /// Why [signTrustTask] refused to sign.
 enum SignFailureKind {
   /// The document has no in-band `issuer`. The verifier binds every proof to
@@ -42,6 +44,10 @@ final class SignException implements Exception {
 ///   method, exactly. That is the binding the verifier enforces, so a document
 ///   that could not verify is refused here with a [SignException] rather than
 ///   at the consumer.
+/// - [proofPurpose] defaults to `authentication`: a Trust Task proof shows the
+///   issuer controls its identifier (SPEC §4.7.3). `assertionMethod` is for a
+///   proof a specification defines as an attestation. A purpose outside
+///   [signingPurposes] is an [ArgumentError].
 /// - [cryptosuite] defaults from the key: `eddsa-jcs-2022` for Ed25519,
 ///   `ecdsa-jcs-2019` for P-256 and P-384.
 /// - `created` is emitted in UTC with a trailing `Z`, as VC Data Integrity
@@ -55,9 +61,14 @@ Future<Map<String, dynamic>> signTrustTask(
   Map<String, dynamic> doc,
   ssi.DidSigner signer, {
   String? cryptosuite,
-  String proofPurpose = 'assertionMethod',
+  String proofPurpose = 'authentication',
   DateTime? created,
 }) async {
+  final purposeError = proofPurposeError(proofPurpose);
+  if (purposeError != null) {
+    throw ArgumentError.value(proofPurpose, 'proofPurpose', purposeError);
+  }
+
   final unsigned = Map<String, dynamic>.of(doc)..remove('proof');
 
   final issuer = unsigned['issuer'];
