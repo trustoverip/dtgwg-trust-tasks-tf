@@ -3,8 +3,10 @@ package proof
 import (
 	"bytes"
 	"context"
+	"crypto/ecdsa"
 	"encoding/json"
 	"errors"
+	"math/big"
 	"os"
 	"reflect"
 	"testing"
@@ -541,5 +543,123 @@ func TestExpires(t *testing.T) {
 				t.Errorf("kind = %s, want malformedProof", got)
 			}
 		})
+	}
+}
+
+// A signed document whose bytes are changed in a way encoding/json would undo
+// while decoding must not verify: the proof covers the canonical form, and the
+// changed bytes would reach the handler as something else.
+func TestVerifierRefusesInputThatDecodesLossily(t *testing.T) {
+	v := NewVerifier(WithClock(laterClock()))
+	signer := seededSigner(t, Ed25519, 1)
+	signed, err := signer.Sign(grant(t, signer.DID, "admin�"), SignOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := v.Verify(context.Background(), signed); err != nil {
+		t.Fatalf("unchanged document: %v", err)
+	}
+	replacement := []byte("admin\xef\xbf\xbd")
+	if !bytes.Contains(signed, replacement) {
+		t.Fatalf("signed document does not carry a literal U+FFFD: %s", signed)
+	}
+	changes := map[string][]byte{
+		"lone surrogate escape": bytes.Replace(signed, replacement, []byte(`admin\ud800`), 1),
+		"invalid UTF-8":         bytes.Replace(signed, replacement, []byte("admin\xff"), 1),
+		"duplicate member": bytes.Replace(signed, []byte(`"role":"admin`),
+			[]byte(`"role":"owner","role":"admin`), 1),
+	}
+	for name, doc := range changes {
+		t.Run(name, func(t *testing.T) {
+			if bytes.Equal(doc, signed) {
+				t.Fatal("the change did not apply")
+			}
+			if got := kindOf(t, v.Verify(context.Background(), doc)); got != MalformedProof {
+				t.Errorf("kind = %s, want malformedProof", got)
+			}
+		})
+	}
+}
+
+func TestSignRefusesDuplicateMembers(t *testing.T) {
+	signer := seededSigner(t, Ed25519, 1)
+	doc := bytes.Replace(grant(t, signer.DID, "admin"), []byte(`"role":"admin"`),
+		[]byte(`"role":"owner","role":"admin"`), 1)
+	if _, err := signer.Sign(doc, SignOptions{}); err == nil {
+		t.Error("Sign accepted a document with a duplicate member")
+	}
+}
+
+// An ECDSA private key must be a scalar of the curve's exact byte length in
+// [1, n-1].
+func TestSignerFromPrivateKeyRefusesInvalidEcdsaScalars(t *testing.T) {
+	orders := map[Curve]string{
+		P256: "ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551",
+		P384: "ffffffffffffffffffffffffffffffffffffffffffffffffc7634d81f4372ddf581a0db248b0a77aecec196accc52973",
+	}
+	for curve, orderHex := range orders {
+		t.Run(string(curve), func(t *testing.T) {
+			order, ok := new(big.Int).SetString(orderHex, 16)
+			if !ok {
+				t.Fatal("bad order")
+			}
+			size := len(orderHex) / 2
+			fixed := func(n *big.Int) []byte { return n.FillBytes(make([]byte, size)) }
+			refused := map[string][]byte{
+				"empty":           {},
+				"too short":       {1, 2, 3, 4, 5},
+				"one byte short":  bytes.Repeat([]byte{1}, size-1),
+				"one byte long":   bytes.Repeat([]byte{1}, size+1),
+				"zero":            make([]byte, size),
+				"group order":     fixed(order),
+				"group order + 1": fixed(new(big.Int).Add(order, big.NewInt(1))),
+				"all ones":        bytes.Repeat([]byte{0xff}, size),
+			}
+			for name, key := range refused {
+				if s, err := SignerFromPrivateKey(curve, key); err == nil {
+					t.Errorf("%s: SignerFromPrivateKey = %s, want an error", name, s.DID)
+				}
+			}
+			v := NewVerifier(WithClock(laterClock()))
+			accepted := map[string][]byte{
+				"one":               fixed(big.NewInt(1)),
+				"group order - 1":   fixed(new(big.Int).Sub(order, big.NewInt(1))),
+				"leading zero byte": append([]byte{0}, bytes.Repeat([]byte{7}, size-1)...),
+			}
+			for name, key := range accepted {
+				s, err := SignerFromPrivateKey(curve, key)
+				if err != nil {
+					t.Errorf("%s: %v", name, err)
+					continue
+				}
+				signed, err := s.Sign(grant(t, s.DID, "admin"), SignOptions{})
+				if err != nil {
+					t.Errorf("%s: sign: %v", name, err)
+					continue
+				}
+				if err := v.Verify(context.Background(), signed); err != nil {
+					t.Errorf("%s: verify: %v", name, err)
+				}
+			}
+		})
+	}
+}
+
+// Deriving the public key through crypto/ecdh must give the same did:key as
+// the scalar multiplication it replaced.
+func TestSignerFromPrivateKeyPublicKeyMatchesScalarBaseMult(t *testing.T) {
+	for _, curve := range []Curve{P256, P384} {
+		s := seededSigner(t, curve, 9)
+		size := 32
+		if curve == P384 {
+			size = 48
+		}
+		key := bytes.Repeat([]byte{9}, size)
+		key[0] = 1
+		x, y := curveParams(curve).ScalarBaseMult(key) // the reference derivation
+		want := didKeyFromEcdsa(&ecdsa.PublicKey{Curve: curveParams(curve), X: x, Y: y}, curve)
+		if s.VerificationMethod != want {
+			t.Errorf("%s: VerificationMethod = %s, want %s", curve, s.VerificationMethod, want)
+		}
 	}
 }

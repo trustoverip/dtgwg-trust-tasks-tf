@@ -27,7 +27,8 @@
 //!    runs first, so a misaddressed document is suppressed (§8.1).
 //! 6. **Attribution gate** — see [`HttpsServerBuilder::require_attribution`].
 //! 7. `proof.verificationMethod` DID-method pre-screen — see
-//!    [`HttpsServerBuilder::allowed_did_methods`].
+//!    [`HttpsServerBuilder::allowed_did_methods`]. With a verifier
+//!    configured and no explicit choice, only `did:key` passes.
 //! 8. Proof verification (the only step that may egress).
 //! 9. **Duplicate-execution claim** (§7.2 item 11) — see
 //!    [`HttpsServerBuilder::replay_protection`].
@@ -162,6 +163,24 @@ struct ServerState {
     freshness: FreshnessPolicy,
 }
 
+/// Which DID methods `proof.verificationMethod` may name, as configured.
+enum DidMethodPolicy {
+    /// No explicit choice: `did:key` only when a verifier is configured
+    /// (see [`DEFAULT_ALLOWED_DID_METHODS`]); nothing to screen without one.
+    Default,
+    /// [`HttpsServerBuilder::allowed_did_methods`].
+    Only(BTreeSet<String>),
+    /// [`HttpsServerBuilder::allow_any_did_method`].
+    Any,
+}
+
+/// The DID methods a server with a verifier accepts in
+/// `proof.verificationMethod` when neither
+/// [`HttpsServerBuilder::allowed_did_methods`] nor
+/// [`HttpsServerBuilder::allow_any_did_method`] was called: `did:key`, whose
+/// key is in the identifier, so verifying it never leaves the process.
+pub const DEFAULT_ALLOWED_DID_METHODS: &[&str] = &["key"];
+
 /// Builder for [`HttpsServer`].
 pub struct HttpsServerBuilder {
     local_vid: Option<String>,
@@ -169,7 +188,7 @@ pub struct HttpsServerBuilder {
     routes: HashMap<String, Route>,
     verifier: Option<Arc<dyn DynProofVerifier>>,
     require_attribution: bool,
-    allowed_did_methods: Option<BTreeSet<String>>,
+    did_methods: DidMethodPolicy,
     replay_protection: bool,
     replay_guard: Option<Arc<dyn ReplayGuard>>,
     freshness: FreshnessPolicy,
@@ -440,10 +459,14 @@ impl HttpsServerBuilder {
     /// it. Pinning the accepted methods (`["key"]`, `["web", "webvh"]`, …)
     /// bounds where that egress can go.
     ///
-    /// Defaults to no restriction, which preserves existing behaviour for
-    /// servers with no verifier configured (those reject proof-bearing
-    /// documents outright and never egress). A `verificationMethod` that is
-    /// not a DID URL at all is rejected whenever a restriction is set.
+    /// **Default:** with a verifier configured and neither this nor
+    /// [`Self::allow_any_did_method`] called, only
+    /// [`DEFAULT_ALLOWED_DID_METHODS`] (`did:key`) passes — a method that
+    /// resolves over the network is opt-in, never implied by plugging in a
+    /// resolving verifier. A server with no verifier screens nothing by
+    /// default: it refuses proof-bearing documents outright and never
+    /// egresses. A `verificationMethod` that is not a DID URL at all is
+    /// rejected whenever a restriction applies.
     ///
     /// This is a coarse pre-screen at the binding boundary. Depth — resolved
     /// host allow-listing, redirect policy, per-resolution timeouts and
@@ -453,7 +476,19 @@ impl HttpsServerBuilder {
         I: IntoIterator<Item = S>,
         S: Into<String>,
     {
-        self.allowed_did_methods = Some(methods.into_iter().map(Into::into).collect());
+        self.did_methods = DidMethodPolicy::Only(methods.into_iter().map(Into::into).collect());
+        self
+    }
+
+    /// Accept a `proof.verificationMethod` of any DID method, lifting the
+    /// `did:key`-only default described on [`Self::allowed_did_methods`].
+    ///
+    /// Only for a verifier that never resolves over the network, or whose
+    /// resolver bounds where it goes (a host allow-list, private addresses
+    /// refused, a deadline per resolution) — otherwise any caller can make
+    /// this server fetch from a host it names.
+    pub fn allow_any_did_method(mut self) -> Self {
+        self.did_methods = DidMethodPolicy::Any;
         self
     }
 
@@ -578,6 +613,16 @@ impl HttpsServerBuilder {
         // A builder is built once, so this is the first and only `set`; the
         // discovery handler reads the policy the server actually applies.
         let _ = self.applied_freshness.set(self.freshness);
+        let allowed_did_methods = match self.did_methods {
+            DidMethodPolicy::Only(methods) => Some(methods),
+            DidMethodPolicy::Any => None,
+            DidMethodPolicy::Default => self.verifier.is_some().then(|| {
+                DEFAULT_ALLOWED_DID_METHODS
+                    .iter()
+                    .map(|m| (*m).to_string())
+                    .collect()
+            }),
+        };
         HttpsServer {
             state: Arc::new(ServerState {
                 local_vid: self.local_vid,
@@ -585,7 +630,7 @@ impl HttpsServerBuilder {
                 routes: self.routes,
                 verifier: self.verifier,
                 require_attribution: self.require_attribution,
-                allowed_did_methods: self.allowed_did_methods,
+                allowed_did_methods,
                 // Secure by default: the record is kept unless the deployment
                 // said otherwise, and the default guard is the in-process one.
                 replay_guard: self.replay_protection.then(|| {
@@ -622,7 +667,7 @@ impl HttpsServer {
             verifier: None,
             // Secure by default: see `HttpsServerBuilder::require_attribution`.
             require_attribution: true,
-            allowed_did_methods: None,
+            did_methods: DidMethodPolicy::Default,
             // Secure by default: see `HttpsServerBuilder::replay_protection`.
             replay_protection: true,
             replay_guard: None,
