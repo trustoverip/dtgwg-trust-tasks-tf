@@ -100,7 +100,9 @@ enum Command {
     /// `npx trust-tasks-gen-ts`, `go run …/cmd/trust-tasks-gen` or
     /// `dart run trust_tasks:generate`, from the project directory, with
     /// `--lock` and `--out` filled in. Arguments after `--` go to the
-    /// generator. Rust generates in build.rs instead.
+    /// generator. `--lang rs` runs trust-tasks-build in-process and writes
+    /// <out>/trust_tasks_generated.rs (after `--`: `--index`,
+    /// `--runtime-path <path>`) — the file build.rs generates, for review.
     Generate {
         /// The language.
         #[arg(long, value_enum)]
