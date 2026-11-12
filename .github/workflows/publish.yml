@@ -260,9 +260,9 @@ jobs:
           path: ${{ runner.temp }}/npm-pack
 
       # The tarball comes from a job that ran third-party code, so check it is
-      # the package and version this job decided to publish, from its own
-      # checkout, and that it carries no `publishConfig` (which could send it
-      # to another registry or tag) before it goes anywhere.
+      # the package and version this job decided to publish from its own
+      # checkout, with no publishConfig and no install-time script, before it
+      # goes anywhere (scripts/check-npm-tarball.sh).
       - name: Check the tarball is the package decided on
         if: steps.decide.outputs.should_publish == 'true'
         env:
@@ -275,17 +275,7 @@ jobs:
             echo "::error::expected exactly one tarball from build-npm, found: ${tarballs[*]}"
             exit 1
           fi
-          manifest=$(tar -xzOf "${tarballs[0]}" package/package.json)
-          got_name=$(jq -r '.name' <<<"$manifest")
-          got_version=$(jq -r '.version' <<<"$manifest")
-          if [ "$got_name" != "$NAME" ] || [ "$got_version" != "$VERSION" ]; then
-            echo "::error::the tarball is $got_name@$got_version, not $NAME@$VERSION"
-            exit 1
-          fi
-          if jq -e 'has("publishConfig")' <<<"$manifest" >/dev/null; then
-            echo "::error::the tarball's package.json has a publishConfig; refusing to publish it"
-            exit 1
-          fi
+          ./scripts/check-npm-tarball.sh "${tarballs[0]}" "$NAME" "$VERSION"
           echo "TARBALL=${tarballs[0]}" >> "$GITHUB_ENV"
 
       # Trusted publishing (OIDC) requires npm >= 11.5.1; Node 20 ships older.

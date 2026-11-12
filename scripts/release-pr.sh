@@ -153,6 +153,126 @@ prepare() {
 # here rather than calling scripts/git-push-with-token.sh, because by the time
 # `open` pushes, the working tree is the patch's, and nothing from it may run
 # while the token is in the environment.
+# ── What a release may change inside a manifest ──────────────────────────────
+# check-patch-paths.sh limits WHICH files the patch touches; these limit WHAT
+# it changes in the three kinds of manifest a release edits, so a version bump
+# cannot carry anything else with it: an npm `scripts` entry, a dependency
+# moved to a path, URL or git source, a line of Go or Dart beside the version
+# constant, or a pubspec key other than `version:` and a dependency constraint. They read the
+# index after `git apply --index` and HEAD, with git, jq and grep only.
+
+# A version, or a range of versions, and nothing else.
+VERSION_RANGE_RE='^([\^~]|[<>]=?|=)?[0-9]+(\.[0-9]+){0,2}(-[0-9A-Za-z.]+)?( +([<>]=?|=)?[0-9]+(\.[0-9]+){0,2}(-[0-9A-Za-z.]+)?)*$'
+
+refuse_content() {
+  echo "::error::refusing the release change: $*" >&2
+}
+
+# The lines a staged change removes and adds, without the file headers.
+changed_lines() {
+  git diff --cached -U0 -- "$1" | grep -E '^[+-]' | grep -vE '^(\+\+\+|---) ' || true
+}
+
+# Only `version` and dependency version strings may differ.
+check_package_json() {
+  local file="$1" old new filter
+  if ! old=$(git show "HEAD:$file" 2>/dev/null); then
+    refuse_content "$file is new; a release only edits existing manifests"
+    return 1
+  fi
+  new=$(git show ":$file")
+  filter='del(.version)
+    | reduce ("dependencies", "devDependencies", "peerDependencies", "optionalDependencies") as $k
+        (.; if (.[$k] | type) == "object"
+            then .[$k] |= with_entries(
+              if (.value | type) == "string" and (.value | test($re)) then .value = "<version>" else . end)
+            else . end)'
+  if ! old=$(jq -S --arg re "$VERSION_RANGE_RE" "$filter" <<<"$old") \
+    || ! new=$(jq -S --arg re "$VERSION_RANGE_RE" "$filter" <<<"$new"); then
+    refuse_content "$file is not valid JSON"
+    return 1
+  fi
+  if [ "$old" != "$new" ]; then
+    refuse_content "$file changes more than its version and dependency versions"
+    return 1
+  fi
+}
+
+# Only the one version-constant line may change, to another version: Go's
+# `const Version` and Dart's `packageVersion` (the pubspec's mirror).
+check_version_constant() {
+  local file="$1" re="$2" what="$3" line n=0
+  while IFS= read -r line; do
+    n=$((n + 1))
+    if ! [[ "$line" =~ $re ]]; then
+      refuse_content "$file changes more than \`$what\`: $line"
+      return 1
+    fi
+  done < <(changed_lines "$file")
+  if [ "$n" -ne 2 ]; then
+    refuse_content "$file should change exactly one \`$what\` line"
+    return 1
+  fi
+}
+GO_VERSION_RE='^[+-]const Version = "[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?"$'
+DART_VERSION_RE="^[+-]const String packageVersion = '[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?';\$"
+
+# Only `version:` and dependency constraints may change, each line in place:
+# the same key, at the same indentation, from one version constraint to another.
+check_pubspec() {
+  local file="$1" line i
+  local -a removed=() added=()
+  while IFS= read -r line; do
+    case "$line" in
+      -*) removed+=("${line#-}") ;;
+      +*) added+=("${line#+}") ;;
+    esac
+  done < <(changed_lines "$file")
+  if [ "${#removed[@]}" -ne "${#added[@]}" ]; then
+    refuse_content "$file adds or removes lines; a release only changes versions in place"
+    return 1
+  fi
+  local re='^( *)([a-z_][a-z0-9_]*): *(.*)$' key_old key_new value
+  for i in "${!added[@]}"; do
+    for line in "${removed[$i]}" "${added[$i]}"; do
+      if ! [[ "$line" =~ $re ]]; then
+        refuse_content "$file: not a version line: $line"
+        return 1
+      fi
+      if [ -z "${BASH_REMATCH[1]}" ] && [ "${BASH_REMATCH[2]}" != "version" ]; then
+        refuse_content "$file: only \`version:\` may change at the top level: $line"
+        return 1
+      fi
+      value="${BASH_REMATCH[3]}"
+      value="${value#[\"\']}"
+      value="${value%[\"\']}"
+      if ! [[ "$value" =~ $VERSION_RANGE_RE ]]; then
+        refuse_content "$file: not a version constraint: $line"
+        return 1
+      fi
+    done
+    key_old="${removed[$i]%%:*}"
+    key_new="${added[$i]%%:*}"
+    if [ "$key_old" != "$key_new" ]; then
+      refuse_content "$file: \`$key_old\` became \`$key_new\`"
+      return 1
+    fi
+  done
+}
+
+check_applied_content() {
+  local file bad=0
+  while IFS= read -r -d '' file; do
+    case "$file" in
+      */package.json) check_package_json "$file" || bad=1 ;;
+      */version.go) check_version_constant "$file" "$GO_VERSION_RE" "const Version" || bad=1 ;;
+      */lib/src/runtime/version.dart) check_version_constant "$file" "$DART_VERSION_RE" "packageVersion" || bad=1 ;;
+      */pubspec.yaml) check_pubspec "$file" || bad=1 ;;
+    esac
+  done < <(git diff --cached --name-only -z)
+  [ "$bad" -eq 0 ]
+}
+
 push_branch() {
   { set +x; } 2>/dev/null
   if [ -z "${PUSH_TOKEN:-}" ]; then
@@ -204,6 +324,8 @@ open_pr() {
   git switch -C "$BRANCH"
   if [ -s "$out/changes.patch" ]; then
     git apply --index --binary "$out/changes.patch"
+    # Before the commit, so a refused change is never pushed.
+    check_applied_content || exit 1
   fi
   RELEASE_SUMMARY="$out/summary.md"
 
