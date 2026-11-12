@@ -46,8 +46,19 @@
 // trees and root files, which are precisely what should 404 when absent.
 // Nothing can be missed, because the SPA is the default.
 //
+// ## 3. JSON requests that name nothing
+//
+// Under /spec/ and /ceremony/, a request whose Accept asks only for JSON (no
+// text/html) and that neither negotiation could map is answered 404 with a
+// small JSON body, instead of the SPA shell under a 200.
+//
 // Runtime note: CloudFront Functions run a constrained JS engine. Keep to ES5.1
-// idioms — no optional chaining, no String.prototype.includes, no async.
+// idioms — no optional chaining, no String.prototype.includes, no async. The
+// generated-response `body` object form ({ encoding, data }) needs the
+// cloudfront-js-2.0 runtime, which the README's create/update commands set.
+//
+// scripts/serve-website.mjs runs this same handler, so the local preview
+// routes exactly as production does.
 
 // Real files on the origin. A request under one of these is left alone, so a
 // missing object produces a genuine 404 rather than the SPA shell.
@@ -55,8 +66,47 @@ var ASSET_PREFIXES = ['/assets/', '/specs/', '/bindings/', '/ceremonies/'];
 
 // Files served from the root of website/. Must track that directory: a new root
 // file added without updating this list is served the SPA shell instead of
-// itself.
-var ROOT_FILES = ['/index.html', '/registry.json', '/SPEC.md', '/_redirects', '/vercel.json'];
+// itself. robots.txt and sitemap.xml are written by scripts/build-registry.mjs.
+var ROOT_FILES = [
+  '/index.html', '/registry.json', '/SPEC.md', '/_redirects', '/vercel.json',
+  '/robots.txt', '/sitemap.xml'
+];
+
+/**
+ * Whether the request asks only for JSON: an Accept naming a JSON media type
+ * (application/json, application/schema+json, application/*+json …) and not
+ * text/html. A browser always names text/html; a schema consumer never does.
+ */
+function wantsJsonOnly(request) {
+  var headers = request.headers;
+  var accept = headers && headers.accept ? headers.accept.value.toLowerCase() : '';
+  if (accept.indexOf('text/html') !== -1) {
+    return false;
+  }
+  return /application\/([a-z0-9.+-]*\+)?json/.test(accept);
+}
+
+/**
+ * The answer to a JSON request under /spec/ or /ceremony/ that names nothing
+ * negotiable — a slug outside the §6.1 grammar, a missing version, a three-part
+ * version on a task, a traversal attempt, or a JSON type the subtree does not
+ * serve. Before this, such a request got the HTML shell with a 200, and a
+ * consumer following §7.2 items 1–2 "validated" against a web page.
+ */
+function notFoundJson(uri) {
+  return {
+    statusCode: 404,
+    statusDescription: 'Not Found',
+    headers: {
+      'content-type': { value: 'application/json' },
+      'cache-control': { value: 'no-store' }
+    },
+    body: {
+      encoding: 'text',
+      data: JSON.stringify({ error: 'not found', detail: 'No schema or definition is published at ' + uri })
+    }
+  };
+}
 
 /**
  * Rewrite a Type URI to its schema when the client asked for one.
@@ -210,6 +260,14 @@ function handler(event) {
   // Same reasoning as above: a negotiated definition path is an asset path.
   if (negotiateCeremony(request)) {
     return request;
+  }
+
+  // A JSON-only request under a Type URI or definition URI subtree that
+  // neither branch above could map: answer 404 rather than the HTML shell.
+  // The prefix tests are on the singular forms, so /specs/ and /ceremonies/
+  // (the asset trees) never reach this.
+  if ((request.uri.indexOf('/spec/') === 0 || request.uri.indexOf('/ceremony/') === 0) && wantsJsonOnly(request)) {
+    return notFoundJson(request.uri);
   }
 
   // Real file: leave it alone so a missing object 404s honestly.
