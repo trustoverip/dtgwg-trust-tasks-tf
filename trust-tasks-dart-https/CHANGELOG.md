@@ -10,6 +10,113 @@ Publishing is triggered by the `trust-tasks-dart-https-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.2.0 — 2026-11-12
+
+
+### Fixed
+
+- **ts,go,dart,rs**: Whole-second capability-client issuedAt, tested Dart core floors, TS default export condition, Go schema caching (#1214)
+
+* fix(dart-capability-client,go-capabilityclient,go-didcomm): stamp issuedAt in whole seconds and fail on entropy failure
+
+  The Dart capability client stamped issuedAt with toIso8601String (full
+  precision); it now uses the core's systemClock. The Go port now stamps
+  through trusttasks.SystemClock. The TS port already stamped whole seconds.
+
+  The Go capabilityclient and didcomm UUIDv4 generators ignored crypto/rand
+  errors and would mint an all-zero id; they now panic, as tsp's does.
+
+- **dart-https**: Advertise the expiry horizon, and pin all four runtimes' freshness to shared vectors (#1212)
+
+* test(runtime): shared freshness vectors run by all four runtimes
+
+  fixtures/consume/freshness.json pins SPEC §7.2's acceptance window (items 4
+  and 13, *Bounding the record*): now / policy / issuedAt / expiresAt to a
+  verdict and, for an accepted document, the replay record's expiry. It covers
+  a stated expiresAt replacing the maximum age, the 30-day expiry horizon and
+  its clamp on the record, a zero horizon, the half-open edges to the
+  millisecond, skew on both sides, a missing issuedAt with and without
+  requireIssuedAt, offsets, fractions and calendar-invalid timestamps, and
+  holds each runtime's default and consequential policies to the same values.
+
+  Run by trust-tasks-rs (tests/freshness_vectors.rs), @openvtc/trust-tasks
+  (test/freshness-vectors.test.ts), trust-tasks-go
+  (trusttasks/freshness_vectors_test.go) and trust_tasks
+  (test/freshness_vectors_test.dart). The Rust workflow now runs on a change
+  under fixtures/, which its integration tests read.
+
+- **dart-https**: Screen proof DID methods to did:key by default and hold error responses to the response verifier (#1207)
+
+HttpsServer with a proofVerifier now accepts only did:key in
+  proof.verificationMethod unless allowedDidMethods widens the set or
+  allowAnyDidMethod: true lifts the screen (defaultAllowedDidMethods).
+  A server with no verifier is unchanged.
+
+  HttpsClient with a responseVerifier now requires a trust-task-error to carry
+  a proof that verifies over the body as received, issued by serverVid to myVid.
+  Otherwise it throws the new UnverifiedErrorResponseException, which keeps the
+  status, the reason and the unverified document for diagnostics.
+
+- **https,dart-https**: Cap HTTPS client responses, keep bearer tokens on https, stop following redirects, and keep response bodies out of errors (#1205)
+
+* fix(https,dart-https)!: cap HTTPS client responses, keep bearer tokens on https, stop following redirects, and keep response bodies out of errors
+
+  Rust HttpsClient and Dart HttpsClient:
+
+  - The response body is read up to a cap (256 KiB by default,
+    max_response_bytes / maxResponseBytes) and refused beyond it, with a new
+    ResponseTooLarge error. A declared Content-Length over the cap is refused
+    before reading.
+  - server_url / base must be https. Plain http is accepted for a loopback
+    host, or elsewhere with allow_insecure_http / allowInsecureHttp, but a
+    bearer token is never sent over non-loopback http.
+  - Redirects are not followed by default; a 3xx is returned as an HTTP status
+    error so the signed document is never re-posted elsewhere. Rust can opt
+    into same-origin redirects with follow_redirects(true); an https client
+    never downgrades to http.
+  - Error text no longer quotes the response body: HttpStatus keeps at most
+    512 bytes in its field and leaves it out of Display; decode errors keep
+    only the category and position.
+
+  Dart only: every error the HTTP client raises (TLS included) is wrapped as
+  TransportException; the timeout now covers reading the body and cancels the
+  read when it fires; a responseVerifier requires a serverVid; a platform
+  client that followed a redirect anyway is detected by its final URL.
+
+- **runtime**: Digest item 11 over the received document, and check envelope types and nesting depth (#1171)
+
+* fix(runtime)!: digest item 11 over the received document, and check envelope types and nesting depth
+
+  Item 11's duplicate-execution digest is now taken over the document as
+  received wherever a pipeline holds it, so two documents under one id that
+  differ only in a member the payload type does not model, or in the spelling
+  of a timestamp, are an idConflict rather than a duplicate:
+
+  - Go ConsumeInbound digests ConsumeOptions.Received when set.
+  - Dart consumeInbound digests `received` whenever it is passed (it did only
+    for a forward read), and the HTTPS server, DIDComm and TSP consumers pass it.
+  - Rust consume_inbound / consume_dispatched digest the received JSON under
+    ProofPolicy::VerifyReceived, with or without a proof; the HTTPS server
+    digests the body. New received_document_digest.
+
+  TypeScript consumeInbound now checks the envelope before anything reads it:
+  member types (string id/type and string-valued optional members, object
+  payload/proof/ceremony, @context string/array/object) and a nesting bound of
+  128 levels, refused malformedRequest and addressed only from string members.
+  validateEnvelope and MAX_NESTING_DEPTH are exported.
+
+  Dart consumeInbound refuses a document nested beyond maxNestingDepth (128)
+  with malformedRequest instead of overflowing the stack, and the new
+  parseTrustTaskDocument decodes a received value without throwing, returning
+  a malformedRequest reason for a mistyped member.
+
+  Shared vectors in fixtures/consume/item11-digest.json run in all four
+  runtimes.
+
+### Dependencies
+
+- Requires `trust_tasks` ^0.10.0 (was ^0.9.23), the core released beside it.
+
 ## 0.1.9 — 2026-11-10
 
 

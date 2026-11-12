@@ -1,5 +1,42 @@
 # Changelog
 
+## [0.38.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-v0.37.15...trust-tasks-v0.38.0) — 2026-11-12
+
+
+### Documentation
+
+- Fix drifted counts, release runbook, licences and stale examples across the four libraries ([#1224](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1224))
+
+* docs(getting-started): move the worked example to acl/grant/0.3 and stamp issuedAt with issued_at_now()
+
+  The example pinned acl/grant/0.2, superseded by 0.3, and stamped issuedAt
+  with chrono::Utc::now(), the full-precision form #970 removed from the
+  libraries. The TS consumer example wrote toISOString() milliseconds into
+  document fields the same way. The dependency snippet now uses cargo add,
+  so it cannot name a stale version, and §4.4 describes the shared version
+  group instead of versions from 0.14.
+
+
+
+### Fixed
+
+- **rs,build,cli,codegen**: Review fixes — declared guard code, SchemaValidator, keyword slugs, generate --lang rs, registry hints, docs.rs ([#1215](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1215))
+
+* fix(rs): declared acl/revoke code in the guard, a caching SchemaValidator, docs.rs metadata
+
+  - guards::acl::reject_last_authority returns acl/revoke:lastAuthorityProtected,
+    the code every acl/revoke version declares (was snake_case); new
+    LAST_AUTHORITY_PROTECTED constant, pinned to the generated declarations ([#1093](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1093)).
+  - validate::SchemaValidator: a PayloadValidator compiling each schema once,
+    cached by the schema text's address and confirmed against its content;
+    validate_value and check_details use a shared one; prune_payload reuses a
+    parsed-schema cache; PayloadPolicy::accept_unvalidated() ([#1091](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1091)).
+  - docs.rs builds trust-tasks-rs with validate + acl and the facade with its
+    non-spec features, and trust-tasks-rs / trust-tasks-https enable doc_cfg
+    under docsrs, without which the docs.rs build cannot compile ([#1106](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/1106)).
+
+
+
 ## [0.37.15](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-v0.37.14...trust-tasks-v0.37.15) — 2026-11-11
 
 
