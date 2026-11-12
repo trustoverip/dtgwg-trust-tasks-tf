@@ -369,7 +369,14 @@ of that: it publishes the tarball or pushes the tag or branch, and only it gets
 credentials; `scripts/git-push-with-token.sh` gives the token to the one
 `git push` that needs it. A leg of the second job runs only if the same leg of
 the first passed, so one package's failure holds back only that package.
-`withdraw.yml` is split the same way. The exception is `release-plz-release`,
+The jobs that apply a patch made by the first job (`release-pr-open`, and
+`open-pr` in `withdraw.yml`, which is split the same way) first check it with
+`scripts/check-patch-paths.sh`: only the files a release, or a withdrawal batch,
+changes; never `.github/`, `scripts/`, `.gitattributes`, `.gitmodules`, a
+symlink, a submodule, a rename or a copy. After applying it they run nothing
+from the working tree, so their push is inline rather than the helper script.
+`publish-npm` checks that the tarball's `package.json` names the package and
+version it decided to publish, and has no `publishConfig`. The exception is `release-plz-release`,
 where the release-plz action itself holds the crates.io token and
 `contents: write`. It compiles nothing (`publish_no_verify = true` in
 release-plz.toml), so no dependency's build script runs there.
@@ -407,7 +414,10 @@ usually fixes it, because the missing crate is on crates.io by then.
   limited to this repository with Contents and Pull requests read/write. Not a
   GitHub App token: the Release PR and withdrawal commits are authored as the
   token's owner (EasyCLA authorises the commit author), and an App token has
-  no user, so `release-pr.sh` and `withdraw.yml` refuse one. **Set**, as of the `trust-tasks-dart-v0.1.0` tag on 2026-09-16: that tag
+  no user, so `release-pr.sh` and `withdraw.yml` refuse one. A fine-grained
+  PAT on a repository owned by the `trustoverip` organization works only if the
+  organization allows fine-grained PATs and an organization owner approves this
+  one. **Set**, as of the `trust-tasks-dart-v0.1.0` tag on 2026-09-16: that tag
   was pushed by `tag-dart` and *did* trigger `publish-dart.yml`, which the
   default token cannot do. (This entry previously said "Not currently set"; that
   was stale.)
@@ -418,6 +428,40 @@ usually fixes it, because the missing crate is on crates.io by then.
   — and, on the Dart side, the release tag would not trigger the publish workflow
   at all. If it is ever unset, **close and reopen the Release PR** to trigger CI
   before merging, and re-push the Dart tag from a workstation to publish.
+- **The website deploy role** (`deploy.yml`). The deploy job takes AWS
+  credentials from GitHub OIDC once the repository variable
+  `AWS_DEPLOY_ROLE_ARN` is set, and from the `AWS_ACCESS_KEY_ID` /
+  `AWS_SECRET_ACCESS_KEY` secrets until then. To set it up, in this order:
+  1. In GitHub, create the `website` environment (Settings → Environments) and
+     restrict its deployment branches to `main`, **before** the role exists.
+     The role trusts the environment, not the branch, so this rule is what
+     keeps it to `main`.
+  2. Check that the repository uses GitHub's default OIDC subject:
+     `gh api repos/trustoverip/dtgwg-trust-tasks-tf/actions/oidc/customization/sub`
+     should report `"use_default": true`. A custom template changes the `sub`
+     below.
+  3. In AWS, add the IAM OIDC provider `token.actions.githubusercontent.com`
+     (audience `sts.amazonaws.com`) if the account has none.
+  4. Create the role. Its trust policy allows `sts:AssumeRoleWithWebIdentity`
+     from that provider when (`StringEquals`)
+     `token.actions.githubusercontent.com:aud` is `sts.amazonaws.com` and
+     `token.actions.githubusercontent.com:sub` is
+     `repo:trustoverip/dtgwg-trust-tasks-tf:environment:website`. Its
+     permissions:
+     - `s3:ListBucket` on `arn:aws:s3:::<bucket>`, with the condition
+       `StringLike` `s3:prefix` = `website/*`;
+     - `s3:PutObject` and `s3:DeleteObject` on `arn:aws:s3:::<bucket>/website/*`;
+     - an explicit **Deny** of `s3:DeleteObject` on
+       `arn:aws:s3:::<bucket>/website/specs/by-digest/*` (the by-digest store
+       is append-only; see the comments in `deploy.yml`);
+     - `cloudfront:CreateInvalidation` on the distribution.
+
+     `aws s3 sync` compares by listing, so no `s3:GetObject`.
+  5. Set the repository variable `AWS_DEPLOY_ROLE_ARN` to the role's ARN and
+     let a deploy run.
+  6. Once a deploy has succeeded through the role, delete the two access-key
+     secrets and the IAM user's key, and remove the access-key step from
+     `deploy.yml`.
 - **pub.dev automated publishing** — a one-time setup on the package's Admin
   tab: "Enable publishing from GitHub Actions", repository
   `trustoverip/dtgwg-trust-tasks-tf`, tag pattern
