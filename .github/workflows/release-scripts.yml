@@ -1,0 +1,32 @@
+name: Release scripts
+# The parts of the release tooling that run with the release token:
+# `release-pr.sh open` and scripts/check-patch-paths.sh, which refuse a patch
+# that touches anything a release or a withdrawal batch does not
+# (scripts/test-release/). Unfiltered, like the other workflows, so it can be a
+# required check. Seconds: git and node only, nothing installed.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  test:
+    name: release scripts refuse out-of-scope patches
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+      - run: npm run test:release-scripts

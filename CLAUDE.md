@@ -564,8 +564,8 @@ the same reason). TypeScript hoists because structural typing makes it free.
    do instead — it is a human migration, not a version number.
 
 And the one that has no undo: **a Go release cannot be retracted.**
-`proxy.golang.org` caches a tag permanently and by design. `publish-go` builds,
-vets and tests *before* tagging for that reason. crates.io and npm both have a
+`proxy.golang.org` caches a tag permanently and by design. `verify-go` builds,
+vets and tests *before* `publish-go` tags for that reason. crates.io and npm both have a
 retraction window; Go does not.
 
 ### The `trust-tasks-go/tsp` nested module
@@ -627,8 +627,8 @@ written in the module. Its only requirement is the core module whose
   as the core's does), a matrix leg in `publish-go`, and a `GO_MODULES` entry in
   `scripts/release-pr.sh` (`release-bump-go.sh trust-tasks-go/proof`). The core's release WATCH **excludes**
   the nested modules, so a change under `trust-tasks-go/proof` releases proof, not
-  the core. Like every Go tag it is irreversible, so `publish-go` builds/vets/tests
-  the module before tagging.
+  the core. Like every Go tag it is irreversible, so `verify-go` builds/vets/tests
+  the module before `publish-go` tags it.
 
 ### The `trust-tasks-go/didcomm` nested module
 
@@ -799,7 +799,7 @@ are not obvious:
 
 - **`pubspec_overrides.yaml` is committed** and points `trust_tasks` at
   `../trust-tasks-dart`, the Dart form of a Rust `path =` dependency. pub never
-  publishes it. `tag-dart` deletes it before verifying a release, so the release
+  publishes it. `verify-dart` deletes it before verifying a release, so the release
   is checked against the *published* core.
 - **A sibling's `trust_tasks` constraint must admit the current core.** pub
   reads `^0.1.0` as `<0.2.0`, so until #895 every sibling declared a range that
