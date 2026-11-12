@@ -159,19 +159,19 @@ pub fn unpack_trust_task<P>(
 where
     P: DeserializeOwned,
 {
-    unpack_received(wire, recipient, sender).map(|(doc, _, handler)| (doc, handler))
+    let (document, handler) = open(wire, recipient, sender)?;
+    let doc = serde_json::from_value(document).map_err(TspError::InvalidBody)?;
+    Ok((doc, handler))
 }
 
-/// [`unpack_trust_task`], also returning the document as received — what a
-/// proof is verified over (see `ProofPolicy::with_received`).
-pub(crate) fn unpack_received<P>(
+/// Open a TSP message: every transport-level rule of [`unpack_trust_task`],
+/// stopping short of parsing the carried `document`. Returns it as received —
+/// what a proof is verified over — with the authenticated parties.
+pub(crate) fn open(
     wire: &[u8],
     recipient: &PrivateVid,
     sender: &ResolvedVid,
-) -> Result<(TrustTask<P>, serde_json::Value, TspHandler), TspError>
-where
-    P: DeserializeOwned,
-{
+) -> Result<(serde_json::Value, TspHandler), TspError> {
     let unpacked = direct::unpack(wire, &recipient.decryption_key, &sender.signing_key)?;
 
     if unpacked.message_type != MessageType::Direct {
@@ -193,13 +193,9 @@ where
         return Err(TspError::WrongEnvelopeType(envelope.type_));
     }
 
-    let received = envelope.document;
-    let doc: TrustTask<P> =
-        serde_json::from_value(received.clone()).map_err(TspError::InvalidBody)?;
-
     // A TSP VID is a framework VID verbatim — no normalisation.
     let handler = TspHandler::new(Some(unpacked.receiver), Some(sender.id.clone()));
-    Ok((doc, received, handler))
+    Ok((envelope.document, handler))
 }
 
 /// The binding envelope object: a `type` tag plus the carried Trust Task.

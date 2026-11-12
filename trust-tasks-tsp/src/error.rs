@@ -3,7 +3,7 @@
 
 use affinidi_tsp::MessageType;
 use thiserror::Error;
-use trust_tasks_rs::RejectReason;
+use trust_tasks_rs::{RejectReason, UnanswerableBody};
 
 /// Failure modes the TSP binding can produce. When surfaced as an `unpack`
 /// failure on the consumer side, [`Self::into_reject_reason`] folds each into a
@@ -44,6 +44,12 @@ pub enum TspError {
     #[error("payload did not parse as a Trust Task envelope: {0}")]
     InvalidBody(serde_json::Error),
 
+    /// A refusal before the pipeline that could not be answered — see
+    /// [`UnanswerableBody`]. Not produced through this crate's own unpack,
+    /// which always names the verified sender.
+    #[error("{0}")]
+    Unanswerable(UnanswerableBody),
+
     /// The framework's [`TrustTask`](trust_tasks_rs::TrustTask) failed to
     /// serialise into JSON for placement in the envelope. Effectively impossible
     /// for well-formed payload types; here to keep the taxonomy total.
@@ -72,9 +78,28 @@ impl TspError {
         match self {
             TspError::InvalidBody(e) => RejectReason::malformed_from_serde(&e),
             TspError::SenderMismatch { .. } => RejectReason::ProofRequired,
+            // No authenticated sender: only an in-band proof could attribute it.
+            TspError::Unanswerable(UnanswerableBody::NoAuthenticatedSender(_)) => {
+                RejectReason::ProofRequired
+            }
             _ => RejectReason::MalformedRequest {
                 reason: ENVELOPE_MALFORMED.to_string(),
             },
+        }
+    }
+}
+
+/// What [`TspConsumer`](crate::TspConsumer) reports for a `document` it could
+/// not answer: one that is not a document at all is
+/// [`InvalidBody`](TspError::InvalidBody), as from
+/// [`unpack_trust_task`](crate::unpack_trust_task). This crate's unpack always
+/// names the verified sender, so the other case does not arise from it; it is
+/// reported as the sender failure it would be.
+impl From<UnanswerableBody> for TspError {
+    fn from(unanswerable: UnanswerableBody) -> Self {
+        match unanswerable {
+            UnanswerableBody::Unparsable(e) => TspError::InvalidBody(e),
+            other => TspError::Unanswerable(other),
         }
     }
 }

@@ -523,6 +523,23 @@ Every known cross-runtime difference — this one, Rust-only `ERROR_CODES`, TS's
 closed `StandardCode`, and the open gaps — is tabled as yes / deliberately no /
 todo in **`docs/runtime-parity.md`**; update it when you change a row.
 
+## The Rust message bindings share one consumer — `GuardedConsumer`
+
+`DidcommConsumer`, `TspConsumer` and `DidcommV1Consumer` are thin wrappers
+that dereference to `trust_tasks_rs::GuardedConsumer` (#1096): the item-11
+record, the freshness bound, and `consume_body` / `consume_body_dispatched`,
+which parse the body a binding opened. A binding keeps only its unpack (an
+`open` that stops short of parsing) and its envelope check (DIDComm's thread
+headers), passed as a closure. Do not give a binding its own copy back.
+
+An authenticated body that does not parse, or that the envelope check
+refuses, is **answered** — `ConsumeOutcome::Rejected(malformedRequest)`,
+addressed to the transport-authenticated sender, never the unchecked in-band
+`issuer`, and refused before the item-11 record is written — as the Go and
+Dart bindings do. Only a body with no string `id` / Trust Task `type` to name
+in `inResponseTo`, or a transport with no authenticated sender, is an
+`Err` (`UnanswerableBody`, mapped to the binding's own error).
+
 ## Declared error codes are generated — Rust only, so far
 
 A spec's `errorCodes` front matter (SPEC §7.3 item 9) reaches `trust-tasks-rs`:
