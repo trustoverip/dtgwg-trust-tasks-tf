@@ -59,8 +59,6 @@ export function proofPurposeError(purpose: string): string | undefined {
     : "proofPurpose names no signing verification relationship";
 }
 
-const DATE_TIME_STAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$/;
-
 /**
  * A {@link ProofVerifier} for W3C Data Integrity proofs, on `@noble`.
  *
@@ -120,13 +118,17 @@ export class DataIntegrityProofVerifier implements ProofVerifier {
     // an explicit offset — and not beyond the clock-skew allowance. An
     // offset-less value is refused rather than read as local time, as the Rust
     // and Dart verifiers do.
+    // Every field must be in range, as for `expires`: `Date.parse` rolls
+    // 2026-02-30 into March and gives NaN for month 13, and NaN compares false
+    // with the horizon, so such a value used to pass.
     const created = p.created;
     if (created !== undefined) {
-      if (typeof created !== "string" || !DATE_TIME_STAMP.test(created)) {
-        return fail("malformedProof", `proof.created must be a dateTimeStamp with Z or an offset: ${created}`);
+      const at = typeof created === "string" ? parseDateTimeStamp(created) : undefined;
+      if (at === undefined) {
+        return fail("malformedProof", `proof.created must be a dateTimeStamp with Z or an offset: ${String(created)}`);
       }
       const horizon = this.now() + Math.max(0, this.clockSkewMs);
-      if (Date.parse(created) > horizon) {
+      if (at > horizon) {
         return fail("malformedProof", `proof.created is more than ${this.clockSkewMs}ms in the future`);
       }
     }

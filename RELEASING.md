@@ -338,7 +338,16 @@ token's claims — which is why Dart needs two workflows where the others need o
 **deleted** — in CI that file points a package at the in-tree `trust_tasks`, but
 a consumer gets the published one. So a `trust_tasks_proof` release that relies
 on core API nobody has released yet fails verification and is not tagged,
-while the core is; re-run the failed jobs once the core is on pub.dev. `publish-dart.yml` looks up the tag's version on
+while the core is; re-run the failed jobs once the core is on pub.dev.
+
+When the Release PR takes `trust_tasks` across a `0.x` minor, it also raises
+every sibling's `trust_tasks` floor to the new core and releases each sibling
+for it (at least a patch, with a "Dependencies" changelog line), because a
+caret below 1.0 admits one minor and `check-sibling-core-ranges` refuses a
+sibling that excludes the core. Those siblings' verify legs then fail on the
+merge until the new core is on pub.dev — the same re-run.
+
+`publish-dart.yml` looks up the tag's version on
 pub.dev before publishing and does nothing when it is already there, which is
 what keeps the tag written after a hand-published first version from turning
 into a failed run.

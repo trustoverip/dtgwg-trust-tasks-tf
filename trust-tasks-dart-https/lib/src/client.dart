@@ -152,6 +152,36 @@ final class ResponseProofException extends HttpsClientException {
       'ResponseProofException(${missing ? 'missing' : 'invalid'})';
 }
 
+/// A non-2xx response carried a `trust-task-error` document that this client,
+/// configured with a [HttpsClient.responseVerifier], could not attest: it had
+/// no proof, its proof did not verify, or its `issuer` / `recipient` is not the
+/// configured server / this client.
+///
+/// **Untrusted.** [error] is what arrived, kept for diagnostics; anything on
+/// the path could have written it. Do not act on its code as the server's
+/// verdict — treat the request's outcome as unknown.
+final class UnverifiedErrorResponseException extends HttpsClientException {
+  const UnverifiedErrorResponseException(
+    this.httpStatus,
+    this.reason,
+    this.error,
+  );
+
+  /// The HTTP status code that accompanied it.
+  final int httpStatus;
+
+  /// Why it could not be attested.
+  final String reason;
+
+  /// The document as received. Unverified.
+  final ErrorResponse error;
+
+  /// Names neither the code nor the message: both are unattested.
+  @override
+  String toString() =>
+      'UnverifiedErrorResponseException(HTTP $httpStatus: $reason)';
+}
+
 /// A client for the HTTPS binding (`bindings/https/0.2`).
 ///
 /// ```dart
@@ -231,7 +261,16 @@ final class HttpsClient {
   /// The bearer token (§3).
   final String? token;
 
-  /// When set, every success response must carry a proof that verifies.
+  /// When set, every success response must carry a proof that verifies, over
+  /// the body exactly as received.
+  ///
+  /// **Error responses are held to it too.** A `trust-task-error` is thrown as
+  /// [TrustTaskErrorException] only when its proof verifies and its `issuer` /
+  /// `recipient` are [serverVid] / [myVid], as a success response's must be.
+  /// Anything else — an unsigned error, a bad proof, an error from another
+  /// party — is [UnverifiedErrorResponseException]: the document is kept for
+  /// diagnostics, but nothing about it is attested, and it must not be read as
+  /// the server's answer.
   final ProofVerifier? responseVerifier;
 
   /// Budget for one exchange, reading the response included.
@@ -309,7 +348,7 @@ final class HttpsClient {
     if (reply.statusCode == 202 || reply.statusCode == 204) {
       throw DuplicateAbsorbedException(reply.statusCode);
     }
-    _throwIfError(reply, stamped);
+    await _throwIfError(reply, stamped);
     if (reply.bodyBytes.isEmpty) {
       throw DuplicateAbsorbedException(reply.statusCode);
     }
@@ -344,7 +383,7 @@ final class HttpsClient {
     final stamped = _stamp(request);
     final reply = await _post(stamped.toJson(encode));
     if (reply.statusCode == 202 || reply.statusCode == 204) return;
-    _throwIfError(reply, stamped);
+    await _throwIfError(reply, stamped);
     // A 2xx with a body: the framework's optional empty `{}` #response, which
     // a fire-and-forget consumer may send as a courtesy (§4.1, `responded`).
   }
@@ -445,7 +484,10 @@ final class HttpsClient {
 
   /// §4: a non-2xx answer with a JSON body is read as a `trust-task-error`
   /// first, and only then treated as a transport failure.
-  void _throwIfError<P>(http.Response reply, TrustTaskDocument<P> request) {
+  Future<void> _throwIfError<P>(
+    http.Response reply,
+    TrustTaskDocument<P> request,
+  ) async {
     final status = reply.statusCode;
     if (status >= 200 && status < 300) return;
 
@@ -453,6 +495,7 @@ final class HttpsClient {
     if (contentType.split(';').first.trim().toLowerCase() ==
         'application/json') {
       ErrorResponse? error;
+      Map<String, dynamic>? received;
       try {
         final json =
             jsonDecode(utf8.decode(reply.bodyBytes)) as Map<String, dynamic>;
@@ -462,11 +505,20 @@ final class HttpsClient {
             json,
             (p) => ErrorPayload.fromJson(p! as Map<String, dynamic>),
           );
+          received = json;
         }
       } on Object {
         error = null;
       }
       if (error != null) {
+        // With a response verifier configured, an error is the server's
+        // answer only once it is attested as one: a valid proof, from the
+        // configured server, to this client. Otherwise anything on the path
+        // could answer every request with an unsigned refusal.
+        final reason = await _attestError(error, received!);
+        if (reason != null) {
+          throw UnverifiedErrorResponseException(status, reason, error);
+        }
         final reported = error.payload.inResponseTo?.id;
         if (reported != null && reported != request.id) {
           throw ResponseMismatchException(
@@ -523,6 +575,37 @@ final class HttpsClient {
         response.recipient,
       );
     }
+  }
+
+  /// With a [responseVerifier], why [error] is not attested as the server's
+  /// answer, or null when it is: it must carry a proof that verifies over
+  /// [received] — the body as it arrived — and name [serverVid] as `issuer`
+  /// and [myVid] as `recipient` (each where configured). Without a verifier
+  /// there is nothing to attest and every error passes.
+  Future<String?> _attestError(
+    ErrorResponse error,
+    Map<String, dynamic> received,
+  ) async {
+    final verifier = responseVerifier;
+    if (verifier == null) return null;
+    if (received['proof'] == null) {
+      return 'the error response carried no proof';
+    }
+    final server = serverVid;
+    if (server != null && error.issuer != server) {
+      return "the error response's issuer is not the configured server";
+    }
+    final me = myVid;
+    if (me != null && error.recipient != me) {
+      return 'the error response is not addressed to this client';
+    }
+    var ok = false;
+    try {
+      ok = await verifier.verify(received);
+    } on Object {
+      ok = false;
+    }
+    return ok ? null : "the error response's proof did not verify";
   }
 
   Future<void> _verify(Map<String, dynamic> json) async {

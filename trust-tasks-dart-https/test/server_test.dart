@@ -261,6 +261,71 @@ void main() {
       expect(verifier.calls, 0);
     });
 
+    group('DID-method screen default', () {
+      const didKey = 'did:key:z6MkExample';
+
+      test('is did:key only', () {
+        expect(defaultAllowedDidMethods, {'key'});
+      });
+
+      test('with a verifier and no choice, admits did:key only', () async {
+        final verifier = FakeVerifier();
+        final s = echoServer(verifier: verifier, allowAnyDidMethod: false);
+        expect(s.allowedDidMethods, defaultAllowedDidMethods);
+
+        final web = await s.handle(post(echoDoc(proof: proof(alice))));
+        expect(codeOf(web), 'proofInvalid');
+        expect(verifier.calls, 0);
+
+        final key = await s.handle(
+          post(
+            echoDoc(
+              id: 'urn:uuid:00000000-0000-4000-8000-0000000000d1',
+              proof: proof(didKey),
+            ),
+          ),
+        );
+        expect(key.status, 200);
+        expect(verifier.calls, 1);
+      });
+
+      test('allowAnyDidMethod lifts it', () async {
+        final verifier = FakeVerifier();
+        final s = echoServer(verifier: verifier, allowAnyDidMethod: true);
+        expect(s.allowedDidMethods, isNull);
+        final reply = await s.handle(post(echoDoc(proof: proof(alice))));
+        expect(reply.status, 200);
+        expect(verifier.calls, 1);
+      });
+
+      test('an explicit allowedDidMethods replaces it', () async {
+        final verifier = FakeVerifier();
+        final s = echoServer(
+          verifier: verifier,
+          allowedDidMethods: {'web'},
+          allowAnyDidMethod: false,
+        );
+        final reply = await s.handle(post(echoDoc(proof: proof(alice))));
+        expect(reply.status, 200);
+        expect(verifier.calls, 1);
+      });
+
+      test('a server with no verifier screens nothing', () {
+        expect(echoServer(allowAnyDidMethod: false).allowedDidMethods, isNull);
+      });
+
+      test('allowedDidMethods with allowAnyDidMethod is an ArgumentError', () {
+        expect(
+          () => HttpsServer(
+            proofVerifier: FakeVerifier(),
+            allowedDidMethods: {'key'},
+            allowAnyDidMethod: true,
+          ),
+          throwsArgumentError,
+        );
+      });
+    });
+
     test('a proof-REQUIRED specification refuses a proofless document',
         () async {
       final s = HttpsServer(

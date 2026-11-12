@@ -41,6 +41,8 @@ let verifier = Verifier::with_resolver(resolver);
 
 The default builder runs in local mode (no network) — sufficient for `did:key`, `did:peer`, and `did:jwk`. Add `.with_network_mode(...)` to point at a running resolver cache server for `did:web`, `did:webvh`, and the rest. See [`affinidi-did-resolver-cache-sdk`](https://crates.io/crates/affinidi-did-resolver-cache-sdk) for the full configuration surface.
 
+Every resolution has a deadline (`DEFAULT_RESOLUTION_TIMEOUT`, 10 s; `.with_timeout(..)`) and a host policy: a DID naming `localhost` or a loopback, private-network or link-local address is refused before the client is called (`.allow_private_hosts(true)` lifts it for local development), and `.with_host_filter(|host| ..)` restricts resolution to hosts you list. A public hostname that resolves to a private address is the client's to refuse — `DIDCacheConfigBuilder::with_host_policy` does so by default.
+
 The adapter currently extracts public keys from `Multikey`-typed verification methods (`publicKeyMultibase`); JWK-bearing methods surface a clean `Resolver` error so callers can stack a custom resolver in front.
 
 ## Signing (`affinidi` backend)

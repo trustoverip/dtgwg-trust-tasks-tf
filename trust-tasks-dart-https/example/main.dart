@@ -65,6 +65,10 @@ Future<void> main() async {
       final summary = switch (e) {
         TrustTaskErrorException(:final error) =>
           'refused: ${error.payload.code}',
+        // An error document the response verifier could not attest: not the
+        // server's answer, so the outcome is unknown.
+        UnverifiedErrorResponseException(:final httpStatus) =>
+          'unattested error (HTTP $httpStatus), outcome unknown',
         DuplicateAbsorbedException() => 'already accepted',
         HttpStatusException(:final httpStatus) => 'HTTP $httpStatus',
         TransportException() => 'no answer',
