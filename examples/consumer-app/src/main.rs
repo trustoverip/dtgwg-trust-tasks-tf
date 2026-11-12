@@ -12,8 +12,8 @@
 //! `trust-tasks/@acme/`). `build.rs` runs `trust-tasks-build`, which checks
 //! each bundle against its locked digest and writes their Rust types to
 //! `$OUT_DIR`, included below as `tasks` — acme's under `tasks::acme`. The
-//! application depends on `trust-tasks-rs` with `default-features = false`, so
-//! none of the registry's prebuilt specification modules is compiled.
+//! application depends on `trust-tasks-rs` with its default features, which
+//! name no prebuilt specification family, so none of them is compiled.
 //!
 //! ```sh
 //! cargo run -p trust-tasks-example-consumer-app
