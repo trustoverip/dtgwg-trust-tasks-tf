@@ -179,10 +179,66 @@ jobs:
           --size-only
           --cache-control "public, max-age=31536000, immutable"
 
-      # `--exclude` keeps the by-digest prefix out of this sync entirely —
-      # neither uploaded (done above) nor deleted by `--delete`.
+      # The site in four syncs, each with its own object metadata (#1145,
+      # #1148, #1152). `aws s3 sync` applies `--exclude`/`--include` to
+      # `--delete` too, so each sync deletes only within its own slice, and the
+      # by-digest prefix (above) is in none of them.
+      #
+      # Cache-Control: asset URLs are not content-hashed, so nothing can be
+      # `immutable`. Pages and assets are `no-cache` (always revalidated — a
+      # cheap 304 when unchanged), so a new index.html never runs against stale
+      # JSX or data. The specs tree is read by tools as well as the page, and
+      # tolerates a few minutes' staleness: a short max-age with
+      # stale-while-revalidate.
+      #
+      # 1. Payload and shared schemas, with the media type a Type URI is
+      #    negotiated for (SPEC §6.2) — S3 would otherwise guess
+      #    application/json.
+      - name: Deploy schemas to S3
+        run: >-
+          aws s3 sync website/specs/ s3://${{ secrets.AWS_S3_BUCKET }}/website/specs/
+          --delete
+          --exclude "*" --include "*.schema.json"
+          --exclude "by-digest/*"
+          --content-type "application/schema+json"
+          --cache-control "public, max-age=300, stale-while-revalidate=86400"
+
+      # 2. The rest of the specs tree.
+      - name: Deploy the specs tree to S3
+        run: >-
+          aws s3 sync website/specs/ s3://${{ secrets.AWS_S3_BUCKET }}/website/specs/
+          --delete
+          --exclude "*.schema.json"
+          --exclude "by-digest/*"
+          --cache-control "public, max-age=300, stale-while-revalidate=86400"
+
+      # 3. tasks.generated.js, gzip-encoded at rest. It is ~10 MB minified, at
+      #    CloudFront's 10,000,000-byte ceiling for on-the-fly compression, and
+      #    over it the file went out uncompressed (13 MB). Only the page loads
+      #    it, from a <script> tag, and every browser accepts gzip, so storing
+      #    it encoded is safe; CloudFront passes an encoded object through
+      #    as-is. registry.json is deliberately NOT stored encoded: machine
+      #    consumers fetch it, not all of them decode an encoding they did not
+      #    ask for, and minified it is under the ceiling, so CloudFront
+      #    compresses it per request (build-registry.mjs warns as it nears it).
+      - name: Deploy the generated registry script (gzip-encoded)
+        run: |
+          gzip -9 -n -c website/assets/tasks.generated.js > "$RUNNER_TEMP/tasks.generated.js.gz"
+          aws s3 cp "$RUNNER_TEMP/tasks.generated.js.gz" \
+            s3://${{ secrets.AWS_S3_BUCKET }}/website/assets/tasks.generated.js \
+            --content-encoding gzip \
+            --content-type "text/javascript; charset=utf-8" \
+            --cache-control "no-cache"
+
+      # 4. Everything else — index.html, the JSX, the hand-kept data files,
+      #    registry.json, robots.txt, sitemap.xml, bindings/, ceremonies/.
       - name: Deploy to S3
-        run: aws s3 sync website/ s3://${{ secrets.AWS_S3_BUCKET }}/website/ --delete --exclude "specs/by-digest/*"
+        run: >-
+          aws s3 sync website/ s3://${{ secrets.AWS_S3_BUCKET }}/website/
+          --delete
+          --exclude "specs/*"
+          --exclude "assets/tasks.generated.js"
+          --cache-control "no-cache"
 
       - name: Invalidate CloudFront Cache
         if: env.CLOUDFRONT_DISTRIBUTION_ID != ''
