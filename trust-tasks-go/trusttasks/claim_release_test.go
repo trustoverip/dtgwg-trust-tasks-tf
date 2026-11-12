@@ -130,3 +130,47 @@ func TestItem11WindowClosesAtTheInstantTheRecordMayBeDropped(t *testing.T) {
 		t.Errorf("expected one execution, got %d", executions)
 	}
 }
+
+// panickyResponse panics when encoded, standing in for a MarshalJSON with a bug.
+type panickyResponse struct{}
+
+func (panickyResponse) MarshalJSON() ([]byte, error) { panic("response cannot be encoded") }
+
+func TestItem11SettlesTheClaimWhenTheResponseEncoderPanics(t *testing.T) {
+	guard := tt.NewInMemoryReplayGuard(0)
+	executions := 0
+
+	func() {
+		defer func() {
+			if recovered := recover(); recovered == nil {
+				t.Fatal("expected the encoder's panic to propagate")
+			}
+		}()
+		_, _ = tt.ConsumeInbound(context.Background(), tt.ConsumeOptions[payload, panickyResponse]{
+			Transport:     tt.UnauthenticatedTransport{},
+			Spec:          relaxedSpec,
+			ProofPolicy:   tt.ProofPolicy{Kind: tt.ProofAcceptUnverified},
+			PayloadPolicy: tt.PayloadPolicy{Kind: tt.PayloadAcceptUnvalidated},
+			Checks:        tt.ConsequentialChecks(guard),
+			Doc:           consequentialDoc(nil),
+			MyVID:         me,
+			Now:           testNow,
+			NewErrorID:    func() string { return "err-1" },
+			Clock:         fixedClock,
+			Handler: func(_ context.Context, accepted *tt.Document[payload], _ tt.ResolvedParties) (*tt.Document[panickyResponse], error) {
+				executions++
+				return tt.RespondWith[payload, panickyResponse](accepted, "resp-1", panickyResponse{}, fixedClock), nil
+			},
+		})
+	}()
+
+	// The handler returned, so the effect happened: a resend is absorbed as a
+	// settled duplicate, neither left in flight nor executed again.
+	outcome := consequential(t, guard, consequentialDoc(nil), &executions, testNow)
+	if outcome.Kind != tt.OutcomeDuplicate || outcome.InFlight {
+		t.Fatalf("expected a settled duplicate, got %q (inFlight=%v)", outcome.Kind, outcome.InFlight)
+	}
+	if executions != 1 {
+		t.Errorf("expected one execution, got %d", executions)
+	}
+}

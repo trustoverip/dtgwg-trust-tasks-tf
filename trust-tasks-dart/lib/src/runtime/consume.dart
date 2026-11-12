@@ -621,7 +621,24 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
         }
       }
     } else {
-      await settleEncoding(() => refusal.response.toJson((p) => p.toJson()));
+      Object? encoded;
+      try {
+        encoded = refusal.response.toJson((p) => p.toJson());
+      } on Object {
+        // A refusal executed nothing. If it cannot be encoded for the record,
+        // release the claim rather than record a determination with no body,
+        // so a resend is evaluated again; the encoder's error then reaches the
+        // caller.
+        if (claimedGuard != null) {
+          try {
+            await claimedGuard.release(doc.id, claimedDigest!);
+          } on Object {
+            /* best-effort */
+          }
+        }
+        rethrow;
+      }
+      await settle(encoded);
     }
     return Rejected<R>(refusal.response);
   } on Object {

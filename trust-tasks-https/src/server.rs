@@ -1041,9 +1041,52 @@ async fn dispatch_handler(
 /// Drop a claim whose execution produced no recorded response. Best-effort: a
 /// guard that cannot release leaves the record standing until `retain_until`,
 /// which is safe (item 11 still holds) but unkind to a legitimate retry.
+///
+/// Cancellation-safe: if the request future is dropped while the release is
+/// awaited (a timeout layer, a client disconnect), [`AbandonedRelease`]
+/// finishes it through [`ReplayGuard::release_abandoned`] rather than leaving
+/// the claim in flight.
 async fn release_claim(state: &ServerState, id: &str, digest: Option<&DocumentDigest>) {
     if let (Some(guard), Some(digest)) = (&state.replay_guard, digest) {
-        let _ = guard.release(id, digest).await;
+        release_with(guard.as_ref(), id, digest).await;
+    }
+}
+
+/// [`release_claim`]'s body, over the guard alone.
+async fn release_with(guard: &dyn ReplayGuard, id: &str, digest: &DocumentDigest) {
+    let pending = AbandonedRelease {
+        guard,
+        id,
+        digest,
+        armed: true,
+    };
+    let _ = guard.release(id, digest).await;
+    pending.disarm();
+}
+
+/// Releases a claim from its destructor unless disarmed — see [`release_claim`].
+struct AbandonedRelease<'a> {
+    guard: &'a dyn ReplayGuard,
+    id: &'a str,
+    digest: &'a DocumentDigest,
+    armed: bool,
+}
+
+impl AbandonedRelease<'_> {
+    fn disarm(mut self) {
+        self.armed = false;
+    }
+}
+
+impl Drop for AbandonedRelease<'_> {
+    fn drop(&mut self) {
+        if self.armed {
+            // A guard that panics here loses only this release; a panic from a
+            // destructor during another unwind would abort the process.
+            let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                self.guard.release_abandoned(self.id, self.digest);
+            }));
+        }
     }
 }
 
@@ -1239,4 +1282,54 @@ fn refuse_unauthenticated_discovery(
         });
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod release_tests {
+    use super::*;
+    use std::future::Future;
+    use trust_tasks_rs::{ReplayGuardError, ReplayVerdict};
+
+    /// `release` never completes, as a store round trip in progress when the
+    /// request is cancelled; `release_abandoned` releases at once.
+    struct StalledRelease(InMemoryReplayGuard);
+
+    #[async_trait::async_trait]
+    impl ReplayGuard for StalledRelease {
+        async fn claim(
+            &self,
+            id: &str,
+            digest: &DocumentDigest,
+            retain_until: Option<chrono::DateTime<chrono::Utc>>,
+            now: chrono::DateTime<chrono::Utc>,
+        ) -> Result<ReplayVerdict, ReplayGuardError> {
+            self.0.claim(id, digest, retain_until, now).await
+        }
+        async fn release(&self, _: &str, _: &DocumentDigest) -> Result<(), ReplayGuardError> {
+            std::future::pending().await
+        }
+        fn release_abandoned(&self, id: &str, digest: &DocumentDigest) {
+            self.0.release_abandoned(id, digest);
+        }
+    }
+
+    /// A request dropped while its claim's release is awaited (a timeout
+    /// layer, a client disconnect) still releases the claim.
+    #[test]
+    fn a_release_cancelled_mid_await_still_releases_the_claim() {
+        let guard = StalledRelease(InMemoryReplayGuard::new(8));
+        let digest = trust_tasks_rs::received_document_digest(&serde_json::json!({"id": "req-1"}));
+        let now = chrono::Utc::now();
+        let mut cx = std::task::Context::from_waker(std::task::Waker::noop());
+        let claimed = std::pin::pin!(guard.claim("req-1", &digest, None, now)).poll(&mut cx);
+        assert!(matches!(
+            claimed,
+            std::task::Poll::Ready(Ok(ReplayVerdict::Fresh))
+        ));
+
+        let released = std::pin::pin!(release_with(&guard, "req-1", &digest)).poll(&mut cx);
+        assert!(released.is_pending());
+        // The pinned future was dropped at the end of the statement above.
+        assert_eq!(guard.0.len(), 0, "the claim was left in flight");
+    }
 }

@@ -93,6 +93,15 @@ class _SerialisingGuard extends InMemoryReplayGuard {
       super.recordResponse(id, jsonDecode(jsonEncode(response)));
 }
 
+/// A final refusal whose payload cannot be encoded.
+class _UnencodableErrorPayload extends ErrorPayload {
+  const _UnencodableErrorPayload()
+      : super(code: 'permissionDenied', retryable: false);
+
+  @override
+  Map<String, dynamic> toJson() => throw StateError('cannot encode');
+}
+
 void main() {
   group('SPEC §7.2 item 11 — duplicate execution', () {
     test('absorbs a bit-for-bit resend and never executes twice (§8.4)',
@@ -185,6 +194,41 @@ void main() {
       expect(duplicate.priorResponse, isNull);
       expect(executions.count, 1,
           reason: 'the consequential effect happened twice');
+    });
+
+    test('releases the claim when a final refusal cannot be encoded', () async {
+      // A refusal executed nothing. If it cannot be encoded for the record, the
+      // claim is released — not recorded as completed with no body — so a
+      // resend is evaluated again; the encoder's error reaches the caller.
+      final guard = InMemoryReplayGuard();
+      await expectLater(
+        consumeInbound<Payload, Response>(
+          transport: const UnauthenticatedTransport(),
+          spec: consequentialSpec,
+          proofPolicy: const ProofPolicy.acceptUnverified(),
+          payloadPolicy: const PayloadPolicy.acceptUnvalidated(),
+          checks: consequentialChecks(guard),
+          doc: consequentialDoc(),
+          myVid: me,
+          now: testNow,
+          newErrorId: () => 'err-1',
+          payloadToJson: payloadToJson,
+          clock: fixedClock,
+          handler: (accepted, parties) async => throw Refusal(
+            TrustTaskDocument<ErrorPayload>(
+              id: 'err-1',
+              type: trustTaskErrorTypeUri,
+              payload: const _UnencodableErrorPayload(),
+            ),
+          ),
+        ),
+        throwsStateError,
+      );
+
+      final executions = Executions();
+      final resend = await consequential(guard, consequentialDoc(), executions);
+      expect(resend, isA<Handled<Response>>());
+      expect(executions.count, 1);
     });
 
     test('caches a success response as JSON a persistent guard can store',
