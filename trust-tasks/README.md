@@ -3,19 +3,19 @@
 One dependency line for the [Trust Tasks](https://trusttasks.org/) framework.
 
 ```sh
-cargo add trust-tasks --no-default-features --features https,proof-affinidi
+cargo add trust-tasks --features https,proof-affinidi
 ```
 
 which writes
 
 ```toml
-trust-tasks = { version = "…", default-features = false, features = ["https", "proof-affinidi"] }
+trust-tasks = { version = "…", features = ["https", "proof-affinidi"] }
 ```
 
-with the current version. Keep `default-features = false`: the default,
-`all-specs`, compiles every prebuilt specification module — deprecated, and a
-build measured in minutes and gigabytes. An application generates the tasks it
-uses instead (below).
+with the current version. No feature is on by default: you get the runtime and
+the features you name. The prebuilt specification modules (`all-specs`) are
+deprecated and opt-in; an application generates the tasks it uses instead
+(below).
 
 The framework ships as several crates, because each transport binding drags in
 a different (and heavy) dependency tree and you should only pay for the one you
@@ -43,7 +43,7 @@ Dropping the facade later is a find-and-replace, not a migration.
 | `validate` | runtime JSON Schema validation of payloads | `trust-tasks-rs` |
 | `all-transports` | all four transport modules | — |
 | `https-jwt` | `trust_tasks::https::JwtBearerAuth` | `trust-tasks-https` |
-| `all-specs` *(default)* | every prebuilt spec family under `trust_tasks::specs` — **deprecated**; turn it off with `default-features = false` | `trust-tasks-rs` |
+| `all-specs` | every prebuilt spec family under `trust_tasks::specs` — **deprecated**, and a build of minutes and over 16 GB; off by default (on by default in 0.38 and earlier) | `trust-tasks-rs` |
 
 Most deployments want **one transport plus `proof-affinidi`**: a task whose
 specification declares `proof` REQUIRED cannot be produced or consumed without a
@@ -61,7 +61,7 @@ directly** — that is the supported answer, not a workaround.
 [`GETTING-STARTED.md`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/GETTING-STARTED.md)
 walks a signed `acl/grant` round trip end to end, in Rust, TypeScript, Go and
 Dart, and names the traps. Its Rust is extracted from an example application
-that uses this facade with `default-features = false` and generates the one
+that uses this facade with no spec family and generates the one
 task it speaks, `acl/grant/0.3`, in `build.rs`
 ([`examples/getting-started`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/examples/getting-started)):
 
@@ -69,10 +69,9 @@ task it speaks, `acl/grant/0.3`, in `build.rs`
 cargo run -p trust-tasks-example-getting-started
 ```
 
-The facade's default feature, `all-specs`, compiles every prebuilt
-specification module; those are deprecated, and an application generates the
-tasks it uses instead (see GETTING-STARTED §1). That is why the dependency line
-above turns default features off.
+The facade's `all-specs` feature compiles every prebuilt specification module;
+those are deprecated, and an application generates the tasks it uses instead
+(see GETTING-STARTED §1). That is why `all-specs` is not a default feature.
 
 ## License
 

@@ -357,7 +357,7 @@ crate (`du -sh trust-tasks-rs/src/specs`; over 90 MB at the time of writing). So
 Measured on the `validate` build: 63s → 23s, peak memory 9.0 GB → 4.3 GB.
 
 **A single family builds and tests on its own** —
-`cargo test -p trust-tasks-rs --no-default-features --features vault` is about
+`cargo test -p trust-tasks-rs --features vault` is about
 13 s and 1 GB cold, against minutes and ~6 GB for the whole workspace — and the
 `test-single-family` job in `rust.yml` keeps it that way for `acl`, `vault` and
 `keys`. So a test naming a family must sit behind that family's feature: the
@@ -448,7 +448,16 @@ the module body is also what the consumer-side generators emit:
 Consequences: hand-written Rust in this repo that uses a prebuilt module on
 purpose — the `acl`-specimen test modules, the integration tests, the examples —
 carries `#[allow(deprecated)]` (CI denies warnings); new runtime code must not
-depend on a non-framework family at all. The TS, Go and Dart equivalence tests
+depend on a non-framework family at all.
+
+**No family is on by default (#1102).** `trust-tasks-rs` and the `trust-tasks`
+facade both have `default = []` — the generator writes it, and
+`tests/spec_feature_manifest.rs` asserts it — so a plain dependency is the
+runtime alone. A dev-dependency names the families its tests use
+(`features = ["acl"]`), and a CI job that needs every family says so:
+`cargo test --workspace --features trust-tasks/all-specs`,
+`-p trust-tasks-rs --features validate,all-specs`. `--no-default-features` is
+no longer needed anywhere to get the runtime alone. The TS, Go and Dart equivalence tests
 mask exactly the mark and nothing else, so change its wording in the generator
 and the test together.
 

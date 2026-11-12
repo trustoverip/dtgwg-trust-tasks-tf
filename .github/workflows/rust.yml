@@ -112,8 +112,11 @@ jobs:
       # dev headers so libdbus-sys finds the system library.
       - name: Install libdbus-1-dev
         uses: ./.github/actions/install-libdbus
-      - name: cargo test (default features)
-        run: cargo test --workspace --all-targets
+      # Every family explicitly: `default` is empty (#1102), so without this
+      # the generated conformance tests of all but the families a
+      # dev-dependency names would compile out.
+      - name: cargo test (every spec family)
+        run: cargo test --workspace --all-targets --features trust-tasks/all-specs
 
   test-validate:
     name: cargo test (trust-tasks-rs, --features validate)
@@ -146,16 +149,17 @@ jobs:
           save-if: ${{ github.ref == 'refs/heads/main' }}
       - name: Install libdbus-1-dev
         uses: ./.github/actions/install-libdbus
-      - name: cargo test (--features validate)
-        run: cargo test -p trust-tasks-rs --features validate --all-targets
+      - name: cargo test (--features validate,all-specs)
+        run: cargo test -p trust-tasks-rs --features validate,all-specs --all-targets
 
   # Every spec family is a Cargo feature, so a consumer — or a contributor
   # working on one family — can build trust-tasks-rs with only that family:
-  # `cargo test -p trust-tasks-rs --no-default-features --features vault` is a
-  # ~1 GB, seconds-long build where the default one is the whole registry. That
-  # only holds while no test outside a family's own gate names it, which
-  # nothing else checks: every other job builds with all families on. The
-  # three below are the unit-test family (acl) and two that are not it.
+  # `cargo test -p trust-tasks-rs --features vault` is a ~1 GB, seconds-long
+  # build where `all-specs` is the whole registry. That only holds while no
+  # test outside a family's own gate names it, which nothing else checks:
+  # every other test job builds with all families on. The three below are the
+  # unit-test family (acl) and two that are not it. The runtime alone (no
+  # family at all, the default since #1102) is the clippy job's default leg.
   test-single-family:
     name: cargo test (trust-tasks-rs, one family at a time)
     runs-on: ubuntu-24.04
@@ -167,11 +171,11 @@ jobs:
       - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
         with:
           toolchain: stable
-      - name: cargo test --no-default-features --features <family>
+      - name: cargo test --features <family>
         run: |
           for family in acl vault keys; do
             echo "::group::$family"
-            cargo test -p trust-tasks-rs --no-default-features --features "$family" --all-targets
+            cargo test -p trust-tasks-rs --features "$family" --all-targets
             echo "::endgroup::"
           done
       # Every other job builds trust-tasks-ceremony with its `affinidi` backend
@@ -186,7 +190,7 @@ jobs:
   # An application that generates its tasks at build time: three registry
   # versions and one from a third-party source pinned in
   # examples/consumer-app/trust-tasks.lock, their bundles vendored beside it,
-  # `trust-tasks-rs` with `default-features = false`. Building it runs
+  # `trust-tasks-rs` with its (empty) default features. Building it runs
   # trust-tasks-build (digest check + generation) in a real build.rs, and
   # running it is a round trip through the generated types. The whole job is
   # seconds where a build of the prebuilt modules is minutes — which is the
@@ -350,9 +354,10 @@ jobs:
           components: rustfmt
       - run: cargo fmt --all -- --check
 
-  # Both feature sets, in parallel. Default features catch what is only
-  # reachable without `validate` (an import used solely under a cfg); all
-  # features catch the rest.
+  # Both feature sets, in parallel. Default features — the runtime alone, no
+  # spec family and no `validate`, what a plain dependency gets since #1102 —
+  # catch what is only reachable without a feature (an import used solely
+  # under a cfg); all features catch the rest.
   clippy:
     name: cargo clippy (${{ matrix.features.name }})
     runs-on: ubuntu-24.04
@@ -361,7 +366,7 @@ jobs:
       fail-fast: false
       matrix:
         features:
-          - { name: default features, flags: "" }
+          - { name: default features, flags: "" }  # no spec family
           - { name: --all-features, flags: --all-features }
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -546,6 +551,8 @@ jobs:
       # when `validate` is off (no `cfg(not(feature = "validate"))`, no build
       # script), so the default build is a strict subset and a second verify
       # compile of it was ~4 minutes that could only fail when this one did.
+      # `all-specs` is named because `default` is empty (#1102): the generated
+      # tree is what can reference a file the tarball leaves out.
       # Should a `not(feature = "validate")` path ever appear, package the
       # default set again. Every other published
       # crate is packaged by `package-workspace`, on the Release PR only:
@@ -568,14 +575,14 @@ jobs:
         uses: ./.github/actions/add-swap
         with:
           mode: adaptive
-      - name: cargo package trust-tasks-rs (--features validate)
+      - name: cargo package trust-tasks-rs (--features validate,all-specs)
         # The verify build compiles the packaged crate (mostly generated code)
         # a second time on a 7 GB runner. At full parallelism it is killed with
         # exit 143 on roughly half the runs (#993, #994 on 2026-10-30), with no
         # compile error in the log. Two jobs keep the peak under the limit.
         env:
           CARGO_BUILD_JOBS: 2
-        run: cargo package -p trust-tasks-rs --features validate
+        run: cargo package -p trust-tasks-rs --features validate,all-specs
       # crates.io refuses an upload over 10 MiB, and nothing else measures it:
       # `cargo package` does not enforce the limit and release-plz publishes
       # with `publish_no_verify`, so an oversize crate was first discovered

@@ -40,10 +40,11 @@ use trust_tasks_build::publish::{self, compute_lifecycles, Lifecycle};
 /// `trust_tasks_rs::ErrorPayload`, so we never emit a generated version.
 const SKIP_SLUGS: &[&str] = &["trust-task-error"];
 
-/// Cargo feature that turns on every task family at once. `default` is
-/// exactly this one feature, so a consumer who says nothing keeps the
-/// pre-0.14 module tree; `default-features = false` plus a handful of
-/// family features is what buys the compile-time saving.
+/// Cargo feature that turns on every task family at once. It is NOT in
+/// `default` (#1102): every prebuilt module is deprecated (milestone 5 of
+/// docs/design/consumer-side-generation.md) and compiling them all is a
+/// ~17 GB build, so a consumer who says nothing gets the runtime alone and
+/// opts in with `features = ["all-specs"]` or one feature per family.
 const ALL_SPECS_FEATURE: &str = "all-specs";
 
 /// Whether a top-level family is one of the framework-reserved slugs of
@@ -499,7 +500,7 @@ fn main() -> Result<()> {
 
 /// Rewrite the generated block of `trust-tasks-rs/Cargo.toml`'s `[features]`
 /// table: one feature per top-level spec family, an `all-specs` umbrella
-/// enabling every one of them, and `default = ["all-specs"]`.
+/// enabling every one of them, and an empty `default`.
 ///
 /// Generated rather than hand-maintained on purpose. `CLAUDE.md` records three
 /// separate incidents of a hand-kept list drifting from the tree; a family
@@ -509,12 +510,15 @@ fn main() -> Result<()> {
 /// re-deriving the family set from `specs/` and asserting the table matches.
 fn write_cargo_features(gated: &[String], repo_root: &Path) -> Result<()> {
     let mut body = String::new();
-    body.push_str("# One feature per top-level spec family. `default` is the umbrella, so an\n");
-    body.push_str("# unconfigured consumer gets every family exactly as before; the saving is\n");
-    body.push_str("# `default-features = false, features = [\"vault\"]` and friends.\n");
-    body.push_str("default = [\"");
+    body.push_str("# One feature per top-level spec family, and the `");
     body.push_str(ALL_SPECS_FEATURE);
-    body.push_str("\"]\n");
+    body.push_str("` umbrella. `default`\n");
+    body.push_str(
+        "# is empty (#1102): every prebuilt module is deprecated, so a plain dependency\n",
+    );
+    body.push_str("# compiles the runtime alone. Opt in with `features = [\"vault\"]` and\n");
+    body.push_str("# friends, or `features = [\"all-specs\"]` for every family.\n");
+    body.push_str("default = []\n");
     body.push_str(ALL_SPECS_FEATURE);
     body.push_str(" = [\n");
     for family in gated {
