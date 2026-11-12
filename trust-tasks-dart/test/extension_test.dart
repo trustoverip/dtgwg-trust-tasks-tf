@@ -120,6 +120,7 @@ Future<ConsumeOutcome<auth03.Response>> consume(
       checks: checks ?? notConsequentialChecks(),
       doc: read.doc,
       received: passReceived ? (received ?? read.received) : null,
+      extendsIndex: chained,
       myVid: me,
       now: testNow,
       newErrorId: () => 'err-1',
@@ -184,6 +185,19 @@ void main() {
     test('a cycle ends the walk', () {
       const cyclic = <String, String>{'${base}0.4': '0.3', '${base}0.3': '0.4'};
       expect(extensionChain('${base}0.4', index: cyclic), ['0.3']);
+    });
+
+    test('only a strictly earlier MINOR of the same MAJOR is a link', () {
+      // As Rust and TypeScript read SPEC §5.2: an upward, same-version or
+      // cross-MAJOR declaration in a caller-supplied index ends the walk.
+      const upward = <String, String>{'${base}0.2': '0.3'};
+      const self = <String, String>{'${base}0.2': '0.2'};
+      const crossMajor = <String, String>{'${base}2.1': '1.0'};
+      expect(extensionChain('${base}0.2', index: upward), isEmpty);
+      expect(extendsTo('${base}0.2', '${base}0.3', index: upward), isFalse);
+      expect(extensionChain('${base}0.2', index: self), isEmpty);
+      expect(extensionChain('${base}2.1', index: crossMajor), isEmpty);
+      expect(extendsTo('${base}2.1', '${base}1.0', index: crossMajor), isFalse);
     });
 
     test('another slug at the same version is never reached', () {

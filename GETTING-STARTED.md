@@ -323,7 +323,7 @@ The TypeScript package is `@openvtc/trust-tasks`; import its runtime from
 `trust-tasks generate --lang ts` wrote (§1). Producing a document is the mirror
 of the Rust; the interesting half is **consuming** one, where
 [`consumeInbound`](./trust-tasks-ts/README.md) runs the SPEC §7.2 pipeline
-(items 2 and 4–8, the freshness bound, and item 11's duplicate-execution
+(items 2–8, the freshness bound, and item 11's duplicate-execution
 record) and then calls your handler.
 
 ```ts
@@ -390,9 +390,11 @@ access, moves value, discloses a secret, or is otherwise irreversible — SPEC
 transport binding delegates it to the consumer. `notConsequentialChecks()` keeps
 no record and is conformant only where repeated execution is safe and intended.
 
-Items 1 and 3 (framework schema, unknown `type`) belong to your parse and
-dispatch and have already succeeded by the time you hold a typed document. Full
-detail is in [`trust-tasks-ts/README.md`](./trust-tasks-ts/README.md).
+Item 1 (framework schema) belongs to your parse. Item 3 is checked for you: a
+document whose `type` is not the `spec` it is consumed under (or a later
+version extending it) is refused `unsupportedType` / `unsupportedVersion`
+before the handler runs. Full detail is in
+[`trust-tasks-ts/README.md`](./trust-tasks-ts/README.md).
 
 ---
 

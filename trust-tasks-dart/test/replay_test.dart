@@ -43,6 +43,7 @@ Future<ConsumeOutcome<Response>> consequential(
   TrustTaskDocument<Payload> doc,
   Executions executions, {
   ConsumeChecks? checks,
+  DateTime? now,
 }) =>
     consumeInbound<Payload, Response>(
       transport: const UnauthenticatedTransport(),
@@ -52,7 +53,7 @@ Future<ConsumeOutcome<Response>> consequential(
       checks: checks ?? consequentialChecks(guard),
       doc: doc,
       myVid: me,
-      now: testNow,
+      now: now ?? testNow,
       newErrorId: () => 'err-1',
       payloadToJson: payloadToJson,
       clock: fixedClock,
@@ -141,6 +142,49 @@ void main() {
           await consequential(guard, consequentialDoc(), executions);
       expect(outcome, isA<Handled<Response>>());
       expect(executions.count, 1);
+    });
+
+    test('settles the claim when the response encoder throws', () async {
+      // The handler returned, so the effect happened: the claim is settled
+      // (with no response to hand back) rather than left in flight until the
+      // record expires, and the encoder's error reaches the caller.
+      final guard = InMemoryReplayGuard();
+      final executions = Executions();
+      Future<ConsumeOutcome<Response>> run() =>
+          consumeInbound<Payload, Response>(
+            transport: const UnauthenticatedTransport(),
+            spec: consequentialSpec,
+            proofPolicy: const ProofPolicy.acceptUnverified(),
+            payloadPolicy: const PayloadPolicy.acceptUnvalidated(),
+            checks: consequentialChecks(guard),
+            doc: consequentialDoc(),
+            myVid: me,
+            now: testNow,
+            newErrorId: () => 'err-1',
+            payloadToJson: payloadToJson,
+            clock: fixedClock,
+            responseToJson: (r) => throw StateError('cannot encode'),
+            handler: (accepted, parties) async {
+              executions.count++;
+              return respondWith<Payload, Response>(
+                accepted,
+                'resp-1',
+                const Response(true),
+                clock: fixedClock,
+              );
+            },
+          );
+
+      await expectLater(run(), throwsStateError);
+
+      final resend = await run();
+      expect(resend, isA<DuplicateOutcome<Response>>());
+      final duplicate = resend as DuplicateOutcome<Response>;
+      expect(duplicate.inFlight, isFalse,
+          reason: 'the claim was left in flight');
+      expect(duplicate.priorResponse, isNull);
+      expect(executions.count, 1,
+          reason: 'the consequential effect happened twice');
     });
 
     test('caches a success response as JSON a persistent guard can store',
@@ -520,6 +564,44 @@ void main() {
           at(issuedAt: '2025-12-31T23:00:00Z'), testNow, policy);
       expect(reason?.code, StandardCode.expired);
       expect(reason?.message, staleWireMessage);
+    });
+
+    test(
+        'closes the acceptance window at the instant the record may be dropped',
+        () async {
+      // The window is half-open and ends where the record does. At exactly
+      // `recordExpiry` the guard treats the record as absent, so the document
+      // must already be refused; one millisecond earlier it is still a
+      // duplicate.
+      final guard = InMemoryReplayGuard();
+      final executions = Executions();
+      final end = recordExpiry(
+        consequentialDoc(),
+        consequentialChecks(guard).freshness,
+        testNow,
+      )!;
+      expect(end, testNow.add(const Duration(minutes: 6)));
+
+      await consequential(guard, consequentialDoc(), executions);
+
+      final justBefore = await consequential(
+        guard,
+        consequentialDoc(),
+        executions,
+        now: end.subtract(const Duration(milliseconds: 1)),
+      );
+      expect(justBefore, isA<DuplicateOutcome<Response>>());
+
+      final atEnd = await consequential(
+        guard,
+        consequentialDoc(),
+        executions,
+        now: end,
+      );
+      expect(atEnd, isA<Rejected<Response>>());
+      expect((atEnd as Rejected<Response>).error.payload.code,
+          StandardCode.expired);
+      expect(executions.count, 1);
     });
 
     test('refuses a document with no timestamp once a window is configured',

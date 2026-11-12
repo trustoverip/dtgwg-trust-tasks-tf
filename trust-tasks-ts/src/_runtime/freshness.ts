@@ -184,7 +184,10 @@ export function validateFreshness<P>(
       }
     }
 
-    if (policy.maxAgeMs !== undefined && issuedAt + policy.maxAgeMs + policy.skewMs < now) {
+    // The window is half-open: refused from the instant `recordExpiry` returns,
+    // the instant a guard may drop the record, so there is no moment at which
+    // the document is both acceptable and forgotten.
+    if (policy.maxAgeMs !== undefined && issuedAt + policy.maxAgeMs + policy.skewMs <= now) {
       return stale();
     }
     return null;

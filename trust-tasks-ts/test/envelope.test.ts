@@ -211,27 +211,30 @@ describe("shared item-11 vectors (fixtures/consume)", () => {
     consumer: string;
     now: string;
     first: string;
-    cases: Array<{ name: string; first?: string; second: string; expect: string }>;
+    cases: Array<{
+      name: string;
+      first?: string;
+      second: string;
+      secondAt?: string;
+      expect: string;
+    }>;
   };
   const spec: SpecPolicy = { ...SPEC, typeUri: vectors.spec };
 
   for (const c of vectors.cases) {
     it(c.name, async () => {
       const guard = new InMemoryReplayGuard();
-      const run = (body: string) =>
+      const run = (body: string, at = vectors.now) =>
         consume(
           JSON.parse(body),
           consequentialChecks(guard),
           spec,
           vectors.consumer,
-          Date.parse(vectors.now),
+          Date.parse(at),
         );
       assert.equal((await run(c.first ?? vectors.first)).kind, "handled");
-      const second = await run(c.second);
-      const got =
-        second.kind === "rejected" && second.error.payload.code === "idConflict"
-          ? "idConflict"
-          : second.kind;
+      const second = await run(c.second, c.secondAt);
+      const got = second.kind === "rejected" ? second.error.payload.code : second.kind;
       assert.equal(got, c.expect);
     });
   }

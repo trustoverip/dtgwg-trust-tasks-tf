@@ -279,6 +279,26 @@ pub trait ReplayGuard: Send + Sync {
         let _ = (id, digest);
         Ok(())
     }
+
+    /// Release a claim whose handler never returned — it panicked, or the
+    /// future running [`consume_inbound`](crate::consume_inbound) was dropped
+    /// (a request timeout, a client disconnect) while the handler was awaited.
+    ///
+    /// Nothing says the effect happened, and holding the claim would answer
+    /// every resend with an in-flight duplicate until `retain_until`. This is
+    /// called from a destructor, at most once per claim, so it cannot `.await`
+    /// and **MUST NOT** panic or block.
+    ///
+    /// The default polls [`release`](Self::release) once and drops it, which
+    /// completes for a guard whose `release` does not suspend
+    /// ([`InMemoryReplayGuard`] among them). A guard backed by a network store
+    /// should override it to hand the release to its own runtime (for
+    /// example `tokio::spawn`), or the record stays until `retain_until`.
+    fn release_abandoned(&self, id: &str, digest: &DocumentDigest) {
+        let mut release = self.release(id, digest);
+        let mut cx = std::task::Context::from_waker(std::task::Waker::noop());
+        let _ = release.as_mut().poll(&mut cx);
+    }
 }
 
 #[async_trait::async_trait]
@@ -316,6 +336,10 @@ impl<T: ReplayGuard + ?Sized> ReplayGuard for &T {
 
     async fn release(&self, id: &str, digest: &DocumentDigest) -> Result<(), ReplayGuardError> {
         (**self).release(id, digest).await
+    }
+
+    fn release_abandoned(&self, id: &str, digest: &DocumentDigest) {
+        (**self).release_abandoned(id, digest)
     }
 }
 
@@ -512,6 +536,20 @@ impl Entry {
 }
 
 impl Inner {
+    /// Drop `id`'s record if it is an unfinished claim made by `digest`. Only
+    /// the claim this digest made: a concurrent arrival that legitimately
+    /// holds the key must not have it taken away by a different document's
+    /// cleanup.
+    fn release(&mut self, id: &str, digest: &DocumentDigest) {
+        if self
+            .entries
+            .get(id)
+            .is_some_and(|entry| &entry.digest == digest && !entry.completed)
+        {
+            self.remove(id);
+        }
+    }
+
     fn remove(&mut self, id: &str) {
         if let Some(entry) = self.entries.remove(id) {
             if let Some(until) = entry.retain_until {
@@ -653,17 +691,19 @@ impl ReplayGuard for InMemoryReplayGuard {
 
     async fn release(&self, id: &str, digest: &DocumentDigest) -> Result<(), ReplayGuardError> {
         let mut inner = self.inner.lock().expect("replay guard mutex");
-        // Only release the claim this digest made. A concurrent arrival that
-        // legitimately holds the key must not have it taken away by a
-        // different document's cleanup.
-        if inner
-            .entries
-            .get(id)
-            .is_some_and(|entry| &entry.digest == digest && !entry.completed)
-        {
-            inner.remove(id);
-        }
+        inner.release(id, digest);
         Ok(())
+    }
+
+    /// Synchronous already, so it releases directly. Called from a destructor,
+    /// possibly while a handler's panic unwinds, so a poisoned lock is
+    /// recovered rather than turned into a second panic.
+    fn release_abandoned(&self, id: &str, digest: &DocumentDigest) {
+        let mut inner = self
+            .inner
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        inner.release(id, digest);
     }
 }
 
@@ -996,6 +1036,64 @@ mod tests {
             ),
             "a completed execution's record must survive a stray release"
         );
+    }
+
+    /// `release_abandoned` releases synchronously — directly for the in-memory
+    /// guard, and through the default for a guard that only implements the
+    /// async `release` — and, like `release`, never frees a completed record.
+    #[tokio::test]
+    async fn release_abandoned_frees_an_unfinished_claim_without_awaiting() {
+        /// Implements only the async methods, so it takes the default.
+        struct Delegating(InMemoryReplayGuard);
+
+        #[async_trait::async_trait]
+        impl ReplayGuard for Delegating {
+            async fn claim(
+                &self,
+                id: &str,
+                digest: &DocumentDigest,
+                retain_until: Option<DateTime<Utc>>,
+                now: DateTime<Utc>,
+            ) -> Result<ReplayVerdict, ReplayGuardError> {
+                self.0.claim(id, digest, retain_until, now).await
+            }
+            async fn record_response(
+                &self,
+                id: &str,
+                response: Option<&Value>,
+            ) -> Result<(), ReplayGuardError> {
+                self.0.record_response(id, response).await
+            }
+            async fn release(
+                &self,
+                id: &str,
+                digest: &DocumentDigest,
+            ) -> Result<(), ReplayGuardError> {
+                self.0.release(id, digest).await
+            }
+        }
+
+        let now = t("2026-08-26T12:00:00Z");
+        let digest = document_digest(&doc("req-1", json!({}))).unwrap();
+        let guards: [&dyn ReplayGuard; 2] = [
+            &InMemoryReplayGuard::new(8),
+            &Delegating(InMemoryReplayGuard::new(8)),
+        ];
+        for guard in guards {
+            guard.claim("req-1", &digest, None, now).await.unwrap();
+            guard.release_abandoned("req-1", &digest);
+            assert_eq!(
+                guard.claim("req-1", &digest, None, now).await.unwrap(),
+                ReplayVerdict::Fresh
+            );
+
+            guard.record_response("req-1", None).await.unwrap();
+            guard.release_abandoned("req-1", &digest);
+            assert!(matches!(
+                guard.claim("req-1", &digest, None, now).await.unwrap(),
+                ReplayVerdict::Duplicate { .. }
+            ));
+        }
     }
 
     /// The seam has to be usable as a trait object, or a deployment cannot
