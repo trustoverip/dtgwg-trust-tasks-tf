@@ -98,8 +98,7 @@ pub struct FreshnessPolicy {
     /// The furthest after `issuedAt` a stated `expiresAt` is honoured. A
     /// document whose `expiresAt` lies beyond `issuedAt + expiry_horizon` is
     /// treated as expiring there: accepted until then (plus
-    /// [`skew`](Self::skew)) and refused as `expired` from that instant on,
-    /// never refused for
+    /// [`skew`](Self::skew)) and refused as `expired` after, never refused for
     /// stating the later instant. `None` honours any `expiresAt`.
     ///
     /// The horizon runs from `issuedAt`, so it does not apply to a document

@@ -160,7 +160,7 @@ func ValidateFreshness[P any](
 // same instant as the end of the record's required retention.
 //
 // expiresAt fixes it where present; otherwise issuedAt + MaxAge + Skew — the same
-// bound [ValidateFreshness] refuses from, so a replay arriving inside the skew
+// bound [ValidateFreshness] accepts up to, so a replay arriving inside the skew
 // allowance still finds the record. The second
 // return is false when this policy places no bound on the document, in which case
 // a consumer MUST NOT execute a consequential task on it — there is no window in

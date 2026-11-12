@@ -801,7 +801,7 @@ where
     // so a corrected resend under the same `id` — which §8.4 does not permit
     // anyway, but which producers do — would come back `idConflict` forever,
     // and an attacker could pre-burn an `id` it had merely observed.
-    let mut claim: Option<HeldClaim<'_>> = None;
+    let mut claim: Option<(&dyn ReplayGuard, DocumentDigest)> = None;
     if let ReplayPolicy::Guard(guard) = replay {
         // Over the document as received when it is in hand: SPEC §7.2 compares
         // the whole received document, and `doc`'s re-serialisation drops
@@ -839,13 +839,7 @@ where
         };
 
         match guard.claim(&doc.id, &digest, Some(retain_until), now).await {
-            Ok(ReplayVerdict::Fresh) => {
-                claim = Some(HeldClaim {
-                    guard,
-                    id: doc.id.clone(),
-                    digest: Some(digest),
-                })
-            }
+            Ok(ReplayVerdict::Fresh) => claim = Some((guard, digest)),
             Ok(ReplayVerdict::Duplicate {
                 prior_response,
                 in_flight,
@@ -881,6 +875,11 @@ where
     // the claim (see `HeldClaim`). Once the handler has returned, the claim is
     // settled below exactly once.
     let doc_id = doc.id.clone();
+    let claim = claim.map(|(guard, digest)| HeldClaim {
+        guard,
+        id: doc_id.clone(),
+        digest: Some(digest),
+    });
     let outcome = handler(doc, parties).await;
     let claim = claim.map(HeldClaim::settle);
     match outcome {
