@@ -488,6 +488,39 @@ fn check_is_offline() {
 }
 
 #[test]
+fn a_plain_http_registry_is_refused_unless_loopback_or_allowed() {
+    let mut reg = TestRegistry::new();
+    reg.publish_real();
+    let app = App::new(&reg);
+    let r = app
+        .run(&[
+            "--registry",
+            "http://registry.example",
+            "add",
+            "vault/upsert/0.4",
+        ])
+        .fails();
+    assert!(r.stderr.contains("must be https://"), "{}", r.stderr);
+    assert!(r.stderr.contains("--allow-http-registry"), "{}", r.stderr);
+    assert!(
+        !app.path("trust-tasks.lock").exists(),
+        "a refused registry wrote a lock"
+    );
+
+    // Loopback is accepted: the command gets as far as connecting (nothing
+    // listens on port 9) rather than refusing the scheme.
+    let r = app
+        .run(&[
+            "--registry",
+            "http://127.0.0.1:9",
+            "add",
+            "vault/upsert/0.4",
+        ])
+        .fails();
+    assert!(!r.stderr.contains("must be https://"), "{}", r.stderr);
+}
+
+#[test]
 fn check_reports_a_lock_resolved_against_another_registry() {
     let mut reg = TestRegistry::new();
     reg.publish_real();
