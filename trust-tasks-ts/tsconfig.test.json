@@ -5,6 +5,7 @@
     "outDir": ".test-build",
     "declaration": false,
     "declarationMap": false,
+    "sourceMap": true,
     "noEmit": false,
     "types": [
       "node"
