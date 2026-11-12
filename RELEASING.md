@@ -135,7 +135,7 @@ no hand-written entries.
 >    (e.g. `trust-tasks-ts-proof-v0.1.0`). `release-bump-ts.sh` measures the next
 >    bump from it.
 > 4. Add the package to `TS_PACKAGES` in `scripts/release-pr.sh` and to the
->    `publish-npm` matrix.
+>    npm matrix in `publish.yml` (the `build-npm` job's; `publish-npm` reuses it).
 >
 > After that the package rides along: `release-pr` bumps it and `publish-npm`
 > publishes it, once per package (keyed on its directory and `<prefix>-v` tag), and the first
@@ -305,7 +305,7 @@ extending it would take.
 > ⚠️ **A Go release cannot be unpublished.** `proxy.golang.org` caches a tag
 > permanently and by design, so a tag pushed over a tree that does not build is
 > served to every consumer forever and can only be superseded, never retracted.
-> `publish-go` runs `go build`, `go vet` and `go test` *before* tagging for
+> `verify-go` runs `go build`, `go vet` and `go test` *before* tagging for
 > exactly this reason. npm and crates.io both allow a short retraction window;
 > Go does not.
 
@@ -322,22 +322,23 @@ Merging the crates PR triggers `release-plz-release`, which tags each crate
 (`<crate>-v<version>`), publishes to crates.io in dependency order, and creates
 a GitHub Release per crate carrying its changelog section.
 
-Merging the npm PR triggers `publish-npm`, which builds the package, publishes
-it with OIDC provenance, and pushes the `trust-tasks-ts-v<version>` tag that the
+Merging the npm PR triggers `build-npm`, which builds and packs the package,
+then `publish-npm`, which publishes that tarball with OIDC provenance and pushes the `trust-tasks-ts-v<version>` tag that the
 *next* Release PR measures the npm package from.
 
-Merging the Dart PR triggers `tag-dart`, which verifies the package analyses,
-tests and dry-run-publishes, then pushes `trust-tasks-dart-v<version>`. That tag
+Merging the Dart PR triggers `verify-dart`, which checks the package analyses,
+tests and dry-run-publishes, then `tag-dart`, which pushes
+`trust-tasks-dart-v<version>`. That tag
 triggers `publish-dart.yml`, which publishes to pub.dev over OIDC. **pub.dev only
 accepts a publish from a tag-triggered workflow** — it checks that in the OIDC
 token's claims — which is why Dart needs two workflows where the others need one.
 
-`tag-dart` is a matrix with one entry per Dart package, run one at a time with
-`trust_tasks` first. Each package is verified with its `pubspec_overrides.yaml`
+`verify-dart` and `tag-dart` share a matrix with one entry per Dart package;
+`tag-dart` runs one at a time with `trust_tasks` first. Each package is verified with its `pubspec_overrides.yaml`
 **deleted** — in CI that file points a package at the in-tree `trust_tasks`, but
 a consumer gets the published one. So a `trust_tasks_proof` release that relies
-on core API nobody has released yet fails verification and is not tagged;
-release the core first. `publish-dart.yml` looks up the tag's version on
+on core API nobody has released yet fails verification and is not tagged,
+while the core is; re-run the failed jobs once the core is on pub.dev. `publish-dart.yml` looks up the tag's version on
 pub.dev before publishing and does nothing when it is already there, which is
 what keeps the tag written after a hand-published first version from turning
 into a failed run.
@@ -348,8 +349,8 @@ into a failed run.
 > to delete and re-push the tag from a workstation, which is an ordinary
 > authenticated push and does trigger the workflow.
 
-Merging the Go PR triggers `publish-go`, which verifies the module builds and
-its tests pass, pushes the `trust-tasks-go/v<version>` tag, and asks
+Merging the Go PR triggers `verify-go`, which checks the module builds and
+its tests pass, then `publish-go`, which pushes the `trust-tasks-go/v<version>` tag, and asks
 `proxy.golang.org` to index it. That tag is both the publication and the anchor
 the *next* Release PR measures the Go module from — unlike the other two, there is no
 separate release tag, because the go tooling requires this exact spelling for a
@@ -358,9 +359,23 @@ module in a subdirectory.
 Nothing else publishes. An ordinary feature merge runs the same jobs and they do
 nothing, because every version is already on its registry.
 
+**Who holds which token.** Each publish is two jobs. The first (`build-npm`,
+`verify-go`, `verify-dart`, and `release-pr` for the Release PR itself) runs
+the package managers, tests and release tooling — third-party code — with
+`contents: read`, no OIDC token and no credentials left in the checkout. The
+second (`publish-npm`, `publish-go`, `tag-dart`, `release-pr-open`) runs none
+of that: it publishes the tarball or pushes the tag or branch, and only it gets
+`contents: write`, `id-token: write` or `RELEASE_PLZ_TOKEN`. No checkout persists
+credentials; `scripts/git-push-with-token.sh` gives the token to the one
+`git push` that needs it. A leg of the second job runs only if the same leg of
+the first passed, so one package's failure holds back only that package.
+`withdraw.yml` is split the same way. The exception is `release-plz-release`:
+`cargo publish` compiles each crate it uploads, so it runs dependencies' build
+scripts beside the crates.io token.
+
 ### 3. If it fails partway
 
-Re-run the job. All four sides are idempotent: `cargo publish` skips a crate
+Re-run the failed jobs. All four sides are idempotent: `cargo publish` skips a crate
 already at that version, `publish-npm` skips a version already on npm,
 `publish-go` skips a version already tagged, `tag-dart` skips a version whose
 tag exists, and `publish-dart.yml` skips a version already on pub.dev. A re-run resumes rather than duplicating.
@@ -387,8 +402,11 @@ usually fixes it, because the missing crate is on crates.io by then.
   ⚠️ **Every crate's Trusted Publisher is registered against the workflow
   filename `publish.yml`.** Renaming that file breaks the OIDC exchange before
   any release logic runs. See the comment at the top of it.
-- **`RELEASE_PLZ_TOKEN`** — a PAT (contents + pull-requests write) or GitHub App
-  token. **Set**, as of the `trust-tasks-dart-v0.1.0` tag on 2026-09-16: that tag
+- **`RELEASE_PLZ_TOKEN`** — a personal access token, preferably fine-grained and
+  limited to this repository with Contents and Pull requests read/write. Not a
+  GitHub App token: the Release PR and withdrawal commits are authored as the
+  token's owner (EasyCLA authorises the commit author), and an App token has
+  no user, so `release-pr.sh` and `withdraw.yml` refuse one. **Set**, as of the `trust-tasks-dart-v0.1.0` tag on 2026-09-16: that tag
   was pushed by `tag-dart` and *did* trigger `publish-dart.yml`, which the
   default token cannot do. (This entry previously said "Not currently set"; that
   was stale.)
@@ -435,7 +453,8 @@ usually fixes it, because the missing crate is on crates.io by then.
   `publish-dart.yml` finds the version already on pub.dev and does nothing, and
   if it runs before, it fails with the message above and your upload follows.
 
-  Adding another Dart package means: an entry in `tag-dart` in `publish.yml`
+  Adding another Dart package means: an entry in the Dart matrix in `publish.yml`
+  (`verify-dart`'s; `tag-dart` reuses it)
   and in `DART_PACKAGES` in `scripts/release-pr.sh`, a tag pattern and a `case`
   arm in `publish-dart.yml`, a `case` arm in `scripts/release-bump-dart.sh`, a matrix
   entry in the `packages` job in `dart.yml`, and the manual first publish above.
@@ -565,8 +584,8 @@ give the Release PR something to carry. See the comment on that constant. Dart
 publishes in two steps — tag, then publish on the tag — because pub.dev will not
 publish from a push-to-`main` workflow at all.
 
-`release-pr` runs `needs: [release-plz-release, publish-npm, publish-go,
-tag-dart]` — **not** beside them. They fire on the same push, and the tag (or
+`release-pr` runs `needs: [release-plz-release, build-npm, publish-npm,
+verify-go, publish-go, verify-dart, tag-dart]` — **not** beside them. They fire on the same push, and the tag (or
 registry version) each bump measures from is written by those jobs. In
 parallel, the run that merges a release would compute its next bump against the
 *previous* release and immediately reopen a Release PR for what had just gone

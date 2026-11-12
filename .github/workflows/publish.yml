@@ -109,6 +109,23 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
 
+  # ── Who holds which token ────────────────────────────────────────────────
+  #
+  # Every publish below is two jobs. The first decides and verifies — `npm ci`,
+  # `go test`, `dart pub get` and `dart test`, all of which run code from
+  # third-party packages — with read-only permissions, no OIDC token and no
+  # credentials left in `.git/config`. The second runs no package code at all:
+  # it re-reads the decision from its own checkout and does the one privileged
+  # thing (publish, push a tag). Its checkout persists no credentials either;
+  # scripts/git-push-with-token.sh hands the token to the one `git push` that
+  # needs it.
+  #
+  # A leg of the second job runs only once the same leg of the first has
+  # passed — it downloads that leg's marker artifact, which exists only on
+  # success — so one package's failed verification holds back that package
+  # and no other. Both jobs share one matrix (a YAML anchor), so the legs pair
+  # up by construction.
+
   # ── npm ──────────────────────────────────────────────────────────────────
   #
   # release-plz is Rust-only: it cannot touch a non-Rust manifest, so each
@@ -120,23 +137,20 @@ jobs:
   # their own tag prefix. Each is skipped when its version is already on npm, so
   # a feature merge is a no-op and the first publish of a new package (which npm
   # trusted publishing cannot bootstrap) is done by hand — see RELEASING.md.
-  publish-npm:
+  #
+  # `build-npm` installs, builds and packs the tarball; `publish-npm` publishes
+  # that tarball as built, with provenance, and tags it.
+  build-npm:
     # Publishes only from main, including a manual re-run.
     if: github.ref == 'refs/heads/main'
-    name: Publish ${{ matrix.name }} to npm
+    name: Build ${{ matrix.name }} for npm
     runs-on: ubuntu-24.04
-    # 30, not 20: the publish is followed by up to 8 minutes of waiting for the
-    # version to become public ("Confirm the version is public on npm").
-    timeout-minutes: 30
+    timeout-minutes: 20
     permissions:
-      # `contents: write` so the tag can be pushed after a successful publish —
-      # `<prefix>-v<version>` is what the next Release PR measures from, the npm
-      # mirror of the `<crate>-v<version>` tags release-plz writes.
-      contents: write
-      id-token: write # required for npm trusted publishing (OIDC) + provenance
+      contents: read
     strategy:
       fail-fast: false
-      matrix:
+      matrix: &npm-packages
         include:
           - name: "@openvtc/trust-tasks"
             dir: trust-tasks-ts
@@ -153,27 +167,16 @@ jobs:
           - name: "@openvtc/trust-tasks-gen"
             dir: trust-tasks-ts-gen
             prefix: trust-tasks-ts-gen-v
-    concurrency:
-      # Two pushes landing close together would both see the version as absent
-      # from npm and both try to publish it; the loser fails on a duplicate.
-      group: publish-npm-${{ matrix.dir }}-${{ github.ref }}
-      cancel-in-progress: false
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: 0
+          persist-credentials: false
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          # npm 12 (installed below for OIDC trusted publishing)
-          # requires Node >= 22.22.2; Node 20 fails with EBADENGINE.
           node-version: "24"
-          registry-url: "https://registry.npmjs.org"
 
-      # Trusted publishing (OIDC) requires npm >= 11.5.1; Node 20 ships older.
-      - name: Update npm
-        run: npm install -g npm@12.2.2
-
-      - name: Decide whether to publish
+      - &npm-decide
+        name: Decide whether to publish
         id: decide
         working-directory: ${{ matrix.dir }}
         run: |
@@ -189,27 +192,96 @@ jobs:
             echo "should_publish=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Install deps & build
+      - name: Install deps, build and pack
         if: steps.decide.outputs.should_publish == 'true'
         working-directory: ${{ matrix.dir }}
         run: |
+          set -euo pipefail
           npm ci
           npm run build
+          mkdir -p "$RUNNER_TEMP/npm-pack"
+          npm pack --pack-destination "$RUNNER_TEMP/npm-pack"
+
+      - name: Upload the tarball
+        if: steps.decide.outputs.should_publish == 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: npm-${{ matrix.dir }}
+          path: ${{ runner.temp }}/npm-pack/*.tgz
+          if-no-files-found: error
+          retention-days: 1
+          overwrite: true
+
+  publish-npm:
+    # Publishes only from main, including a manual re-run. Not skipped when
+    # another package's build leg failed: each leg checks its own tarball.
+    if: github.ref == 'refs/heads/main' && !cancelled()
+    needs: build-npm
+    name: Publish ${{ matrix.name }} to npm
+    runs-on: ubuntu-24.04
+    # 30, not 20: the publish is followed by up to 8 minutes of waiting for the
+    # version to become public ("Confirm the version is public on npm").
+    timeout-minutes: 30
+    permissions:
+      # `contents: write` so the tag can be pushed after a successful publish —
+      # `<prefix>-v<version>` is what the next Release PR measures from, the npm
+      # mirror of the `<crate>-v<version>` tags release-plz writes.
+      contents: write
+      id-token: write # required for npm trusted publishing (OIDC) + provenance
+    strategy:
+      fail-fast: false
+      matrix: *npm-packages
+    concurrency:
+      # Two pushes landing close together would both see the version as absent
+      # from npm and both try to publish it; the loser fails on a duplicate.
+      group: publish-npm-${{ matrix.dir }}-${{ github.ref }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          # npm 12 (installed below for OIDC trusted publishing)
+          # requires Node >= 22.22.2; Node 20 fails with EBADENGINE.
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+
+      - *npm-decide
+
+      # Present only when this package's build leg passed.
+      - name: Download the tarball build-npm made
+        if: steps.decide.outputs.should_publish == 'true'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: npm-${{ matrix.dir }}
+          path: ${{ runner.temp }}/npm-pack
+
+      # Trusted publishing (OIDC) requires npm >= 11.5.1; Node 20 ships older.
+      - name: Update npm
+        if: steps.decide.outputs.should_publish == 'true'
+        run: npm install -g npm@12.2.2
 
       # No NODE_AUTH_TOKEN: with trusted publishing npm mints a short-lived
-      # token via OIDC and attaches build provenance automatically.
+      # token via OIDC and attaches build provenance automatically. Publishing
+      # the packed tarball runs none of the package's scripts.
       #
       # A version npm is holding as STAGED (below) answers a second publish with
       # an opaque 409; say what it means.
       - name: npm publish (trusted publishing)
         if: steps.decide.outputs.should_publish == 'true'
-        working-directory: ${{ matrix.dir }}
         env:
           NAME: ${{ matrix.name }}
           VERSION: ${{ steps.decide.outputs.version }}
         run: |
           set -uo pipefail
-          npm publish --access public 2>&1 | tee "$RUNNER_TEMP/npm-publish.log"
+          tarballs=("$RUNNER_TEMP"/npm-pack/*.tgz)
+          if [ "${#tarballs[@]}" -ne 1 ] || [ ! -f "${tarballs[0]}" ]; then
+            echo "::error::expected exactly one tarball from build-npm, found: ${tarballs[*]}"
+            exit 1
+          fi
+          npm publish "${tarballs[0]}" --access public 2>&1 | tee "$RUNNER_TEMP/npm-publish.log"
           status=${PIPESTATUS[0]}
           if [ "$status" -ne 0 ] && grep -q 'previously staged version' "$RUNNER_TEMP/npm-publish.log"; then
             echo "::error::$NAME@$VERSION is already STAGED on npm, awaiting a maintainer. Approve it (npm stage list $NAME, then npm stage approve <stage-id>, with 2FA) or reject it (npm stage reject <stage-id>), then re-run this job."
@@ -226,6 +298,7 @@ jobs:
           VERSION: ${{ steps.decide.outputs.version }}
           PREFIX: ${{ matrix.prefix }}
           NAME: ${{ matrix.name }}
+          PUSH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           tag="${PREFIX}$VERSION"
@@ -236,7 +309,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git tag -a "$tag" -m "$NAME $VERSION"
-          git push origin "$tag"
+          ./scripts/git-push-with-token.sh origin "$tag"
 
       # `npm publish` succeeding does not mean the version is public. When the
       # trusted publisher lacks "Allow npm publish" (stage-only, npm's default
@@ -282,18 +355,19 @@ jobs:
   # (proof, didcomm and capabilityclient). tsp is deliberately absent — it depends on the
   # unpublished affinidi-tsp-go and so cannot be released. Each leg reads its own
   # `const Version`, and the nested legs' verify step fetches the published core.
-  publish-go:
+  #
+  # `verify-go` builds, vets and tests; `publish-go` pushes the tag.
+  verify-go:
     # Publishes only from main, including a manual re-run.
     if: github.ref == 'refs/heads/main'
-    name: Publish ${{ matrix.name }} (tag + module proxy)
+    name: Verify ${{ matrix.name }} before tagging
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
-      # The tag IS the publication, so this is the one permission that matters.
-      contents: write
+      contents: read
     strategy:
       fail-fast: false
-      matrix:
+      matrix: &go-modules
         include:
           - name: trust-tasks-go
             dir: trust-tasks-go
@@ -315,15 +389,14 @@ jobs:
             versionfile: trust-tasks-go/capabilityclient/version.go
             tagprefix: trust-tasks-go/capabilityclient/v
             module: github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/capabilityclient
-    concurrency:
-      group: publish-go-${{ matrix.dir }}-${{ github.ref }}
-      cancel-in-progress: false
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           fetch-depth: 0
 
-      - name: Decide whether to publish
+      - &go-decide
+        name: Decide whether to publish
         id: decide
         env:
           VERSION_FILE: ${{ matrix.versionfile }}
@@ -344,7 +417,8 @@ jobs:
             echo "should_publish=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+      - &go-setup
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         if: steps.decide.outputs.should_publish == 'true'
         with:
           go-version: "1.24"
@@ -361,6 +435,56 @@ jobs:
           go build ./...
           go vet ./...
           go test ./...
+          mkdir -p "$RUNNER_TEMP/verified"
+          echo "$GITHUB_SHA" > "$RUNNER_TEMP/verified/sha"
+
+      # The leg index names the marker: a module path has slashes, which an
+      # artifact name cannot.
+      - name: Record that this module passed
+        if: steps.decide.outputs.should_publish == 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: go-verified-${{ strategy.job-index }}
+          path: ${{ runner.temp }}/verified/sha
+          if-no-files-found: error
+          retention-days: 1
+          overwrite: true
+
+  publish-go:
+    # Publishes only from main, including a manual re-run. Not skipped when
+    # another module's verify leg failed: each leg checks its own marker.
+    if: github.ref == 'refs/heads/main' && !cancelled()
+    needs: verify-go
+    name: Publish ${{ matrix.name }} (tag + module proxy)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      # The tag IS the publication, so this is the one permission that matters.
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix: *go-modules
+    concurrency:
+      group: publish-go-${{ matrix.dir }}-${{ github.ref }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - *go-decide
+
+      # Present only when this module's verify leg passed.
+      - name: Require the verify leg to have passed
+        if: steps.decide.outputs.should_publish == 'true'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: go-verified-${{ strategy.job-index }}
+          path: ${{ runner.temp }}/verified
+
+      # For `go list` in the proxy warm-up only; nothing here builds the module.
+      - *go-setup
 
       - name: Tag the release
         if: steps.decide.outputs.should_publish == 'true'
@@ -368,13 +492,14 @@ jobs:
           VERSION: ${{ steps.decide.outputs.version }}
           NAME: ${{ matrix.name }}
           TAG_PREFIX: ${{ matrix.tagprefix }}
+          PUSH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           tag="${TAG_PREFIX}${VERSION}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git tag -a "$tag" -m "$NAME $VERSION"
-          git push origin "$tag"
+          ./scripts/git-push-with-token.sh origin "$tag"
 
       # Ask the module proxy for the version so it fetches and caches it now.
       # Without this the first consumer to run `go get` pays the fetch, and a
@@ -404,32 +529,33 @@ jobs:
   #
   # The odd one out: pub.dev only accepts an automated publish when the workflow
   # run was triggered by a TAG push, which it checks in the OIDC token's claims.
-  # So this job does not publish — it only writes the tag, and
-  # `publish-dart.yml` (triggered by that tag) does the publishing.
+  # So nothing here publishes — `verify-dart` checks each package and
+  # `tag-dart` writes the tag, and `publish-dart.yml` (triggered by that tag)
+  # does the publishing.
   #
-  # One matrix entry per Dart package. `max-parallel: 1` and the core first:
-  # a package built on `trust_tasks` is verified against the *published* core
-  # (below), so the core's tag has to have gone out before its consumers are
-  # judged. Adding a package: an entry here, one in DART_PACKAGES and a case
+  # One matrix entry per Dart package, the core first. `tag-dart` runs one leg
+  # at a time in that order, so the core's tag goes out before its consumers'.
+  # Adding a package: an entry here, one in DART_PACKAGES and a case
   # arm in scripts/release-bump-dart.sh (both read by release-pr.sh), and the
   # tag pattern and `case` arm in publish-dart.yml.
   #
-  # One Release PR can bump the core and a dependent together. If the dependent
-  # needs core API that was unreleased until this merge, its leg below can run
-  # before pub.dev has finished publishing the core and fail; re-run the job
-  # once the core is live. Its failure also holds back `release-pr` until then.
-  tag-dart:
+  # A package built on `trust_tasks` is verified against the *published* core
+  # (below). One Release PR can bump the core and a dependent together; if the
+  # dependent needs core API that was unreleased until this merge, its verify
+  # leg fails, the core is still tagged and published, and the dependent is
+  # not. Re-run the failed jobs once the core is live on pub.dev. The failure
+  # also holds back `release-pr` until then.
+  verify-dart:
     # Publishes only from main, including a manual re-run.
     if: github.ref == 'refs/heads/main'
-    name: Tag ${{ matrix.name }} for pub.dev
+    name: Verify ${{ matrix.name }} before tagging
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
-      contents: write
+      contents: read
     strategy:
-      max-parallel: 1
       fail-fast: false
-      matrix:
+      matrix: &dart-packages
         include:
           - name: trust_tasks
             dir: trust-tasks-dart
@@ -446,19 +572,14 @@ jobs:
           - name: trust_tasks_capability_client
             dir: trust-tasks-dart-capability-client
             prefix: trust-tasks-dart-capability-client-v
-    concurrency:
-      group: tag-dart-${{ matrix.dir }}-${{ github.ref }}
-      cancel-in-progress: false
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           fetch-depth: 0
-          # A tag pushed by the default GITHUB_TOKEN does not trigger
-          # `publish-dart.yml`, so prefer the PAT when there is one. The step
-          # below says so out loud when there is not.
-          token: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
 
-      - name: Decide whether to tag
+      - &dart-decide
+        name: Decide whether to tag
         id: decide
         env:
           DIR: ${{ matrix.dir }}
@@ -506,6 +627,51 @@ jobs:
           # The same dry run publish-dart.yml performs, surfaced here where a
           # failure costs a re-run rather than a burnt version number.
           dart pub publish --dry-run
+          mkdir -p "$RUNNER_TEMP/verified"
+          echo "$GITHUB_SHA" > "$RUNNER_TEMP/verified/sha"
+
+      - name: Record that this package passed
+        if: steps.decide.outputs.should_tag == 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: dart-verified-${{ matrix.dir }}
+          path: ${{ runner.temp }}/verified/sha
+          if-no-files-found: error
+          retention-days: 1
+          overwrite: true
+
+  tag-dart:
+    # Publishes only from main, including a manual re-run. Not skipped when
+    # another package's verify leg failed: each leg checks its own marker.
+    if: github.ref == 'refs/heads/main' && !cancelled()
+    needs: verify-dart
+    name: Tag ${{ matrix.name }} for pub.dev
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+      matrix: *dart-packages
+    concurrency:
+      group: tag-dart-${{ matrix.dir }}-${{ github.ref }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - *dart-decide
+
+      # Present only when this package's verify leg passed.
+      - name: Require the verify leg to have passed
+        if: steps.decide.outputs.should_tag == 'true'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: dart-verified-${{ matrix.dir }}
+          path: ${{ runner.temp }}/verified
 
       - name: Tag the release
         if: steps.decide.outputs.should_tag == 'true'
@@ -514,13 +680,17 @@ jobs:
           PREFIX: ${{ matrix.prefix }}
           VERSION: ${{ steps.decide.outputs.version }}
           HAVE_PAT: ${{ secrets.RELEASE_PLZ_TOKEN != '' }}
+          # A tag pushed by the default GITHUB_TOKEN does not trigger
+          # `publish-dart.yml`, so prefer the PAT when there is one, and say so
+          # out loud when there is not.
+          PUSH_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           tag="$PREFIX$VERSION"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git tag -a "$tag" -m "$NAME $VERSION"
-          git push origin "$tag"
+          ./scripts/git-push-with-token.sh origin "$tag"
           if [ "$HAVE_PAT" != "true" ]; then
             echo "::warning::$tag was pushed with the default GITHUB_TOKEN, so publish-dart.yml will NOT have been triggered and $VERSION is NOT on pub.dev. Delete and re-push the tag from a workstation to publish it: git push --delete origin $tag && git push origin $tag"
           fi
@@ -532,6 +702,12 @@ jobs:
   # each npm package, Go module and Dart package, committed together. This
   # replaced thirteen per-package Release PRs, each of which was regenerated —
   # and its CI restarted — every time another one merged.
+  #
+  # Two jobs, like the publishes. `release-pr` runs `release-pr.sh prepare`
+  # (release-plz, git-cliff and the bump scripts) read-only and with no token,
+  # and uploads the resulting change as a patch. `release-pr-open` runs
+  # `release-pr.sh open`, which applies that patch, commits it and pushes the
+  # branch and PR with the release token, and runs nothing else.
   release-pr:
     name: Release PR
     runs-on: ubuntu-24.04
@@ -545,15 +721,14 @@ jobs:
     # beside them means the push that merges a release computes the next one
     # against the PREVIOUS release and immediately reopens a PR for what just
     # went out. (A matrix `needs` waits for every leg.)
-    needs: [release-plz-release, publish-npm, publish-go, tag-dart]
+    needs: [release-plz-release, build-npm, publish-npm, verify-go, publish-go, verify-dart, tag-dart]
     # Not after a failed publish: the half-published state is for a human to
     # finish (re-run the failed job), and proposing the next release on top of
     # it would only muddy which versions are actually out. Skipped legs are
     # fine — that is an ordinary feature merge.
     if: ${{ github.ref == 'refs/heads/main' && !cancelled() && !contains(needs.*.result, 'failure') }}
     permissions:
-      contents: write
-      pull-requests: write
+      contents: read
     concurrency:
       # Serialising PR updates just coalesces them; the branch is derived, so
       # the last run to finish writes the right tree.
@@ -562,15 +737,10 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           # Full history + tags: every bump is measured from a tag, and a
           # shallow clone produces a correct bump with an empty changelog.
           fetch-depth: 0
-          # Same token `gh` uses below, so the branch push and the PR come from
-          # one identity. With a PAT in RELEASE_PLZ_TOKEN that also means CI
-          # actually runs on the Release PR — GitHub suppresses workflow runs
-          # for events authored by the default GITHUB_TOKEN, and the one commit
-          # that publishes must not be the one commit CI never built.
-          token: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
 
       # Kept from when this job ran cargo-semver-checks, whose rustdoc builds
       # compile the binding crates' TDK dependencies (they probe for libdbus-1
@@ -616,7 +786,50 @@ jobs:
         with:
           tool: release-plz@0.3.171,git-cliff@2.14.2
 
+      - name: Compute the release
+        run: ./scripts/release-pr.sh prepare "$RUNNER_TEMP/release-pr"
+
+      - name: Upload the release change
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-pr
+          path: ${{ runner.temp }}/release-pr/
+          if-no-files-found: error
+          retention-days: 1
+          overwrite: true
+
+  release-pr-open:
+    name: Open or update the Release PR
+    needs: release-pr
+    if: ${{ github.ref == 'refs/heads/main' && !cancelled() && needs.release-pr.result == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+    concurrency:
+      group: release-pr-open-${{ github.ref }}
+      cancel-in-progress: false
+    steps:
+      # The commit the patch was computed against; no history is needed to
+      # apply it, commit it and push the branch.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Download the release change
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-pr
+          path: ${{ runner.temp }}/release-pr
+
+      # The same token for `gh` and for the branch push, so both come from one
+      # identity. With a PAT in RELEASE_PLZ_TOKEN that also means CI actually
+      # runs on the Release PR — GitHub suppresses workflow runs for events
+      # authored by the default GITHUB_TOKEN, and the one commit that publishes
+      # must not be the one commit CI never built.
       - name: Open or update the Release PR
         env:
           GH_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
-        run: ./scripts/release-pr.sh
+          PUSH_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
+        run: ./scripts/release-pr.sh open "$RUNNER_TEMP/release-pr"

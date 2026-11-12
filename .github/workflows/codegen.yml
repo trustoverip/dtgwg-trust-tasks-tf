@@ -39,12 +39,18 @@ env:
   CARGO_INCREMENTAL: 0
   RUSTFLAGS: "-D warnings"
 
+# Read-only by default; a job that needs more asks for it by name.
+permissions:
+  contents: read
+
 jobs:
   codegen-drift:
     name: trust-tasks-codegen drift
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
         with:
           toolchain: stable

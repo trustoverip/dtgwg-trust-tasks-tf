@@ -51,6 +51,10 @@ on:
       - "trust-tasks-dart-didcomm-v[0-9]+.[0-9]+.[0-9]+"
       - "trust-tasks-dart-capability-client-v[0-9]+.[0-9]+.[0-9]+"
 
+# Read-only by default; a job that needs more asks for it by name.
+permissions:
+  contents: read
+
 jobs:
   # Which package the tag names, and whether that version is already on pub.dev.
   #
