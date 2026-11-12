@@ -625,7 +625,8 @@ jobs:
             echo "::error::trust-tasks-rs now has code compiled only without \`validate\`, so packaging with \`validate\` no longer covers the default build. Add back \`cargo package -p trust-tasks-rs\` (default features) to this job."
             exit 1
           fi
-      # Two build jobs were enough until the generated tree passed ~70 MB
+      # Two build jobs were enough until the generated tree grew past what the
+      # runner could verify (the `package` job prints its size)
       # (#1002: the runner was again stopped mid-verify, exit 143, no compile
       # error). Swap, as the semver job adds, lets the verify build finish under
       # pressure rather than be killed.
@@ -648,7 +649,7 @@ jobs:
           fi
           free -h
       - name: cargo package trust-tasks-rs (--features validate)
-        # The verify build compiles the packaged crate (~66 MB of generated code)
+        # The verify build compiles the packaged crate (mostly generated code)
         # a second time on a 7 GB runner. At full parallelism it is killed with
         # exit 143 on roughly half the runs (#993, #994 on 2026-10-30), with no
         # compile error in the log. Two jobs keep the peak under the limit.
@@ -708,7 +709,7 @@ jobs:
           # See the `test` job.
           sudo apt-get update || true
           sudo apt-get install -y libdbus-1-dev pkg-config
-      # The verify build compiles trust-tasks-rs's packaged tree (~70 MB of
+      # The verify build compiles trust-tasks-rs's packaged tree (mostly
       # generated code) like the `package` job, and was stopped the same way
       # (exit 143, no compile error) on the Release PR after #1002. Same remedy:
       # swap, and two build jobs.

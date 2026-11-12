@@ -540,7 +540,7 @@ impl DeclaredErrorCode {
         details: &serde_json::Value,
     ) -> Result<(), crate::validate::ValidationError> {
         match self.details_schema {
-            Some(schema) => crate::validate::against_schema(schema, details),
+            Some(schema) => crate::validate::SHARED.check(schema, details),
             None => Ok(()),
         }
     }

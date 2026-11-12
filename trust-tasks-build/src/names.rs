@@ -144,6 +144,41 @@ pub fn is_source_name(name: &str) -> bool {
     is_slug_segment(name)
 }
 
+/// Every Rust keyword, strict and reserved, in any edition — each needs a raw
+/// identifier to name a module. `gen` is reserved from 2024; spelling it raw
+/// is valid in every edition the generated code may be compiled under.
+const RUST_KEYWORDS: &[&str] = &[
+    "abstract", "as", "async", "await", "become", "box", "break", "const", "continue", "crate",
+    "do", "dyn", "else", "enum", "extern", "false", "final", "fn", "for", "gen", "if", "impl",
+    "in", "let", "loop", "macro", "match", "mod", "move", "mut", "override", "priv", "pub", "ref",
+    "return", "self", "Self", "static", "struct", "super", "trait", "true", "try", "type",
+    "typeof", "unsafe", "unsized", "use", "virtual", "where", "while", "yield",
+];
+
+/// The Rust module name for one slug segment (or a source name): `-` becomes
+/// `_`, a keyword is written as a raw identifier (`move` → `r#move`), and the
+/// four keywords no raw identifier may spell — `self`, `super`, `crate`,
+/// `Self` — take a `_` suffix (`self` → `self_`).
+///
+/// A raw module `r#move` lives in `move.rs`; [`module_file_name`] gives the
+/// name on disk.
+#[doc(hidden)]
+pub fn module_name(segment: &str) -> String {
+    let ident = segment.replace('-', "_");
+    match ident.as_str() {
+        "self" | "super" | "crate" | "Self" => format!("{ident}_"),
+        k if RUST_KEYWORDS.contains(&k) => format!("r#{ident}"),
+        _ => ident,
+    }
+}
+
+/// The file or directory name of the module [`module_name`] names: the
+/// identifier without a raw prefix.
+#[doc(hidden)]
+pub fn module_file_name(module: &str) -> &str {
+    module.strip_prefix("r#").unwrap_or(module)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -222,6 +257,28 @@ mod tests {
             "", "Acme", "1acme", "acme_x", "acme--x", "acme-", "a/b", "a:b",
         ] {
             assert!(!is_source_name(bad), "{bad}");
+        }
+    }
+
+    #[test]
+    fn keyword_segments_become_module_names() {
+        assert_eq!(module_name("change-role"), "change_role");
+        assert_eq!(module_name("move"), "r#move");
+        assert_eq!(module_name("type"), "r#type");
+        assert_eq!(module_name("gen"), "r#gen");
+        assert_eq!(module_name("self"), "self_");
+        assert_eq!(module_name("super"), "super_");
+        assert_eq!(module_name("crate"), "crate_");
+        assert_eq!(module_file_name("r#move"), "move");
+        assert_eq!(module_file_name("self_"), "self_");
+        // Every keyword, and every slug segment shaped like one, is a usable
+        // module name.
+        for k in RUST_KEYWORDS {
+            let name = module_name(k);
+            syn::parse_str::<syn::Ident>(&name)
+                .unwrap_or_else(|_| panic!("{k} -> {name} is not an identifier"));
+            syn::parse_str::<syn::Path>(&format!("a::{name}::b"))
+                .unwrap_or_else(|_| panic!("{k} -> {name} cannot be a path segment"));
         }
     }
 }
