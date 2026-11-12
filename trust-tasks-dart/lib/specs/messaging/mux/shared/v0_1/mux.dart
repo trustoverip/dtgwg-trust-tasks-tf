@@ -81,6 +81,22 @@ extension type const MuxSource(String value) {
   static const List<MuxSource> values = <MuxSource>[grant, attach];
 }
 
+/// The wire a mux connection speaks: `didcomm`, a DIDComm WebSocket that negotiated
+/// the `didcomm-mux` subprotocol; `tsp`, a raw-TSP WebSocket that negotiated
+/// `tsp-mux`. The same values messaging/mux/connections reports for a connection's
+/// `wire`.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const MuxWire(String value) {
+  static const MuxWire didcomm = MuxWire('didcomm');
+  static const MuxWire tsp = MuxWire('tsp');
+
+  /// Every value this specification's schema permits.
+  static const List<MuxWire> values = <MuxWire>[didcomm, tsp];
+}
+
 /// A grant's identifier, chosen by the member DID's signer and carried in its grant
 /// statement; a UUID is RECOMMENDED. A mediator refuses a grant whose identifier is
 /// already on the member DID's record.

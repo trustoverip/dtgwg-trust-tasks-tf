@@ -14,6 +14,8 @@ import (
 // Response The success response to a messaging/monitor/subscribe request. Carried in a
 // Trust Task document whose type is
 // https://trusttasks.org/spec/messaging/monitor/subscribe/0.1#response.
+//
+// Deprecated: superseded by messaging/monitor/subscribe/0.2
 type Response struct {
 	SubscriptionID string `json:"subscriptionId"`
 	ExpiresAt      string `json:"expiresAt"`
@@ -118,6 +120,8 @@ const (
 type VID = string
 
 // Payload Messaging — Subscribe to Traffic Monitor — payload
+//
+// Deprecated: superseded by messaging/monitor/subscribe/0.2
 type Payload struct {
 	Filter *MonitorFilter `json:"filter,omitempty"`
 
@@ -151,7 +155,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by messaging/monitor/subscribe/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/messaging/monitor/subscribe/0.1#response"

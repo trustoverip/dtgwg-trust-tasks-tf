@@ -9,6 +9,8 @@
 pub(crate) fn declared_extends(type_uri: &str) -> Option<&'static str> {
     #[allow(clippy::match_single_binding)]
     match type_uri {
+        "https://trusttasks.org/spec/messaging/monitor/event/0.3" => Some("0.2"),
+        "https://trusttasks.org/spec/messaging/monitor/subscribe/0.2" => Some("0.1"),
         "https://trusttasks.org/spec/rooms/keys/act/0.10" => Some("0.9"),
         "https://trusttasks.org/spec/rooms/keys/act/0.11" => Some("0.10"),
         "https://trusttasks.org/spec/rooms/keys/act/0.12" => Some("0.11"),

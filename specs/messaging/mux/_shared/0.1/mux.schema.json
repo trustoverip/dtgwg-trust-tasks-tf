@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/messaging/mux/_shared/0.1/mux",
   "title": "Messaging mux — shared definitions for DID multiplexing at a mediator",
-  "description": "Shared $def objects referenced by the messaging/mux/* specifications: the scope vocabulary, grant states, attach and detach reasons, the grant and attachment views, and the three signed statements — session attach, stored grant, revoke-all — each a closed JSON object carrying an embedded W3C Data Integrity proof by the member DID. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build).",
+  "description": "Shared $def objects referenced by the messaging/mux/* specifications: the scope vocabulary, the wire a mux connection speaks, grant states, attach and detach reasons, the grant and attachment views, and the three signed statements — session attach, stored grant, revoke-all — each a closed JSON object carrying an embedded W3C Data Integrity proof by the member DID. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build).",
   "$defs": {
     "MuxDid": {
       "title": "MuxDid",
@@ -59,6 +59,15 @@
         "attach"
       ],
       "description": "How a member came to be on a connection: through a stored grant, or through a session attach bound to that connection."
+    },
+    "MuxWire": {
+      "title": "MuxWire",
+      "type": "string",
+      "enum": [
+        "didcomm",
+        "tsp"
+      ],
+      "description": "The wire a mux connection speaks: `didcomm`, a DIDComm WebSocket that negotiated the `didcomm-mux` subprotocol; `tsp`, a raw-TSP WebSocket that negotiated `tsp-mux`. The same values messaging/mux/connections reports for a connection's `wire`."
     },
     "GrantId": {
       "title": "GrantId",
