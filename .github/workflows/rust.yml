@@ -47,6 +47,9 @@ on:
       # so a doc-only edit still has to run cargo test.
       - "GETTING-STARTED.md"
       - ".github/workflows/rust.yml"
+      # The composite actions the jobs below use (#1141).
+      - ".github/actions/add-swap/**"
+      - ".github/actions/install-libdbus/**"
       # `cargo deny` reads this, so a change to it must run the job it
       # configures. Without it, the file that decides what the supply-chain
       # check bans is the one file that change cannot be tested by — the same
@@ -91,13 +94,9 @@ jobs:
       # (see `unit_test_gate` in trust-tasks-codegen), which roughly halved the
       # peak, so this is now a margin rather than a necessity.
       - name: Add swap
-        run: |
-          sudo swapoff -a || true
-          sudo fallocate -l 10G /swapfile
-          sudo chmod 600 /swapfile
-          sudo mkswap /swapfile
-          sudo swapon /swapfile
-          free -h
+        uses: ./.github/actions/add-swap
+        with:
+          mode: fixed
       - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
         with:
           toolchain: stable
@@ -112,14 +111,7 @@ jobs:
       # build scripts probe for `libdbus-1` via pkg-config. Install the
       # dev headers so libdbus-sys finds the system library.
       - name: Install libdbus-1-dev
-        run: |
-          # `apt-get update` exits non-zero when ANY configured source fails, and
-          # the runner image ships Google's Chrome repo, which periodically serves
-          # a Packages.gz whose hash does not match its Release file. This job
-          # needs Ubuntu's archive and nothing else, so a failed update is not
-          # informative — the *install* is the check, and it still fails loudly.
-          sudo apt-get update || true
-          sudo apt-get install -y libdbus-1-dev pkg-config
+        uses: ./.github/actions/install-libdbus
       - name: cargo test (default features)
         run: cargo test --workspace --all-targets
 
@@ -139,13 +131,9 @@ jobs:
       # (see `unit_test_gate` in trust-tasks-codegen), which roughly halved the
       # peak, so this is now a margin rather than a necessity.
       - name: Add swap
-        run: |
-          sudo swapoff -a || true
-          sudo fallocate -l 10G /swapfile
-          sudo chmod 600 /swapfile
-          sudo mkswap /swapfile
-          sudo swapon /swapfile
-          free -h
+        uses: ./.github/actions/add-swap
+        with:
+          mode: fixed
       - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
         with:
           toolchain: stable
@@ -157,14 +145,7 @@ jobs:
           # quota and evicted the entries every run actually restores.
           save-if: ${{ github.ref == 'refs/heads/main' }}
       - name: Install libdbus-1-dev
-        run: |
-          # `apt-get update` exits non-zero when ANY configured source fails, and
-          # the runner image ships Google's Chrome repo, which periodically serves
-          # a Packages.gz whose hash does not match its Release file. This job
-          # needs Ubuntu's archive and nothing else, so a failed update is not
-          # informative — the *install* is the check, and it still fails loudly.
-          sudo apt-get update || true
-          sudo apt-get install -y libdbus-1-dev pkg-config
+        uses: ./.github/actions/install-libdbus
       - name: cargo test (--features validate)
         run: cargo test -p trust-tasks-rs --features validate --all-targets
 
@@ -257,36 +238,15 @@ jobs:
           # quota and evicted the entries every run actually restores.
           save-if: ${{ github.ref == 'refs/heads/main' }}
       - name: Install libdbus-1-dev
-        run: |
-          # `apt-get update` exits non-zero when ANY configured source fails, and
-          # the runner image ships Google's Chrome repo, which periodically serves
-          # a Packages.gz whose hash does not match its Release file. This job
-          # needs Ubuntu's archive and nothing else, so a failed update is not
-          # informative — the *install* is the check, and it still fails loudly.
-          sudo apt-get update || true
-          sudo apt-get install -y libdbus-1-dev pkg-config
+        uses: ./.github/actions/install-libdbus
       # Serialising stopped being enough once #1002's thirteen versions grew the
       # generated tree: the Release PR's `cargo doc` was stopped again, exit 143,
       # while checking trust-tasks-rs. Swap, as test/clippy/package use, lets the
       # peak spill instead of the runner being killed.
       - name: Add swap
-        run: |
-          sudo systemctl stop systemd-oomd || true
-          sudo swapoff -a
-          sudo rm -f /mnt/swapfile /swapfile
-          root_free=$(df --output=avail -BG / | tail -1 | tr -dc 0-9)
-          mnt_free=$(df --output=avail -BG /mnt | tail -1 | tr -dc 0-9)
-          if [ "$mnt_free" -gt "$root_free" ]; then dir=/mnt free=$mnt_free; else dir='' free=$root_free; fi
-          size=$(( free - 8 < 16 ? free - 8 : 16 ))
-          if [ "$size" -lt 4 ]; then
-            echo "::warning::only ${free}G free; not adding swap"
-          else
-            sudo fallocate -l "${size}G" "$dir/swapfile"
-            sudo chmod 600 "$dir/swapfile"
-            sudo mkswap "$dir/swapfile"
-            sudo swapon "$dir/swapfile"
-          fi
-          free -h
+        uses: ./.github/actions/add-swap
+        with:
+          mode: adaptive
       - name: cargo doc
         # One job at a time. With the default parallelism, rustc checking
         # trust-tasks-rs (every generated spec module, all features) runs
@@ -333,11 +293,9 @@ jobs:
           # Tags for the baselines, history for the "already breaking" check.
           fetch-depth: 0
       # A changed binding crate pulls in Affinidi's TDK, whose build scripts
-      # probe for libdbus-1. See the `test` job for why `update` may fail.
+      # probe for libdbus-1.
       - name: Install libdbus-1-dev
-        run: |
-          sudo apt-get update || true
-          sudo apt-get install -y libdbus-1-dev pkg-config
+        uses: ./.github/actions/install-libdbus
       - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
         with:
           toolchain: stable
@@ -350,23 +308,9 @@ jobs:
       # whichever of / and /mnt has more room, up to 16 GB, leaving 8 GB for
       # the builds — the runner image's disk layout is not ours to assume.
       - name: Add swap
-        run: |
-          sudo systemctl stop systemd-oomd || true
-          sudo swapoff -a
-          sudo rm -f /mnt/swapfile /swapfile
-          root_free=$(df --output=avail -BG / | tail -1 | tr -dc 0-9)
-          mnt_free=$(df --output=avail -BG /mnt | tail -1 | tr -dc 0-9)
-          if [ "$mnt_free" -gt "$root_free" ]; then dir=/mnt free=$mnt_free; else dir='' free=$root_free; fi
-          size=$(( free - 8 < 16 ? free - 8 : 16 ))
-          if [ "$size" -lt 4 ]; then
-            echo "::warning::only ${free}G free; not adding swap"
-          else
-            sudo fallocate -l "${size}G" "$dir/swapfile"
-            sudo chmod 600 "$dir/swapfile"
-            sudo mkswap "$dir/swapfile"
-            sudo swapon "$dir/swapfile"
-          fi
-          free -h
+        uses: ./.github/actions/add-swap
+        with:
+          mode: adaptive
       - name: Compare with the last releases
         # The title is read through the API, never interpolated into the
         # script body (see go.yml's api-compat for why it is fetched now rather
@@ -421,13 +365,9 @@ jobs:
       # (exit 143, "The runner has received a shutdown signal") rather than
       # failing it.
       - name: Add swap
-        run: |
-          sudo swapoff -a || true
-          sudo fallocate -l 10G /swapfile
-          sudo chmod 600 /swapfile
-          sudo mkswap /swapfile
-          sudo swapon /swapfile
-          free -h
+        uses: ./.github/actions/add-swap
+        with:
+          mode: fixed
       - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
         with:
           toolchain: stable
@@ -440,14 +380,7 @@ jobs:
           key: ${{ matrix.features.flags || 'default' }}
           save-if: ${{ github.ref == 'refs/heads/main' }}
       - name: Install libdbus-1-dev
-        run: |
-          # `apt-get update` exits non-zero when ANY configured source fails, and
-          # the runner image ships Google's Chrome repo, which periodically serves
-          # a Packages.gz whose hash does not match its Release file. This job
-          # needs Ubuntu's archive and nothing else, so a failed update is not
-          # informative — the *install* is the check, and it still fails loudly.
-          sudo apt-get update || true
-          sudo apt-get install -y libdbus-1-dev pkg-config
+        uses: ./.github/actions/install-libdbus
       - name: clippy
         run: cargo clippy --workspace --all-targets ${{ matrix.features.flags }} -- -D warnings
 
@@ -611,14 +544,7 @@ jobs:
       # trust-tasks-rs is the one whose generated tree changes on ordinary
       # PRs, so it is the one worth checking on each of them.
       - name: Install libdbus-1-dev
-        run: |
-          # `apt-get update` exits non-zero when ANY configured source fails, and
-          # the runner image ships Google's Chrome repo, which periodically serves
-          # a Packages.gz whose hash does not match its Release file. This job
-          # needs Ubuntu's archive and nothing else, so a failed update is not
-          # informative — the *install* is the check, and it still fails loudly.
-          sudo apt-get update || true
-          sudo apt-get install -y libdbus-1-dev pkg-config
+        uses: ./.github/actions/install-libdbus
       - name: The validate build is a superset of the default one
         run: |
           if grep -rnE 'not\(\s*feature\s*=\s*"validate"' trust-tasks-rs --include='*.rs'; then
@@ -631,23 +557,9 @@ jobs:
       # error). Swap, as the semver job adds, lets the verify build finish under
       # pressure rather than be killed.
       - name: Add swap
-        run: |
-          sudo systemctl stop systemd-oomd || true
-          sudo swapoff -a
-          sudo rm -f /mnt/swapfile /swapfile
-          root_free=$(df --output=avail -BG / | tail -1 | tr -dc 0-9)
-          mnt_free=$(df --output=avail -BG /mnt | tail -1 | tr -dc 0-9)
-          if [ "$mnt_free" -gt "$root_free" ]; then dir=/mnt free=$mnt_free; else dir='' free=$root_free; fi
-          size=$(( free - 8 < 16 ? free - 8 : 16 ))
-          if [ "$size" -lt 4 ]; then
-            echo "::warning::only ${free}G free; not adding swap"
-          else
-            sudo fallocate -l "${size}G" "$dir/swapfile"
-            sudo chmod 600 "$dir/swapfile"
-            sudo mkswap "$dir/swapfile"
-            sudo swapon "$dir/swapfile"
-          fi
-          free -h
+        uses: ./.github/actions/add-swap
+        with:
+          mode: adaptive
       - name: cargo package trust-tasks-rs (--features validate)
         # The verify build compiles the packaged crate (mostly generated code)
         # a second time on a 7 GB runner. At full parallelism it is killed with
@@ -705,32 +617,15 @@ jobs:
         with:
           toolchain: stable
       - name: Install libdbus-1-dev
-        run: |
-          # See the `test` job.
-          sudo apt-get update || true
-          sudo apt-get install -y libdbus-1-dev pkg-config
+        uses: ./.github/actions/install-libdbus
       # The verify build compiles trust-tasks-rs's packaged tree (mostly
       # generated code) like the `package` job, and was stopped the same way
       # (exit 143, no compile error) on the Release PR after #1002. Same remedy:
       # swap, and two build jobs.
       - name: Add swap
-        run: |
-          sudo systemctl stop systemd-oomd || true
-          sudo swapoff -a
-          sudo rm -f /mnt/swapfile /swapfile
-          root_free=$(df --output=avail -BG / | tail -1 | tr -dc 0-9)
-          mnt_free=$(df --output=avail -BG /mnt | tail -1 | tr -dc 0-9)
-          if [ "$mnt_free" -gt "$root_free" ]; then dir=/mnt free=$mnt_free; else dir='' free=$root_free; fi
-          size=$(( free - 8 < 16 ? free - 8 : 16 ))
-          if [ "$size" -lt 4 ]; then
-            echo "::warning::only ${free}G free; not adding swap"
-          else
-            sudo fallocate -l "${size}G" "$dir/swapfile"
-            sudo chmod 600 "$dir/swapfile"
-            sudo mkswap "$dir/swapfile"
-            sudo swapon "$dir/swapfile"
-          fi
-          free -h
+        uses: ./.github/actions/add-swap
+        with:
+          mode: adaptive
       # `publish = false` crates are not uploaded, so they are not checked.
       - name: cargo package --workspace
         env:

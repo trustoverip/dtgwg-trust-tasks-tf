@@ -1,0 +1,84 @@
+name: Changed paths
+description: >-
+  Decide whether a job's remaining steps need to run, for the hand-written
+  sibling-package jobs (#1141). Those jobs are required checks, so their
+  workflows stay unfiltered and the jobs always run and report; this step only
+  lets a job whose inputs this PR did not touch skip its build and test steps
+  (gate them on `steps.<id>.outputs.run == 'true'`) and still report success.
+
+  The output is `true` — run everything — unless ALL of these hold: the event
+  is `pull_request`, the PR is not the Release PR (head branch `release`), the
+  PR's changes could be computed, and none of them matches `paths`. A push to
+  `main`, a workflow_dispatch, and any failure to work out the diff run the
+  full job. Every caller's pathspecs also implicitly include `.github/actions/`
+  (this action and the others the jobs use).
+
+  Requires a prior actions/checkout (the default shallow one is enough: the
+  base side of the PR's merge commit is fetched here).
+
+inputs:
+  paths:
+    description: >-
+      Newline-separated git pathspecs: the package's directory, the core library
+      it builds on, the workflow file itself, and any shared script or fixture it
+      reads. `:(exclude)` pathspecs are allowed.
+    required: true
+
+outputs:
+  run:
+    description: "`true` when the job's remaining steps must run, `false` when they may skip."
+    value: ${{ steps.decide.outputs.run }}
+
+runs:
+  using: composite
+  steps:
+    - id: decide
+      shell: bash
+      env:
+        EVENT_NAME: ${{ github.event_name }}
+        HEAD_REF: ${{ github.head_ref }}
+        PATHSPECS: ${{ inputs.paths }}
+      run: |
+        set -uo pipefail
+        decide() {
+          echo "run=$1" >>"$GITHUB_OUTPUT"
+          echo "$2"
+          exit 0
+        }
+        if [ "$EVENT_NAME" != pull_request ]; then
+          decide true "Event is $EVENT_NAME, not pull_request: running every step."
+        fi
+        if [ "$HEAD_REF" = release ]; then
+          decide true "This is the Release PR: running every step."
+        fi
+
+        # On pull_request, HEAD is GitHub's merge of the PR into its base: its
+        # first parent is the base as merged, so HEAD^1..HEAD is exactly what
+        # the PR changes. The default checkout is depth 1; fetch one more.
+        if ! git rev-parse -q --verify 'HEAD^2' >/dev/null; then
+          git fetch --no-tags --quiet --depth=2 origin "$(git rev-parse HEAD)" ||
+            decide true "::warning::Could not fetch the PR's base; running every step."
+        fi
+        if ! git rev-parse -q --verify 'HEAD^2' >/dev/null ||
+          ! base=$(git rev-parse -q --verify 'HEAD^1'); then
+          decide true "::warning::HEAD is not the PR's merge commit; running every step."
+        fi
+
+        specs=(.github/actions)
+        while IFS= read -r line; do
+          line="${line#"${line%%[![:space:]]*}"}"
+          line="${line%"${line##*[![:space:]]}"}"
+          [ -n "$line" ] && specs+=("$line")
+        done <<<"$PATHSPECS"
+
+        if ! changed=$(git diff --no-renames --name-only "$base" HEAD -- "${specs[@]}"); then
+          decide true "::warning::git diff failed; running every step."
+        fi
+        if [ -n "$changed" ]; then
+          echo "Changed inputs of this job:"
+          echo "$changed" | head -50
+          decide true "Running every step."
+        fi
+        echo "Watched paths:"
+        printf '  %s\n' "${specs[@]}"
+        decide false "This PR changes none of them: the remaining steps skip, and the job reports success."
