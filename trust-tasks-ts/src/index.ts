@@ -1282,6 +1282,15 @@ export import MuxShared_v0_1 = _MuxShared_v0_1;
 import * as _MessagingMuxAck_v0_1 from "./messaging/mux/ack/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import MessagingMuxAck_v0_1 = _MessagingMuxAck_v0_1;
+import * as _MessagingMuxAdminList_v0_1 from "./messaging/mux/admin-list/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import MessagingMuxAdminList_v0_1 = _MessagingMuxAdminList_v0_1;
+import * as _MessagingMuxAdminRevokeAll_v0_1 from "./messaging/mux/admin-revoke-all/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import MessagingMuxAdminRevokeAll_v0_1 = _MessagingMuxAdminRevokeAll_v0_1;
+import * as _MessagingMuxAdminRevoke_v0_1 from "./messaging/mux/admin-revoke/0.1/payload.js";
+/** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
+export import MessagingMuxAdminRevoke_v0_1 = _MessagingMuxAdminRevoke_v0_1;
 import * as _MessagingMuxAttach_v0_1 from "./messaging/mux/attach/0.1/payload.js";
 /** @deprecated The prebuilt specification modules will be removed: pin the tasks you use with the `trust-tasks` CLI, generate them with `@openvtc/trust-tasks-gen`, and import the runtime from `@openvtc/trust-tasks/runtime` (GETTING-STARTED.md). */
 export import MessagingMuxAttach_v0_1 = _MessagingMuxAttach_v0_1;

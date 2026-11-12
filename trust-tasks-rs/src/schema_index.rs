@@ -2204,6 +2204,24 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/messaging/mux/ack/0.1#response" => <crate::specs::messaging::mux::ack::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "messaging")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/admin-list/0.1" => <crate::specs::messaging::mux::admin_list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/admin-list/0.1#response" => <crate::specs::messaging::mux::admin_list::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/admin-revoke/0.1" => <crate::specs::messaging::mux::admin_revoke::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/admin-revoke/0.1#response" => <crate::specs::messaging::mux::admin_revoke::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/admin-revoke-all/0.1" => <crate::specs::messaging::mux::admin_revoke_all::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/admin-revoke-all/0.1#response" => <crate::specs::messaging::mux::admin_revoke_all::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/messaging/mux/attach/0.1" => <crate::specs::messaging::mux::attach::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "messaging")]
         #[cfg(not(test))]
@@ -10350,6 +10368,27 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "messaging")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/admin-list/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::messaging::mux::admin_list::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/admin-revoke/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::messaging::mux::admin_revoke::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/admin-revoke-all/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::messaging::mux::admin_revoke_all::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/messaging/mux/attach/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::messaging::mux::attach::v0_1::Payload,
         >()),
@@ -17958,6 +17997,21 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "messaging")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/admin-list/0.1" => {
+            Some(crate::specs::messaging::mux::admin_list::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/admin-revoke/0.1" => {
+            Some(crate::specs::messaging::mux::admin_revoke::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/admin-revoke-all/0.1" => {
+            Some(crate::specs::messaging::mux::admin_revoke_all::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/messaging/mux/attach/0.1" => {
             Some(crate::specs::messaging::mux::attach::v0_1::ERROR_CODES)
         }
@@ -23019,6 +23073,9 @@ pub fn max_document_bytes_for(type_uri: &str) -> Option<usize> {
         #[cfg(feature = "keys")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/keys/sign-jws/0.1#response" => <crate::specs::keys::sign_jws::v0_1::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/mux/admin-list/0.1#response" => <crate::specs::messaging::mux::admin_list::v0_1::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
         #[cfg(feature = "messaging")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/messaging/mux/attach/0.1" => <crate::specs::messaging::mux::attach::v0_1::Payload as crate::Payload>::MAX_DOCUMENT_BYTES,
