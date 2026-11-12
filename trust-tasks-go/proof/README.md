@@ -63,6 +63,13 @@ key satisfies the verification equation for any message with a chosen
 signature, so the verifier checks the key itself (on `math/big`, no new
 dependency) before verifying.
 
+The document must be I-JSON (RFC 7493), as JCS (RFC 8785) requires. A document
+that is not valid UTF-8, carries an unpaired surrogate escape (`"\ud800"`), has
+two members with the same name in one object, or has anything but whitespace
+after its closing brace fails as `malformedProof`. `encoding/json` would accept
+each of these by rewriting or dropping part of the input, so the canonical form
+the proof covers would differ from the bytes a handler reads.
+
 ## Sign
 
 ```go
@@ -76,3 +83,8 @@ signing relationship. `ProofPurpose` defaults to `authentication`, the purpose
 SPEC §4.7.3 recommends for a Trust Task document. `created` is written UTC,
 `Z`-terminated, with no sub-second field (chrono's form), so the same key over
 the same document and `created` reproduces the Rust crate's `proofValue`.
+
+`SignerFromPrivateKey` takes an Ed25519 seed of 32 bytes, or an ECDSA scalar of
+exactly 32 bytes (P-256) or 48 bytes (P-384) in the range [1, n-1]. Any other
+key is refused with an error rather than producing a signer. `Sign` also
+refuses a document the verifier would refuse as non-I-JSON.

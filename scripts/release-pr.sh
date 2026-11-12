@@ -134,7 +134,21 @@ prepare() {
   # ── npm, Go, Dart ────────────────────────────────────────────────────────────
   for pkg in "${TS_PACKAGES[@]}"; do ./scripts/release-bump-ts.sh "$pkg"; done
   for mod in "${GO_MODULES[@]}"; do ./scripts/release-bump-go.sh "$mod"; done
-  for pkg in "${DART_PACKAGES[@]}"; do ./scripts/release-bump-dart.sh "$pkg"; done
+  # `trust_tasks` is DART_PACKAGES' first entry, so its bump lands before the
+  # siblings', and they read its new version: one whose range no longer admits
+  # it (the core crossed a 0.x minor) has its floor raised and is released for
+  # it. check-sibling-core-ranges fails the Release PR otherwise (#1085).
+  for pkg in "${DART_PACKAGES[@]}"; do
+    TRUST_TASKS_CORE=$(sed -n 's/^version: *//p' trust-tasks-dart/pubspec.yaml | head -1 | tr -d '\r') \
+      ./scripts/release-bump-dart.sh "$pkg"
+  done
+  # A sibling that is tested but not released yet (trust-tasks-dart-tsp) is held
+  # to the same check, so its floor moves too; it has no version to bump.
+  dart_core=$(sed -n 's/^version: *//p' trust-tasks-dart/pubspec.yaml | head -1 | tr -d '\r')
+  for pubspec in trust-tasks-dart-*/pubspec.yaml; do
+    was=$(node scripts/raise-dart-core-floor.mjs "$pubspec" "$dart_core")
+    [ -z "$was" ] || echo "::notice::$pubspec: trust_tasks $was -> ^$dart_core"
+  done
 
   # Everything the steps above changed, as one patch against HEAD, and the
   # commit it applies to.

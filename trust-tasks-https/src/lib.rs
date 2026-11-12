@@ -86,6 +86,6 @@ pub use client::{
 
 #[cfg(feature = "server")]
 pub use server::{
-    HttpsServer, HttpsServerBuilder, RequestContext, DEFAULT_MAX_CONCURRENT_REQUESTS,
-    DEFAULT_REQUEST_TIMEOUT, MAX_BODY_BYTES,
+    HttpsServer, HttpsServerBuilder, RequestContext, DEFAULT_ALLOWED_DID_METHODS,
+    DEFAULT_MAX_CONCURRENT_REQUESTS, DEFAULT_REQUEST_TIMEOUT, MAX_BODY_BYTES,
 };

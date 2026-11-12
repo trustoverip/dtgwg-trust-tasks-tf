@@ -121,3 +121,58 @@ async fn cached_resolver_surfaces_resolver_error_for_unknown_method() {
         "unresolvable VM should not return SignatureInvalid, got {err:?}"
     );
 }
+
+/// A DID naming this machine or its private network is refused before the
+/// client is asked to resolve it.
+#[tokio::test]
+async fn cached_resolver_refuses_private_hosts_by_default() {
+    use trust_tasks_proof::affinidi::{ProofPurpose, ProofPurposeResolver};
+
+    let resolver = local_resolver().await;
+    for vm in [
+        "did:web:localhost%3A8080#key-1",
+        "did:web:127.0.0.1#key-1",
+        "did:web:169.254.169.254#key-1",
+        "did:webvh:QmScid:10.0.0.7:alice#key-1",
+    ] {
+        let err = resolver
+            .resolve_vm_for_purpose(vm, ProofPurpose::AssertionMethod)
+            .await
+            .expect_err(vm);
+        assert!(err.to_string().contains("does not contact"), "{vm}: {err}");
+    }
+
+    // Opting out hands the DID to the client, which then fails on its own
+    // terms (nothing listens there, or its own host policy refuses it).
+    let open = local_resolver()
+        .await
+        .allow_private_hosts(true)
+        .with_timeout(std::time::Duration::from_secs(5));
+    let err = open
+        .resolve_vm_for_purpose("did:web:127.0.0.1%3A9#key-1", ProofPurpose::AssertionMethod)
+        .await
+        .expect_err("nothing serves that DID");
+    assert!(!err.to_string().contains("does not contact"), "{err}");
+}
+
+/// A host filter limits resolution to the hosts it accepts; DIDs that name
+/// no host are not screened.
+#[tokio::test]
+async fn cached_resolver_host_filter_is_applied() {
+    use trust_tasks_proof::affinidi::{ProofPurpose, ProofPurposeResolver};
+
+    let resolver = local_resolver()
+        .await
+        .with_host_filter(|host| host == "trusted.example");
+    let err = resolver
+        .resolve_vm_for_purpose("did:web:other.example#key-1", ProofPurpose::AssertionMethod)
+        .await
+        .expect_err("filtered out");
+    assert!(err.to_string().contains("does not contact"), "{err}");
+
+    let (_, vm) = fresh_did_key();
+    resolver
+        .resolve_vm_for_purpose(&vm, ProofPurpose::AssertionMethod)
+        .await
+        .expect("did:key names no host");
+}

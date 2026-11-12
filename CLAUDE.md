@@ -806,8 +806,15 @@ are not obvious:
   excluded the core it was developed against: consumers got core 0.1.19, and an
   app on core 0.9 could not add a sibling at all. `tag-dart` cannot see this —
   it verifies against the newest core the constraint admits — so when the core
-  crosses a `0.x` minor, raise the siblings' floor in the same release cycle;
-  `npm run check-sibling-core-ranges` fails until you do.
+  crosses a `0.x` minor, the floors must move in the same release.
+  `release-pr.sh` does it: it passes the core's new version to each sibling's
+  `release-bump-dart.sh`, which raises a floor that no longer admits it
+  (`scripts/raise-dart-core-floor.mjs`) and releases the sibling for it even
+  with no other change, and it raises the unreleased `-tsp` floor too.
+  `npm run check-sibling-core-ranges` fails if one is missed. (Unlike npm this
+  works inside the Release PR, because the siblings build against the in-tree
+  core; on merge their `verify-dart` legs wait for the core to reach pub.dev —
+  re-run them.)
 - **`ssi: ">=3.9.6 <5.0.0"` spans two majors on purpose.** `package:didcomm`
   pins ssi 3, so requiring ssi 4 would make this package impossible to use
   beside a DIDComm transport. The `packages` job in `dart.yml` tests with ssi
