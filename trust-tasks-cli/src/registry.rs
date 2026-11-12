@@ -47,9 +47,13 @@ pub fn normalize(url: &str) -> String {
 /// also be reached.
 pub const CA_FILE_ENV: &str = "TRUST_TASKS_CA_FILE";
 
+/// The one HTTP agent every fetch the CLI makes goes through — the registry,
+/// a source, and `registry build`'s shared components — so each honours
+/// [`CA_FILE_ENV`].
+///
 /// `https_only` refuses every plain-http request the agent would make,
 /// redirects included, so an https origin cannot hand a fetch over to http.
-fn http_agent(https_only: bool) -> Result<ureq::Agent> {
+pub fn http_agent(https_only: bool) -> Result<ureq::Agent> {
     let mut config = ureq::Agent::config_builder()
         .timeout_global(Some(Duration::from_secs(120)))
         .https_only(https_only)
@@ -162,6 +166,27 @@ fn check_registry_url(url: &str, allow_http: bool) -> Result<()> {
 enum Source {
     Http { base: String, agent: ureq::Agent },
     Dir(PathBuf),
+}
+
+/// What a registry answered for one file.
+enum Got {
+    Body(Vec<u8>),
+    /// No such file (404, or a missing file in a directory).
+    Missing,
+    /// HTTP 403. Ambiguous: S3 answers it for a missing key when it may not
+    /// list the bucket, and a private mirror for a request it will not serve.
+    Forbidden,
+}
+
+impl Got {
+    /// The body, reading 403 as absent — right where absence has a fallback
+    /// (the by-digest store before the version's path).
+    fn body(self) -> Option<Vec<u8>> {
+        match self {
+            Got::Body(b) => Some(b),
+            Got::Missing | Got::Forbidden => None,
+        }
+    }
 }
 
 pub struct Registry {
@@ -380,14 +405,15 @@ impl Registry {
         })
     }
 
-    /// `Ok(None)` when the registry has no such file.
-    fn get(&self, rel: &str) -> Result<Option<Vec<u8>>> {
+    /// The file, or why there is none. 401 is an error: the registry wants
+    /// credentials, which says nothing about whether the file exists.
+    fn get(&self, rel: &str) -> Result<Got> {
         match &self.source {
             Source::Dir(root) => {
                 let path = root.join(rel);
                 match std::fs::read(&path) {
-                    Ok(b) => Ok(Some(b)),
-                    Err(e) if e.kind() == ErrorKind::NotFound => Ok(None),
+                    Ok(b) => Ok(Got::Body(b)),
+                    Err(e) if e.kind() == ErrorKind::NotFound => Ok(Got::Missing),
                     Err(e) => Err(e).with_context(|| format!("reading {}", path.display())),
                 }
             }
@@ -401,11 +427,14 @@ impl Registry {
                             .limit(MAX_BODY_BYTES)
                             .read_to_vec()
                             .with_context(|| format!("reading {url}"))?;
-                        Ok(Some(body))
+                        Ok(Got::Body(body))
                     }
-                    // S3 answers 403 for a missing key when it may not list the
-                    // bucket; either way there is nothing there.
-                    Err(ureq::Error::StatusCode(404 | 403)) => Ok(None),
+                    Err(ureq::Error::StatusCode(404)) => Ok(Got::Missing),
+                    Err(ureq::Error::StatusCode(403)) => Ok(Got::Forbidden),
+                    Err(ureq::Error::StatusCode(401)) => bail!(
+                        "{} refused {url} with HTTP 401 (authentication required) — this CLI sends no credentials; serve the registry to it without authentication, or mirror it to a directory",
+                        self.label
+                    ),
                     Err(e) => Err(anyhow!(e)).with_context(|| format!("fetching {url}")),
                 }
             }
@@ -434,17 +463,25 @@ impl Registry {
 
     pub fn index(&self) -> Result<Index> {
         let rel = "specs/index.json";
-        let bytes = self.get(rel)?.ok_or_else(|| {
-            let what = if self.is_official() {
-                "registry index".to_string()
-            } else {
-                format!("index for {}", self.label)
-            };
-            anyhow!(
+        let what = if self.is_official() {
+            "registry index".to_string()
+        } else {
+            format!("index for {}", self.label)
+        };
+        let bytes = match self.get(rel)? {
+            Got::Body(bytes) => bytes,
+            Got::Missing => bail!(
                 "no {what} at {} — a registry is a site root with specs/index.json under it",
                 self.describe(rel)
-            )
-        })?;
+            ),
+            Got::Forbidden => bail!(
+                "{} refused {} with HTTP 403 (forbidden) — the server will not serve the {what} to \
+                 this CLI, which sends no credentials; or, on S3, there is no such file (check the URL \
+                 is the site root with specs/index.json under it)",
+                self.label,
+                self.describe(rel)
+            ),
+        };
         Index::parse(&bytes, &self.label)
     }
 
@@ -466,7 +503,7 @@ impl Registry {
         let label = &self.label;
         let hex = digest_hex(digest)?;
         let by_digest = format!("specs/by-digest/sha256-{hex}.json");
-        if let Some(bytes) = self.get(&by_digest)? {
+        if let Some(bytes) = self.get(&by_digest)?.body() {
             if digest_of(&bytes) == digest {
                 check_bundle(&bytes, id, v)?;
                 return Ok(Fetched {
@@ -493,13 +530,19 @@ impl Registry {
             );
         };
         let rel = format!("specs/{}", entry.path);
-        let bytes = self.get(&rel)?.ok_or_else(|| {
-            anyhow!(
+        let bytes = match self.get(&rel)? {
+            Got::Body(bytes) => bytes,
+            Got::Missing => bail!(
                 "{slug} {v}: {} lists {} but it is missing",
                 self.index_name(),
                 self.describe(&rel)
-            )
-        })?;
+            ),
+            Got::Forbidden => bail!(
+                "{slug} {v}: {} lists {} but the server refused it with HTTP 403 (forbidden)",
+                self.index_name(),
+                self.describe(&rel)
+            ),
+        };
         let got = digest_of(&bytes);
         if got != digest {
             bail!(

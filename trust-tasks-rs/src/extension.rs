@@ -114,7 +114,7 @@ struct PruneLimitReached(usize);
 /// Prune `payload` in place; on `Err` it may be partly pruned and must be
 /// discarded.
 fn prune_within_limit(payload: &mut Value, schema_json: &str) -> Result<(), PruneLimitReached> {
-    let Ok(root) = serde_json::from_str::<Value>(schema_json) else {
+    let Some(root) = crate::schema_cache::parsed(schema_json) else {
         return Ok(());
     };
     let limit = prune_step_limit(payload);
@@ -373,6 +373,10 @@ pub(crate) fn prune_forward(payload: &mut Value, schema_json: &str) -> Result<()
 /// and schema that need more leave `payload` as it was; [`read_as`] and the
 /// dispatchers refuse such a document [`RejectReason::MalformedRequest`]
 /// instead.
+///
+/// The parsed schema is cached by the text's address (and confirmed against
+/// its content), so forwarding a stream of documents to one implemented
+/// version parses its `PAYLOAD_SCHEMA` once.
 pub fn prune_payload(payload: &mut Value, schema_json: &str) {
     let mut pruned = payload.clone();
     if prune_within_limit(&mut pruned, schema_json).is_ok() {

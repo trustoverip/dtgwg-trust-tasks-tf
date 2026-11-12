@@ -3,7 +3,7 @@
 //   npm run generate   # trust-tasks-gen-ts --lock trust-tasks.lock --out src/trust-tasks
 //   npm run build && npm start
 //
-// `trust-tasks.lock` pins acl/grant 0.2, keys/list 0.2 and vault/get 0.3 from
+// `trust-tasks.lock` pins acl/grant 0.3, keys/list 0.2 and vault/get 0.3 from
 // the registry (the same three as examples/consumer-app, the Rust example),
 // plus payments/settle 1.0 from a third-party source, `acme` (SPEC §6.5). The
 // generated modules import the runtime from `@openvtc/trust-tasks/runtime` —
@@ -20,7 +20,7 @@ import {
   type TrustTaskDocument,
 } from "@openvtc/trust-tasks/runtime";
 
-import { Acme, AclGrant_v0_2, KeysList_v0_2, VaultGet_v0_3, declareExtends } from "./trust-tasks/index.js";
+import { Acme, AclGrant_v0_3, KeysList_v0_2, VaultGet_v0_3, declareExtends } from "./trust-tasks/index.js";
 
 declareExtends();
 
@@ -100,7 +100,7 @@ const other = readForSpec({ ...request, type: "https://trusttasks.org/spec/vault
 assert.equal(other.kind === "refused" && other.reason.code, "unsupportedVersion");
 
 // 4. Policy constants and identity come from the pinned bundles.
-assert.equal(AclGrant_v0_2.SPEC.isProofRequired, true);
+assert.equal(AclGrant_v0_3.SPEC.isProofRequired, true);
 assert.equal(KeysList_v0_2.TYPE_URI, "https://trusttasks.org/spec/keys/list/0.2");
 
 // 5. The third-party task: its identity is its own authority's Type URI.

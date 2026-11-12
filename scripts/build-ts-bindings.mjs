@@ -1412,8 +1412,15 @@ function verifyComponentNames(ts, expected) {
         `${missing.length > 8 ? ", …" : ""}`,
     );
   }
+  // A component with a `type` beside an `anyOf` compiles to an intersection of
+  // numbered parts (`X = X1 & X2`), which are its own, not a duplicate. Only a
+  // bare name shows it; acl's `Purpose` is qualified here, so nothing does yet.
+  const parts = new Set();
+  for (const m of ts.matchAll(/^export type ([A-Za-z0-9_$]+) = ([A-Za-z0-9_$]+(?: & [A-Za-z0-9_$]+)+);$/gm)) {
+    for (const part of m[2].split(" & ")) if (part.replace(/\d+$/, "") === m[1]) parts.add(part);
+  }
   const numbered = [...declared].filter(
-    (n) => /\d$/.test(n) && !expected.includes(n) && declared.has(n.replace(/\d+$/, "")),
+    (n) => /\d$/.test(n) && !expected.includes(n) && !parts.has(n) && declared.has(n.replace(/\d+$/, "")),
   );
   if (numbered.length) {
     throw new Error(

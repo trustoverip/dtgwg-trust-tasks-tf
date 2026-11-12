@@ -61,6 +61,7 @@
 //! `release-plz.toml`.
 
 #![warn(missing_docs)]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #![warn(rust_2018_idioms)]
 
 mod auth;

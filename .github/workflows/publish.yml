@@ -56,6 +56,13 @@ jobs:
     name: Release-plz release (crates.io)
     runs-on: ubuntu-24.04
     timeout-minutes: 60
+    concurrency:
+      # Two pushes landing close together would both see a version absent from
+      # crates.io and both run `release-plz release`; the loser fails on a
+      # duplicate, part-way through the workspace. Queue them instead, as the
+      # npm, Go and Dart publish jobs do.
+      group: release-plz-release-${{ github.ref }}
+      cancel-in-progress: false
     permissions:
       contents: write
       pull-requests: read
@@ -81,14 +88,7 @@ jobs:
       # release-plz.toml), so it is probably unneeded. Dropping it is left to a
       # change of its own: the install is seconds, and a failed release is not.
       - name: Install libdbus-1-dev
-        run: |
-          # `apt-get update` exits non-zero when ANY configured source fails, and
-          # the runner image ships Google's Chrome repo, which periodically serves
-          # a Packages.gz whose hash does not match its Release file. This job
-          # needs Ubuntu's archive and nothing else, so a failed update is not
-          # informative — the *install* is the check, and it still fails loudly.
-          sudo apt-get update || true
-          sudo apt-get install -y libdbus-1-dev pkg-config
+        uses: ./.github/actions/install-libdbus
 
       - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
         with:
@@ -775,13 +775,7 @@ jobs:
       # via pkg-config). Nothing has shown that `release-plz update` never runs
       # a build script, and the install is seconds.
       - name: Install libdbus-1-dev
-        run: |
-          # `apt-get update` exits non-zero when ANY configured source fails, and
-          # the runner image ships Google's Chrome repo, which periodically serves
-          # a Packages.gz whose hash does not match its Release file. The
-          # *install* is the check, and it still fails loudly.
-          sudo apt-get update || true
-          sudo apt-get install -y libdbus-1-dev pkg-config
+        uses: ./.github/actions/install-libdbus
 
       - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
         with:

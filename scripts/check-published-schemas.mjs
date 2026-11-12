@@ -16,8 +16,11 @@
 // member, a value appended to an enum, a branch appended to a oneOf/anyOf, a
 // loosened bound, a new `$defs` entry, and any `description`, `$comment` or
 // `examples` (scripts/lib/schema-compat.mjs has the full rule). In the front
-// matter, `proofRequirement.requirement` may not change and declared
-// `errorCodes` may only grow. Everything else fails here, on the pull request,
+// matter, the policy it derives may not change — `proofRequirement` and
+// `issuedAtRequirement` (either form, per variant), `parties[].requirement`
+// and `bearer`, each of which sets a generated `IS_*` constant — and declared
+// `errorCodes` may only grow. A released spec file may not be deleted or
+// renamed either: its module would vanish from every library. Everything else fails here, on the pull request,
 // rather than as a breaking Release PR after the merge.
 //
 // This subsumes the enum check it replaces (scripts/check-enum-append-only.mjs,
@@ -26,9 +29,9 @@
 //
 // ── What is compared ─────────────────────────────────────────────────────────
 //
-// Each `*.json` and `spec.md` under `specs/` that this branch changed (against
-// its merge base with `PUBLISHED_BASE_REF`, else `origin/main`) and that
-// existed at the LAST RELEASE — the newest `trust-tasks-rs-v*` tag. The
+// Each `*.json` and `spec.md` under `specs/` that this branch changed, deleted
+// or renamed away (against its merge base with `PUBLISHED_BASE_REF`, else
+// `origin/main`) and that existed at the LAST RELEASE — the newest `trust-tasks-rs-v*` tag. The
 // comparison is against the file as released, not as it is on main: a version
 // merged since the last release has reached no library yet, so it can still be
 // fixed in place. A file new since the release is not constrained.
@@ -40,7 +43,7 @@
 // against it.
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
-import { incompatibilities, frontMatterIncompatibilities } from "./lib/schema-compat.mjs";
+import { incompatibilities, frontMatterIncompatibilities, parseFrontMatter } from "./lib/schema-compat.mjs";
 
 const git = (...args) => execFileSync("git", args, { encoding: "utf8", maxBuffer: 1 << 28 }).trim();
 
@@ -52,7 +55,10 @@ if (!release) {
 }
 const baseRef = process.env.PUBLISHED_BASE_REF || "origin/main";
 const base = git("merge-base", baseRef, "HEAD");
-const changed = git("diff", "--name-only", "--diff-filter=M", base, "HEAD", "--", "specs")
+// `--no-renames`: a rename is reported as the old path deleted (and the new
+// one added, which is unconstrained), so a released file renamed away is
+// caught as removed.
+const changed = git("diff", "--name-only", "--no-renames", "--diff-filter=MD", base, "HEAD", "--", "specs")
   .split("\n")
   .filter((p) => p.endsWith(".json") || p.endsWith("/spec.md"))
   .filter((p) => p !== "specs/spec.meta.schema.json");
@@ -64,28 +70,21 @@ const atRelease = (file) => {
     return null; // not in the release: new since, so unconstrained
   }
 };
-const frontMatter = (text) => {
-  const m = text.match(/^---\n([\s\S]*?)\n---/);
-  if (!m) return {};
-  // Only the two members compared here are read, so a full YAML parser is not needed:
-  // `proofRequirement:` → `requirement:` and the `- code:` entries under `errorCodes:`.
-  const fm = m[1];
-  const requirement = fm.match(/^proofRequirement:\s*\n\s+requirement:\s*["']?(\w+)/m)?.[1];
-  const block = fm.match(/^errorCodes:\s*\n((?:[ \t]+.*\n?)*)/m)?.[1] ?? "";
-  const errorCodes = [...block.matchAll(/-\s*code:\s*["']?([^"'\s]+)/g)].map((c) => ({ code: c[1] }));
-  return { proofRequirement: { requirement }, errorCodes };
-};
-
 const violations = [];
 let compared = 0;
 for (const file of changed) {
-  if (!existsSync(file)) continue;
   const released = atRelease(file);
   if (released === null) continue;
   compared++;
+  if (!existsSync(file)) {
+    // Test fixtures, not a schema: no library compiles them.
+    if (file.endsWith("payload.invalid-examples.json")) continue;
+    violations.push({ file, reason: "was deleted or renamed — every library compiles it, so its module would disappear" });
+    continue;
+  }
   const now = readFileSync(file, "utf8");
   if (file.endsWith("spec.md")) {
-    for (const v of frontMatterIncompatibilities(frontMatter(released), frontMatter(now))) violations.push({ file, ...v });
+    for (const v of frontMatterIncompatibilities(parseFrontMatter(released), parseFrontMatter(now))) violations.push({ file, ...v });
     continue;
   }
   let before;

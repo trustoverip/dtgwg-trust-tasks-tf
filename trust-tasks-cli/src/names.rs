@@ -16,17 +16,16 @@ pub struct Version {
 }
 
 impl Version {
+    /// `MAJOR.MINOR` as SPEC §5.1 writes it — no leading zeros, so `0.3` and
+    /// never `00.3` — by the grammar `trust-tasks-build` holds a lock to.
     pub fn parse(s: &str) -> Option<Version> {
+        if !trust_tasks_build::is_spec_version(s) {
+            return None;
+        }
         let (major, minor) = s.split_once('.')?;
-        let num = |p: &str| -> Option<u32> {
-            if p.is_empty() || !p.bytes().all(|b| b.is_ascii_digit()) {
-                return None;
-            }
-            p.parse().ok()
-        };
         Some(Version {
-            major: num(major)?,
-            minor: num(minor)?,
+            major: major.parse().ok()?,
+            minor: minor.parse().ok()?,
         })
     }
 }
@@ -49,21 +48,13 @@ impl fmt::Display for Version {
     }
 }
 
-/// Validates a slug: lowercase path segments of `[a-z0-9-]`, as every slug in
-/// the registry is. Also what keeps a slug from escaping `trust-tasks/` when it
-/// becomes a path.
+/// Validates a slug by SPEC §6.1's grammar — `/`-separated segments, each
+/// `[a-z][a-z0-9]*(-[a-z0-9]+)*` — the one `trust-tasks-build` holds a lock to.
+/// Also what keeps a slug from escaping `trust-tasks/` when it becomes a path.
 pub fn check_slug(slug: &str) -> Result<()> {
-    let ok = !slug.is_empty()
-        && slug.split('/').all(|seg| {
-            !seg.is_empty()
-                && !seg.starts_with('-')
-                && seg
-                    .bytes()
-                    .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-')
-        });
-    if !ok {
+    if !trust_tasks_build::is_spec_slug(slug) {
         bail!(
-            "`{slug}` is not a specification slug (lowercase path segments of a-z, 0-9 and `-`, e.g. `vault/upsert`)"
+            "`{slug}` is not a specification slug (path segments of a-z, 0-9 and single `-`, each starting with a letter, e.g. `vault/upsert`)"
         );
     }
     Ok(())
@@ -204,6 +195,34 @@ mod tests {
         assert!(Version::parse("1").is_none());
         assert!(Version::parse("1.x").is_none());
         assert!(Version::parse("+1.2").is_none());
+        // SPEC §5.1: no leading zeros.
+        assert!(Version::parse("00.3").is_none());
+        assert!(Version::parse("0.03").is_none());
+        assert_eq!(Version::parse("10.0").unwrap().to_string(), "10.0");
+    }
+
+    #[test]
+    fn slugs_follow_spec_6_1() {
+        for ok in ["vault/upsert", "trust-task-discovery", "a1/b-2"] {
+            assert!(check_slug(ok).is_ok(), "{ok}");
+        }
+        for bad in [
+            "1abc/x",
+            "vault/get/00.3",
+            "a--b",
+            "a-",
+            "-a",
+            "a//b",
+            "a/",
+            "",
+        ] {
+            assert!(check_slug(bad).is_err(), "{bad}");
+        }
+        // A malformed version is not read as a pin of the version it resembles.
+        let e = parse_task_arg("vault/get/00.3").unwrap_err().to_string();
+        assert!(e.contains("is not a specification slug"), "{e}");
+        let e = parse_task_arg("1abc/x").unwrap_err().to_string();
+        assert!(e.contains("is not a specification slug"), "{e}");
     }
 
     fn official(slug: &str) -> TaskId {

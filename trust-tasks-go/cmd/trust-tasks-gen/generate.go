@@ -249,6 +249,7 @@ func generatePackage(b *bundle, source, digest string) (generated, error) {
 	}
 
 	em := newEmitter()
+	em.reserveTailIdentifiers()
 	defNames, rootName := em.emitDeclarations(schema, "Payload")
 	deprecation := ""
 	if b.Deprecation != nil {

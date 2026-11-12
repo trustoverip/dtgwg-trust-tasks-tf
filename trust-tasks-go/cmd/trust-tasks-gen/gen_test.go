@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
+	"go/ast"
+	"go/parser"
+	"go/token"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -12,7 +15,7 @@ import (
 )
 
 // copyApp copies testdata/app (a lock pinning acl/grant 0.2, keys/list 0.2 and
-// vault/get 0.3, as examples/consumer-app does) into a temporary directory.
+// vault/get 0.3) into a temporary directory.
 func copyApp(t *testing.T) string {
 	t.Helper()
 	dst := t.TempDir()
@@ -447,6 +450,76 @@ func TestDefsOrder(t *testing.T) {
 		err := run(options{Lock: filepath.Join(app, "trust-tasks.lock"), Out: filepath.Join(app, "gen")})
 		if err == nil || !strings.Contains(err.Error(), want) {
 			t.Errorf("defsOrder %s: got %v, want an error containing %q", order, err, want)
+		}
+	}
+}
+
+// TestReservedNames: a schema-derived name never redeclares an identifier the
+// generated file declares itself — the tail's constants and policies, or an
+// enum constant. scripts/test-checks/go-bindings-names.test.mjs holds the
+// prebuilt generator to the same names.
+func TestReservedNames(t *testing.T) {
+	const obj = `{"type":"object","properties":{"x":{"type":"string"}}}`
+	schema := `{"type":"object","properties":{` +
+		`"schemaJson":` + obj + `},"$defs":{` +
+		`"Spec":` + obj + `,` +
+		`"TypeURI":{"type":"string"},` +
+		`"Extends":{"type":"string","enum":["a"]},` +
+		`"Deprecation":` + obj + `,` +
+		`"PayloadSchemaJSON":{"type":"string"},` +
+		`"ResponseSpec":{"type":"string"},` +
+		`"ResponseTypeURI":{"type":"string"},` +
+		`"ResponsePayloadSchemaJSON":{"type":"string"},` +
+		`"Type":{"type":"string","enum":["URI"]},` +
+		`"Kind":{"type":"string","enum":["spec"]},` +
+		`"KindSpec":` + obj + `,` +
+		`"Thing":` + obj + `,` +
+		`"Response":{"type":"object","properties":{"spec":` + obj + `}}}}`
+	b := &bundle{
+		TypeURI:        "https://trusttasks.org/spec/probe/0.1",
+		Slug:           "probe",
+		Version:        "0.1",
+		Schema:         []byte(schema),
+		ResponseSchema: []byte(`{"type":"object"}`),
+	}
+	g, err := generatePackage(b, "", "sha256:00")
+	if err != nil {
+		t.Fatal(err)
+	}
+	file, err := parser.ParseFile(token.NewFileSet(), g.rel, g.code, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	seen := map[string]int{}
+	for _, decl := range file.Decls {
+		gd, ok := decl.(*ast.GenDecl)
+		if !ok {
+			continue
+		}
+		for _, spec := range gd.Specs {
+			switch s := spec.(type) {
+			case *ast.TypeSpec:
+				seen[s.Name.Name]++
+			case *ast.ValueSpec:
+				for _, n := range s.Names {
+					seen[n.Name]++
+				}
+			}
+		}
+	}
+	for name, n := range seen {
+		if n > 1 {
+			t.Errorf("%s is declared %d times:\n%s", name, n, g.code)
+		}
+	}
+	for _, want := range append([]string{
+		"Spec2", "TypeURI2", "Extends2", "Extends2A", "Deprecation2", "PayloadSchemaJSON2",
+		"ResponseSpec2", "ResponseTypeURI2", "ResponsePayloadSchemaJSON2",
+		"TypeURI_", "KindSpec_", "KindSpec", "ResponseSpec3", "PayloadSchemaJSON3",
+		"Thing", "Response", "Payload",
+	}, tailIdentifiers...) {
+		if seen[want] != 1 {
+			t.Errorf("%s is declared %d times, want once:\n%s", want, seen[want], g.code)
 		}
 	}
 }

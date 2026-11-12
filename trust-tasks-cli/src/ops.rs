@@ -186,6 +186,28 @@ fn open_lock(project: &Project, registry_url: &str) -> Result<Lock> {
     Ok(Lock::load(&project.lock_path())?.unwrap_or_else(|| Lock::new(registry_url.to_string())))
 }
 
+/// When `--registry` (or `TRUST_TASKS_REGISTRY`) names a registry the manifest
+/// does not, the lock records it but `trust-tasks.toml` does not — so a later
+/// command without the flag, `check` in CI say, sees a lock resolved against
+/// another registry. Say so, and how to make the choice stick.
+fn note_registry_not_in_manifest(manifest: &Manifest, ctx: &Ctx, registry_url: &str) -> Result<()> {
+    if ctx.registry.is_none() {
+        return Ok(());
+    }
+    let declared = manifest
+        .registry()?
+        .map(|r| crate::registry::normalize(&r))
+        .unwrap_or_else(|| crate::registry::DEFAULT_REGISTRY.to_string());
+    if declared != registry_url {
+        note(format_args!(
+            "{LOCKFILE} records registry {registry_url}, but {MANIFEST} names {declared}: a command \
+             run without --registry / TRUST_TASKS_REGISTRY will report the lock as resolved against \
+             another registry. To keep {registry_url}, set `registry = \"{registry_url}\"` in {MANIFEST}"
+        ));
+    }
+    Ok(())
+}
+
 /// Refuses a source named for the first segment of an official task the
 /// manifest pins: the two would share a top-level namespace in every
 /// language's generated code. Checked against the manifest so the error
@@ -225,6 +247,9 @@ pub fn add(ctx: &Ctx, args: &[String]) -> Result<()> {
         }
     }
     let registry_url = effective_registry(&manifest, ctx.registry)?;
+    if requests.keys().any(|id| id.source.is_none()) {
+        note_registry_not_in_manifest(&manifest, ctx, &registry_url)?;
+    }
     let old = Lock::load(&project.lock_path())?;
     let mut lock = old
         .clone()
@@ -382,6 +407,9 @@ pub fn update(ctx: &Ctx, slugs: &[String], to_latest: bool) -> Result<bool> {
     let mut manifest = project.manifest(false)?;
     check_namespaces(&manifest)?;
     let registry_url = effective_registry(&manifest, ctx.registry)?;
+    if manifest.tasks.keys().any(|id| id.source.is_none()) {
+        note_registry_not_in_manifest(&manifest, ctx, &registry_url)?;
+    }
     let old = Lock::load(&project.lock_path())?;
     let mut lock = open_lock(&project, &registry_url)?;
     if lock.registry != registry_url {
@@ -606,8 +634,10 @@ pub fn check(ctx: &Ctx) -> Result<bool> {
     let official_used = lock.entries.keys().any(|(id, _)| id.source.is_none());
     if official_used && lock.registry != registry_url {
         problems.push(format!(
-            "{LOCKFILE} was resolved against {} but the registry is {registry_url} — run `trust-tasks update`",
-            lock.registry
+            "{LOCKFILE} was resolved against {locked} but the registry is {registry_url} — to keep \
+             {locked}, set `registry = \"{locked}\"` in {MANIFEST} (or pass --registry {locked} / \
+             set TRUST_TASKS_REGISTRY); to move to {registry_url}, run `trust-tasks update`",
+            locked = lock.registry
         ));
     }
     if let Err(e) = check_namespaces(&manifest) {

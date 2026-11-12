@@ -204,4 +204,15 @@ jobs:
             GIT_CONFIG_KEY_0="http.https://github.com/.extraheader" \
             GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $auth" \
             git push -f origin "$branch"
-          gh pr create --base main --head "$branch" --title "$title" --body-file "$RUNNER_TEMP/body.md"
+          # A re-run for the same as-of date finds its PR already open: refresh
+          # it rather than fail at `gh pr create` after the branch was rewritten.
+          # REST, not `gh pr edit`, for the reason release-pr.sh gives (the
+          # token has `repo` only; `gh pr edit` asks GraphQL for `read:org`).
+          existing=$(gh pr list --head "$branch" --state open --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh api --silent -X PATCH "repos/{owner}/{repo}/pulls/$existing" \
+              -f title="$title" -f body="$(cat "$RUNNER_TEMP/body.md")"
+            echo "::notice::updated PR #$existing"
+          else
+            gh pr create --base main --head "$branch" --title "$title" --body-file "$RUNNER_TEMP/body.md"
+          fi
