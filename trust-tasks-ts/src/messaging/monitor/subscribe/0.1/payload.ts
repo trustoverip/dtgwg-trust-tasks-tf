@@ -6,6 +6,7 @@
 import type { Ext, MonitorFilter, TrafficChannel, TrafficDirection, TrafficStage, Vid, WireProtocol } from "../../../../_shared/components.js";
 
 
+/** @deprecated superseded by messaging/monitor/subscribe/0.2 */
 export interface MessagingSubscribeToTrafficMonitorPayload {
   filter?: MonitorFilter;
   /**
@@ -27,6 +28,8 @@ export interface MessagingSubscribeToTrafficMonitorPayload {
 }
 /**
  * The success response to a messaging/monitor/subscribe request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/monitor/subscribe/0.1#response.
+ *
+ * @deprecated superseded by messaging/monitor/subscribe/0.2
  */
 export interface MessagingSubscribeToTrafficMonitorResponsePayload {
   subscriptionId: string;
@@ -65,15 +68,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by messaging/monitor/subscribe/0.2";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by messaging/monitor/subscribe/0.2
+ */
 export type Payload = MessagingSubscribeToTrafficMonitorPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/messaging/monitor/subscribe/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by messaging/monitor/subscribe/0.2
+ */
 export type Response = MessagingSubscribeToTrafficMonitorResponsePayload;
 
 /**

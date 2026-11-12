@@ -66,6 +66,17 @@ const (
 	MuxSourceAttach MuxSource = "attach"
 )
 
+// MuxWire The wire a mux connection speaks: `didcomm`, a DIDComm WebSocket that
+// negotiated the `didcomm-mux` subprotocol; `tsp`, a raw-TSP WebSocket that negotiated
+// `tsp-mux`. The same values messaging/mux/connections reports for a connection's `wire`.
+type MuxWire string
+
+// Values MuxWire may take, per this specification's schema.
+const (
+	MuxWireDidcomm MuxWire = "didcomm"
+	MuxWireTsp     MuxWire = "tsp"
+)
+
 // GrantID A grant's identifier, chosen by the member DID's signer and carried in its
 // grant statement; a UUID is RECOMMENDED. A mediator refuses a grant whose identifier is
 // already on the member DID's record.

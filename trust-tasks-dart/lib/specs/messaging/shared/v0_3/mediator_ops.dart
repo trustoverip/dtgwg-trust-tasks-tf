@@ -546,3 +546,236 @@ class MonitorFilter {
         if (failuresOnly != null) 'failuresOnly': failuresOnly!,
       };
 }
+
+/// What happened to a member DID's place on a mux connection, as messaging/mux/event
+/// reports it to the connection's principal. `attached`: the member joined the
+/// connection, or its scope or expiry there changed. `detached`: the member left the
+/// connection, or a stored grant of it was not attached on connect.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const MembershipChange(String value) {
+  static const MembershipChange attached = MembershipChange('attached');
+  static const MembershipChange detached = MembershipChange('detached');
+
+  /// Every value this specification's schema permits.
+  static const List<MembershipChange> values = <MembershipChange>[
+    attached,
+    detached
+  ];
+}
+
+/// The wire a mux connection speaks: `didcomm`, a DIDComm WebSocket that negotiated
+/// the `didcomm-mux` subprotocol; `tsp`, a raw-TSP WebSocket that negotiated
+/// `tsp-mux`. The same values messaging/mux/connections reports for a connection's
+/// `wire`.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const MuxWire(String value) {
+  static const MuxWire didcomm = MuxWire('didcomm');
+  static const MuxWire tsp = MuxWire('tsp');
+
+  /// Every value this specification's schema permits.
+  static const List<MuxWire> values = <MuxWire>[didcomm, tsp];
+}
+
+/// How a member came to be on a connection: through a stored grant, or through a
+/// session attach bound to that connection.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const MuxSource(String value) {
+  static const MuxSource grant = MuxSource('grant');
+  static const MuxSource attach = MuxSource('attach');
+
+  /// Every value this specification's schema permits.
+  static const List<MuxSource> values = <MuxSource>[grant, attach];
+}
+
+/// The reason carried by one member's change in a messaging/mux/event `attached` or
+/// `detached` event: exactly the AttachReason values followed by the DetachReason
+/// values, with their meanings. An `attached` event carries only AttachReason values
+/// and a `detached` event only DetachReason values. One closed set rather than a
+/// union, so every generated binding types it as one enumeration; it MUST be kept
+/// equal to the two sets it joins.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const MemberChangeReason(String value) {
+  static const MemberChangeReason connect = MemberChangeReason('connect');
+  static const MemberChangeReason grant = MemberChangeReason('grant');
+  static const MemberChangeReason attach = MemberChangeReason('attach');
+  static const MemberChangeReason reactivated =
+      MemberChangeReason('reactivated');
+  static const MemberChangeReason revokedByMember =
+      MemberChangeReason('revokedByMember');
+  static const MemberChangeReason revokedByPrincipal =
+      MemberChangeReason('revokedByPrincipal');
+  static const MemberChangeReason epochBumped =
+      MemberChangeReason('epochBumped');
+  static const MemberChangeReason suspendedUnknownKey =
+      MemberChangeReason('suspendedUnknownKey');
+  static const MemberChangeReason keyRotated = MemberChangeReason('keyRotated');
+  static const MemberChangeReason expired = MemberChangeReason('expired');
+  static const MemberChangeReason accountBlocked =
+      MemberChangeReason('accountBlocked');
+  static const MemberChangeReason superseded = MemberChangeReason('superseded');
+  static const MemberChangeReason admin = MemberChangeReason('admin');
+  static const MemberChangeReason detachRequested =
+      MemberChangeReason('detachRequested');
+  static const MemberChangeReason accountRemoved =
+      MemberChangeReason('accountRemoved');
+  static const MemberChangeReason resolutionFailed =
+      MemberChangeReason('resolutionFailed');
+  static const MemberChangeReason connectionFull =
+      MemberChangeReason('connectionFull');
+
+  /// Every value this specification's schema permits.
+  static const List<MemberChangeReason> values = <MemberChangeReason>[
+    connect,
+    grant,
+    attach,
+    reactivated,
+    revokedByMember,
+    revokedByPrincipal,
+    epochBumped,
+    suspendedUnknownKey,
+    keyRotated,
+    expired,
+    accountBlocked,
+    superseded,
+    admin,
+    detachRequested,
+    accountRemoved,
+    resolutionFailed,
+    connectionFull
+  ];
+}
+
+/// The mediator's identifier for one authenticated connection, as announced in that
+/// connection's `ready` event.
+typedef SessionId = String;
+
+/// One change to the membership of one mux connection at the mediator: a member DID
+/// attached to or detached from a principal's connection. Not a step in the life of a
+/// message, so it is not a MonitorEvent and carries none of its members. Carries
+/// metadata only — never a message, a signed statement, a nonce or key material.
+class MonitorMembershipEvent {
+  const MonitorMembershipEvent({
+    required this.occurredAt,
+    required this.change,
+    required this.principal,
+    required this.member,
+    required this.wire,
+    required this.source,
+    required this.reason,
+    this.sessionId,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory MonitorMembershipEvent.fromJson(Map<String, dynamic> json) =>
+      MonitorMembershipEvent(
+        occurredAt: json['occurredAt'] as String,
+        change: MembershipChange(json['change'] as String),
+        principal: json['principal'] as String,
+        member: json['member'] as String,
+        wire: MuxWire(json['wire'] as String),
+        source: MuxSource(json['source'] as String),
+        reason: MemberChangeReason(json['reason'] as String),
+        sessionId: json['sessionId'] as String?,
+      );
+
+  /// When the change took effect, with sub-second precision where the mediator has it.
+  final String occurredAt;
+  final MembershipChange change;
+
+  /// The DID the connection is authenticated as, in the same form the mediator uses for
+  /// accounts.
+  final Vid principal;
+
+  /// The member DID that attached or detached, in the same form the mediator uses for
+  /// accounts.
+  final Vid member;
+  final MuxWire wire;
+
+  /// Whether the member rides, or rode, the connection through a stored grant or a
+  /// session attach.
+  final MuxSource source;
+
+  /// Why, exactly as the messaging/mux/event entry for the change reports it: an
+  /// AttachReason value when `change` is `attached`, a DetachReason value when it is
+  /// `detached`.
+  final MemberChangeReason reason;
+
+  /// The connection's identifier, as its `ready` event announced it and
+  /// messaging/mux/connections lists it. Absent when the mediator does not report it.
+  final SessionId? sessionId;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'occurredAt': occurredAt,
+        'change': change.value,
+        'principal': principal,
+        'member': member,
+        'wire': wire.value,
+        'source': source.value,
+        'reason': reason.value,
+        if (sessionId != null) 'sessionId': sessionId!,
+      };
+}
+
+/// Opts a monitor subscription in to mux membership events and selects which. Its
+/// presence is the opt-in: a subscription without one receives no membership events.
+/// Every member present narrows the selection (members are ANDed; values within one
+/// member are ORed); an empty object selects every membership event the requester is
+/// entitled to see.
+class MembershipFilter {
+  const MembershipFilter({
+    this.dids,
+    this.changes,
+    this.wires,
+    this.sources,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory MembershipFilter.fromJson(Map<String, dynamic> json) =>
+      MembershipFilter(
+        dids: json['dids'] == null
+            ? null
+            : (json['dids'] as List<dynamic>).map((e) => e as String).toList(),
+        changes: json['changes'] == null
+            ? null
+            : (json['changes'] as List<dynamic>)
+                .map((e) => MembershipChange(e as String))
+                .toList(),
+        wires: json['wires'] == null
+            ? null
+            : (json['wires'] as List<dynamic>)
+                .map((e) => MuxWire(e as String))
+                .toList(),
+        sources: json['sources'] == null
+            ? null
+            : (json['sources'] as List<dynamic>)
+                .map((e) => MuxSource(e as String))
+                .toList(),
+      );
+
+  /// Only events whose `principal` or `member` is one of these accounts.
+  final List<Vid>? dids;
+  final List<MembershipChange>? changes;
+  final List<MuxWire>? wires;
+  final List<MuxSource>? sources;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        if (dids != null) 'dids': dids!,
+        if (changes != null) 'changes': changes!.map((e) => e.value).toList(),
+        if (wires != null) 'wires': wires!.map((e) => e.value).toList(),
+        if (sources != null) 'sources': sources!.map((e) => e.value).toList(),
+      };
+}

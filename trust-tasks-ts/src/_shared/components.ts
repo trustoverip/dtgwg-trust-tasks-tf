@@ -1311,6 +1311,10 @@ export type MemberStateV2 = "offered" | "admitted" | "suspended" | "removed";
  */
 export type MembersOnly = boolean;
 /**
+ * What happened to a member DID's place on a mux connection, as messaging/mux/event reports it to the connection's principal. `attached`: the member joined the connection, or its scope or expiry there changed. `detached`: the member left the connection, or a stored grant of it was not attached on connect.
+ */
+export type MembershipChange = "attached" | "detached";
+/**
  * How the member came to be in the group. `added`: by a manager. `joined`: they joined an open group. `requestApproved`: a manager approved their request. `rule`: a dynamic group's rule admits them.
  */
 export type MembershipSource = "added" | "joined" | "requestApproved" | "rule";
@@ -1524,6 +1528,10 @@ export type MuxScopeValue = "receive" | "pickup" | "delete" | "send";
  * How a member came to be on a connection: through a stored grant, or through a session attach bound to that connection.
  */
 export type MuxSource = "grant" | "attach";
+/**
+ * The wire a mux connection speaks: `didcomm`, a DIDComm WebSocket that negotiated the `didcomm-mux` subprotocol; `tsp`, a raw-TSP WebSocket that negotiated `tsp-mux`. The same values messaging/mux/connections reports for a connection's `wire`.
+ */
+export type MuxWire = "didcomm" | "tsp";
 /**
  * Scopes one application's records within a context, so several tools can share a context without colliding — `openvtc`, `cnm`, an agent runtime. The maintainer MUST NOT interpret the value; it is an opaque partition name. Namespaces are first-come and unreserved, so an application SHOULD pick a stable, specific one: a future per-namespace ACL would grant on this exact string, which makes renaming a namespace a migration rather than an edit.
  */
@@ -12019,6 +12027,30 @@ export interface MemberResponse {
  */
 export interface Membership {}
 /**
+ * Opts a monitor subscription in to mux membership events and selects which. Its presence is the opt-in: a subscription without one receives no membership events. Every member present narrows the selection (members are ANDed; values within one member are ORed); an empty object selects every membership event the requester is entitled to see.
+ */
+export interface MembershipFilter {
+  /**
+   * Only events whose `principal` or `member` is one of these accounts.
+   *
+   * @minItems 1
+   * @maxItems 100
+   */
+  dids?: [Vid, ...Vid[]];
+  /**
+   * @minItems 1
+   */
+  changes?: [MembershipChange, ...MembershipChange[]];
+  /**
+   * @minItems 1
+   */
+  wires?: [MuxWire, ...MuxWire[]];
+  /**
+   * @minItems 1
+   */
+  sources?: [MuxSource, ...MuxSource[]];
+}
+/**
  * A memory item as the maintainer holds it. `value` is absent in two distinct situations and a consumer MUST NOT conflate them: the item is a tombstone (`deleted` is true), or the caller asked for a metadata-only view (`vta/memory/list` without `includeValues`). This is why `deleted` is required rather than defaulted — a consumer that infers deletion from an absent value gets the tombstone case wrong exactly when convergence depends on it.
  */
 export interface MemoryRecord {
@@ -12381,6 +12413,37 @@ export interface MonitorFilter {
    * Only events that carry an `outcome`.
    */
   failuresOnly?: boolean;
+}
+/**
+ * One change to the membership of one mux connection at the mediator: a member DID attached to or detached from a principal's connection. Not a step in the life of a message, so it is not a MonitorEvent and carries none of its members. Carries metadata only — never a message, a signed statement, a nonce or key material.
+ */
+export interface MonitorMembershipEvent {
+  /**
+   * When the change took effect, with sub-second precision where the mediator has it.
+   */
+  occurredAt: string;
+  change: MembershipChange;
+  /**
+   * The DID the connection is authenticated as, in the same form the mediator uses for accounts.
+   */
+  principal: Vid;
+  /**
+   * The member DID that attached or detached, in the same form the mediator uses for accounts.
+   */
+  member: Vid;
+  wire: MuxWire;
+  /**
+   * Whether the member rides, or rode, the connection through a stored grant or a session attach.
+   */
+  source: MuxSource;
+  /**
+   * Why, exactly as the messaging/mux/event entry for the change reports it: an AttachReason value when `change` is `attached`, a DetachReason value when it is `detached`.
+   */
+  reason: MemberChangeReason;
+  /**
+   * The connection's identifier, as its `ready` event announced it and messaging/mux/connections lists it. Absent when the mediator does not report it.
+   */
+  sessionId?: SessionId_MessagingMuxV0_1;
 }
 /**
  * The W3C Data Integrity proof embedded in a mux statement, made by the member DID: the format and verifier Trust Tasks already use for document proofs (SPEC §4.7). The proof covers the whole statement except `proof` itself, as the cryptosuite defines. Closed: a member Data Integrity defines but this list omits is refused.

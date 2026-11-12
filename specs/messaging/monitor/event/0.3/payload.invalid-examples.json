@@ -1,0 +1,90 @@
+[
+  {
+    "note": "Membership event with an unknown change.",
+    "payload": {
+      "subscriptionId": "mon_1",
+      "seq": 1,
+      "events": [],
+      "dropped": 0,
+      "membership": [
+        {
+          "occurredAt": "2026-11-13T09:00:00Z",
+          "change": "moved",
+          "principal": "did:web:phone.example",
+          "member": "did:web:alice.example",
+          "wire": "tsp",
+          "source": "grant",
+          "reason": "connect"
+        }
+      ],
+      "membershipDropped": 0,
+      "expiresAt": "2026-11-13T09:10:00Z"
+    }
+  },
+  {
+    "note": "Membership event carrying a scope — membership events are metadata about who rides a connection, not what they may do there.",
+    "payload": {
+      "subscriptionId": "mon_1",
+      "seq": 1,
+      "events": [],
+      "dropped": 0,
+      "membership": [
+        {
+          "occurredAt": "2026-11-13T09:00:00Z",
+          "change": "attached",
+          "principal": "did:web:phone.example",
+          "member": "did:web:alice.example",
+          "wire": "didcomm",
+          "source": "attach",
+          "reason": "attach",
+          "scope": ["receive"]
+        }
+      ],
+      "membershipDropped": 0,
+      "expiresAt": "2026-11-13T09:10:00Z"
+    }
+  },
+  {
+    "note": "Membership event without a reason.",
+    "payload": {
+      "subscriptionId": "mon_1",
+      "seq": 1,
+      "events": [],
+      "dropped": 0,
+      "membership": [
+        {
+          "occurredAt": "2026-11-13T09:00:00Z",
+          "change": "detached",
+          "principal": "did:web:phone.example",
+          "member": "did:web:alice.example",
+          "wire": "didcomm",
+          "source": "grant"
+        }
+      ],
+      "membershipDropped": 0,
+      "expiresAt": "2026-11-13T09:10:00Z"
+    }
+  },
+  {
+    "note": "A wire that is not a mux wire — the subprotocol name is not the value.",
+    "payload": {
+      "subscriptionId": "mon_1",
+      "seq": 1,
+      "events": [],
+      "dropped": 0,
+      "membership": [
+        {
+          "occurredAt": "2026-11-13T09:00:00Z",
+          "change": "attached",
+          "principal": "did:web:phone.example",
+          "member": "did:web:alice.example",
+          "wire": "tsp-mux",
+          "source": "grant",
+          "reason": "connect"
+        }
+      ],
+      "membershipDropped": 0,
+      "expiresAt": "2026-11-13T09:10:00Z"
+    }
+  }
+]

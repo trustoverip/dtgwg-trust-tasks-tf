@@ -969,9 +969,11 @@ mod messaging {
         mod event {
             mod v0_1;
             mod v0_2;
+            mod v0_3;
         }
         mod subscribe {
             mod v0_1;
+            mod v0_2;
         }
         mod unsubscribe {
             mod v0_1;

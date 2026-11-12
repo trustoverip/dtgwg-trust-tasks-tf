@@ -5,6 +5,49 @@ package versions over its own API. Below 1.0 a breaking change bumps the leading
 non-zero component. Publishing is triggered by the
 `trust-tasks-ts-gen-v<version>` tag; see `RELEASING.md`.
 
+## 0.1.4 — 2026-11-12
+
+
+### Documentation
+
+- Fix drifted counts, release runbook, licences and stale examples across the four libraries (#1224)
+
+* docs(getting-started): move the worked example to acl/grant/0.3 and stamp issuedAt with issued_at_now()
+
+  The example pinned acl/grant/0.2, superseded by 0.3, and stamped issuedAt
+  with chrono::Utc::now(), the full-precision form #970 removed from the
+  libraries. The TS consumer example wrote toISOString() milliseconds into
+  document fields the same way. The dependency snippet now uses cargo add,
+  so it cannot name a stale version, and §4.4 describes the shared version
+  group instead of versions from 0.14.
+
+
+
+### Fixed
+
+- **ts-gen**: Generate locks that pin acl/grant/0.3, and move the consumer apps to it (#1229)
+
+* fix(ts-gen): accept a bare component's numbered intersection parts
+
+  A component whose schema has a type beside an anyOf (acl's Purpose, from
+  acl/_shared/0.3) compiles to Purpose = Purpose1 & Purpose2. A lock that
+  reaches one shape of Purpose names it bare, and the counter-suffixed
+  duplicate check then refused its own parts, so any lock pinning
+  acl/grant/0.3 failed to generate. The package names it Purpose_AclV0_3
+  over the whole registry and never hit it; build-ts-bindings.mjs gets the
+  same exclusion so the two checks stay diffable.
+
+- **ts,go,dart,rs**: Whole-second capability-client issuedAt, tested Dart core floors, TS default export condition, Go schema caching (#1214)
+
+* fix(dart-capability-client,go-capabilityclient,go-didcomm): stamp issuedAt in whole seconds and fail on entropy failure
+
+  The Dart capability client stamped issuedAt with toIso8601String (full
+  precision); it now uses the core's systemClock. The Go port now stamps
+  through trusttasks.SystemClock. The TS port already stamped whole seconds.
+
+  The Go capabilityclient and didcomm UUIDv4 generators ignored crypto/rand
+  errors and would mint an all-zero id; they now panic, as tsp's does.
+
 ## 0.1.3 — 2026-11-05
 
 ## 0.1.2 — 2026-10-28
