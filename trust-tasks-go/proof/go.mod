@@ -10,4 +10,4 @@ module github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/proof
 
 go 1.22
 
-require github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go v0.1.2
+require github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go v0.10.22
