@@ -1,6 +1,7 @@
 package proof
 
 import (
+	"bytes"
 	"context"
 	"crypto/ecdsa"
 	"crypto/ed25519"
@@ -219,6 +220,10 @@ func (v *Verifier) Verify(_ context.Context, doc json.RawMessage) error {
 		return failf(IssuerMismatch, "verificationMethod is controlled by %s, not the document issuer %s", vmDid, issuer)
 	}
 
+	if err := checkProofContext(obj, proof); err != nil {
+		return err
+	}
+
 	key, err := publicKeyFromDidKey(verificationMethod)
 	if err != nil {
 		return failf(SignatureInvalid, "verificationMethod is not a did:key this verifier supports: %v", err)
@@ -344,8 +349,45 @@ func suiteMatchesCurve(suite Cryptosuite, curve Curve) error {
 	return nil
 }
 
+// checkProofContext refuses a proof whose @context disagrees with the
+// document's. eddsa-jcs-2022 / ecdsa-jcs-2019 §3.3.2 step 4: "If
+// proofOptions.@context exists: Check that the securedDocument.@context starts
+// with all values contained in the proofOptions.@context in the same order.
+// Otherwise, set verified to false". A proof without @context is hashed as
+// received (step 4 does not apply).
+//
+// This verifier requires the two to be equal, not only the proof's to be a
+// prefix. The cryptosuite verifies a longer document @context by hashing the
+// proof's in its place (step 4.2) and returning that rewritten document as the
+// verified one; a ProofVerifier returns no document, so the caller would go on
+// to act on @context entries no signature covers. The Rust, TypeScript and
+// Dart verifiers apply the same rule.
+func checkProofContext(doc, proof map[string]any) error {
+	proofContext, ok := proof["@context"]
+	if !ok {
+		return nil
+	}
+	docContext, ok := doc["@context"]
+	if !ok {
+		return failf(MalformedProof, "proof carries @context but the document has none")
+	}
+	a, err := canonicalize(proofContext)
+	if err != nil {
+		return failf(MalformedProof, "canonicalize proof @context: %v", err)
+	}
+	b, err := canonicalize(docContext)
+	if err != nil {
+		return failf(MalformedProof, "canonicalize document @context: %v", err)
+	}
+	if !bytes.Equal(a, b) {
+		return failf(MalformedProof, "proof @context does not equal the document's @context")
+	}
+	return nil
+}
+
 // hashDataFor builds the signing input: the suite digest of the proof
-// configuration (the proof minus proofValue) concatenated with the suite digest
+// configuration (the proof minus proofValue, as received:
+// @context included when it carries one) concatenated with the suite digest
 // of the document minus its proof, configuration first (VC Data Integrity §3).
 func hashDataFor(curve Curve, proof, doc map[string]any) ([]byte, error) {
 	config := make(map[string]any, len(proof))

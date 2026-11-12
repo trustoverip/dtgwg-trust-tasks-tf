@@ -2,8 +2,9 @@ import { base58 } from "@scure/base";
 
 /**
  * A cryptosuite this package can verify, and the curve behind it. Only the JCS
- * suites: a Trust Task document carries no JSON-LD `@context`, so the RDF
- * canonicalisation the `-rdfc-` suites need has nothing to expand.
+ * suites: a Trust Task document is processed as JSON whether or not it carries
+ * the optional `@context` (SPEC §4.7.1), so it is never expanded and the RDF
+ * canonicalisation the `-rdfc-` suites need does not apply.
  */
 export type Cryptosuite = "eddsa-jcs-2022" | "ecdsa-jcs-2019";
 

@@ -65,6 +65,12 @@ a `did:key` authorises; `keyAgreement` and any other value are refused
 passed, or when any of its fields is out of range (February 30, hour 24, a leap
 second, an offset beyond ±14:00).
 
+A proof that carries `@context` must carry the document's `@context`, exactly,
+or it fails as `malformedProof`. eddsa-jcs-2022 / ecdsa-jcs-2019 §3.3.2 step 4
+checks only that the document's starts with the proof's; the verifier returns
+no document, so it does not accept `@context` entries the signature does not
+cover. The proof configuration is hashed as received.
+
 An Ed25519 key must be a canonically encoded point of large order.
 `crypto/ed25519` accepts a non-canonical or small-order key, and a small-order
 key satisfies the verification equation for any message with a chosen
@@ -90,7 +96,9 @@ signed, err := signer.Sign(docJSON, proof.SignOptions{})     // issuer must be s
 signing relationship. `ProofPurpose` defaults to `authentication`, the purpose
 SPEC §4.7.3 recommends for a Trust Task document. `created` is written UTC,
 `Z`-terminated, with no sub-second field (chrono's form), so the same key over
-the same document and `created` reproduces the Rust crate's `proofValue`.
+the same document and `created` reproduces the Rust crate's `proofValue`. A
+document's `@context` is copied into the proof, as the cryptosuites' Create
+Proof algorithm requires.
 
 `SignerFromPrivateKey` takes an Ed25519 seed of 32 bytes, or an ECDSA scalar of
 exactly 32 bytes (P-256) or 48 bytes (P-384) in the range [1, n-1]. Any other

@@ -157,6 +157,11 @@ export class DataIntegrityProofVerifier implements ProofVerifier {
       return fail("issuerMismatch", `verificationMethod is controlled by ${vmDid}, not the document issuer ${issuer}`);
     }
 
+    const contextError = proofContextError(doc as Record<string, unknown>, p);
+    if (contextError !== undefined) {
+      return fail("malformedProof", contextError);
+    }
+
     const key = publicKeyFromDidKey(p.verificationMethod as string);
     if (key === null) {
       return fail("signatureInvalid", "verificationMethod is not a did:key this verifier supports");
@@ -176,7 +181,8 @@ export class DataIntegrityProofVerifier implements ProofVerifier {
       return fail("signatureInvalid", `proofValue is not base58btc multibase: ${String(e)}`);
     }
 
-    // Hash the proof configuration (proof minus proofValue) and the document
+    // Hash the proof configuration (proof minus proofValue) exactly as
+    // received — with its `@context`, when it carries one — and the document
     // minus its proof, each with the suite's digest, and verify the signature
     // over the concatenation, configuration first.
     const { proofValue: _pv, ...config } = p;
@@ -200,6 +206,40 @@ export class DataIntegrityProofVerifier implements ProofVerifier {
       return fail("signatureInvalid", `verification error: ${String(e)}`);
     }
   }
+}
+
+/**
+ * Why `proof`'s `@context` disagrees with `doc`'s, or `undefined` when it does
+ * not. eddsa-jcs-2022 / ecdsa-jcs-2019 §3.3.2 step 4: "If proofOptions.@context
+ * exists: Check that the securedDocument.@context starts with all values
+ * contained in the proofOptions.@context in the same order. Otherwise, set
+ * verified to false". A proof without `@context` is checked as received (step
+ * 4 does not apply).
+ *
+ * This verifier requires the two to be **equal**, not only the proof's to be a
+ * prefix. The cryptosuite verifies a longer document `@context` by hashing the
+ * proof's in its place (step 4.2) and returning that rewritten document as the
+ * verified one; {@link ProofVerifier.verify} returns no document, so the caller
+ * would go on to act on `@context` entries no signature covers. The Rust, Go
+ * and Dart verifiers apply the same rule.
+ */
+function proofContextError(doc: Record<string, unknown>, proof: Record<string, unknown>): string | undefined {
+  if (!Object.prototype.hasOwnProperty.call(proof, "@context")) return undefined;
+  if (!Object.prototype.hasOwnProperty.call(doc, "@context")) {
+    return "proof carries @context but the document has none";
+  }
+  let a: Uint8Array;
+  let b: Uint8Array;
+  try {
+    a = canonicalBytes(proof["@context"]);
+    b = canonicalBytes(doc["@context"]);
+  } catch (e) {
+    return `@context cannot be canonicalized: ${String(e)}`;
+  }
+  if (a.length !== b.length || !a.every((byte, i) => byte === b[i])) {
+    return "proof @context does not equal the document's @context";
+  }
+  return undefined;
 }
 
 /**
