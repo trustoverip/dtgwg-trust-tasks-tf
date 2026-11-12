@@ -37,11 +37,19 @@ import (
 
 verifier := proof.NewVerifier() // did:key, both suites, 1-minute clock skew
 
+// body is the document exactly as it arrived; doc is its decoded form.
 outcome, err := trusttasks.ConsumeInbound(ctx, trusttasks.ConsumeOptions[P, R]{
     // ...
+    Doc:         doc,
+    Received:    body,
     ProofPolicy: trusttasks.ProofPolicy{Kind: trusttasks.ProofVerify, Verifier: verifier},
 })
 ```
+
+**Set `Received`.** Without it the proof is verified over a re-encoding of
+`doc`, and a typed decode drops every payload member the Go type does not model,
+so a validly signed document carrying such a member fails `proofInvalid`. With
+it, the proof is verified over the bytes the producer signed.
 
 `Verifier` binds the proof to the document's in-band `issuer`: a valid signature
 proves only that *some* key signed, so that key's `did:key` must also be the

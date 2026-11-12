@@ -385,22 +385,24 @@ type RejectReason struct {
 // side. Build error responses with [RejectWith] / [RejectWithRecipient], or read
 // the URI from here; do not spell it out again.
 //
-// The Rust counterpart is trust_task_error_type_uri() in trust-tasks-rs and the
-// TypeScript one is TRUST_TASK_ERROR_TYPE_URI in @openvtc/trust-tasks, both kept
-// equal to this value. scripts/check-bindings-conformance.mjs enforces it.
+// The Rust, TypeScript and Dart counterparts are TRUST_TASK_ERROR_TYPE_URI in
+// trust-tasks-rs and @openvtc/trust-tasks and trustTaskErrorTypeUri in
+// trust_tasks, all kept equal to this value; scripts/check-bindings-conformance.mjs
+// enforces it.
 //
-// 0.5 because this runtime populates the inResponseTo member of §8.2 and can
-// emit idConflict (§8.3), which is absent from 0.3's code enum and does not match
-// its extended-code pattern — a document carrying it would not validate as 0.3.
-// Per §5.2 forward-minor compatibility a 0.3 consumer SHOULD accept it.
+// The version is the one whose schema covers what this runtime writes: the
+// inResponseTo member of §8.2 and every standard code it can emit. Per §5.2
+// forward-minor compatibility a consumer of an earlier 0.x SHOULD accept it.
+// Moving it is a change to this constant alone; do not restate the number in
+// prose.
 const TrustTaskErrorTypeURI = "https://trusttasks.org/spec/trust-task-error/0.6"
 
 // ValidateBasic applies SPEC §7.2 items 4 and 5a — expiry and wrong-recipient.
 //
-// This is not the full §7.2 check. Items 1–3 (framework schema, payload schema,
-// unknown type) belong to the caller's parse and dispatch; items 5b, 7 and 8 need
-// the specification's policy and live in [EnforceSpecPolicy]. [ConsumeInbound]
-// bundles 4–8.
+// This is not the full §7.2 check. Item 1 (framework schema) belongs to the
+// caller's parse; items 5b, 7 and 8 need the specification's policy and live in
+// [EnforceSpecPolicy]; item 13 is [ValidateFreshness]. [ConsumeInbound] bundles
+// items 2–8, 11 and 13.
 //
 // Returns nil when the document passes.
 func ValidateBasic[P any](doc *Document[P], now time.Time, myVID string) *RejectReason {

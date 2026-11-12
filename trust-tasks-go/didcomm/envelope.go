@@ -205,9 +205,12 @@ func PackTrustTask(doc json.RawMessage, sender *Identity, recipient *PeerKey) ([
 	return packAuthcrypt(plaintext, sender.priv, sender.Kid, recipient.pub, recipient.Kid)
 }
 
-// ResolveSender maps an authenticated sender DID to its X25519 key-agreement
-// key. The binding does no DID resolution itself (the Go-style model): the
-// caller supplies this, looking the DID up in its own store.
+// ResolveSender maps a sender DID — the bare DID of the envelope's skid, as
+// claimed and not yet authenticated — to its X25519 key-agreement key. The key
+// returned is what authenticates the skid: a forged one derives a
+// key-encryption key that fails to unwrap. The binding does no DID resolution
+// itself (the Go-style model): the caller supplies this, looking the DID up in
+// its own store.
 //
 // Return a non-nil error for a DID the store does not know. A nil *PeerKey, or
 // one not built with [NewPeerKey], is treated the same way: the envelope is
