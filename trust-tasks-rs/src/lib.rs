@@ -97,6 +97,7 @@ pub use payload::{Payload, RequestPayload, SpecPolicy};
 pub use proof::{
     erase_verifier, DynProofVerifier, ErasedVerifier, Proof, ProofVerifier, VerificationError,
 };
+pub use replay::received_document_digest;
 pub use replay::{
     document_digest, DocumentDigest, InMemoryReplayGuard, ReplayGuard, ReplayGuardError,
     ReplayPolicy, ReplayVerdict,

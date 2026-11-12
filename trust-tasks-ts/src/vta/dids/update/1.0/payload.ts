@@ -3,7 +3,7 @@
  * Source: specs/vta/dids/update/1.0/payload.schema.json
  */
 
-import type { ApprovalEvidenceKind, DidMethodName, DidVerificationRelationship, Ext, IdentityChange, IdentityChangePreview, IdentityKeyRole, KeyChangeApprovalState, KeyChangeOutcome, KeyType, PreviewWarning, Publication, PublishedArtifact, RecordedApproval, RecoverySigningRequest } from "../../../../_shared/components.js";
+import type { ApprovalEvidenceKind, DidMethodName, DidVerificationRelationship, Ext, IdentityChange, IdentityChangePreview, IdentityKeyRole, KeyAssuranceLevel, KeyChangeApprovalState, KeyChangeOutcome, KeyType, PreviewWarning, Publication, PublishedArtifact, RecordedApproval, RecoverySigningRequest } from "../../../../_shared/components.js";
 
 
 /**
@@ -67,7 +67,7 @@ export interface VTADIDsUpdateResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { ApprovalEvidenceKind, DidMethodName, DidVerificationRelationship, Ext, IdentityChange, IdentityChangePreview, IdentityKeyRole, KeyChangeApprovalState, KeyChangeOutcome, KeyType, PreviewWarning, Publication, PublishedArtifact, RecordedApproval, RecoverySigningRequest };
+export type { ApprovalEvidenceKind, DidMethodName, DidVerificationRelationship, Ext, IdentityChange, IdentityChangePreview, IdentityKeyRole, KeyAssuranceLevel, KeyChangeApprovalState, KeyChangeOutcome, KeyType, PreviewWarning, Publication, PublishedArtifact, RecordedApproval, RecoverySigningRequest };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/dids/update/1.0" as const;
@@ -377,8 +377,22 @@ export const PAYLOAD_SCHEMA = {
         },
         "recoverySigning": {
           "$ref": "#/$defs/RecoverySigningRequest"
+        },
+        "assuranceLevel": {
+          "$ref": "#/$defs/KeyAssuranceLevel",
+          "description": "The key assurance level the resulting document declares (CONVENTIONS.md §3.4)."
         }
       }
+    },
+    "KeyAssuranceLevel": {
+      "title": "KeyAssuranceLevel",
+      "type": "integer",
+      "enum": [
+        1,
+        2,
+        3
+      ],
+      "description": "A service DID's key assurance level (VTI-KEY-194; CONVENTIONS.md §3.4). `1` — single key: no `keyRoles`, one key signs everything. `2` — role-separated: `keyRoles`, with the `attestation` and `update` keys held by the VTA, which may derive them and back them up. `3` — recoverable: level 2 with those keys generated and in no backup, a recovery key held by a recovery custodian outside the VTA, and a witness enforcing it. Declared in the document's `keyAssurance` member."
     },
     "RecoverySigningRequest": {
       "title": "RecoverySigningRequest",
@@ -438,9 +452,10 @@ export const PAYLOAD_SCHEMA = {
         "selfPublish",
         "noWitnesses",
         "protectionBelowPolicy",
-        "recoveryKeyRevealed"
+        "recoveryKeyRevealed",
+        "roleKeysInBackups"
       ],
-      "description": "Conditions a human should be shown before approving. `singleKeyRole` — the role will hold one active key. `algorithmNotInAcceptedSet` — a verifier population the VTA knows of does not accept the new key's algorithm. `roleWillHaveNoClassicalKey` — every remaining key is post-quantum. `attestationReissuanceRequired` — revoking this attestation key obliges re-issuance and re-signed status lists (VTI-KEY-133). `selfPublish` — the VTA will not publish the change; the operator must. `noWitnesses` — the identifier has no witnesses, so a party holding the VTA's routine update key can drop the recovery commitment unobserved (CONVENTIONS.md §5.3). `protectionBelowPolicy` — a key will be held at a `ProtectionClass` below what the VTA's policy recommends for its role (a plain VTA holding an attestation key). `recoveryKeyRevealed` — this change uses the recovery key, which must be replaced by a fresh recovery commitment in the same change."
+      "description": "Conditions a human should be shown before approving. `singleKeyRole` — the role will hold one active key. `algorithmNotInAcceptedSet` — a verifier population the VTA knows of does not accept the new key's algorithm. `roleWillHaveNoClassicalKey` — every remaining key is post-quantum. `attestationReissuanceRequired` — revoking this attestation key obliges re-issuance and re-signed status lists (VTI-KEY-133). `selfPublish` — the VTA will not publish the change; the operator must. `noWitnesses` — the identifier has no witnesses, so a party holding the VTA's routine update key can lower its level unobserved (CONVENTIONS.md §5.4); a level-3 identity is refused instead (`vta/dids:witnessRequired`). `protectionBelowPolicy` — a key will be held at a `ProtectionClass` below what the VTA's policy recommends for its role (a plain VTA holding an attestation key). `recoveryKeyRevealed` — this change uses the recovery key, which must be replaced by a fresh recovery commitment in the same change. `roleKeysInBackups` — at level 2, the identity's `attestation` and `update` keys will be in this VTA's backups, so a backup and what unlocks it are a copy of the identity's seal and change authority (CONVENTIONS.md §3.4)."
     },
     "IdentityChange": {
       "title": "IdentityChange",
@@ -460,9 +475,10 @@ export const PAYLOAD_SCHEMA = {
             "rotateUpdateKey",
             "commitUpdateKey",
             "replaceRecoveryCommitment",
-            "useRecoveryKey"
+            "useRecoveryKey",
+            "declareAssuranceLevel"
           ],
-          "description": "`addKey` — a verification method joins its role's relationship and `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves its relationship and `keyRoles`, and stays in `verificationMethod` with `revoked` set to the compromise time (CONVENTIONS.md §9.1). `rotateUpdateKey` — the identifier's update authority moves to a committed routine successor. `commitUpdateKey` — a new routine successor is committed. `replaceRecoveryCommitment` — the recovery commitment changes. `useRecoveryKey` — the change is authorized by the recovery key, which the identifier then reveals."
+          "description": "`addKey` — a verification method joins its role's relationship and `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves its relationship and `keyRoles`, and stays in `verificationMethod` with `revoked` set to the compromise time (CONVENTIONS.md §9.1). `rotateUpdateKey` — the identifier's update authority moves to a committed routine successor. `commitUpdateKey` — a new routine successor is committed. `replaceRecoveryCommitment` — the recovery commitment changes. `useRecoveryKey` — the change is authorized by the recovery key, which the identifier then reveals. `declareAssuranceLevel` — the document's `keyAssurance` declares a new, higher key assurance level (CONVENTIONS.md §3.4); `role` is `update`, and `assuranceLevel` carries the level."
         },
         "role": {
           "$ref": "#/$defs/IdentityKeyRole"
@@ -485,6 +501,10 @@ export const PAYLOAD_SCHEMA = {
             "$ref": "#/$defs/DidVerificationRelationship"
           },
           "uniqueItems": true
+        },
+        "assuranceLevel": {
+          "$ref": "#/$defs/KeyAssuranceLevel",
+          "description": "`declareAssuranceLevel` only: the level declared."
         }
       }
     },
@@ -755,8 +775,22 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "recoverySigning": {
           "$ref": "#/$defs/RecoverySigningRequest"
+        },
+        "assuranceLevel": {
+          "$ref": "#/$defs/KeyAssuranceLevel",
+          "description": "The key assurance level the resulting document declares (CONVENTIONS.md §3.4)."
         }
       }
+    },
+    "KeyAssuranceLevel": {
+      "title": "KeyAssuranceLevel",
+      "type": "integer",
+      "enum": [
+        1,
+        2,
+        3
+      ],
+      "description": "A service DID's key assurance level (VTI-KEY-194; CONVENTIONS.md §3.4). `1` — single key: no `keyRoles`, one key signs everything. `2` — role-separated: `keyRoles`, with the `attestation` and `update` keys held by the VTA, which may derive them and back them up. `3` — recoverable: level 2 with those keys generated and in no backup, a recovery key held by a recovery custodian outside the VTA, and a witness enforcing it. Declared in the document's `keyAssurance` member."
     },
     "RecoverySigningRequest": {
       "title": "RecoverySigningRequest",
@@ -816,9 +850,10 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "selfPublish",
         "noWitnesses",
         "protectionBelowPolicy",
-        "recoveryKeyRevealed"
+        "recoveryKeyRevealed",
+        "roleKeysInBackups"
       ],
-      "description": "Conditions a human should be shown before approving. `singleKeyRole` — the role will hold one active key. `algorithmNotInAcceptedSet` — a verifier population the VTA knows of does not accept the new key's algorithm. `roleWillHaveNoClassicalKey` — every remaining key is post-quantum. `attestationReissuanceRequired` — revoking this attestation key obliges re-issuance and re-signed status lists (VTI-KEY-133). `selfPublish` — the VTA will not publish the change; the operator must. `noWitnesses` — the identifier has no witnesses, so a party holding the VTA's routine update key can drop the recovery commitment unobserved (CONVENTIONS.md §5.3). `protectionBelowPolicy` — a key will be held at a `ProtectionClass` below what the VTA's policy recommends for its role (a plain VTA holding an attestation key). `recoveryKeyRevealed` — this change uses the recovery key, which must be replaced by a fresh recovery commitment in the same change."
+      "description": "Conditions a human should be shown before approving. `singleKeyRole` — the role will hold one active key. `algorithmNotInAcceptedSet` — a verifier population the VTA knows of does not accept the new key's algorithm. `roleWillHaveNoClassicalKey` — every remaining key is post-quantum. `attestationReissuanceRequired` — revoking this attestation key obliges re-issuance and re-signed status lists (VTI-KEY-133). `selfPublish` — the VTA will not publish the change; the operator must. `noWitnesses` — the identifier has no witnesses, so a party holding the VTA's routine update key can lower its level unobserved (CONVENTIONS.md §5.4); a level-3 identity is refused instead (`vta/dids:witnessRequired`). `protectionBelowPolicy` — a key will be held at a `ProtectionClass` below what the VTA's policy recommends for its role (a plain VTA holding an attestation key). `recoveryKeyRevealed` — this change uses the recovery key, which must be replaced by a fresh recovery commitment in the same change. `roleKeysInBackups` — at level 2, the identity's `attestation` and `update` keys will be in this VTA's backups, so a backup and what unlocks it are a copy of the identity's seal and change authority (CONVENTIONS.md §3.4)."
     },
     "IdentityChange": {
       "title": "IdentityChange",
@@ -838,9 +873,10 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "rotateUpdateKey",
             "commitUpdateKey",
             "replaceRecoveryCommitment",
-            "useRecoveryKey"
+            "useRecoveryKey",
+            "declareAssuranceLevel"
           ],
-          "description": "`addKey` — a verification method joins its role's relationship and `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves its relationship and `keyRoles`, and stays in `verificationMethod` with `revoked` set to the compromise time (CONVENTIONS.md §9.1). `rotateUpdateKey` — the identifier's update authority moves to a committed routine successor. `commitUpdateKey` — a new routine successor is committed. `replaceRecoveryCommitment` — the recovery commitment changes. `useRecoveryKey` — the change is authorized by the recovery key, which the identifier then reveals."
+          "description": "`addKey` — a verification method joins its role's relationship and `keyRoles`. `retireKey` — a verification method leaves its relationship, `keyRoles` and the document. `revokeKey` — a verification method leaves its relationship and `keyRoles`, and stays in `verificationMethod` with `revoked` set to the compromise time (CONVENTIONS.md §9.1). `rotateUpdateKey` — the identifier's update authority moves to a committed routine successor. `commitUpdateKey` — a new routine successor is committed. `replaceRecoveryCommitment` — the recovery commitment changes. `useRecoveryKey` — the change is authorized by the recovery key, which the identifier then reveals. `declareAssuranceLevel` — the document's `keyAssurance` declares a new, higher key assurance level (CONVENTIONS.md §3.4); `role` is `update`, and `assuranceLevel` carries the level."
         },
         "role": {
           "$ref": "#/$defs/IdentityKeyRole"
@@ -863,6 +899,10 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "$ref": "#/$defs/DidVerificationRelationship"
           },
           "uniqueItems": true
+        },
+        "assuranceLevel": {
+          "$ref": "#/$defs/KeyAssuranceLevel",
+          "description": "`declareAssuranceLevel` only: the level declared."
         }
       }
     },

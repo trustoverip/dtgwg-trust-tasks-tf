@@ -58,12 +58,14 @@ it does not hold.
 
 ### 1.1 Service DIDs: optional and alpha
 
-The Verifiable Trust Infrastructure specification is being amended to name `did:webs` as
-an **optional** durable-identity method beside `did:webvh` and `did:scid:vh:1`, never the
-default (VTI-KEY-001 and VTI-KEY-003 as amended;
-[dtgwg-vti-spec#120](https://github.com/trustoverip/dtgwg-vti-spec/issues/120)). Under
-it, a node **MAY** take a `did:webs` identity, and **MUST NOT** require a peer that has
-not declared `did:webs` resolution to resolve it. These tasks implement that position:
+The Verifiable Trust Infrastructure specification names `did:webs` as an **optional**,
+alpha durable-identity method beside `did:webvh` and `did:scid:vh:1`, never the default
+(VTI-KEY-001, VTI-KEY-003;
+[dtgwg-vti-spec#121](https://github.com/trustoverip/dtgwg-vti-spec/pull/121)). Under
+it, a node **MAY** take a `did:webs` identity, **MUST NOT** require a peer to resolve it,
+and acts as it only toward a peer that has declared `"webs"` in its document's
+`resolvedMethods` (VTI-KEY-008), failing the exchange with `methodNotDeclared` otherwise
+(VTI-KEY-009). These tasks implement that position:
 
 1. A VTA **MAY** create a `did:webs` service DID, and **MUST** refuse one, with
    `vta/webs/dids/create:serviceDidNotPermitted`, unless its configuration enables

@@ -7,7 +7,7 @@ A method profile states what the method-neutral key-role family
 | Profile | `DidMethodName` | Status |
 |---|---|---|
 | [`webvh.md`](webvh.md) | `webvh`, `scid:vh` | **Eligible** |
-| [`webs.md`](webs.md) | `webs` | **Eligible with the key-role designation extension** (proposed to the did:webs specification; reference implementation in `affinidi-did-webs` 0.9.1); ineligible without it — criteria 4 and 6 of §3.2 |
+| [`webs.md`](webs.md) | `webs` | **Eligible with the key-role designation extension** (proposed to the did:webs specification; reference implementation in `affinidi-did-webs` 0.13.1); ineligible without it — criteria 4 and 6 of §3.2 |
 
 Ineligible by construction, with no profile needed (CONVENTIONS.md §3.2): `did:key`,
 `did:jwk`, `did:peer` (every numalgo), `did:web`. A VTA refuses each with

@@ -51,6 +51,8 @@ export {
   type TransportHandler,
 } from "./transport.js";
 
+export { MAX_NESTING_DEPTH, validateEnvelope } from "./envelope.js";
+
 export {
   ID_CONFLICT_WIRE_MESSAGE,
   PROOF_INVALID_WIRE_MESSAGE,

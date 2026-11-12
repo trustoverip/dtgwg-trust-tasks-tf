@@ -637,9 +637,6 @@ mark.tt-mark {
   border-radius: 2px;
 }
 
-/* ---------- Tweaks panel positioning override ------------ */
-[data-tweaks-panel] { z-index: 9999; }
-
 /* ---------- Rendered-markdown prose (framework spec) ----- */
 .tt-prose {
   font-size: var(--tt-text-base);
