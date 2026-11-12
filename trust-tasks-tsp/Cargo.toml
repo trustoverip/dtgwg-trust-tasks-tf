@@ -6,6 +6,7 @@ rust-version = "1.95"
 license.workspace = true
 repository.workspace = true
 description = "ToIP Trust Spanning Protocol (TSP) transport binding for the Trust Tasks framework, built on affinidi-tsp. Provides pack/unpack helpers and a TransportHandler that maps the authenticated VID sender into the framework's §4.8.1 precedence."
+readme = "README.md"
 keywords = ["trust-tasks", "tsp", "affinidi", "vid"]
 categories = ["network-programming", "cryptography"]
 publish = true

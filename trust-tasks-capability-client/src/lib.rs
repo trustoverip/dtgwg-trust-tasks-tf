@@ -3,8 +3,8 @@
 //! and `git-trust/*` (grant / revoke commit-signing trust).
 //!
 //! This crate owns the *documents*, not a transport: it builds request
-//! documents, parses inbound envelope replies, classifies them, and (behind
-//! the `signing` feature) attaches a Data-Integrity proof. Each consumer keeps
+//! documents, parses inbound envelope replies and classifies them. Signing is
+//! left to the caller (see below). Each consumer keeps
 //! its own send/receive plumbing but shares this wire layer, so a capability
 //! producer (a community service) and a management UI cannot drift on the
 //! contract.
