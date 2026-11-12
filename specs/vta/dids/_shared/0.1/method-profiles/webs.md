@@ -14,16 +14,14 @@ the published `did.json`: a key-role identity under `did:webs` resolves only for
 whose resolver implements the extension (VTI-KEY-173). It is flagged for working-group
 review.
 
-**An optional, alpha method.** The VTI specification admits `did:webs` to a node's durable
-identity as an *optional* method at alpha maturity (VTI-KEY-001, VTI-KEY-003): no peer is
-required to resolve it. A node acts as a `did:webs` key-role identity only toward a peer
-whose current document declares `"webs"` in `resolvedMethods` (VTI-KEY-008), and otherwise
-fails the exchange with `methodNotDeclared`, sending nothing and never falling back to
-another identifier (VTI-KEY-009). A peer that declares `did:webs` but whose resolver lacks
-extension A still refuses the document, so until the extension is adopted an operator
-**SHOULD** keep a `did:webvh` or `did:scid:vh:1` identity for every peer that cannot verify
-this one, as [`vta/webs/_shared/0.2` §1.1](../../../../webs/_shared/0.2/CONVENTIONS.md)
-says for the level-1 identities of that family. A key-role identity created now may have to
+**An alpha method every node resolves.** The VTI specification admits `did:webs` to a
+node's durable identity at alpha maturity, and every VTI node resolves it, with extension A
+(VTI-KEY-001, VTI-KEY-003;
+[dtgwg-vti-spec#123](https://github.com/trustoverip/dtgwg-vti-spec/pull/123)): a node acts
+as a `did:webs` identity toward any peer, whatever method the peer's own identity uses, and
+needs no declaration from it. A party that is not a VTI node and whose resolver lacks
+extension A refuses the document (VTI-KEY-009); an operator whose identity's artefacts such
+parties rely on **SHOULD** keep it at level 1 until the extension is adopted. A key-role identity created now may have to
 be created again, under a new identifier, as the did:webs and KERI specifications settle
 (VTI-KEY-009, *Note (alpha)*).
 
@@ -185,10 +183,9 @@ Extension A, as the key-role designation implements it:
   `alsoKnownAs` as designated aliases, under the rules of
   [`vta/webs/_shared/0.2` §9.2](../../../../webs/_shared/0.2/CONVENTIONS.md). Its
   `@context` and `resolvedMethods` are **ignored, not refused**: the host derives its own
-  context, and a did:webs document renders no declaration of further methods — a node
-  whose identity is `did:webs` declares `did:webs` by using it (VTI-KEY-008, and the open
-  issue under VTI-KEY-009). A VTI node's template carries `resolvedMethods` for the methods
-  that render it, and the member must not make the template unusable here. Any other
+  context, and `resolvedMethods` declared the methods a node resolved under the withdrawn
+  VTI-KEY-008, so a template written while it stood may still carry it and must not be
+  unusable here. Any other
   member the derivation renders nothing for is refused, before a key is minted, with
   `vta/dids/create:templateNotKeyRole`: a VTA **MUST NOT** publish a document that drops
   what the template described.
