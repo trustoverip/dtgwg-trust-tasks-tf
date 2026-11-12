@@ -1,0 +1,317 @@
+{
+  "description": "The acceptance window of SPEC §7.2 (items 4 and 13, *Bounding the record*) as every runtime applies it. Each case builds a document carrying the case's `issuedAt` and `expiresAt` (absent where the case omits them), runs the expiry check of item 4 (validate_basic / validateBasic / ValidateBasic, with no recipient) and then the freshness check (validate_freshness / validateFreshness / ValidateFreshness) at `now` under the named policy, and must reach `verdict`: `accept`, or the code the first failing check refuses with (`expired` or `malformedRequest`). A timestamp the runtime cannot read at all is `malformedRequest`. For an accepted case, the record expiry (record_expiry / recordExpiry / RecordExpiry) at `now` must equal `recordExpiry`, or be unbounded where it is null. Policies are in milliseconds; a member that is absent is unset (no maximum age, no expiry horizon), and `requireIssuedAt` defaults to false. `default` and `consequential` must equal each runtime's own default and consequential policy constants.",
+  "policies": {
+    "default": {
+      "skewMs": 60000,
+      "requireIssuedAt": false
+    },
+    "consequential": {
+      "skewMs": 60000,
+      "maxAgeMs": 300000,
+      "expiryHorizonMs": 2592000000,
+      "requireIssuedAt": true
+    },
+    "maxAgeOnly": {
+      "skewMs": 60000,
+      "maxAgeMs": 300000,
+      "requireIssuedAt": false
+    },
+    "windowNoRequirement": {
+      "skewMs": 60000,
+      "maxAgeMs": 300000,
+      "expiryHorizonMs": 2592000000,
+      "requireIssuedAt": false
+    },
+    "zeroHorizon": {
+      "skewMs": 60000,
+      "maxAgeMs": 300000,
+      "expiryHorizonMs": 0,
+      "requireIssuedAt": true
+    },
+    "noSkew": {
+      "skewMs": 0,
+      "maxAgeMs": 300000,
+      "expiryHorizonMs": 2592000000,
+      "requireIssuedAt": true
+    }
+  },
+  "cases": [
+    {
+      "name": "fresh document, no expiresAt",
+      "policy": "consequential",
+      "now": "2026-08-01T12:00:00Z",
+      "issuedAt": "2026-08-01T12:00:00Z",
+      "verdict": "accept",
+      "recordExpiry": "2026-08-01T12:06:00Z"
+    },
+    {
+      "name": "one millisecond before issuedAt + maxAge + skew",
+      "policy": "consequential",
+      "now": "2026-08-01T12:05:59.999Z",
+      "issuedAt": "2026-08-01T12:00:00Z",
+      "verdict": "accept",
+      "recordExpiry": "2026-08-01T12:06:00Z"
+    },
+    {
+      "name": "exactly at issuedAt + maxAge + skew: the window is half-open",
+      "policy": "consequential",
+      "now": "2026-08-01T12:06:00Z",
+      "issuedAt": "2026-08-01T12:00:00Z",
+      "verdict": "expired"
+    },
+    {
+      "name": "fractional issuedAt, one millisecond before the edge",
+      "policy": "consequential",
+      "now": "2026-08-01T12:06:00.249Z",
+      "issuedAt": "2026-08-01T12:00:00.250Z",
+      "verdict": "accept",
+      "recordExpiry": "2026-08-01T12:06:00.250Z"
+    },
+    {
+      "name": "fractional issuedAt, exactly at the edge",
+      "policy": "consequential",
+      "now": "2026-08-01T12:06:00.250Z",
+      "issuedAt": "2026-08-01T12:00:00.250Z",
+      "verdict": "expired"
+    },
+    {
+      "name": "issuedAt with an offset is the same instant",
+      "policy": "consequential",
+      "now": "2026-08-01T12:05:59Z",
+      "issuedAt": "2026-08-01T17:30:00+05:30",
+      "verdict": "accept",
+      "recordExpiry": "2026-08-01T12:06:00Z"
+    },
+    {
+      "name": "issuedAt exactly the skew tolerance ahead of now",
+      "policy": "consequential",
+      "now": "2026-08-01T12:00:00Z",
+      "issuedAt": "2026-08-01T12:01:00Z",
+      "verdict": "accept",
+      "recordExpiry": "2026-08-01T12:07:00Z"
+    },
+    {
+      "name": "issuedAt one millisecond beyond the skew tolerance",
+      "policy": "consequential",
+      "now": "2026-08-01T12:00:00Z",
+      "issuedAt": "2026-08-01T12:01:00.001Z",
+      "verdict": "malformedRequest"
+    },
+    {
+      "name": "issuedAt one millisecond ahead with no skew tolerance",
+      "policy": "noSkew",
+      "now": "2026-08-01T12:00:00Z",
+      "issuedAt": "2026-08-01T12:00:00.001Z",
+      "verdict": "malformedRequest"
+    },
+    {
+      "name": "no skew tolerance: the window ends at issuedAt + maxAge",
+      "policy": "noSkew",
+      "now": "2026-08-01T12:05:00Z",
+      "issuedAt": "2026-08-01T12:00:00Z",
+      "verdict": "expired"
+    },
+    {
+      "name": "the issue's case: issuedAt ten minutes ago, expiresAt an hour ahead — expiresAt replaces the maximum age",
+      "policy": "consequential",
+      "now": "2026-08-01T12:10:00Z",
+      "issuedAt": "2026-08-01T12:00:00Z",
+      "expiresAt": "2026-08-01T13:10:00Z",
+      "verdict": "accept",
+      "recordExpiry": "2026-08-01T13:10:00Z"
+    },
+    {
+      "name": "the same age with no expiresAt is refused by the maximum age",
+      "policy": "consequential",
+      "now": "2026-08-01T12:10:00Z",
+      "issuedAt": "2026-08-01T12:00:00Z",
+      "verdict": "expired"
+    },
+    {
+      "name": "one millisecond before expiresAt",
+      "policy": "consequential",
+      "now": "2026-08-01T13:09:59.999Z",
+      "issuedAt": "2026-08-01T12:00:00Z",
+      "expiresAt": "2026-08-01T13:10:00Z",
+      "verdict": "accept",
+      "recordExpiry": "2026-08-01T13:10:00Z"
+    },
+    {
+      "name": "exactly at expiresAt (item 4 is inclusive, with no skew)",
+      "policy": "consequential",
+      "now": "2026-08-01T13:10:00Z",
+      "issuedAt": "2026-08-01T12:00:00Z",
+      "expiresAt": "2026-08-01T13:10:00Z",
+      "verdict": "expired"
+    },
+    {
+      "name": "expiresAt equal to issuedAt states an empty interval",
+      "policy": "consequential",
+      "now": "2026-08-01T11:59:00Z",
+      "issuedAt": "2026-08-01T12:00:00Z",
+      "expiresAt": "2026-08-01T12:00:00Z",
+      "verdict": "malformedRequest"
+    },
+    {
+      "name": "expiresAt before issuedAt, both still ahead of now",
+      "policy": "default",
+      "now": "2026-08-01T12:00:00Z",
+      "issuedAt": "2026-08-01T12:00:30Z",
+      "expiresAt": "2026-08-01T12:00:10Z",
+      "verdict": "malformedRequest"
+    },
+    {
+      "name": "expiresAt one millisecond after issuedAt",
+      "policy": "consequential",
+      "now": "2026-08-01T12:00:00Z",
+      "issuedAt": "2026-08-01T12:00:00Z",
+      "expiresAt": "2026-08-01T12:00:00.001Z",
+      "verdict": "accept",
+      "recordExpiry": "2026-08-01T12:00:00.001Z"
+    },
+    {
+      "name": "expiresAt exactly at the expiry horizon is honoured, not clamped",
+      "policy": "consequential",
+      "now": "2026-08-02T12:00:00Z",
+      "issuedAt": "2026-08-01T12:00:00Z",
+      "expiresAt": "2026-08-31T12:00:00Z",
+      "verdict": "accept",
+      "recordExpiry": "2026-08-31T12:00:00Z"
+    },
+    {
+      "name": "expiresAt exactly at the horizon, now past it inside the skew: expired by item 4",
+      "policy": "consequential",
+      "now": "2026-08-31T12:00:30Z",
+      "issuedAt": "2026-08-01T12:00:00Z",
+      "expiresAt": "2026-08-31T12:00:00Z",
+      "verdict": "expired"
+    },
+    {
+      "name": "expiresAt one millisecond beyond the horizon is clamped to horizon + skew",
+      "policy": "consequential",
+      "now": "2026-08-02T12:00:00Z",
+      "issuedAt": "2026-08-01T12:00:00Z",
+      "expiresAt": "2026-08-31T12:00:00.001Z",
+      "verdict": "accept",
+      "recordExpiry": "2026-08-31T12:01:00Z"
+    },
+    {
+      "name": "expiresAt a year out: accepted inside the horizon, the record clamped",
+      "policy": "consequential",
+      "now": "2026-08-02T12:00:00Z",
+      "issuedAt": "2026-08-01T12:00:00Z",
+      "expiresAt": "2027-08-01T12:00:00Z",
+      "verdict": "accept",
+      "recordExpiry": "2026-08-31T12:01:00Z"
+    },
+    {
+      "name": "expiresAt beyond the horizon, one millisecond before horizon + skew",
+      "policy": "consequential",
+      "now": "2026-08-31T12:00:59.999Z",
+      "issuedAt": "2026-08-01T12:00:00Z",
+      "expiresAt": "2027-08-01T12:00:00Z",
+      "verdict": "accept",
+      "recordExpiry": "2026-08-31T12:01:00Z"
+    },
+    {
+      "name": "expiresAt beyond the horizon, exactly at horizon + skew",
+      "policy": "consequential",
+      "now": "2026-08-31T12:01:00Z",
+      "issuedAt": "2026-08-01T12:00:00Z",
+      "expiresAt": "2027-08-01T12:00:00Z",
+      "verdict": "expired"
+    },
+    {
+      "name": "no horizon: any stated expiresAt is honoured, and the maximum age does not apply",
+      "policy": "maxAgeOnly",
+      "now": "2026-12-01T12:00:00Z",
+      "issuedAt": "2026-08-01T12:00:00Z",
+      "expiresAt": "2027-08-01T12:00:00Z",
+      "verdict": "accept",
+      "recordExpiry": "2027-08-01T12:00:00Z"
+    },
+    {
+      "name": "a zero horizon clamps at issuedAt: accepted inside the skew",
+      "policy": "zeroHorizon",
+      "now": "2026-08-01T12:00:30Z",
+      "issuedAt": "2026-08-01T12:00:00Z",
+      "expiresAt": "2026-08-01T13:00:00Z",
+      "verdict": "accept",
+      "recordExpiry": "2026-08-01T12:01:00Z"
+    },
+    {
+      "name": "a zero horizon clamps at issuedAt: refused at issuedAt + skew",
+      "policy": "zeroHorizon",
+      "now": "2026-08-01T12:01:00Z",
+      "issuedAt": "2026-08-01T12:00:00Z",
+      "expiresAt": "2026-08-01T13:00:00Z",
+      "verdict": "expired"
+    },
+    {
+      "name": "no issuedAt, consequential: refused for policy, though expiresAt bounds it",
+      "policy": "consequential",
+      "now": "2026-08-01T12:00:00Z",
+      "expiresAt": "2026-08-01T13:00:00Z",
+      "verdict": "malformedRequest"
+    },
+    {
+      "name": "neither timestamp, consequential",
+      "policy": "consequential",
+      "now": "2026-08-01T12:00:00Z",
+      "verdict": "malformedRequest"
+    },
+    {
+      "name": "neither timestamp, a window without the issuedAt requirement: unboundable",
+      "policy": "windowNoRequirement",
+      "now": "2026-08-01T12:00:00Z",
+      "verdict": "expired"
+    },
+    {
+      "name": "neither timestamp, default policy: accepted, with no record bound",
+      "policy": "default",
+      "now": "2026-08-01T12:00:00Z",
+      "verdict": "accept",
+      "recordExpiry": null
+    },
+    {
+      "name": "no issuedAt, expiresAt beyond the horizon: the horizon needs an issuedAt, so expiresAt stands",
+      "policy": "windowNoRequirement",
+      "now": "2026-08-01T12:00:00Z",
+      "expiresAt": "2027-08-01T12:00:00Z",
+      "verdict": "accept",
+      "recordExpiry": "2027-08-01T12:00:00Z"
+    },
+    {
+      "name": "default policy: a year-old issuedAt is accepted, with no record bound",
+      "policy": "default",
+      "now": "2026-08-01T12:00:00Z",
+      "issuedAt": "2025-08-01T12:00:00Z",
+      "verdict": "accept",
+      "recordExpiry": null
+    },
+    {
+      "name": "default policy: a stated expiresAt bounds the record",
+      "policy": "default",
+      "now": "2026-08-01T12:00:00Z",
+      "issuedAt": "2026-08-01T11:00:00Z",
+      "expiresAt": "2027-08-01T12:00:00Z",
+      "verdict": "accept",
+      "recordExpiry": "2027-08-01T12:00:00Z"
+    },
+    {
+      "name": "a calendar-invalid issuedAt is malformed, not rolled over into the window",
+      "policy": "consequential",
+      "now": "2026-02-01T00:00:00Z",
+      "issuedAt": "2026-01-31T24:00:00Z",
+      "verdict": "malformedRequest"
+    },
+    {
+      "name": "a calendar-invalid expiresAt is malformed, not rolled over",
+      "policy": "consequential",
+      "now": "2026-02-28T00:00:00Z",
+      "issuedAt": "2026-02-28T00:00:00Z",
+      "expiresAt": "2026-02-30T00:00:00Z",
+      "verdict": "malformedRequest"
+    }
+  ]
+}
