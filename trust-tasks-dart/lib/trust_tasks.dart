@@ -14,12 +14,16 @@
 /// This library deliberately exports the **runtime only**. Dart's `export` is
 /// flat — there is no namespaced re-export — so exporting 500 generated
 /// libraries here would collide on the first shared definition anyone calls
-/// `Ext`. Import the one specification you need directly, with a prefix:
+/// `Ext`. Import the one specification you need directly, with a prefix — from
+/// the library `dart run trust_tasks:generate` wrote into your own package:
 ///
 /// ```dart
 /// import 'package:trust_tasks/trust_tasks.dart';
-/// import 'package:trust_tasks/specs/acl/grant/v0_2/payload.dart' as acl_grant;
+/// import 'package:my_app/trust_tasks/acl/grant/v0_3/payload.dart' as acl_grant;
 /// ```
+///
+/// The prebuilt libraries under `package:trust_tasks/specs/` have the same
+/// surface, and are deprecated.
 ///
 /// ## Parity
 ///
