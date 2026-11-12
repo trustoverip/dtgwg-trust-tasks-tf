@@ -690,14 +690,25 @@ func (c *claim) settle(ctx context.Context, id string, response any) {
 	if c == nil {
 		return
 	}
+	ctx, cancel := settleContext(ctx)
+	defer cancel()
 	var encoded json.RawMessage
 	if response != nil {
+		// A MarshalJSON that panics must not leave the claim in flight: the
+		// handler returned, so the effect happened. Record it with no response
+		// to hand back — a resend is then absorbed, not executed again — and
+		// let the panic continue unchanged.
+		recorded := false
+		defer func() {
+			if !recorded {
+				_ = c.guard.RecordResponse(ctx, id, nil)
+			}
+		}()
 		if raw, err := json.Marshal(response); err == nil {
 			encoded = raw
 		}
+		recorded = true
 	}
-	ctx, cancel := settleContext(ctx)
-	defer cancel()
 	_ = c.guard.RecordResponse(ctx, id, encoded)
 }
 
