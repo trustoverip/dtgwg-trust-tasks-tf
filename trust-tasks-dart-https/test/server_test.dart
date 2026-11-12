@@ -539,9 +539,11 @@ void main() {
       final read = discovery.Response.fromJson(payload);
       expect(read.supportedTypes, contains(echoType));
       expect(read.frameworkVersion, '0.6.1');
-      // echoServer keeps the consequential posture: five minutes, 60 s skew.
+      // echoServer keeps the consequential posture: five minutes, 60 s skew,
+      // and a stated expiresAt honoured up to thirty days.
       expect(read.acceptanceWindow?.maxAgeSeconds, 300);
       expect(read.acceptanceWindow?.clockSkewSeconds, 60);
+      expect(read.acceptanceWindow?.expiryHorizonSeconds, 30 * 24 * 60 * 60);
     });
 
     test('a request outside the 0.4 request schema is refused', () async {
@@ -575,9 +577,34 @@ void main() {
         requireIssuedAt: true,
       )))['acceptanceWindow'];
       // Never wider than enforced (responder rule 1): fractions round down.
-      // No expiryHorizonSeconds: FreshnessPolicy has no horizon, so the
-      // maximum age applies to every document, which is what its absence says.
+      // No expiryHorizonSeconds: this policy sets no horizon, and the
+      // member's absence says the maximum age applies to every document —
+      // narrower than the policy, which honours any stated expiresAt.
       expect(window, {'maxAgeSeconds': 90, 'clockSkewSeconds': 5});
+
+      // The expiry horizon is advertised, rounded down the same way, so a
+      // producer can see a stated expiresAt is honoured up to it.
+      expect(
+        (await ask(const FreshnessPolicy(
+          maxAge: Duration(seconds: 90),
+          expiryHorizon: Duration(days: 1, milliseconds: 900),
+        )))['acceptanceWindow'],
+        {
+          'maxAgeSeconds': 90,
+          'clockSkewSeconds': 60,
+          'expiryHorizonSeconds': 86400,
+        },
+      );
+      // A horizon under a second has no spelling that is not wider than the
+      // window enforced, so no window is stated.
+      expect(
+        (await ask(const FreshnessPolicy(
+          maxAge: Duration(seconds: 90),
+          expiryHorizon: Duration.zero,
+        )))
+            .containsKey('acceptanceWindow'),
+        isFalse,
+      );
 
       // An unbounded window has no spelling, so none is stated.
       expect(

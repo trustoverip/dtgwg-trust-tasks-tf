@@ -111,6 +111,13 @@ final class RequestContext {
       Refusal(rejectWith(_request, newUrnUuid(), toErrorPayload(reason)));
 }
 
+/// The acceptance window a server advertises, in whole seconds.
+typedef _Window = ({
+  int maxAgeSeconds,
+  int clockSkewSeconds,
+  int? expiryHorizonSeconds,
+});
+
 typedef _Dispatch = Future<HttpsReply> Function(
   Map<String, dynamic> json,
   _Exchange exchange,
@@ -354,12 +361,19 @@ final class HttpsServer {
   /// A 0.4 or 0.3 response also states the acceptance window this server
   /// applies — [freshness]'s `maxAge` and `skew`, in whole seconds rounded
   /// down, so the advertised window is never wider than the one enforced
-  /// (trust-task-discovery/0.4, *Acceptance window*, responder rule 1). It
-  /// states no `expiryHorizonSeconds`: [FreshnessPolicy] has no expiry
-  /// horizon, so the window says the maximum age applies to every document.
+  /// (trust-task-discovery/0.4, *Acceptance window*, responder rule 1). A 0.4
+  /// window also states [freshness]'s `expiryHorizon` as
+  /// `expiryHorizonSeconds`, rounded down the same way: a stated `expiresAt`
+  /// is honoured in place of the maximum age up to that horizon. With no
+  /// horizon the member is absent, which says the maximum age applies to
+  /// every document — narrower than the window enforced, which honours any
+  /// stated `expiresAt`, and so permitted. A 0.3 window cannot carry the
+  /// member and is narrower in the same way.
   /// Every route shares [freshness], so the window is stated once, at the top
   /// level. It is omitted when [freshness] sets no `maxAge` — an unbounded
-  /// window has no spelling — and when [advertiseAcceptanceWindow] is false, for a
+  /// window has no spelling — when its horizon is under one second, which a
+  /// window cannot state without claiming a wider one than enforced, and when
+  /// [advertiseAcceptanceWindow] is false, for a
   /// deployment whose configured window would fingerprint it (the
   /// specification's *Correlation* section).
   void enableDiscovery({
@@ -384,6 +398,7 @@ final class HttpsServer {
               : discovery_v0_4.AcceptanceWindow(
                   maxAgeSeconds: window.maxAgeSeconds,
                   clockSkewSeconds: window.clockSkewSeconds,
+                  expiryHorizonSeconds: window.expiryHorizonSeconds,
                 ),
         );
       },
@@ -392,14 +407,21 @@ final class HttpsServer {
   }
 
   /// [freshness] as an acceptance window, or null when it has none to state.
-  ({int maxAgeSeconds, int clockSkewSeconds})? _acceptanceWindow() {
+  _Window? _acceptanceWindow() {
     final maxAge = freshness.maxAge;
     if (maxAge == null || maxAge.inSeconds < 1 || freshness.skew.isNegative) {
       return null;
     }
+    final horizon = freshness.expiryHorizon;
+    // A horizon under a second clamps every stated expiry nearer than the
+    // window could say: omitting the member would claim the maximum age, and
+    // zero is not a valid `expiryHorizonSeconds`. State nothing rather than a
+    // window wider than the one enforced (responder rule 1).
+    if (horizon != null && horizon.inSeconds < 1) return null;
     return (
       maxAgeSeconds: maxAge.inSeconds,
       clockSkewSeconds: freshness.skew.inSeconds,
+      expiryHorizonSeconds: horizon?.inSeconds,
     );
   }
 
@@ -411,7 +433,7 @@ final class HttpsServer {
   void _enableSupersededDiscovery(
     bool public,
     List<int>? release,
-    ({int maxAgeSeconds, int clockSkewSeconds})? window,
+    _Window? window,
   ) {
     // ignore: deprecated_member_use
     on<discovery_v0_3.Payload, discovery_v0_3.Response>(
