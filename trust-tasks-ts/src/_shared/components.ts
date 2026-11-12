@@ -798,11 +798,7 @@ export type DidMethodName = string;
  * A DID Core verification relationship.
  */
 export type DidVerificationRelationship =
-  | "authentication"
-  | "assertionMethod"
-  | "keyAgreement"
-  | "capabilityInvocation"
-  | "capabilityDelegation";
+  "authentication" | "assertionMethod" | "keyAgreement" | "capabilityInvocation" | "capabilityDelegation";
 /**
  * A DID, compared by exact string equality.
  */
@@ -844,12 +840,7 @@ export type DisjunctiveProof = [SigmaProof, ...SigmaProof[]];
  * The kinds of drift, named so that a task can select a drift item by kind. The same values, with the same meanings, as `DriftItem`'s `type`, which keeps its own inline list so that `DriftItem` stays textually identical to 0.1; the two lists change together. `roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.
  */
 export type DriftType =
-  | "roleAdded"
-  | "roleRemoved"
-  | "roleChanged"
-  | "requiredCheckMissing"
-  | "protectionWeakened"
-  | "bootstrapMissing";
+  "roleAdded" | "roleRemoved" | "roleChanged" | "requiredCheckMissing" | "protectionWeakened" | "bootstrapMissing";
 /**
  * The DTG credential catalog type the entry binds to, e.g. `MembershipCredential`, `AuthorityCredential` or `StatementCredential`. Absent for a community-defined type outside the DTG catalog. A statement type is identified by its predicate, not by a subtype: every DTG statement is a `StatementCredential`, and which statements a community accepts is the set of predicates it registers with vtc/endorsement-types/register.
  */
@@ -1171,13 +1162,7 @@ export type KeyChangeOutcome = "preview" | "applied" | "pendingApproval" | "awai
  * `pendingApproval` — awaiting the approvals the VTA's policy requires; nothing is published. `awaitingRecoveryProof` — approved, and waiting for the recovery custodian's proof over the change; nothing is published. `staged` — successor published, not yet used. `overlapping` — successor active, predecessor `retiring`. `completed` — every predecessor retired, or the change is published and any overlap it began has ended. `aborted` — the successor was retired instead of the predecessor, or a revocation superseded the change. `expired` — the approvals or the recovery proof did not arrive before the preview expired; nothing was published.
  */
 export type KeyChangeState =
-  | "pendingApproval"
-  | "awaitingRecoveryProof"
-  | "staged"
-  | "overlapping"
-  | "completed"
-  | "aborted"
-  | "expired";
+  "pendingApproval" | "awaitingRecoveryProof" | "staged" | "overlapping" | "completed" | "aborted" | "expired";
 /**
  * Where a key is in its role's lifecycle (CONVENTIONS.md §8, §10). `pending` — planned by a preview or a change awaiting approval; not published; custody projection only. `staged` — published and bound to its role but not yet used, until the publishing change's cache horizon. `active` — the key the VTA uses for new signatures (for `messaging`, advertises for new sessions; for `update`, the current authority). `retiring` — still published but never used to sign again; a retiring `messaging` key still decrypts until retirement. `retired` — removed by planned rotation; what it signed while published stays valid, judged against the identifier version current at issuance. `revoked` — withdrawn for compromise, recorded with `compromisedSince`; what it signed from then on establishes nothing. `committed` — an `update` key the identifier commits to as a successor but has not revealed (a did:webvh `nextKeyHashes` entry, a KERI next-key digest). `retired` and `revoked` are terminal.
  */
@@ -2210,16 +2195,12 @@ export type Scope_VtaV0_1 = Builtin_VtaV0_1 | Global_VtaV0_1 | Context_VtaV0_1;
  * Discriminated by `envelope`. Exactly one variant matches per document.
  */
 export type SealedEnvelope_VaultV0_1 =
-  | DidcommAuthcryptEnvelope_VaultV0_1
-  | HpkeArmoredEnvelope_VaultV0_1
-  | TspMessageEnvelope_VaultV0_1;
+  DidcommAuthcryptEnvelope_VaultV0_1 | HpkeArmoredEnvelope_VaultV0_1 | TspMessageEnvelope_VaultV0_1;
 /**
  * Discriminated by `envelope`. Exactly one variant matches per document.
  */
 export type SealedEnvelope_VaultV0_2 =
-  | DidcommAuthcryptEnvelope_VaultV0_2
-  | HpkeArmoredEnvelope_VaultV0_2
-  | TspMessageEnvelope_VaultV0_2;
+  DidcommAuthcryptEnvelope_VaultV0_2 | HpkeArmoredEnvelope_VaultV0_2 | TspMessageEnvelope_VaultV0_2;
 /**
  * The cleartext inside the sealed block of vtc/storage/credentials/set/0.2, discriminated by `kind`, which must equal the config's kind. It names the config it is for inside the seal, so that a block captured on its way to one config cannot be replayed into another: a community MUST refuse a block whose `configId` differs from the request's. Never appears on the wire outside a seal, and is never returned. A `local` config has no credential.
  */
@@ -2293,14 +2274,7 @@ export type SecretFingerprint = string;
  * - `custom` — arbitrary structured fields; release-time consumer responsible for interpretation.
  */
 export type SecretKind_VaultV0_1 =
-  | "password"
-  | "passkey"
-  | "oauth-tokens"
-  | "did-self-issued"
-  | "didcomm-peer"
-  | "bearer-token"
-  | "ssh-key"
-  | "custom";
+  "password" | "passkey" | "oauth-tokens" | "did-self-issued" | "didcomm-peer" | "bearer-token" | "ssh-key" | "custom";
 /**
  * Discriminator for the secret type stored in the entry. Definitions:
  * - `password` — username + password (+ optional TOTP seed).
@@ -2313,14 +2287,7 @@ export type SecretKind_VaultV0_1 =
  * - `custom` — arbitrary structured fields; release-time consumer responsible for interpretation.
  */
 export type SecretKind_VaultV0_2 =
-  | "password"
-  | "passkey"
-  | "oauthTokens"
-  | "didSelfIssued"
-  | "didcommPeer"
-  | "bearerToken"
-  | "sshKey"
-  | "custom";
+  "password" | "passkey" | "oauthTokens" | "didSelfIssued" | "didcommPeer" | "bearerToken" | "sshKey" | "custom";
 /**
  * One lowercased owner or repository name. Forges compare these case-insensitively, so the wire form is always lowercase and a producer lowercases before sending. A leading `.` is refused, which rules out `.` and `..`.
  */
@@ -2621,15 +2588,9 @@ export type StorageSettings = LocalSettings | S3Settings | GcsSettings | WalrusS
  */
 export type SweepMinutes = number;
 export type SyncEvent_SyncV0_1 =
-  | VaultUpsertedEvent_SyncV0_1
-  | VaultDeletedEvent_SyncV0_1
-  | AclChangedEvent_SyncV0_1
-  | PolicyChangedEvent_SyncV0_1;
+  VaultUpsertedEvent_SyncV0_1 | VaultDeletedEvent_SyncV0_1 | AclChangedEvent_SyncV0_1 | PolicyChangedEvent_SyncV0_1;
 export type SyncEvent_SyncV0_2 =
-  | VaultUpsertedEvent_SyncV0_2
-  | VaultDeletedEvent_SyncV0_2
-  | AclChangedEvent_SyncV0_2
-  | PolicyChangedEvent_SyncV0_2;
+  VaultUpsertedEvent_SyncV0_2 | VaultDeletedEvent_SyncV0_2 | AclChangedEvent_SyncV0_2 | PolicyChangedEvent_SyncV0_2;
 /**
  * Free-text tags the directory searches.
  *
@@ -2648,23 +2609,12 @@ export type TickLength = string;
  * One kind of change a console can be told about. A closed set: a topic not listed here is a new MINOR version of this component, not an `ext` member, because each topic is bound to the read that authorizes it.
  */
 export type Topic_VtcAdminEventsV0_1 =
-  | "actions"
-  | "acknowledgements"
-  | "joinRequests"
-  | "members"
-  | "singleAdminMode"
-  | "config";
+  "actions" | "acknowledgements" | "joinRequests" | "members" | "singleAdminMode" | "config";
 /**
  * One kind of change a console can be told about. A closed set: a topic not listed here is a new MINOR version of this component, not an `ext` member, because each topic is bound to the read that authorizes it.
  */
 export type Topic_VtcAdminEventsV0_2 =
-  | "actions"
-  | "acknowledgements"
-  | "joinRequests"
-  | "members"
-  | "singleAdminMode"
-  | "config"
-  | "rooms";
+  "actions" | "acknowledgements" | "joinRequests" | "members" | "singleAdminMode" | "config" | "rooms";
 /**
  * One kind of change a console can be told about. A closed set: a topic not listed here is a new MINOR version of this component, not an `ext` member, because each topic is bound to the read that authorizes it.
  */
@@ -2708,14 +2658,7 @@ export type TrafficDirection = "inbound" | "outbound" | "internal";
  * What happened. `received`: a frame arrived. `stored`: it was queued for a local account. `delivered`: handed to its recipient. `forwarded`: relayed to another mediator. `refused`: rejected (see the event's `outcome`). `deleted`: removed by its recipient or an administrator. `expired`: removed by expiry. `purged`: removed by a queue purge.
  */
 export type TrafficStage =
-  | "received"
-  | "stored"
-  | "delivered"
-  | "forwarded"
-  | "refused"
-  | "deleted"
-  | "expired"
-  | "purged";
+  "received" | "stored" | "delivered" | "forwarded" | "refused" | "deleted" | "expired" | "purged";
 /**
  * Handle for one upload (begin → chunk → commit or abort) or one download (get → chunk). Host-generated and unguessable, which is what lets a reference to another party's transfer be answered as not-found without confirming that it exists. Bound at creation to the party that opened it: the subject the host authenticated for the opening request. Opaque: a producer quotes what it was given.
  */
@@ -2949,9 +2892,7 @@ export type VetterDisplayName = string;
  * @maxItems 3
  */
 export type VetterMethods =
-  | [VettingMethod]
-  | [VettingMethod, VettingMethod]
-  | [VettingMethod, VettingMethod, VettingMethod];
+  [VettingMethod] | [VettingMethod, VettingMethod] | [VettingMethod, VettingMethod, VettingMethod];
 /**
  * A class of documentation, named in lowerCamelCase. Open rather than enumerated, because what documentation a vetter accepts is each vetter's own choice. Well-known values: `passport`, `nationalId`, `driverLicence`, and `none` — the vetter will attest without a document, which is the `priorAcquaintance` case. Only the class ever travels — never a document number, an image, an issuing authority or an expiry date. `none` states a policy (what a vetter accepts); a record of what was relied on expresses 'no document' as an empty list instead.
  */
@@ -5497,13 +5438,7 @@ export interface Action_VtcAdminActionsV0_1 {
    * Why the action closed. Present exactly when `status` is not `open`. `invalidated` — the community closed it because something it depended on stopped holding before the threshold (an approver or the requester lost standing, the target state moved); `failedRecheck` — the threshold was met but the execution-time re-check refused.
    */
   closedReason?:
-    | "thresholdMet"
-    | "declined"
-    | "expired"
-    | "cancelledByRequester"
-    | "invalidated"
-    | "failedRecheck"
-    | "acknowledged";
+    "thresholdMet" | "declined" | "expired" | "cancelledByRequester" | "invalidated" | "failedRecheck" | "acknowledged";
   /**
    * The number of distinct approvals the operation needs. Present for `approval`; absent otherwise (a `queue` decision is one decision by construction, and `acknowledge` needs every remaining administrator).
    */
@@ -9332,12 +9267,7 @@ export interface DriftItem_GitNsV0_1 {
    * `roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.
    */
   type:
-    | "roleAdded"
-    | "roleRemoved"
-    | "roleChanged"
-    | "requiredCheckMissing"
-    | "protectionWeakened"
-    | "bootstrapMissing";
+    "roleAdded" | "roleRemoved" | "roleChanged" | "requiredCheckMissing" | "protectionWeakened" | "bootstrapMissing";
   resource: RepoResource_GitNsV0_1;
   /**
    * Whose role differs, for the three role types.
@@ -9360,12 +9290,7 @@ export interface DriftItem_GitNsV0_6 {
    * `roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.
    */
   type:
-    | "roleAdded"
-    | "roleRemoved"
-    | "roleChanged"
-    | "requiredCheckMissing"
-    | "protectionWeakened"
-    | "bootstrapMissing";
+    "roleAdded" | "roleRemoved" | "roleChanged" | "requiredCheckMissing" | "protectionWeakened" | "bootstrapMissing";
   resource: RepoResource_GitNsV0_6;
   /**
    * Whose role differs, for the three role types.
