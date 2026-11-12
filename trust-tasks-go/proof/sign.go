@@ -1,6 +1,7 @@
 package proof
 
 import (
+	"crypto/ecdh"
 	"crypto/ecdsa"
 	"crypto/ed25519"
 	"crypto/rand"
@@ -24,8 +25,10 @@ type Signer struct {
 }
 
 // SignerFromPrivateKey builds a [Signer] from a raw private key: a 32-byte
-// Ed25519 seed, or the big-endian scalar of a P-256 (32-byte) or P-384
-// (48-byte) key.
+// Ed25519 seed, or the big-endian scalar of a P-256 (exactly 32 bytes) or
+// P-384 (exactly 48 bytes) key. An ECDSA scalar must be in [1, n-1], where n is
+// the curve's group order; a key of another length, zero, or n or above is
+// refused with an error.
 func SignerFromPrivateKey(curve Curve, privateKey []byte) (*Signer, error) {
 	switch curve {
 	case Ed25519:
@@ -45,11 +48,23 @@ func SignerFromPrivateKey(curve Curve, privateKey []byte) (*Signer, error) {
 		}, nil
 	case P256, P384:
 		params := curveParams(curve)
+		byteLen := (params.Params().BitSize + 7) / 8
+		if len(privateKey) != byteLen {
+			return nil, fmt.Errorf("%s private key must be a %d-byte big-endian scalar, got %d bytes", curve, byteLen, len(privateKey))
+		}
+		// crypto/ecdh refuses a scalar of zero or one not below the group
+		// order, and derives the public key without the deprecated
+		// elliptic.Curve.ScalarBaseMult.
+		ecdhKey, err := ecdhCurve(curve).NewPrivateKey(privateKey)
+		if err != nil {
+			return nil, fmt.Errorf("%s private key is not a valid scalar (it must be in [1, n-1]): %w", curve, err)
+		}
+		point := ecdhKey.PublicKey().Bytes() // 0x04 || X || Y
+		x := new(big.Int).SetBytes(point[1 : 1+byteLen])
+		y := new(big.Int).SetBytes(point[1+byteLen:])
 		d := new(big.Int).SetBytes(privateKey)
-		x, y := params.ScalarBaseMult(privateKey)
 		priv := &ecdsa.PrivateKey{PublicKey: ecdsa.PublicKey{Curve: params, X: x, Y: y}, D: d}
 		vm := didKeyFromEcdsa(&priv.PublicKey, curve)
-		byteLen := (params.Params().BitSize + 7) / 8
 		return &Signer{
 			curve:              curve,
 			VerificationMethod: vm,
@@ -169,4 +184,13 @@ func (s *Signer) Sign(doc json.RawMessage, opts SignOptions) (json.RawMessage, e
 		return nil, fmt.Errorf("proof: marshal signed document: %w", err)
 	}
 	return out, nil
+}
+
+// ecdhCurve returns the crypto/ecdh curve for a P-curve, used to validate a
+// private scalar and derive its public key.
+func ecdhCurve(c Curve) ecdh.Curve {
+	if c == P384 {
+		return ecdh.P384()
+	}
+	return ecdh.P256()
 }
