@@ -101,55 +101,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Provision — VTA Redeem — response payload",
-      "description": "The hand-over, signed by the Farm's assertionMethod key and sent only once the claimant's key is written into the VTA as its administrator and the VTA answers: which VTA, what the claim did, and where the VTA is reachable. Every earlier state is a `trust-task-error` (`pending`, `rejected`, or a family code), never this document.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "handle",
-        "vtaDid",
-        "operation"
-      ],
-      "properties": {
-        "handle": {
-          "$ref": "#/$defs/Handle"
-        },
-        "vtaDid": {
-          "type": "string",
-          "minLength": 8,
-          "maxLength": 2048,
-          "pattern": "^did:[a-z0-9]+:[^\\s]+$",
-          "description": "The DID of the VTA the claimant now administers. The Farm chooses the DID method; the VTA Farm issues `did:webvh`."
-        },
-        "operation": {
-          "type": "string",
-          "enum": [
-            "provisionVta",
-            "grantAcl"
-          ],
-          "description": "What the claim did. `provisionVta`: the claimant is the first administrator of a VTA provisioned for this reservation. `grantAcl`: the claimant was added as an administrator of a VTA that already had one. The Farm derives it from the reservation; the wallet never chooses it."
-        },
-        "mediatorDid": {
-          "type": "string",
-          "minLength": 8,
-          "maxLength": 2048,
-          "pattern": "^did:[a-z0-9]+:[^\\s]+$",
-          "description": "The DID of the DIDComm mediator the VTA is reachable through. A convenience: the wallet can also read it from the VTA's own DID document."
-        },
-        "didLogUrl": {
-          "type": "string",
-          "minLength": 9,
-          "maxLength": 2048,
-          "pattern": "^https://[^@/?#\\s]+(/[^\\s]*)?$",
-          "description": "Where the VTA's DID log is served. For `did:webvh` it is the `did.jsonl` URL the DID itself encodes. An `https` URL with no userinfo."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

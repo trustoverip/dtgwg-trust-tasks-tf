@@ -125,32 +125,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Auth Passkey Login Start — response payload",
-      "description": "Server-issued WebAuthn request options. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/login/start/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "authId",
-        "options"
-      ],
-      "properties": {
-        "authId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Opaque server handle correlating this start with the matching finish."
-        },
-        "options": {
-          "$ref": "#/$defs/CredentialRequestOptions",
-          "description": "PublicKeyCredentialRequestOptions for navigator.credentials.get."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -159,78 +133,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "CredentialRequestOptions": {
-      "$anchor": "credentialRequestOptions",
-      "title": "PublicKeyCredentialRequestOptions",
-      "description": "Server-issued options for `navigator.credentials.get({ publicKey: ... })`.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "challenge"
-      ],
-      "properties": {
-        "extensions": {
-          "type": "object",
-          "description": "Client extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.\n\nThis component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.\n\nStructure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later."
-        },
-        "challenge": {
-          "type": "string",
-          "description": "base64url-encoded one-time nonce."
-        },
-        "timeout": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "rpId": {
-          "type": "string",
-          "minLength": 1
-        },
-        "allowCredentials": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/CredentialDescriptor"
-          }
-        },
-        "userVerification": {
-          "enum": [
-            "discouraged",
-            "preferred",
-            "required"
-          ]
-        }
-      }
-    },
-    "CredentialDescriptor": {
-      "$anchor": "credentialDescriptor",
-      "title": "PublicKeyCredentialDescriptor",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type",
-        "id"
-      ],
-      "properties": {
-        "type": {
-          "const": "public-key"
-        },
-        "id": {
-          "type": "string",
-          "description": "base64url-encoded credential id."
-        },
-        "transports": {
-          "type": "array",
-          "items": {
-            "enum": [
-              "usb",
-              "nfc",
-              "ble",
-              "internal",
-              "hybrid"
-            ]
-          }
-        }
       }
     }
   }

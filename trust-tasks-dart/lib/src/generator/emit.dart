@@ -304,6 +304,72 @@ const List<String> _takenTypeNames = [
   'Deprecated',
 ];
 
+/// [schemaText] with every root `$defs` entry its root does not reach removed
+/// (#1098), and `$defs` dropped when none survive.
+///
+/// A bundle's request schema carries `$defs.Response` and what only the
+/// response uses, and its response schema a copy of every request definition.
+/// Only the emitted constants are pruned — never the schema the types come
+/// from, and never the bundle. Reachability follows each `$ref` of the form
+/// `#/$defs/<name>[/…]` (its first segment, pointer-unescaped) from the root
+/// object without its `$defs` (its own `$ref` included — all a response
+/// document has), then each reached definition whole. Any other local `$ref`
+/// (`#`, an anchor) keeps every definition, and the text is returned as given.
+/// The other generators each implement the same rule independently;
+/// check-bindings compares the results.
+String pruneUnreachableDefs(String schemaText) {
+  final doc = jsonDecode(schemaText);
+  if (doc is! Map<String, dynamic>) return schemaText;
+  final defs = doc[r'$defs'];
+  if (defs is! Map<String, dynamic>) return schemaText;
+  final reached = <String>{};
+  var opaque = false;
+  final frontier = <Object?>[
+    <String, dynamic>{
+      for (final e in doc.entries)
+        if (e.key != r'$defs') e.key: e.value,
+    },
+  ];
+  while (frontier.isNotEmpty) {
+    final node = frontier.removeLast();
+    if (node is List) {
+      frontier.addAll(node);
+    } else if (node is Map<String, dynamic>) {
+      final ref = node[r'$ref'];
+      if (ref is String) {
+        if (ref.startsWith(r'#/$defs/')) {
+          final name = ref
+              .substring(8)
+              .split('/')
+              .first
+              .replaceAll('~1', '/')
+              .replaceAll('~0', '~');
+          if (defs.containsKey(name) && reached.add(name)) {
+            frontier.add(defs[name]);
+          }
+        } else if (ref.startsWith('#')) {
+          opaque = true;
+        }
+      }
+      frontier.addAll(node.values);
+    }
+  }
+  if (opaque) return schemaText;
+  final out = <String, dynamic>{};
+  for (final e in doc.entries) {
+    if (e.key != r'$defs') {
+      out[e.key] = e.value;
+      continue;
+    }
+    final kept = <String, dynamic>{
+      for (final d in defs.entries)
+        if (reached.contains(d.key)) d.key: d.value,
+    };
+    if (kept.isNotEmpty) out[e.key] = kept;
+  }
+  return jsonEncode(out);
+}
+
 /// Quote [s] as a Dart single-quoted string literal, escaping `$` too.
 String dartString(String s) {
   final out = StringBuffer("'");
@@ -850,12 +916,12 @@ List<String> _emitTail(Bundle b, bool hasResponse) {
     "/// schema's constraints — not minLength, not pattern, not the oneOf mutual",
     r'/// exclusion — so without it every such rule is unenforced. Cross-file \$refs are',
     '/// already inlined, so it needs no resolver.',
-    'const String payloadSchemaJson = ${dartString(b.schemaText)};',
+    'const String payloadSchemaJson = ${dartString(pruneUnreachableDefs(b.schemaText))};',
   ].join('\n'));
   if (b.responseSchemaText != null) {
     out.add([
       '/// As [payloadSchemaJson], for the success-response variant.',
-      'const String responsePayloadSchemaJson = ${dartString(b.responseSchemaText!)};',
+      'const String responsePayloadSchemaJson = ${dartString(pruneUnreachableDefs(b.responseSchemaText!))};',
     ].join('\n'));
   }
 

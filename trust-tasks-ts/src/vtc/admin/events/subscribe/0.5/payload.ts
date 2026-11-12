@@ -156,48 +156,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Admin Events — Subscribe — response payload",
-      "description": "The subscription as granted, sent as the first document on the stream. Failures use trust-task-error and open no stream.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "topics",
-        "heartbeatSeconds",
-        "resumed",
-        "resumeToken"
-      ],
-      "properties": {
-        "topics": {
-          "type": "array",
-          "minItems": 1,
-          "maxItems": 10,
-          "uniqueItems": true,
-          "items": {
-            "$ref": "#/$defs/Topic"
-          },
-          "description": "The effective topics: those requested that the caller may read. The community sends events for these and no others. A requested topic missing here is one the caller may not read, and the console MUST NOT present it as live."
-        },
-        "heartbeatSeconds": {
-          "type": "integer",
-          "minimum": 5,
-          "maximum": 60,
-          "description": "The longest the community lets the stream go without sending anything. Over HTTPS the heartbeat is an SSE comment. A console that receives nothing for twice this interval MUST treat the stream as dead."
-        },
-        "resumed": {
-          "type": "boolean",
-          "description": "`true` when the community recognised the request's `resumeToken` and will send a hint for every effective topic that changed after it. `false` when no `resumeToken` was given or it could not be honoured; the console MUST then re-fetch every effective topic, because it may have missed changes."
-        },
-        "resumeToken": {
-          "$ref": "#/$defs/ResumeToken",
-          "description": "The stream position as of this response, so that a console that disconnects before its first event still has a token to resume from."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

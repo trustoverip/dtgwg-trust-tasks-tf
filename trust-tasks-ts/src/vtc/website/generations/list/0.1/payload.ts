@@ -88,52 +88,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Website Generations List — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "generations"
-      ],
-      "properties": {
-        "generations": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "generation",
-              "current"
-            ],
-            "properties": {
-              "generation": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Generation label (e.g. gen-5)."
-              },
-              "current": {
-                "type": "boolean",
-                "description": "True for the generation current resolves to."
-              },
-              "deployedAt": {
-                "type": "string",
-                "format": "date-time",
-                "description": "When this generation was deployed. A rollback target is chosen by *when* far more often than by number."
-              },
-              "sizeBytes": {
-                "type": "integer",
-                "minimum": 0,
-                "description": "Total size of the generation on disk. Distinguishes a real deployment from a truncated or empty one before an operator rolls onto it."
-              }
-            }
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

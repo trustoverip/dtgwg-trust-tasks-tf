@@ -145,40 +145,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Rooms Owner Group Remove — response payload",
-      "description": "Success response to rooms/owner/group/remove. Type https://trusttasks.org/spec/rooms/owner/group/remove/0.1#response. The room's new epoch, which the removed member holds no key for.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "roomId",
-        "member",
-        "epoch"
-      ],
-      "properties": {
-        "roomId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 512,
-          "description": "The room."
-        },
-        "member": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048,
-          "description": "Who was removed."
-        },
-        "epoch": {
-          "type": "integer",
-          "minimum": 2,
-          "description": "The room epoch after the removal, as the host recorded it."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

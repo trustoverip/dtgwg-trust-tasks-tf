@@ -87,44 +87,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Members Renew — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "vmc",
-        "roleVac",
-        "personhood",
-        "personhoodChanged"
-      ],
-      "properties": {
-        "did": {
-          "type": "string",
-          "minLength": 1
-        },
-        "vmc": {
-          "type": "object",
-          "description": "The freshly-issued W3C Verifiable Membership Credential (opaque here)."
-        },
-        "roleVac": {
-          "type": "object",
-          "description": "The freshly-issued role credential (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\"role:<name>\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues."
-        },
-        "personhood": {
-          "type": "boolean",
-          "description": "Whether the renewed membership carries a personhood assertion."
-        },
-        "personhoodChanged": {
-          "type": "boolean",
-          "description": "Whether the personhood state changed on this renewal."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

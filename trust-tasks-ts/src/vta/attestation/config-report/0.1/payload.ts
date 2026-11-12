@@ -117,64 +117,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Attestation Config Report — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "configDigestSha384",
-        "configView",
-        "nonce",
-        "teeType",
-        "evidence",
-        "generatedAt"
-      ],
-      "properties": {
-        "configDigestSha384": {
-          "type": "string",
-          "pattern": "^[A-Za-z0-9+/]{64}$",
-          "description": "SHA-384 of the decoded configView bytes, base64 (standard). A convenience: the verifier recomputes it, and a mismatch with either the view or the evidence is a refusal."
-        },
-        "configView": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 65536,
-          "pattern": "^[A-Za-z0-9+/]+={0,2}$",
-          "description": "The canonical, secret-free view of the configuration the agent booted, base64 (standard): the exact bytes whose SHA-384 the evidence binds as its user data."
-        },
-        "nonce": {
-          "type": "string",
-          "pattern": "^[0-9a-f]{64}$",
-          "description": "The request's nonce, echoed. A verifier checks the nonce inside the evidence, not this."
-        },
-        "teeType": {
-          "type": "string",
-          "enum": [
-            "nitro",
-            "sev-snp",
-            "simulated"
-          ],
-          "description": "The platform that produced the evidence. Informational and not covered by the evidence."
-        },
-        "evidence": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 65536,
-          "pattern": "^[A-Za-z0-9+/_-]+={0,2}$",
-          "description": "The platform's quote, base64 (a COSE_Sign1 attestation document for nitro)."
-        },
-        "generatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the evidence was produced. Informational: freshness comes from the nonce."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

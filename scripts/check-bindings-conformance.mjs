@@ -510,6 +510,27 @@ function collectExternalRefs(node, out = []) {
 }
 
 /**
+ * Every local `#/$defs/<name>` `$ref` in `doc` whose definition `doc.$defs`
+ * does not hold. The generators prune each shipped schema to the `$defs` its
+ * root reaches (#1098); a pruning that dropped one it needed leaves a dangling
+ * reference, and since all four prune alike, comparing them with each other
+ * cannot see it.
+ */
+function danglingLocalRefs(doc) {
+  const defs = doc?.$defs ?? {};
+  const out = [];
+  const visit = (node) => {
+    if (Array.isArray(node)) return node.forEach(visit);
+    if (!node || typeof node !== "object") return;
+    const m = typeof node.$ref === "string" ? /^#\/\$defs\/([^/]*)/.exec(node.$ref) : null;
+    if (m && !Object.hasOwn(defs, m[1].split("~1").join("/").split("~0").join("~"))) out.push(node.$ref);
+    Object.values(node).forEach(visit);
+  };
+  visit(doc);
+  return out;
+}
+
+/**
  * Parse `export const <name>: <type> = { … };` (or the older
  * `export const <name> = { … } as const;`) out of a generated TS module.
  *
@@ -968,6 +989,14 @@ for (const spec of specs) {
         // An un-inlined cross-file $ref is unresolvable at runtime: the
         // consumer has no filesystem to walk and no base URI to resolve against.
         for (const [lang, , doc] of shipped) {
+          const dangling = danglingLocalRefs(doc);
+          if (dangling.length > 0) {
+            fail(
+              where,
+              `the ${variant} schema shipped by ${lang} references $defs it does not carry ` +
+                `(${dangling.slice(0, 3).join(", ")}) — pruning dropped a definition its root reaches.`,
+            );
+          }
           const external = collectExternalRefs(doc);
           if (external.length > 0) {
             fail(

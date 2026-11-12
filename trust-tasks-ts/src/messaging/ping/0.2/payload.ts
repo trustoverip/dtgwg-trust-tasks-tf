@@ -104,47 +104,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Messaging Ping — response payload",
-      "description": "The success response to a messaging/ping request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/ping/0.2#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "respondedAt",
-        "status"
-      ],
-      "properties": {
-        "respondedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The mediator's current time (RFC 3339). Advisory; not a trusted time source."
-        },
-        "status": {
-          "type": "string",
-          "enum": [
-            "ok",
-            "degraded"
-          ],
-          "description": "Coarse health. `ok` = able to accept and route messages; `degraded` = reachable but operating with reduced function. A mediator that cannot serve at all returns the framework `unavailable` error instead of a response."
-        },
-        "protocols": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "The transport protocols the mediator currently serves (e.g. `didcomm`, `tsp`). Open set; requesters ignore unrecognized tokens. MAY be omitted in a reduced response to an unauthenticated requester."
-        },
-        "nonce": {
-          "type": "string",
-          "description": "Echoed verbatim from the request when one was supplied."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

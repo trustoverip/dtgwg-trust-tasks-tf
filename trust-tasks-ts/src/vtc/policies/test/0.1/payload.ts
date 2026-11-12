@@ -120,42 +120,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Policies Test — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "purpose",
-        "sha256",
-        "result"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The evaluated module's identifier."
-        },
-        "purpose": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "description": "Governance purpose the module is classified under."
-        },
-        "sha256": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Digest of the evaluated module, so a caller can confirm which bytes ran."
-        },
-        "result": {
-          "description": "Raw result of the queried rule, uninterpreted. May be any JSON value, including absent-as-null."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

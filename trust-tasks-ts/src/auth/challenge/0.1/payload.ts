@@ -115,39 +115,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Auth Challenge — response payload",
-      "description": "Issued by the auth service in reply to a challenge request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/challenge/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "challenge",
-        "sessionId",
-        "expiresAt"
-      ],
-      "properties": {
-        "challenge": {
-          "type": "string",
-          "minLength": 16,
-          "description": "base64url-encoded one-time nonce. MUST be at least 128 bits of entropy. The subject embeds this value into the auth/authenticate document they sign."
-        },
-        "sessionId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Opaque, server-chosen identifier correlating this challenge with the subsequent authenticate call. The subject MUST echo it back unchanged. Consumers MUST treat the value as opaque."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "ISO-8601 timestamp after which the challenge MUST NOT be accepted. Issuers SHOULD pick a window between 30 seconds and 5 minutes."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

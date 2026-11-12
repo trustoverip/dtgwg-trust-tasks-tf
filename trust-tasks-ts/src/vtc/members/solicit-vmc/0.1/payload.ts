@@ -104,36 +104,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Members Solicit VMC — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "memberDid",
-        "requested",
-        "threadId"
-      ],
-      "properties": {
-        "memberDid": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The member the request was dispatched to."
-        },
-        "requested": {
-          "type": "boolean",
-          "description": "The request was DISPATCHED. Not a delivery or reply receipt."
-        },
-        "threadId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Correlates the member's eventual vtc/members/vmc delivery with this solicitation."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

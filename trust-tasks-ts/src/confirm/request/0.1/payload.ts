@@ -151,32 +151,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Confirm Request — synchronous ack",
-      "description": "Synchronous acknowledgement that the wallet received the request and will (or will not) deliver a confirm/response. The actual signed confirmation arrives via confirm/response out-of-band. Carried in a Trust Task document whose type is https://trusttasks.org/spec/confirm/request/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "status"
-      ],
-      "properties": {
-        "status": {
-          "type": "string",
-          "enum": [
-            "accepted",
-            "refused"
-          ]
-        },
-        "reason": {
-          "type": "string",
-          "description": "Required when status is `refused`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

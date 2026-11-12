@@ -90,31 +90,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Members Personhood-Challenge — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "challengeId",
-        "expiresAt"
-      ],
-      "properties": {
-        "challengeId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Single-use nonce (a UUID). Embed it into the assert VP's proof.challenge."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The assert handler refuses the presentation past this point."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

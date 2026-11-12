@@ -121,26 +121,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Rooms Keys Welcome — response payload",
-      "description": "Success response to rooms/keys/welcome. Type https://trusttasks.org/spec/rooms/keys/welcome/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "epoch"
-      ],
-      "properties": {
-        "epoch": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "The MLS epoch the recipient joined at. The sender needs this to know which commits the recipient still lacks."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

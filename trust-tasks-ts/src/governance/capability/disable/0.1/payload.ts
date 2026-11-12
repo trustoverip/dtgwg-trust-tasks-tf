@@ -104,33 +104,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Governance Capability Disable — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "capability",
-        "enabled"
-      ],
-      "properties": {
-        "capability": {
-          "type": "string"
-        },
-        "enabled": {
-          "type": "boolean",
-          "description": "False once the capability is inactive for the community."
-        },
-        "message": {
-          "type": "string",
-          "maxLength": 1024,
-          "description": "Additional human-readable detail."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

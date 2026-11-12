@@ -92,29 +92,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Auth — OOB Respond — response payload",
-      "description": "The outcome the service recorded. It never contains session material: authority goes to the starter key, through auth/oob/redeem only.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "status"
-      ],
-      "properties": {
-        "status": {
-          "type": "string",
-          "enum": [
-            "approved",
-            "declined"
-          ],
-          "description": "`approved` when the grant approved and every check passed; `declined` when the grant declined."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

@@ -90,27 +90,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Credential Exchange Pending Approve — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "vp_token"
-      ],
-      "properties": {
-        "vp_token": {
-          "type": [
-            "string",
-            "object"
-          ],
-          "description": "The freshly-minted OID4VP `vp_token`, identical in shape to credential-exchange/present. It is returned rather than only delivered so the approving operator holds exactly what the verifier will receive. Bound to the ORIGINAL query's nonce and audience — which is why an expired deferral cannot be approved."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

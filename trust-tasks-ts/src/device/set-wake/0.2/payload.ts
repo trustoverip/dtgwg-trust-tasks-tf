@@ -116,28 +116,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Device Set Wake — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "pushCapable"
-      ],
-      "properties": {
-        "triggerPolicy": {
-          "$ref": "#/$defs/WakeTriggerPolicy",
-          "description": "The effective allowlist the VTA computed and provisioned to the gateway. Absent when the wake channel was cleared."
-        },
-        "pushCapable": {
-          "type": "boolean",
-          "description": "Whether the device now has a usable wake channel (true after a successful set, false after a clear)."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -146,26 +124,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "WakeTriggerPolicy": {
-      "title": "WakeTriggerPolicy",
-      "description": "VTA-owned allowlist of the DIDs permitted to trigger a wake for a given WakeHandle (push wake-up binding, https://trusttasks.org/binding/push/0.1). The VTA is the source of truth for this policy — all device config state resides at the VTA — and provisions it to the gateway, which ENFORCES it: a wake request from a DID not on the list is refused. Typically holds the device's mediator DID (queue-driven wake, where the mediator alone knows the device is offline) and/or the VTA's own DID (policy-driven wake, e.g. a step-up the VTA is delegating to this device).",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "allowedTriggers"
-      ],
-      "properties": {
-        "allowedTriggers": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          },
-          "uniqueItems": true,
-          "description": "DIDs authorized to trigger a wake for this handle. An empty array means no party may wake the device (push effectively disabled while the handle exists). The gateway authenticates the trigger's DID before checking membership."
-        }
       }
     },
     "WakeHandle": {
@@ -247,28 +205,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           },
           "uniqueItems": true,
           "description": "DIDs authorized to trigger a wake for this handle. An empty array means no party may wake the device (push effectively disabled while the handle exists). The gateway authenticates the trigger's DID before checking membership."
-        }
-      }
-    },
-    "WakeHandle": {
-      "title": "WakeHandle",
-      "description": "An opaque, gateway-issued reference to a device's push channel (push wake-up binding, https://trusttasks.org/binding/push/0.1). The push gateway returns it to the device at registration; the device conveys it to its VTA (device/set-wake), and the VTA provisions it to authorized triggers (its mediator and/or itself). The raw platform push token (APNs/FCM/WebPush) is held ONLY by the gateway and is never represented here — the handle abstracts the platform, so adding new push methods (e.g. PWA Web Push) needs no change to triggers or VTA config. A handle is a bearer capability to *request* a wake (subject to the gateway's allowlist), never to read the channel.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "gateway",
-        "handle"
-      ],
-      "properties": {
-        "gateway": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The push gateway that issued this handle and acts on it — a DID (DIDComm-reachable gateway) or an https URL (REST gateway). A trigger sends its contentless wake request here."
-        },
-        "handle": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Opaque gateway-issued identifier for the device's push channel. Reveals no platform token. Rotates whenever the device re-registers a new platform token with the gateway; the device then re-conveys the fresh handle via device/set-wake."
         }
       }
     }

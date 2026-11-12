@@ -87,30 +87,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Identity Retire — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "generationId",
-        "droppedAt"
-      ],
-      "properties": {
-        "generationId": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "droppedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the generation's key material was dropped from the running service."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

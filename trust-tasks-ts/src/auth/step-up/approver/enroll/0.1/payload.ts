@@ -109,24 +109,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Auth — Step-up Approver Enroll — response payload",
-      "description": "The new binding as stored.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "approver"
-      ],
-      "properties": {
-        "approver": {
-          "$ref": "#/$defs/Approver"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -136,57 +118,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "Approver": {
-      "title": "Approver",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "approverDid",
-        "subject",
-        "enrolledAt",
-        "enrolledVia"
-      ],
-      "description": "One step-up approver binding, as its subject or an administrator sees it. The binding confers nothing of its own: it is read only when the relying party checks the evidence of a step-up asked of `subject`.",
-      "properties": {
-        "approverDid": {
-          "$ref": "#/$defs/ApproverDid"
-        },
-        "subject": {
-          "type": "string",
-          "pattern": "^did:",
-          "minLength": 5,
-          "maxLength": 2048,
-          "description": "The one subject DID this approver is bound to. An approver DID is bound to at most one subject at a relying party."
-        },
-        "label": {
-          "$ref": "#/$defs/ApproverLabel"
-        },
-        "enrolledAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the binding was written."
-        },
-        "enrolledVia": {
-          "$ref": "#/$defs/EnrolledVia"
-        },
-        "lastUsedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When a statement by this approver last satisfied a step-up. Absent when it never has."
-        }
-      }
-    },
-    "EnrolledVia": {
-      "title": "EnrolledVia",
-      "type": "string",
-      "enum": [
-        "install",
-        "invite",
-        "selfService",
-        "offline"
-      ],
-      "description": "The anchor the binding rested on, recorded so an incident review can see how each factor came to exist. `install`: claimed with the community's install token (vtc/install/claim/finish/0.3). `invite`: redeemed from an administrator's invite (auth/step-up/approver/redeem/finish/0.1). `selfService`: added by the subject behind a factor they already held (auth/step-up/approver/enroll/0.1). `offline`: redeemed from an invite minted by the operator with host access while the service was stopped — an `invite`-shaped redemption whose issuer was the host rather than an administrator."
     },
     "ApproverLabel": {
       "title": "ApproverLabel",
@@ -310,12 +241,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "maxLength": 128,
       "pattern": "^did:key:z6Mk[1-9A-HJ-NP-Za-km-z]+$",
       "description": "A step-up approver, as an Ed25519 `did:key` (`z6Mk…`). `did:key` only, because its document is a function of the key and resolves with no network, so verifying an approver's statement never depends on a fetch, and a key whose DID document could be rewritten after enrolment would not be the key that was enrolled. Distinct from the subject's DID, from every verification method in the subject's DID document, and from every key the subject can sign operations with at the relying party."
-    },
-    "AttestStatement": {
-      "title": "AttestStatement",
-      "type": "object",
-      "minProperties": 1,
-      "description": "A complete, signed auth/step-up/approver/attest/0.1 Trust Task document — envelope, payload and proof — issued by the approver. Deliberately an open object here rather than a typed one: the consumer verifies it as a document in its own right (envelope, proof and payload against that specification's schemas), and verifies its proof over the members exactly as received, which a binding that narrowed it to a typed struct and re-serialised it could silently break."
     }
   }
 };

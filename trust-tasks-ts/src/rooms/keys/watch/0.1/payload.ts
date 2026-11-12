@@ -226,86 +226,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         }
       }
     },
-    "RoomWatchOutcome": {
-      "title": "Outcome for one room",
-      "description": "What became of one room of the request.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "roomId",
-        "armed"
-      ],
-      "properties": {
-        "roomId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 2048,
-          "description": "The room, echoed."
-        },
-        "armed": {
-          "type": "boolean",
-          "description": "`true`: the host holds the watch armed and the recipient will pass on its signal with rooms/keys/changed. `false`: the watch was cancelled, there was none to cancel, or it was refused (`refused` says why)."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Present when `armed` is `true`: when the watch lapses if it has not fired — the expiresAt the host answered, or earlier where the recipient bounds it. The caller re-arms before then if it still wants a signal."
-        },
-        "refused": {
-          "type": "string",
-          "enum": [
-            "notAMember",
-            "actionNotHeld",
-            "limitReached",
-            "hostUnreachable",
-            "hostRefused"
-          ],
-          "description": "Present when this room's watch was not armed or cancelled because of a refusal. `notAMember`: the recipient holds no credential the room issued to `member`. `actionNotHeld`: the member's credentials do not confer `read`. `limitReached`: the recipient holds as many watches as it allows — the caller polls this room. `hostUnreachable`: the host could not be resolved, advertises no transport the recipient speaks, or did not answer — a retry may succeed. `hostRefused`: the host answered with a trust-task-error, whose code is in `hostCode`."
-        },
-        "hostCode": {
-          "type": "string",
-          "maxLength": 256,
-          "description": "Present when `refused` is `hostRefused`: the code of the host's trust-task-error, unaltered — for instance `rooms/watch:limitReached` or the standard `permissionDenied`."
-        }
-      }
-    },
-    "Response": {
-      "$anchor": "response",
-      "title": "Rooms Keys — Watch — response payload",
-      "description": "Success response to rooms/keys/watch: one outcome per room requested, in the order requested. Type https://trusttasks.org/spec/rooms/keys/watch/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "member",
-        "host",
-        "watches"
-      ],
-      "properties": {
-        "member": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048,
-          "description": "The member, echoed."
-        },
-        "host": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048,
-          "description": "The host, echoed."
-        },
-        "watches": {
-          "type": "array",
-          "minItems": 1,
-          "maxItems": 64,
-          "items": {
-            "$ref": "#/$defs/RoomWatchOutcome"
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -324,28 +244,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
-    "RoomWatchRequest": {
-      "title": "Room to watch",
-      "description": "One room of the request, with the version the caller has read it to.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "roomId"
-      ],
-      "properties": {
-        "roomId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 2048,
-          "description": "The room."
-        },
-        "sinceVersion": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "The highest version of the room the caller has read to, passed to the host as rooms/watch's sinceVersion: the host signals as soon as the room is above it, at once if it already is. Absent means the room's latest version when the host arms the watch. Ignored on a cancel."
-        }
-      }
-    },
     "RoomWatchOutcome": {
       "title": "Outcome for one room",
       "description": "What became of one room of the request.",

@@ -75,23 +75,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Community — Branding — Show — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "branding"
-      ],
-      "properties": {
-        "branding": {
-          "$ref": "#/$defs/CommunityBranding"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -100,35 +83,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "CommunityBranding": {
-      "title": "CommunityBranding",
-      "type": "object",
-      "additionalProperties": false,
-      "description": "OPTIONAL. How the community asks to be shown to a prospective applicant: a name, an accent colour and a logo. Presentation only, self-asserted and unverified — `communityDid` identifies the community, never `branding`. Not part of any criterion, so not covered by a `requirementsDigest`. Every member is optional.",
-      "properties": {
-        "displayName": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "description": "The community's name as it asks to be shown."
-        },
-        "accentColor": {
-          "type": "string",
-          "pattern": "^#[0-9a-fA-F]{6}$",
-          "description": "An sRGB colour as `#rrggbb`, compared case-insensitively. A community SHOULD write it in lower case."
-        },
-        "logoUrl": {
-          "type": "string",
-          "format": "uri",
-          "pattern": "^https://",
-          "maxLength": 2048,
-          "description": "An https URL of the community's logo. Fetched by the client, so an untrusted image from wherever it points."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
       }
     }
   }

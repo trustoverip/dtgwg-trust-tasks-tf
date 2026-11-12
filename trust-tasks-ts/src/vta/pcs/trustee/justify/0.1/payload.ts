@@ -156,71 +156,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA PCS — Trustee Justify — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "document"
-      ],
-      "properties": {
-        "document": {
-          "title": "JustifyDocument",
-          "description": "The voting/trustees/justify request, signed as the trustee.",
-          "type": "object",
-          "required": [
-            "id",
-            "type",
-            "issuer",
-            "recipient",
-            "issuedAt",
-            "payload",
-            "proof"
-          ],
-          "properties": {
-            "id": {
-              "type": "string",
-              "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
-            },
-            "type": {
-              "const": "https://trusttasks.org/spec/voting/trustees/justify/0.1"
-            },
-            "issuer": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 2048,
-              "description": "The signer."
-            },
-            "recipient": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 2048,
-              "description": "The ballot box."
-            },
-            "issuedAt": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "expiresAt": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "payload": {
-              "type": "object",
-              "description": "That task's request payload."
-            },
-            "proof": {
-              "type": "object",
-              "description": "A Data Integrity proof by an `authentication` key of `issuer`."
-            }
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -326,19 +261,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "TrusteeIndex": {
-      "title": "TrusteeIndex",
-      "description": "A trustee's index: its position in the manifest's `trustees.dids`, counting from 1.",
-      "type": "integer",
-      "minimum": 1,
-      "maximum": 64
-    },
-    "ElectionId": {
-      "title": "ElectionId",
-      "description": "An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.",
-      "type": "string",
-      "pattern": "^[A-Za-z0-9._-]{1,128}$"
     }
   }
 };

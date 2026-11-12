@@ -187,50 +187,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "WebVH DID Update — response payload",
-      "description": "The published entry. camelCase per the framework convention — note the counts are the state AFTER the update, including the rotation the caller did not ask for.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "newVersionId"
-      ],
-      "properties": {
-        "did": {
-          "type": "string"
-        },
-        "newVersionId": {
-          "type": "string",
-          "description": "versionId of the entry just appended. A caller intending a further edit SHOULD pass this back as the next request's `expectedVersionId`."
-        },
-        "newScid": {
-          "type": "string"
-        },
-        "newLogEntry": {
-          "type": "string",
-          "description": "The appended log entry, as JSON text."
-        },
-        "updateKeysCount": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Update keys authorized AFTER this entry. Where `document` was supplied these are new keys — the previous ones no longer authorize anything."
-        },
-        "preRotationKeyCount": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Pre-rotation commitments published by this entry."
-        },
-        "serverless": {
-          "type": "boolean",
-          "description": "True when the agent holds the log itself and no hosting server was published to — the operator must fetch and redeploy `did.jsonl`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

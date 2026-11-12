@@ -89,28 +89,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTN Rooms — List — response payload",
-      "description": "Every room the network opens.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "rooms"
-      ],
-      "properties": {
-        "rooms": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/RoomDef"
-          },
-          "description": "The rooms."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -120,55 +98,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "RoomDef": {
-      "description": "A room.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "name",
-        "role",
-        "passMinutes"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "pattern": "^[a-z0-9][a-z0-9-]{0,62}$",
-          "description": "The room's id."
-        },
-        "name": {
-          "type": "string",
-          "maxLength": 200,
-          "description": "Its name."
-        },
-        "role": {
-          "$ref": "#/$defs/RoleName",
-          "description": "The role whose groups' members may enter."
-        },
-        "description": {
-          "type": "string",
-          "maxLength": 1000,
-          "description": "What it is for."
-        },
-        "url": {
-          "type": "string",
-          "format": "uri",
-          "maxLength": 2048,
-          "description": "Where the room is."
-        },
-        "passMinutes": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 1440,
-          "description": "How long a pass lasts, in minutes: at most 1440 (24 hours). A pass is short-lived because it is not revoked; eligibility is re-proved for the next one."
-        }
-      }
-    },
-    "RoleName": {
-      "type": "string",
-      "pattern": "^[a-z0-9_-]{1,64}$",
-      "description": "A role's name: 1–64 lowercase letters, digits, `-` or `_`."
     },
     "Membership": {
       "type": "object",
@@ -262,10 +191,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "type": "string",
       "pattern": "^[a-z0-9_-]{1,64}$",
       "description": "A role's name: 1–64 lowercase letters, digits, `-` or `_`."
-    },
-    "Membership": {
-      "type": "object",
-      "description": "A person's membership credential (VMC) from a community that is a member of this network, holder-bound to the requester's identity. Open for the same reason as `Credential`."
     }
   }
 };

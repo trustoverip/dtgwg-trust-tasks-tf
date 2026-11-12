@@ -115,57 +115,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Persona Profile Delete — response payload",
-      "description": "Success response to persona/profile/delete. Type https://trusttasks.org/spec/persona/profile/delete/1.0#response. Deleting an absent profile is a success carrying existed: false, which is what makes a repeated delete converge.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "profileId",
-        "existed"
-      ],
-      "properties": {
-        "profileId": {
-          "$ref": "#/$defs/Ulid"
-        },
-        "existed": {
-          "type": "boolean",
-          "description": "False when no live profile was present. A repeat delete returns false and deliberately takes no new version, so watchers never observe a change that did not happen."
-        },
-        "disclosedTo": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "partyCount",
-            "contextCount"
-          ],
-          "description": "How many distinct parties this face has disclosed to, across how many contexts, from the holder's disclosure history. Counts, not identifiers; persona/disclosure/history names them. Returned on the delete because the delete does not un-tell anyone: the history, and what those parties hold, remain.",
-          "properties": {
-            "partyCount": {
-              "type": "integer",
-              "minimum": 0
-            },
-            "contextCount": {
-              "type": "integer",
-              "minimum": 0
-            }
-          }
-        },
-        "unboundPersonas": {
-          "type": "array",
-          "maxItems": 256,
-          "items": {
-            "type": "string",
-            "minLength": 1
-          },
-          "description": "Persona DIDs whose bindings were cleared. Present only when `unbind` was true and something was cleared — a holder is owed the list of which personas their one action left presenting nothing."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -262,12 +211,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "description": "A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.",
       "type": "string",
       "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
-    },
-    "ExpectedVersion": {
-      "title": "ExpectedVersion",
-      "description": "Optimistic-concurrency precondition. A positive value requires the record's current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.",
-      "type": "integer",
-      "minimum": 0
     }
   }
 };
