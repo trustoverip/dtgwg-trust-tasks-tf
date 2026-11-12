@@ -37,6 +37,6 @@
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
     "json-schema-to-typescript": "^15.0.4",
-    "yaml": "^2.5.1"
+    "yaml": "^2.9.1"
   }
 }
