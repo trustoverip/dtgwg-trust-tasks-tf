@@ -77,3 +77,49 @@ func TestCanonicalizeSortsMembersAndEscapes(t *testing.T) {
 		t.Errorf("canonicalize = %q, want %q", got, want)
 	}
 }
+
+// decode accepts only I-JSON (RFC 7493), which RFC 8785 requires: the inputs
+// below are ones encoding/json would accept by rewriting or dropping part of
+// them, so two byte strings would share one canonical form.
+func TestDecodeRefusesInputJCSCannotRepresentFaithfully(t *testing.T) {
+	cases := map[string]string{
+		"duplicate member":                   `{"a":1,"a":2}`,
+		"duplicate after unescaping":         `{"a":1,"a":2}`,
+		"duplicate in a nested object":       `{"x":[{"b":true,"c":null,"b":false}]}`,
+		"lone high surrogate":                `{"a":"\ud800"}`,
+		"lone high surrogate at end":         `"x\ud800"`,
+		"high surrogate then non-surrogate":  `{"a":"\ud800A"}`,
+		"high surrogate then high surrogate": `{"a":"\ud800\ud800"}`,
+		"lone low surrogate":                 `{"a":"\udc00"}`,
+		"lone surrogate in a member name":    `{"\udfff":1}`,
+		"invalid UTF-8 in a string":          "{\"a\":\"\xff\"}",
+		"UTF-8 encoded surrogate":            "{\"a\":\"\xed\xa0\x80\"}",
+		"truncated UTF-8 sequence":           "{\"a\":\"\xe2\x82\"}",
+		"trailing value":                     `{"a":1}{"b":2}`,
+		"trailing garbage":                   `{"a":1} x`,
+	}
+	for name, in := range cases {
+		t.Run(name, func(t *testing.T) {
+			if v, err := decode([]byte(in)); err == nil {
+				t.Errorf("decode(%q) = %#v, want an error", in, v)
+			}
+		})
+	}
+}
+
+func TestDecodeAcceptsWellFormedInput(t *testing.T) {
+	cases := []string{
+		`{"a":{"a":1},"b":[{"a":1},{"a":2}]}`, // the same name in different objects
+		`{"a":"😀"}`,                           // an escaped surrogate pair
+		`{"a":"😀"}`,                           // upper-case hex
+		`{"a":"\\ud800"}`,                     // an escaped backslash, not an escape
+		"{\"a\":\"\xef\xbf\xbd\"}",            // a literal U+FFFD is valid text
+		"{\"a\":\"\xf0\x9f\x98\x80\"}",        // a literal astral character
+		"{\"a\":[1,2,{\"b\":\"]}\"}]}\n\t ",   // trailing whitespace only
+	}
+	for _, in := range cases {
+		if _, err := decode([]byte(in)); err != nil {
+			t.Errorf("decode(%q): %v", in, err)
+		}
+	}
+}
