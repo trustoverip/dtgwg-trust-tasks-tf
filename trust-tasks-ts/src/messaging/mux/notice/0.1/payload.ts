@@ -139,8 +139,13 @@ export type Payload = MessagingMuxNoticePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/messaging/mux/notice/0.1",
   "title": "Messaging — Mux Notice — payload",
@@ -345,7 +350,7 @@ export const PAYLOAD_SCHEMA = {
       "description": "Why a member left a connection, or why a stored grant did not attach on connect. `revokedByMember` / `revokedByPrincipal`: messaging/mux/revoke by that side. `epochBumped`: the member DID ran messaging/mux/revoke-all, which ends its grants and its session attaches. `suspendedUnknownKey`: the unknown-key rule suspended the grant. `keyRotated`: the grant's signing key left the member DID's current authentication relationship (grant state `staleKey`). `expired`: the grant or attach reached its effective expiry. `accountBlocked`: the member's account was blocked, or its access-control capabilities no longer cover the member's scope; the member leaves rather than being narrowed. `superseded`: the member DID's own direct connection, or a newer connection of the same kind, now receives its live traffic; the member stays on this connection inactive. `admin`: an operator acted. `detachRequested`: the principal removed a session attach with messaging/mux/detach. `accountRemoved`: the member's account, or the principal's, was removed. `resolutionFailed`: the member DID could not be resolved when the grant was re-validated; the grant is not changed and is re-checked later. `connectionFull`: the grant is valid and stays stored, but this connection already carries `maxDidsPerConnection` members, so it was not attached here; it attaches on a connection with room, including this one's successor once the principal makes room and reconnects."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

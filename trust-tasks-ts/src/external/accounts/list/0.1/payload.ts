@@ -82,8 +82,13 @@ export type Response = ExternalAccountsListResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/external/accounts/list/0.1",
   "title": "External Accounts — List — payload",
@@ -971,10 +976,10 @@ export const PAYLOAD_SCHEMA = {
       "description": "How the account authenticates to its provider. Every model pins the custodian's verification material in the provider's own account, uploaded once, so no model requires the custodian to be reachable from the internet. `aws-roles-anywhere`: the custodian is the certificate authority of an IAM Roles Anywhere trust anchor, and signs CreateSession with a short-lived end-entity certificate it issued to the account's own key. `gcp-wif-pinned`: a Workload Identity Federation pool provider holds an uploaded JWKS; the custodian signs an ID token and exchanges it at Google's STS. `azure-cert`: a certificate uploaded to an Entra app registration; the custodian signs an RFC 7523 client assertion. `oauth2-private-key-jwt`: the same RFC 7523 client authentication against any token endpoint that registered the custodian's public key. `s3-static-presign`: an access-key pair for an S3-compatible store that cannot federate; the custodian presigns per-object URLs and never releases the key. `sui-signer`: a Sui address derived from the custodian's key; the custodian signs only allow-listed transactions. `static-secret`: an API key or token used inside the custodian by a named driver; last resort, never released.\n\nPlain OpenID Connect discovery federation is deliberately absent. It works by the provider fetching the issuer's JWKS from a public URL, which either makes the custodian reachable from the internet or makes whoever hosts a copy of the JWKS able to mint credentials for every federated role."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -1829,7 +1834,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "How the account authenticates to its provider. Every model pins the custodian's verification material in the provider's own account, uploaded once, so no model requires the custodian to be reachable from the internet. `aws-roles-anywhere`: the custodian is the certificate authority of an IAM Roles Anywhere trust anchor, and signs CreateSession with a short-lived end-entity certificate it issued to the account's own key. `gcp-wif-pinned`: a Workload Identity Federation pool provider holds an uploaded JWKS; the custodian signs an ID token and exchanges it at Google's STS. `azure-cert`: a certificate uploaded to an Entra app registration; the custodian signs an RFC 7523 client assertion. `oauth2-private-key-jwt`: the same RFC 7523 client authentication against any token endpoint that registered the custodian's public key. `s3-static-presign`: an access-key pair for an S3-compatible store that cannot federate; the custodian presigns per-object URLs and never releases the key. `sui-signer`: a Sui address derived from the custodian's key; the custodian signs only allow-listed transactions. `static-secret`: an API key or token used inside the custodian by a named driver; last resort, never released.\n\nPlain OpenID Connect discovery federation is deliberately absent. It works by the provider fetching the issuer's JWKS from a public URL, which either makes the custodian reachable from the internet or makes whoever hosts a copy of the JWKS able to mint credentials for every federated role."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

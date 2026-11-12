@@ -110,8 +110,13 @@ export type Response = VTADIDsKeysRetireResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/dids/keys/retire/1.0",
   "title": "VTA DIDs — Keys Retire — payload",
@@ -908,10 +913,10 @@ export const PAYLOAD_SCHEMA = {
       "description": "`preview` — nothing was written; the response carries the plan. `applied` — the change was made (and published, unless `publication.selfPublish`). `pendingApproval` — the plan is recorded and awaits further approvals. `awaitingRecoveryProof` — the plan is approved and waits for the recovery custodian's proof (`preview.recoverySigning`); nothing is published until it arrives."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -1657,7 +1662,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "`preview` — nothing was written; the response carries the plan. `applied` — the change was made (and published, unless `publication.selfPublish`). `pendingApproval` — the plan is recorded and awaits further approvals. `awaitingRecoveryProof` — the plan is approved and waits for the recovery custodian's proof (`preview.recoverySigning`); nothing is published until it arrives."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's
