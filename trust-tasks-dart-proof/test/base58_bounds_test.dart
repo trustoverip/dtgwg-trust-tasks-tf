@@ -86,7 +86,10 @@ void main() {
         expect(r.failure, ProofFailureKind.signatureInvalid);
       }
     }
-    expect(sw.elapsed, lessThan(const Duration(seconds: 1)),
+    // Decoding a value this size would take minutes; refusing it on its
+    // length takes milliseconds. The bound sits between the two with room for
+    // a slow or busy CI runner.
+    expect(sw.elapsed, lessThan(const Duration(seconds: 10)),
         reason: 'refusing 200 oversized proofs took ${sw.elapsed}');
   });
 }
