@@ -13,6 +13,7 @@
 // in favour of generating the tasks an application uses (trust-tasks-build).
 #![allow(deprecated)]
 
+use std::future::Future;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 
@@ -459,4 +460,180 @@ async fn a_guard_that_cannot_reach_its_store_fails_closed() {
         other => panic!("expected Rejected(unavailable), got {other:?}"),
     }
     assert_eq!(executions.count(), 0, "executed without a usable record");
+}
+
+/// Polls `fut` once with a waker that never fires. Enough to drive the
+/// pipeline into a handler that panics synchronously or suspends forever,
+/// without a runtime that would need the future to be `'static`.
+fn poll_once<F: std::future::Future>(fut: F) -> std::task::Poll<F::Output> {
+    let mut fut = std::pin::pin!(fut);
+    let mut cx = std::task::Context::from_waker(std::task::Waker::noop());
+    fut.as_mut().poll(&mut cx)
+}
+
+/// A handler that panics never says the effect happened. The claim it held is
+/// released, so the producer's bit-for-bit resend runs again rather than being
+/// absorbed as an in-flight duplicate until the record expires. The panic
+/// itself still reaches the caller.
+#[tokio::test]
+async fn a_panicking_handler_releases_the_claim_so_a_resend_runs() {
+    let guard = InMemoryReplayGuard::new(64);
+    let executions = Executions::default();
+    let now = t("2026-08-26T12:00:00Z");
+    let doc = request("req-1", "admin", now);
+
+    let panicked = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        poll_once(consume_inbound(
+            &NoopHandler::new(),
+            ProofPolicy::<NoVerifier>::AcceptUnverified,
+            PayloadPolicy::<NoValidator>::AcceptUnvalidated,
+            ConsumeChecks::consequential(&guard),
+            doc.clone(),
+            ME,
+            now,
+            || "err-1".to_string(),
+            |req: TrustTask<grant::Payload>, _parties| async move {
+                if req.id == "req-1" {
+                    panic!("handler failed part-way");
+                }
+                Ok::<_, ErrorResponse>(req.respond_with("resp-1", response("admin")))
+            },
+        ))
+    }));
+    assert!(panicked.is_err(), "the handler's panic must propagate");
+    assert_eq!(
+        guard.len(),
+        0,
+        "the panicking handler's claim was left in flight"
+    );
+
+    let resend = consume(&guard, &executions, doc.clone(), now).await;
+    assert!(matches!(resend, ConsumeOutcome::Handled(_)), "{resend:?}");
+    assert_eq!(executions.count(), 1);
+
+    // The successful execution's record stands: a further resend is absorbed.
+    let again = consume(&guard, &executions, doc, now).await;
+    assert!(
+        matches!(
+            again,
+            ConsumeOutcome::Duplicate {
+                in_flight: false,
+                ..
+            }
+        ),
+        "{again:?}"
+    );
+    assert_eq!(executions.count(), 1);
+}
+
+/// Dropping the pipeline's future while the handler is awaited — a request
+/// timeout, a client that disconnects — abandons the execution the same way a
+/// panic does, and releases the claim the same way.
+#[tokio::test]
+async fn a_cancelled_handler_releases_the_claim_so_a_resend_runs() {
+    let guard = InMemoryReplayGuard::new(64);
+    let executions = Executions::default();
+    let now = t("2026-08-26T12:00:00Z");
+    let doc = request("req-1", "admin", now);
+
+    let pending = poll_once(consume_inbound(
+        &NoopHandler::new(),
+        ProofPolicy::<NoVerifier>::AcceptUnverified,
+        PayloadPolicy::<NoValidator>::AcceptUnvalidated,
+        ConsumeChecks::consequential(&guard),
+        doc.clone(),
+        ME,
+        now,
+        || "err-1".to_string(),
+        |_req: TrustTask<grant::Payload>, _parties| async move {
+            std::future::pending::<Result<TrustTask<grant::Response>, ErrorResponse>>().await
+        },
+    ));
+    assert!(pending.is_pending(), "the handler should still be running");
+    // `poll_once` dropped the future on return.
+    assert_eq!(
+        guard.len(),
+        0,
+        "the cancelled handler's claim was left in flight"
+    );
+
+    let resend = consume(&guard, &executions, doc, now).await;
+    assert!(matches!(resend, ConsumeOutcome::Handled(_)), "{resend:?}");
+    assert_eq!(executions.count(), 1);
+}
+
+/// While the claim is held — the handler still running — a resend is an
+/// in-flight duplicate, not a second execution. The guard only releases what
+/// was abandoned.
+#[tokio::test]
+async fn a_resend_while_the_handler_runs_is_still_an_in_flight_duplicate() {
+    let guard = InMemoryReplayGuard::new(64);
+    let executions = Executions::default();
+    let now = t("2026-08-26T12:00:00Z");
+    let doc = request("req-1", "admin", now);
+    let transport = NoopHandler::new();
+
+    let mut running = std::pin::pin!(consume_inbound(
+        &transport,
+        ProofPolicy::<NoVerifier>::AcceptUnverified,
+        PayloadPolicy::<NoValidator>::AcceptUnvalidated,
+        ConsumeChecks::consequential(&guard),
+        doc.clone(),
+        ME,
+        now,
+        || "err-1".to_string(),
+        |_req: TrustTask<grant::Payload>, _parties| async move {
+            std::future::pending::<Result<TrustTask<grant::Response>, ErrorResponse>>().await
+        },
+    ));
+    let mut cx = std::task::Context::from_waker(std::task::Waker::noop());
+    assert!(running.as_mut().poll(&mut cx).is_pending());
+
+    let resend = consume(&guard, &executions, doc, now).await;
+    assert!(
+        matches!(
+            resend,
+            ConsumeOutcome::Duplicate {
+                in_flight: true,
+                ..
+            }
+        ),
+        "{resend:?}"
+    );
+    assert_eq!(executions.count(), 0);
+}
+
+/// The acceptance window is half-open and ends where the record does: at
+/// exactly `issuedAt + max_age + skew` the record may be gone, so the document
+/// must already be refused. A millisecond earlier it is still a duplicate.
+#[tokio::test]
+async fn the_window_closes_at_the_instant_the_record_may_be_dropped() {
+    let guard = InMemoryReplayGuard::new(64);
+    let executions = Executions::default();
+    let issued = t("2026-08-26T12:00:00Z");
+    let doc = request("req-1", "admin", issued);
+    let end = FreshnessPolicy::consequential()
+        .record_expiry(&doc, issued)
+        .unwrap();
+
+    consume(&guard, &executions, doc.clone(), issued).await;
+
+    let just_before = consume(
+        &guard,
+        &executions,
+        doc.clone(),
+        end - TimeDelta::milliseconds(1),
+    )
+    .await;
+    assert!(
+        matches!(just_before, ConsumeOutcome::Duplicate { .. }),
+        "{just_before:?}"
+    );
+
+    let at_end = consume(&guard, &executions, doc, end).await;
+    match at_end {
+        ConsumeOutcome::Rejected(err) => assert_eq!(err.payload.code, StandardCode::Expired.into()),
+        other => panic!("expected Rejected(expired), got {other:?}"),
+    }
+    assert_eq!(executions.count(), 1);
 }
