@@ -359,9 +359,22 @@ That raise is the *upper* end. The *lower* end — a floor old enough that the
 sibling no longer compiles against it — is a feature PR's to keep: when a
 sibling starts using core API newer than its floor, raise the floor in the same
 PR. The `downgrade` legs of the `packages` job in `dart.yml` check it (the
-override dropped, `dart pub downgrade`, `dart analyze lib example`), and warn
-rather than fail while the floor names a core not yet on pub.dev, which is
-exactly the Release PR's case above.
+override dropped, `dart pub downgrade`, `dart analyze lib example`):
+
+- A floor naming a core not yet on pub.dev — the Release PR crossing a minor,
+  above — is skipped with a warning until that core is published.
+- When `lib/` fails at the floor but compiles against the newest core on
+  pub.dev, the leg fails: raise the floor.
+- When it fails against every published core, `lib/` uses core API that has
+  not been released yet. That is normal between a core change and its release,
+  so the leg only warns — except on the Release PR, where it fails.
+
+The last case bites a Release PR that releases the core **without** crossing a
+minor: nothing raises the sibling floors (that only happens on a minor), so a
+sibling already using the new core API fails its `downgrade` leg. Raise that
+sibling's `trust_tasks` floor to the version the Release PR assigns the core,
+by hand, in the Release PR:
+`node scripts/raise-dart-core-floor.mjs <sibling>/pubspec.yaml <core version>`.
 
 `publish-dart.yml` looks up the tag's version on
 pub.dev before publishing and does nothing when it is already there, which is
