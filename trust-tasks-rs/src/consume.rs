@@ -869,8 +869,20 @@ where
     }
 
     // All §7.2 checks passed. Hand to the caller's business handler.
+    //
+    // `claim` is held across this await: if the handler panics, or this
+    // future is dropped before the handler returns, its destructor releases
+    // the claim (see `HeldClaim`). Once the handler has returned, the claim is
+    // settled below exactly once.
     let doc_id = doc.id.clone();
-    match handler(doc, parties).await {
+    let claim = claim.map(|(guard, digest)| HeldClaim {
+        guard,
+        id: doc_id.clone(),
+        digest: Some(digest),
+    });
+    let outcome = handler(doc, parties).await;
+    let claim = claim.map(HeldClaim::settle);
+    match outcome {
         Ok(response) => {
             if let Some((guard, _)) = claim {
                 // Best-effort: the effect has already happened, so a failure
@@ -902,6 +914,43 @@ where
                 }
             }
             ConsumeOutcome::Rejected(error_response)
+        }
+    }
+}
+
+/// The item-11 claim [`consume_core`] holds while the handler runs.
+///
+/// Released from its destructor unless [`settle`](Self::settle) took it first.
+/// That covers the two ways the handler can fail to return: a panic, which
+/// unwinds through the await and drops the claim, and cancellation, where the
+/// future running the pipeline is dropped mid-await (a request timeout, a
+/// client disconnect). Either way nothing says the effect happened, and
+/// holding the claim would answer every resend with an in-flight duplicate
+/// until the record expired. The panic itself continues unchanged.
+struct HeldClaim<'g> {
+    guard: &'g dyn ReplayGuard,
+    id: String,
+    /// `None` once settled.
+    digest: Option<DocumentDigest>,
+}
+
+impl<'g> HeldClaim<'g> {
+    /// The handler returned: hand the claim to the normal settle path, which
+    /// records or releases it, and disarm the destructor.
+    fn settle(mut self) -> (&'g dyn ReplayGuard, DocumentDigest) {
+        let digest = self.digest.take().expect("a claim is settled once");
+        (self.guard, digest)
+    }
+}
+
+impl Drop for HeldClaim<'_> {
+    fn drop(&mut self) {
+        if let Some(digest) = self.digest.take() {
+            // A destructor that panics while a handler's panic unwinds aborts
+            // the process; a guard that panics here loses only this release.
+            let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                self.guard.release_abandoned(&self.id, &digest);
+            }));
         }
     }
 }

@@ -21,10 +21,11 @@ type item11Vectors struct {
 	Now      string `json:"now"`
 	First    string `json:"first"`
 	Cases    []struct {
-		Name   string `json:"name"`
-		First  string `json:"first"`
-		Second string `json:"second"`
-		Expect string `json:"expect"`
+		Name     string `json:"name"`
+		First    string `json:"first"`
+		Second   string `json:"second"`
+		SecondAt string `json:"secondAt"`
+		Expect   string `json:"expect"`
 	} `json:"cases"`
 }
 
@@ -55,13 +56,17 @@ func consumeVector(
 	guard tt.ReplayGuard,
 	received string,
 	withReceived bool,
+	at string,
 ) tt.ConsumeOutcome[response] {
 	t.Helper()
 	var doc tt.Document[widget]
 	if err := json.Unmarshal([]byte(received), &doc); err != nil {
 		t.Fatal(err)
 	}
-	now, err := time.Parse(time.RFC3339, v.Now)
+	if at == "" {
+		at = v.Now
+	}
+	now, err := time.Parse(time.RFC3339Nano, at)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -94,8 +99,8 @@ func verdictOf(outcome tt.ConsumeOutcome[response]) string {
 	switch {
 	case outcome.Kind == tt.OutcomeDuplicate:
 		return "duplicate"
-	case outcome.Kind == tt.OutcomeRejected && outcome.Error.Payload.Code == string(tt.CodeIDConflict):
-		return "idConflict"
+	case outcome.Kind == tt.OutcomeRejected:
+		return outcome.Error.Payload.Code
 	default:
 		return string(outcome.Kind)
 	}
@@ -110,10 +115,10 @@ func TestItem11SharedVectorsCompareTheDocumentAsReceived(t *testing.T) {
 			if c.First != "" {
 				firstBody = c.First
 			}
-			if first := consumeVector(t, v, guard, firstBody, true); first.Kind != tt.OutcomeHandled {
+			if first := consumeVector(t, v, guard, firstBody, true, ""); first.Kind != tt.OutcomeHandled {
 				t.Fatalf("first: %s %+v", first.Kind, first.Error)
 			}
-			if got := verdictOf(consumeVector(t, v, guard, c.Second, true)); got != c.Expect {
+			if got := verdictOf(consumeVector(t, v, guard, c.Second, true, c.SecondAt)); got != c.Expect {
 				t.Fatalf("second: got %s, want %s", got, c.Expect)
 			}
 		})
@@ -130,10 +135,10 @@ func TestItem11WithoutReceivedDigestsTheTypedView(t *testing.T) {
 			continue
 		}
 		guard := tt.NewInMemoryReplayGuard(16)
-		if first := consumeVector(t, v, guard, v.First, false); first.Kind != tt.OutcomeHandled {
+		if first := consumeVector(t, v, guard, v.First, false, ""); first.Kind != tt.OutcomeHandled {
 			t.Fatalf("first: %s %+v", first.Kind, first.Error)
 		}
-		if got := verdictOf(consumeVector(t, v, guard, c.Second, false)); got != "duplicate" {
+		if got := verdictOf(consumeVector(t, v, guard, c.Second, false, "")); got != "duplicate" {
 			t.Fatalf("got %s", got)
 		}
 		return

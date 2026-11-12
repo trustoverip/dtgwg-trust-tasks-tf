@@ -611,7 +611,21 @@ func ConsumeInbound[P, R any](
 		}
 	}
 
+	// A handler that panics (or calls runtime.Goexit) never returns, so the
+	// settle and release calls below never run. This defer releases the claim on
+	// that path: nothing says the effect happened, and holding the claim would
+	// answer every resend with an in-flight duplicate until the record expired.
+	// It does not recover — the panic continues to the caller unchanged, with its
+	// original stack. Once the handler has returned, exactly one of the calls
+	// below settles the claim instead.
+	handlerReturned := false
+	defer func() {
+		if !handlerReturned {
+			claimed.release(ctx, doc.ID)
+		}
+	}()
 	response, err := opts.Handler(ctx, doc, parties)
+	handlerReturned = true
 	if err != nil {
 		var refusal *Refusal
 		if !errors.As(err, &refusal) {
@@ -652,6 +666,19 @@ type claim struct {
 	digest string
 }
 
+// claimSettleTimeout bounds a settle or release made after the request's own
+// context may have ended.
+const claimSettleTimeout = 5 * time.Second
+
+// settleContext detaches ctx from its cancellation for a settle or release. The
+// handler failing because ctx was cancelled — a client that went away, a
+// deadline — is exactly when the claim most needs releasing, and a guard backed
+// by a network store would refuse a call made on the cancelled context. The
+// values ctx carries are kept, and the call is bounded by claimSettleTimeout.
+func settleContext(ctx context.Context) (context.Context, context.CancelFunc) {
+	return context.WithTimeout(context.WithoutCancel(ctx), claimSettleTimeout)
+}
+
 // settle records the response for a completed execution, best-effort.
 //
 // The effect has already happened, so a guard that cannot cache the response
@@ -669,6 +696,8 @@ func (c *claim) settle(ctx context.Context, id string, response any) {
 			encoded = raw
 		}
 	}
+	ctx, cancel := settleContext(ctx)
+	defer cancel()
 	_ = c.guard.RecordResponse(ctx, id, encoded)
 }
 
@@ -677,6 +706,8 @@ func (c *claim) release(ctx context.Context, id string) {
 	if c == nil {
 		return
 	}
+	ctx, cancel := settleContext(ctx)
+	defer cancel()
 	_ = c.guard.Release(ctx, id, c.digest)
 }
 

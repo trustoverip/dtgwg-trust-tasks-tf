@@ -1,5 +1,5 @@
 {
-  "description": "Item-11 duplicate-execution vectors (SPEC §7.2 item 11, Keying and comparison). For each case, consume the case's `first` (the top-level `first` when the case has none), then its `second`, under the same `id` against one replay guard, with a payload type that models only `payload.subject`, passing each document as received. `expect` is the outcome of the second.",
+  "description": "Item-11 duplicate-execution vectors (SPEC §7.2 item 11, Keying and comparison). For each case, consume the case's `first` (the top-level `first` when the case has none), then its `second` (at the case's `secondAt` when it has one, otherwise at `now`), under the same `id` against one replay guard, under the consequential checks (5 min maximum age, 60 s skew), with a payload type that models only `payload.subject`, passing each document as received. `expect` is the outcome of the second: `duplicate`, or the refusal's error code.",
   "spec": "https://trusttasks.org/spec/conformance/widget/0.1",
   "consumer": "did:web:consumer.example",
   "now": "2026-11-01T00:00:30Z",
@@ -61,6 +61,20 @@
       "second": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000001\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:alice.example\",\"amount\":1.5}}",
       "expect": "idConflict",
       "why": "Control case for the two above."
+    },
+    {
+      "name": "byte-identical resend one millisecond before the window closes",
+      "second": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000001\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:alice.example\"}}",
+      "secondAt": "2026-11-01T00:05:59.999Z",
+      "expect": "duplicate",
+      "why": "Inside the acceptance window (issuedAt + 5 min maximum age + 60 s skew), so the record is still held and the resend is absorbed."
+    },
+    {
+      "name": "byte-identical resend at the instant the window closes",
+      "second": "{\"id\":\"urn:uuid:5f0c2a4e-8d1b-4c3a-9e2f-000000000001\",\"type\":\"https://trusttasks.org/spec/conformance/widget/0.1\",\"issuer\":\"did:web:producer.example\",\"recipient\":\"did:web:consumer.example\",\"issuedAt\":\"2026-11-01T00:00:00Z\",\"payload\":{\"subject\":\"did:web:alice.example\"}}",
+      "secondAt": "2026-11-01T00:06:00Z",
+      "expect": "expired",
+      "why": "SPEC §7.2 (Bounding the record): retention and willingness to execute are the same bound. The window is half-open, so at its end the record may be dropped and the document is refused, never executed a second time."
     }
   ]
 }
