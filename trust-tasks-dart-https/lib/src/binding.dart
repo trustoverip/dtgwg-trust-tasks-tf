@@ -1,7 +1,11 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:trust_tasks/trust_tasks.dart';
+
+// One `urn:uuid:` generator for the whole Dart family, in the core (#1118).
+// Re-exported so `package:trust_tasks_https` keeps naming it; the element is
+// the core's, so importing both packages is not an ambiguity.
+export 'package:trust_tasks/trust_tasks.dart' show newUrnUuid;
 
 /// The binding's stable identifier (`bindings/https/0.2` §1). It never appears
 /// on the wire; HTTPS has no envelope to carry it.
@@ -92,20 +96,6 @@ int statusForCode(String code) {
     'taskFailed',
   };
   return unprocessable.contains(normalized) ? 422 : 500;
-}
-
-final Random _random = Random.secure();
-
-/// A fresh `urn:uuid:` identifier (UUID version 4).
-String newUrnUuid() {
-  final b = List<int>.generate(16, (_) => _random.nextInt(256));
-  b[6] = (b[6] & 0x0f) | 0x40;
-  b[8] = (b[8] & 0x3f) | 0x80;
-  String hex(int from, int to) => [
-        for (var i = from; i < to; i++) b[i].toRadixString(16).padLeft(2, '0'),
-      ].join();
-  return 'urn:uuid:${hex(0, 4)}-${hex(4, 6)}-${hex(6, 8)}-${hex(8, 10)}-'
-      '${hex(10, 16)}';
 }
 
 /// The routing key for a Type URI: `#request` and no fragment route alike,

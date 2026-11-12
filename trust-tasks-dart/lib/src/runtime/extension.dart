@@ -22,7 +22,7 @@
 ///       // ...
 ///     );
 ///   case VersionRefused(:final document, :final reason):
-///     emit(reject(transport, document, uuid.v4(), reason));
+///     emit(reject(transport, document, newUrnUuid(), reason));
 /// }
 /// ```
 ///

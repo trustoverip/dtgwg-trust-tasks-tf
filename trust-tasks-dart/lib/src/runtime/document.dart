@@ -511,6 +511,7 @@ class SpecPolicy {
     this.isRecipientRequired = false,
     this.isIssuedAtRequired = false,
     this.payloadSchema,
+    this.maxDocumentBytes,
   });
 
   final String typeUri;
@@ -538,6 +539,18 @@ class SpecPolicy {
   /// consumer has something to validate against. Null only for a hand-written
   /// policy that omits it.
   final String? payloadSchema;
+
+  /// The specification's front-matter `maxDocumentBytes` for this variant, in
+  /// bytes of the serialized document as received (the JSON text, `proof`
+  /// included, no transport envelope), or null when it declares none.
+  ///
+  /// Two-sided (SPEC §12.4, as `CONTRIBUTING-SPECS.md` states it): a consumer
+  /// serving the task **MUST NOT** refuse a document within it on grounds of
+  /// size alone, and **SHOULD** refuse a larger one with `malformedRequest`.
+  /// Null declares nothing — the receiving party's own transport limit
+  /// applies. The two variants are independent: a response never inherits the
+  /// request's bound. The counterpart of Rust's `Payload::MAX_DOCUMENT_BYTES`.
+  final int? maxDocumentBytes;
 }
 
 /// Why a consumer rejected a document, and the §8.3 code it maps to.

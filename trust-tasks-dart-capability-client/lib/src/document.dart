@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:trust_tasks/trust_tasks.dart';
 
 import 'constants.dart';
@@ -7,22 +5,10 @@ import 'constants.dart';
 /// A capability document: a Trust Task whose payload is an open JSON object.
 typedef CapabilityDocument = TrustTaskDocument<Map<String, dynamic>>;
 
-final _rand = Random.secure();
-
 /// A fresh document `id` (a UUID v4 URN). One per *attempt* — never reused
-/// across attempts; see [newAttempt].
-String _freshId() {
-  final b = List<int>.generate(16, (_) => _rand.nextInt(256));
-  b[6] = (b[6] & 0x0f) | 0x40;
-  b[8] = (b[8] & 0x3f) | 0x80;
-  String hex(int i) => b[i].toRadixString(16).padLeft(2, '0');
-  final s = StringBuffer('urn:uuid:');
-  for (var i = 0; i < 16; i++) {
-    if (i == 4 || i == 6 || i == 8 || i == 10) s.write('-');
-    s.write(hex(i));
-  }
-  return s.toString();
-}
+/// across attempts; see [newAttempt]. The core's generator: the Dart family
+/// keeps one (#1118).
+String _freshId() => newUrnUuid();
 
 /// `issuedAt` for a built document: UTC in whole seconds, through the core's
 /// [systemClock]. A full-precision timestamp is the SPEC §13.1 item 3

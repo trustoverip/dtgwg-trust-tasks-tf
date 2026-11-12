@@ -56,6 +56,7 @@ Future<ConsumeOutcome<Response>> consequential(
       now: now ?? testNow,
       newErrorId: () => 'err-1',
       payloadToJson: payloadToJson,
+      responseToJson: (r) => r.toJson(),
       clock: fixedClock,
       handler: (accepted, parties) async {
         executions.count++;
@@ -80,7 +81,8 @@ class _FailingGuard implements ReplayGuard {
   ) async =>
       throw StateError('redis://cache.internal:6379 connection refused');
   @override
-  Future<void> recordResponse(String id, Object? response) async {}
+  Future<void> recordResponse(
+      String id, Map<String, dynamic>? response) async {}
   @override
   Future<void> release(String id, String digest) async {}
 }
@@ -89,8 +91,11 @@ class _FailingGuard implements ReplayGuard {
 /// JSON, and keeps it as the decoded JSON.
 class _SerialisingGuard extends InMemoryReplayGuard {
   @override
-  Future<void> recordResponse(String id, Object? response) =>
-      super.recordResponse(id, jsonDecode(jsonEncode(response)));
+  Future<void> recordResponse(String id, Map<String, dynamic>? response) =>
+      super.recordResponse(
+        id,
+        jsonDecode(jsonEncode(response)) as Map<String, dynamic>?,
+      );
 }
 
 /// A final refusal whose payload cannot be encoded.
@@ -119,8 +124,9 @@ void main() {
 
       // §7.2 (*Disposition of a duplicate*): return the prior response.
       final prior = (second as DuplicateOutcome<Response>).priorResponse;
-      expect(prior, isA<TrustTaskDocument<Response>>());
-      expect((prior! as TrustTaskDocument<Response>).id, 'resp-1');
+      expect(prior?['id'], 'resp-1');
+      expect(prior?['payload'], {'ok': true});
+      expect(second.isError, isFalse);
     });
 
     test('releases the claim when the handler throws, so a resend executes',
@@ -138,6 +144,7 @@ void main() {
           now: testNow,
           newErrorId: () => 'err-1',
           payloadToJson: payloadToJson,
+          responseToJson: (r) => r.toJson(),
           handler: (accepted, parties) async =>
               throw StateError('database connection reset'),
         ),
@@ -213,6 +220,7 @@ void main() {
           now: testNow,
           newErrorId: () => 'err-1',
           payloadToJson: payloadToJson,
+          responseToJson: (r) => r.toJson(),
           clock: fixedClock,
           handler: (accepted, parties) async => throw Refusal(
             TrustTaskDocument<ErrorPayload>(
@@ -264,8 +272,8 @@ void main() {
       expect(second, isA<DuplicateOutcome<Response>>());
       final prior = (second as DuplicateOutcome<Response>).priorResponse;
       expect(prior, isA<Map<String, dynamic>>());
-      expect((prior! as Map<String, dynamic>)['id'], 'resp-1');
-      expect((prior as Map<String, dynamic>)['payload'], {'ok': true});
+      expect(prior!['id'], 'resp-1');
+      expect(prior['payload'], {'ok': true});
     });
 
     test('rejects differing content under a reused id with idConflict',
