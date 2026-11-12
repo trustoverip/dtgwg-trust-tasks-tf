@@ -40,6 +40,7 @@ The binding specification is explicit that [it "does not permit `proof` to be om
 | `Content-Type: application/json` required | A `text/plain` cross-origin simple POST is refused with 415 instead of reaching the pipeline. | — |
 | Request timeout + concurrency limit | Slowloris and flood controls on the router. | `.request_timeout(..)`, `.max_concurrent_requests(..)` |
 | Response binding on the client | `HttpsClient::send` checks the response's `threadId`, `type`, `issuer` and `recipient` against the request before returning it. | — |
+| Client transport limits | `server_url` must be `https` (plain `http` only to a loopback host, or with `.allow_insecure_http(true)` and no bearer token); redirects are not followed; a response body over 256 KiB is refused; error text never quotes the response body. | `.allow_insecure_http(..)`, `.follow_redirects(true)` (same origin only), `.max_response_bytes(..)` |
 
 A guard that cannot be consulted fails **closed**: the server answers `unavailable` (retryable) and does not execute, because a consumer that cannot establish whether a document is a duplicate has not satisfied item 11.
 

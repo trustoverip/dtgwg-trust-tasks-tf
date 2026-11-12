@@ -15,6 +15,8 @@ use crate::registry::{check_identity, read_bundle_head, Index, IndexEntry, Regis
 pub struct Ctx<'a> {
     pub dir: Option<&'a Path>,
     pub registry: Option<&'a str>,
+    /// `--allow-http-registry`: accept a non-loopback http:// registry.
+    pub allow_http_registry: bool,
 }
 
 /// One line of a command's report: `{verb:>9} {rest}`.
@@ -37,15 +39,22 @@ fn warn(msg: impl std::fmt::Display) {
 struct Origins<'a> {
     root: &'a Path,
     official: String,
+    allow_http: bool,
     sources: &'a BTreeMap<String, SourceLoc>,
     open: BTreeMap<Option<String>, (Registry, Option<Index>)>,
 }
 
 impl<'a> Origins<'a> {
-    fn new(root: &'a Path, official: String, sources: &'a BTreeMap<String, SourceLoc>) -> Self {
+    fn new(
+        ctx: &Ctx,
+        root: &'a Path,
+        official: String,
+        sources: &'a BTreeMap<String, SourceLoc>,
+    ) -> Self {
         Origins {
             root,
             official,
+            allow_http: ctx.allow_http_registry,
             sources,
             open: BTreeMap::new(),
         }
@@ -55,7 +64,7 @@ impl<'a> Origins<'a> {
         let key = source.map(str::to_string);
         if !self.open.contains_key(&key) {
             let registry = match source {
-                None => Registry::open(&self.official)?,
+                None => Registry::open(&self.official, self.allow_http)?,
                 Some(name) => {
                     let loc = self.sources.get(name).ok_or_else(|| {
                         anyhow!(
@@ -237,7 +246,7 @@ pub fn add(ctx: &Ctx, args: &[String]) -> Result<()> {
         check_namespaces(&after)?;
     }
     let sources = manifest.sources.clone();
-    let mut origins = Origins::new(&project.root, registry_url.clone(), &sources);
+    let mut origins = Origins::new(ctx, &project.root, registry_url.clone(), &sources);
 
     let mut bundles = BTreeMap::new();
     for (id, req) in &requests {
@@ -401,7 +410,7 @@ pub fn update(ctx: &Ctx, slugs: &[String], to_latest: bool) -> Result<bool> {
     };
 
     let sources = manifest.sources.clone();
-    let mut origins = Origins::new(&project.root, registry_url.clone(), &sources);
+    let mut origins = Origins::new(ctx, &project.root, registry_url.clone(), &sources);
     let mut bundles = BTreeMap::new();
     let mut refused = 0usize;
 
@@ -727,7 +736,7 @@ pub fn fetch_locked(ctx: &Ctx) -> Result<()> {
         .ok_or_else(|| anyhow!("no {LOCKFILE} — run `trust-tasks update` to resolve {MANIFEST}"))?;
     // Restore from where the lock resolved each source, which is what its
     // digests were taken from.
-    let mut origins = Origins::new(&project.root, registry_url, &lock.sources);
+    let mut origins = Origins::new(ctx, &project.root, registry_url, &lock.sources);
     let mut bundles = BTreeMap::new();
     for e in lock.entries.values() {
         if project.vendored_ok(e) {
@@ -769,7 +778,7 @@ pub fn list(ctx: &Ctx, remote: bool) -> Result<()> {
     let lock = Lock::load(&project.lock_path())?
         .ok_or_else(|| anyhow!("no {LOCKFILE} — run `trust-tasks update`"))?;
     let registry_url = effective_registry(&manifest, ctx.registry)?;
-    let mut origins = Origins::new(&project.root, registry_url, &manifest.sources);
+    let mut origins = Origins::new(ctx, &project.root, registry_url, &manifest.sources);
 
     let mut header = vec!["TASK", "VERSION", "INTENT", "STATUS", "NOTE"];
     if remote {
