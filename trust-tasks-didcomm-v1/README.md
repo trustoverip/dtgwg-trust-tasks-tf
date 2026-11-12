@@ -14,7 +14,7 @@ drive both.
 cargo add trust-tasks-didcomm-v1
 ```
 
-or, through the facade, `cargo add trust-tasks --no-default-features --features didcomm-v1`
+or, through the facade, `cargo add trust-tasks --features didcomm-v1`
 and use `trust_tasks::didcomm_v1`.
 
 ## What differs from DIDComm v2.1

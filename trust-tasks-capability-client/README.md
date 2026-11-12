@@ -18,7 +18,7 @@ no crypto dependency. The TypeScript, Go and Dart ports
 cargo add trust-tasks-capability-client
 ```
 
-or, through the facade, `cargo add trust-tasks --no-default-features --features capability-client`
+or, through the facade, `cargo add trust-tasks --features capability-client`
 and use `trust_tasks::capability_client`.
 
 ## API

@@ -34,16 +34,15 @@ so run it in CI, and `trust-tasks update` moves pins, saying whether a move need
 code changes. The same three files drive every language.
 
 ```sh
-cargo add trust-tasks --no-default-features --features https,proof-affinidi
+cargo add trust-tasks --features https,proof-affinidi
 cargo add --build trust-tasks-build
 ```
 
-That writes the current versions into `Cargo.toml`, with the facade's default
-features off:
+That writes the current versions into `Cargo.toml`:
 
 ```toml
 [dependencies]
-trust-tasks = { version = "…", default-features = false, features = ["https", "proof-affinidi"] }
+trust-tasks = { version = "…", features = ["https", "proof-affinidi"] }
 
 [build-dependencies]
 trust-tasks-build = "…"
@@ -74,9 +73,10 @@ dart pub add trust_tasks
 trust-tasks generate --lang dart --out lib/trust_tasks
 ```
 
-`default-features = false` matters: the facade's default is `all-specs`, every
-prebuilt module (~90 MB of generated Rust, minutes and over 16 GB of memory for
-a cold build, and deprecated). Generating three tasks instead builds in about 8
+Leave out `all-specs`: it is every prebuilt module (~90 MB of generated Rust,
+minutes and over 16 GB of memory for a cold build, and deprecated), and it is
+off by default (on by default in 0.38 and earlier, where the line above needs
+`default-features = false`). Generating three tasks instead builds in about 8
 seconds and 0.4 GB. `trust-tasks generate` verifies the lock, then runs each
 language's own generator — it installs nothing, and Rust needs no command at
 all because `build.rs` is the generator.
@@ -94,8 +94,8 @@ validation" fails open. See
 features so you pick a transport rather than a set of version numbers.
 Everything in it is a `pub use` — `trust_tasks::TrustTask` **is**
 `trust_tasks_rs::TrustTask` — so dropping the facade later is a
-find-and-replace, not a migration: depend on `trust-tasks-rs` with
-`default-features = false` and leave out `.runtime_path`.
+find-and-replace, not a migration: depend on `trust-tasks-rs` and leave out
+`.runtime_path`.
 
 ### The crate matrix
 

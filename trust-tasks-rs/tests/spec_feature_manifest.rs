@@ -173,16 +173,16 @@ fn every_spec_family_has_a_cargo_feature() {
     assert_eq!(
         all_specs,
         on_disk,
-        "`all-specs` does not enable every family, so `default` no longer means \
-         'everything' and a consumer who upgraded would silently lose modules.\n  \
+        "`all-specs` does not enable every family, so a consumer who asked for \
+         'everything' would silently lose modules.\n  \
          missing from all-specs: {:?}",
         on_disk.difference(&all_specs).collect::<Vec<_>>(),
     );
-    assert_eq!(
-        default,
-        BTreeSet::from(["all-specs".to_string()]),
-        "`default` must be exactly [\"all-specs\"]: that is what keeps this crate \
-         non-breaking for a consumer who configures no features."
+    assert!(
+        default.is_empty(),
+        "`default` must be empty (#1102): every prebuilt module is deprecated, and a \
+         plain dependency must compile the runtime alone, not the whole registry. \
+         Found: {default:?}"
     );
 }
 

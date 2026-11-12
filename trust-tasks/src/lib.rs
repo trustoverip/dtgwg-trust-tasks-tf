@@ -8,19 +8,20 @@
 //! [Versioning](#versioning)).
 //!
 //! ```sh
-//! cargo add trust-tasks --no-default-features --features https,proof-affinidi
+//! cargo add trust-tasks --features https,proof-affinidi
 //! ```
 //!
 //! which writes, with the current version:
 //!
 //! ```toml
-//! trust-tasks = { version = "…", default-features = false, features = ["https", "proof-affinidi"] }
+//! trust-tasks = { version = "…", features = ["https", "proof-affinidi"] }
 //! ```
 //!
-//! Keep `default-features = false`. The default, `all-specs`, compiles every
-//! prebuilt specification module under `specs`; those are deprecated, and an
-//! application generates the tasks it uses with `trust-tasks-build` instead
-//! (see [A first round trip](#a-first-round-trip)).
+//! No feature is on by default. `all-specs`, which compiles every prebuilt
+//! specification module under `specs`, is opt-in (it was the default in 0.38
+//! and earlier); those modules are deprecated, and an application generates
+//! the tasks it uses with `trust-tasks-build` instead (see
+//! [A first round trip](#a-first-round-trip)).
 //!
 //! Everything here is a `pub use`. There are no wrapper types, no shims, and
 //! nothing to keep in step: `trust_tasks::TrustTask` **is**
@@ -56,7 +57,7 @@
 //! `trust-tasks-rs` carries **one feature per prebuilt spec family** (`vault`,
 //! `acl`, `keys`, …) so a size-sensitive build can compile only the families it
 //! speaks. Those are **not** forwarded here. Only the `all-specs` umbrella is,
-//! and it is on by default (and deprecated, with the modules it compiles).
+//! off by default (and deprecated, with the modules it compiles).
 //!
 //! That is a deliberate limit on what a facade is for. Dozens more feature
 //! names in front of a newcomer is the problem this crate exists to remove, and
@@ -78,7 +79,7 @@
 //! exchange with both ends written out, the TypeScript, Go and Dart consuming
 //! sides, and the four traps that reliably cost an afternoon. The Rust in that document is
 //! extracted from the repository's `examples/getting-started` application — this
-//! facade with `default-features = false`, and the one task it speaks generated
+//! facade with no spec family, and the one task it speaks generated
 //! in `build.rs` — and a test fails if the two drift, so it is code that
 //! compiles and runs rather than code that once did.
 //!

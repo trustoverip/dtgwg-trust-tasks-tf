@@ -1,7 +1,7 @@
 //! Tests for the `validate` feature — runtime JSON Schema validation of
 //! payloads against the embedded `payload.schema.json` files.
 
-#![cfg(feature = "validate")]
+#![cfg(all(feature = "validate", feature = "acl"))]
 // Exercises the prebuilt specification modules on purpose; they are deprecated
 // in favour of generating the tasks an application uses (trust-tasks-build).
 #![allow(deprecated)]

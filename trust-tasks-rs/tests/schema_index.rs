@@ -1,6 +1,13 @@
 //! The Type URI → schema lookup a dispatching consumer needs.
 
-#![cfg(feature = "validate")]
+// Looks up `vta`, `vtc` and `auth` URIs, which the index knows only when those
+// families are compiled in; no family is on by default (#1102).
+#![cfg(all(
+    feature = "validate",
+    feature = "vta",
+    feature = "vtc",
+    feature = "auth"
+))]
 // Exercises the prebuilt specification modules on purpose; they are deprecated
 // in favour of generating the tasks an application uses (trust-tasks-build).
 #![allow(deprecated)]
