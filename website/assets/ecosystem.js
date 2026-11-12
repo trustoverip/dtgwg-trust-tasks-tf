@@ -34,7 +34,7 @@ window.TT_ECOSYSTEM = [
     tier: "reference",
     accent: "violet",
     summary:
-      "Four reference client libraries, each generated from the same registry and published to its own language's package registry. All four carry a typed payload for every specification and implement the SPEC §7.2 consumer pipeline; a cross-language conformance check holds them to the same verdict on the same document. Transport bindings ship in Rust (TSP, HTTPS, DIDComm v2 and v1) and Dart (HTTPS, DIDComm v2), each with a Data Integrity proof backend, and Go ships a TSP binding as a separate module; the implementations interoperate across languages.",
+      "Reference client libraries in Rust, TypeScript, Go and Dart, each published to its own language's package registry. Each implements the SPEC §7.2 consumer pipeline and generates typed payloads from the registry's bundles for the specifications an application pins; a cross-language conformance check holds them to the same verdict on the same document. Which transport bindings each ships is in the capability matrix; the implementations interoperate across languages.",
     // No version numbers: the previous entry said "Tracking framework 0.2
     // (0.2.x crate line)" while the workspace was at 0.21. Each registry states
     // its own current version, and the capability matrix states what each
@@ -43,8 +43,8 @@ window.TT_ECOSYSTEM = [
     bullets: [
       "trust-tasks-rs — crates.io · the workspace with the transport bindings",
       "@openvtc/trust-tasks — npm · types + §7.2 pipeline, zero dependencies",
-      "trust-tasks-go — Go module proxy · one package per specification",
-      "trust_tasks — pub.dev · Dart and Flutter, with trust_tasks_https, trust_tasks_didcomm and trust_tasks_proof beside it",
+      "trust-tasks-go — Go module proxy · standard library only, with nested modules beside it",
+      "trust_tasks — pub.dev · Dart and Flutter, with companion packages beside it",
       "See the capability matrix for which library supports which transport",
     ],
     primary: { label: "Implementations · trusttasks.org", href: "/implementations" },
