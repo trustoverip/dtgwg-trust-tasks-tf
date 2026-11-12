@@ -232,27 +232,62 @@ String _dartExecutable() {
   return base == 'dart' || base == 'dart.exe' ? exe : 'dart';
 }
 
+/// Replace [outDir] with the formatted tree in [staging].
+///
+/// The new tree is first copied into a temporary directory beside [outDir]
+/// (same parent, so on the same filesystem), and then swapped in by renames:
+/// the old directory is renamed aside, the new one renamed into place, and only
+/// then is the old one deleted. A failure while copying leaves [outDir]
+/// untouched; a failure of the second rename puts the old directory back. The
+/// only window in which [outDir] is absent is between two renames.
 void _replaceOutput(String outDir, Directory staging, Iterable<String> paths) {
-  final out = Directory(outDir);
-  if (out.existsSync()) {
-    final entries = out.listSync();
-    if (entries.isNotEmpty && !File('$outDir/$markerFileName').existsSync()) {
-      throw GenerateError(
-        '$outDir is not empty and has no $markerFileName marker — refusing to '
-        'replace a directory this generator did not write. Point --out at an '
-        'empty or generated directory.',
-      );
-    }
-    for (final entry in entries) {
-      entry.deleteSync(recursive: true);
-    }
-  } else {
-    out.createSync(recursive: true);
+  // Absolute and without `.`/`..` segments or a trailing separator, so the
+  // renames below name the directory itself and its real parent.
+  var outPath = Directory(outDir).absolute.uri.normalizePath().toFilePath();
+  final sep = Platform.pathSeparator;
+  while (outPath.length > 1 && outPath.endsWith(sep)) {
+    outPath = outPath.substring(0, outPath.length - 1);
   }
-  for (final rel in paths) {
-    final target = File('$outDir/$rel');
-    target.parent.createSync(recursive: true);
-    File('${staging.path}/$rel').copySync(target.path);
+  final out = Directory(outPath);
+  final exists = out.existsSync();
+  if (exists &&
+      out.listSync().isNotEmpty &&
+      !File('${out.path}/$markerFileName').existsSync()) {
+    throw GenerateError(
+      '$outDir is not empty and has no $markerFileName marker — refusing to '
+      'replace a directory this generator did not write. Point --out at an '
+      'empty or generated directory.',
+    );
   }
-  File('$outDir/$markerFileName').writeAsStringSync(_markerText);
+
+  final parent = out.parent..createSync(recursive: true);
+  final name = outPath.split(sep).last;
+  final fresh = parent.createTempSync('.$name.new-');
+  try {
+    for (final rel in paths) {
+      final target = File('${fresh.path}/$rel');
+      target.parent.createSync(recursive: true);
+      File('${staging.path}/$rel').copySync(target.path);
+    }
+    File('${fresh.path}/$markerFileName').writeAsStringSync(_markerText);
+  } on Object {
+    fresh.deleteSync(recursive: true);
+    rethrow;
+  }
+
+  if (!exists) {
+    fresh.renameSync(out.path);
+    return;
+  }
+  // Reserve a name for the old tree, then free it for the rename.
+  final aside = parent.createTempSync('.$name.old-')..deleteSync();
+  out.renameSync(aside.path);
+  try {
+    fresh.renameSync(out.path);
+  } on Object {
+    Directory(aside.path).renameSync(out.path);
+    fresh.deleteSync(recursive: true);
+    rethrow;
+  }
+  Directory(aside.path).deleteSync(recursive: true);
 }

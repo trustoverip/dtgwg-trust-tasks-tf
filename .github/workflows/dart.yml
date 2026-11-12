@@ -314,10 +314,23 @@ jobs:
   #
   # They resolve `trust_tasks` from the tree (pubspec_overrides.yaml), so a PR
   # that changes the core and its consumer together is tested together. Whether
-  # a package also works against the *published* core is a release question,
-  # asked by `tag-dart` in publish.yml.
+  # a package's newest release works against the *published* core is a release
+  # question, asked by `tag-dart` in publish.yml.
+  #
+  # The `downgrade` legs ask the other half: does lib/ (and example/) still
+  # compile against the OLDEST core — and oldest everything else — its pubspec
+  # admits? `check-sibling-core-ranges` only checks that a range admits the
+  # newest core, and every sibling once declared `^0.9.3` while importing
+  # libraries that first shipped in 0.9.23 (#1115): a consumer on an older core
+  # got a compile error instead of a resolver error. These legs drop the
+  # in-tree override for trust_tasks, `dart pub downgrade`, and analyze. When a
+  # sibling needs newer published core API, raise its floor in the same PR.
+  # When it needs core API no published core has yet (a PR adding core API and
+  # its first use together), the leg warns — except in the Release PR, where
+  # the floor must name the core being released — and a floor naming an
+  # unpublished core (a Release PR crossing a minor) is skipped until it is.
   packages:
-    name: ${{ matrix.package }} (${{ matrix.sdk }}${{ matrix.ssi && format(', ssi {0}', matrix.ssi) || '' }})
+    name: ${{ matrix.package }} (${{ matrix.sdk }}${{ matrix.ssi && format(', ssi {0}', matrix.ssi) || '' }}${{ matrix.downgrade && ', downgrade' || '' }})
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -358,6 +371,23 @@ jobs:
             sdk: "3.6"
           - package: trust-tasks-dart-capability-client
             sdk: stable
+          # The floors: every dependency at the lowest version the pubspec
+          # admits, trust_tasks from pub.dev rather than the tree.
+          - package: trust-tasks-dart-proof
+            sdk: stable
+            downgrade: true
+          - package: trust-tasks-dart-https
+            sdk: stable
+            downgrade: true
+          - package: trust-tasks-dart-didcomm
+            sdk: stable
+            downgrade: true
+          - package: trust-tasks-dart-tsp
+            sdk: stable
+            downgrade: true
+          - package: trust-tasks-dart-capability-client
+            sdk: stable
+            downgrade: true
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -370,21 +400,68 @@ jobs:
         working-directory: ${{ matrix.package }}
         run: |
           printf '  ssi: %s\n' "${{ matrix.ssi }}" >> pubspec_overrides.yaml
-      - name: Install dependencies
+      # Drop the trust_tasks override (only that one: trust-tasks-dart-tsp's
+      # also supplies affinidi_tsp from git), as tag-dart does before verifying
+      # a release, so the floor is resolved from pub.dev.
+      - name: Use the published core
+        id: floor
+        if: matrix.downgrade
         working-directory: ${{ matrix.package }}
         run: |
-          dart pub get
+          floor=$(sed -n 's/^  trust_tasks: *\^\([0-9][0-9.]*\).*/\1/p' pubspec.yaml)
+          latest=$(curl -fsS https://pub.dev/api/packages/trust_tasks | jq -r .latest.version)
+          echo "trust_tasks floor $floor; newest on pub.dev $latest"
+          if [ "$(printf '%s\n%s\n' "$floor" "$latest" | sort -V | head -1)" != "$floor" ]; then
+            echo "::warning file=${{ matrix.package }}/pubspec.yaml::trust_tasks ^$floor is not on pub.dev yet (newest: $latest); the floor is tested once it is."
+            echo "skip=true" >>"$GITHUB_OUTPUT"
+            exit 0
+          fi
+          sed -i '/^  trust_tasks:$/,/^    path: /d' pubspec_overrides.yaml
+          grep -qE '^  [a-z_]+:' pubspec_overrides.yaml || rm pubspec_overrides.yaml
+      - name: Install dependencies
+        if: steps.floor.outputs.skip != 'true'
+        working-directory: ${{ matrix.package }}
+        run: |
+          if [ "${{ matrix.downgrade }}" = true ]; then dart pub downgrade; else dart pub get; fi
           dart pub deps --style=compact | grep -E '^- (ssi|trust_tasks) '
       - name: Analyze
+        if: '!matrix.downgrade'
         working-directory: ${{ matrix.package }}
         run: dart analyze --fatal-infos
+      # lib/ is what a consumer compiles and example/ is what pub.dev shows;
+      # test/ may exercise in-tree core the floor predates.
+      - name: Analyze at the floors
+        if: matrix.downgrade && steps.floor.outputs.skip != 'true'
+        working-directory: ${{ matrix.package }}
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          set -- lib
+          if [ -d example ]; then set -- lib example; fi
+          dart analyze --fatal-infos "$@" && exit 0
+          # Failing at the floor means one of two things. If the newest core
+          # on pub.dev passes, the floor is too low: raise it. If that fails
+          # too, lib/ uses core API no published core has yet — normal between
+          # a core change and its release. The Release PR is where the floor
+          # must move to the core it publishes, so fail there; warn elsewhere.
+          dart pub upgrade >/dev/null
+          if dart analyze --fatal-infos "$@" >/dev/null 2>&1; then
+            echo "::error file=${{ matrix.package }}/pubspec.yaml::lib/ does not compile against its trust_tasks floor but does against the newest published core: raise the floor."
+            exit 1
+          fi
+          if [ "$HEAD_REF" = release ]; then
+            echo "::error file=${{ matrix.package }}/pubspec.yaml::lib/ needs core API no published trust_tasks has: in the Release PR the floor must name the core this release publishes."
+            exit 1
+          fi
+          echo "::warning file=${{ matrix.package }}/pubspec.yaml::lib/ needs core API no published trust_tasks has yet; the floor is tested once that core is released."
       - name: Check formatting
-        if: matrix.sdk == 'stable' && !matrix.ssi
+        if: matrix.sdk == 'stable' && !matrix.ssi && !matrix.downgrade
         working-directory: ${{ matrix.package }}
         run: |
           floor=$(sed -n 's/^ *sdk: *^\{0,1\}\([0-9]*\.[0-9]*\).*/\1/p' pubspec.yaml | head -1)
           echo "formatting at language version $floor"
           dart format --output=none --set-exit-if-changed --language-version="$floor" .
       - name: Test
+        if: '!matrix.downgrade'
         working-directory: ${{ matrix.package }}
         run: dart test

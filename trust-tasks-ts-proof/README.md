@@ -15,6 +15,11 @@ and the Dart `trust_tasks_proof` package: for the same Ed25519 key, document and
 npm install @openvtc/trust-tasks @openvtc/trust-tasks-proof
 ```
 
+Requires **Node.js 20.19 or later** (`engines`; the floor `@noble/curves` and
+`@noble/hashes` 2 set), or a browser or React Native runtime. The package is
+ESM; its `exports` carry a `default` condition, so `require()` also works on a
+Node.js that can load ESM synchronously (20.19+, 22.12+).
+
 ## Verifying
 
 ```ts
