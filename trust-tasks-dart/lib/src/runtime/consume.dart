@@ -562,6 +562,22 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
     }
   }
 
+  /// Settle the claim with the encoded response, encoding it first.
+  ///
+  /// The handler has already returned, so the effect happened: the claim is
+  /// settled even when [encode] throws — with no response to hand back, so a
+  /// resend is absorbed rather than executed again — and the encoder's error
+  /// then reaches the caller. Without this the claim stayed in flight until
+  /// the record expired.
+  Future<void> settleEncoding(Object? Function() encode) async {
+    Object? encoded;
+    try {
+      encoded = encode();
+    } finally {
+      await settle(encoded);
+    }
+  }
+
   TrustTaskDocument<R>? response;
   try {
     response = await handler(doc, parties);
@@ -579,7 +595,7 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
         }
       }
     } else {
-      await settle(refusal.response.toJson((p) => p.toJson()));
+      await settleEncoding(() => refusal.response.toJson((p) => p.toJson()));
     }
     return Rejected<R>(refusal.response);
   } on Object {
@@ -604,10 +620,11 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
     return Accepted<R>();
   }
 
-  await settle(
-    responseToJson == null ? response : response.toJson(responseToJson),
+  final handled = response;
+  await settleEncoding(
+    () => responseToJson == null ? handled : handled.toJson(responseToJson),
   );
-  return Handled<R>(response);
+  return Handled<R>(handled);
 }
 
 /// Whether a document is an error response rather than a success response.

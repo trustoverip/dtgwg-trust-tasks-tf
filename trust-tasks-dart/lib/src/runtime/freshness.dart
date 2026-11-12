@@ -136,7 +136,10 @@ RejectReason? validateFreshness<P>(
     }
 
     final maxAge = policy.maxAge;
-    if (maxAge != null && issuedAt.add(maxAge + policy.skew).isBefore(now)) {
+    // The window is half-open: refused from the instant [recordExpiry]
+    // returns, the instant a guard may drop the record, so there is no moment
+    // at which the document is both acceptable and forgotten.
+    if (maxAge != null && !issuedAt.add(maxAge + policy.skew).isAfter(now)) {
       return stale();
     }
     return null;
@@ -156,7 +159,7 @@ RejectReason? validateFreshness<P>(
 /// instant as the end of the record's required retention.
 ///
 /// `expiresAt` fixes it where present; otherwise `issuedAt + maxAge + skew` — the
-/// same bound [validateFreshness] accepts up to, so a replay arriving inside the
+/// same bound [validateFreshness] refuses from, so a replay arriving inside the
 /// skew allowance still finds the record. Null means
 /// this policy places no bound on the document, in which case a consumer **MUST
 /// NOT** execute a consequential task on it — there is no window in which to

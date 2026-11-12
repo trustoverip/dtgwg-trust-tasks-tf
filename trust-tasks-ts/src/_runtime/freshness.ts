@@ -140,7 +140,10 @@ export function validateFreshness<P>(
       }
     }
 
-    if (policy.maxAgeMs !== undefined && issuedAt + policy.maxAgeMs + policy.skewMs < now) {
+    // The window is half-open: refused from the instant `recordExpiry` returns,
+    // the instant a guard may drop the record, so there is no moment at which
+    // the document is both acceptable and forgotten.
+    if (policy.maxAgeMs !== undefined && issuedAt + policy.maxAgeMs + policy.skewMs <= now) {
       return stale();
     }
     return null;
@@ -161,7 +164,7 @@ export function validateFreshness<P>(
  * instant as the end of the record's required retention.
  *
  * `expiresAt` fixes it where present; otherwise `issuedAt + maxAgeMs + skewMs`
- * — the same bound {@link validateFreshness} accepts up to, so a replay arriving
+ * — the same bound {@link validateFreshness} refuses from, so a replay arriving
  * inside the skew allowance still finds the record.
  * `undefined` means this policy places no bound on the document, in which case
  * a consumer **MUST NOT** execute a consequential task on it — there is no

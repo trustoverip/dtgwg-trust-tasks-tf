@@ -204,6 +204,27 @@ describe("SPEC §7.2 item 11 — duplicate execution", () => {
     assert.equal(state.executions, 1);
   });
 
+  it("closes the acceptance window at the instant the record may be dropped", async () => {
+    // The window is half-open and ends where the record does. At exactly
+    // `recordExpiry` the guard treats the record as absent, so the document
+    // must already be refused; one millisecond earlier it is still a duplicate.
+    const guard = new InMemoryReplayGuard(64);
+    const { run, state } = runner(guard);
+    const end = recordExpiry(doc(), consequentialChecks(guard).freshness, NOW);
+    assert.equal(end, Date.parse("2026-08-26T12:06:00Z"));
+
+    await run(doc());
+
+    const justBefore = await run(doc(), end! - 1);
+    assert.equal(justBefore.kind, "duplicate");
+
+    const atEnd = await run(doc(), end!);
+    assert.equal(atEnd.kind, "rejected");
+    if (atEnd.kind !== "rejected") return;
+    assert.equal(atEnd.error.payload.code, "expired");
+    assert.equal(state.executions, 1);
+  });
+
   it("does not burn the id of a document refused before the claim", async () => {
     const guard = new InMemoryReplayGuard(64);
     const { run, state } = runner(guard);

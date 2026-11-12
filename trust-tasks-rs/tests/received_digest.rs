@@ -48,6 +48,9 @@ struct Vectors {
     now: DateTime<Utc>,
     /// `(name, first, second, expect)`.
     cases: Vec<(String, String, String, String)>,
+    /// Each case's `secondAt`, the instant its `second` is consumed at;
+    /// `now` where it has none.
+    second_at: Vec<DateTime<Utc>>,
 }
 
 fn vectors() -> Vectors {
@@ -56,9 +59,20 @@ fn vectors() -> Vectors {
     let raw: Value = serde_json::from_slice(&std::fs::read(path).expect("fixture")).unwrap();
     assert_eq!(raw["spec"], WIDGET);
     let s = |v: &Value| v.as_str().expect("a string").to_string();
+    let now: DateTime<Utc> = s(&raw["now"]).parse().unwrap();
     Vectors {
         consumer: s(&raw["consumer"]),
-        now: s(&raw["now"]).parse().unwrap(),
+        now,
+        second_at: raw["cases"]
+            .as_array()
+            .expect("cases")
+            .iter()
+            .map(|c| {
+                c["secondAt"]
+                    .as_str()
+                    .map_or(now, |at| at.parse().expect("secondAt"))
+            })
+            .collect(),
         cases: raw["cases"]
             .as_array()
             .expect("cases")
@@ -80,6 +94,7 @@ async fn consume(
     guard: &InMemoryReplayGuard,
     body: &str,
     with_received: bool,
+    now: DateTime<Utc>,
 ) -> ConsumeOutcome<Value> {
     let received: Value = serde_json::from_str(body).unwrap();
     let doc: TrustTask<Widget> = serde_json::from_value(received.clone()).unwrap();
@@ -95,7 +110,7 @@ async fn consume(
         ConsumeChecks::consequential(guard),
         doc,
         &v.consumer,
-        v.now,
+        now,
         || "err-1".to_string(),
         |req, _parties| async move {
             Ok::<_, ErrorResponse>(req.respond_with("resp-1", serde_json::json!({ "ok": true })))
@@ -110,6 +125,9 @@ fn verdict(outcome: &ConsumeOutcome<Value>) -> String {
         ConsumeOutcome::Rejected(err) if err.payload.code == StandardCode::IdConflict.into() => {
             "idConflict".into()
         }
+        ConsumeOutcome::Rejected(err) if err.payload.code == StandardCode::Expired.into() => {
+            "expired".into()
+        }
         other => format!("{other:?}"),
     }
 }
@@ -118,14 +136,14 @@ fn verdict(outcome: &ConsumeOutcome<Value>) -> String {
 async fn shared_item11_vectors_compare_the_document_as_received() {
     let v = vectors();
     assert!(!v.cases.is_empty());
-    for (name, first_body, second, expect) in &v.cases {
+    for ((name, first_body, second, expect), &second_at) in v.cases.iter().zip(&v.second_at) {
         let guard = InMemoryReplayGuard::new(16);
-        let first = consume(&v, &guard, first_body, true).await;
+        let first = consume(&v, &guard, first_body, true, v.now).await;
         assert!(
             matches!(first, ConsumeOutcome::Handled(_)),
             "{name}: first {first:?}"
         );
-        let got = verdict(&consume(&v, &guard, second, true).await);
+        let got = verdict(&consume(&v, &guard, second, true, second_at).await);
         assert_eq!(&got, expect, "{name}");
     }
 }
@@ -143,11 +161,11 @@ async fn without_the_received_json_the_digest_is_of_the_typed_view() {
         .expect("vector");
     let guard = InMemoryReplayGuard::new(16);
     assert!(matches!(
-        consume(&v, &guard, first, false).await,
+        consume(&v, &guard, first, false, v.now).await,
         ConsumeOutcome::Handled(_)
     ));
     assert_eq!(
-        verdict(&consume(&v, &guard, second, false).await),
+        verdict(&consume(&v, &guard, second, false, v.now).await),
         "duplicate"
     );
 }
