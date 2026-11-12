@@ -5447,17 +5447,13 @@ name = "trust-tasks-codegen"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "heck",
  "prettyplease",
  "proc-macro2",
  "quote",
- "schemars 0.8.22",
- "serde",
  "serde_json",
  "syn 2.0.117",
  "toml",
  "trust-tasks-build",
- "typify",
  "walkdir",
 ]
 

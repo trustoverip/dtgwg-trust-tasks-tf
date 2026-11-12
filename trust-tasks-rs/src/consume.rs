@@ -262,9 +262,9 @@ impl<'a, V: ProofVerifier + ?Sized> ProofPolicy<'a, V> {
 /// The framework does not bundle a JSON Schema implementation, for the same
 /// reason it does not bundle a cryptosuite: the choice of engine, its draft
 /// support, and its resource limits belong to the consumer. Implement this
-/// over whichever validator you already run — or over
-/// [`crate::validate::against_schema`], which the `validate` feature provides
-/// on top of the `jsonschema` crate.
+/// over whichever validator you already run — or, with the `validate`
+/// feature, use `validate::SchemaValidator`, an implementation on the
+/// `jsonschema` crate that compiles each schema once.
 pub trait PayloadValidator {
     /// Check `payload` against `schema_json`.
     ///
@@ -314,8 +314,17 @@ pub enum PayloadPolicy<'a, V: PayloadValidator + ?Sized> {
     /// but it is a decision, and this names it.
     ///
     /// This variant carries no validator, so nothing pins `V`. Write it as
+    /// [`PayloadPolicy::accept_unvalidated()`], or spelled out,
     /// `PayloadPolicy::<NoValidator>::AcceptUnvalidated`.
     AcceptUnvalidated,
+}
+
+impl PayloadPolicy<'static, NoValidator> {
+    /// [`AcceptUnvalidated`](Self::AcceptUnvalidated) with the validator type
+    /// pinned to [`NoValidator`], so the call needs no turbofish.
+    pub const fn accept_unvalidated() -> Self {
+        Self::AcceptUnvalidated
+    }
 }
 
 /// Pins the validator type on the [`PayloadPolicy::AcceptUnvalidated`] path.
@@ -328,7 +337,7 @@ pub enum PayloadPolicy<'a, V: PayloadValidator + ?Sized> {
 /// consume_inbound(
 ///     transport,
 ///     ProofPolicy::Verify(verifier),
-///     PayloadPolicy::<NoValidator>::AcceptUnvalidated,
+///     PayloadPolicy::<NoValidator>::AcceptUnvalidated, // or PayloadPolicy::accept_unvalidated()
 ///     ConsumeChecks::consequential(&guard),
 ///     doc,
 ///     // …
@@ -1167,7 +1176,7 @@ mod tests {
         let outcome: ConsumeOutcome<grant::Response> = consume_inbound(
             &transport,
             ProofPolicy::Verify(&verifier),
-            PayloadPolicy::<NoValidator>::AcceptUnvalidated,
+            PayloadPolicy::accept_unvalidated(),
             ConsumeChecks::not_consequential(),
             doc,
             "did:web:maintainer.example",

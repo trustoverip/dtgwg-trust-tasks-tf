@@ -81,6 +81,17 @@ trust-tasks-proof = { path = "../trust-tasks-proof", version = "0.37", optional 
 trust-tasks-ceremony = { path = "../trust-tasks-ceremony", version = "0.2", optional = true }
 trust-tasks-capability-client = { path = "../trust-tasks-capability-client", version = "0.37", optional = true }
 
+# Every feature but the spec families (`all-specs`, the default): those are
+# trust-tasks-rs's prebuilt modules, all deprecated, and documenting them costs
+# more memory than docs.rs gives a build. trust-tasks-rs's own docs show one.
 [package.metadata.docs.rs]
-all-features = true
+no-default-features = true
+features = [
+    "validate",
+    "all-transports",
+    "https-jwt",
+    "proof-affinidi",
+    "ceremony",
+    "capability-client",
+]
 rustdoc-args = ["--cfg", "docsrs"]

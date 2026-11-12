@@ -18,7 +18,8 @@ readme = "README.md"
 keywords = ["trust-tasks", "trustoverip", "did", "json-schema", "verifiable"]
 categories = ["data-structures", "encoding"]
 publish = true
-# The generated per-spec conformance tests (1,057 files, 7.3 MB) run in this
+# The generated per-spec conformance tests (one file per specification version
+# with examples) run in this
 # repository's CI and nowhere else: a consumer never compiles another crate's
 # integration tests. Shipping them took the .crate to 9.96 MB of crates.io's
 # 10 MB upload limit.
@@ -134,6 +135,11 @@ serde_json = "1"
 tokio = { version = "1", features = ["rt", "macros"] }
 proptest = "1"
 
+# Not `all-features`: every spec family is over a thousand generated modules,
+# all deprecated (they are generated per application now), and documenting
+# them costs more memory than docs.rs gives a build. The runtime, `validate`,
+# and one family as a specimen of what generated code looks like.
 [package.metadata.docs.rs]
-all-features = true
+no-default-features = true
+features = ["validate", "acl"]
 rustdoc-args = ["--cfg", "docsrs"]

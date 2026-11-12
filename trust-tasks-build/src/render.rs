@@ -424,6 +424,159 @@ pub(crate) fn render_error_codes(error_codes: &[ErrorCodeDecl], rt: &TokenStream
     }
 }
 
+/// The doc line that opens the schema block typify writes into every
+/// generated type's documentation, and the one that closes it.
+const SCHEMA_BLOCK_OPEN: &str = "<details><summary>JSON schema</summary>";
+const SCHEMA_BLOCK_CLOSE: &str = "</details>";
+
+/// Remove the `<details><summary>JSON schema</summary> … </details>` block
+/// typify writes into every generated type's doc comment.
+///
+/// Each one restates the type's own JSON schema, nested types included, so the
+/// same schema text appeared once per enclosing type — megabytes of a crate
+/// that had reached crates.io's upload limit. The schema a reader wants is the
+/// published one at the specification's Type URI, which every module's
+/// documentation already links, and the one a program wants is
+/// `Payload::PAYLOAD_SCHEMA`. The prose description typify draws from each
+/// schema's `description` is kept.
+///
+/// Done on the `syn` tree, one `#[doc]` attribute per line as typify emits the
+/// block, and never on the printed source: a schema `description` that
+/// contains the marker text sits verbatim in the `PAYLOAD_SCHEMA` string
+/// literal too, and a pass over text could not tell that line from a doc
+/// comment. Only a run of doc attributes from one whose whole text is the
+/// opening line to one whose whole text is the closing line is removed; a run
+/// that is interrupted by anything else, or never closes, is left alone.
+pub(crate) fn strip_doc_schema_blocks(file: &mut syn::File) {
+    use syn::visit_mut::VisitMut;
+
+    fn doc_text(attr: &syn::Attribute) -> Option<String> {
+        if !attr.path().is_ident("doc") {
+            return None;
+        }
+        let syn::Meta::NameValue(nv) = &attr.meta else {
+            return None;
+        };
+        let syn::Expr::Lit(syn::ExprLit {
+            lit: syn::Lit::Str(text),
+            ..
+        }) = &nv.value
+        else {
+            return None;
+        };
+        Some(text.value())
+    }
+
+    fn strip(attrs: &mut Vec<syn::Attribute>) {
+        let mut i = 0;
+        while i < attrs.len() {
+            if doc_text(&attrs[i]).as_deref().map(str::trim) != Some(SCHEMA_BLOCK_OPEN) {
+                i += 1;
+                continue;
+            }
+            let close = attrs[i + 1..]
+                .iter()
+                .map(doc_text)
+                .take_while(Option::is_some)
+                .position(|text| text.as_deref().map(str::trim) == Some(SCHEMA_BLOCK_CLOSE));
+            match close {
+                Some(offset) => {
+                    attrs.drain(i..=i + 1 + offset);
+                }
+                None => i += 1,
+            }
+        }
+    }
+
+    fn item_attrs(item: &mut syn::Item) -> Option<&mut Vec<syn::Attribute>> {
+        use syn::Item;
+        Some(match item {
+            Item::Const(i) => &mut i.attrs,
+            Item::Enum(i) => &mut i.attrs,
+            Item::ExternCrate(i) => &mut i.attrs,
+            Item::Fn(i) => &mut i.attrs,
+            Item::ForeignMod(i) => &mut i.attrs,
+            Item::Impl(i) => &mut i.attrs,
+            Item::Macro(i) => &mut i.attrs,
+            Item::Mod(i) => &mut i.attrs,
+            Item::Static(i) => &mut i.attrs,
+            Item::Struct(i) => &mut i.attrs,
+            Item::Trait(i) => &mut i.attrs,
+            Item::TraitAlias(i) => &mut i.attrs,
+            Item::Type(i) => &mut i.attrs,
+            Item::Union(i) => &mut i.attrs,
+            Item::Use(i) => &mut i.attrs,
+            _ => return None,
+        })
+    }
+
+    struct Strip;
+    impl VisitMut for Strip {
+        fn visit_item_mut(&mut self, item: &mut syn::Item) {
+            if let Some(attrs) = item_attrs(item) {
+                strip(attrs);
+            }
+            syn::visit_mut::visit_item_mut(self, item);
+        }
+    }
+    Strip.visit_file_mut(file);
+}
+
+#[cfg(test)]
+mod strip_doc_schema_block_tests {
+    use super::*;
+
+    #[test]
+    fn the_block_goes_and_everything_else_stays() {
+        let mut file: syn::File = syn::parse_str(
+            r##"
+            #[doc = "A thing."]
+            #[doc = ""]
+            #[doc = " <details><summary>JSON schema</summary>"]
+            #[doc = ""]
+            #[doc = " ```json"]
+            #[doc = "{ \"description\": \"</details> in a string\" }"]
+            #[doc = " ```"]
+            #[doc = " </details>"]
+            #[derive(Debug)]
+            pub struct Thing;
+
+            pub const PAYLOAD_SCHEMA: &str = "<details><summary>JSON schema</summary>\n</details>";
+            "##,
+        )
+        .unwrap();
+        strip_doc_schema_blocks(&mut file);
+        let out = prettyplease::unparse(&file);
+        assert!(out.contains("A thing."), "{out}");
+        assert!(out.contains("#[derive(Debug)]\npub struct Thing;"), "{out}");
+        assert!(!out.contains("```json"), "{out}");
+        assert!(
+            out.contains(
+                r#"pub const PAYLOAD_SCHEMA: &str = "<details><summary>JSON schema</summary>\n</details>";"#
+            ),
+            "{out}"
+        );
+    }
+
+    #[test]
+    fn an_unclosed_or_interrupted_block_is_left_alone() {
+        let source = r##"
+            #[doc = " <details><summary>JSON schema</summary>"]
+            #[doc = " ```json"]
+            pub struct Open;
+
+            #[doc = " <details><summary>JSON schema</summary>"]
+            #[derive(Debug)]
+            #[doc = " </details>"]
+            pub struct Interrupted;
+            "##;
+        let mut file: syn::File = syn::parse_str(source).unwrap();
+        let before = prettyplease::unparse(&file);
+        strip_doc_schema_blocks(&mut file);
+        assert_eq!(prettyplease::unparse(&file), before);
+    }
+}
+
 #[cfg(test)]
 mod indent_safe_doc_tests {
     use super::*;
