@@ -248,12 +248,17 @@ String _dartClassName(String name) {
 }
 
 /// `lowerCamelCase`, for a field, parameter or top-level constant.
-String _dartFieldName(String name) {
+///
+/// [taken] names the identifiers the enclosing declaration already gives a
+/// meaning to — [_classMemberTaken] or [_extensionMemberTaken].
+String _dartFieldName(String name, [Set<String> taken = const {}]) {
   final parts = _segments(name);
   if (parts.isEmpty) return 'value';
   var ident = parts.first + parts.skip(1).map(_cap).join();
   if (RegExp('^[0-9]').hasMatch(ident)) ident = 'n$ident';
-  return _dartReserved.contains(ident) ? '${ident}Value' : ident;
+  return _dartReserved.contains(ident) || taken.contains(ident)
+      ? '${ident}Value'
+      : ident;
 }
 
 /// `lower_snake_case`, for a file or directory name (the `file_names` lint).
@@ -269,6 +274,35 @@ const Set<String> _dartReserved = {
   'for', 'if', 'in', 'is', 'new', 'null', 'rethrow', 'return', 'super',
   'switch', 'this', 'throw', 'true', 'try', 'var', 'void', 'while', 'with',
 };
+
+/// Field names a generated class cannot use although Dart reserves none of
+/// them. A field shadows a lowercase core type through the whole class body,
+/// so `final String? dynamic;` breaks the `Map<String, dynamic>` its own
+/// `fromJson` and `toJson` are written in (and `int`, `double`, `num`, `bool`
+/// the members of those types). `toJson` is the class's own method; the four
+/// `Object` members cannot be overridden by a field of another type.
+const Set<String> _classMemberTaken = {
+  'dynamic', 'int', 'double', 'num', 'bool', //
+  'toJson', 'hashCode', 'runtimeType', 'toString', 'noSuchMethod',
+};
+
+/// Constant names a generated extension type cannot use: its representation
+/// field is `value` and it declares `values`. Nothing else — `GroupKind.dynamic`
+/// is a legal, published constant, so this is narrower than [_classMemberTaken].
+const Set<String> _extensionMemberTaken = {'value', 'values'};
+
+/// Type names a generated library cannot declare. `Function` is a built-in
+/// identifier, refused as a type name. The rest are names the generated code
+/// itself refers to — the `dart:core` types its fields and conversions are
+/// written in, and `SpecPolicy` (from the unprefixed runtime import) and
+/// `Deprecated` in the tail — which a declaration of the same name would
+/// shadow. Seeded into every emitter, so [_Emitter.reserve] suffixes such a
+/// name the way it suffixes any other collision (`$defs.String` becomes
+/// `String2`).
+const List<String> _takenTypeNames = [
+  'Function', 'Object', 'String', 'List', 'Map', 'MapEntry', 'SpecPolicy', //
+  'Deprecated',
+];
 
 /// Quote [s] as a Dart single-quoted string literal, escaping `$` too.
 String dartString(String s) {
@@ -380,7 +414,7 @@ String _identity(String e) => e;
 
 class _Emitter {
   final List<String> decls = [];
-  final Set<String> names = {};
+  final Set<String> names = {..._takenTypeNames};
 
   String reserve(String preferred) {
     var name = preferred;
@@ -514,7 +548,7 @@ _Desc _declareExtensionType(
   final seen = <String>{};
   final constNames = <String>[];
   for (final value in (node['enum'] as List).cast<String>()) {
-    var constName = _dartFieldName(value);
+    var constName = _dartFieldName(value, _extensionMemberTaken);
     while (seen.contains(constName)) {
       constName += '_';
     }
@@ -560,7 +594,7 @@ _Desc _declareClass(
   for (final entry in (node['properties'] as Map<String, dynamic>).entries) {
     final wireName = entry.key;
     final member = entry.value;
-    var fieldName = _dartFieldName(wireName);
+    var fieldName = _dartFieldName(wireName, _classMemberTaken);
     while (fieldNames.contains(fieldName)) {
       fieldName += '_';
     }
