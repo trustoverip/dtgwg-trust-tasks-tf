@@ -40,6 +40,9 @@ final class SignException implements Exception {
 ///
 /// - The proof covers the document minus its `proof` member. **An existing
 ///   `proof` is replaced**, never nested or signed over.
+/// - A document carrying `@context` gets a proof carrying the same
+///   `@context`, as the cryptosuites' Create Proof algorithm requires
+///   (eddsa-jcs-2022 / ecdsa-jcs-2019 §3.3.1 step 2).
 /// - The document's `issuer` must equal the DID of [signer]'s verification
 ///   method, exactly. That is the binding the verifier enforces, so a document
 ///   that could not verify is refused here with a [SignException] rather than
@@ -97,6 +100,14 @@ Future<Map<String, dynamic>> signTrustTask(
     'verificationMethod': verificationMethod,
     'proofPurpose': proofPurpose,
   };
+  // eddsa-jcs-2022 / ecdsa-jcs-2019 §3.3.1 step 2: "If
+  // unsecuredDocument.@context is present, set proof.@context to
+  // unsecuredDocument.@context." The proof configuration is hashed with it and
+  // the emitted proof carries it. A document without `@context` (the usual
+  // Trust Task) gets exactly the proof it got before.
+  if (unsigned.containsKey('@context')) {
+    config['@context'] = jsonDecode(jsonEncode(unsigned['@context']));
+  }
 
   // eddsa-jcs-2022 §3.3.4 and ecdsa-jcs-2019 §3.3.4: hash the canonical proof
   // configuration and the canonical document separately, and sign the two

@@ -174,6 +174,14 @@ jobs:
             cargo test -p trust-tasks-rs --no-default-features --features "$family" --all-targets
             echo "::endgroup::"
           done
+      # Every other job builds trust-tasks-ceremony with its `affinidi` backend
+      # on, so nothing else would notice the no-backend build reading the salt
+      # or comparing digests differently again (#1094). Seconds, so it rides
+      # along here rather than taking a job of its own.
+      - name: cargo test -p trust-tasks-ceremony --no-default-features
+        run: |
+          cargo test -p trust-tasks-ceremony --no-default-features --all-targets
+          cargo clippy -p trust-tasks-ceremony --no-default-features --all-targets -- -D warnings
 
   # An application that generates its tasks at build time: three registry
   # versions and one from a third-party source pinned in

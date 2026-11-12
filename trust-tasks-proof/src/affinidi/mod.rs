@@ -151,7 +151,8 @@ impl Verifier {
     /// Checks, in order: a `proof` member is present and well-formed, its
     /// `created`, if any, has every field in range, and its `expires`, if
     /// any, has not passed; the document names an `issuer` controlling the proof's verificationMethod
-    /// (SPEC §4.8, exact string equality); the `proofPurpose` names a signing
+    /// (SPEC §4.8, exact string equality); a proof `@context`, if any, equals
+    /// the document's (see `check_proof_context`); the `proofPurpose` names a signing
     /// relationship and the issuer lists the verificationMethod under it
     /// (W3C Data Integrity / Controlled Identifiers §3.3); the signature
     /// verifies over the document minus its `proof`.
@@ -169,6 +170,17 @@ impl Verifier {
         if proof_value.get("expires").is_some() {
             return Err(VerificationError::MalformedProof(
                 UNSUPPORTED_EXPIRES.to_string(),
+            ));
+        }
+        // The upstream proof type holds `@context` only as an array of
+        // strings; another form would fail to parse with a message that does
+        // not say why.
+        if proof_value
+            .get("@context")
+            .is_some_and(|c| !c.as_array().is_some_and(|a| a.iter().all(Value::is_string)))
+        {
+            return Err(VerificationError::MalformedProof(
+                UNSUPPORTED_CONTEXT.to_string(),
             ));
         }
         let parsed_proof: DataIntegrityProof = serde_json::from_value(proof_value)
@@ -209,6 +221,9 @@ impl Verifier {
         //        and both arrive before any signature is checked.
         check_proof_bounds(&parsed_proof)?;
 
+        // ─── 3b. The proof's `@context`, if any, must equal the document's.
+        check_proof_context(&doc_value, doc.get("proof").unwrap_or(&Value::Null))?;
+
         // ─── 4. The key must be one the issuer authorised for the purpose
         //        the proof declares: `keyAgreement` and unknown purposes are
         //        refused here, and the resolver checks the relationship.
@@ -221,6 +236,48 @@ impl Verifier {
             .await
             .map_err(map_error)?;
         Ok(())
+    }
+}
+
+/// Why [`Verifier::verify_raw`] refuses a proof whose `@context` is not an
+/// array of strings.
+///
+/// `affinidi-data-integrity` 0.8's proof type holds `@context` as
+/// `Vec<String>`, so a single-string or inline-object context cannot be
+/// re-hashed as it was signed. The Go, TypeScript and Dart verifiers accept
+/// one that equals the document's; the shared vector
+/// `eddsa-jcs-2022-context-string.json` records the gap.
+const UNSUPPORTED_CONTEXT: &str =
+    "a proof @context that is not an array of strings is not supported by this verifier: affinidi-data-integrity's proof type cannot carry it";
+
+/// Refuse a proof whose `@context` disagrees with the document's.
+///
+/// eddsa-jcs-2022 / ecdsa-jcs-2019 §3.3.2 step 4: "If proofOptions.@context
+/// exists: Check that the securedDocument.@context starts with all values
+/// contained in the proofOptions.@context in the same order. Otherwise, set
+/// verified to false". A proof without `@context` is hashed as received
+/// (step 4 does not apply).
+///
+/// This verifier requires the two to be **equal**, not only the proof's to be
+/// a prefix. The cryptosuite verifies a longer document `@context` by hashing
+/// the proof's in its place (step 4.2) and returning that rewritten document
+/// as the verified one; a [`ProofVerifier`] returns no document, so the caller
+/// would go on to act on `@context` entries no signature covers. The Go,
+/// TypeScript and Dart verifiers apply the same rule.
+fn check_proof_context(doc: &Value, proof: &Value) -> Result<(), VerificationError> {
+    let Some(proof_context) = proof.get("@context") else {
+        return Ok(());
+    };
+    match doc.get("@context") {
+        None => Err(VerificationError::MalformedProof(
+            "proof carries @context but the document has none".to_string(),
+        )),
+        // `serde_json::Value` equality is structural: member order in an
+        // inline context does not matter, array order does.
+        Some(doc_context) if doc_context == proof_context => Ok(()),
+        Some(_) => Err(VerificationError::MalformedProof(
+            "proof @context does not equal the document's @context".to_string(),
+        )),
     }
 }
 

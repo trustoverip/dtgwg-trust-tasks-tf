@@ -89,6 +89,16 @@ pub enum SignError {
     DataIntegrity(#[from] DataIntegrityError),
 }
 
+/// The `@context` a proof over `doc` carries: the document's own, when it is
+/// an array of strings (the only form the upstream proof type can hold).
+fn proof_context(doc: &serde_json::Map<String, Value>) -> Option<Vec<String>> {
+    doc.get("@context")?
+        .as_array()?
+        .iter()
+        .map(|v| v.as_str().map(str::to_string))
+        .collect()
+}
+
 /// Sign a Trust Task document and return it with an embedded `proof`.
 ///
 /// The proof is computed over the document with the `proof` member
@@ -97,6 +107,12 @@ pub enum SignError {
 /// replaced** — re-signing an already-signed document is treated as "mint
 /// a fresh proof over the current content", never as appending a proof
 /// set or signing over the old proof.
+///
+/// A document carrying an `@context` array of strings gets a proof carrying
+/// the same `@context`, as the cryptosuites' Create Proof algorithm requires
+/// (eddsa-jcs-2022 / ecdsa-jcs-2019 §3.3.1 step 2); any other `@context`
+/// gets a proof without one, and a context set in `options` is not used. A
+/// document without `@context` gets the proof it always did.
 ///
 /// Defaults: `proofPurpose` falls back to `"authentication"` and the
 /// cryptosuite to [`CryptoSuite::EddsaJcs2022`] whenever the caller sets
@@ -160,6 +176,17 @@ pub async fn sign_trust_task(
         Some(value) => ProofPurpose::parse(value)?,
     };
     options.proof_purpose = Some(purpose.as_str().to_string());
+
+    // ─── 3a. eddsa-jcs-2022 / ecdsa-jcs-2019 §3.3.1 step 2: "If
+    //        unsecuredDocument.@context is present, set proof.@context to
+    //        unsecuredDocument.@context." The upstream proof type holds a
+    //        `@context` only as an array of strings, so a document whose
+    //        `@context` is a single string or names an inline context gets a
+    //        proof without one — which the cryptosuite verifies too (step 4 of
+    //        Verify Proof applies only when the proof carries `@context`). A
+    //        context set through `SignOptions::with_context` is replaced: any
+    //        other value would make the stock verifier refuse the proof.
+    options.context = proof_context(&unsigned);
 
     // ─── 4. Sign the proof-less document and embed the result.
     let unsigned = Value::Object(unsigned);
