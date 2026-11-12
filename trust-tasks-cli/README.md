@@ -35,16 +35,26 @@ Commit all three. Edits to `trust-tasks.toml` keep your comments.
 | `trust-tasks list [--remote]` | The pinned versions with their status and deprecation, from the vendored bundles. `--remote` adds the latest live version in the registry, and whether moving to it is an extension or a break. |
 | `trust-tasks generate --lang <rs\|ts\|go\|dart> --out <dir> [-- <args>]` | Runs `check`, then that language's generator over the lock, from the project directory: `npx --no-install trust-tasks-gen-ts` (`npm i -D @openvtc/trust-tasks-gen`), `go run …/trust-tasks-go/cmd/trust-tasks-gen` (from a module requiring `trust-tasks-go`) or `dart run trust_tasks:generate` (from a package depending on `trust_tasks`), with `--lock` and `--out` filled in and anything after `--` passed on. It installs nothing. Refuses a lock that does not verify. `--lang rs` only checks: Rust generates in `build.rs` with `trust-tasks-build`. |
 
-Global options: `--registry <url>` (or `TRUST_TASKS_REGISTRY`) and
-`-C, --dir <dir>` (the directory holding `trust-tasks.toml`; by default the
-nearest one at or above the current directory).
+Global options: `--registry <url>` (or `TRUST_TASKS_REGISTRY`),
+`--allow-http-registry` (see below) and `-C, --dir <dir>` (the directory
+holding `trust-tasks.toml`; by default the nearest one at or above the current
+directory).
 
 ### The registry
 
 `https://trusttasks.org` unless `trust-tasks.toml` sets `registry = "…"` or
 `--registry` / `TRUST_TASKS_REGISTRY` overrides it. A registry is a site root
 with this layout under it — so a private mirror, a `file://` URL or a plain
-directory works the same (that is how the tests run offline):
+directory works the same (that is how the tests run offline).
+
+A registry URL must be `https://`: the index supplies the digests a pin
+records, so over plain http anyone on the network path could choose both the
+digests and the bundles they name. An `http://` registry on loopback
+(`localhost`, `127.0.0.0/8`, `[::1]`) is accepted for local mirrors and tests;
+any other is refused unless `--allow-http-registry` is given. An https
+registry is never followed to an http redirect.
+
+The layout under the site root:
 
 ```text
 specs/index.json                          every version: digest, status, extends
