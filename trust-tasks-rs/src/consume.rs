@@ -60,10 +60,12 @@
 //! }
 //! ```
 //!
-//! The function does not attempt item 1 (framework outer-schema validation)
-//! or item 3 (unknown Type URI). Those belong to the caller's deserialize +
-//! [`Dispatcher`](crate::Dispatcher) pipeline — by the time you hold a
-//! `TrustTask<P>` they have already succeeded.
+//! The function does not attempt item 1 (framework outer-schema validation);
+//! that belongs to the caller's deserialize step. Item 3 is checked here:
+//! deserializing into `TrustTask<P>` does not compare `type` with `P`, so
+//! [`consume_inbound`] refuses a document whose `type` is neither `P`'s Type
+//! URI nor a later version declaring an extension chain to it (SPEC §5.2) —
+//! `unsupportedVersion` for the same slug, `unsupportedType` otherwise.
 //!
 //! Item 2 (payload schema) is deliberately *not* in that list, though it once
 //! was. Deserializing into `P` performs most of it — required members, member
@@ -462,6 +464,15 @@ where
     F: FnOnce(TrustTask<P>, ResolvedParties) -> Fut,
     Fut: Future<Output = Result<TrustTask<R>, ErrorResponse>>,
 {
+    // §7.2 item 3. Deserializing into `TrustTask<P>` does not look at `type`,
+    // so a document of another specification whose payload happens to fit
+    // `P` would otherwise be consumed under `P`'s policy. Accept `P`'s own
+    // Type URI, or a later version whose declared extension chain reaches it
+    // (SPEC §5.2, as `extension::read_as` reads one); refuse anything else
+    // before the record is written, as the dispatched path does.
+    if let Err(reason) = crate::extension::reading_of::<P>(&doc.type_uri) {
+        return route_rejection(transport, &doc, reason, error_id_factory);
+    }
     consume_core(
         transport,
         policy,
@@ -1142,6 +1153,92 @@ mod tests {
             }
             other => panic!("expected Handled, got {other:?}"),
         }
+    }
+
+    /// A document of `type_uri` carrying an `acl/grant/0.2` payload, consumed
+    /// as `acl/grant/0.2` against `guard`.
+    async fn consume_typed_as_grant(
+        type_uri: &str,
+        guard: &dyn ReplayGuard,
+    ) -> ConsumeOutcome<grant::Response> {
+        let transport = NoopHandler::new();
+        let verifier = StubVerifier { outcome: Ok(()) };
+        let mut doc = TrustTask::for_payload("req-type", grant_payload());
+        doc.type_uri = type_uri.parse().expect("a valid Type URI");
+        doc.issuer = Some("did:web:org.example".into());
+        doc.recipient = Some("did:web:maintainer.example".into());
+        doc.issued_at = Some(Utc::now());
+        doc.proof = Some(dummy_proof());
+        consume_inbound(
+            &transport,
+            ProofPolicy::Verify(&verifier),
+            PayloadPolicy::<NoValidator>::AcceptUnvalidated,
+            ConsumeChecks::consequential(guard),
+            doc,
+            "did:web:maintainer.example",
+            Utc::now(),
+            || "err-type".to_string(),
+            |req, _parties| async move {
+                let entry = req.payload.entry.clone();
+                Ok(req.respond_with("resp-type", grant::Response { entry, ext: None }))
+            },
+        )
+        .await
+    }
+
+    /// §7.2 item 3 on the typed path: a payload that fits `P` does not make a
+    /// document of another specification a document of `P`'s.
+    #[tokio::test]
+    async fn typed_consume_refuses_a_document_of_another_type() {
+        let guard = crate::replay::InMemoryReplayGuard::default();
+        let cases = [
+            (
+                "https://trusttasks.org/spec/chat/message/1.0",
+                StandardCode::UnsupportedType,
+            ),
+            // The same slug under another authority is another specification.
+            (
+                "https://other.example/spec/acl/grant/0.2",
+                StandardCode::UnsupportedType,
+            ),
+            // The same specification at a version that does not reach 0.2.
+            (
+                "https://trusttasks.org/spec/acl/grant/9.9",
+                StandardCode::UnsupportedVersion,
+            ),
+            // The response variant is not the request.
+            (
+                "https://trusttasks.org/spec/acl/grant/0.2#response",
+                StandardCode::UnsupportedType,
+            ),
+        ];
+        for (type_uri, code) in cases {
+            match consume_typed_as_grant(type_uri, &guard).await {
+                ConsumeOutcome::Rejected(err) => {
+                    assert_eq!(err.payload.code, code.into(), "for {type_uri}");
+                }
+                other => panic!("{type_uri}: expected Rejected, got {other:?}"),
+            }
+        }
+        // Refused before the record: the document's own type is still served
+        // under the same `id`, and the `#request` spelling is the same type.
+        for type_uri in [
+            "https://trusttasks.org/spec/acl/grant/0.2#request",
+            "https://trusttasks.org/spec/acl/grant/0.2",
+        ] {
+            let guard = crate::replay::InMemoryReplayGuard::default();
+            assert!(
+                matches!(
+                    consume_typed_as_grant(type_uri, &guard).await,
+                    ConsumeOutcome::Handled(_)
+                ),
+                "{type_uri} is the implemented type"
+            );
+        }
+        assert!(matches!(
+            consume_typed_as_grant("https://trusttasks.org/spec/acl/grant/0.2", &guard).await,
+            ConsumeOutcome::Handled(_)
+        ));
     }
 
     /// §7.2 item 2 runs, and runs *before* the handler. A validator that

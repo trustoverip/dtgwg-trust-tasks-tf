@@ -135,7 +135,11 @@ Future<ConsumeOutcome<Response>> run(
       proofPolicy: proofPolicy,
       payloadPolicy: payloadPolicy,
       checks: checks ?? notConsequentialChecks(),
-      doc: document,
+      // A document of the spec it is consumed under, unless a test says
+      // otherwise.
+      doc: document.type == requiredSpec.typeUri
+          ? document.copyWith(type: spec.typeUri)
+          : document,
       myVid: me,
       now: testNow,
       newErrorId: () => 'err-1',
@@ -315,6 +319,56 @@ void main() {
     });
   });
 
+  group('§7.2 item 3 — the document type is the spec\'s', () {
+    // A payload that decodes as `P` does not make a document of another
+    // specification a document of this one.
+    const cases = <(String, String)>[
+      ('https://trusttasks.org/spec/chat/message/1.0', 'unsupportedType'),
+      // The same slug under another authority is another specification.
+      ('https://other.example/spec/acl/grant/0.1', 'unsupportedType'),
+      // The response variant is not the request.
+      ('https://trusttasks.org/spec/acl/grant/0.1#response', 'unsupportedType'),
+      ('not a type uri', 'unsupportedType'),
+      // The same specification at a version that does not reach 0.1.
+      ('https://trusttasks.org/spec/acl/grant/9.9', 'unsupportedVersion'),
+      ('https://trusttasks.org/spec/acl/grant/0.0', 'unsupportedVersion'),
+    ];
+    for (final (type, code) in cases) {
+      test('refuses $type with $code', () async {
+        final outcome = await run(
+          doc(proof: testProof).copyWith(type: type),
+          handlerShouldNotRun: true,
+        );
+        expect(rejectedCode(outcome), code);
+      });
+    }
+
+    test('treats #request and no fragment as one type', () async {
+      final outcome = await run(
+        doc(proof: testProof).copyWith(type: '${requiredSpec.typeUri}#request'),
+      );
+      expect(outcome, isA<Handled<Response>>());
+    });
+
+    test('refuses before the item-11 claim, so the id is still served',
+        () async {
+      final checks = consequentialChecks(InMemoryReplayGuard());
+      const issuedAt = '2026-01-01T00:00:00Z';
+      final wrong = await run(
+        doc(proof: testProof, issuedAt: issuedAt)
+            .copyWith(type: 'https://trusttasks.org/spec/chat/message/1.0'),
+        checks: checks,
+        handlerShouldNotRun: true,
+      );
+      expect(rejectedCode(wrong), 'unsupportedType');
+      final right = await run(
+        doc(proof: testProof, issuedAt: issuedAt),
+        checks: checks,
+      );
+      expect(right, isA<Handled<Response>>());
+    });
+  });
+
   group('§4.8.1 party resolution', () {
     test('fills absent in-band members from the transport', () async {
       ResolvedParties? seen;
@@ -326,7 +380,8 @@ void main() {
         proofPolicy: const ProofPolicy.acceptUnverified(),
         payloadPolicy: const PayloadPolicy.acceptUnvalidated(),
         checks: notConsequentialChecks(),
-        doc: doc(issuer: null, recipient: null),
+        doc: doc(issuer: null, recipient: null)
+            .copyWith(type: relaxedSpec.typeUri),
         myVid: me,
         now: testNow,
         newErrorId: () => 'err-1',

@@ -181,10 +181,11 @@ pub fn extension_reaches(received: &TypeUri, implemented: &TypeUri) -> bool {
 ///   ([`prune_payload`]) and then deserialized. The document keeps the `type`
 ///   it arrived with, so [`TrustTask::respond_with`] answers the received
 ///   version.
-/// * Otherwise [`RejectReason::UnsupportedVersion`] for the same slug under
-///   the same authority, and [`RejectReason::UnsupportedType`] for another —
-///   including the same slug under another authority, which is another
-///   specification (SPEC §6.1).
+/// * Otherwise [`RejectReason::UnsupportedVersion`] for the same slug and
+///   variant under the same authority, and [`RejectReason::UnsupportedType`]
+///   for another — including the same slug under another authority, which is
+///   another specification (SPEC §6.1), and the `#response` variant of a
+///   request type.
 ///
 /// A payload that does not deserialize into `P` — after pruning, in the
 /// forward case — is [`RejectReason::MalformedRequest`].
@@ -193,16 +194,42 @@ pub fn extension_reaches(received: &TypeUri, implemented: &TypeUri) -> bool {
 /// over the value you parsed it from, not over the result (see the module
 /// docs).
 pub fn read_as<P: Payload>(doc: TrustTask<Value>) -> Result<TrustTask<P>, RejectReason> {
+    match reading_of::<P>(&doc.type_uri)? {
+        Reading::Same => downcast_payload::<P>(doc),
+        Reading::Forward => forward::<P>(doc, P::PAYLOAD_SCHEMA),
+    }
+}
+
+/// How a document of `received` type is read as `P`: as `P`'s own version,
+/// or along a declared extension chain.
+pub(crate) enum Reading {
+    /// `received` is `P`'s Type URI (bare or `#request`-fragmented alike).
+    Same,
+    /// `received` declares an extension chain reaching `P`'s version.
+    Forward,
+}
+
+/// Whether a document whose `type` is `received` may be consumed as `P` —
+/// [`read_as`]'s decision without the payload. `Err` is
+/// [`RejectReason::UnsupportedVersion`] for the same slug and variant under
+/// the same authority and [`RejectReason::UnsupportedType`] for anything
+/// else.
+pub(crate) fn reading_of<P: Payload>(received: &TypeUri) -> Result<Reading, RejectReason> {
     let implemented = P::type_uri();
-    let received = doc.type_uri.for_routing();
-    if received == implemented.for_routing() {
-        return downcast_payload::<P>(doc);
+    let routed = received.for_routing();
+    if routed == implemented.for_routing() {
+        return Ok(Reading::Same);
     }
-    if extension_reaches(&doc.type_uri, &implemented) {
-        return forward::<P>(doc, P::PAYLOAD_SCHEMA);
+    if extension_reaches(received, &implemented) {
+        return Ok(Reading::Forward);
     }
-    let type_uri = received.to_string();
-    if doc.type_uri.specification_key() == implemented.specification_key() {
+    let type_uri = routed.to_string();
+    // Another variant is another kind of document (SPEC §4.4.1) — a response
+    // is not a version of the request — so it is a type this consumer does
+    // not take here, as the TypeScript and Go readers answer it.
+    if received.specification_key() == implemented.specification_key()
+        && routed.variant() == implemented.for_routing().variant()
+    {
         Err(RejectReason::UnsupportedVersion { type_uri })
     } else {
         Err(RejectReason::UnsupportedType { type_uri })

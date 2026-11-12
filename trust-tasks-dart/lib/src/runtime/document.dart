@@ -586,10 +586,10 @@ String systemClock() =>
 
 /// SPEC §7.2 items 4 and 5a — expiry and wrong-recipient.
 ///
-/// ⚠ This is *not* the full §7.2 check. Items 1–3 (framework schema, payload
-/// schema, unknown `type`) belong to the caller's parse and dispatch; items 5b,
-/// 7 and 8 need the specification's policy and live in [enforceSpecPolicy].
-/// [consumeInbound] bundles 4–8.
+/// ⚠ This is *not* the full §7.2 check. Item 1 (framework schema) belongs to
+/// the caller's parse; items 2 and 3 (payload schema, `type`) and items 5b, 7
+/// and 8 need the specification and run in [consumeInbound] (5b, 7 and 8 via
+/// [enforceSpecPolicy]).
 ///
 /// Returns null when the document passes.
 RejectReason? validateBasic<P>(
