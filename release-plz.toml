@@ -9,7 +9,7 @@
 # So merging a feature PR never releases anything, and a release is a reviewable
 # diff rather than a side effect of a merge. See RELEASING.md.
 #
-# WHAT GETS PUBLISHED is decided in each crate's Cargo.toml, not here. Nine
+# WHAT GETS PUBLISHED is decided in each crate's Cargo.toml, not here. Most
 # crates publish; `trust-tasks-codegen` sets `publish = false` because it is the
 # internal generator. release-plz honours that flag — it still updates an
 # unpublished crate's version and dependency requirements so the workspace stays

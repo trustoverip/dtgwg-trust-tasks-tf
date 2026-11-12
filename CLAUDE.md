@@ -330,8 +330,8 @@ door like `__private` or `DeclaredErrorCode::__from_declaration`, and
 ### ⚠️ `trust-tasks-rs` unit tests see only the `acl` family
 
 `cargo test` compiles a library twice — as the library, and again with
-`cfg(test)` as its unit-test harness — and the generated tree is ~66 MB of the
-crate. So the generator keeps that second build small:
+`cfg(test)` as its unit-test harness — and the generated tree is nearly all of
+the crate. So the generator keeps that second build small:
 
 - **Every gated family except those in `UNIT_TEST_FAMILIES`** (in
   `trust-tasks-codegen`, currently `["acl"]`) carries `#[cfg(not(test))]` in
