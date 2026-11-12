@@ -10,10 +10,6 @@ import type { Ext } from "../../../../_shared/components.js";
  * The lowercase hexadecimal SHA-256 of a stored message: for a TSP message, of the base64url (no padding) encoding of its qb2 bytes.
  */
 export type MessageId = string;
-/**
- * The lowercase hexadecimal SHA-256 of a stored message: for a TSP message, of the base64url (no padding) encoding of its qb2 bytes.
- */
-export type MessageId1 = string;
 
 /**
  * A principal acknowledges frames delivered on the mux connection that carries the request. The outer document members are owned by the framework — SPEC §6.3.
@@ -56,7 +52,7 @@ export interface MessagingMuxAckResponsePayload {
  * An id the mediator did not delete, and why.
  */
 export interface AckRefusal {
-  messageId: MessageId1;
+  messageId: MessageId;
   /**
    * `notFound`: the mediator holds no message with this id for the principal or a member of the connection (already deleted, expired, or never delivered here). `notPermitted`: the message is a member's, and the member is not on the connection or lacks the `delete` scope; it stays in the member's inbox.
    */
@@ -147,8 +143,7 @@ export const PAYLOAD_SCHEMA = {
       ],
       "properties": {
         "messageId": {
-          "$ref": "#/$defs/MessageId",
-          "description": "The id, as requested."
+          "$ref": "#/$defs/MessageId"
         },
         "reason": {
           "type": "string",
@@ -228,8 +223,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       ],
       "properties": {
         "messageId": {
-          "$ref": "#/$defs/MessageId",
-          "description": "The id, as requested."
+          "$ref": "#/$defs/MessageId"
         },
         "reason": {
           "type": "string",

@@ -42,8 +42,7 @@
       ],
       "properties": {
         "messageId": {
-          "$ref": "#/$defs/MessageId",
-          "description": "The id, as requested."
+          "$ref": "#/$defs/MessageId"
         },
         "reason": {
           "type": "string",
