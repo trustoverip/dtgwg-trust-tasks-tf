@@ -43,7 +43,20 @@ async fn every_shared_vector_reaches_its_expected_result() {
         assert!(SUPPORTED.contains(&suite), "{file}: no support for {suite}");
         let doc: Value = serde_json::from_slice(&std::fs::read(dir().join(file)).unwrap()).unwrap();
         let result = verifier.verify_raw(&doc).await;
-        match entry["expect"].as_str().unwrap() {
+        // A known gap is asserted, not skipped: this fails once it closes.
+        let expect = match entry["exceptions"]["rust"]["expect"].as_str() {
+            Some(expect) => {
+                if let Err(err) = &result {
+                    assert!(
+                        err.to_string().contains("not supported"),
+                        "{file}: expected the documented gap, got {err:?}"
+                    );
+                }
+                expect
+            }
+            None => entry["expect"].as_str().unwrap(),
+        };
+        match expect {
             "valid" => assert!(result.is_ok(), "{file}: expected valid, got {result:?}"),
             "invalid" => assert!(result.is_err(), "{file}: expected invalid, but it verified"),
             other => panic!("{file}: unknown expect {other}"),
