@@ -565,6 +565,21 @@ derive a census of declared-vs-emitted codes rather than hand-keep one.
   same comparison so the four agree with each other, not only with the front
   matter.
 
+## `maxDocumentBytes` is generated — Rust and Dart only, so far
+
+A spec's `maxDocumentBytes` front matter (per variant; an absent `response`
+never inherits the request's bound) reaches Rust as
+`Payload::MAX_DOCUMENT_BYTES` and Dart as `SpecPolicy.maxDocumentBytes` on
+`spec` / `responseSpec` — emitted by **both** Dart generators
+(`build-dart-bindings.mjs` from front matter, `lib/src/generator/emit.dart`
+from the bundle's `policy.maxDocumentBytes`), independently. `check-bindings`
+compares Rust and Dart against the front matter. The Dart HTTPS server enforces
+it: its pre-parse body limit is the largest registered bound with a 256 KiB
+floor, then each document is held to its route's bound (`malformedRequest`).
+The Rust server still has a flat 256 KiB cap (#1121's Rust half rides with
+#1089); TypeScript and Go emit nothing yet — add them to the same comparison
+when they do.
+
 ## ⚠️ The Go module — four things that bite
 
 `trust-tasks-go` follows Rust's shape, not TypeScript's: one package per

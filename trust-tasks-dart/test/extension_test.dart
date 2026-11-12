@@ -125,6 +125,7 @@ Future<ConsumeOutcome<auth03.Response>> consume(
       now: testNow,
       newErrorId: () => 'err-1',
       payloadToJson: (p) => p.toJson(),
+      responseToJson: (r) => r.toJson(),
       clock: fixedClock,
       handler: (accepted, parties) async => respondWith(
         accepted,

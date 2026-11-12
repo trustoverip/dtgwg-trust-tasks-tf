@@ -70,6 +70,7 @@ void main() {
           now: testNow,
           newErrorId: () => 'err-1',
           payloadToJson: (p) => p.toJson(),
+          responseToJson: (r) => r.toJson(),
           clock: fixedClock,
           handler: (accepted, parties) async =>
               respondWith<acl_grant.Payload, acl_grant.Response>(

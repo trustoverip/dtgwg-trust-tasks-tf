@@ -80,6 +80,7 @@ Future<void> main() async {
     now: now,
     newErrorId: () => 'urn:uuid:reply-error',
     payloadToJson: (p) => p.toJson(),
+    responseToJson: (r) => r.toJson(),
     clock: clock,
     handler: (accepted, parties) async {
       check(accepted.payload.status == keys_list.KeyStatus.active,
@@ -137,6 +138,7 @@ Future<void> main() async {
     now: now,
     newErrorId: () => 'urn:uuid:reply-grant',
     payloadToJson: (p) => p.toJson(),
+    responseToJson: (r) => r.toJson(),
     clock: clock,
     handler: (accepted, parties) async =>
         throw StateError('a proofless acl/grant reached the handler'),

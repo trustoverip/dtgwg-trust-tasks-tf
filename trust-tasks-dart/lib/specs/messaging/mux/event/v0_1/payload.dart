@@ -373,4 +373,5 @@ const SpecPolicy spec = SpecPolicy(
   isRecipientRequired: true,
   isIssuedAtRequired: true,
   payloadSchema: payloadSchemaJson,
+  maxDocumentBytes: 1048576,
 );
