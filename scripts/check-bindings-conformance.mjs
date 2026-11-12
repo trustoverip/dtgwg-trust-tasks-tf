@@ -510,16 +510,18 @@ function collectExternalRefs(node, out = []) {
 }
 
 /**
- * Parse `export const <name> = { … } as const;` out of a generated TS module.
+ * Parse `export const <name>: <type> = { … };` (or the older
+ * `export const <name> = { … } as const;`) out of a generated TS module.
  *
  * Brace-counting rather than a regex: the schema is a large nested literal and
  * a lazy match stops at the first `}`. String literals are skipped so a brace
  * inside a `pattern` or a description does not throw the count off.
  */
 function tsSchemaConst(src, name) {
-  const start = src.indexOf(`export const ${name} = {`);
+  const m = new RegExp(`^export const ${name}(?::[^=\\n]+)? = \\{`, "m").exec(src);
+  const start = m ? m.index : -1;
   if (start < 0) return null;
-  const open = src.indexOf("{", start);
+  const open = start + m[0].length - 1;
   let depth = 0;
   let inString = false;
   let escaped = false;

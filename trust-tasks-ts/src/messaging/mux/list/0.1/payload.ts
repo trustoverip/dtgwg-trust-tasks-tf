@@ -104,8 +104,13 @@ export type Response = MessagingMuxListResponsePayload;
  * at runtime: without a schema a consumer has nothing to validate, and
  * every REQUIRED payload member is optional in practice. Cross-file
  * `$ref`s are already inlined, so it needs no resolver.
+ *
+ * Typed as a plain JSON object rather than `as const`: a literal type would
+ * carry the whole schema a second time in the declaration file, and nothing
+ * reads it at the type level. (An index signature, not `Readonly<Record<…>>`:
+ * a schema may itself define a type named `Record`.)
  */
-export const PAYLOAD_SCHEMA = {
+export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/messaging/mux/list/0.1",
   "title": "Messaging — Mux List — payload",
@@ -448,10 +453,10 @@ export const PAYLOAD_SCHEMA = {
       "description": "The side of a delegation a requester acts as. `principal`: the DID that authenticated the connection and to which members' traffic is delegated. `member`: a DID whose traffic is delegated."
     }
   }
-} as const;
+};
 
 /** As {@link PAYLOAD_SCHEMA}, for the success-response variant. */
-export const RESPONSE_PAYLOAD_SCHEMA = {
+export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
@@ -761,7 +766,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "description": "The side of a delegation a requester acts as. `principal`: the DID that authenticated the connection and to which members' traffic is delegated. `member`: a DID whose traffic is delegated."
     }
   }
-} as const;
+};
 
 /**
  * SPEC.md §7.2 policy for the request variant, from this specification's

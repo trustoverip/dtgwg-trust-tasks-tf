@@ -58,8 +58,10 @@
 //                set (union: old ⊆ new) or a sequence (tuple: old is a prefix).
 //              - the literal TYPE of an embedded JSON Schema document (the
 //                generated `PAYLOAD_SCHEMA`, `RESPONSE_PAYLOAD_SCHEMA` and
-//                `SPEC.payloadSchema` constants are `as const`, so every
-//                description edit changes their type). Those are schema data,
+//                `SPEC.payloadSchema` constants were `as const` until #1107, so
+//                every description edit changed their type; they are now typed
+//                `{ readonly [key: string]: unknown }`, and the mask still
+//                matters against a release from before that). Those are schema data,
 //                and their compatibility is what `check-published-schemas`
 //                judges, with JSON-Schema-aware rules. The constants'
 //                existence, and SPEC's policy flags (`isProofRequired`, …),

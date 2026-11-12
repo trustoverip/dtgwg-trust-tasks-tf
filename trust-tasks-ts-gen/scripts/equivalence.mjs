@@ -268,12 +268,12 @@ function split(text, file) {
   return { middle: text.slice(bannerEnd, tailAt), tail: text.slice(tailAt) };
 }
 
-/** Cut `export const NAME = <json> as const;` out of `tail`, returning both. */
+/** Cut the JSON out of `export const NAME: <type> = <json>;` in `tail`, returning both. */
 function cutSchema(tail, name) {
-  const start = tail.indexOf(`export const ${name} = `);
-  if (start < 0) return { tail, json: null, text: null };
-  const jsonStart = start + `export const ${name} = `.length;
-  const end = tail.indexOf("\n} as const;", jsonStart);
+  const m = new RegExp(`^export const ${name}(?::[^=\\n]+)? = `, "m").exec(tail);
+  if (!m) return { tail, json: null, text: null };
+  const jsonStart = m.index + m[0].length;
+  const end = tail.indexOf("\n};", jsonStart);
   const text = tail.slice(jsonStart, end + 2);
   return { tail: tail.slice(0, jsonStart) + "<schema>" + tail.slice(end + 2), json: JSON.parse(text), text };
 }
