@@ -54,9 +54,7 @@ void main() {
       }),
       base: 'https://maintainer.example/tt/',
     );
-    await sendEcho(client, request()).catchError(
-      (Object _) => request(),
-    );
+    await sendEcho(client, request()).catchError((Object _) => request());
     expect(seen.url.toString(), 'https://maintainer.example/tt/trust-tasks');
     expect(seen.headers['content-type'], startsWith('application/json'));
     expect(seen.headers['authorization'], 'Bearer $aliceToken');
@@ -96,8 +94,11 @@ void main() {
     await expectLater(
       sendEcho(client, request()),
       throwsA(
-        isA<DuplicateAbsorbedException>()
-            .having((e) => e.inFlight, 'inFlight', isFalse),
+        isA<DuplicateAbsorbedException>().having(
+          (e) => e.inFlight,
+          'inFlight',
+          isFalse,
+        ),
       ),
     );
   });
@@ -108,8 +109,9 @@ void main() {
     );
     await expectLater(
       sendEcho(client, request()),
-      throwsA(isA<HttpStatusException>()
-          .having((e) => e.httpStatus, 'status', 502)),
+      throwsA(
+        isA<HttpStatusException>().having((e) => e.httpStatus, 'status', 502),
+      ),
     );
   });
 
@@ -192,12 +194,158 @@ void main() {
       );
       await expectLater(
         sendEcho(client, request(text: 'refuse')),
-        throwsA(isA<ResponseMismatchException>().having(
-          (e) => e.binding,
-          'binding',
-          ResponseBinding.inResponseTo,
-        )),
+        throwsA(
+          isA<ResponseMismatchException>().having(
+            (e) => e.binding,
+            'binding',
+            ResponseBinding.inResponseTo,
+          ),
+        ),
       );
+    });
+  });
+
+  group('transport limits', () {
+    test('a plain http base is refused unless loopback or allowed', () {
+      expect(
+        () => HttpsClient(base: Uri.parse('http://maintainer.example')),
+        throwsArgumentError,
+      );
+      expect(
+        HttpsClient(
+          base: Uri.parse('http://maintainer.example'),
+          allowInsecureHttp: true,
+        ).endpoint.toString(),
+        'http://maintainer.example/trust-tasks',
+      );
+      for (final base in [
+        'http://127.0.0.1:8080',
+        'http://localhost:3000',
+        'http://[::1]:3000',
+      ]) {
+        HttpsClient(base: Uri.parse(base), token: aliceToken).close();
+      }
+    });
+
+    test('a bearer token is never sent over non-loopback http', () {
+      expect(
+        () => HttpsClient(
+          base: Uri.parse('http://maintainer.example'),
+          token: aliceToken,
+          allowInsecureHttp: true,
+        ),
+        throwsArgumentError,
+      );
+    });
+
+    test('a response verifier needs a server VID', () {
+      expect(
+        () => HttpsClient(
+          base: Uri.parse('https://maintainer.example'),
+          responseVerifier: FakeVerifier(),
+        ),
+        throwsArgumentError,
+      );
+    });
+
+    test('redirects are not followed', () async {
+      late http.BaseRequest seen;
+      final client = clientFor(
+        MockClient((r) async {
+          seen = r;
+          return http.Response(
+            '',
+            307,
+            headers: {'location': 'https://elsewhere.example/trust-tasks'},
+          );
+        }),
+      );
+      await expectLater(
+        sendEcho(client, request()),
+        throwsA(
+          isA<HttpStatusException>().having((e) => e.httpStatus, 'status', 307),
+        ),
+      );
+      expect(seen.followRedirects, isFalse);
+    });
+
+    test('a body over maxResponseBytes is refused', () async {
+      final client = HttpsClient(
+        base: Uri.parse('https://maintainer.example'),
+        serverVid: server,
+        myVid: alice,
+        maxResponseBytes: 1024,
+        httpClient: MockClient.streaming((r, _) async {
+          return http.StreamedResponse(
+            Stream.fromIterable(
+              List.generate(8, (_) => List<int>.filled(512, 0x20)),
+            ),
+            200,
+            headers: {'content-type': 'application/json'},
+          );
+        }),
+      );
+      await expectLater(
+        sendEcho(client, request()),
+        throwsA(
+          isA<ResponseTooLargeException>().having(
+            (e) => e.limit,
+            'limit',
+            1024,
+          ),
+        ),
+      );
+    });
+
+    test('a declared Content-Length over the cap is refused unread', () async {
+      final client = HttpsClient(
+        base: Uri.parse('https://maintainer.example'),
+        serverVid: server,
+        myVid: alice,
+        maxResponseBytes: 16,
+        httpClient: MockClient((_) async => http.Response('x' * 64, 200)),
+      );
+      await expectLater(
+        sendEcho(client, request()),
+        throwsA(isA<ResponseTooLargeException>()),
+      );
+    });
+
+    test('any client error is a TransportException', () async {
+      final client = clientFor(
+        MockClient((_) async => throw const FormatException('handshake')),
+      );
+      await expectLater(
+        sendEcho(client, request()),
+        throwsA(isA<TransportException>()),
+      );
+    });
+
+    test('error text does not quote the response body', () async {
+      final secretish = 'BODY-${'z' * 600}';
+      final client = clientFor(
+        MockClient((_) async => http.Response(secretish, 502)),
+      );
+      final error = await sendEcho(
+        client,
+        request(),
+      ).then<Object?>((_) => null, onError: (Object e) => e);
+      expect(error, isA<HttpStatusException>());
+      expect(error.toString(), isNot(contains('BODY-')));
+      expect(
+        (error! as HttpStatusException).body.length,
+        lessThanOrEqualTo(512),
+      );
+
+      final decoding = clientFor(
+        MockClient((_) async => http.Response('{"BODY-', 200)),
+      );
+      final decodeError = await sendEcho(
+        decoding,
+        request(),
+      ).then<Object?>((_) => null, onError: (Object e) => e);
+      expect(decodeError, isA<ResponseDecodeException>());
+      expect(decodeError.toString(), isNot(contains('BODY-')));
     });
   });
 
@@ -208,8 +356,13 @@ void main() {
     );
     await expectLater(
       sendEcho(client, request()),
-      throwsA(isA<ResponseProofException>()
-          .having((e) => e.missing, 'missing', isTrue)),
+      throwsA(
+        isA<ResponseProofException>().having(
+          (e) => e.missing,
+          'missing',
+          isTrue,
+        ),
+      ),
     );
   });
 }

@@ -1376,6 +1376,180 @@ async fn error_response_about_another_document_is_rejected() {
     }
 }
 
+// ─── Client transport limits ─────────────────────────────────────────────
+
+/// Serve one fixed raw reply (status, headers, body) to every POST, counting
+/// the requests it receives.
+async fn spawn_raw_server(
+    status: u16,
+    headers: Vec<(&'static str, String)>,
+    body: Vec<u8>,
+) -> (SocketAddr, Arc<AtomicUsize>) {
+    let hits = Arc::new(AtomicUsize::new(0));
+    let counter = Arc::clone(&hits);
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let addr = listener.local_addr().unwrap();
+    let app = axum::Router::new().route(
+        "/trust-tasks",
+        axum::routing::post(move || {
+            let headers = headers.clone();
+            let body = body.clone();
+            counter.fetch_add(1, AtomicOrdering::SeqCst);
+            async move {
+                let mut response = axum::response::Response::builder()
+                    .status(status)
+                    .header(axum::http::header::CONTENT_TYPE, "application/json");
+                for (name, value) in headers {
+                    response = response.header(name, value);
+                }
+                response.body(axum::body::Body::from(body)).unwrap()
+            }
+        }),
+    );
+    tokio::spawn(async move {
+        axum::serve(listener, app).await.unwrap();
+    });
+    (addr, hits)
+}
+
+#[test]
+fn a_plain_http_server_url_is_refused_unless_loopback_or_allowed() {
+    let refused = |b: trust_tasks_https::HttpsClientBuilder| match b.build() {
+        Err(ClientError::Config(msg)) => msg,
+        Err(other) => panic!("expected a configuration error, got {other:?}"),
+        Ok(_) => panic!("expected a configuration error"),
+    };
+
+    let msg = refused(HttpsClient::builder().server_url("http://server.example"));
+    assert!(msg.contains("allow_insecure_http"), "{msg}");
+
+    // A bearer token never crosses non-loopback http, even when http is
+    // otherwise allowed.
+    let msg = refused(
+        HttpsClient::builder()
+            .server_url("http://server.example")
+            .my_token("alice")
+            .allow_insecure_http(true),
+    );
+    assert!(msg.contains("bearer token"), "{msg}");
+
+    refused(HttpsClient::builder().server_url("ftp://server.example"));
+
+    HttpsClient::builder()
+        .server_url("http://server.example")
+        .allow_insecure_http(true)
+        .build()
+        .expect("token-less http is allowed when asked for");
+    for url in [
+        "http://127.0.0.1:3000",
+        "http://localhost:3000",
+        "http://[::1]:3000",
+    ] {
+        HttpsClient::builder()
+            .server_url(url)
+            .my_token("alice")
+            .build()
+            .unwrap_or_else(|e| panic!("{url}: {e}"));
+    }
+    HttpsClient::builder()
+        .server_url("https://server.example")
+        .my_token("alice")
+        .build()
+        .expect("https");
+}
+
+/// A redirect is returned, not followed, so the document is never re-posted
+/// to another URL.
+#[tokio::test]
+async fn redirects_are_not_followed_by_default() {
+    let (elsewhere, elsewhere_hits) = spawn_raw_server(200, Vec::new(), b"{}".to_vec()).await;
+    let (addr, _) = spawn_raw_server(
+        307,
+        vec![("location", format!("http://{elsewhere}/trust-tasks"))],
+        Vec::new(),
+    )
+    .await;
+    let client = build_client(addr, "did:web:alice.example", Some("alice"));
+    let err = client
+        .send::<list::v0_3::Payload>(TrustTask::for_payload(
+            "urn:uuid:test-redirect",
+            list_payload(),
+        ))
+        .await
+        .unwrap_err();
+    match err {
+        ClientError::HttpStatus { http_status, .. } => assert_eq!(http_status, 307),
+        other => panic!("expected HttpStatus 307, got {other:?}"),
+    }
+    assert_eq!(elsewhere_hits.load(AtomicOrdering::SeqCst), 0);
+}
+
+/// A response over the cap is refused, whether or not it declares its length.
+#[tokio::test]
+async fn a_response_over_max_response_bytes_is_refused() {
+    let big = format!("{{\"pad\":\"{}\"}}", "x".repeat(4096)).into_bytes();
+    let (addr, _) = spawn_raw_server(200, Vec::new(), big).await;
+    let client = HttpsClient::builder()
+        .server_url(format!("http://{addr}"))
+        .server_vid(SERVER_VID)
+        .my_vid("did:web:alice.example")
+        .max_response_bytes(1024)
+        .build()
+        .unwrap();
+    let err = client
+        .send::<list::v0_3::Payload>(TrustTask::for_payload(
+            "urn:uuid:test-too-large",
+            list_payload(),
+        ))
+        .await
+        .unwrap_err();
+    match err {
+        ClientError::ResponseTooLarge { limit } => assert_eq!(limit, 1024),
+        other => panic!("expected ResponseTooLarge, got {other:?}"),
+    }
+}
+
+/// Error text does not quote what the peer sent.
+#[tokio::test]
+async fn client_errors_do_not_quote_the_response_body() {
+    let marker = "BODY-MARKER";
+    let body = format!("{marker}{}", "z".repeat(2048)).into_bytes();
+    let (addr, _) = spawn_raw_server(502, vec![], body).await;
+    let client = build_client(addr, "did:web:alice.example", Some("alice"));
+    let err = client
+        .send::<list::v0_3::Payload>(TrustTask::for_payload(
+            "urn:uuid:test-status-body",
+            list_payload(),
+        ))
+        .await
+        .unwrap_err();
+    assert!(!err.to_string().contains(marker), "{err}");
+    match err {
+        ClientError::HttpStatus { body, .. } => assert!(body.len() <= 512, "{}", body.len()),
+        other => panic!("expected HttpStatus, got {other:?}"),
+    }
+
+    // A 2xx that is not the expected document: serde's own message would
+    // quote the offending value.
+    let (addr, _) = spawn_raw_server(
+        200,
+        vec![],
+        format!("{{\"id\": \"urn:uuid:x\", \"type\": \"{marker}\", \"payload\": {{}}}}")
+            .into_bytes(),
+    )
+    .await;
+    let client = build_client(addr, "did:web:alice.example", Some("alice"));
+    let err = client
+        .send::<list::v0_3::Payload>(TrustTask::for_payload(
+            "urn:uuid:test-decode-body",
+            list_payload(),
+        ))
+        .await
+        .unwrap_err();
+    assert!(matches!(err, ClientError::ResponseDecode(_)), "{err:?}");
+    assert!(!err.to_string().contains(marker), "{err}");
+}
+
 // ─── Discovery privacy (finding 4) ────────────────────────────────────────
 
 async fn spawn_discovery_server(public: bool) -> SocketAddr {

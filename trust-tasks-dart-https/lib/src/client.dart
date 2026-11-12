@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 import 'package:trust_tasks/trust_tasks.dart';
@@ -8,6 +9,13 @@ import 'binding.dart';
 
 /// Default budget for one exchange, connection included.
 const Duration defaultClientTimeout = Duration(seconds: 30);
+
+/// Default cap on a response body: 256 KiB, the request cap the servers apply.
+/// A trust-task response is one small JSON document.
+const int defaultMaxResponseBytes = 256 * 1024;
+
+/// How much of a non-Trust-Task error body [HttpStatusException.body] keeps.
+const int _maxErrorBodyChars = 512;
 
 /// Why [HttpsClient.send] did not return a response document.
 ///
@@ -30,20 +38,25 @@ final class TrustTaskErrorException extends HttpsClientException {
 }
 
 /// A non-2xx answer with no `trust-task-error` body: a proxy, a `401`, a bare
-/// `500`. §4.1: this establishes nothing about the document's state. Retry by
-/// re-sending the same bytes (SPEC §8.4).
+/// `500`, or a redirect (which the client does not follow). §4.1: this
+/// establishes nothing about the document's state. Retry by re-sending the same
+/// bytes (SPEC §8.4).
 final class HttpStatusException extends HttpsClientException {
   const HttpStatusException(this.httpStatus, this.body);
 
   final int httpStatus;
+
+  /// The start of the body (at most 512 characters), for diagnostics. Not
+  /// included in [toString]: it is whatever the peer chose to send.
   final String body;
 
   @override
   String toString() => 'HttpStatusException(HTTP $httpStatus)';
 }
 
-/// The exchange never produced an answer: a connection failure or [timeout].
-/// Like [HttpStatusException], not a statement about the document (§4.1).
+/// The exchange never produced an answer: a connection or TLS failure, the
+/// [HttpsClient.timeout], or any other error raised by the HTTP client. Like
+/// [HttpStatusException], not a statement about the document (§4.1).
 final class TransportException extends HttpsClientException {
   const TransportException(this.cause);
 
@@ -73,10 +86,24 @@ final class DuplicateAbsorbedException extends HttpsClientException {
 final class ResponseDecodeException extends HttpsClientException {
   const ResponseDecodeException(this.cause);
 
+  /// The decoding error. Its text may quote the body, so [toString] names
+  /// only its type.
   final Object cause;
 
   @override
-  String toString() => 'ResponseDecodeException($cause)';
+  String toString() => 'ResponseDecodeException(${cause.runtimeType})';
+}
+
+/// The response body was larger than [HttpsClient.maxResponseBytes]. Reading
+/// stopped there; nothing was decoded.
+final class ResponseTooLargeException extends HttpsClientException {
+  const ResponseTooLargeException(this.limit);
+
+  /// The cap that was exceeded, in bytes.
+  final int limit;
+
+  @override
+  String toString() => 'ResponseTooLargeException(over $limit bytes)';
 }
 
 /// Which binding of a response to its request did not hold.
@@ -146,6 +173,17 @@ final class HttpsClient {
   ///
   /// Pass [httpClient] to reuse a connection pool, or to substitute a platform
   /// client; this client never closes one it was given.
+  ///
+  /// [base] must be `https`. A plain `http` base is accepted only on loopback
+  /// (`localhost`, `127.0.0.0/8`, `::1`) or with [allowInsecureHttp], and a
+  /// [token] is never sent over non-loopback `http`, whatever
+  /// [allowInsecureHttp] says: it would cross the network in the clear.
+  ///
+  /// A [responseVerifier] needs a [serverVid]: a proof only says who signed,
+  /// and without a VID to compare the signer to, any signed document would
+  /// pass.
+  ///
+  /// Throws [ArgumentError] for a configuration that breaks these rules.
   HttpsClient({
     required Uri base,
     this.serverVid,
@@ -153,10 +191,31 @@ final class HttpsClient {
     this.token,
     this.responseVerifier,
     this.timeout = defaultClientTimeout,
+    this.maxResponseBytes = defaultMaxResponseBytes,
+    bool allowInsecureHttp = false,
     http.Client? httpClient,
-  })  : endpoint = _endpoint(base),
+  })  : endpoint = _endpoint(
+          base,
+          allowInsecureHttp: allowInsecureHttp,
+          hasToken: token != null,
+        ),
         _http = httpClient ?? http.Client(),
-        _ownsHttp = httpClient == null;
+        _ownsHttp = httpClient == null {
+    if (responseVerifier != null && serverVid == null) {
+      throw ArgumentError.value(
+        serverVid,
+        'serverVid',
+        'is required when responseVerifier is set',
+      );
+    }
+    if (maxResponseBytes <= 0) {
+      throw ArgumentError.value(
+        maxResponseBytes,
+        'maxResponseBytes',
+        'must be positive',
+      );
+    }
+  }
 
   /// Where requests are posted.
   final Uri endpoint;
@@ -175,13 +234,57 @@ final class HttpsClient {
   /// When set, every success response must carry a proof that verifies.
   final ProofVerifier? responseVerifier;
 
-  /// Budget for one exchange.
+  /// Budget for one exchange, reading the response included.
   final Duration timeout;
+
+  /// The largest response body read, in bytes; a larger one is
+  /// [ResponseTooLargeException].
+  final int maxResponseBytes;
 
   final http.Client _http;
   final bool _ownsHttp;
 
-  static Uri _endpoint(Uri base) {
+  static bool _sameResource(Uri a, Uri b) =>
+      a.scheme == b.scheme &&
+      a.host.toLowerCase() == b.host.toLowerCase() &&
+      a.port == b.port &&
+      a.path == b.path;
+
+  static bool _isLoopback(String host) {
+    final h = host.toLowerCase();
+    if (h == 'localhost' || h.endsWith('.localhost')) return true;
+    if (h == '::1' || h == '[::1]') return true;
+    final octets = h.split('.');
+    return octets.length == 4 &&
+        octets.first == '127' &&
+        octets.every((o) => int.tryParse(o) != null);
+  }
+
+  static Uri _endpoint(
+    Uri base, {
+    required bool allowInsecureHttp,
+    required bool hasToken,
+  }) {
+    final scheme = base.scheme.toLowerCase();
+    if (scheme == 'http' && !_isLoopback(base.host)) {
+      if (hasToken) {
+        throw ArgumentError.value(
+          base,
+          'base',
+          'is plain http: a bearer token is only sent over https '
+              '(or to loopback)',
+        );
+      }
+      if (!allowInsecureHttp) {
+        throw ArgumentError.value(
+          base,
+          'base',
+          'is plain http: use https, or pass allowInsecureHttp: true',
+        );
+      }
+    } else if (scheme != 'https' && scheme != 'http') {
+      throw ArgumentError.value(base, 'base', 'is not an https URL');
+    }
     var path = base.path;
     while (path.endsWith('/')) {
       path = path.substring(0, path.length - 1);
@@ -258,21 +361,86 @@ final class HttpsClient {
         issuedAt: request.issuedAt ?? systemClock(),
       );
 
+  /// POST [document] and read the reply, within [timeout] and
+  /// [maxResponseBytes]. Redirects are not followed: a `3xx` comes back as
+  /// itself, so the signed document is never re-sent to another URL. Every
+  /// error the HTTP client raises — TLS included — is a [TransportException].
   Future<http.Response> _post(Map<String, dynamic> document) async {
-    final headers = <String, String>{
-      'content-type': 'application/json',
-      'accept': 'application/json',
-      if (token != null) 'authorization': 'Bearer $token',
-    };
+    final request = http.Request('POST', endpoint)
+      ..followRedirects = false
+      ..headers.addAll({
+        'content-type': 'application/json',
+        'accept': 'application/json',
+        if (token != null) 'authorization': 'Bearer $token',
+      })
+      ..body = jsonEncode(document);
     try {
-      return await _http
-          .post(endpoint, headers: headers, body: jsonEncode(document))
-          .timeout(timeout);
-    } on TimeoutException catch (e) {
-      throw TransportException(e);
-    } on http.ClientException catch (e) {
+      return await _exchange(request);
+    } on HttpsClientException {
+      rethrow;
+    } on Object catch (e) {
       throw TransportException(e);
     }
+  }
+
+  Future<http.Response> _exchange(http.Request request) async {
+    final clock = Stopwatch()..start();
+    final streamed = await _http.send(request).timeout(timeout);
+    // A platform client that follows redirects anyway (a browser's fetch)
+    // reports where it ended up; an answer from anywhere else is not this
+    // endpoint's.
+    final finalUrl = streamed is http.BaseResponseWithUrl
+        ? (streamed as http.BaseResponseWithUrl).url
+        : null;
+    if (finalUrl != null && !_sameResource(finalUrl, endpoint)) {
+      unawaited(streamed.stream.listen(null).cancel());
+      throw TransportException(
+        StateError('the response came from another URL after a redirect'),
+      );
+    }
+    final declared = streamed.contentLength;
+    if (declared != null && declared > maxResponseBytes) {
+      unawaited(streamed.stream.listen(null).cancel());
+      throw ResponseTooLargeException(maxResponseBytes);
+    }
+    final bytes = BytesBuilder(copy: false);
+    final done = Completer<void>();
+    late final StreamSubscription<List<int>> sub;
+    sub = streamed.stream.listen(
+      (chunk) {
+        if (bytes.length + chunk.length > maxResponseBytes) {
+          unawaited(sub.cancel());
+          if (!done.isCompleted) {
+            done.completeError(ResponseTooLargeException(maxResponseBytes));
+          }
+          return;
+        }
+        bytes.add(chunk);
+      },
+      onError: (Object e, StackTrace st) {
+        if (!done.isCompleted) done.completeError(e, st);
+      },
+      onDone: () {
+        if (!done.isCompleted) done.complete();
+      },
+      cancelOnError: true,
+    );
+    final remaining = timeout - clock.elapsed;
+    await done.future.timeout(
+      remaining.isNegative ? Duration.zero : remaining,
+      onTimeout: () {
+        // Stop reading: the connection is released rather than left
+        // draining a body nobody will look at.
+        unawaited(sub.cancel());
+        throw TimeoutException('reading the response', timeout);
+      },
+    );
+    return http.Response.bytes(
+      bytes.takeBytes(),
+      streamed.statusCode,
+      headers: streamed.headers,
+      request: request,
+    );
   }
 
   /// §4: a non-2xx answer with a JSON body is read as a `trust-task-error`
@@ -310,8 +478,13 @@ final class HttpsClient {
         throw TrustTaskErrorException(status, error);
       }
     }
+    final text = utf8.decode(reply.bodyBytes, allowMalformed: true);
     throw HttpStatusException(
-        status, utf8.decode(reply.bodyBytes, allowMalformed: true));
+      status,
+      text.length > _maxErrorBodyChars
+          ? text.substring(0, _maxErrorBodyChars)
+          : text,
+    );
   }
 
   void _checkBinding<P, R>(
@@ -329,7 +502,10 @@ final class HttpsClient {
     final type = '${bareTypeUri(request.type)}#response';
     if (response.type != type) {
       throw ResponseMismatchException(
-          ResponseBinding.type, type, response.type);
+        ResponseBinding.type,
+        type,
+        response.type,
+      );
     }
     final server = serverVid;
     if (server != null && response.issuer != server) {
