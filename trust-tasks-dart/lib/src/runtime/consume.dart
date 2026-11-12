@@ -22,10 +22,10 @@
 ///   doc: doc,
 ///   myVid: 'did:web:maintainer.example',
 ///   now: DateTime.now(),
-///   newErrorId: () => uuid.v4(),
 ///   payloadToJson: (p) => p.toJson(),
+///   responseToJson: (r) => r.toJson(),
 ///   handler: (accepted, parties) async =>
-///       respondWith(accepted, uuid.v4(), await applyGrant(accepted.payload)),
+///       respondWith(accepted, newUrnUuid(), await applyGrant(accepted.payload)),
 /// );
 ///
 /// switch (outcome) {
@@ -34,7 +34,7 @@
 ///   case Suppressed(:final reason):  log(reason);
 ///   case Accepted():                 break; // fire-and-forget
 ///   case DuplicateOutcome(:final priorResponse):
-///     if (priorResponse != null) emit(priorResponse);
+///     if (priorResponse != null) emitJson(priorResponse); // success or error
 /// }
 /// ```
 ///
@@ -57,6 +57,7 @@ import 'codes.dart';
 import 'document.dart';
 import 'extension.dart' show typeRefusalFor;
 import 'freshness.dart';
+import 'id.dart';
 import 'replay.dart';
 import 'transport.dart';
 
@@ -253,7 +254,9 @@ final class Accepted<R> extends ConsumeOutcome<R> {
 /// What to emit:
 ///
 /// * [priorResponse] non-null — emit it. It is the response document the first
-///   execution produced, which §7.2 says the consumer SHOULD return.
+///   execution produced, which §7.2 says the consumer SHOULD return, as the
+///   JSON map that was recorded: a success response or, for a non-retryable
+///   refusal, the error response ([isError] says which).
 /// * [priorResponse] null, [inFlight] false — the specification defines no
 ///   success response (§4.4.1), or the guard retains none. Emit nothing.
 /// * [inFlight] true — the first execution has not finished. §7.2: the consumer
@@ -261,8 +264,27 @@ final class Accepted<R> extends ConsumeOutcome<R> {
 ///   another".
 final class DuplicateOutcome<R> extends ConsumeOutcome<R> {
   const DuplicateOutcome({this.priorResponse, this.inFlight = false});
-  final Object? priorResponse;
+
+  /// The first execution's response document, as JSON, where one was retained.
+  ///
+  /// Always a JSON map, never a typed document: [consumeInbound] records every
+  /// response through `responseToJson`, so an in-memory guard and a persisting
+  /// one hand back the same thing.
+  final Map<String, dynamic>? priorResponse;
   final bool inFlight;
+
+  /// Whether [priorResponse] is an error response (a `trust-task-error`
+  /// document) rather than a success response. False when there is none.
+  bool get isError => priorResponse != null && isErrorDocument(priorResponse!);
+}
+
+/// Whether the JSON document [doc] is an error response — its `type` is a
+/// `trust-task-error` Type URI — rather than a success response.
+///
+/// Keys off the type, as [isErrorResponse] does, never the payload's shape.
+bool isErrorDocument(Map<String, dynamic> doc) {
+  final type = doc['type'];
+  return type is String && bareTypeUri(type).contains('/trust-task-error/');
 }
 
 /// Wire message for the [RejectProofIfPresent] path.
@@ -327,13 +349,14 @@ Refusal refuse<P>(
 /// Run SPEC §7.2 items 4–8 against [doc], then either call [handler] or build
 /// the routed error response per §8.1.
 ///
-/// Pass [responseToJson] whenever [checks] uses a [ReplayGuard] that persists
-/// what it records. With it, a success response reaches
-/// [ReplayGuard.recordResponse] as the same JSON map a refusal does, and a
-/// later [DuplicateOutcome.priorResponse] is that map. Without it, the guard
-/// receives the [TrustTaskDocument] object itself, which an in-memory guard can
-/// hold but a persistent one cannot serialise. Such a guard would then cache no
-/// success response, and a resend would be absorbed with nothing to return.
+/// [responseToJson] writes the handler's response payload as JSON. A success
+/// response reaches [ReplayGuard.recordResponse] through it as the same JSON
+/// map a refusal does, and a later [DuplicateOutcome.priorResponse] is that
+/// map — whatever the guard, in-memory or persisting. For a specification that
+/// defines no success response, pass `(r) => r`; it is never called.
+///
+/// [newErrorId] mints the `id` of an error response; it defaults to
+/// [newUrnUuid].
 ///
 /// Pass [received] — the decoded JSON map [doc] was read from, exactly as it
 /// arrived — and the item-11 digest is taken over it, so a member [doc]'s type
@@ -363,11 +386,11 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
   required TrustTaskDocument<P> doc,
   required String myVid,
   required DateTime now,
-  required String Function() newErrorId,
+  String Function() newErrorId = newUrnUuid,
   required Object? Function(P payload) payloadToJson,
+  required Object? Function(R response) responseToJson,
   required Handler<P, R> handler,
   Clock? clock,
-  Object? Function(R response)? responseToJson,
   Map<String, dynamic>? received,
   Map<String, String>? extendsIndex,
 }) async {
@@ -579,7 +602,7 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
   /// cannot un-happen it. The record of the *claim* is what item 11 needs and it
   /// is already written; all that is lost is the ability to hand the same
   /// response back, and the duplicate is still absorbed.
-  Future<void> settle(Object? response) async {
+  Future<void> settle(Map<String, dynamic>? response) async {
     if (claimedGuard == null) return;
     try {
       await claimedGuard.recordResponse(doc.id, response);
@@ -595,8 +618,8 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
   /// resend is absorbed rather than executed again — and the encoder's error
   /// then reaches the caller. Without this the claim stayed in flight until
   /// the record expired.
-  Future<void> settleEncoding(Object? Function() encode) async {
-    Object? encoded;
+  Future<void> settleEncoding(Map<String, dynamic> Function() encode) async {
+    Map<String, dynamic>? encoded;
     try {
       encoded = encode();
     } finally {
@@ -621,7 +644,7 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
         }
       }
     } else {
-      Object? encoded;
+      Map<String, dynamic> encoded;
       try {
         encoded = refusal.response.toJson((p) => p.toJson());
       } on Object {
@@ -664,9 +687,7 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
   }
 
   final handled = response;
-  await settleEncoding(
-    () => responseToJson == null ? handled : handled.toJson(responseToJson),
-  );
+  await settleEncoding(() => handled.toJson(responseToJson));
   return Handled<R>(handled);
 }
 

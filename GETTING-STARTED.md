@@ -502,11 +502,11 @@ final outcome = await consumeInbound<acl_grant.Payload, acl_grant.Response>(
   doc: doc,
   myVid: 'did:web:maintainer.example',
   now: DateTime.now(),
-  newErrorId: () => uuid.v4(),
   payloadToJson: (p) => p.toJson(),
+  responseToJson: (r) => r.toJson(),
   handler: (accepted, parties) async => respondWith(
     accepted,
-    uuid.v4(),
+    newUrnUuid(),
     acl_grant.Response(entry: await applyGrant(accepted.payload.entry, parties)),
   ),
 );
@@ -517,8 +517,9 @@ switch (outcome) {
   case Suppressed(:final reason):         return log(reason);
   case Accepted():                        return;  // fire-and-forget
   case DuplicateOutcome(:final priorResponse):
-    // §7.2 item 11: this document already executed.
-    if (priorResponse != null) send(priorResponse);
+    // §7.2 item 11: this document already executed. The recorded response,
+    // as JSON — a success or (isError) the refusal.
+    if (priorResponse != null) sendJson(priorResponse);
 }
 ```
 

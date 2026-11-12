@@ -144,6 +144,7 @@ Future<ConsumeOutcome<Response>> run(
       now: testNow,
       newErrorId: () => 'err-1',
       payloadToJson: payloadToJson,
+      responseToJson: (r) => r.toJson(),
       clock: fixedClock,
       handler: (accepted, parties) async {
         if (handlerShouldNotRun) fail('handler must not run');
@@ -386,6 +387,7 @@ void main() {
         now: testNow,
         newErrorId: () => 'err-1',
         payloadToJson: payloadToJson,
+        responseToJson: (r) => r.toJson(),
         handler: (accepted, parties) async {
           seen = parties;
           return respondWith<Payload, Response>(

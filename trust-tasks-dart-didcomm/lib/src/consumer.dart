@@ -48,6 +48,8 @@ final class DidcommConsumer {
     this.proofVerifier,
     this.payloadValidator,
     DateTime Function() clock = DateTime.now,
+    this.onEvent,
+    this.extendsIndex,
   })  : replayGuard = replayGuard ?? InMemoryReplayGuard(),
         _clock = clock;
 
@@ -76,6 +78,19 @@ final class DidcommConsumer {
 
   /// Validates payloads against their schema (§7.2 item 2).
   final PayloadValidator? payloadValidator;
+
+  /// Told what happened to each document, for logs and metrics; see
+  /// [ServerEvent]. Null reports nothing. Never changes an outcome: it is
+  /// called after the decision, not awaited, and whatever it throws is
+  /// dropped.
+  final ServerEventHook? onEvent;
+
+  /// The `extends` index a later version is read forward along; null uses the
+  /// generated one, which covers the public registry. A consumer of
+  /// third-party (§6.5) specifications passes its own (see [extensionChain]).
+  final Map<String, String>? extendsIndex;
+
+  void _emit(ServerEvent event) => emitServerEvent(onEvent, event);
 
   final DateTime Function() _clock;
 
@@ -129,6 +144,7 @@ final class DidcommConsumer {
 
     Received<R> refused(TrustTaskDocument<Object?> doc, RejectReason reason) {
       final error = reject(transport, doc, newUrnUuid(), reason);
+      _report(doc, reason, error, transport);
       return Received<R>(
         outcome: error == null ? Suppressed<R>(reason) : Rejected<R>(error),
         transport: transport,
@@ -142,7 +158,8 @@ final class DidcommConsumer {
     TrustTaskDocument<Object?> envelopeDoc;
     try {
       envelopeDoc = TrustTaskDocument<Object?>.fromJson(json, (p) => p);
-    } on Object {
+    } on Object catch (error, stackTrace) {
+      _emit(DocumentMalformed(error: error, stackTrace: stackTrace));
       String? str(String key) =>
           json[key] is String ? json[key] as String : null;
       envelopeDoc = TrustTaskDocument<Object?>(
@@ -166,13 +183,24 @@ final class DidcommConsumer {
     final thread = checkThreadHeaders(unpacked.message, json);
     if (thread != null) return refused(envelopeDoc, thread);
 
-    final TrustTaskDocument<P> doc;
+    // Read as [spec]'s version (SPEC §5.2): unchanged for that version, pruned
+    // to what its schema knows for a later one whose declared `extends` chain
+    // reaches it, and `unsupportedVersion` / `unsupportedType` otherwise.
+    // `json` stays as received; the proof and the item-11 digest are over it.
+    final VersionRead<P> read;
     try {
-      doc = TrustTaskDocument<P>.fromJson(
-        json,
-        (p) => decode(p! as Map<String, dynamic>),
-      );
-    } on Object {
+      P payloadFromJson(Object? p) => decode(p! as Map<String, dynamic>);
+      final index = extendsIndex;
+      read = index == null
+          ? readForVersion<P>(json, spec, payloadFromJson)
+          : readForVersion<P>(json, spec, payloadFromJson, index: index);
+    } on Object catch (error, stackTrace) {
+      _emit(PayloadDecodeFailed(
+        documentId: envelopeDoc.id,
+        type: envelopeDoc.type,
+        error: error,
+        stackTrace: stackTrace,
+      ));
       return refused(
         envelopeDoc,
         const RejectReason(
@@ -180,6 +208,13 @@ final class DidcommConsumer {
           message: 'payload does not match the specification',
         ),
       );
+    }
+    final TrustTaskDocument<P> doc;
+    switch (read) {
+      case VersionRefused(:final document, :final reason):
+        return refused(document, reason);
+      case VersionAccepted(doc: final accepted):
+        doc = accepted;
     }
 
     final verifier = proofVerifier;
@@ -189,7 +224,18 @@ final class DidcommConsumer {
       spec: spec,
       proofPolicy: verifier == null
           ? const ProofPolicy.rejectIfPresent()
-          : ProofPolicy.verify(_AsReceived(verifier, json)),
+          : ProofPolicy.verify(
+              _AsReceived(
+                verifier,
+                json,
+                onRejected: (error, stackTrace) => _emit(ProofRejected(
+                  documentId: doc.id,
+                  type: doc.type,
+                  error: error,
+                  stackTrace: stackTrace,
+                )),
+              ),
+            ),
       payloadPolicy: validator == null
           ? const PayloadPolicy.acceptUnvalidated()
           : PayloadPolicy.validate(validator),
@@ -208,20 +254,72 @@ final class DidcommConsumer {
       // The document as it arrived: the item-11 digest is over it, so a member
       // the payload type does not model still tells two documents apart.
       received: json,
-      handler: handler,
+      extendsIndex: extendsIndex,
+      handler: (accepted, parties) async {
+        try {
+          return await handler(accepted, parties);
+        } on Refusal {
+          rethrow;
+        } on Object catch (error, stackTrace) {
+          // Still propagates to the caller, as before; the hook is told too,
+          // so a consumer that logs through it sees every failure in one place.
+          _emit(HandlerFailed(
+            documentId: accepted.id,
+            type: accepted.type,
+            error: error,
+            stackTrace: stackTrace,
+          ));
+          rethrow;
+        }
+      },
     );
+
+    switch (outcome) {
+      case Rejected(:final error):
+        _emit(DocumentRejected(
+          documentId: doc.id,
+          type: doc.type,
+          error: error,
+        ));
+      case Suppressed(:final reason):
+        _emit(DocumentSuppressed(
+          documentId: doc.id,
+          type: doc.type,
+          reason: reason,
+          consistency: resolveParties(transport, doc).error,
+        ));
+      case Handled() || Accepted() || DuplicateOutcome():
+        break;
+    }
 
     final reply = switch (outcome) {
       Handled(:final response) => response.toJson(encodeResponse),
       Rejected(:final error) => error.toJson((p) => p.toJson()),
       Accepted() || Suppressed() => null,
-      DuplicateOutcome(:final priorResponse) => switch (priorResponse) {
-          final TrustTaskDocument<R> d => d.toJson(encodeResponse),
-          final Map<String, dynamic> m => m,
-          _ => null,
-        },
+      // Always the recorded JSON — a success or an error response document.
+      DuplicateOutcome(:final priorResponse) => priorResponse,
     };
     return Received<R>(outcome: outcome, transport: transport, reply: reply);
+  }
+
+  /// Tell [onEvent] about a refusal built before `consumeInbound` ran: the
+  /// routed [error], or a suppression when there is none (§8.1).
+  void _report(
+    TrustTaskDocument<Object?> doc,
+    RejectReason reason,
+    ErrorResponse? error,
+    TransportHandler transport,
+  ) {
+    if (error != null) {
+      _emit(DocumentRejected(documentId: doc.id, type: doc.type, error: error));
+    } else {
+      _emit(DocumentSuppressed(
+        documentId: doc.id,
+        type: doc.type,
+        reason: reason,
+        consistency: resolveParties(transport, doc).error,
+      ));
+    }
   }
 
   /// Pack [reply] into an authcrypt envelope back to the authenticated sender
@@ -249,12 +347,27 @@ final class DidcommConsumer {
 /// Verifies the document as it arrived rather than as the typed decode would
 /// re-encode it, which drops members the generated type does not model and so
 /// breaks a valid signature.
+///
+/// [onRejected] hears of a proof the verifier refused — what it threw, or
+/// nulls when it returned false — for [ProofRejected]. A throw still reaches
+/// `consumeInbound`, which answers `proofInvalid` as before.
 final class _AsReceived implements ProofVerifier {
-  const _AsReceived(this.inner, this.json);
+  const _AsReceived(this.inner, this.json, {required this.onRejected});
 
   final ProofVerifier inner;
   final Map<String, dynamic> json;
+  final void Function(Object? error, StackTrace? stackTrace) onRejected;
 
   @override
-  Future<bool> verify(Map<String, dynamic> doc) => inner.verify(json);
+  Future<bool> verify(Map<String, dynamic> doc) async {
+    final bool ok;
+    try {
+      ok = await inner.verify(json);
+    } on Object catch (error, stackTrace) {
+      onRejected(error, stackTrace);
+      rethrow;
+    }
+    if (!ok) onRejected(null, null);
+    return ok;
+  }
 }
