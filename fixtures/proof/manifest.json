@@ -1,5 +1,5 @@
 {
-  "description": "Shared Data Integrity proof vectors for Trust Task documents. Every library's proof verifier runs every entry, so a document signed by one implementation is checked by all of them (SPEC §4.7). Signed with the Ed25519 key of seed [7; 32] unless noted.",
+  "description": "Shared Data Integrity proof vectors for Trust Task documents. Every library's proof verifier runs every entry, so a document signed by one implementation is checked by all of them (SPEC §4.7). Signed with the Ed25519 key of seed [7; 32] unless noted. An entry's `exceptions` names a runtime that reaches a different result today, and why; that runtime's test asserts the exception, so it fails once the gap closes.",
   "entries": [
     {
       "file": "eddsa-jcs-2022-baseline.json",
@@ -58,6 +58,90 @@
       "cryptosuite": "eddsa-jcs-2022",
       "expect": "invalid",
       "why": "The same response with `disclosed.timeline.checkpointCount` altered after signing. The proof covers the disclosed aggregates, not only the envelope: a Holder cannot adjust what it disclosed without re-signing."
+    },
+    {
+      "file": "eddsa-jcs-2022-purpose-key-agreement.json",
+      "cryptosuite": "eddsa-jcs-2022",
+      "expect": "invalid",
+      "why": "The baseline document correctly signed with proofPurpose keyAgreement. It must fail: a key-agreement key never authorises a signature (SPEC §4.7.3)."
+    },
+    {
+      "file": "eddsa-jcs-2022-purpose-unrecognised.json",
+      "cryptosuite": "eddsa-jcs-2022",
+      "expect": "invalid",
+      "why": "The baseline document correctly signed with proofPurpose `assertion`, which names no verification relationship. It must fail (SPEC §4.7.3): the purpose is the relationship the verifier checks, so one it does not recognise cannot be checked."
+    },
+    {
+      "file": "eddsa-jcs-2022-expired.json",
+      "cryptosuite": "eddsa-jcs-2022",
+      "expect": "invalid",
+      "why": "A correctly signed proof whose `expires` (2026-01-02T00:00:00Z) has passed. It must fail: VC Data Integrity §2.1 makes a proof unusable after its `expires`."
+    },
+    {
+      "file": "eddsa-jcs-2022-expires-future.json",
+      "cryptosuite": "eddsa-jcs-2022",
+      "expect": "valid",
+      "exceptions": {
+        "rust": {
+          "expect": "invalid",
+          "why": "Known gap: affinidi-data-integrity 0.8's proof type has no `expires` member and drops it when parsing, so the signature Rust recomputes leaves out a member the signer covered. trust-tasks-proof refuses any proof carrying `expires` as unsupported until the upstream type gains the member."
+        }
+      },
+      "why": "A correctly signed proof whose `expires` (2999-01-01T00:00:00Z) has not passed. It verifies."
+    },
+    {
+      "file": "eddsa-jcs-2022-expires-february-30.json",
+      "cryptosuite": "eddsa-jcs-2022",
+      "expect": "invalid",
+      "why": "`expires` is 2999-02-30T00:00:00Z, a day February does not have. Every runtime checks each field of `expires` against its range after the shared pattern, rather than relying on its language's own date parser, which in one runtime or another rolls the value over or accepts it."
+    },
+    {
+      "file": "eddsa-jcs-2022-expires-hour-24.json",
+      "cryptosuite": "eddsa-jcs-2022",
+      "expect": "invalid",
+      "why": "`expires` is 2999-01-01T24:00:00Z; hours run 00-23. Every runtime checks each field of `expires` against its range after the shared pattern, rather than relying on its language's own date parser, which in one runtime or another rolls the value over or accepts it."
+    },
+    {
+      "file": "eddsa-jcs-2022-expires-leap-second.json",
+      "cryptosuite": "eddsa-jcs-2022",
+      "expect": "invalid",
+      "why": "`expires` is 2999-12-31T23:59:60Z; seconds run 00-59, and no runtime can know whether a leap second will be inserted. Every runtime checks each field of `expires` against its range after the shared pattern, rather than relying on its language's own date parser, which in one runtime or another rolls the value over or accepts it."
+    },
+    {
+      "file": "eddsa-jcs-2022-expires-offset-24-hours.json",
+      "cryptosuite": "eddsa-jcs-2022",
+      "expect": "invalid",
+      "why": "`expires` carries the offset +24:00; an offset is at most 14:00. Every runtime checks each field of `expires` against its range after the shared pattern, rather than relying on its language's own date parser, which in one runtime or another rolls the value over or accepts it."
+    },
+    {
+      "file": "eddsa-jcs-2022-expires-offset-minute-60.json",
+      "cryptosuite": "eddsa-jcs-2022",
+      "expect": "invalid",
+      "why": "`expires` carries the offset +23:60; offset minutes run 00-59. Every runtime checks each field of `expires` against its range after the shared pattern, rather than relying on its language's own date parser, which in one runtime or another rolls the value over or accepts it."
+    },
+    {
+      "file": "eddsa-jcs-2022-expires-offset-99-hours.json",
+      "cryptosuite": "eddsa-jcs-2022",
+      "expect": "invalid",
+      "why": "`expires` carries the offset +99:00; an offset is at most 14:00. Every runtime checks each field of `expires` against its range after the shared pattern, rather than relying on its language's own date parser, which in one runtime or another rolls the value over or accepts it."
+    },
+    {
+      "file": "eddsa-jcs-2022-small-order-key.json",
+      "cryptosuite": "eddsa-jcs-2022",
+      "expect": "invalid",
+      "why": "Issued by the did:key of the Ed25519 identity point (a key of small order) with R the identity and S = 0. That signature satisfies [S]B = R + [k]A for every message, so a verifier that accepts small-order keys accepts any document from this issuer. RFC 8032 decoding as the libraries apply it, and verify_strict, refuse the key."
+    },
+    {
+      "file": "eddsa-jcs-2022-non-canonical-key.json",
+      "cryptosuite": "eddsa-jcs-2022",
+      "expect": "invalid",
+      "why": "The same signature under the identity point encoded non-canonically (y = p + 1). RFC 8032 §5.1.3 refuses a y of p or more."
+    },
+    {
+      "file": "eddsa-jcs-2022-mixed-order-r.json",
+      "cryptosuite": "eddsa-jcs-2022",
+      "expect": "invalid",
+      "why": "Signed by the seed-7 key with R = rB + T, T a point of order 8, and S = r + k·a. The cofactored equation holds and the cofactorless one does not. Every library checks the cofactorless equation (TypeScript checks it explicitly; @noble alone checks the cofactored one), so all four refuse it."
     }
   ]
 }

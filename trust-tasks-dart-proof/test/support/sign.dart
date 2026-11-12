@@ -67,6 +67,9 @@ final class TestIdentity {
     Map<String, dynamic> doc, {
     DateTime? created,
     String? createdText,
+    String proofPurpose = 'assertionMethod',
+    String? verificationMethod,
+    Map<String, dynamic> extra = const {},
   }) async {
     final unsigned = Map<String, dynamic>.of(doc)..remove('proof');
     final config = <String, dynamic>{
@@ -74,8 +77,9 @@ final class TestIdentity {
       'cryptosuite': cryptosuite,
       'created':
           createdText ?? (created ?? DateTime.now()).toUtc().toIso8601String(),
-      'verificationMethod': signer.didKeyId,
-      'proofPurpose': 'assertionMethod',
+      'verificationMethod': verificationMethod ?? signer.didKeyId,
+      'proofPurpose': proofPurpose,
+      ...extra,
     };
     // ecdsa-jcs-2019 hashes with the curve's own digest: SHA-384 for P-384.
     final digest = signer.signatureScheme == SignatureScheme.ecdsa_p384_sha384
