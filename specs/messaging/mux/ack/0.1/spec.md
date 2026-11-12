@@ -74,7 +74,7 @@ A conforming **consumer** (the mediator) **MUST**:
 
 1. Answer `unsupportedType` ([SPEC §8.3](/SPEC.md#83-standard-error-codes)) when mux is not enabled, and `messaging/mux:notMuxConnection` when the request did not arrive on a mux connection.
 2. For each id: delete the stored message when it is in the principal's inbox, or in the inbox of a member that is on this connection, at the time of the request, with the `delete` scope. List it in `acked` only once it is deleted.
-3. List every other id in `refused`, with `notFound` when the mediator holds no message with that id for the principal or any member of the connection, and `notPermitted` when the message is a member's and the member is not on the connection or lacks `delete`. A refused message is left as it was.
+3. List every other id in `refused`: with `notPermitted` when the message is held for a member this connection carries and the member lacks `delete` (or its account no longer stands), and with `notFound` otherwise. A message held for a DID the connection does not carry **MUST** be answered `notFound`, as if it did not exist: an id is a hash of the message, so telling the two apart would let a principal confirm another DID's mail. A refused message is left as it was.
 4. Answer on the connection the request arrived on. Because acknowledging is idempotent, the consumer **MAY** deliver the response on the connection only, without storing it; a response it does store is acknowledged like any other frame.
 
 An id is the lowercase hexadecimal SHA-256 of the stored message: for a TSP message, of the base64url (no padding) encoding of its qb2 bytes, as for `tsp-ack`; for a DIDComm message, of the message as stored, as a message-pickup delete names it.
@@ -141,7 +141,7 @@ The mediator responds after the deletions, in a payload that validates against t
 
 ### Data carried
 
-Message ids in, the same ids sorted into two lists out. An id is a hash of a message the mediator stores and already delivered on this connection, so it carries nothing the parties did not hold. A producer **MUST NOT** place anything but extension data its ecosystem defines in `ext`.
+Message ids in, the same ids sorted into two lists out. An id is a hash of a message the mediator stores and already delivered on this connection, so it carries nothing the parties did not hold. Because an id is a content hash, a principal could name one it guessed; consumer rule 3 keeps the answer from saying whether anyone else holds such a message. A producer **MUST NOT** place anything but extension data its ecosystem defines in `ext`.
 
 ### Correlation
 
