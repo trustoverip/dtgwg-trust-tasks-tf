@@ -93,8 +93,11 @@ type HostFilter = Arc<dyn Fn(&str) -> bool + Send + Sync>;
 /// the resulting DID document to pull out the named verification method's
 /// key material.
 ///
-/// Every resolution has a deadline and a host policy — see the
-/// [module documentation](self).
+/// Every resolution has a deadline ([`DEFAULT_RESOLUTION_TIMEOUT`], or
+/// [`Self::with_timeout`]) and a host policy: a DID naming `localhost` or a
+/// loopback, private-network or link-local address is refused before the
+/// client is called ([`Self::allow_private_hosts`] opts out), and
+/// [`Self::with_host_filter`] restricts resolution to the hosts it accepts.
 #[derive(Clone)]
 pub struct CachedDidResolver {
     client: Arc<DIDCacheClient>,
