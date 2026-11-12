@@ -1,0 +1,686 @@
+{
+  "$comment": "The spec-examples baseline (#1131), read by scripts/lib/spec-examples.mjs: the latest live spec versions that had no request example, no #response example, or an example whose payload fails its own schema when the lint landed. Keyed by <slug>/<version>, then by rule, with the reason. It may only SHRINK: a finding not listed fails the build, and an entry that no longer applies fails the build until it is deleted. Do not add an entry for a new spec or a new version — write the example.",
+  "exceptions": {
+    "audit/list/0.2": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "audit/verify/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "auth/passkey/enroll/redeem/finish/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "auth/passkey/enroll/redeem/start/0.1": {
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "auth/passkey/login/finish/0.2": {
+      "invalid-request": "Baseline (#1131): example 2 abbreviates `credential` (no id, rawId, type), which the schema requires."
+    },
+    "config/patch/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "config/reload/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "config/restart/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "config/show/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "credential-exchange/issue/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed."
+    },
+    "credential-exchange/offer/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed."
+    },
+    "credential-exchange/pending/approve/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "credential-exchange/pending/deny/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "credential-exchange/pending/list/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "credential-exchange/present/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed."
+    },
+    "credential-exchange/query/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed."
+    },
+    "credential-exchange/request/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed."
+    },
+    "device/disable/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "device/heartbeat/0.3": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "device/list/0.3": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "device/register/0.2": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "device/set-wake/0.2": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "git-ns/bridge/event/0.6": {
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "git-ns/bridge/job/0.7": {
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "git-ns/bridge/result/0.2": {
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "git-ns/drift/resolve/0.4": {
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "git-ns/namespace/bind/0.2": {
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "git-ns/namespace/list/0.2": {
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "git-ns/namespace/reseat/0.4": {
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "git-ns/repo/adopt/0.3": {
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "git-ns/repo/archive/0.3": {
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "git-ns/repo/create/0.4": {
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "git-ns/repo/list/0.2": {
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "git-ns/repo/transfer/0.3": {
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "git-ns/right/break-glass/0.2": {
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "git-ns/right/grant/0.4": {
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "git-ns/right/ratify/0.2": {
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "git-ns/right/revoke/0.4": {
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "git-ns/roles/reproject/0.2": {
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "git-ns/view/0.6": {
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "git-trust/grant/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "git-trust/revoke/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "governance/capability/disable/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "governance/capability/enable/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "governance/capability/list/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "persona/attribute/delete/1.0": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "persona/attribute/get/1.0": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "persona/attribute/list/1.0": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "persona/attribute/promote/1.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "persona/attribute/purge-version/1.0": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "persona/attribute/put/1.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "persona/binding/get/1.0": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "persona/binding/list/1.0": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "persona/binding/set/1.0": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "persona/claim-types/list/1.0": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "persona/contact/delete/1.0": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "persona/correlation/analyze/1.2": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "persona/disclosure/history/1.0": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "persona/disclosure/present/1.0": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "persona/disclosure/preview/1.0": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "persona/local/binding/set/1.0": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "persona/local/profile/delete/1.0": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "persona/local/profile/get/1.0": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "persona/local/profile/list/1.0": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "persona/local/profile/put/1.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "persona/profile/compose/1.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "persona/profile/delete/1.0": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "persona/profile/get/1.0": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "persona/profile/list/1.0": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "persona/profile/put/1.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "persona/profile/reinstate/1.0": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "persona/profile/retire/1.0": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "persona/profile/timeline/1.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "persona/profile/usage/1.0": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "persona/renderers/list/1.0": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "policy/activate/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "policy/active/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "policy/delete/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "policy/evaluate/0.4": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "policy/get/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "policy/list/0.3": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "policy/upsert/0.3": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "provision/integration/0.3": {
+      "invalid-request": "Baseline (#1131): example `request.holder` and `request.nonce` are placeholders that do not match the schema patterns (did:key base58btc, 22-char base64url).",
+      "invalid-response": "Baseline (#1131): example `digestMultibase` and `summary.bundleIdHex` are placeholders that do not match the schema patterns."
+    },
+    "push/provision/0.2": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "push/register/0.2": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "push/wake/0.2": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "registry/authorization/0.2": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "registry/did/rotate/0.2": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "registry/recognition/0.2": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "registry/record/delete/0.2": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "registry/record/put/0.3": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "registry/record/query/0.3": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "rooms/blobs/get/0.2": {
+      "invalid-response": "Baseline (#1131): example `target.url` elides the signature with a literal `…`, which is not a valid URI."
+    },
+    "rooms/blobs/upload/begin/0.2": {
+      "invalid-response": "Baseline (#1131): example `targets[0].url` elides the signature with a literal `…`, which is not a valid URI."
+    },
+    "rooms/epoch/mint/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "rooms/keys/commit/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "rooms/keys/open/0.3": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "rooms/keys/present/0.2": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "rooms/keys/welcome/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "rooms/owner/claim/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "rooms/owner/transfer/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "rooms/records/curate/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "rooms/records/get/0.4": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "rooms/records/list/0.7": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "trust-ceremony-receipt/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed."
+    },
+    "trust-task-next-step/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed."
+    },
+    "vault/delete/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vault/get/0.3": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vault/proxy-login/0.2": {
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vault/release/0.2": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vault/sign-trust-task/0.2": {
+      "missing-response": "Baseline (#1131): no #response example when the lint landed.",
+      "invalid-request": "Baseline (#1131): example 2 omits the required `entryId` and `unsignedEnvelope` and carries members the schema does not declare."
+    },
+    "vault/sync/0.3": {
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vault/upsert/0.4": {
+      "missing-response": "Baseline (#1131): no #response example when the lint landed.",
+      "invalid-request": "Baseline (#1131): example `sealedSecret` predates the current envelope shape (no `envelope`/`jwe`, undeclared members)."
+    },
+    "vault/usage/0.3": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vrc/relationships/issue/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vrc/relationships/propose/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vta/credentials/issue/0.2": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/admin/bootstrap/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/admin/invites/list/0.2": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed."
+    },
+    "vtc/admin/invites/revoke/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/auth/admin-session/0.2": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/auth/recognise/0.3": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/auth/recognise/challenge/0.2": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/backup/export/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/backup/import/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/ceremonies/list/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/community/profile/show/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/community/profile/update/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/config/export/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/config/import/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/directory/disclosure/0.1": {
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/directory/query/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/endorsement-types/delete/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/endorsement-types/list/0.2": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/endorsement-types/register/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/endorsements/issue/0.1": {
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/endorsements/list/0.2": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/endorsements/revoke/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/endorsements/show/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/invitations/issue/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/invitations/list/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/invitations/revoke/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/join-requests/decide/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/join-requests/list/0.2": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/join-requests/show/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/join-requests/status/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/join-requests/submit-receipt/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/join-requests/submit/0.3": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/members/admin-remove/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/members/list/0.2": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/members/personhood/assert/0.2": {
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/members/personhood/challenge/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/members/personhood/revoke/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/members/purge/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/members/removed/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/members/renew/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/members/request-vmc/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/members/rotate-challenge/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/members/rotate/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/members/self-remove-receipt/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/members/self-remove/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/members/show/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/members/solicit-vmc/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/members/update/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/members/vmc/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/policies/test/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/recognition/check/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/registry/diagnostics/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/relationships/graph/0.2": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/relationships/list/0.3": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/relationships/publish/0.2": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/relationships/request/0.2": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/relationships/revoke/0.2": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/website/files/delete/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/website/files/list/0.3": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/website/generations/list/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "vtc/website/rollback/0.1": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "witness/session/0.2": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    },
+    "witness/session/submit/0.2": {
+      "missing-request": "Baseline (#1131): no request example when the lint landed.",
+      "missing-response": "Baseline (#1131): no #response example when the lint landed."
+    }
+  }
+}
