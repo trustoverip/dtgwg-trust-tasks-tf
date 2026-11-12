@@ -34,9 +34,9 @@
     "api-compat": "node scripts/api-compat.mjs"
   },
   "devDependencies": {
-    "@microsoft/api-extractor": "7.59.4",
+    "@microsoft/api-extractor": "7.60.1",
     "@types/node": "^26.2.0",
-    "typescript": "^6.0.0"
+    "typescript": "^7.0.2"
   },
   "license": "Apache-2.0",
   "repository": {
