@@ -158,17 +158,60 @@ pub fn unpack_trust_task<P>(
 where
     P: DeserializeOwned,
 {
-    unpack_received(unpacked).map(|(doc, _, handler)| (doc, handler))
+    let Opened {
+        body,
+        transport,
+        threads,
+    } = open(unpacked)?;
+    let doc: TrustTask<P> =
+        serde_json::from_value(body).map_err(DidcommV1Error::InvalidDocument)?;
+    threads.check(&doc)?;
+    Ok((doc, transport))
 }
 
-/// [`unpack_trust_task`], also returning the document as received — what a
-/// proof is verified over (see `ProofPolicy::with_received`).
-pub(crate) fn unpack_received<P>(
-    unpacked: UnpackResult,
-) -> Result<(TrustTask<P>, serde_json::Value, DidcommV1Handler), DidcommV1Error>
-where
-    P: DeserializeOwned,
-{
+/// An authenticated message of a Trust Task carriage, opened, its attached
+/// document not yet parsed.
+pub(crate) struct Opened {
+    /// The attached document as received — what a proof is verified over.
+    pub(crate) body: Value,
+    /// The authenticated parties and the carriage.
+    pub(crate) transport: DidcommV1Handler,
+    /// The `~thread` fields the sender asserted, for the cross-check.
+    pub(crate) threads: ThreadHeaders,
+}
+
+/// The `~thread` `thid` and `pthid` a message explicitly carried.
+pub(crate) struct ThreadHeaders {
+    thid: Option<String>,
+    pthid: Option<String>,
+}
+
+impl ThreadHeaders {
+    /// Binding thread mapping — compare only where both sides are explicitly
+    /// present. v1's `thid` defaults to the message `@id` and the framework's
+    /// `threadId` falls back to the document's `id`; those are different
+    /// identifiers, so an unconditional comparison would reject conforming
+    /// exchanges.
+    pub(crate) fn check<P>(&self, doc: &TrustTask<P>) -> Result<(), DidcommV1Error> {
+        check_thread(
+            "thid",
+            "threadId",
+            self.thid.as_deref(),
+            doc.thread_id.as_deref(),
+        )?;
+        check_thread(
+            "pthid",
+            "parentThreadId",
+            self.pthid.as_deref(),
+            doc.parent_thread_id.as_deref(),
+        )
+    }
+}
+
+/// Every transport-level rule of [`unpack_trust_task`] — the authenticated-
+/// sender gate, the message-type check and the attachment lookup — stopping
+/// short of parsing the attached document.
+pub(crate) fn open(unpacked: UnpackResult) -> Result<Opened, DidcommV1Error> {
     // A v1 envelope authenticates a verkey, not a DID, so there are two ways to
     // arrive without an attributable sender and they are worth telling apart.
     let authenticated = match unpacked {
@@ -204,37 +247,25 @@ where
         );
     }
 
-    let received = attachment(msg)?;
-    let doc: TrustTask<P> =
-        serde_json::from_value(received.clone()).map_err(DidcommV1Error::InvalidDocument)?;
-
-    // Binding thread mapping — compare only where both sides are explicitly
-    // present. v1's `thid` defaults to the message `@id` and the framework's
-    // `threadId` falls back to the document's `id`; those are different
-    // identifiers, so an unconditional comparison would reject conforming
-    // exchanges.
+    let body = attachment(msg)?;
     // `explicit_thid` rather than the effective one: a defaulted `thid` is a
     // value the transport synthesised from `@id`, not one the sender asserted,
     // and comparing against it would manufacture disagreements.
-    check_thread(
-        "thid",
-        "threadId",
-        msg.explicit_thid(),
-        doc.thread_id.as_deref(),
-    )?;
-    check_thread(
-        "pthid",
-        "parentThreadId",
-        msg.pthid_value(),
-        doc.parent_thread_id.as_deref(),
-    )?;
+    let threads = ThreadHeaders {
+        thid: msg.explicit_thid().map(str::to_string),
+        pthid: msg.pthid_value().map(str::to_string),
+    };
 
-    let handler = DidcommV1Handler::new(
+    let transport = DidcommV1Handler::new(
         Some(authenticated.recipient.to_string()),
         Some(authenticated.sender.to_string()),
     )
     .with_carriage(carriage);
-    Ok((doc, received, handler))
+    Ok(Opened {
+        body,
+        transport,
+        threads,
+    })
 }
 
 /// Which of the binding's two carriages a message arrived on.
