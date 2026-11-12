@@ -110,7 +110,8 @@ async fn sender(secret: &Secret, my_did: &str) -> Result<(), Box<dyn std::error:
     let capabilities = grant::CapabilityScopeCeiling::try_from(
         grant::CapabilityScopeCeiling::builder().scope("ceiling"),
     )?;
-    let purposes = grant::PurposeScopeAny::try_from(grant::PurposeScopeAny::builder().scope("any"))?;
+    let purposes =
+        grant::PurposeScopeAny::try_from(grant::PurposeScopeAny::builder().scope("any"))?;
     let entry: grant::AclEntry = grant::AclEntry::builder()
         .subject("did:web:carol.example")
         .role("moderator")
