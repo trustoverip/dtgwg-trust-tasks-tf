@@ -15,7 +15,12 @@ environment:
   sdk: ^3.3.0
 
 dependencies:
-  trust_tasks: ^0.9.3
+  # The floor is the oldest published core this package's lib/ and example/
+  # compile against; the `packages` job in dart.yml checks it with
+  # `dart pub downgrade`. Raise it when this package starts using newer core API.
+  # 0.9.23: trust_task_discovery/v0_4 (added in 0.9.22; 0.9.11-0.9.22 never
+  # reached pub.dev, so 0.9.23 is the first core that has it).
+  trust_tasks: ^0.9.23
   # The client only. It runs on the web and in Flutter as well as the VM; the
   # server's dart:io adapter lives in a separate library so that it does not
   # take the web away from the client.

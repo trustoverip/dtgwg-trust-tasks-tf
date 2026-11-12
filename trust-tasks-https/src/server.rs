@@ -223,9 +223,9 @@ impl HttpsServerBuilder {
 
     /// Plug in an in-band [`ProofVerifier`]. When configured, the
     /// server verifies the `proof` member of every proof-bearing
-    /// document and rejects with `proof_invalid` on failure; when
+    /// document and rejects with `proofInvalid` on failure; when
     /// absent, the server rejects proof-bearing documents with
-    /// `malformed_request` (the
+    /// `malformedRequest` (the
     /// [`PROOF_NOT_ACCEPTED_BY_POLICY`](trust_tasks_rs::PROOF_NOT_ACCEPTED_BY_POLICY)
     /// rule — matches `consume_inbound` under
     /// [`ProofPolicy::RejectIfPresent`](trust_tasks_rs::ProofPolicy::RejectIfPresent)).
@@ -892,12 +892,12 @@ async fn dispatch_handler(
     //
     //   * Verifier configured (`HttpsServerBuilder::with_verifier`):
     //     mirror `ProofPolicy::Verify` — proof-bearing documents are
-    //     verified, failure rejects `proof_invalid`. Proofless
+    //     verified, failure rejects `proofInvalid`. Proofless
     //     documents proceed; the per-spec `IS_PROOF_REQUIRED` check in
     //     the dispatch closure catches REQUIRED specs.
     //
     //   * No verifier (default): mirror `ProofPolicy::RejectIfPresent`
-    //     — proof-bearing documents are rejected `malformed_request`
+    //     — proof-bearing documents are rejected `malformedRequest`
     //     with the framework-shared `PROOF_NOT_ACCEPTED_BY_POLICY`
     //     wire message. Silently dropping a producer's proof would
     //     mislead them about the exchange's integrity guarantees, and
@@ -1249,7 +1249,7 @@ fn build_error_response(
     let new_id = format!("urn:uuid:{}", Uuid::new_v4());
     match (handler, request) {
         (Some(h), Some(req)) => {
-            // Apply §8.1 routing — identity_mismatch goes to the
+            // Apply §8.1 routing — identityMismatch goes to the
             // transport-authenticated peer (or is suppressed; we still
             // synthesise the document for the HTTP body, but route the
             // outbound recipient correctly).
@@ -1280,7 +1280,7 @@ fn build_error_response(
 }
 
 /// When `TransportHandler::reject` returns `None` (no transport-
-/// authenticated sender under identity_mismatch), the framework rule
+/// authenticated sender under identityMismatch), the framework rule
 /// (SPEC §8.1) is that the consumer SHOULD NOT emit a response. HTTP
 /// gives us no way to "not emit" — the TCP connection already exists and
 /// the peer is waiting for a status line. We therefore emit the *same*

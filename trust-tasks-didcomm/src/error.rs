@@ -123,7 +123,7 @@ impl DidcommError {
     /// [`TransportHandler::reject`](trust_tasks_rs::TransportHandler::reject).
     ///
     /// The mapping is intentionally conservative: all envelope-level
-    /// failures collapse to `malformed_request`, since from the
+    /// failures collapse to `malformedRequest`, since from the
     /// framework's perspective the bytes simply did not yield a
     /// well-formed Trust Task document.
     ///

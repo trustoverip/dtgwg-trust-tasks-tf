@@ -230,8 +230,9 @@ function main() {
   console.log('load-bearing prose only you can write. Start with ## Abstract and the four');
   console.log('## Security & Privacy sub-headings; the build lints for those by name.');
   console.log('');
-  console.log('When the schema is final: regenerate the bindings and bump both libraries');
-  console.log('in the same PR (see CONTRIBUTING-SPECS.md → "Regenerate the bindings").');
+  console.log('When the schema is final: regenerate all four libraries (Rust, TS, Go, Dart)');
+  console.log('in the same PR, and do NOT bump a version or write a CHANGELOG entry — the');
+  console.log('Release PR does that (see CONTRIBUTING-SPECS.md → "Regenerate the bindings").');
 }
 
 /* ── Templates ───────────────────────────────────────────────────────────── */

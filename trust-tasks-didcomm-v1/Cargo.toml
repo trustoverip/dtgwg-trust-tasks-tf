@@ -6,6 +6,7 @@ rust-version = "1.95"
 license.workspace = true
 repository.workspace = true
 description = "DIDComm v1 transport binding for the Trust Tasks framework, built on affinidi-messaging-didcomm-v1. Carries Trust Task documents to Aries-lineage agents, which speak v1 only, and maps the connection's theirDid into the framework's §4.8.1 precedence."
+readme = "README.md"
 keywords = ["trust-tasks", "didcomm", "aries", "did", "transport"]
 categories = ["network-programming", "cryptography"]
 publish = true

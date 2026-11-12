@@ -17,7 +17,6 @@ import (
 	"crypto/rand"
 	"encoding/json"
 	"strings"
-	"time"
 
 	tt "github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/trusttasks"
 )
@@ -61,7 +60,12 @@ func ptr[T any](v T) *T { return &v }
 // [NewAttempt].
 func freshID() string {
 	var b [16]byte
-	_, _ = rand.Read(b[:])
+	if _, err := rand.Read(b[:]); err != nil {
+		// A document id needs entropy. Ignoring the error would mint the same
+		// all-zero id every time, which the peer's item-11 record then reads as
+		// an idConflict; fail loudly instead, as the tsp module's NewURNUUID does.
+		panic("trust-tasks: crypto/rand failed: " + err.Error())
+	}
 	b[6] = (b[6] & 0x0f) | 0x40
 	b[8] = (b[8] & 0x3f) | 0x80
 	const hexd = "0123456789abcdef"
@@ -74,7 +78,9 @@ func freshID() string {
 	return "urn:uuid:" + string(buf)
 }
 
-func nowRFC3339() string { return time.Now().UTC().Format(time.RFC3339) }
+// nowRFC3339 stamps issuedAt through the core's SystemClock: UTC, whole
+// seconds (SPEC §13.1 item 3; #970).
+func nowRFC3339() string { return tt.SystemClock() }
 
 // BuildDocument builds a capability Trust Task addressed issuerDID → recipientDID.
 //

@@ -103,7 +103,8 @@ version: "0.1"                     # MUST match the version-folder name
 title: ACL — Grant
 summary: One-sentence elevator pitch.
 status: draft                      # draft | candidate | standard | retired
-targetFrameworkVersion: "0.4.0"    # framework version this spec targets. MAJOR.MINOR.PATCH
+targetFrameworkVersion: "0.6.0"    # framework version this spec targets — the latest one;
+                                   # `npm run new-spec` fills it in. MAJOR.MINOR.PATCH
                                    # (preferred, matches the canonical spec repo) or MAJOR.MINOR
 category: access-control           # must be one of the TT_CATEGORIES ids
 keywords: [acl, access-control, grant]   # optional — see below
@@ -193,7 +194,8 @@ A specification that defines a fire-and-forget task (no success response documen
 
 Every example block **SHOULD** be a complete JSON object — including framework members like `id`, `type`, `issuer`, `recipient`, `issuedAt`, and (where required) `proof` — so a reader can copy, modify, and use it directly. Pair request and response examples by `threadId` so the round trip is visible. Comment briefly before each example on what it demonstrates.
 
-See `specs/acl/grant/0.1/spec.md` for a worked example.
+See the latest version under `specs/acl/grant/` for a worked example — not an
+earlier one, which predates requirements a new specification must meet.
 
 ## Decisions, holds and repeated requests
 

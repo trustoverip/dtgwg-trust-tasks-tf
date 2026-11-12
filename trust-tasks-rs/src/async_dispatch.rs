@@ -250,7 +250,7 @@ impl<Ctx, R> AsyncDispatcher<Ctx, R> {
     /// §4.3).
     ///
     /// None of the rejections this method can produce carry the
-    /// `identity_mismatch` transport-routing exception, so the §8.1 safe
+    /// `identityMismatch` transport-routing exception, so the §8.1 safe
     /// default (address the original producer) applies to all of them.
     ///
     /// `ErrorResponse` is intentionally large; boxing it in the `Err`

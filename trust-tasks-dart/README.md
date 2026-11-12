@@ -33,12 +33,18 @@ and implements neither.
 The package's own library exports the **runtime only**. Dart's `export` is flat
 — there is no namespaced re-export — so exporting 500 generated libraries from
 one barrel would collide on the first shared definition anyone calls `Ext`.
-Import the specification you need directly, with a prefix:
+Import the specification you need directly, with a prefix — from the library
+`dart run trust_tasks:generate` wrote into your own package:
 
 ```dart
 import 'package:trust_tasks/trust_tasks.dart';
-import 'package:trust_tasks/specs/acl/grant/v0_2/payload.dart' as acl_grant;
+import 'package:my_app/trust_tasks/acl/grant/v0_3/payload.dart' as acl_grant; // generated
 ```
+
+The prebuilt library of the same version
+(`package:trust_tasks/specs/acl/grant/v0_3/payload.dart`) has the same surface,
+so moving off it is a change to the import line; it is deprecated with the rest
+of the prebuilt tree.
 
 Each generated library exports a uniform surface:
 
@@ -54,9 +60,9 @@ becomes `specs/acl/change_role/v0_2/payload.dart`.
 
 ## Consuming a document
 
-`consumeInbound` runs SPEC §7.2 items 2 and 4–8, plus the two stateful checks —
-the freshness bound of item 4 and the duplicate-execution record of item 11 —
-and then either calls your handler or builds the correctly-routed error response
+`consumeInbound` runs SPEC §7.2 items 2–8, plus the two stateful checks — the
+duplicate-execution record of item 11 and the freshness bound of item 13 — and
+then either calls your handler or builds the correctly-routed error response
 per §8.1.
 
 Read the body with `parseTrustTaskDocument`, which never throws.

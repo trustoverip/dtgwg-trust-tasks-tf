@@ -9,7 +9,7 @@ document type and a `TransportHandler` trait that lets concrete transports
 (REST, DIDComm, message queues, ...) plug their identity, integrity, and
 freshness semantics into a single validation pipeline.
 
-The framework specification this crate implements is [`SPEC.md`](../SPEC.md).
+The framework specification this crate implements is [`SPEC.md`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/SPEC.md).
 
 > **The prebuilt specification modules under `specs::` are deprecated** (all but
 > the framework's own `trust-task-*` families) and will be removed in a future
@@ -253,7 +253,7 @@ codegen can't produce.
 |---|---|
 | _(default)_ | `all-specs` — the framework crate plus every generated spec family, which is what the crate has always shipped |
 | `all-specs` | Every top-level spec family |
-| one per family | `acl`, `audit`, `auth`, `chat`, `config`, `confirm`, `consent`, `credential-exchange`, `device`, `did-management`, `git-trust`, `governance`, `keys`, `messaging`, `policy`, `provision`, `push`, `registry`, `sync`, `task-consent`, `vault`, `vrc`, `vta`, `vtc`, `webvh`, `witness` — the `specs::<family>` module tree and nothing else |
+| one per family | `acl`, `vault`, `keys`, … — one per top-level directory under `specs/`, listed in the `[features]` table of this crate's `Cargo.toml`; each is the `specs::<family>` module tree and nothing else |
 | `validate` | Runtime JSON Schema validation. Pulls in [`jsonschema`](https://crates.io/crates/jsonschema) and exposes a `validate` module + `ValidatedPayload` impls for every generated request payload. Belt-and-suspenders over serde's structural decoding — catches `pattern`, `minItems`, and `additionalProperties` constraints that the typed structs can't always encode. |
 
 ### Generating only the tasks you use
@@ -268,18 +268,19 @@ features. See the `trust-tasks-build` README.
 
 ### Compiling only the families you use
 
-`specs/` is 941 generated modules and ~66 MB of source, across 34 feature-gated families. Depending on the crate
-with default features compiles all of it. If you use three tasks, say so:
+`specs/` is well over a thousand generated modules and over 90 MB of source,
+one feature-gated family per top-level directory. Depending on the crate with
+default features compiles all of it — minutes and over 16 GB of memory for a
+cold build. If you use one family, say so:
 
-```toml
-[dependencies]
-trust-tasks-rs = { version = "0.34", default-features = false, features = ["vault"] }
+```sh
+cargo add trust-tasks-rs --no-default-features --features vault
 ```
 
-Rebuilding the crate alone, with dependencies cached and `CARGO_INCREMENTAL=0`,
-on an Apple-silicon laptop: **14 s** for the default feature set, about **1 s**
-for `vault` or `acl` alone. On a CI runner the gap is wider in memory than in
-time — the default set needs several GB to compile, one family about 1 GB.
+A single family builds in seconds and about 1 GB (`cargo test -p
+trust-tasks-rs --no-default-features --features vault` takes about 13 s cold,
+dependencies cached). These prebuilt modules are deprecated either way; the
+section above is the replacement.
 
 The framework surface — `TrustTask`, the §7.2 consume pipeline, the transport
 traits, `ErrorPayload`, discovery — is always compiled, along with the five
@@ -309,5 +310,5 @@ landed and for the versioning rules.
 
 ## License
 
-Apache-2.0. See [`../SOURCE_CODE.md`](../SOURCE_CODE.md) for the source-code
-licensing terms of this repository.
+Apache-2.0 — see
+[`LICENSE`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/trust-tasks-rs/LICENSE), included in the published crate.

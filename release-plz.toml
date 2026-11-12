@@ -9,9 +9,9 @@
 # So merging a feature PR never releases anything, and a release is a reviewable
 # diff rather than a side effect of a merge. See RELEASING.md.
 #
-# WHAT GETS PUBLISHED is decided in each crate's Cargo.toml, not here. Most
-# crates publish; `trust-tasks-codegen` sets `publish = false` because it is the
-# internal generator. release-plz honours that flag — it still updates an
+# WHAT GETS PUBLISHED is decided in each crate's Cargo.toml, not here. Every
+# workspace crate publishes except those that set `publish = false`:
+# `trust-tasks-codegen` (the internal generator) and the example applications. release-plz honours that flag — it still updates an
 # unpublished crate's version and dependency requirements so the workspace stays
 # coherent, it just never uploads it. Keeping the decision in the manifests
 # means cargo and release-plz cannot disagree about it.
@@ -48,7 +48,10 @@ semver_check = false
 # section. This is what an external consumer lands on from crates.io.
 git_release_enable = true
 
-# Label the Release PR so it is obvious in the queue and easy to filter.
+# Unused now: release-plz no longer opens the Release PR (`release-plz update`
+# reads no PR settings). scripts/release-pr.sh applies the `release` label
+# itself, with `gh pr create --label release`. Kept so a return to release-plz's
+# own `release-pr` would label it the same way.
 pr_labels = ["release"]
 
 # Don't compile each tarball at publish time — rust.yml's `package-workspace`

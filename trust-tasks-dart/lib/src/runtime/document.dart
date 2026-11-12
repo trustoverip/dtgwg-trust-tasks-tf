@@ -563,16 +563,15 @@ class RejectReason {
 /// side. Build error responses with [rejectWith] / [rejectWithRecipient], or
 /// read the URI from here; do not spell it out again.
 ///
-/// The counterparts are `trust_task_error_type_uri()` in trust-tasks-rs,
-/// `TRUST_TASK_ERROR_TYPE_URI` in @openvtc/trust-tasks and
-/// `TrustTaskErrorTypeURI` in trust-tasks-go, all kept equal to this value.
-/// `scripts/check-bindings-conformance.mjs` enforces it.
+/// The counterparts are `TRUST_TASK_ERROR_TYPE_URI` in trust-tasks-rs and
+/// @openvtc/trust-tasks and `TrustTaskErrorTypeURI` in trust-tasks-go, all kept
+/// equal to this value. `scripts/check-bindings-conformance.mjs` enforces it.
 ///
-/// `0.5` because this runtime populates the `inResponseTo` member of §8.2 and
-/// can emit `idConflict` (§8.3), which is absent from `0.3`'s code enum and does
-/// not match its extended-code pattern — a document carrying it would not
-/// validate as `0.3`. Per §5.2 forward-minor compatibility a `0.3` consumer
-/// SHOULD accept it.
+/// The version is the one whose schema covers what this runtime writes: the
+/// `inResponseTo` member of §8.2 and every standard code it can emit. Per §5.2
+/// forward-minor compatibility a consumer of an earlier `0.x` SHOULD accept it.
+/// Moving it is a change to this constant alone; do not restate the number in
+/// prose.
 const String trustTaskErrorTypeUri =
     'https://trusttasks.org/spec/trust-task-error/0.6';
 

@@ -243,8 +243,8 @@ jobs:
   # The Data Integrity proof backend is a SEPARATE Go module (trust-tasks-go/proof)
   # like tsp — the core `./...` jobs above do not reach it. Unlike tsp it pulls in
   # no third-party code (it rolls the cryptosuites on the standard library), so its
-  # only requirement is the core module, and there is no unpublished dependency
-  # blocking a release; wiring one is a follow-up.
+  # only requirement is the core module. Released on its own
+  # trust-tasks-go/proof/vX.Y.Z tag (publish.yml's publish-go matrix).
   proof:
     name: go test trust-tasks-go/proof (${{ matrix.go }})
     runs-on: ubuntu-24.04
@@ -286,7 +286,8 @@ jobs:
   # (trust-tasks-go/didcomm) like tsp and proof — the core `./...` jobs do not
   # reach it. It rolls DIDComm v2.1 authcrypt (ECDH-1PU + A256KW + A256CBC-HS512)
   # on the standard library's crypto/ecdh, so like proof it pulls in no
-  # third-party code and needs only the core module. Not release-wired yet.
+  # third-party code and needs only the core module. Released on its own
+  # trust-tasks-go/didcomm/vX.Y.Z tag (publish.yml's publish-go matrix).
   didcomm:
     name: go test trust-tasks-go/didcomm (${{ matrix.go }})
     runs-on: ubuntu-24.04

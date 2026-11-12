@@ -16,9 +16,9 @@ on:
   # filter and the requirement are mutually exclusive, and of the two it is the
   # requirement that carries its weight.
   #
-  # The whole workflow costs well under a minute (the four jobs ran 16s, 9s and
-  # change on their last green board), which is not a price worth paying a
-  # correctness gap for.
+  # The workflow is no longer cheap — it now builds Rust for the equivalence
+  # checks and runs api-extractor over the whole package — but a skipped
+  # required check is a correctness gap, and that is the dearer of the two.
   pull_request:
 
 # A newer push to the same PR supersedes the run in flight, so cancel it rather

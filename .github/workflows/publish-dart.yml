@@ -29,10 +29,13 @@ name: Publish Dart
 #   trust_tasks_proof  trust-tasks-dart-proof/   trust-tasks-dart-proof-v{{version}}
 #   trust_tasks_https  trust-tasks-dart-https/   trust-tasks-dart-https-v{{version}}
 #   trust_tasks_didcomm trust-tasks-dart-didcomm/ trust-tasks-dart-didcomm-v{{version}}
+#   trust_tasks_capability_client
+#                      trust-tasks-dart-capability-client/
+#                                                trust-tasks-dart-capability-client-v{{version}}
 #
 # The patterns cannot collide: `trust-tasks-dart-v` never prefixes
-# `trust-tasks-dart-proof-v`, `trust-tasks-dart-https-v` or
-# `trust-tasks-dart-didcomm-v`. Adding a package means a row here, a tag pattern
+# `trust-tasks-dart-proof-v`, `trust-tasks-dart-https-v`,
+# `trust-tasks-dart-didcomm-v` or `trust-tasks-dart-capability-client-v`. Adding a package means a row here, a tag pattern
 # below, a `case` arm in `resolve`, an entry in the `tag-dart` matrix in
 # publish.yml, and one in DART_PACKAGES in scripts/release-pr.sh.
 #
