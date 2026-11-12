@@ -4,3 +4,4 @@ pub mod create;
 pub mod keys;
 pub mod recover;
 pub mod update;
+pub mod upgrade;

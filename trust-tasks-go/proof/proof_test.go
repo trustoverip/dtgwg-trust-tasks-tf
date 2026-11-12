@@ -138,7 +138,7 @@ func TestInteropReproducesRustSignatureByteForByte(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	signed, err := signer.Sign(loadFixture(t), SignOptions{Created: created})
+	signed, err := signer.Sign(loadFixture(t), SignOptions{Created: created, ProofPurpose: rustProof["proofPurpose"].(string)})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -325,6 +325,9 @@ func TestSharedProofVectors(t *testing.T) {
 			File        string `json:"file"`
 			Cryptosuite string `json:"cryptosuite"`
 			Expect      string `json:"expect"`
+			Exceptions  map[string]struct {
+				Expect string `json:"expect"`
+			} `json:"exceptions"`
 		} `json:"entries"`
 	}
 	if err := json.Unmarshal(b, &manifest); err != nil {
@@ -344,7 +347,11 @@ func TestSharedProofVectors(t *testing.T) {
 				t.Fatal(err)
 			}
 			err = v.Verify(context.Background(), doc)
-			switch e.Expect {
+			expect := e.Expect
+			if x, ok := e.Exceptions["go"]; ok {
+				expect = x.Expect
+			}
+			switch expect {
 			case "valid":
 				if err != nil {
 					t.Errorf("expected valid, got %v", err)
@@ -415,4 +422,124 @@ func TestCaseVariantMembersAreRefused(t *testing.T) {
 			t.Fatalf("verify: %v", err)
 		}
 	})
+}
+
+// signWithConfig signs doc over exactly the proof configuration given, so a
+// test can produce a correctly signed proof carrying members Sign never writes
+// (expires) or values it refuses (a non-signing proofPurpose).
+func signWithConfig(t *testing.T, signer *Signer, doc json.RawMessage, config map[string]any) json.RawMessage {
+	t.Helper()
+	var body map[string]any
+	if err := json.Unmarshal(doc, &body); err != nil {
+		t.Fatal(err)
+	}
+	config["type"] = "DataIntegrityProof"
+	config["cryptosuite"] = string(suiteForCurve(signer.curve))
+	config["verificationMethod"] = signer.VerificationMethod
+	hashData, err := hashDataFor(signer.curve, config, body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	signature, err := signer.sign(hashData)
+	if err != nil {
+		t.Fatal(err)
+	}
+	config["proofValue"] = toMultibase(signature)
+	body["proof"] = config
+	out, err := json.Marshal(body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return out
+}
+
+func TestProofPurposeMustNameASigningRelationship(t *testing.T) {
+	v := NewVerifier(WithClock(laterClock()))
+	signer := seededSigner(t, Ed25519, 1)
+	for _, purpose := range SigningPurposes {
+		t.Run(purpose, func(t *testing.T) {
+			signed := signWithConfig(t, signer, grant(t, signer.DID, "admin"), map[string]any{
+				"created": "2026-01-01T00:00:00Z", "proofPurpose": purpose,
+			})
+			if err := v.Verify(context.Background(), signed); err != nil {
+				t.Errorf("verify: %v", err)
+			}
+		})
+	}
+	for _, purpose := range []string{"keyAgreement", "assertion", "AUTHENTICATION", "authentication "} {
+		t.Run(purpose, func(t *testing.T) {
+			signed := signWithConfig(t, signer, grant(t, signer.DID, "admin"), map[string]any{
+				"created": "2026-01-01T00:00:00Z", "proofPurpose": purpose,
+			})
+			if got := kindOf(t, v.Verify(context.Background(), signed)); got != MalformedProof {
+				t.Errorf("kind = %s, want malformedProof", got)
+			}
+		})
+	}
+}
+
+func TestSignDefaultsToAuthenticationAndRefusesNonSigningPurposes(t *testing.T) {
+	signer := seededSigner(t, Ed25519, 1)
+	signed, err := signer.Sign(grant(t, signer.DID, "admin"), SignOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var doc map[string]any
+	_ = json.Unmarshal(signed, &doc)
+	if got := doc["proof"].(map[string]any)["proofPurpose"]; got != "authentication" {
+		t.Errorf("default proofPurpose = %v, want authentication", got)
+	}
+	for _, purpose := range []string{"keyAgreement", "assertion"} {
+		if _, err := signer.Sign(grant(t, signer.DID, "admin"), SignOptions{ProofPurpose: purpose}); err == nil {
+			t.Errorf("signing with proofPurpose %q should fail", purpose)
+		}
+	}
+}
+
+func TestExpires(t *testing.T) {
+	now := time.Date(2026, 6, 1, 12, 0, 0, 0, time.UTC)
+	v := NewVerifier(WithClock(func() time.Time { return now }))
+	signer := seededSigner(t, Ed25519, 1)
+	sign := func(expires any) json.RawMessage {
+		return signWithConfig(t, signer, grant(t, signer.DID, "admin"), map[string]any{
+			"created": "2026-06-01T11:00:00Z", "proofPurpose": "authentication", "expires": expires,
+		})
+	}
+
+	if err := v.Verify(context.Background(), sign("2026-06-01T12:00:01Z")); err != nil {
+		t.Errorf("an unexpired proof: %v", err)
+	}
+	if err := v.Verify(context.Background(), sign("2026-06-01T12:00:00Z")); err != nil {
+		t.Errorf("a proof at its expires instant: %v", err)
+	}
+	for _, ok := range []string{"2028-02-29T00:00:00Z", "2027-01-01T00:00:00+14:00", "2027-01-01T00:00:00-12:59", "2027-01-01T23:59:59.999999999Z"} {
+		if err := v.Verify(context.Background(), sign(ok)); err != nil {
+			t.Errorf("expires %s: %v", ok, err)
+		}
+	}
+	for name, expires := range map[string]any{
+		"passed":                       "2026-06-01T11:59:59Z",
+		"passed, offset":               "2026-06-01T13:59:59+02:00",
+		"no zone":                      "2027-01-01T00:00:00",
+		"not a string":                 float64(1767225600),
+		"not a date":                   "tomorrow",
+		"date only":                    "2027-01-01",
+		"impossible month":             "2027-13-01T00:00:00Z",
+		"February 30":                  "2027-02-30T00:00:00Z",
+		"February 29, not a leap year": "2027-02-29T00:00:00Z",
+		"hour 24":                      "2027-01-01T24:00:00Z",
+		"minute 60":                    "2027-01-01T00:60:00Z",
+		"leap second":                  "2027-01-01T00:00:60Z",
+		"offset +24:00":                "2027-01-01T00:00:00+24:00",
+		"offset +23:60":                "2027-01-01T00:00:00+23:60",
+		"offset +14:01":                "2027-01-01T00:00:00+14:01",
+		"offset -99:00":                "2027-01-01T00:00:00-99:00",
+		"empty":                        "",
+	} {
+		t.Run(name, func(t *testing.T) {
+			if got := kindOf(t, v.Verify(context.Background(), sign(expires))); got != MalformedProof {
+				t.Errorf("kind = %s, want malformedProof", got)
+			}
+		})
+	}
 }
