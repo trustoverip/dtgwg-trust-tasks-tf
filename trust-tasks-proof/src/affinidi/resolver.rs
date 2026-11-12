@@ -436,7 +436,10 @@ mod host_tests {
             did_host("did:webs:127.0.0.1%3A7676:Eaid").as_deref(),
             Some("127.0.0.1")
         );
-        assert_eq!(did_host("did:web:%5B::1%5D%3A80").as_deref(), Some("::1"));
+        assert_eq!(
+            did_host("did:web:%5B%3A%3A1%5D%3A80").as_deref(),
+            Some("::1")
+        );
         assert_eq!(
             did_host("did:scid:vh:1:QmScid?src=10.0.0.5%3A8000").as_deref(),
             Some("10.0.0.5")
