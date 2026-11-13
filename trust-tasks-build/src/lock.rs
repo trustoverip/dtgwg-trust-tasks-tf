@@ -41,7 +41,8 @@ use sha2::{Digest, Sha256};
 
 use crate::bundle::Bundle;
 use crate::names::{
-    is_official_type_uri, is_reserved_slug, is_source_name, official_type_uri, type_uri_parts,
+    is_official_type_uri, is_reserved_slug, is_source_name, is_spec_slug, is_spec_version,
+    official_type_uri, type_uri_parts,
 };
 
 /// The lockfile shape this crate reads.
@@ -201,6 +202,22 @@ impl LockedTask {
     pub(crate) fn check_identity(&self) -> Result<()> {
         let id = self.display_id();
         let v = &self.version;
+        // The slug and version become path segments of the vendored bundle's
+        // location (`bundle_path`), so both must have their SPEC §6.1 / §5.1
+        // form before anything else is compared — for an official entry the
+        // Type URI is built from these same strings and so cannot vouch for them.
+        if !is_spec_slug(&self.slug) {
+            return Err(anyhow!(
+                "{id}/{v}: `{}` is not a SPEC §6.1 slug (`/`-separated segments of \
+                 lowercase letters, digits and single hyphens)",
+                self.slug
+            ));
+        }
+        if !is_spec_version(v) {
+            return Err(anyhow!(
+                "{id}/{v}: `{v}` is not a SPEC §5.1 version (MAJOR.MINOR)"
+            ));
+        }
         let Some(source) = &self.source else {
             if self.type_uri != official_type_uri(&self.slug, v) {
                 return Err(anyhow!(
