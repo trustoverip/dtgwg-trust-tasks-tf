@@ -218,7 +218,20 @@ impl<Ctx, R> AsyncDispatcher<Ctx, R> {
                 crate::extension::prune_forward(&mut doc.payload, schema)?;
             }
         }
-        self.handlers[&target](doc, ctx).await
+        self.dispatch_routed(&target, doc, ctx).await
+    }
+
+    /// [`Self::dispatch`] for a document already routed to `target` (a key
+    /// [`Self::route`] returned) and, along a forward route, already pruned —
+    /// as [`consume_dispatched`](crate::consume_dispatched) has done by the
+    /// time it dispatches, so it does not route and prune a second time.
+    pub(crate) async fn dispatch_routed(
+        &self,
+        target: &str,
+        doc: TrustTask<Value>,
+        ctx: Ctx,
+    ) -> Result<R, RejectReason> {
+        self.handlers[target](doc, ctx).await
     }
 
     /// The registered key `type_uri` routes to, and whether it is a forward

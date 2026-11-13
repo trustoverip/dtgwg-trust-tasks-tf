@@ -12,8 +12,8 @@
 //!
 //! Each scenario runs a warm-up, then several timed rounds of fresh documents
 //! (every `id` distinct, so each is a first delivery that is claimed and
-//! recorded), and prints the median round's microseconds per request. An
-//! argument runs only the scenarios whose name contains it.
+//! recorded), and prints the best and the median round's microseconds per
+//! request. An argument runs only the scenarios whose name contains it.
 
 use std::time::Instant;
 
@@ -23,7 +23,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use tower::Service;
 use trust_tasks_https::{BearerAuth, HttpsServer};
-use trust_tasks_rs::{InMemoryReplayGuard, Payload, RequestPayload};
+use trust_tasks_rs::{InMemoryReplayGuard, Payload, PayloadValidator, RequestPayload};
 
 const SERVER_VID: &str = "did:web:server.example";
 const ALICE: &str = "did:web:alice.example";
@@ -100,13 +100,39 @@ fn request(bytes: Vec<u8>) -> Request<Body> {
         .unwrap()
 }
 
-async fn scenario(name: &str, type_uri: &str, entries: usize, extra: bool, per_round: usize) {
+/// A validator that reads the whole payload and accepts it, so a scenario
+/// measures what the pipeline spends handing the payload to one rather than
+/// what a schema check costs.
+struct ReadsEverything;
+
+impl PayloadValidator for ReadsEverything {
+    fn validate(&self, _schema_json: &str, payload: &Value) -> Result<(), String> {
+        fn count(v: &Value) -> usize {
+            match v {
+                Value::Array(items) => items.iter().map(count).sum::<usize>() + 1,
+                Value::Object(members) => members.values().map(count).sum::<usize>() + 1,
+                _ => 1,
+            }
+        }
+        std::hint::black_box(count(payload));
+        Ok(())
+    }
+}
+
+async fn scenario(
+    name: &str,
+    type_uri: &str,
+    entries: usize,
+    extra: bool,
+    validate: bool,
+    per_round: usize,
+) {
     if let Some(filter) = std::env::args().nth(1) {
         if !name.contains(&filter) {
             return;
         }
     }
-    let server = HttpsServer::builder()
+    let mut builder = HttpsServer::builder()
         .local_vid(SERVER_VID)
         .with_auth(BearerAuth::from_pairs([("alice", ALICE)]))
         // The default guard's per-issuer share would refuse one sender's
@@ -116,9 +142,11 @@ async fn scenario(name: &str, type_uri: &str, entries: usize, extra: bool, per_r
             Ok(RecordResponse {
                 count: req.payload.entries.len(),
             })
-        })
-        .build();
-    let mut router = server.into_router();
+        });
+    if validate {
+        builder = builder.with_payload_validator(ReadsEverything);
+    }
+    let mut router = builder.build().into_router();
 
     let size = body(type_uri, 0, entries, extra).len();
     let rounds = 7;
@@ -148,7 +176,8 @@ async fn scenario(name: &str, type_uri: &str, entries: usize, extra: bool, per_r
     }
     per_request.sort_by(f64::total_cmp);
     println!(
-        "{name:<34} {size:>8} B  {:>9.2} µs/request (median of {rounds} rounds of {per_round})",
+        "{name:<34} {size:>7} B  best {:>8.2}  median {:>8.2} µs/request ({rounds} rounds of {per_round})",
+        per_request[0],
         per_request[rounds / 2],
     );
 }
@@ -158,9 +187,27 @@ async fn main() {
     trust_tasks_rs::extension::declare_extends(EXTENDS);
     let v01 = Record::TYPE_URI;
     let v02 = "https://example.test/spec/bench/record/0.2";
-    scenario("typical (3 entries)", v01, 3, false, 20_000).await;
-    scenario("medium (100 entries)", v01, 100, false, 2_000).await;
-    scenario("large (1500 entries)", v01, 1500, false, 200).await;
-    scenario("forward route, typical (0.2→0.1)", v02, 3, true, 20_000).await;
-    scenario("forward route, medium (0.2→0.1)", v02, 100, true, 2_000).await;
+    scenario("typical (3 entries)", v01, 3, false, false, 20_000).await;
+    scenario("medium (100 entries)", v01, 100, false, false, 2_000).await;
+    scenario("large (1500 entries)", v01, 1500, false, false, 200).await;
+    scenario(
+        "forward route, typical (0.2→0.1)",
+        v02,
+        3,
+        true,
+        false,
+        20_000,
+    )
+    .await;
+    scenario(
+        "forward route, medium (0.2→0.1)",
+        v02,
+        100,
+        true,
+        false,
+        2_000,
+    )
+    .await;
+    scenario("validated, typical", v01, 3, false, true, 20_000).await;
+    scenario("validated, medium", v01, 100, false, true, 2_000).await;
 }

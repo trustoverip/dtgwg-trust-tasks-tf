@@ -86,7 +86,7 @@ use chrono::{DateTime, Utc};
 use serde::Serialize;
 use serde_json::Value;
 
-use crate::canonical::{canonical_json, sha256_hex};
+use crate::canonical::canonical_sha256_hex;
 use crate::document::TrustTask;
 use crate::error::RejectReason;
 use crate::freshness::FreshnessPolicy;
@@ -126,9 +126,7 @@ pub fn document_digest<P: Serialize>(
     doc: &TrustTask<P>,
 ) -> Result<DocumentDigest, serde_json::Error> {
     let value = serde_json::to_value(doc)?;
-    Ok(DocumentDigest(sha256_hex(
-        canonical_json(&value).as_bytes(),
-    )))
+    Ok(DocumentDigest(canonical_sha256_hex(&value)))
 }
 
 /// [`document_digest`] over a document as it arrived, rather than over a
@@ -139,7 +137,7 @@ pub fn document_digest<P: Serialize>(
 /// does. The two digests agree whenever the typed reading re-serialises to the
 /// received document.
 pub fn received_document_digest(received: &Value) -> DocumentDigest {
-    DocumentDigest(sha256_hex(canonical_json(received).as_bytes()))
+    DocumentDigest(canonical_sha256_hex(received))
 }
 
 /// What a [`ReplayGuard`] says about a document offered for execution.
