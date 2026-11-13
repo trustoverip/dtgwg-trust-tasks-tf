@@ -34,6 +34,8 @@ import { checkMemberCasing } from './lib/member-casing.mjs';
 import { findGeneratorKeywords } from './lib/generator-keywords.mjs';
 import { checkWireConventions } from './lib/wire-conventions.mjs';
 import { checkStaleReferences } from './lib/stale-references.mjs';
+import { checkMemberDescriptions } from './lib/member-descriptions.mjs';
+import { checkCurrentFramework } from './lib/spec-lifecycle.mjs';
 import { checkSpecExamples } from './lib/spec-examples.mjs';
 import { checkSchemaBounds } from './lib/schema-bounds.mjs';
 import { incompatibilities, frontMatterIncompatibilities } from './lib/schema-compat.mjs';
@@ -2562,6 +2564,9 @@ function main() {
     warn,
     log: console.log,
   });
+  // #1132: the description ratchet, and the current framework version.
+  checkMemberDescriptions({ specsDir: SPECS_DIR, fail, warn, log: console.log });
+  checkCurrentFramework({ root: ROOT, fail, log: console.log });
   checkStaleReferences({
     specsDir: SPECS_DIR,
     allowlistPath: path.join(ROOT, 'scripts', 'lib', 'stale-references-allowlist.json'),
