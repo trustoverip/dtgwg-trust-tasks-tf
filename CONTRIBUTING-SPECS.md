@@ -195,7 +195,7 @@ After the closing `---`, write the human-readable specification: Abstract, Statu
 
 ## Request and Response sections
 
-A specification that defines both a request document and a success-response document **MUST** organize its `spec.md` body around two H2 sections — `## Request` and `## Response` — placed immediately after `## Definitions` and before `## Security & Privacy`. The framework's `#request` / `#response` fragment convention (see [SPEC.md §4.4.1](SPEC.md#441-request-and-response-variants)) maps directly to these anchor names: clicking a Trust Task `type` URL like `https://trusttasks.org/spec/acl/grant/0.1#response` lands the reader on the rendered spec page at the **Response** section.
+A specification that defines both a request document and a success-response document **MUST** organize its `spec.md` body around two H2 sections — `## Request` and `## Response` — placed immediately after `## Definitions` and before `## Security & Privacy`. The framework's `#request` / `#response` fragment convention (see [SPEC.md §4.4.1](SPEC.md#441-request-and-response-variants)) maps directly to these anchor names: clicking a Trust Task `type` URL like `https://trusttasks.org/spec/acl/grant/0.3#response` lands the reader on the rendered spec page at the **Response** section.
 
 The shape:
 
@@ -225,7 +225,7 @@ Three framework rules decide which reply form a task uses. Settle them when you 
 | Creating something | register, grant, create, issue | Refused with a task-specific code (`alreadyRegistered`, `alreadyGranted`). |
 | Missing target | any | Refused with a task-specific code, which **MAY** be the same as "exists but you may not see it". |
 
-`keys/revoke/0.1`, `git-trust/grant/0.1` and `vtc/relationships/revoke/0.1` show each kind.
+`keys/revoke/0.1`, `git-trust/grant/0.1` and `vtc/relationships/revoke/0.2` show each kind.
 
 ## The `## Authorization` section
 
@@ -253,7 +253,7 @@ Item 15 binds specifications whose `targetFrameworkVersion` is `0.4` or later. A
 
 | Spec | Why it is worth reading |
 |---|---|
-| [`witness/session/submit/0.1`](specs/witness/session/submit/0.1/spec.md) | Two pieces of evidence, and why a foreign submission is `challengeMismatch` and not `presentationInvalid` — the presentation is well-formed, and the defect is entitlement |
+| [`witness/session/submit/0.2`](specs/witness/session/submit/0.2/spec.md) | Two pieces of evidence, and why a foreign submission is `challengeMismatch` and not `presentationInvalid` — the presentation is well-formed, and the defect is entitlement |
 | [`vrc/relationships/issue/0.1`](specs/vrc/relationships/issue/0.1/spec.md) | Authority comes from a prior accepted proposal; two proofs are on the exchange and neither is the authorization |
 | [`auth/refresh/0.1`](specs/auth/refresh/0.1/spec.md) | Bearer possession as the entire authority — and how saying so explains why `proof` is optional and why rotation is the only theft signal available |
 | [`push/register/0.2`](specs/push/register/0.2/spec.md) | The no-evidence case, and how to write it without leaving a reader guessing |
@@ -317,7 +317,7 @@ Write framework cross-references **root-relative**:
 [SPEC §4.5.1](/SPEC.md#451-the-ext-extension-member)
 ```
 
-Not `../../../../SPEC.md#…`. The `../` count is a function of how deep your slug is — four from `auth/passkey/enroll/start/0.1`, three from `acl/grant/0.1` — which makes the link's correctness a property of where the file sits rather than of what it says. It then breaks when a spec moves, when a slug gains a segment, and above all when you copy a paragraph from a neighbouring spec at a different depth, which is how most specs get written. 135 such links across 65 files had drifted before the build started checking them, and they were broken on the live site, not merely wrong in the repo.
+Not `../../../../SPEC.md#…`. The `../` count is a function of how deep your slug is — four from `auth/passkey/enroll/start/0.2`, three from `acl/grant/0.3` — which makes the link's correctness a property of where the file sits rather than of what it says. It then breaks when a spec moves, when a slug gains a segment, and above all when you copy a paragraph from a neighbouring spec at a different depth, which is how most specs get written. 135 such links across 65 files had drifted before the build started checking them, and they were broken on the live site, not merely wrong in the repo.
 
 `/SPEC.md#anchor` is the same string from every depth. The website's renderer resolves it onto the rendered `/specification` page at the right heading — a better destination than the relative form ever reached, which was a raw markdown download — and `npm run build` validates it from the repository root, so a wrong anchor path still fails the build.
 
@@ -445,7 +445,7 @@ Where the specification defines a success-response document, both shapes live in
 ```jsonc
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://trusttasks.org/spec/acl/grant/0.1",
+  "$id": "https://trusttasks.org/spec/acl/grant/0.3",
   "type": "object",
   "additionalProperties": false,
   "required": ["subject", "role", "after"],

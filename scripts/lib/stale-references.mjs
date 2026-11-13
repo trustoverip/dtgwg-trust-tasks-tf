@@ -114,12 +114,13 @@ const LATER = /^[^\n]{0,3}\b(or later|and later|onwards?)\b/;
  * `{ kind, file, line, index, target, version, latest, text }`. `index` is the
  * offset of the version number itself, so the fixer rewrites only that.
  */
-function referencesIn(slug, dir, specsDir, reg) {
+function referencesIn(slug, dir, specsDir, reg, { files = ['spec.md', 'payload.schema.json', 'payload.invalid-examples.json'], doc = false, binding = false } = {}) {
   const found = [];
-  for (const file of ['spec.md', 'payload.schema.json', 'payload.invalid-examples.json']) {
+  for (const file of files) {
     const full = path.join(dir, file);
     if (!fs.existsSync(full)) continue;
     const text = fs.readFileSync(full, 'utf8');
+    const markdown = file.endsWith('.md');
     const lines = text.split('\n');
     const lineStarts = [0];
     for (let i = 0; i < text.length; i++) if (text[i] === '\n') lineStarts.push(i + 1);
@@ -135,7 +136,7 @@ function referencesIn(slug, dir, specsDir, reg) {
     };
     // Per-line context for spec.md: front matter, a fenced block, a Changes section, or prose.
     const context = [];
-    if (file === 'spec.md') {
+    if (markdown) {
       let front = lines[0] === '---';
       let fence = false;
       let changes = 0; // the heading level of the history section we are in, or 0
@@ -145,7 +146,7 @@ function referencesIn(slug, dir, specsDir, reg) {
           if (i > 0 && line === '---') front = false;
           return;
         }
-        if (line.startsWith('```')) {
+        if (/^\s*(```|~~~)/.test(line)) {
           fence = !fence;
           context.push('fence');
           return;
@@ -160,7 +161,9 @@ function referencesIn(slug, dir, specsDir, reg) {
       });
     }
     const seen = new Set();
-    const consider = (target, version, versionAt) => {
+    // `written` is the version as it appears in the text: `0.2`, or `0_2` in a
+    // generated module path (`acl/grant/v0_2`, `acl::grant::v0_2`).
+    const consider = (target, version, versionAt, written = version) => {
       if (target === slug || !reg.latestLive.has(target) || seen.has(versionAt)) return;
       if (target === 'trust-task-error') return; // SPEC §8.1 routes to the current version; checkBindingErrorSpecPin owns it
       const latest = reg.latestLive.get(target);
@@ -172,11 +175,17 @@ function referencesIn(slug, dir, specsDir, reg) {
       const ln = lineOf(versionAt);
       const where = context[ln] ?? 'json';
       if (where === 'front' || where === 'changes') return;
-      const after = text.slice(versionAt + version.length, lineStarts[ln + 1] ?? text.length);
+      const after = text.slice(versionAt + written.length, lineStarts[ln + 1] ?? text.length);
       if (LATER.test(after)) return;
       const line = lines[ln];
       let kind;
-      if (file === 'spec.md') {
+      if (doc && !binding) {
+        // A document outside the registry states no conformance: a version in
+        // prose is a text reference the fixer moves; one in a code block or a
+        // full Type URI is a sample a person checks against the new version.
+        const typeUri = /trusttasks\.org\/spec\/$/.test(text.slice(versionAt - target.length - 30, versionAt - target.length - 1));
+        kind = where === 'fence' || typeUri ? 'example' : 'text';
+      } else if (markdown) {
         // The sentence around the reference, which may run across lines (a paragraph ends at a blank line).
         const from = Math.max(text.lastIndexOf('. ', versionAt), text.lastIndexOf('\n\n', versionAt), 0);
         const ends = [text.indexOf('. ', versionAt), text.indexOf('\n\n', versionAt)].filter((i) => i >= 0);
@@ -202,7 +211,7 @@ function referencesIn(slug, dir, specsDir, reg) {
       // History: `since X`, `added in X`, `introduced in X`, `until X`.
       const before = text.slice(Math.max(lineStarts[ln], versionAt - target.length - 60), versionAt - target.length);
       if (/\b(since|added in|introduced in|introduced by|until|before)\b[^.;:]{0,25}$/i.test(before)) return;
-      found.push({ kind, file, line: ln + 1, index: versionAt, target, version, latest, text: line.trim() });
+      found.push({ kind, file, line: ln + 1, index: versionAt, target, version, latest, written, replacement: written === version ? latest : latest.replace('.', '_'), text: line.trim() });
     };
     for (const m of text.matchAll(TYPE_URI)) {
       consider(m[1], m[2], m.index + m[0].length - m[2].length);
@@ -210,6 +219,13 @@ function referencesIn(slug, dir, specsDir, reg) {
     for (const m of text.matchAll(BARE)) {
       const [, ups, rel, version] = m;
       let target = rel;
+      if (doc && !ups && !reg.latestLive.has(rel)) {
+        // A path through a directory that mirrors the registry
+        // (`specs/acl/grant/0.2/`, `trust-tasks-ts/src/acl/grant/0.2/payload.ts`).
+        const mirrored = mirroredSlug(rel, reg);
+        if (mirrored) consider(mirrored, version, m.index + m[0].length - version.length);
+        continue;
+      }
       if (ups || !reg.latestLive.has(rel)) {
         // A relative path: resolve it against the referencing directory.
         const resolved = path.relative(specsDir, path.resolve(dir, `${ups}${rel}`)).split(path.sep).join('/');
@@ -218,8 +234,35 @@ function referencesIn(slug, dir, specsDir, reg) {
       }
       consider(target, version, m.index + m[0].length - version.length);
     }
+    if (doc) {
+      // A generated module path: `acl/grant/v0_2` (Go, Dart, TypeScript
+      // consumer trees) or `acl::grant::v0_2` (Rust), snake_case or not.
+      for (const m of text.matchAll(MODULE_PATH)) {
+        const [, rel, major, minor] = m;
+        const slashed = rel.replace(/::/g, '/');
+        const target = mirroredSlug(slashed, reg) ?? mirroredSlug(slashed.replace(/_/g, '-'), reg);
+        if (!target) continue;
+        const written = `${major}_${minor}`;
+        consider(target, `${major}.${minor}`, m.index + m[0].length - written.length, written);
+      }
+    }
   }
   return found;
+}
+
+const MODULE_PATH = /(?<![a-z0-9/._:-])([a-z0-9][a-z0-9_-]*(?:(?:\/|::)[a-z0-9_-]+)*)(?:\/|::)v(\d+)_(\d+)(?![\d_])/g;
+const MIRROR_ROOTS = new Set(['specs', 'src', 'lib', 'tasks', 'trust_tasks', 'trust-tasks']);
+
+/** The registry slug a path through a mirroring directory names, or null. */
+function mirroredSlug(rel, reg) {
+  if (reg.latestLive.has(rel)) return rel;
+  const parts = rel.split('/');
+  for (let i = 1; i < parts.length; i++) {
+    if (!MIRROR_ROOTS.has(parts[i - 1])) continue;
+    const candidate = parts.slice(i).join('/');
+    if (reg.latestLive.has(candidate)) return candidate;
+  }
+  return null;
 }
 
 /** Every finding across the registry, with allowlisted ones marked. */
@@ -238,10 +281,118 @@ export function staleReferences(specsDir, allowlist = {}) {
   return out;
 }
 
-export function checkStaleReferences({ specsDir, allowlistPath, fail, warn, log }) {
+// ── Documents outside the registry (#1129) ──────────────────────────────────
+
+// Directories never walked: generated trees (every one mirrors the registry
+// under a `specs` directory), dependencies, build output and test fixtures,
+// whose old versions are the point of the fixture.
+const SKIP_DIRS = new Set(['.git', 'node_modules', 'target', 'website', 'specs', 'dist', 'build', '.dart_tool', '.test-build', 'fixtures', 'testdata', 'vendor', '.claude', 'fixture-registry']);
+
+// A glob (`docs/adr/**`, `**/CHANGELOG.md`) as a RegExp over a root-relative path.
+function globRe(glob) {
+  let re = '';
+  for (let i = 0; i < glob.length; i++) {
+    const c = glob[i];
+    if (c === '*' && glob[i + 1] === '*') {
+      re += glob[i + 2] === '/' ? '(?:.*/)?' : '.*';
+      i += glob[i + 2] === '/' ? 2 : 1;
+    } else if (c === '*') re += '[^/]*';
+    else re += c.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
+  }
+  return new RegExp(`^${re}$`);
+}
+
+/**
+ * The documents the check reads: every `*.md` outside `specs/` (and outside
+ * the directories above) and every `trust-tasks.toml` under `examples/`. Of a
+ * binding, only its latest version: a superseded binding keeps the
+ * references it was published with, as a superseded spec does.
+ */
+export function documentFiles(root) {
+  const out = [];
+  (function walk(dir) {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (!SKIP_DIRS.has(entry.name)) walk(full);
+      } else if (entry.name.endsWith('.md') || (entry.name === 'trust-tasks.toml' && /^examples\//.test(path.relative(root, full).split(path.sep).join('/')))) {
+        out.push(path.relative(root, full).split(path.sep).join('/'));
+      }
+    }
+  })(root);
+  const bindingLatest = new Map();
+  for (const f of out) {
+    const m = f.match(/^bindings\/(.+)\/(\d+\.\d+)\/[^/]+$/);
+    if (m && (!bindingLatest.has(m[1]) || compareVersions(m[2], bindingLatest.get(m[1])) > 0)) bindingLatest.set(m[1], m[2]);
+  }
+  return out
+    .filter((f) => {
+      const m = f.match(/^bindings\/(.+)\/(\d+\.\d+)\/[^/]+$/);
+      return !m || bindingLatest.get(m[1]) === m[2];
+    })
+    .sort();
+}
+
+/** The `[tasks]` pins of a trust-tasks.toml, as findings-shaped references. */
+function tomlReferences(root, file, reg) {
+  const text = fs.readFileSync(path.join(root, file), 'utf8');
+  const found = [];
+  let section = '';
+  let offset = 0;
+  text.split('\n').forEach((line, i) => {
+    const header = line.match(/^\s*\[([^\]]+)\]/);
+    if (header) section = header[1].trim();
+    const pin = section === 'tasks' && line.match(/^\s*"?([a-z0-9][a-z0-9/-]*)"?\s*=\s*"(\d+\.\d+)"/);
+    if (pin) {
+      const [, target, version] = pin;
+      const latest = reg.latestLive.get(target);
+      if (latest && compareVersions(version, latest) < 0 && !reg.extended(target, latest).has(version)) {
+        const index = offset + line.lastIndexOf(`"${version}"`) + 1;
+        // A pin is what the application generates and implements: moving it is a code change.
+        found.push({ kind: 'example', file, line: i + 1, index, target, version, latest, written: version, replacement: latest, text: line.trim() });
+      }
+    }
+    offset += line.length + 1;
+  });
+  return found;
+}
+
+/**
+ * Every stale reference in a document outside the registry, with allowlisted
+ * ones marked. `allowlist` is the `documents` member of
+ * stale-references-allowlist.json: `history` (glob → reason) names documents
+ * that are about the past as a whole; `exceptions` (path → `<slug>/<version>`
+ * → reason) names one deliberate reference.
+ */
+export function documentStaleReferences(root, specsDir, allowlist = {}, files = documentFiles(root)) {
+  const reg = registry(specsDir);
+  const history = Object.keys(allowlist.history ?? {}).map((g) => [g, globRe(g)]);
+  const out = [];
+  for (const file of files) {
+    const historyGlob = history.find(([, re]) => re.test(file))?.[0];
+    const found = file.endsWith('.toml')
+      ? tomlReferences(root, file, reg)
+      : referencesIn(null, path.join(root, path.dirname(file)), specsDir, reg, {
+          files: [path.basename(file)],
+          doc: true,
+          // A binding is a specification: its prose is classified as a spec's is.
+          binding: file.startsWith('bindings/'),
+        }).map((f) => ({ ...f, file }));
+    for (const f of found) {
+      const key = `${f.target}/${f.version}`;
+      out.push({ ...f, dir: root, historyGlob, allowed: Boolean(historyGlob || allowlist.exceptions?.[file]?.[key]) });
+    }
+  }
+  return out;
+}
+
+export function checkStaleReferences({ specsDir, allowlistPath, fail, warn, log, root = path.dirname(specsDir), documents = true }) {
   let allowlist;
+  let documentAllowlist;
   try {
-    allowlist = JSON.parse(fs.readFileSync(allowlistPath, 'utf8')).exceptions ?? {};
+    const parsed = JSON.parse(fs.readFileSync(allowlistPath, 'utf8'));
+    allowlist = parsed.exceptions ?? {};
+    documentAllowlist = parsed.documents ?? {};
   } catch (e) {
     // Never fail open: a check that cannot read its allowlist checks nothing.
     fail(path.relative(path.dirname(specsDir), allowlistPath), `could not be read: ${e.message}`);
@@ -284,5 +435,49 @@ export function checkStaleReferences({ specsDir, allowlistPath, fail, warn, log 
     `  Stale references: ${counts.wire} wire pin(s), ${counts.normative} normative value(s), ${counts.example} example(s), ` +
       `${counts.text} text reference(s) ` +
       `name a superseded version; ${counts.allowed} documented exception(s)`
+  );
+  if (!documents) return;
+
+  // Documents outside the registry (#1129): READMEs, guides, bindings, example pins.
+  const docFindings = documentStaleReferences(root, specsDir, documentAllowlist);
+  const docUsed = new Set();
+  const docCounts = { example: 0, text: 0, normative: 0, history: 0, allowed: 0 };
+  for (const f of docFindings) {
+    const key = `${f.target}/${f.version}`;
+    if (f.historyGlob) {
+      docCounts.history++;
+      continue;
+    }
+    if (f.allowed) {
+      docCounts.allowed++;
+      docUsed.add(`${f.file}\u0000${key}`);
+      continue;
+    }
+    docCounts[f.kind] = (docCounts[f.kind] ?? 0) + 1;
+    const fix =
+      f.file.endsWith('.toml')
+        ? `It is a pin the example application generates and implements, so move it — and the code using it — by hand.`
+        : f.kind === 'text'
+          ? `Run \`npm run fix-stale-references\`.`
+          : f.kind === 'normative'
+            ? `It says what a conforming implementation emits or accepts, so moving it changes conformance — decide by hand.`
+            : `It is in a code sample or a full Type URI, so update it by hand and check the sample fits ${f.target}/${f.latest}.`;
+    fail(
+      `${f.file}:${f.line}`,
+      `names ${key}, superseded by ${f.target}/${f.latest}. ${fix} If the old version is meant, add "${key}" under ` +
+        `"${f.file}" in the \`documents.exceptions\` of scripts/lib/stale-references-allowlist.json with the reason.`
+    );
+  }
+  for (const [file, entries] of Object.entries(documentAllowlist.exceptions ?? {})) {
+    for (const key of Object.keys(entries)) {
+      if (!docUsed.has(`${file}\u0000${key}`)) {
+        warn(`stale-references-allowlist.json: "${key}" for ${file} is no longer found — delete the entry`);
+      }
+    }
+  }
+  log(
+    `  Stale references in documents: ${docCounts.text} text reference(s), ${docCounts.example} sample(s) or pin(s), ` +
+      `${docCounts.normative} normative binding value(s) name a superseded version; ${docCounts.allowed} documented ` +
+      `exception(s), ${docCounts.history} in history documents`
   );
 }
