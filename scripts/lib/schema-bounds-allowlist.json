@@ -1,0 +1,436 @@
+{
+  "$comment": "The schema-bounds baseline, read by scripts/lib/schema-bounds.mjs: request-side arrays without maxItems, `limit` without maximum, `cursor` without maxLength, and URL members without a URI format and scheme constraint, in the latest live spec versions when the lint landed. Keyed by <slug>/<version> (or a shared schema file), then by \"<rule> <pointer>\", with the reason. It may only SHRINK: a finding not listed fails the build, and an entry that no longer applies fails the build until it is deleted. Do not add an entry for a new spec or a new version — declare the bound.",
+  "exceptions": {
+    "acl/_shared/0.3/acl-entry.schema.json": {
+      "array-max-items /$defs/ApproveCapabilityScopeListed/properties/grants": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/AuthorityScopeContexts/properties/contexts": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/CapabilityScopeListed/properties/grants": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/KeyScopeListed/properties/keys": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "audit/list/0.2": {
+      "cursor-max-length /properties/cursor": "Baseline: no maxLength when the lint landed; the next version declares one."
+    },
+    "auth/_shared/0.1/webauthn.schema.json": {
+      "array-max-items /$defs/AttestationResponse/properties/response/properties/transports": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/CredentialDescriptor/properties/transports": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/CredentialRequestOptions/properties/allowCredentials": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "auth/authenticate/0.3": {
+      "array-max-items /properties/scope": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "auth/passkey/enroll/invite/0.3": {
+      "array-max-items /properties/scopes": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "url-scheme /$defs/Response/properties/invite/properties/url": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "auth/refresh/0.2": {
+      "array-max-items /properties/scope": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "auth/step-up/approve-request/0.5": {
+      "array-max-items /properties/accepts": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "auth/step-up/approver/invite/0.2": {
+      "url-scheme /$defs/Response/properties/url": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "auth/step-up/policy/0.2": {
+      "array-max-items /properties/floors": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "chat/message/0.1": {
+      "array-max-items /properties/attachments": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /properties/mentions": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "config/show/0.1": {
+      "array-max-items /properties/keys": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "device/_shared/0.2/device-binding.schema.json": {
+      "array-max-items /$defs/WakeTriggerPolicy/properties/allowedTriggers": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "url-scheme /$defs/PushRegistration/oneOf/2/properties/endpoint": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "device/list/0.3": {
+      "cursor-max-length /properties/cursor": "Baseline: no maxLength when the lint landed; the next version declares one."
+    },
+    "device/set-wake/0.2": {
+      "array-max-items /properties/suggestedTriggers": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "did-management/_shared/0.3/registered-instance.schema.json": {
+      "url-scheme /$defs/RegisteredInstance/properties/publicUrl": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "did-management/_shared/0.3/service-instance.schema.json": {
+      "url-scheme /$defs/ServiceInstance/properties/publicUrl": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "did-management/did/list/0.2": {
+      "cursor-max-length /properties/cursor": "Baseline: no maxLength when the lint landed; the next version declares one."
+    },
+    "did-management/registry/admin-register/0.2": {
+      "array-max-items /properties/servedDomains": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "url-scheme /properties/publicUrl": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "did-management/server/config/0.1": {
+      "url-scheme /$defs/Response/properties/didHostingUrl": "Baseline: no scheme constraint when the lint landed; the next version declares one.",
+      "url-scheme /$defs/Response/properties/publicUrl": "Baseline: no scheme constraint when the lint landed; the next version declares one.",
+      "url-scheme /$defs/Response/properties/vta/properties/url": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "did-management/server/register/0.2": {
+      "array-max-items /properties/enabledMethods": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /properties/servedDomains": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "url-scheme /properties/publicUrl": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "did-management/server/stats-sync/0.1": {
+      "array-max-items /properties/buckets": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /properties/perMnemonic": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "git-ns/account/list/0.2": {
+      "cursor-max-length /properties/cursor": "Baseline: no maxLength when the lint landed; the next version declares one."
+    },
+    "git-ns/activity/list/0.3": {
+      "cursor-max-length /properties/cursor": "Baseline: no maxLength when the lint landed; the next version declares one."
+    },
+    "git-ns/bridge/event/0.6": {
+      "array-max-items /properties/drift": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "git-ns/bridge/job/0.7": {
+      "array-max-items /properties/desiredRoles": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /properties/removeAccounts": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /properties/steps": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "git-ns/bridge/job/list/0.4": {
+      "cursor-max-length /properties/cursor": "Baseline: no maxLength when the lint landed; the next version declares one."
+    },
+    "git-ns/bridge/result/0.2": {
+      "array-max-items /properties/steps": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "git-ns/projection/show/0.3": {
+      "cursor-max-length /properties/cursor": "Baseline: no maxLength when the lint landed; the next version declares one."
+    },
+    "git-ns/right/issued-by-departed/0.3": {
+      "cursor-max-length /properties/cursor": "Baseline: no maxLength when the lint landed; the next version declares one."
+    },
+    "git-ns/right/list/0.3": {
+      "cursor-max-length /properties/cursor": "Baseline: no maxLength when the lint landed; the next version declares one."
+    },
+    "governance/_shared/0.1/governance.schema.json": {
+      "array-max-items /$defs/CapabilityManifest/properties/externalAdapters": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/CapabilityManifest/properties/lifecycleHooks": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/CapabilityManifest/properties/roles/additionalProperties": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/CapabilityManifest/properties/specs": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/CapabilityManifest/properties/vocabulary/properties/actions": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "keys/list/0.2": {
+      "cursor-max-length /properties/cursor": "Baseline: no maxLength when the lint landed; the next version declares one.",
+      "limit-maximum /properties/limit": "Baseline: no maximum when the lint landed; the next version declares one."
+    },
+    "keys/sign-csr/0.1": {
+      "url-scheme /properties/subjectAltNames/properties/uri": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "messaging/_shared/0.3/mediator-ops.schema.json": {
+      "array-max-items /$defs/MembershipFilter/properties/changes": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/MembershipFilter/properties/sources": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/MembershipFilter/properties/wires": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/MonitorFilter/properties/channels": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/MonitorFilter/properties/directions": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/MonitorFilter/properties/protocols": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/MonitorFilter/properties/stages": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "messaging/access-list/list/0.1": {
+      "array-max-items /properties/entries": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "cursor-max-length /properties/cursor": "Baseline: no maxLength when the lint landed; the next version declares one."
+    },
+    "messaging/access-list/update/0.1": {
+      "array-max-items /properties/add": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /properties/remove": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "messaging/account/list/0.2": {
+      "cursor-max-length /properties/cursor": "Baseline: no maxLength when the lint landed; the next version declares one."
+    },
+    "messaging/acl/get/0.1": {
+      "array-max-items /properties/dids": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "messaging/message/list/0.1": {
+      "cursor-max-length /properties/cursor": "Baseline: no maxLength when the lint landed; the next version declares one."
+    },
+    "messaging/queue/list/0.1": {
+      "cursor-max-length /properties/cursor": "Baseline: no maxLength when the lint landed; the next version declares one."
+    },
+    "policy/list/0.3": {
+      "cursor-max-length /properties/cursor": "Baseline: no maxLength when the lint landed; the next version declares one."
+    },
+    "policy/upsert/0.3": {
+      "array-max-items /properties/appliesTo": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "process-attestation/0.1": {
+      "array-max-items /properties/disclosure": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "url-scheme /$defs/ReceiptReference/oneOf/0/properties/uri": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "provision/integration/0.3": {
+      "array-max-items /$defs/BootstrapRequest/properties/@context": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/BootstrapRequest/properties/type": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "registry/record/query/0.3": {
+      "cursor-max-length /properties/cursor": "Baseline: no maxLength when the lint landed; the next version declares one."
+    },
+    "rooms/keys/backfill/0.2": {
+      "limit-maximum /properties/limit": "Baseline: no maximum when the lint landed; the next version declares one."
+    },
+    "rooms/keys/chain/0.2": {
+      "array-max-items /properties/links": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "rooms/owner/issue-authority/0.3": {
+      "array-max-items /properties/actions": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "task-consent/request/0.1": {
+      "array-max-items /properties/consequences": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /properties/effects": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "trust-ceremony-receipt/0.1": {
+      "array-max-items /properties/steps": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "trust-task-next-step/0.1": {
+      "array-max-items /properties/expects": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "vault/_shared/0.2/vault-entry.schema.json": {
+      "array-max-items /$defs/SiteTarget/oneOf/3/properties/sha256CertFingerprints": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/VaultEntry/properties/attachments": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/VaultEntry/properties/customFieldNames": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/VaultEntry/properties/selectors": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/VaultEntry/properties/tags": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/VaultEntry/properties/targets": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "vault/_shared/0.3/vault-entry.schema.json": {
+      "array-max-items /$defs/SiteTarget/oneOf/3/properties/sha256CertFingerprints": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "vault/list/0.4": {
+      "cursor-max-length /properties/cursor": "Baseline: no maxLength when the lint landed; the next version declares one."
+    },
+    "vault/upsert/0.4": {
+      "array-max-items /properties/clearFields": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /properties/customFieldNames": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /properties/selectors": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /properties/tags": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /properties/targets": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "vault/usage/0.3": {
+      "array-max-items /properties/kindFilter": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "cursor-max-length /properties/cursor": "Baseline: no maxLength when the lint landed; the next version declares one."
+    },
+    "vetting/_shared/0.1/hidden-vetting.schema.json": {
+      "array-max-items /$defs/PublishedConfig/properties/events": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/PublishedConfig/properties/tokenLabels": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/PublishedConfig/properties/vetterLabels": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/PublishedEvent/properties/tiers": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/StatementMeta/properties/claimsVerified": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "vetting/session/0.1": {
+      "array-max-items /properties/optionalClaims": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /properties/requiredClaims": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "voting/_shared/0.1/voting.schema.json": {
+      "array-max-items /$defs/Answer/properties/choice": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/Answer/properties/ranking": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "voting/_shared/0.4/voting.schema.json": {
+      "array-max-items /$defs/Answer/properties/choice": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/Answer/properties/ranking": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/Manifest/properties/board/properties/auditors": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/RollRule/properties/listed": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/Trustees/properties/dids": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "vta/_shared/0.1/backup-transfer.schema.json": {
+      "url-scheme /$defs/StreamDescriptor/properties/transportUrl": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "vta/_shared/0.1/context.schema.json": {
+      "array-max-items /$defs/ContextPolicy/properties/presentableTypes": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/ContextPolicy/properties/signableKeys": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/ContextPolicy/properties/trustedVerifiers": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "vta/_shared/0.8/service.schema.json": {
+      "url-scheme /$defs/DrainEntry/properties/endpoint": "Baseline: no scheme constraint when the lint landed; the next version declares one.",
+      "url-scheme /$defs/ServiceState/properties/url": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "vta/_shared/0.9/did-template.schema.json": {
+      "array-max-items /$defs/DidTemplate/properties/keyRoles": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/DidTemplate/properties/keys/additionalProperties/properties/algorithms": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/DidTemplate/properties/methods": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/DidTemplate/properties/requiredVars": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "vta/app-state/list/1.1": {
+      "cursor-max-length /properties/cursor": "Baseline: no maxLength when the lint landed; the next version declares one."
+    },
+    "vta/dids/_shared/0.1/key-roles.schema.json": {
+      "array-max-items /$defs/RecoveryCustodian/properties/participants": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/RoleLayout/properties/algorithms": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/ThresholdRecoveryCommitment/properties/members": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "vta/dids/keys/list/1.0": {
+      "array-max-items /properties/roles": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "vta/dids/keys/rotate/1.0": {
+      "array-max-items /properties/replace": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "vta/dids/recover/1.1": {
+      "array-max-items /properties/history": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "vta/dids/upgrade/1.0": {
+      "array-max-items /properties/layout": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "vta/health/details/0.1": {
+      "url-scheme /$defs/Response/properties/mediatorUrl": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "vta/memory/list/0.3": {
+      "cursor-max-length /properties/cursor": "Baseline: no maxLength when the lint landed; the next version declares one."
+    },
+    "vta/passkey-vms/enroll-submit/0.2": {
+      "array-max-items /properties/transports": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "vta/pcs/attest/0.1": {
+      "array-max-items /$defs/AttestMeta/properties/claimsVerified": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "vta/services/enable/1.1": {
+      "url-scheme /properties/config/properties/url": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "vta/services/update/1.2": {
+      "url-scheme /properties/config/properties/url": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "vta/webs/_shared/0.1/webs-records.schema.json": {
+      "array-max-items /$defs/DesignatedService/properties/serviceEndpoint/oneOf/2": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/DesignatedService/properties/type/oneOf/1": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "vta/webs/_shared/0.2/webs-records.schema.json": {
+      "array-max-items /$defs/DesignatedService/properties/serviceEndpoint/oneOf/2": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/DesignatedService/properties/type/oneOf/1": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "vta/webs/dids/create/0.2": {
+      "url-scheme /$defs/Response/properties/didJsonUrl": "Baseline: no scheme constraint when the lint landed; the next version declares one.",
+      "url-scheme /$defs/Response/properties/keriCesrUrl": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "vta/webs/dids/list/0.1": {
+      "cursor-max-length /properties/cursor": "Baseline: no maxLength when the lint landed; the next version declares one."
+    },
+    "vta/webvh/dids/create/1.2": {
+      "array-max-items /properties/additionalServices": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "url-scheme /$defs/Response/properties/scidDidUrl": "Baseline: no scheme constraint when the lint landed; the next version declares one.",
+      "url-scheme /properties/url": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "vtc/_shared/0.1/community.schema.json": {
+      "array-max-items /$defs/PersonhoodGovernance/properties/acceptedIdvps": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "url-scheme /$defs/CommunityProfileView/properties/logoUrl": "Baseline: no scheme constraint when the lint landed; the next version declares one.",
+      "url-scheme /$defs/CommunityProfileView/properties/publicUrl": "Baseline: no scheme constraint when the lint landed; the next version declares one.",
+      "url-scheme /$defs/PersonhoodGovernance/properties/governanceFrameworkUrl": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "vtc/_shared/0.1/config-portability.schema.json": {
+      "url-scheme /$defs/CommunityProfileSnapshot/properties/logoUrl": "Baseline: no scheme constraint when the lint landed; the next version declares one.",
+      "url-scheme /$defs/CommunityProfileSnapshot/properties/publicUrl": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "vtc/_shared/0.2/schema-registry.schema.json": {
+      "array-max-items /$defs/VettingRequirements/properties/acceptedDocumentClasses": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/VettingRequirements/properties/acceptedMethods": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/VettingRequirements/properties/optionalClaims": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /$defs/VettingRequirements/properties/requiredClaims": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "vtc/_shared/0.7/network-membership.schema.json": {
+      "url-scheme /$defs/NetworkMembership/properties/url": "Baseline: no scheme constraint when the lint landed; the next version declares one.",
+      "url-scheme /$defs/RegisteredGroup/properties/endpoint": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "vtc/admin/invites/create/0.2": {
+      "url-scheme /$defs/Response/properties/installUrl": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "vtc/badges/_shared/0.1/badge.schema.json": {
+      "url-scheme /$defs/AwardShare/properties/bakedImageUrl": "Baseline: no scheme constraint when the lint landed; the next version declares one.",
+      "url-scheme /$defs/AwardShare/properties/verificationUrl": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "vtc/boards/_shared/0.1/board.schema.json": {
+      "array-max-items /$defs/ElectionTemplate/properties/board/properties/auditors": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "vtc/boards/show/0.1": {
+      "array-max-items /properties/state": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "vtc/community/profile/update/0.1": {
+      "url-scheme /properties/logoUrl": "Baseline: no scheme constraint when the lint landed; the next version declares one.",
+      "url-scheme /properties/publicUrl": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "vtc/directory/_shared/0.1/directory-card.schema.json": {
+      "url-scheme /$defs/CardBlobRef/properties/url": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "vtc/endorsement-types/list/0.2": {
+      "cursor-max-length /properties/cursor": "Baseline: no maxLength when the lint landed; the next version declares one."
+    },
+    "vtc/endorsements/list/0.2": {
+      "cursor-max-length /properties/cursor": "Baseline: no maxLength when the lint landed; the next version declares one."
+    },
+    "vtc/join-requests/list/0.2": {
+      "cursor-max-length /properties/cursor": "Baseline: no maxLength when the lint landed; the next version declares one."
+    },
+    "vtc/members/list/0.2": {
+      "cursor-max-length /properties/cursor": "Baseline: no maxLength when the lint landed; the next version declares one."
+    },
+    "vtc/networks/join/0.2": {
+      "url-scheme /properties/url": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "vtc/networks/preview/0.1": {
+      "url-scheme /$defs/Response/properties/url": "Baseline: no scheme constraint when the lint landed; the next version declares one.",
+      "url-scheme /properties/url": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "vtc/networks/repudiate/0.2": {
+      "url-scheme /properties/url": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "vtc/registry/diagnostics/0.1": {
+      "url-scheme /$defs/RegistryTransport/properties/url": "Baseline: no scheme constraint when the lint landed; the next version declares one.",
+      "url-scheme /$defs/Response/properties/mediatorUrl": "Baseline: no scheme constraint when the lint landed; the next version declares one.",
+      "url-scheme /$defs/TransportStatus/properties/endpoint": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "vtc/registry/records/list/0.2": {
+      "cursor-max-length /properties/cursor": "Baseline: no maxLength when the lint landed; the next version declares one."
+    },
+    "vtc/registry/sync-jobs/list/0.2": {
+      "cursor-max-length /properties/cursor": "Baseline: no maxLength when the lint landed; the next version declares one."
+    },
+    "vtc/relationships/list/0.3": {
+      "cursor-max-length /properties/cursor": "Baseline: no maxLength when the lint landed; the next version declares one."
+    },
+    "vtc/roles/define/0.1": {
+      "array-max-items /properties/approveScope": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /properties/ceiling": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "vtc/vetting/hidden/publish/0.1": {
+      "array-max-items /$defs/RequestEvent/properties/tiers": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /properties/events": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /properties/livePeriods": "Baseline: no maxItems when the lint landed; the next version declares one.",
+      "array-max-items /properties/liveTokenLabels": "Baseline: no maxItems when the lint landed; the next version declares one."
+    },
+    "vtc/website/files/list/0.3": {
+      "cursor-max-length /properties/cursor": "Baseline: no maxLength when the lint landed; the next version declares one."
+    },
+    "vtn/_shared/0.1/directory.schema.json": {
+      "url-scheme /$defs/DirectoryEntry/properties/url": "Baseline: no scheme constraint when the lint landed; the next version declares one.",
+      "url-scheme /$defs/FederatedEntry/properties/url": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "vtn/_shared/0.1/entry.schema.json": {
+      "url-scheme /$defs/EntryProfile/properties/url": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "vtn/_shared/0.1/graph.schema.json": {
+      "url-scheme /$defs/Node/properties/url": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "vtn/_shared/0.1/groups.schema.json": {
+      "url-scheme /$defs/RegisteredGroup/properties/endpoint": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "vtn/_shared/0.1/membership.schema.json": {
+      "url-scheme /$defs/UpstreamMembership/properties/url": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "vtn/_shared/0.1/relay.schema.json": {
+      "url-scheme /$defs/OutboxItem/properties/endpoint": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "vtn/_shared/0.1/rooms.schema.json": {
+      "url-scheme /$defs/RoomDef/properties/url": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "vtn/listings/create/0.1": {
+      "url-scheme /properties/url": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "vtn/memberships/join/0.1": {
+      "url-scheme /properties/url": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "vtn/memberships/repudiate/0.1": {
+      "url-scheme /properties/url": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    },
+    "webvh/witness/publish/0.1": {
+      "url-scheme /$defs/Response/properties/witnessUrl": "Baseline: no scheme constraint when the lint landed; the next version declares one."
+    }
+  }
+}
