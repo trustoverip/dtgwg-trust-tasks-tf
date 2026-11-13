@@ -5,9 +5,83 @@
 const { useState: useS, useEffect: useE, useMemo: useM, useRef: useR } = React;
 
 /* Version ordering and per-slug collapsing live in assets/routes.js, shared
- * with the generated TT_STATS footer and the build's link check. */
+ * with the registry build (which computes TT_STATS by it) and its link check. */
 const { cmpVersion, byVersionDesc } = window.ttRoutes;
 const latestPerSlug = window.ttRoutes.latestPerSlug;
+
+/* ============================================================
+   Detail on demand (#1145)
+   ============================================================ */
+/* tasks.generated.js is the registry index only — what the lists, filters,
+ * search and counts read. A spec version's full record (schema, parties,
+ * classification, error codes, shared schemas used, …) is fetched from
+ * /specs/<slug>/<M.N>/detail.json when its page opens, and a shared schema's
+ * schema and users from its `detailPath`; scripts/build-registry.mjs writes
+ * both.
+ *
+ * Responses are cached by URL for the life of the page: a settled one in
+ * `ttFetched`, so returning to a page renders it at once with no loading
+ * state, and an in-flight one in `ttFetching`, so two components asking for
+ * the same file share one request. A failure is not cached, so "Try again"
+ * refetches. `window.ttFetched` may be supplied before this bundle runs — the
+ * website test does, to render pages whose data a server render cannot fetch. */
+const ttFetched = window.ttFetched || (window.ttFetched = new Map());
+const ttFetching = new Map();
+function fetchJson(url) {
+  if (ttFetched.has(url)) return Promise.resolve(ttFetched.get(url));
+  if (!ttFetching.has(url)) {
+    const p = fetch(url, { headers: { "Accept": "application/json" } })
+      .then(r => { if (!r.ok) throw new Error(`Failed to load ${url} (HTTP ${r.status})`); return r.json(); })
+      .then(v => { ttFetched.set(url, v); return v; })
+      .finally(() => { ttFetching.delete(url); });
+    ttFetching.set(url, p);
+  }
+  return ttFetching.get(url);
+}
+
+function specDetailPath(t) {
+  return `/specs/${t.slug}/${t.version}/detail.json`;
+}
+
+/* `{ data, error, retry }` for one JSON file: `data` and `error` both null
+ * while it loads. A null `url` loads nothing. */
+function useJson(url) {
+  const settled = () => (url && ttFetched.has(url) ? ttFetched.get(url) : null);
+  const [state, setState] = useS(() => ({ url, data: settled(), error: null }));
+  const [attempt, setAttempt] = useS(0);
+  useE(() => {
+    if (!url) return;
+    if (ttFetched.has(url)) { setState({ url, data: ttFetched.get(url), error: null }); return; }
+    let cancelled = false;
+    setState({ url, data: null, error: null });
+    fetchJson(url).then(
+      data => { if (!cancelled) setState({ url, data, error: null }); },
+      e => { if (!cancelled) setState({ url, data: null, error: e.message }); }
+    );
+    return () => { cancelled = true; };
+  }, [url, attempt]);
+  const retry = () => setAttempt(n => n + 1);
+  // The render between a url change and its effect must not show the previous file.
+  if (state.url !== url) return { data: settled(), error: null, retry };
+  return { data: state.data, error: state.error, retry };
+}
+
+/* The loading line and the failed-fetch notice the on-demand pages share. */
+function FetchPending({ what }) {
+  return <p data-tt-loading="" style={{ color: "var(--tt-text-muted)" }}>Loading {what}…</p>;
+}
+function FetchFailed({ what, error, retry, githubHref }) {
+  return (
+    <div className="tt-empty" role="alert" data-tt-fetch-error="" style={{ padding: "var(--tt-space-5)", margin: "var(--tt-space-5) 0" }}>
+      <b>Couldn't load {what}.</b><br />
+      {error}<br />
+      <button type="button" className="btn btn--ghost" style={{ marginTop: "var(--tt-space-3)" }} onClick={retry}>Try again</button>
+      {githubHref && (
+        <> &nbsp; <a href={githubHref} target="_blank" rel="noreferrer">Read it on GitHub →</a></>
+      )}
+    </div>
+  );
+}
 
 /* ============================================================
    Markdown helpers — used by SpecPage and (lightly) FrameworkSpecPage
@@ -366,15 +440,11 @@ const DIFF_ADD = "#0f7b6c", DIFF_DEL = "#c0392b";
 // ── Schema $ref resolution, so a diff shows the EFFECTIVE schema (with shared
 // definitions inlined) instead of opaque $ref pointers + version-bump noise. ──
 
-let _sharedMap = null;
-function sharedSchemaMap() {
-  if (!_sharedMap) {
-    _sharedMap = {};
-    for (const s of (window.TT_SHARED || [])) {
-      if (s.sourcePath && s.schema) _sharedMap[s.sourcePath] = { schema: s.schema, baseDir: s.sourcePath.replace(/\/[^/]+$/, "") };
-    }
-  }
-  return _sharedMap;
+// A shared schema loaded by loadResolvedSchema, by its served path.
+function loadedSharedSchema(p) {
+  return sharedSlugByPath().has(p) && ttFetched.has(p)
+    ? { schema: ttFetched.get(p), baseDir: p.replace(/\/[^/]+$/, "") }
+    : null;
 }
 // Normalize a relative $ref path (from a file at baseDir) to an absolute /specs/… path.
 function resolveRefPath(baseDir, rel) {
@@ -384,15 +454,15 @@ function resolveRefPath(baseDir, rel) {
 }
 // Deep-inline every $ref (internal + into shared schemas), cycle-guarded, and
 // drop the version-only `$id`. Returns a self-contained schema for diffing.
+// The shared schemas it reaches must already be fetched (loadResolvedSchema).
 function resolveSchema(root, rootBaseDir) {
-  const shared = sharedSchemaMap();
   function deref(node, doc, base, stack) {
     if (Array.isArray(node)) return node.map(n => deref(n, doc, base, stack));
     if (node && typeof node === "object") {
       if (typeof node.$ref === "string") {
         const [file, frag = ""] = node.$ref.split("#");
         let tdoc = doc, tbase = base;
-        if (file !== "") { const hit = shared[resolveRefPath(base, file)]; if (!hit) return { ...node }; tdoc = hit.schema; tbase = hit.baseDir; }
+        if (file !== "") { const hit = loadedSharedSchema(resolveRefPath(base, file)); if (!hit) return { ...node }; tdoc = hit.schema; tbase = hit.baseDir; }
         let def = tdoc;
         for (const seg of frag.split("/").filter(Boolean)) def = def && def[seg.replace(/~1/g, "/").replace(/~0/g, "~")];
         if (def === undefined) return { ...node };
@@ -411,6 +481,62 @@ function resolveSchema(root, rootBaseDir) {
   const r = deref(root, root, rootBaseDir, new Set());
   if (r && typeof r === "object") delete r.$id;
   return r;
+}
+
+/* Fetch the schema served at `url` and every shared schema it reaches by
+ * $ref, then resolve it. Only references to registered shared schemas are
+ * followed, as resolveSchema inlines only those. */
+function loadResolvedSchema(url) {
+  const shared = sharedSlugByPath();
+  const seen = new Set();
+  const visit = (u) => {
+    if (seen.has(u)) return Promise.resolve();
+    seen.add(u);
+    return fetchJson(u).then(doc => {
+      const base = u.replace(/\/[^/]+$/, "");
+      const next = [];
+      (function walk(n) {
+        if (Array.isArray(n)) { n.forEach(walk); return; }
+        if (!n || typeof n !== "object") return;
+        for (const [k, v] of Object.entries(n)) {
+          if (k === "$ref" && typeof v === "string") {
+            const file = v.split("#")[0];
+            const p = file && resolveRefPath(base, file);
+            if (p && shared.has(p)) next.push(p);
+          } else walk(v);
+        }
+      })(doc);
+      return Promise.all(next.map(visit));
+    });
+  };
+  return visit(url).then(() => resolveSchema(ttFetched.get(url), url.replace(/\/[^/]+$/, "")));
+}
+
+/* `{ schema, error }` for loadResolvedSchema(url); both null while loading. */
+function useResolvedSchema(url) {
+  const [state, setState] = useS({ url: null, schema: null, error: null });
+  useE(() => {
+    if (!url) return;
+    let cancelled = false;
+    loadResolvedSchema(url).then(
+      schema => { if (!cancelled) setState({ url, schema, error: null }); },
+      e => { if (!cancelled) setState({ url, schema: null, error: e.message }); }
+    );
+    return () => { cancelled = true; };
+  }, [url]);
+  return state.url === url ? state : { url, schema: null, error: null };
+}
+
+/* SchemaDiff between the schemas served at two URLs, fetched when the diff is
+ * opened rather than with the page. */
+function SchemaVersionDiff({ fromUrl, toUrl, fromVer, toVer, label }) {
+  const a = useResolvedSchema(fromVer === toVer ? null : fromUrl);
+  const b = useResolvedSchema(fromVer === toVer ? null : toUrl);
+  if (fromVer === toVer) return <SchemaDiff before={{}} after={{}} fromVer={fromVer} toVer={toVer} label={label} />;
+  const error = a.error || b.error;
+  if (error) return <p role="alert" data-tt-fetch-error="" style={{ color: "var(--tt-text-muted)" }}>Couldn't load the schemas to compare: {error}</p>;
+  if (!a.schema || !b.schema) return <FetchPending what="the schemas to compare" />;
+  return <SchemaDiff before={a.schema} after={b.schema} fromVer={fromVer} toVer={toVer} label={label} />;
 }
 
 // A version picker for one side of a diff.
@@ -1165,13 +1291,16 @@ function UsesPanel({ uses, setRoute }) {
 function SchemaPage({ slug, setRoute }) {
   const catalog = window.TT_SHARED || [];
   const rec = catalog.find(s => s.slug === slug);
+  // The schema and the tasks that use it are fetched (#1145); the catalogue
+  // entry in the index is enough for the heading while they load.
+  const { data: detail, error: detailError, retry } = useJson(rec ? rec.detailPath : null);
   // Always call the fragment-scroll effect regardless of whether the schema
   // resolves, so hook order is stable across renders (Rules of Hooks).
   useE(() => {
-    if (!rec || !location.hash) return;
+    if (!rec || !detail || !location.hash) return;
     const target = document.getElementById(`def-${location.hash.slice(1)}`);
     if (target) requestAnimationFrame(() => target.scrollIntoView({ block: "start" }));
-  }, [slug, !!rec]);
+  }, [slug, !!rec, !!detail]);
 
   // Version diff state (hooks run unconditionally, before the !rec return).
   const [showDiff, setShowDiff] = useS(false);
@@ -1191,13 +1320,11 @@ function SchemaPage({ slug, setRoute }) {
     setDiffFrom(i > 0 ? schemaVersions[i - 1].version : selfV.ver);
     setDiffTo(selfV.ver);
   }, [slug]);
-  const resolveSharedVersion = (ver) => {
+  const sharedVersionUrl = (ver) => {
     const v = schemaVersions.find(x => x.version === ver);
     const r = v && (window.TT_SHARED || []).find(s => s.slug === v.slug);
-    return r ? resolveSchema(r.schema, r.sourcePath.replace(/\/[^/]+$/, "")) : undefined;
+    return r ? r.sourcePath : null;
   };
-  const fromSchema = useM(() => resolveSharedVersion(diffFrom), [slug, diffFrom]);
-  const toSchema = useM(() => resolveSharedVersion(diffTo), [slug, diffTo]);
 
   if (!rec) {
     return (
@@ -1211,9 +1338,33 @@ function SchemaPage({ slug, setRoute }) {
       </section>
     );
   }
-  const usedBy = (window.TT_SHARED_USED_BY && window.TT_SHARED_USED_BY[slug]) || [];
   const accent = sharedAccent(rec);
   const schemaIdLink = rec.schemaId;
+  const githubHref = `https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main${rec.sourcePath}`;
+  if (!detail) {
+    return (
+      <section className="container container--wide tt-spec">
+        <div>
+          <div style={{ marginBottom: "var(--tt-space-4)" }}>
+            <span className="tt-spec__num">
+              <span style={{ color: sharedAccentText(rec) }}>{sharedKindLabel(rec.kind)}</span>
+              {rec.family && rec.kind !== "framework" ? ` · ${rec.family}` : ""}
+              {" · "}{rec.slug}
+            </span>
+          </div>
+          <h1 className="tt-spec__title">{rec.title}</h1>
+          {rec.description && (
+            <p className="lead" style={{ marginBottom: "var(--tt-space-5)" }}>{rec.description}</p>
+          )}
+          {detailError
+            ? <FetchFailed what="this schema" error={detailError} retry={retry} githubHref={githubHref} />
+            : <FetchPending what="schema" />}
+        </div>
+      </section>
+    );
+  }
+  const schema = detail.schema;
+  const usedBy = detail.usedBy || [];
 
   return (
     <section className="container container--wide tt-spec">
@@ -1292,8 +1443,8 @@ function SchemaPage({ slug, setRoute }) {
               {rec.defs.map(d => (
                 <li key={d} id={`def-${d}`}>
                   <code>{d}</code>
-                  {rec.schema.$defs && rec.schema.$defs[d] && rec.schema.$defs[d].description && (
-                    <span style={{ color: "var(--tt-text-muted)" }}> — {rec.schema.$defs[d].description}</span>
+                  {schema.$defs && schema.$defs[d] && schema.$defs[d].description && (
+                    <span style={{ color: "var(--tt-text-muted)" }}> — {schema.$defs[d].description}</span>
                   )}
                 </li>
               ))}
@@ -1302,7 +1453,7 @@ function SchemaPage({ slug, setRoute }) {
         )}
 
         <h2 id="schema">JSON Schema</h2>
-        <CodeBlock json={rec.schema} />
+        <CodeBlock json={schema} />
 
         {schemaVersions.length > 1 && (
           <div style={{ marginTop: "var(--tt-space-4)" }}>
@@ -1321,7 +1472,7 @@ function SchemaPage({ slug, setRoute }) {
                   <span style={{ color: "var(--tt-text-muted)" }}>→</span>
                   <VersionSelect versions={schemaVersions} value={diffTo} onChange={setDiffTo} />
                 </div>
-                <SchemaDiff before={fromSchema} after={toSchema} fromVer={diffFrom} toVer={diffTo} label="Schema" />
+                <SchemaVersionDiff fromUrl={sharedVersionUrl(diffFrom)} toUrl={sharedVersionUrl(diffTo)} fromVer={diffFrom} toVer={diffTo} label="Schema" />
               </div>
             )}
           </div>
@@ -1394,7 +1545,6 @@ function SchemaPage({ slug, setRoute }) {
    ============================================================ */
 function SchemasIndexPage({ setRoute }) {
   const catalog = window.TT_SHARED || [];
-  const usedBy = window.TT_SHARED_USED_BY || {};
   // Group by kind so the framework primitives sit at the top, then family-shared,
   // then method extensions. Within each group, alphabetize by slug.
   const groups = [
@@ -1428,7 +1578,7 @@ function SchemasIndexPage({ setRoute }) {
               <p style={{ color: "var(--tt-text-muted)", marginTop: 0, marginBottom: "var(--tt-space-5)" }}>{g.desc}</p>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(440px, 1fr))", gap: "var(--tt-space-4)" }}>
                 {items.map(rec => {
-                  const refs = (usedBy[rec.slug] || []).length;
+                  const refs = rec.usedByCount || 0;
                   return (
                     <a
                       key={rec.slug}
@@ -1482,7 +1632,10 @@ function SchemasIndexPage({ setRoute }) {
 
    The lookup lives in this wrapper, which uses no hooks, so a route that stops
    resolving — back/forward onto a stale URL — unmounts SpecDetail instead of
-   changing the hook count of a mounted one. */
+   changing the hook count of a mounted one.
+
+   The lookup is over the registry index; SpecLoader then fetches the
+   version's full record (#1145). */
 function SpecPage({ slug, version, id, setRoute }) {
   const all = window.TT_TASKS || [];
   // A versionless /spec/<slug> resolves to the latest registered version: the
@@ -1492,7 +1645,32 @@ function SpecPage({ slug, version, id, setRoute }) {
   if (!task) {
     return <SpecNotFound slug={slug} version={version} id={id} registered={all} setRoute={setRoute} />;
   }
-  return <SpecDetail task={task} setRoute={setRoute} />;
+  return <SpecLoader key={`${task.slug}/${task.version}`} entry={task} setRoute={setRoute} />;
+}
+
+/* Fetches the version's detail.json and renders SpecDetail over the index
+   entry and the detail together. Until it arrives — or if it cannot — the
+   page shows what the index already knows: the heading, the summary and the
+   lifecycle notice. */
+function SpecLoader({ entry, setRoute }) {
+  const { data, error, retry } = useJson(specDetailPath(entry));
+  if (data) return <SpecDetail task={{ ...entry, ...data }} setRoute={setRoute} />;
+  return (
+    <section className="container container--wide tt-spec">
+      <div>
+        <div style={{ marginBottom: "var(--tt-space-4)" }}>
+          <span className="tt-spec__num">{entry.slug} · v{entry.version}</span>
+        </div>
+        <h1 className="tt-spec__title">{entry.title}</h1>
+        <p className="lead" style={{ marginBottom: "var(--tt-space-5)" }}>{entry.summary}</p>
+        <LifecycleBanner task={entry} setRoute={setRoute} />
+        {error
+          ? <FetchFailed what="this specification" error={error} retry={retry}
+              githubHref={`https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/specs/${entry.slug}/${entry.version}/spec.md`} />
+          : <FetchPending what="specification" />}
+      </div>
+    </section>
+  );
 }
 
 /* Uses no hooks — see the note on SpecPage. */
@@ -1557,14 +1735,13 @@ function SpecDetail({ task, setRoute }) {
     setDiffFrom(prevTask ? prevTask.version : task.version);
     setDiffTo(task.version);
   }, [task.slug, task.version]);
-  // Resolve each side's schema ($refs inlined) so the diff shows effective
-  // content, not $ref pointers + version noise. Memoized per selected version.
-  const resolveForVersion = (ver) => {
+  // Each side's schema is fetched and resolved ($refs inlined) when the diff
+  // is opened, so the diff shows effective content, not $ref pointers +
+  // version noise.
+  const schemaUrlFor = (ver) => {
     const t = versions.find(v => v.version === ver);
-    return t ? resolveSchema(t.schema, t.schemaPath.replace(/\/[^/]+$/, "")) : undefined;
+    return t ? `/specs/${t.slug}/${t.version}/payload.schema.json` : null;
   };
-  const fromSchema = useM(() => resolveForVersion(diffFrom), [task.slug, diffFrom]);
-  const toSchema = useM(() => resolveForVersion(diffTo), [task.slug, diffTo]);
 
   useE(() => {
     if (!task.prosePath) {
@@ -1827,7 +2004,7 @@ function SpecDetail({ task, setRoute }) {
                   <span style={{ color: "var(--tt-text-muted)" }}>→</span>
                   <VersionSelect versions={versions} value={diffTo} onChange={setDiffTo} />
                 </div>
-                <SchemaDiff before={fromSchema} after={toSchema} fromVer={diffFrom} toVer={diffTo} />
+                <SchemaVersionDiff fromUrl={schemaUrlFor(diffFrom)} toUrl={schemaUrlFor(diffTo)} fromVer={diffFrom} toVer={diffTo} />
               </div>
             )}
           </div>

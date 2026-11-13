@@ -11,7 +11,9 @@
  *     → website/assets/hashed/app.<hash>.js    (esbuild: JSX → React.createElement, minified)
  *   website/assets/<name>.js, for every `<script defer src="/assets/<name>.js">`
  *   in the template — markdown.js, routes.js, the hand-kept data files and
- *   tasks.generated.js
+ *   tasks.generated.js (the registry index; each spec's full record is
+ *   fetched on demand from /specs/<slug>/<M.N>/detail.json, a fixed URL
+ *   that is not hashed — #1145)
  *     → website/assets/hashed/<name>.<hash>.js (a byte-for-byte copy)
  *   website/index.template.html
  *     → website/index.html                     (names the hashed files)

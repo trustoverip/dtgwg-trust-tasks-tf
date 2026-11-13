@@ -12,6 +12,8 @@
  *   - a request that failed, or answered with HTTP 400 or above;
  *   - a page with no <h1>, a page still showing the static boot message, or
  *     a page that rendered the not-found view;
+ *   - a page still loading, or showing a failed fetch, once it has settled —
+ *     the spec and schema pages fetch their detail on demand (#1145);
  *   - a canonical link that is not https://trusttasks.org + the route (#1151).
  *
  * website-jsx.test.mjs already renders every route on the server; what this
@@ -46,6 +48,7 @@ export const ROUTES = [
   '/spec/acl/grant/0.3',
   '/binding/https/0.3',
   '/schema',
+  '/schema/acl/_shared/0.1/acl-entry',
   '/implementations/rust',
 ];
 
@@ -189,7 +192,12 @@ async function checkRoute(cdp, base, route) {
     }
     if (state.h1) await sleep(SETTLE_MS);
     const { result } = await cdp.send('Runtime.evaluate', {
-      expression: `({ title: document.title, canonical: (document.querySelector('link[rel="canonical"]') || {}).href || null })`,
+      expression: `({
+        title: document.title,
+        canonical: (document.querySelector('link[rel="canonical"]') || {}).href || null,
+        loading: !!document.querySelector('#main [data-tt-loading]'),
+        fetchError: (document.querySelector('#main [data-tt-fetch-error]') || {}).textContent || null,
+      })`,
       returnByValue: true,
     }, sessionId);
     const final = result.value || {};
@@ -197,6 +205,8 @@ async function checkRoute(cdp, base, route) {
     if (!state.h1) problems.push(`no <h1> within ${PAGE_TIMEOUT_MS / 1000}s${state.boot ? ' (the static boot message is still showing: the app never rendered)' : ''}`);
     else if (state.boot) problems.push('the static boot message is still showing');
     if (/not found/i.test(final.title)) problems.push(`rendered the not-found view (title "${final.title}")`);
+    if (final.fetchError) problems.push(`shows a failed fetch: ${final.fetchError.trim()}`);
+    else if (state.h1 && final.loading) problems.push(`still loading ${SETTLE_MS / 1000}s after its <h1> appeared`);
     const wantCanonical = SITE_ORIGIN + route;
     if (final.canonical !== wantCanonical) problems.push(`canonical link is ${final.canonical}, expected ${wantCanonical}`);
     return { problems, h1: state.h1, title: final.title };

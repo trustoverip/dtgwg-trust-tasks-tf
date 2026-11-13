@@ -12,7 +12,11 @@
 //    loaded with the real generated registry and the hand-kept data files, and
 //    App is rendered to a string with React's server renderer for a set of
 //    routes. A render exception, a missing global or a wrong load order fails
-//    here rather than in a browser.
+//    here rather than in a browser. tasks.generated.js is only the registry
+//    index (#1145): the spec and schema pages fetch their detail from
+//    website/specs/, which a server render cannot, so the test hands the page
+//    a fetch cache (`ttFetched`) that reads those files from disk — and, with
+//    an empty one, checks the loading state too.
 //
 // The render runs React's DEVELOPMENT build, not the production build the page
 // loads, so React's own warnings (bad keys, invalid props) fail the test; its
@@ -91,8 +95,8 @@ test('the page loads production React, pinned, and no in-browser compiler', asyn
 });
 
 test('the template loads the data scripts, then the bundle', () => {
-  // routes.js must run before tasks.generated.js, whose TT_STATS footer uses
-  // it, and every data script before the bundle that reads them.
+  // data.js must run before tasks.generated.js, whose TT_STATS counts its
+  // categories, and every data script before the bundle that reads them.
   const order = ['routes.js', 'data.js', 'tasks.generated.js', 'ceremonies.js', '__APP_BUNDLE__'].map((f) => template.indexOf(`/assets/${f}`));
   assert.ok(order.every((i) => i > 0), 'each script is loaded');
   assert.deepEqual([...order].sort((a, b) => a - b), order, 'in that order');
@@ -137,8 +141,21 @@ test('the built index.html carries the link-preview and canonical tags (#1151)',
   }
 });
 
-/** A browser-ish global for the page scripts, with React and the data loaded. */
-async function pageContext() {
+/** The page's fetch cache, answered from the built website/ tree: what the
+ *  spec and schema pages would fetch, as though it had already arrived. */
+function diskFetchCache() {
+  const file = (url) => path.join(website, ...url.split('/').filter(Boolean));
+  const ok = (url) => typeof url === 'string' && url.startsWith('/specs/') && !url.includes('..') && fs.existsSync(file(url));
+  return {
+    has: ok,
+    get: (url) => (ok(url) ? JSON.parse(fs.readFileSync(file(url), 'utf8')) : undefined),
+    set() {},
+  };
+}
+
+/** A browser-ish global for the page scripts, with React and the data loaded.
+ *  `fetched: false` starts the page with nothing fetched, as a browser does. */
+async function pageContext({ fetched = true } = {}) {
   const ctx = {
     console: { log() {}, info() {}, warn() {}, debug() {}, error: (...a) => ctx.__errors.push(a.map(String).join(' ')) },
     __errors: [],
@@ -150,6 +167,7 @@ async function pageContext() {
     fetch: () => new Promise(() => {}),
     IntersectionObserver: class { observe() {} disconnect() {} },
     addEventListener() {}, removeEventListener() {}, scrollTo() {},
+    ttFetched: fetched ? diskFetchCache() : new Map(),
   };
   const meta = { getAttribute: () => 'site description', setAttribute() {} };
   ctx.document = {
@@ -238,7 +256,8 @@ test('a superseded version shows the lifecycle banner and its successor', { skip
 
 test('the Proof requirement row is filled for the per-variant form', { skip: !haveBuild && 'run `npm run build` first' }, async () => {
   const ctx = await pageContext();
-  const t = ctx.TT_TASKS.find((x) => x.proofRequirement && typeof x.proofRequirement.requirement !== 'string' && x.proofRequirement.request);
+  const detail = (x) => ctx.ttFetched.get(`/specs/${x.slug}/${x.version}/detail.json`);
+  const t = ctx.TT_TASKS.map(detail).find((x) => x.proofRequirement && typeof x.proofRequirement.requirement !== 'string' && x.proofRequirement.request);
   assert.ok(t, 'the registry has a per-variant proofRequirement');
   const { html } = render(ctx, `/spec/${t.slug}/${t.version}`);
   const row = /<dt>Proof requirement<\/dt><dd>([^<]*)<\/dd>/.exec(html);
@@ -256,4 +275,44 @@ test('registry filters are read from the URL', { skip: !haveBuild && 'run `npm r
   assert.match(html, /matching <b>“grant”<\/b>/);
   // Status chips come from the statuses present; the registry holds retired versions.
   if (ctx.TT_TASKS.some((t) => t.status === 'retired')) assert.match(html, /aria-pressed="false"[^>]*>.*?retired/s);
+});
+
+test('the registry index is slim, and every version and shared schema has its detail file (#1145)', { skip: !haveBuild && 'run `npm run build` first' }, async () => {
+  const ctx = await pageContext();
+  for (const t of ctx.TT_TASKS) {
+    for (const heavy of ['schema', 'errorCodes', 'proofRequirement', 'uses', 'partiesDetail']) {
+      assert.equal(t[heavy], undefined, `${t.slug}/${t.version}: ${heavy} is detail, not index`);
+    }
+    const d = ctx.ttFetched.get(`/specs/${t.slug}/${t.version}/detail.json`);
+    assert.ok(d, `${t.slug}/${t.version} has a detail.json`);
+    assert.equal(d.slug, t.slug);
+    assert.equal(d.version, t.version);
+    assert.ok(d.schema && d.prosePath, `${t.slug}/${t.version}: detail.json is the full record`);
+  }
+  for (const s of ctx.TT_SHARED) {
+    assert.equal(s.schema, undefined, `${s.slug}: schema is detail, not index`);
+    const d = ctx.ttFetched.get(s.detailPath);
+    assert.ok(d && d.schema, `${s.slug} has a detail file at ${s.detailPath}`);
+    assert.equal(d.usedBy.length, s.usedByCount, `${s.slug}: the index counts the users its detail lists`);
+  }
+  assert.equal(ctx.TT_STATS.categories, ctx.TT_CATEGORIES.length);
+});
+
+test('a spec or schema page shows its heading and a loading state until its detail arrives', { skip: !haveBuild && 'run `npm run build` first' }, async () => {
+  const ctx = await pageContext({ fetched: false });
+  const spec = render(ctx, '/spec/acl/grant/0.1');
+  assert.deepEqual(spec.errors, []);
+  assert.match(spec.html, /<h1 class="tt-spec__title">[^<]+<\/h1>/);
+  assert.match(spec.html, /data-tt-loading/);
+  assert.doesNotMatch(spec.html, /id="metadata"/);
+  const sharedSlug = ctx.TT_SHARED[0].slug;
+  const schema = render(ctx, `/schema/${sharedSlug}`);
+  assert.deepEqual(schema.errors, []);
+  assert.match(schema.html, /data-tt-loading/);
+  // With the detail in hand, the full page renders.
+  const full = await pageContext();
+  const done = render(full, '/spec/acl/grant/0.1');
+  assert.match(done.html, /id="metadata"/);
+  assert.doesNotMatch(done.html, /data-tt-loading=""[^>]*>Loading specification/);
+  assert.match(render(full, `/schema/${sharedSlug}`).html, /id="used-by"/);
 });
