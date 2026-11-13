@@ -3629,6 +3629,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/rooms/records/put/0.5#response" => <crate::specs::rooms::records::put::v0_5::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/records/put/0.6" => <crate::specs::rooms::records::put::v0_6::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/records/put/0.6#response" => <crate::specs::rooms::records::put::v0_6::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/records/retention/set/0.1" => <crate::specs::rooms::records::retention::set::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -11684,6 +11690,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/records/put/0.6" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::records::put::v0_6::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/records/retention/set/0.1" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::rooms::records::retention::set::v0_1::Payload,
@@ -19223,6 +19234,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/records/put/0.6" => {
+            Some(crate::specs::rooms::records::put::v0_6::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/records/retention/set/0.1" => {
             Some(crate::specs::rooms::records::retention::set::v0_1::ERROR_CODES)
         }
@@ -23224,6 +23240,9 @@ pub fn max_document_bytes_for(type_uri: &str) -> Option<usize> {
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/act/0.9#response" => <crate::specs::rooms::keys::act::v0_9::Response as crate::Payload>::MAX_DOCUMENT_BYTES,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/records/put/0.6" => <crate::specs::rooms::records::put::v0_6::Payload as crate::Payload>::MAX_DOCUMENT_BYTES,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/notifications/deposit/0.1" => <crate::specs::vta::notifications::deposit::v0_1::Payload as crate::Payload>::MAX_DOCUMENT_BYTES,
