@@ -34,7 +34,7 @@ uuid = { version = "1", features = ["v4"] }
 # integration test that depends on these is gated `#[ignore]` so a
 # default `cargo test` skips it (and the compile cost falls only on
 # developers who opt in with `cargo test -- --ignored`).
-affinidi-messaging-test-mediator = "0.16"
+affinidi-messaging-test-mediator = "0.50"
 affinidi-messaging-sdk = "0.32"
 affinidi-tdk = "0.22"
 affinidi-tdk-common = "0.7"
