@@ -596,3 +596,62 @@ func TestConsumerReadsAnExtendingVersionForward(t *testing.T) {
 		t.Fatalf("another slug: reply=%s", got.Reply)
 	}
 }
+
+// SPEC §5.2, §6.5 (#1117): a third-party specification's extends chain is not
+// in the registry index, so it is followed only through Consumer.Extends. With
+// the lookup a 0.3 document reaches the implemented 0.1 along 0.3 → 0.2 → 0.1,
+// is pruned, and is answered as 0.3; without it, it is unsupportedVersion and
+// no handler runs.
+func TestConsumerFollowsACallerSuppliedExtendsChain(t *testing.T) {
+	const base = "https://example.com/spec/vector/grant/"
+	spec := tt.SpecPolicy{
+		TypeURI:       base + "0.1",
+		PayloadSchema: `{"type":"object","additionalProperties":false,"properties":{"text":{"type":"string"}}}`,
+	}
+	lookup := func(typeURI string) string {
+		return map[string]string{base + "0.3": "0.2", base + "0.2": "0.1"}[typeURI]
+	}
+	type note struct {
+		Text  string  `json:"text"`
+		Extra *string `json:"extra,omitempty"`
+	}
+	run := func(extends tt.ExtendsLookup) (*tsp.Received[note], *note) {
+		h := newHarness(t)
+		h.consumer.Extends = extends
+		var seen *note
+		handler := func(_ context.Context, doc *tt.Document[note], _ tt.ResolvedParties) (*tt.Document[note], error) {
+			seen = &doc.Payload
+			return tt.RespondWith[note, note](doc, tsp.NewURNUUID(), note{Text: "ok"}, nil), nil
+		}
+		wire := h.seal(t, echoDoc(defaultID, "hello", func(d map[string]any) {
+			d["type"] = base + "0.3"
+			d["payload"] = map[string]any{"text": "hello", "extra": "0.3 only"}
+		}))
+		decode := func(raw json.RawMessage) (note, error) {
+			var n note
+			err := json.Unmarshal(raw, &n)
+			return n, err
+		}
+		got, err := tsp.Receive(context.Background(), h.consumer, wire, h.alice.Public(), spec, decode, handler)
+		if err != nil {
+			t.Fatalf("receive: %v", err)
+		}
+		return got, seen
+	}
+
+	got, seen := run(lookup)
+	if got.Outcome.Kind != tt.OutcomeHandled {
+		t.Fatalf("outcome = %s, reply=%s", got.Outcome.Kind, got.Reply)
+	}
+	if seen == nil || seen.Text != "hello" || seen.Extra != nil {
+		t.Fatalf("the handler saw %+v, want the payload pruned to 0.1's members", seen)
+	}
+	if want := base + "0.3#response"; got.Outcome.Response.Type != want {
+		t.Fatalf("response typed %s, want %s", got.Outcome.Response.Type, want)
+	}
+
+	got, seen = run(nil)
+	if codeOf(t, got) != string(tt.CodeUnsupportedVersion) || seen != nil {
+		t.Fatalf("registry lookup only: reply=%s, handler saw %+v", got.Reply, seen)
+	}
+}
