@@ -6,7 +6,7 @@ import path from "node:path";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { generate, generateFiles, MARKER_FILE, parseLock, taskLabel } from "../src/index.js";
+import { generate, generateFiles, generateModule, MARKER_FILE, parseBundle, parseLock, taskLabel } from "../src/index.js";
 
 // .test-build/test/generate.test.js → the package root.
 const PKG = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -365,5 +365,95 @@ describe("a bare component's nested branch types", () => {
     const { files } = await generateFiles({ lock, ...quiet });
     const components = files.get("_shared/components.ts")!;
     assert.match(components, /^export type ConsumerKind = Companion \| Service;$/m);
+  });
+});
+
+describe("bundle text reaches a module only as data", () => {
+  const fixture = (): Record<string, any> => JSON.parse(fs.readFileSync(FIXTURE, "utf8"));
+
+  it("refuses json-schema-to-typescript keywords in a schema, wherever a subschema sits", () => {
+    const tsType = "string;\n};\nexport const generatedExtra = 1;\nexport interface Z {\n  z: string";
+    const cases: [string, (b: Record<string, any>) => void][] = [
+      ["a property", (b) => (b.schema.properties.amount.tsType = tsType)],
+      ["a definition", (b) => (b.schema.$defs.Amount.tsEnumNames = ["A"])],
+      ["the response schema", (b) => (b.responseSchema = { ...b.schema.$defs.Response, tsType })],
+      ["a oneOf branch", (b) => (b.schema.properties.amount = { oneOf: [{ type: "string", tsType }] })],
+    ];
+    for (const [where, change] of cases) {
+      const b = fixture();
+      change(b);
+      assert.throws(() => parseBundle(b), /is a json-schema-to-typescript keyword, not JSON Schema/, where);
+    }
+  });
+
+  it("still accepts a payload member named tsType, and a tsType string in an enum", () => {
+    const b = fixture();
+    b.schema.properties.tsType = { type: "string", enum: ["tsType"] };
+    b.propertyOrder["/schema"] = [...b.propertyOrder["/schema"], "tsType"];
+    assert.doesNotThrow(() => parseBundle(b));
+  });
+
+  it("refuses a member named __proto__ anywhere in a schema", () => {
+    const inProperties = JSON.parse(fs.readFileSync(FIXTURE, "utf8").replace('"properties":{', '"properties":{"__proto__":{"type":"string"},'));
+    assert.throws(() => parseBundle(inProperties), /has a member named __proto__/);
+    const inConst = fixture();
+    inConst.schema.properties.amount = JSON.parse('{"const":{"__proto__":{"x":1}}}');
+    assert.throws(() => parseBundle(inConst), /has a member named __proto__/);
+  });
+
+  it("refuses a Type URI that is not one, including one that would end the banner comment", () => {
+    for (const typeUri of [
+      "https://tasks.example.com/spec/payments/settle/1.0 */ export const generatedExtra = 1; /*",
+      "https://tasks.example.com*/x/spec/payments/settle/1.0",
+      "https://tasks.example.com/spec/payments/settle/1.0\nexport const generatedExtra = 1;",
+      "https://tasks.example.com/spec/payments/settle/1.0#request",
+      "http://tasks.example.com/spec/payments/settle/1.0",
+      "https://tasks.example.com/spec/Payments/1.0",
+      "urn:example:acme:spec:payments:settle",
+    ]) {
+      const b = fixture();
+      b.typeUri = typeUri;
+      assert.throws(() => parseBundle(b), /is not a Type URI/, typeUri);
+    }
+    for (const typeUri of [
+      "https://tasks.example.com/spec/payments/settle/1.0",
+      "did:web:acme.example/spec/payments/settle/1.0",
+      "urn:example:acme:spec:payments:settle:1.0",
+    ]) {
+      const b = fixture();
+      b.typeUri = typeUri;
+      assert.doesNotThrow(() => parseBundle(b), typeUri);
+    }
+  });
+
+  it("holds deprecation to the lifecycle notes", () => {
+    for (const note of ["retired", "retired; use payments/settle/1.1", "superseded by payments/settle/1.1"]) {
+      const b = fixture();
+      b.deprecation = note;
+      assert.doesNotThrow(() => parseBundle(b), note);
+    }
+    for (const note of ["retired */ export const generatedExtra = 1; /*", "superseded by payments/settle/1.1\nexport const generatedExtra = 1;", "use something else"]) {
+      const b = fixture();
+      b.deprecation = note;
+      assert.throws(() => parseBundle(b), /is not a lifecycle note/, note);
+    }
+  });
+
+  it("checks a bundle handed to generateModule without parseBundle", async () => {
+    const bundle = { ...parseBundle(fixture()), deprecation: "retired */ export const generatedExtra = 1; /*" };
+    await assert.rejects(generateModule(bundle, "acme"), /is not a lifecycle note/);
+  });
+
+  it("refuses a shared definition whose name would not be an identifier", async () => {
+    const [first] = exampleTasks();
+    const task = edited(first!, (b) => {
+      const origins = b.defOrigins as Record<string, string>;
+      const name = Object.keys(origins)[0]!;
+      origins[name] = origins[name]!.replace(/#\/\$defs\/.*$/, "#/$defs/A};export const generatedExtra = 1;");
+      delete ((b.schema as any).$defs[name] as Record<string, unknown>).title;
+      if (b.responseSchema && (b.responseSchema as any).$defs?.[name]) delete (b.responseSchema as any).$defs[name].title;
+    });
+    const { lock } = app([task]);
+    await assert.rejects(generateFiles({ lock, ...quiet }), /which is not a TypeScript identifier/);
   });
 });

@@ -370,6 +370,45 @@ follow it; a new spec or a new version follows it from the start.
   this registry does not reuse the name for anything else. The response flag
   "this write created the record rather than replacing one" is `wasCreated`.
 
+## Bounds and URL members
+
+A consumer sizes its work from the schema, and an implementer reads which URLs
+a member admits from it. So the latest version of every live spec declares:
+
+- **An upper bound on every request-side collection.** Every array in the
+  request payload (anything outside `$defs.Response`) declares `maxItems`,
+  sized to what the task needs, not to what a transport can carry. An array
+  whose length is fixed by `prefixItems` with `"items": false` is already
+  bounded.
+- **A bounded page.** `limit` and `cursor` are written this way:
+
+  ```json
+  "cursor": { "type": "string", "minLength": 1, "maxLength": 512 },
+  "limit": { "type": "integer", "minimum": 1, "maximum": 100 }
+  ```
+
+  Choose the `maximum` for the collection, and say in prose what the
+  responder does when `limit` is absent.
+- **The schemes a URL member admits.** A string member named as a URL — its
+  name ends in `url`, `uri`, `endpoint`, `href`, `link`, `callback` or
+  `webhook`, singular or plural — states its schemes:
+
+  ```json
+  "publicUrl": { "type": "string", "format": "uri", "pattern": "^https://", "maxLength": 2048 }
+  ```
+
+  A `pattern` anchored on the scheme (`^https://`, `^(https|wss)://`,
+  `^did:`) or an `enum`/`const` satisfies the lint; so does `"format": "uri"`
+  with a description naming the allowed schemes, where a pattern cannot say
+  it. A `typeUri` is a Type URI, an identifier rather than something fetched,
+  and is exempt.
+
+`scripts/lib/schema-bounds.mjs` checks all three, following `$ref`s into
+shared schemas. The versions that did not declare them when the lint landed are
+listed in `scripts/lib/schema-bounds-allowlist.json`, which only shrinks:
+adding a bound to a published version narrows it, so the fix is the next
+version, and a new spec or a new version declares the bounds from the start.
+
 ## Read-one and read-many tasks
 
 The registry's default for a family that enumerates a collection is the **split pair**: a `list` task (paged, filtered enumeration) *and* a sibling `show`/`get` task (single-record fetch by identifier). The rationale is the one [`policy/get/0.1`](specs/policy/get/0.1/spec.md) spells out — the two reads have different failure semantics. A `get` for an unknown id returns `notFound`, a definite determination the caller can act on; a `list` filtered down to one id returns an **empty page**, which is a *successful* response and indistinguishable from "exists but filtered out". Collapsing the pair into list-with-an-id-filter loses that distinction (and, with it, per-record error codes and per-record authorization decisions).
