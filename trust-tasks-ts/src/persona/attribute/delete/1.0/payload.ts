@@ -112,37 +112,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Persona Attribute Delete — response payload",
-      "description": "Success response to persona/attribute/delete. Type https://trusttasks.org/spec/persona/attribute/delete/1.0#response. Deleting an attribute that is already absent is a success carrying `existed: false`, which is what makes a repeated delete converge.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "attributeId",
-        "existed"
-      ],
-      "properties": {
-        "attributeId": {
-          "$ref": "#/$defs/Ulid"
-        },
-        "existed": {
-          "type": "boolean",
-          "description": "False when no live attribute was present. A repeat delete returns false and deliberately does NOT take a new counter value — had it done so, every consumer watching the store would see a change that did not happen, and delete could not be safely retried."
-        },
-        "removedFromProfiles": {
-          "type": "array",
-          "maxItems": 256,
-          "items": {
-            "$ref": "#/$defs/Ulid"
-          },
-          "description": "Profiles whose entries were removed by a cascading delete. Present only when `cascade` was true and something was removed; a holder is owed the list of what their one action changed."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -219,12 +188,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "description": "A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.",
       "type": "string",
       "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
-    },
-    "ExpectedVersion": {
-      "title": "ExpectedVersion",
-      "description": "Optimistic-concurrency precondition. A positive value requires the record's current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.",
-      "type": "integer",
-      "minimum": 0
     }
   }
 };

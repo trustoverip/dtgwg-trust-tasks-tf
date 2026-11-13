@@ -115,37 +115,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Git Trust Revoke — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "subject",
-        "resource",
-        "revoked"
-      ],
-      "properties": {
-        "subject": {
-          "type": "string"
-        },
-        "resource": {
-          "type": "string"
-        },
-        "revoked": {
-          "type": "boolean",
-          "description": "True once the tuple is durably marked unauthorized."
-        },
-        "message": {
-          "type": "string",
-          "maxLength": 1024,
-          "description": "Additional human-readable detail."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

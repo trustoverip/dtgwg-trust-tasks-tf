@@ -126,27 +126,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Consent Set Approver — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "status"
-      ],
-      "properties": {
-        "status": {
-          "type": "string",
-          "enum": [
-            "set"
-          ],
-          "description": "The binding was upserted."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -203,14 +182,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "Route": {
-      "type": "string",
-      "enum": [
-        "wake",
-        "bridge-relay"
-      ],
-      "description": "How a consent prompt reaches the approver: `wake` pushes to the approver's device for a DID-signed decision; `bridge-relay` renders it through an enrolled bridge (e.g. a numbered card in the operator's messaging app) for a bridge-attested decision."
     }
   }
 };

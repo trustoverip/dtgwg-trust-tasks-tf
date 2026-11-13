@@ -94,30 +94,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Auth — OOB Request — response payload",
-      "description": "The handle of the new request and the instant its claim window closes. The starter builds the trigger link from these and the service's DID.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "requestId",
-        "claimClosesAt"
-      ],
-      "properties": {
-        "requestId": {
-          "$ref": "#/$defs/RequestId"
-        },
-        "claimClosesAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The instant by which the request must be claimed, as an RFC 3339 date-time. The trigger link's `_exp` carries the same instant in the link's own integer form: the starter converts this value into it when it builds the link. At most 180 s after the request was accepted; 120 s is RECOMMENDED."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -127,14 +103,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "RequestId": {
-      "title": "RequestId",
-      "type": "string",
-      "minLength": 22,
-      "maxLength": 43,
-      "pattern": "^[A-Za-z0-9_-]{22,43}$",
-      "description": "The service-generated handle of one request: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is RECOMMENDED). It is also the nonce of the exchange, so the family needs no separate challenge, and it is the `_id` of the trigger link (VTI-LNK-033). Compared as a string. It confers no authority on its holder."
     },
     "Mode": {
       "title": "Mode",
@@ -201,22 +169,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "maxLength": 43,
       "pattern": "^[A-Za-z0-9_-]{22,43}$",
       "description": "The service-generated handle of one request: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is RECOMMENDED). It is also the nonce of the exchange, so the family needs no separate challenge, and it is the `_id` of the trigger link (VTI-LNK-033). Compared as a string. It confers no authority on its holder."
-    },
-    "Mode": {
-      "title": "Mode",
-      "type": "string",
-      "enum": [
-        "scan"
-      ],
-      "description": "How the request reaches the approver. A CLOSED list. Version 0.1 defines `scan`: the starter shows a trigger link (as a QR code that is also a clickable link, TRIGGER-LINK.md) and the approver's wallet reads it. `code` (a typed code of at least 8 characters, under strict rate limits) and `push` (sent to the approver's enrolled devices) are reserved names."
-    },
-    "Purpose": {
-      "title": "Purpose",
-      "type": "string",
-      "enum": [
-        "login"
-      ],
-      "description": "What the request is for. A CLOSED list: each purpose has a fixed row in CONVENTIONS.md §3 stating what is revealed at each step, what the grant contains, what redeem returns and the window lengths. Version 0.1 defines `login` only. `stepUp` and `deviceEnrol` are reserved names; adding one is a new version of this component and of every task that references it, never an in-place edit."
     }
   }
 };

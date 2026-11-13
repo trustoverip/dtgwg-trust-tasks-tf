@@ -106,29 +106,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Relationships — Restore — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "state"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "description": "Echoed."
-        },
-        "state": {
-          "$ref": "#/$defs/InForce"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -137,62 +114,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "InForce": {
-      "title": "InForce",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "state"
-      ],
-      "description": "Whether the edge is in force now, and if not, why not — the edge's resolved state, which is not the same thing as the event just recorded: restoring an edge whose `validUntil` passed while it was suspended records the restoration and still resolves `expired`. Exactly the members its `state` names are present.",
-      "properties": {
-        "state": {
-          "type": "string",
-          "enum": [
-            "yes",
-            "notYetValid",
-            "expired",
-            "suspended",
-            "superseded",
-            "withdrawn",
-            "indeterminate"
-          ],
-          "description": "`yes`: inside its window, nothing standing against it. `notYetValid`: its `validFrom` has not arrived. `expired`: its `validUntil` has passed. `suspended`: temporarily ineffective — the only non-`yes` state a lifecycle event can reverse. `superseded`: displaced by a later credential. `withdrawn`: terminal. `indeterminate`: the credential's own window could not be read, so no honest answer is available."
-        },
-        "validFrom": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Present for `notYetValid`."
-        },
-        "validUntil": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Present for `expired`."
-        },
-        "since": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Present for `suspended`: when the standing suspension was recorded."
-        },
-        "at": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Present for `superseded` and `withdrawn`."
-        },
-        "by": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 256,
-          "description": "Present for `superseded`: the digest of the credential that displaced it."
-        },
-        "reason": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 500,
-          "description": "Present for `indeterminate`: why the window could not be read. Written by the community."
-        }
       }
     },
     "LifecycleReason": {
@@ -298,13 +219,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
           "description": "Present for `indeterminate`: why the window could not be read. Written by the community."
         }
       }
-    },
-    "LifecycleReason": {
-      "title": "LifecycleReason",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 500,
-      "description": "Why the edge was suspended or restored, stored verbatim on the lifecycle event. Free text written by the caller — the edge's issuer or a moderating administrator — and read by the counterparty and by administrators; retained with the edge. Untrusted, attributed to its author wherever rendered, and never read by the community's state machine."
     }
   }
 };

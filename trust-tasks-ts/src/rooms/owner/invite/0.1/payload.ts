@@ -124,30 +124,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Rooms Owner Invite — response payload",
-      "description": "Success response to rooms/owner/invite. Type https://trusttasks.org/spec/rooms/owner/invite/0.1#response. The signed VIC, for delivery to the invitee.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "credential",
-        "credentialId"
-      ],
-      "properties": {
-        "credential": {
-          "type": "string",
-          "description": "The signed Verifiable Invitation Credential, serialised."
-        },
-        "credentialId": {
-          "type": "string",
-          "description": "Its `id`. The owner tracks consumption by this on a `private` room, where a host-side invitation store would hand the host the membership at invite time."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

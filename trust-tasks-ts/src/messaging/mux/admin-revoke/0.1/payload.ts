@@ -143,44 +143,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Messaging — Mux Admin Revoke — response payload",
-      "description": "The success response to a messaging/mux/admin-revoke request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/mux/admin-revoke/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "revoked",
-        "remaining"
-      ],
-      "properties": {
-        "revoked": {
-          "type": "array",
-          "maxItems": 500,
-          "items": {
-            "$ref": "#/$defs/GrantRef"
-          },
-          "description": "Every grant this request deleted, ordered by member DID, then principal DID, then grant identifier; their members are detached from every connection before this response is sent, and each principal's replay floor rises so the statements cannot be stored again."
-        },
-        "remaining": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "How many stored grants still match the request after it, because `limit` was reached. Send the same request again to revoke them; `0` when none remain."
-        },
-        "unmatchedGrantIds": {
-          "type": "array",
-          "maxItems": 256,
-          "items": {
-            "$ref": "#/$defs/GrantId"
-          },
-          "description": "Requested grant identifiers that name no stored grant matching the request."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -198,30 +160,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "maxLength": 128,
       "pattern": "^[A-Za-z0-9._:-]+$",
       "description": "A grant's identifier, chosen by the member DID's signer and carried in its grant statement; a UUID is RECOMMENDED. A mediator refuses a grant whose identifier is already on the member DID's record."
-    },
-    "GrantRef": {
-      "title": "GrantRef",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "grantId",
-        "did",
-        "principal"
-      ],
-      "description": "Identifies one stored grant and the two parties to it.",
-      "properties": {
-        "grantId": {
-          "$ref": "#/$defs/GrantId"
-        },
-        "did": {
-          "$ref": "#/$defs/MuxDid",
-          "description": "The member DID."
-        },
-        "principal": {
-          "$ref": "#/$defs/MuxDid",
-          "description": "The principal DID the grant delegates to."
-        }
-      }
     },
     "MuxDid": {
       "title": "MuxDid",

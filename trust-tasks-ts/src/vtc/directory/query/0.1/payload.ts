@@ -101,31 +101,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Directory Query — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "subject",
-        "fields"
-      ],
-      "properties": {
-        "subject": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The projected member's DID."
-        },
-        "fields": {
-          "type": "object",
-          "additionalProperties": true,
-          "description": "The permitted projection. A withheld field is ABSENT, never present-and-null."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

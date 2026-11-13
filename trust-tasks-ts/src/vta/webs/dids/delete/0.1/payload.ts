@@ -128,49 +128,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA did:webs DIDs Delete — response payload",
-      "description": "Success response to vta/webs/dids/delete. Type https://trusttasks.org/spec/vta/webs/dids/delete/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "deactivated",
-        "newlyDeactivated",
-        "versionId",
-        "slotRemoved"
-      ],
-      "properties": {
-        "did": {
-          "type": "string"
-        },
-        "deactivated": {
-          "const": true,
-          "description": "Always true in a success response: the deactivating rotation is published and committed."
-        },
-        "newlyDeactivated": {
-          "type": "boolean",
-          "description": "True when this request published the deactivating rotation; false when the DID was already deactivated."
-        },
-        "versionId": {
-          "type": "string",
-          "pattern": "^[0-9]+:[A-Za-z0-9_-]+$",
-          "description": "The deactivating rotation as `<sequence number>:<SAID>`: the DID's last event."
-        },
-        "slotRemoved": {
-          "type": "boolean",
-          "description": "Whether the hosting server confirmed the slot's removal. False means the DID still resolves, as deactivated, and `hostCleanupError` says why."
-        },
-        "hostCleanupError": {
-          "type": "string",
-          "description": "Present exactly when `slotRemoved` is false: what stopped the slot's removal. A consumer of the response MUST surface it. A further delete request retries the removal."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

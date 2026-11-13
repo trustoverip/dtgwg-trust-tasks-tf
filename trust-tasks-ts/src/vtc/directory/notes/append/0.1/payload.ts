@@ -113,24 +113,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Directory — Notes — Append — response payload",
-      "description": "The success response to a vtc/directory/notes/append/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/notes/append/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "note"
-      ],
-      "properties": {
-        "note": {
-          "$ref": "#/$defs/AdminNote"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -139,52 +121,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "AdminNote": {
-      "title": "AdminNote",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "noteId",
-        "entryId",
-        "author",
-        "createdAt"
-      ],
-      "properties": {
-        "noteId": {
-          "$ref": "#/$defs/NoteId"
-        },
-        "entryId": {
-          "$ref": "#/$defs/EntryId"
-        },
-        "author": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048,
-          "description": "DID of the administrator who wrote the note."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "text": {
-          "$ref": "#/$defs/NoteText",
-          "description": "The note. Absent from a note that has since been redacted, except in vtc/directory/notes/export, which returns every note as written."
-        },
-        "followUp": {
-          "type": "string",
-          "format": "date",
-          "description": "Optional date by which the note asks for a follow-up."
-        },
-        "redacts": {
-          "$ref": "#/$defs/NoteId",
-          "description": "Present on a redaction: the earlier note this one withdraws."
-        },
-        "redactedBy": {
-          "$ref": "#/$defs/NoteId",
-          "description": "Present on a note that a later note redacted."
-        }
       }
     },
     "NoteId": {

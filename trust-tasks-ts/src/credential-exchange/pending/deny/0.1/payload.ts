@@ -94,33 +94,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Credential Exchange Pending Deny — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "status"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The deferral that was refused."
-        },
-        "status": {
-          "type": "string",
-          "enum": [
-            "denied"
-          ],
-          "description": "Terminal status. A single-valued enum rather than a bare string: a denial has exactly one outcome, and leaving the field open would invite consumers to infer meaning from free text."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

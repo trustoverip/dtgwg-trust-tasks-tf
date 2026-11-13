@@ -125,31 +125,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Install Claim Finish — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "adminDid",
-        "setupSessionToken"
-      ],
-      "properties": {
-        "adminDid": {
-          "type": "string",
-          "pattern": "^did:key:z",
-          "description": "Candidate admin DID derived from the passkey's Ed25519 public key."
-        },
-        "setupSessionToken": {
-          "type": "string",
-          "minLength": 1,
-          "description": "EdDSA JWT (aud=vtc-install-session, 5min TTL) consumed by admin/bootstrap."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

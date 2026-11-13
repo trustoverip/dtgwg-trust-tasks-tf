@@ -131,32 +131,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Consent List — response payload",
-      "description": "The grants the requesting bridge is authorized to enforce.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "grants"
-      ],
-      "properties": {
-        "grants": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/ConsentGrant"
-          },
-          "description": "Matching consent grants."
-        },
-        "cursor": {
-          "type": "string",
-          "description": "Optional cursor for incremental follow-up."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -166,64 +140,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "ConsentGrant": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "subject",
-        "effect",
-        "grantedBy",
-        "grantedAt"
-      ],
-      "description": "A recorded consent decision over a ConsentSubject.",
-      "properties": {
-        "subject": {
-          "$ref": "#/$defs/ConsentSubject"
-        },
-        "effect": {
-          "$ref": "#/$defs/Effect"
-        },
-        "scope": {
-          "$ref": "#/$defs/Scope",
-          "description": "Granted scope. REQUIRED when `effect` is `allow`; absent for `deny`."
-        },
-        "grantedBy": {
-          "type": "string",
-          "minLength": 1,
-          "description": "VID of the approver who made the decision."
-        },
-        "grantedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "RFC 3339 time the decision was recorded."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Optional. After this time the grant lapses and the subject must be re-consented."
-        },
-        "evidence": {
-          "type": "string",
-          "description": "How the decision was authorized — e.g. \"did-signed\" (approver's DID signed the consent/decision) or \"bridge-attested\" (an enrolled bridge relayed the operator's out-of-band choice)."
-        }
-      }
-    },
-    "Scope": {
-      "type": "string",
-      "enum": [
-        "receive",
-        "converse"
-      ],
-      "description": "What the agent may do: `receive` = read inbound on this conversation; `converse` = read and reply."
-    },
-    "Effect": {
-      "type": "string",
-      "enum": [
-        "allow",
-        "deny"
-      ],
-      "description": "Whether the subject is permitted. The ABSENCE of any grant is treated as `deny` (default-deny)."
     },
     "ConsentSubject": {
       "type": "object",

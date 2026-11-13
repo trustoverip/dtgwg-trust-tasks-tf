@@ -113,56 +113,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Attestation Report — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "teeType",
-        "evidence",
-        "nonce",
-        "generatedAt"
-      ],
-      "properties": {
-        "teeType": {
-          "type": "string",
-          "enum": [
-            "nitro",
-            "sev-snp",
-            "simulated"
-          ],
-          "description": "The platform that produced the evidence, and so how to verify it."
-        },
-        "evidence": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 65536,
-          "pattern": "^[A-Za-z0-9+/_-]+={0,2}$",
-          "description": "The platform's quote, base64: a COSE_Sign1 attestation document for nitro, an attestation report for sev-snp. Verified against the vendor's root, never trusted on the agent's word."
-        },
-        "nonce": {
-          "type": "string",
-          "pattern": "^[0-9a-f]{64}$",
-          "description": "The request's nonce, echoed. A verifier checks the nonce inside the evidence, not this."
-        },
-        "vtaDid": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 1000,
-          "description": "The DID the evidence binds as its user data. A verifier checks the evidence binds it and that it is the response document's issuer."
-        },
-        "generatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the evidence was produced. Informational: freshness comes from the nonce."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

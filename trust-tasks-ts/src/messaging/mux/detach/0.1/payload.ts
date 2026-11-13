@@ -122,48 +122,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Messaging — Mux Detach — response payload",
-      "description": "The success response to a messaging/mux/detach request: every requested DID appears in `detached` or `notAttached`. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/mux/detach/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "detached",
-        "retainedByGrant",
-        "notAttached"
-      ],
-      "properties": {
-        "detached": {
-          "type": "array",
-          "maxItems": 256,
-          "items": {
-            "$ref": "#/$defs/MuxDid"
-          },
-          "description": "DIDs whose session attach was removed. Each has left the connection, unless it is also listed in `retainedByGrant`."
-        },
-        "retainedByGrant": {
-          "type": "array",
-          "maxItems": 256,
-          "items": {
-            "$ref": "#/$defs/MuxDid"
-          },
-          "description": "DIDs that are also members through a stored grant: their session attach was removed, and they stay on the connection under the grant's scope. Revoke the grant with messaging/mux/revoke to remove them."
-        },
-        "notAttached": {
-          "type": "array",
-          "maxItems": 256,
-          "items": {
-            "$ref": "#/$defs/MuxDid"
-          },
-          "description": "DIDs that had no session attach on this connection. Nothing changed for them."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

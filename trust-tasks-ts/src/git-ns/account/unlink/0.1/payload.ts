@@ -104,31 +104,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Git Namespaces — Unlink Forge Account — response payload",
-      "description": "The account that was unlinked, and when.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "unlinked",
-        "unlinkedAt"
-      ],
-      "properties": {
-        "unlinked": {
-          "$ref": "#/$defs/ForgeAccount",
-          "description": "The account that is no longer linked to the member's DID."
-        },
-        "unlinkedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the binding was deleted."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -137,31 +112,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "ForgeAccount": {
-      "title": "ForgeAccount",
-      "description": "A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "forge",
-        "id",
-        "login"
-      ],
-      "properties": {
-        "forge": {
-          "$ref": "#/$defs/ForgeHost"
-        },
-        "id": {
-          "$ref": "#/$defs/ForgeId"
-        },
-        "login": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 100,
-          "description": "The account's current login, as the forge reported it when last seen. Display only."
-        }
       }
     },
     "ForgeId": {

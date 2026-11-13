@@ -116,55 +116,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Registry Record Read — response payload (a TrustRecord)",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "entity_id",
-        "authority_id",
-        "action",
-        "resource",
-        "record_type"
-      ],
-      "properties": {
-        "entity_id": {
-          "type": "string"
-        },
-        "authority_id": {
-          "type": "string"
-        },
-        "action": {
-          "type": "string"
-        },
-        "resource": {
-          "type": "string"
-        },
-        "recognized": {
-          "type": "boolean"
-        },
-        "authorized": {
-          "type": "boolean"
-        },
-        "context": {
-          "type": "object",
-          "additionalProperties": true
-        },
-        "record_type": {
-          "$ref": "#/$defs/RecordType"
-        }
-      }
-    },
-    "RecordType": {
-      "title": "RecordType",
-      "type": "string",
-      "enum": [
-        "authorization",
-        "recognition"
-      ],
-      "description": "Whether the record asserts an authorization or a recognition relationship."
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -231,16 +182,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "recognition"
       ],
       "description": "Whether the record asserts an authorization or a recognition relationship."
-    },
-    "Ext": {
-      "title": "Ext",
-      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-      "type": "object",
-      "minProperties": 1,
-      "additionalProperties": true,
-      "propertyNames": {
-        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
     }
   }
 };

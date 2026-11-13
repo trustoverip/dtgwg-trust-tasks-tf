@@ -117,54 +117,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Persona Attribute Purge Version — response payload",
-      "description": "Success response to persona/attribute/purge-version. Type https://trusttasks.org/spec/persona/attribute/purge-version/1.0#response. Purging a version that is not held is a success that purges nothing, so a repeated purge converges.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "attributeId",
-        "purged"
-      ],
-      "properties": {
-        "attributeId": {
-          "$ref": "#/$defs/Ulid"
-        },
-        "purged": {
-          "type": "array",
-          "maxItems": 64,
-          "items": {
-            "$ref": "#/$defs/Version"
-          },
-          "description": "The versions actually removed. Empty when none named was held."
-        },
-        "stalePins": {
-          "type": "array",
-          "maxItems": 256,
-          "description": "Profiles that pinned a purged version and now present that entry as stale — which is to say, disclose nothing for it until the holder repins or edits them. Named because a purge that quietly shortened what three faces present is the surprise this family exists to prevent. Absent when none did.",
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "profileId",
-              "pinVersion"
-            ],
-            "properties": {
-              "profileId": {
-                "$ref": "#/$defs/Ulid"
-              },
-              "pinVersion": {
-                "$ref": "#/$defs/Version"
-              }
-            }
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

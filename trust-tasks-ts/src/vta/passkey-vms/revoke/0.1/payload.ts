@@ -106,19 +106,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Passkey-VM Revoke — response payload",
-      "description": "Empty success body. The verificationMethod has been removed via a WebVH log entry. Modelled as an object so future additive fields (e.g. the resulting WebVH version) do not require a version bump.",
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

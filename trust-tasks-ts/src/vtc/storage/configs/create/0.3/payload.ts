@@ -130,23 +130,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Storage — Configs — Create — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "config"
-      ],
-      "properties": {
-        "config": {
-          "$ref": "#/$defs/StorageConfig"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -156,77 +139,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "StorageConfig": {
-      "title": "StorageConfig",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "label",
-        "settings",
-        "state",
-        "createdBy",
-        "createdAt"
-      ],
-      "description": "One storage config as the community holds it. Carries no secret.",
-      "properties": {
-        "id": {
-          "$ref": "#/$defs/StorageConfigId"
-        },
-        "label": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "description": "A display name for administrators (`EU — S3 (main account)`). Shown to a room's creator with the config's kind when the community lets them choose."
-        },
-        "settings": {
-          "$ref": "#/$defs/StorageSettings"
-        },
-        "auth": {
-          "$ref": "#/$defs/StorageAuth"
-        },
-        "capacityBytes": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Total ciphertext bytes the community will store on this config, across every room assigned to it. A capacity, not a policy: an upload that would cross it is refused with scope `storage`. Absent means no capacity set."
-        },
-        "state": {
-          "$ref": "#/$defs/ConfigState"
-        },
-        "isDefault": {
-          "type": "boolean",
-          "description": "True for the config a room is assigned to when neither the community's policy nor its creator names one."
-        },
-        "createdBy": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "updatedBy": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time"
-        }
-      }
-    },
-    "ConfigState": {
-      "title": "ConfigState",
-      "type": "string",
-      "enum": [
-        "active",
-        "draining",
-        "retired"
-      ],
-      "description": "`active`: accepts new rooms and new uploads. `draining`: retired by an administrator while blobs still name it — refuses new rooms and new uploads, keeps serving reads, and becomes `retired` when a migration has emptied it. `retired`: refuses new rooms and new uploads and holds no blob. A config is never deleted while a blob names it."
     },
     "StorageAuth": {
       "title": "StorageAuth",

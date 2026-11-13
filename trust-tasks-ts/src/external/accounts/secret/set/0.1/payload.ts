@@ -104,28 +104,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "External Accounts — Secret — Set — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "fingerprint",
-        "setAt"
-      ],
-      "properties": {
-        "fingerprint": {
-          "$ref": "#/$defs/SecretFingerprint"
-        },
-        "setAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -135,13 +113,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "SecretFingerprint": {
-      "title": "SecretFingerprint",
-      "type": "string",
-      "pattern": "^hmacsha256:[A-Za-z0-9_-]{22}$",
-      "maxLength": 33,
-      "description": "Which secret is set, without being a way to test guesses at it. `hmacsha256:` followed by the base64url encoding, without padding, of the first 16 bytes of HMAC-SHA256 over the secret's bytes under a fingerprint key the custodian holds and never discloses. Comparable only between fingerprints made by the same custodian: a re-entered value can be confirmed, while the same secret at two custodians gives unrelated fingerprints. Never a bare hash of the secret, which would let anyone who reads it run a dictionary against it offline; and deliberately not a DigestMultibase, since multihash has no code for a keyed digest."
     },
     "SealedTransferBundle": {
       "title": "SealedTransferBundle",
@@ -212,29 +183,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "pattern": "^hmacsha256:[A-Za-z0-9_-]{22}$",
       "maxLength": 33,
       "description": "Which secret is set, without being a way to test guesses at it. `hmacsha256:` followed by the base64url encoding, without padding, of the first 16 bytes of HMAC-SHA256 over the secret's bytes under a fingerprint key the custodian holds and never discloses. Comparable only between fingerprints made by the same custodian: a re-entered value can be confirmed, while the same secret at two custodians gives unrelated fingerprints. Never a bare hash of the secret, which would let anyone who reads it run a dictionary against it offline; and deliberately not a DigestMultibase, since multihash has no code for a keyed digest."
-    },
-    "SealedTransferBundle": {
-      "title": "SealedTransferBundle",
-      "type": "string",
-      "minLength": 64,
-      "maxLength": 65536,
-      "pattern": "^-----BEGIN VTA SEALED BUNDLE-----[\\s\\S]+-----END VTA SEALED BUNDLE-----\\s*$",
-      "description": "A sealed-transfer bundle: OpenPGP-style ASCII armor around an HPKE-sealed `SealedPayloadV1` (base mode, X25519-HKDF-SHA256 KEM, HKDF-SHA256 KDF, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`), with a producer assertion and Bundle-Id, Chunk and Digest-Algo headers bound into the associated data. Each task states the key it is sealed to: a single-use wrapping key from keys/import-wrapping-key for external/accounts/secret/set, and the caller's key-agreement key for external/credentials/issue. Its cleartext is an ExternalSecretPayload, an ExternalCredentialPayload or, from external/credentials/issue 0.2 for `s3-static-presign`, a PresignedRequestSet. The only form in which secret material crosses the wire in this family, in either direction: the seal is what keeps a terminating proxy, a relay, a request log or a debug dump of \"the response\" from ever holding a usable secret, whatever transport carried the document."
-    },
-    "AccountId": {
-      "title": "AccountId",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 64,
-      "pattern": "^[a-z0-9][a-z0-9-]*$",
-      "description": "The account's identifier within its context, chosen by whoever creates it. Lowercase letters, digits and hyphens, so that it can be embedded in a certificate subject, a token subject or a provider-side condition without escaping. Unique per context; never reused after deletion while anything that names it (a provider-side trust policy, an audit row) may still exist."
-    },
-    "AccountContextId": {
-      "title": "AccountContextId",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 256,
-      "description": "The custodian context that owns the account. Act scope in this context decides who may manage the account and who may consume it; the account's keys are derived in this context's key space."
     }
   }
 };

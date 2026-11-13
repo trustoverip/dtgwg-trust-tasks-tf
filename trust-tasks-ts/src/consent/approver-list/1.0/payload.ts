@@ -96,27 +96,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Consent List Approvers — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "approvers"
-      ],
-      "properties": {
-        "approvers": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/ApproverBinding"
-          },
-          "description": "Matching approver bindings."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -126,49 +105,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "ApproverBinding": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "platform",
-        "context",
-        "approver"
-      ],
-      "description": "Who approves inbound-messaging consent for a given platform within a VTA context, and how the prompt reaches them.",
-      "properties": {
-        "platform": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Messaging-platform tag, e.g. \"signal\", \"whatsapp\", \"slack\"."
-        },
-        "context": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The VTA context path this binding applies to."
-        },
-        "approver": {
-          "type": "string",
-          "minLength": 1,
-          "description": "VID (DID) of the operator authorized to decide consent for this platform/context."
-        },
-        "route": {
-          "$ref": "#/$defs/Route",
-          "description": "Optional. How to deliver the prompt; defaults to bridge-relay when omitted."
-        },
-        "routeHint": {
-          "type": "string",
-          "description": "Optional routing detail — e.g. the operator's opaque conversationRef for `bridge-relay`."
-        }
-      }
-    },
-    "Route": {
-      "type": "string",
-      "enum": [
-        "wake",
-        "bridge-relay"
-      ],
-      "description": "How a consent prompt reaches the approver: `wake` pushes to the approver's device for a DID-signed decision; `bridge-relay` renders it through an enrolled bridge (e.g. a numbered card in the operator's messaging app) for a bridge-attested decision."
     }
   }
 };

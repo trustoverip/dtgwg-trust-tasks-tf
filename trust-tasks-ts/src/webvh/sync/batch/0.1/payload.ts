@@ -104,56 +104,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "WebVH Sync Batch — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "results"
-      ],
-      "properties": {
-        "results": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/EntryResult"
-          },
-          "description": "One result per entry of `updates`, in request order."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
-    "EntryResult": {
-      "title": "EntryResult",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "mnemonic",
-        "status"
-      ],
-      "properties": {
-        "mnemonic": {
-          "type": "string",
-          "minLength": 1
-        },
-        "status": {
-          "type": "string",
-          "enum": [
-            "applied",
-            "unchanged",
-            "refused"
-          ],
-          "description": "`applied` and `unchanged` as in webvh/sync/update/0.2. `refused` — the entry was permanently refused; see `code`."
-        },
-        "code": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Present if and only if `status` is `refused`: the webvh/sync/update/0.2 error code the entry would have received on its own (e.g. `webvh/sync/update:historyRewrite`)."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -276,52 +226,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "SyncUpdate": {
-      "title": "SyncUpdate",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "mnemonic",
-        "didId",
-        "logContent",
-        "versionCount",
-        "disabled"
-      ],
-      "properties": {
-        "mnemonic": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The slot path on its hosting domain (e.g. `alice`, `people/alice`, or `.well-known` for a root DID)."
-        },
-        "didId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The DID the log establishes. A replica MUST refuse a log that does not establish exactly this DID."
-        },
-        "logContent": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The slot's complete did.jsonl — one log entry per line — not a delta."
-        },
-        "witnessContent": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The slot's did-witness.json. ABSENT means the slot holds no witness proofs: the replica MUST drop any witness proofs it holds for the slot. Absence never means \"unchanged\"."
-        },
-        "versionCount": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "Number of entries in `logContent`, as the source counts them. A replica MUST refuse an update whose `logContent` does not contain exactly this many entries."
-        },
-        "disabled": {
-          "type": "boolean",
-          "description": "Whether the source has disabled the slot. A replica MUST stop serving a disabled slot and MUST resume only on an update carrying `false`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
       }
     }
   }

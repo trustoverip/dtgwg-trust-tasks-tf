@@ -87,33 +87,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "WebVH Sync Delete — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "mnemonic",
-        "status"
-      ],
-      "properties": {
-        "mnemonic": {
-          "type": "string",
-          "minLength": 1
-        },
-        "status": {
-          "type": "string",
-          "enum": [
-            "deleted",
-            "absent"
-          ],
-          "description": "`deleted` — the replica held the slot and has removed it. `absent` — it held nothing for the slot; the delete is idempotent."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

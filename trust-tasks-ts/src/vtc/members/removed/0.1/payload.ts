@@ -92,63 +92,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Members Removed — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "removed"
-      ],
-      "properties": {
-        "removed": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/RemovedMember"
-          },
-          "description": "One entry per tombstone. Purged members are absent."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
-    "RemovedMember": {
-      "$anchor": "removedMember",
-      "title": "RemovedMember",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "removedAt",
-        "status"
-      ],
-      "properties": {
-        "did": {
-          "type": "string",
-          "minLength": 1,
-          "description": "DID of the departed member."
-        },
-        "removedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the removal took effect."
-        },
-        "statusListIndex": {
-          "type": [
-            "integer",
-            "null"
-          ],
-          "minimum": 0,
-          "description": "Slot in the community's published status list holding this member's revocation bit."
-        },
-        "status": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Tombstone state, e.g. how the departure was dispositioned."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

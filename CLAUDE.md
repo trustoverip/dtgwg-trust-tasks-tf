@@ -378,9 +378,23 @@ and `/specs/index.json`; the bundles are not committed.
 
 - **A bundle is built from `generate_one`'s own code paths** — `spec_schemas()`
   for the schemas and `read_spec_policy()` for the policy — so its `schema` /
-  `responseSchema` are, as parsed JSON, the module's `PAYLOAD_SCHEMA`s. Change
-  the inlining or a policy reader there and both move together; do not give
-  `bundle.rs` a reader of its own.
+  `responseSchema` are, as parsed JSON, the module's `PAYLOAD_SCHEMA`s before
+  pruning. Change the inlining or a policy reader there and both move
+  together; do not give `bundle.rs` a reader of its own.
+- **The bundle carries both sides' full `$defs`; the generators prune what
+  they emit** (#1098). Every schema constant in all four languages — prebuilt
+  and consumer-side — keeps only the root `$defs` its root reaches (the request
+  drops `Response` and what only it uses; the response document drops what
+  only the request uses), and drops `$defs` when nothing is left. Pruning the
+  bundle instead would change every digest a `trust-tasks.lock` pins. Seven
+  independent copies of the rule (`prune_unreachable_defs` in
+  `trust-tasks-build`, `pruneUnreachableDefs` in the three `build-*-bindings`
+  scripts, `trust-tasks-ts-gen`, the Go `trust-tasks-gen` and the Dart
+  generator), plus an eighth re-derivation in `check-bundles`; a local `$ref`
+  other than `#/$defs/<name>…` keeps every definition in all of them. Change
+  one, change all. `check-bindings` fails on a shipped schema with a dangling
+  `#/$defs/` reference, which is what catches the copies agreeing on a wrong
+  rule. Types are still generated from the whole schema.
 - **`propertyOrder`, `defsOrder` and `defOrigins` restore what canonical form
   loses** — the authored member order, the `$defs` order the TS/Go/Dart
   inliners produce (a last-in-first-out `$ref` frontier, replayed in

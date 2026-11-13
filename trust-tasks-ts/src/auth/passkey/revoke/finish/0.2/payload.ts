@@ -125,54 +125,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Auth Passkey Revoke Finish — response payload",
-      "description": "Acknowledgement of the removed credential. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/revoke/finish/0.2#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "credentialId",
-        "revokedAt",
-        "remaining",
-        "subject",
-        "purpose"
-      ],
-      "properties": {
-        "credentialId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The credential that was removed. Echoed from the server-side binding rather than from the request, so the producer can confirm the ceremony destroyed what they intended."
-        },
-        "subject": {
-          "type": "string",
-          "minLength": 1,
-          "description": "New in 0.2. The VID the revoked credential was bound to."
-        },
-        "purpose": {
-          "type": "string",
-          "enum": [
-            "session",
-            "stepUp"
-          ],
-          "description": "New in 0.2. What the revoked credential authenticated. `remaining` counts the subject's credentials of this purpose."
-        },
-        "revokedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the credential was unbound."
-        },
-        "remaining": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "How many credentials of the revoked credential's purpose the subject still has. For a session credential never zero — the last-credential guard guarantees it; for a step-up credential it may be zero. Present so whoever just pruned an estate knows what is left without a second round-trip."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -306,65 +258,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "AssertionResponse": {
-      "$anchor": "assertionResponse",
-      "title": "AuthenticatorAssertionResponse (login)",
-      "description": "The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "rawId",
-        "type",
-        "response"
-      ],
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "rawId": {
-          "type": "string"
-        },
-        "type": {
-          "const": "public-key"
-        },
-        "response": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "clientDataJSON",
-            "authenticatorData",
-            "signature"
-          ],
-          "properties": {
-            "clientDataJSON": {
-              "type": "string"
-            },
-            "authenticatorData": {
-              "type": "string"
-            },
-            "signature": {
-              "type": "string"
-            },
-            "userHandle": {
-              "type": [
-                "string",
-                "null"
-              ]
-            }
-          }
-        },
-        "authenticatorAttachment": {
-          "enum": [
-            "platform",
-            "cross-platform"
-          ]
-        },
-        "clientExtensionResults": {
-          "type": "object"
-        }
       }
     }
   }

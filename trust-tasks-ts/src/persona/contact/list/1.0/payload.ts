@@ -147,74 +147,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Persona Contact List — response payload",
-      "description": "Success response to persona/contact/list. Type https://trusttasks.org/spec/persona/contact/list/1.0#response. Summaries carry no claim values: a list is for finding a contact, and finding one does not require disclosing every contact's details.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "contacts"
-      ],
-      "properties": {
-        "contacts": {
-          "type": "array",
-          "maxItems": 500,
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "contactId",
-              "subjectDid",
-              "knownByPersona",
-              "rev",
-              "receivedAt"
-            ],
-            "properties": {
-              "contactId": {
-                "$ref": "#/$defs/Ulid"
-              },
-              "subjectDid": {
-                "type": "string",
-                "minLength": 1
-              },
-              "knownByPersona": {
-                "type": "string",
-                "minLength": 1
-              },
-              "rev": {
-                "type": "integer",
-                "minimum": 1
-              },
-              "displayName": {
-                "type": "string",
-                "maxLength": 256,
-                "description": "A rendering hint drawn from the contact's own disclosed display-name claim, so a list is legible. Absent when they disclosed none; a producer MUST NOT substitute the DID silently as though it were a name."
-              },
-              "claimCount": {
-                "type": "integer",
-                "minimum": 0
-              },
-              "receivedAt": {
-                "type": "string",
-                "format": "date-time"
-              },
-              "hasUnreviewedChange": {
-                "type": "boolean",
-                "description": "True when the current revision superseded another and the holder has not yet acknowledged the difference. This is what lets a producer badge a contact whose payment address moved — the whole point of keeping revisions."
-              }
-            }
-          }
-        },
-        "nextCursor": {
-          "type": "string",
-          "maxLength": 4096
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -224,12 +156,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "Ulid": {
-      "title": "Ulid",
-      "description": "A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.",
-      "type": "string",
-      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
     }
   }
 };

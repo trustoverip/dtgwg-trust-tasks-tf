@@ -101,31 +101,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Backup Complete Export — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "bundleId",
-        "downloaded"
-      ],
-      "properties": {
-        "bundleId": {
-          "type": "string",
-          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "description": "Echoed so the response stands alone as a record."
-        },
-        "downloaded": {
-          "type": "boolean",
-          "description": "Whether the byte stream was actually fetched before this acknowledgement. Required, not optional: false is the honest answer when the operator skipped the download or the slot expired first, and an absent member would let that be read as success."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

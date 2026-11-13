@@ -509,38 +509,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         }
       }
     },
-    "Response": {
-      "$anchor": "response",
-      "title": "Keys — Sign CSR — response payload",
-      "description": "The success response to a keys/sign-csr request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/sign-csr/0.1#response. Failures use trust-task-error, not this shape.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "keyId",
-        "csr",
-        "publicKey"
-      ],
-      "properties": {
-        "keyId": {
-          "type": "string",
-          "description": "The key the request is for. Echoed so a response separated from its request is still attributable."
-        },
-        "csr": {
-          "type": "string",
-          "maxLength": 16384,
-          "pattern": "^-----BEGIN CERTIFICATE REQUEST-----\\n[A-Za-z0-9+/=\\n]+-----END CERTIFICATE REQUEST-----\\n?$",
-          "description": "The PKCS#10 CertificationRequest, DER-encoded and armoured as RFC 7468 `CERTIFICATE REQUEST` text: base64 in lines of 64 characters, LF line endings."
-        },
-        "publicKey": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The key's public half, multibase-encoded exactly as `KeyRecord.publicKey` carries it, so the producer can confirm the request is for the key it meant without parsing the DER."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -559,39 +527,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
-    "RdnAttribute": {
-      "title": "RdnAttribute",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type",
-        "value"
-      ],
-      "description": "One attribute of the subject distinguished name, encoded as a single-valued RDN.",
-      "properties": {
-        "type": {
-          "type": "string",
-          "enum": [
-            "CN",
-            "O",
-            "OU",
-            "C",
-            "L",
-            "ST",
-            "organizationIdentifier",
-            "serialNumber",
-            "emailAddress"
-          ],
-          "description": "The attribute type, by its X.520 / PKCS #9 short name (externally owned, carried verbatim): `CN` commonName (2.5.4.3), `O` organizationName (2.5.4.10), `OU` organizationalUnitName (2.5.4.11), `C` countryName (2.5.4.6), `L` localityName (2.5.4.7), `ST` stateOrProvinceName (2.5.4.8), `organizationIdentifier` (2.5.4.97), `serialNumber` (2.5.4.5), `emailAddress` (1.2.840.113549.1.9.1). Closed: an attribute outside the set is refused, never passed through by OID."
-        },
-        "value": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 255,
-          "description": "The attribute value as text. The custodian encodes it without normalising, trimming or re-casing it, and checks the per-type rules of the specification (character set and length), refusing a value that breaks them with `keys/sign-csr:subjectInvalid`."
-        }
-      }
-    },
     "Response": {
       "$anchor": "response",
       "title": "Keys — Sign CSR — response payload",

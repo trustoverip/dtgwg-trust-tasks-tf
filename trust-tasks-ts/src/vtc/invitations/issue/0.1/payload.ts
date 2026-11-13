@@ -112,38 +112,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Invitations Issue — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "subjectDid",
-        "vic"
-      ],
-      "properties": {
-        "subjectDid": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The invited DID, echoed."
-        },
-        "validUntil": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "format": "date-time",
-          "description": "Expiry, or null when the invitation does not lapse."
-        },
-        "vic": {
-          "type": "object",
-          "description": "The signed Invitation Credential (W3C VC). Opaque here; returned once."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
