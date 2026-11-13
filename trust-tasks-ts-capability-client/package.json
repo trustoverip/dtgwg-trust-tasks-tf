@@ -23,7 +23,7 @@
   },
   "devDependencies": {
     "@openvtc/trust-tasks": "^0.29.0",
-    "@types/node": "^22.0.0",
+    "@types/node": "^26.6.6",
     "typescript": "^7.0.2"
   }
 }

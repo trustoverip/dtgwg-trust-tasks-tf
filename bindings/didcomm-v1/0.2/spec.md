@@ -64,7 +64,7 @@ This binding carries the document in an **`~attach` decorator** ([RFC 0017](http
   "@id": "8f1c9e2a-1b81-4d3e-9b51-7a3c89e3d1f2",
   "@type": "https://trusttasks.org/binding/didcomm-v1/0.2/trust-task/1.0/task",
   "~thread": { "thid": "4a0e2b77-88c1-4d55-9f2a-6c3d1e5b7a92" },
-  "comment": "Trust Task: https://trusttasks.org/spec/acl/grant/0.1",
+  "comment": "Trust Task: https://trusttasks.org/spec/acl/grant/0.3",
   "~attach": [{
     "@id": "trust-task",
     "mime-type": "application/json",

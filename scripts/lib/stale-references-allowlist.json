@@ -7,5 +7,41 @@
     "rooms/records/list": {
       "rooms/records/put/0.1": "Says which records carry no `blobs`: those written by `rooms/records/put/0.1`, which had none. Naming a later version would invert it."
     }
+  },
+  "documents": {
+    "$comment": "The same check over every *.md outside specs/ and every trust-tasks.toml under examples/ (#1129). `history` names documents that are about the past as a whole (glob → reason); `exceptions` names one deliberate reference (root-relative path → <slug>/<version> → reason). An exception no longer found is reported as stale; a history glob is a category and is not.",
+    "history": {
+      "**/CHANGELOG*.md": "Generated from the conventional commits that released each version; an entry records what was true when it shipped.",
+      "SPEC.md": "Generated from the canonical framework repository at a pinned commit; its examples are fixed there, not here.",
+      "docs/adr/**": "An architecture decision record is the decision as it was taken; a later record supersedes it, it is never edited."
+    },
+    "exceptions": {
+      "CONTRIBUTING-SPECS.md": {
+        "auth/refresh/0.1": "The example of a spec targeting a framework before 0.4 that carries the Authorization section anyway, and of bearer possession as the whole authority; 0.2 targets 0.6 and adds a session-key proof, so it is neither."
+      },
+      "bindings/https/0.3/spec.md": {
+        "trust-task-discovery/0.1": "Normative binding text naming the discovery Type URI a server registers; moving it changes the binding's conformance, so it is decided with the binding, not rewritten."
+      },
+      "bindings/tsp/0.1/spec.md": {
+        "trust-task-discovery/0.1": "Normative binding text naming the discovery Type URI a consumer handles; moving it changes the binding's conformance, so it is decided with the binding, not rewritten."
+      },
+      "docs/design-notes/task-control-and-corrigibility.md": {
+        "witness/session/submit/0.1": "A quotation, attributed to the version it was taken from."
+      },
+      "docs/design-notes/trust-ceremonies.md": {
+        "vtc/join-requests/manifest/0.1": "§13.1 records the join flow as it existed when the note was written (2026-08-09).",
+        "vtc/join-requests/submit/0.1": "§13.1 records the join flow as it existed when the note was written (2026-08-09)."
+      },
+      "examples/consumer-app/index-equivalence/trust-tasks.toml": {
+        "acl/list/0.1": "The index-equivalence lock covers superseded versions on purpose (tests/index_equivalence.rs).",
+        "sync/event/0.1": "The index-equivalence lock covers a superseded version with no response on purpose (tests/index_equivalence.rs)."
+      },
+      "trust-tasks-cli/README.md": {
+        "vault/upsert/0.3": "The example session adds a superseded version to show the deprecation warning and the `Moved 0.3 → 0.4` migration."
+      },
+      "trust-tasks-go/README.md": {
+        "acl/grant/0.1": "History: what acl/grant/0.1's allowedKeys warned, quoted as the reason optional slices are pointers."
+      }
+    }
   }
 }
