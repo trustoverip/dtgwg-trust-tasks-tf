@@ -11,6 +11,7 @@
     "regen": "npm run build-ts-bindings && npm run build-go-bindings && npm run build-dart-bindings && cargo run -p trust-tasks-codegen && cargo fmt --all",
     "generate-framework-spec": "node scripts/generate-framework-spec.mjs",
     "check-framework-spec": "node scripts/generate-framework-spec.mjs --check-committed",
+    "bump-framework-spec": "node scripts/generate-framework-spec.mjs --update",
     "new-spec": "node scripts/new-spec.mjs",
     "codemod:spec-links": "node scripts/codemod-spec-links.mjs",
     "serve": "node scripts/serve-website.mjs",

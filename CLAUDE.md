@@ -14,17 +14,21 @@ regenerates the website registry; `cargo run -p trust-tasks-codegen`,
 `SPEC.md` is the Trust Tasks framework specification, **generated** from the
 canonical source, [trustoverip/dtgwg-trust-tasks-spec](https://github.com/trustoverip/dtgwg-trust-tasks-spec),
 by `npm run generate-framework-spec` (`scripts/generate-framework-spec.mjs`).
-A framework change is a PR to that repository; this copy follows it. Every
-deploying run of `deploy.yml` (push to `main`, the nightly schedule, a dispatch
-from the canonical repository) regenerates `SPEC.md` from canonical `main` before
-the build, so trusttasks.org always serves the latest canonical text, and the
-committed copy is refreshed by running the script and committing the result. A
-**pull request builds from the committed copy** instead (#1138):
-`npm run check-framework-spec` regenerates from the canonical commit `SPEC.md`'s
-own banner names and fails only if the committed file is not that output, so a
-canonical change cannot turn an unrelated PR red. When a scheduled or dispatched
-deploy fails, it opens (or comments on) a "Scheduled website deploy is failing"
-issue.
+A framework change is a PR to that repository; this copy follows it **at a
+pinned commit**: `scripts/framework-spec-source.json` names the canonical
+commit (full SHA) `SPEC.md` is generated from, and `npm run
+generate-framework-spec` regenerates from that commit. The pin moves only in a
+pull request — `.github/workflows/framework-spec-bump.yml` runs nightly and on
+a `framework-spec-updated` dispatch from the canonical repository, runs `npm run
+bump-framework-spec` (canonical `main` → pin + `SPEC.md`), and opens or
+refreshes one "regenerate SPEC.md" PR when the text changed; when it fails it
+opens (or comments on) a "Framework specification bump is failing" issue. The
+website serves the **committed** copy: every run of `deploy.yml`, pull request
+or deploy, runs `npm run check-framework-spec`, which fetches the pinned commit
+by SHA, confirms the checkout is that commit, regenerates, and fails if the
+committed file is not that output (#1138). So a canonical change reaches
+trusttasks.org only by a reviewed merge here, and cannot turn an unrelated PR
+red.
 
 - **Section numbers are assigned by the generator**, in canonical order — the
   canonical text has none. When a canonical change moves a section, its number
