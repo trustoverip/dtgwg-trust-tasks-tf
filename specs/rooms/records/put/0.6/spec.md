@@ -39,8 +39,8 @@ exposure:
   actsAsSubject: false
   rationale: "On an `open` room the host reads record content in the clear. On `attributed` and `private` rooms it receives ciphertext and learns only the key, version, epoch and — when the record carries a file — which stored blob it names. The presentation discloses the acting member on `open` and `attributed`; on `private` it discloses only that some member acted."
 maxDocumentBytes:
-  request: 65536
-  rationale: "A record is a short note, message or reaction, or the description of a file whose content travels as a blob through rooms/blobs/upload/*; 64 KiB of serialized request document, proof and presentation included, is the bound a deployed host already enforces, and anything larger belongs in a file."
+  request: 2097152
+  rationale: "A record is a note, message or reaction, or the description of a file whose content travels as a blob through rooms/blobs/upload/*; 2 MiB of serialized request document, proof and presentation included, admits every record a deployed host accepts today, so no stored record becomes non-conforming, and anything larger belongs in a file."
 retention:
   class: durable
   rationale: "A record persists until a member overwrites it or retracts it, and keeps the blob it names stored for as long; outliving the session that wrote it is the point of the task."
@@ -140,7 +140,7 @@ edit or a withdrawal — and a room's profile says when its writers may start us
 `recordMembers`).
 
 Version 0.6 says how large a write may be: a host **MUST** accept a request document of up to
-65,536 bytes, and anything larger is a file. Nothing in the payload changes.
+2,097,152 bytes (2 MiB), and anything larger is a file. Nothing in the payload changes.
 
 ## Status of this Document
 
@@ -148,12 +148,13 @@ This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-m
 
 ### What changed from 0.5
 
-The front matter declares `maxDocumentBytes.request`: 65,536 bytes of the serialized request
+The front matter declares `maxDocumentBytes.request`: 2,097,152 bytes (2 MiB) of the serialized request
 document as received — the JSON text, `proof` and `presentation` included, no transport
 envelope ([SPEC §12.4](/SPEC.md#124-parser-hardening)). No earlier version declared a bound, so
 each host applied its own transport default, and a record one host stored another refused: a
-room could not move between them without stranding records (#1065). 64 KiB is what a deployed
-host already enforces; a larger record carries its content as a file, whose chunks
+room could not move between them without stranding records (#1065). 2 MiB is the largest body a
+deployed host accepts today, so every record either host stores stays within the bound; a host
+with a smaller limit of its own must now raise it. A larger record carries its content as a file, whose chunks
 ([`rooms/blobs/upload/chunk/0.2`](../../../blobs/upload/chunk/0.2/spec.md)) declare their own
 bound. The bound is two-sided: a host **MUST NOT** refuse a request within it on grounds of
 size alone, and **SHOULD** refuse a larger one with the standard `malformedRequest`.
@@ -229,7 +230,7 @@ A conforming **producer** (the member, or an agent acting under an attenuated cr
 **MUST**:
 
 1. Emit a *Trust Task document* of type `https://trusttasks.org/spec/rooms/records/put/0.6`,
-   no larger than the 65,536 bytes `maxDocumentBytes.request` declares. A record whose content
+   no larger than the 2,097,152 bytes `maxDocumentBytes.request` declares. A record whose content
    would not fit carries it as a file (item 6).
 2. Present the **entire** authority chain, leaf first, ending in a credential issued by the
    room. A producer MUST NOT rely on the host resolving a link it was not given.
@@ -369,7 +370,7 @@ A conforming **consumer** (the host) **MUST**:
     author*). On a `private` room it records no author and **MUST NOT** serve one. Item 15 uses
     the same author. A host that holds records stored before it kept the author **MUST NOT**
     supply one for them.
-18. Accept a request document of up to 65,536 bytes (`maxDocumentBytes.request`), and
+18. Accept a request document of up to 2,097,152 bytes (`maxDocumentBytes.request`), and
     **SHOULD** refuse a larger one with the standard `malformedRequest`. `recordTooLarge` stays
     the refusal for a record within that bound that exceeds a smaller per-record limit of the
     host's own.
