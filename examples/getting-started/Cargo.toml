@@ -15,7 +15,7 @@ publish = false
 trust-tasks = { path = "../../trust-tasks", features = ["https", "proof-affinidi"] }
 tokio = { version = "1", features = ["full"] }
 uuid = { version = "1", features = ["v4"] }
-affinidi-secrets-resolver = "0.5"
+affinidi-secrets-resolver = "0.5.18"
 
 [build-dependencies]
 trust-tasks-build = { path = "../../trust-tasks-build" }

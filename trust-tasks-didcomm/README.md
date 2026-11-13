@@ -95,15 +95,8 @@ The `skid` is sender-chosen and proves nothing on its own — it only selects wh
 |---|---|---|
 | `tests/end_to_end.rs` | Local pack/unpack roundtrip via the bare `DIDCommAgent`; happy path, forged in-band issuer, wrong envelope type, JWE-on-wire | seconds |
 | `tests/fail_closed.rs` | The inbound gate refuses every non-authcrypt shape binding §2/§4 excludes: bare JWS (asserting the fan-out it enables), fragment-less `sender_kid`, spoofed `skid`, anoncrypt; plus the `SenderAllowlist` path | seconds |
-| `tests/mediator_e2e.rs` | Real `affinidi-messaging-test-mediator` spawned, two `did:peer` users registered as LOCAL on the mediator, framework `ENVELOPE_TYPE` round-trips through `ATM::pack_encrypted` → `ATM::unpack`, verified sender from `UnpackMetadata` slots into `DidcommHandler::peer()` correctly, framework §4.8.1 still honored | minutes (cold compile of full mediator + SDK) |
 
-The mediator test is gated `#[ignore]` so the default `cargo test` skips it. Opt in with:
-
-```sh
-cargo test -p trust-tasks-didcomm --test mediator_e2e -- --ignored
-```
-
-Currently the test proves compatibility through the SDK's pack/unpack pipeline against a live mediator's identity store and resolver — it does not yet route the packed envelope through the mediator's message-pickup protocol. Wiring up `affinidi_messaging_sdk::protocols::message_pickup` for full mediator-routed delivery is a future PR.
+The mediator integration test (`tests/mediator_e2e.rs`, a round trip through the SDK's `ATM::pack_encrypted` → `ATM::unpack` against a spawned `affinidi-messaging-test-mediator`) is out of the tree while the Affinidi messaging stack moves to `affinidi-crypto` 0.3. It returns once a test-mediator release built on `affinidi-crypto` 0.3 is published.
 
 ## Status
 
