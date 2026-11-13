@@ -144,8 +144,9 @@ where
 /// unknown senders reads the cleartext `VID_sndr` first (via
 /// [`affinidi_tsp::MetaEnvelope::parse`]), resolves it, then calls this.
 ///
-/// Rejects non-`Direct` carriage and any envelope whose cleartext sender does
-/// not match the verified `sender`, and verifies the envelope `type`.
+/// Rejects non-`Direct` carriage, any envelope whose cleartext sender does
+/// not match the verified `sender` or whose cleartext receiver names a VID
+/// other than `recipient`'s, and verifies the envelope `type`.
 ///
 /// `P` is any deserializable payload: a generated type, or
 /// `serde_json::Value` for a consumer that routes on `type` itself — see
@@ -187,6 +188,18 @@ pub(crate) fn open(
         });
     }
 
+    // The cleartext receiver VID is chosen by the sender: the seal proves only
+    // that the message was encrypted to `recipient`'s key, not that the sender
+    // addressed it to `recipient`'s VID. A message naming another VID is not
+    // for this consumer, whose identity it would otherwise take as the
+    // transport recipient (and so as the issuer of every answer). An empty
+    // receiver is the NULL-VID form, opened as `recipient`.
+    if !unpacked.receiver.is_empty() && unpacked.receiver != recipient.id {
+        return Err(TspError::Upstream(affinidi_tsp::TspError::InvalidMessage(
+            "the message is not addressed to this receiver".into(),
+        )));
+    }
+
     let envelope: Envelope =
         serde_json::from_slice(&unpacked.payload).map_err(TspError::InvalidBody)?;
     if envelope.type_ != ENVELOPE_TYPE {
@@ -194,7 +207,7 @@ pub(crate) fn open(
     }
 
     // A TSP VID is a framework VID verbatim — no normalisation.
-    let handler = TspHandler::new(Some(unpacked.receiver), Some(sender.id.clone()));
+    let handler = TspHandler::new(Some(recipient.id.clone()), Some(sender.id.clone()));
     Ok((envelope.document, handler))
 }
 
