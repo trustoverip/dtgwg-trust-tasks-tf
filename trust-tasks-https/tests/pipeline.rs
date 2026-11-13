@@ -159,7 +159,18 @@ fn echo(id: &str, message: &str) -> Value {
 /// POST `body` with `token` as the bearer; the status and the parsed body
 /// (`Value::Null` when there is none).
 async fn post(addr: SocketAddr, token: Option<&str>, body: &Value) -> (u16, Value) {
-    let mut request = reqwest::Client::new()
+    post_with(&reqwest::Client::new(), addr, token, body).await
+}
+
+/// [`post`] through a client the caller built, so a timed request does not
+/// include building the client (which loads the TLS root store).
+async fn post_with(
+    client: &reqwest::Client,
+    addr: SocketAddr,
+    token: Option<&str>,
+    body: &Value,
+) -> (u16, Value) {
+    let mut request = client
         .post(format!("http://{addr}/trust-tasks"))
         .header("content-type", "application/json")
         .body(body.to_string());
@@ -337,9 +348,10 @@ async fn a_blocking_sync_handler_runs_on_a_multi_thread_runtime() {
         tokio::spawn(
             async move { post(addr, Some("alice"), &echo("urn:uuid:slow", "slow")).await },
         );
+    let client = reqwest::Client::new();
     tokio::time::sleep(Duration::from_millis(50)).await;
     let started = std::time::Instant::now();
-    let (status, _) = post(addr, Some("alice"), &echo("urn:uuid:fast", "fast")).await;
+    let (status, _) = post_with(&client, addr, Some("alice"), &echo("urn:uuid:fast", "fast")).await;
     assert_eq!(status, 200);
     assert!(
         started.elapsed() < Duration::from_millis(250),
