@@ -16,8 +16,17 @@ fn request_example_1() {
     assert_eq!(rendered, expected, "request example failed round-trip");
 }
 #[test]
+fn request_example_2() {
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:c1e8a3f4-5b7d-4c29-9e0a-6f2b8d1c4e03\",\n  \"type\": \"https://trusttasks.org/spec/messaging/queue/purge/0.1\",\n  \"issuer\": \"did:web:admin.example\",\n  \"recipient\": \"did:web:mediator.example\",\n  \"issuedAt\": \"2026-09-21T10:11:30Z\",\n  \"payload\": {\n    \"did\": \"did:web:alice.example\",\n    \"queue\": \"send\",\n    \"peer\": \"did:web:carol.example\",\n    \"olderThanSeconds\": 3600,\n    \"storedBefore\": \"2026-09-21T10:10:00Z\",\n    \"dryRun\": false\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"cryptosuite\": \"eddsa-jcs-2022\",\n    \"verificationMethod\": \"did:web:admin.example#key-1\",\n    \"created\": \"2026-09-21T10:11:30Z\",\n    \"proofPurpose\": \"authentication\",\n    \"proofValue\": \"z5Hk...\"\n  }\n}\n";
+    let doc: trust_tasks_rs::TrustTask<spec::Payload> =
+        serde_json::from_str(JSON).expect("deserialize request example");
+    let rendered = serde_json::to_value(&doc).expect("re-serialize");
+    let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
+    assert_eq!(rendered, expected, "request example failed round-trip");
+}
+#[test]
 fn response_example_1() {
-    const JSON: &str = "{\n  \"id\": \"urn:uuid:c1e8a3f4-5b7d-4c29-9e0a-6f2b8d1c4e02\",\n  \"type\": \"https://trusttasks.org/spec/messaging/queue/purge/0.1#response\",\n  \"threadId\": \"urn:uuid:c1e8a3f4-5b7d-4c29-9e0a-6f2b8d1c4e01\",\n  \"issuer\": \"did:web:mediator.example\",\n  \"recipient\": \"did:web:admin.example\",\n  \"issuedAt\": \"2026-09-21T10:10:00Z\",\n  \"payload\": {\n    \"matched\": 912,\n    \"matchedBytes\": 1771204,\n    \"purged\": 0,\n    \"dryRun\": true\n  }\n}\n";
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:c1e8a3f4-5b7d-4c29-9e0a-6f2b8d1c4e02\",\n  \"type\": \"https://trusttasks.org/spec/messaging/queue/purge/0.1#response\",\n  \"threadId\": \"urn:uuid:c1e8a3f4-5b7d-4c29-9e0a-6f2b8d1c4e01\",\n  \"issuer\": \"did:web:mediator.example\",\n  \"recipient\": \"did:web:admin.example\",\n  \"issuedAt\": \"2026-09-21T10:10:00Z\",\n  \"payload\": {\n    \"matched\": 912,\n    \"matchedBytes\": 1771204,\n    \"purged\": 0,\n    \"dryRun\": true,\n    \"selectedAt\": \"2026-09-21T10:10:00Z\"\n  }\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Response> =
         serde_json::from_str(JSON).expect("deserialize response example");
     let rendered = serde_json::to_value(&doc).expect("re-serialize");
@@ -53,6 +62,10 @@ fn rejects_invalid_examples() {
         (
             "`dryRun` as a string — a truthy string must not be read as a boolean, or a preview could become a real purge.",
             "{\n  \"dryRun\": \"false\",\n  \"queue\": \"send\"\n}",
+        ),
+        (
+            "`storedBefore` as Unix seconds — instants are RFC 3339 strings, and a number must not be read as a bound.",
+            "{\n  \"queue\": \"send\",\n  \"storedBefore\": 1790000000\n}",
         ),
     ];
     for (i, (note, raw)) in fixtures.iter().enumerate() {
