@@ -18,7 +18,7 @@
       appear in TT_LIBRARY_CAPABILITIES. Publishing a binding
       that no row mentions would leave the matrix silently
       incomplete, which is how `didcomm/0.2` and `didcomm-v1/0.1`
-      stayed invisible on this site (see CLAUDE.md).
+      stayed invisible on this site (see docs/DEVELOPMENT.md).
 
    ── Three states, not two ───────────────────────────────
    `capabilities` is what a library SHIPS — you can install it
@@ -242,7 +242,7 @@ window.TT_LIBRARIES = [
     transports: {
       // Separate nested modules, so the core stays dependency-free.
       // Untagged: it requires affinidi-tsp-go at a pseudo-version, and has no
-      // release wiring until that library is tagged (CLAUDE.md).
+      // release wiring until that library is tagged (docs/packages/go.md).
       "binding:tsp": { package: "trust-tasks-go/tsp", dir: "trust-tasks-go/tsp", unreleased: "not yet tagged — waits on a tagged affinidi-tsp-go" },
       "binding:didcomm": { package: "trust-tasks-go/didcomm", dir: "trust-tasks-go/didcomm" },
       proof: { package: "trust-tasks-go/proof", dir: "trust-tasks-go/proof" },

@@ -93,6 +93,13 @@ authenticated sender: a body that does not deserialise is `malformedRequest`
 (§4); an in-band `issuer` that is not the authenticated sender is
 `identityMismatch`, sealed to the sender that actually authenticated.
 
+A document larger than its specification's declared `maxDocumentBytes` (SPEC
+§12.4) is `malformedRequest` too — checked once its `type` is routed, before the
+duplicate record is written, and measured as the compact JSON encoding of the
+document the envelope carried. A document read forward along `extends` is not
+held to the implemented version's bound (its own version may declare a larger
+one), and a specification that declares no bound gets none here.
+
 ### Duplicates
 
 **On by default.** §7 records that TSP data messages "do not inherently prevent

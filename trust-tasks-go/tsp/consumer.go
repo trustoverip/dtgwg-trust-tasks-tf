@@ -54,6 +54,13 @@ type Consumer struct {
 
 	// Now supplies the clock. Defaults to time.Now.
 	Now func() time.Time
+
+	// Extends is the lookup forward routing follows (SPEC §5.2 "Declared
+	// extension"): a later version whose chain reaches the implemented one is
+	// read as it. Nil means [tt.RegistryExtends], the generated registry index;
+	// pass a lookup that also knows a third-party (§6.5) specification's
+	// declarations to follow its chain.
+	Extends tt.ExtendsLookup
 }
 
 // NewConsumer returns a Consumer with the record on, an in-process guard and the
@@ -178,14 +185,15 @@ func Consume[P, R any](
 		}), nil
 	}
 
-	// SPEC §5.2 "Declared extension": a later version whose registry extends
-	// chain reaches spec's is read as spec's version, its payload pruned to the
-	// members spec's schema knows, as the Rust dispatcher and the Dart bindings
-	// read it (#1117). Another specification is unsupportedType, an unreached
-	// version of this one unsupportedVersion, and a payload too complex to prune
-	// malformedRequest — each routed to the authenticated sender. The proof and
-	// the item-11 digest stay over the document as received (Received below).
-	reading, reason, err := tt.ReadForSpec(unpacked.Document, spec)
+	// SPEC §5.2 "Declared extension": a later version whose extends chain
+	// (per c.Extends; nil is the registry's) reaches spec's is read as spec's
+	// version, its payload pruned to the members spec's schema knows, as the
+	// Rust dispatcher and the Dart bindings read it (#1117). Another
+	// specification is unsupportedType, an unreached version of this one
+	// unsupportedVersion, and a payload too complex to prune malformedRequest
+	// — each routed to the authenticated sender. The proof and the item-11
+	// digest stay over the document as received (Received below).
+	reading, reason, err := tt.ReadForSpecWith(unpacked.Document, spec, c.Extends)
 	if err != nil {
 		return refused(&raw, tt.RejectReason{
 			Code:    tt.CodeMalformedRequest,
@@ -238,7 +246,10 @@ func Consume[P, R any](
 		// The document as it arrived: the item-11 digest is over it, so a
 		// member the payload type does not model still tells two documents
 		// under one id apart.
+		// It is also what SPEC §12.4's maxDocumentBytes bounds, where the core
+		// enforces it.
 		Received:   unpacked.Document,
+		Extends:    c.Extends,
 		MyVID:      transport.Local,
 		Now:        now,
 		NewErrorID: c.newID,

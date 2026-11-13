@@ -112,6 +112,21 @@ pub enum UnanswerableBody {
 /// burns its `id`. Only a body with nothing to answer — no string `id` or no
 /// Trust Task `type` to name in `inResponseTo` — or a transport that
 /// authenticated no sender comes back as an [`UnanswerableBody`] error.
+///
+/// # The declared size bound is enforced on a body
+///
+/// [`consume_body`](GuardedConsumer::consume_body) and
+/// [`consume_body_dispatched`](GuardedConsumer::consume_body_dispatched) hold
+/// the body to its specification's declared `maxDocumentBytes` (SPEC §12.4)
+/// and refuse a larger one `malformedRequest` — after the envelope has
+/// authenticated the sender, to that sender, and before the record is written.
+/// A document read forward along `extends` is not held to the implemented
+/// version's bound. [`consume`](GuardedConsumer::consume) and
+/// [`consume_dispatched`](GuardedConsumer::consume_dispatched) take a document
+/// already parsed and do not know its size; a caller that does passes
+/// [`checks`](GuardedConsumer::checks)`()`
+/// [`.with_received_bytes(..)`](ConsumeChecks::with_received_bytes) to
+/// [`consume_inbound`] itself.
 pub struct GuardedConsumer {
     record: Record,
     freshness: FreshnessPolicy,
@@ -238,6 +253,17 @@ impl GuardedConsumer {
         }
     }
 
+    /// [`checks`](Self::checks), plus the size of `body` as
+    /// [`ConsumeChecks::received_bytes`] — so a document larger than its
+    /// specification's declared `maxDocumentBytes` (SPEC §12.4) is refused
+    /// `malformedRequest`, to the authenticated sender and before the record
+    /// is written. A specification that declares no bound leaves the document
+    /// unbounded here: a message binding has no transport body limit of its
+    /// own to fall back on.
+    fn checks_for_body(&self, body: &Value) -> ConsumeChecks<'_> {
+        self.checks().with_received_bytes(document_size(body), None)
+    }
+
     /// The guarded pipeline over a body a binding has opened: parse it, apply
     /// `envelope_check`, then run [`consume_inbound`] with this consumer's
     /// checks and the proof policy bound to `body` as received.
@@ -289,18 +315,19 @@ impl GuardedConsumer {
             Ok(doc) => doc,
             Err(refusal) => return refusal.into_outcome(error_id_factory),
         };
-        Ok(self
-            .consume(
-                transport,
-                doc,
-                my_vid,
-                proof_policy.with_received(&body),
-                payload_policy,
-                now,
-                error_id_factory,
-                handler,
-            )
-            .await)
+        let checks = self.checks_for_body(&body);
+        Ok(consume_inbound(
+            transport,
+            proof_policy.with_received(&body),
+            payload_policy,
+            checks,
+            doc,
+            my_vid,
+            now,
+            error_id_factory,
+            handler,
+        )
+        .await)
     }
 
     /// [`consume_body`](Self::consume_body) for a consumer that takes a
@@ -338,19 +365,20 @@ impl GuardedConsumer {
             Ok(doc) => doc,
             Err(refusal) => return refusal.into_outcome(error_id_factory),
         };
-        Ok(self
-            .consume_dispatched(
-                transport,
-                doc,
-                my_vid,
-                proof_policy.with_received(&body),
-                payload_policy,
-                dispatcher,
-                now,
-                error_id_factory,
-                context,
-            )
-            .await)
+        let checks = self.checks_for_body(&body);
+        Ok(consume_dispatched(
+            transport,
+            proof_policy.with_received(&body),
+            payload_policy,
+            checks,
+            dispatcher,
+            doc,
+            my_vid,
+            now,
+            error_id_factory,
+            context,
+        )
+        .await)
     }
 
     /// The guarded pipeline over a document the caller parsed itself —
@@ -443,6 +471,35 @@ impl GuardedConsumer {
         )
         .await
     }
+}
+
+/// The size, in bytes, of `body`'s JSON text — the measure SPEC §12.4's
+/// `maxDocumentBytes` bounds.
+///
+/// A message binding hands [`GuardedConsumer`] the document its envelope
+/// carried already decoded (the DIDComm stacks parse the plaintext message
+/// themselves), so the bytes as received are not available. The compact
+/// serialization stands in for them: it is what a conforming producer emits,
+/// and it never exceeds the received text by more than a reformatted number
+/// (`1e2` read back as `100.0`) — whitespace, escapes and `proof` count no
+/// more than they did on the wire. Counted through a sink, without
+/// materialising the text.
+pub(crate) fn document_size(body: &Value) -> usize {
+    struct Count(usize);
+    impl std::io::Write for Count {
+        fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+            self.0 += buf.len();
+            Ok(buf.len())
+        }
+        fn flush(&mut self) -> std::io::Result<()> {
+            Ok(())
+        }
+    }
+    let mut count = Count(0);
+    // Serializing a `Value` to an infallible writer cannot fail: its map keys
+    // are strings and its numbers finite.
+    let _ = serde_json::to_writer(&mut count, body);
+    count.0
 }
 
 /// A body refused before the pipeline.

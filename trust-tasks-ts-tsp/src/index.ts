@@ -25,4 +25,4 @@ export {
   type PackKeys,
   type UnpackKeys,
 } from "./envelope.js";
-export { TspConsumer, type TspConsumerConfig, type SenderPublicKeys, type Received } from "./consumer.js";
+export { TspConsumer, DOCUMENT_TOO_LARGE_WIRE_MESSAGE, type TspConsumerConfig, type SenderPublicKeys, type Received } from "./consumer.js";
