@@ -74,8 +74,11 @@
 //! **retryable** refusal releases the claim, so the bit-for-bit resend SPEC
 //! §8.4 invites is evaluated afresh; a **non-retryable** refusal is the
 //! determination for that document, recorded and returned to a resend with
-//! its own status. A handler that panics, or whose request is abandoned
-//! mid-handler, releases the claim.
+//! its own status. A handler that panics releases the claim. A request
+//! abandoned **while its handler runs** (the request timeout, a client
+//! disconnect) leaves the claim in flight, because the handler may already
+//! have committed its effect: a resend is answered `202 Accepted` until the
+//! record expires with the acceptance window, and is never executed again.
 //!
 //! ## Handlers and blocking
 //!
@@ -87,13 +90,14 @@
 //! move elsewhere while it does; on a current-thread runtime it runs inline.
 //!
 //! Not `spawn_blocking`, deliberately. A request abandoned by the
-//! [`TimeoutLayer`] (or a client disconnect) releases its item-11 claim, and a
-//! closure on the blocking pool would carry on executing after the release —
-//! so a resend could execute the effect a second time while the first was
-//! still running. A synchronous handler therefore runs to completion inside
-//! its request, and [`HttpsServerBuilder::request_timeout`] does **not**
-//! bound it: the timeout fires only at an `await`. Write a handler that can
-//! take long as an async one.
+//! [`TimeoutLayer`] (or a client disconnect) would leave a closure on the
+//! blocking pool executing with nobody left to record its result, so every
+//! resend would be answered as in flight until the record expired, and the
+//! timeout would bound nothing anyway. A synchronous handler therefore runs to
+//! completion inside its request, its result is recorded, and
+//! [`HttpsServerBuilder::request_timeout`] does **not** bound it: the timeout
+//! fires only at an `await`. Write a handler that can take long as an async
+//! one.
 
 use std::collections::BTreeSet;
 use std::future::Future;
@@ -393,10 +397,17 @@ impl HttpsServerBuilder {
     /// The handler takes the typed request and the [`RequestContext`] by
     /// value and returns a future of the response payload or a
     /// [`RejectReason`]. The future runs on the request's task, so
-    /// [`Self::request_timeout`] bounds it; a request abandoned mid-handler
-    /// (the timeout, a client disconnect) drops the future and releases the
-    /// duplicate-execution claim, as a handler that never ran — make the
-    /// effect atomic, or idempotent, across a cancellation point.
+    /// [`Self::request_timeout`] bounds it.
+    ///
+    /// A request abandoned mid-handler (the timeout, a client disconnect)
+    /// drops the future at whichever `await` it had reached. The effect may
+    /// already have committed, so the duplicate-execution claim is **left in
+    /// flight** rather than released: a bit-for-bit resend is answered
+    /// `202 Accepted` and does not run the handler again, until the record
+    /// expires with the acceptance window. The producer learns nothing more
+    /// about that execution, and a new attempt is a new `id` (SPEC §8.4). An
+    /// effect half-done at the cancellation point stays half-done: make it
+    /// atomic, or idempotent, across each `await`.
     ///
     /// ```rust,ignore
     /// HttpsServer::builder()
@@ -1094,7 +1105,7 @@ async fn dispatch_handler(
 /// Run a synchronous handler. One that may block runs under
 /// `block_in_place` on a multi-threaded runtime, so the worker's other tasks
 /// are moved off it, and inline otherwise — never on the blocking pool, where
-/// it would outlive a cancelled request and the claim that request released
+/// it would outlive a cancelled request with nobody to record its result
 /// (module docs, *Handlers and blocking*).
 fn run_sync<T>(may_block: bool, handler: impl FnOnce() -> T) -> T {
     if may_block {

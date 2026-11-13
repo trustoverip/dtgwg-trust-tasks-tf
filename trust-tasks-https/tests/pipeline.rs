@@ -562,3 +562,44 @@ async fn a_payload_validator_refuses_before_the_handler() {
     assert_eq!(code(&body), "malformedRequest");
     assert_eq!(calls.load(Ordering::SeqCst), 0);
 }
+
+// ─── Cancellation after the effect committed ──────────────────────────────
+
+/// An async handler that commits its effect and is then cut off at a later
+/// `await` by the request timeout must not run again on a resend: the claim
+/// is left in flight (the effect may have happened), so the resend is
+/// answered `202 Accepted`, not executed.
+#[tokio::test]
+async fn an_async_handler_cancelled_after_committing_is_not_executed_again() {
+    let calls = Arc::new(AtomicUsize::new(0));
+    let counter = Arc::clone(&calls);
+    let server = base()
+        .request_timeout(Duration::from_millis(100))
+        .on_async::<Echo, _, _>(move |req, _ctx| {
+            let counter = Arc::clone(&counter);
+            async move {
+                // The effect commits...
+                counter.fetch_add(1, Ordering::SeqCst);
+                // ...then the handler awaits past the request's budget.
+                tokio::time::sleep(Duration::from_secs(5)).await;
+                Ok(EchoResponse {
+                    message: req.payload.message,
+                })
+            }
+        })
+        .build();
+    let addr = spawn(server).await;
+    let doc = echo("urn:uuid:cancelled-1", "hi");
+
+    let (status, _) = post(addr, Some("alice"), &doc).await;
+    assert_eq!(status, 408, "the request outlived its budget");
+    assert_eq!(calls.load(Ordering::SeqCst), 1);
+
+    let (status, body) = post(addr, Some("alice"), &doc).await;
+    assert_eq!(status, 202, "in flight, not re-executed: {body}");
+    assert_eq!(
+        calls.load(Ordering::SeqCst),
+        1,
+        "the committed effect ran a second time"
+    );
+}

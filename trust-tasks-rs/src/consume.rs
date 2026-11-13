@@ -78,6 +78,7 @@
 
 use std::collections::BTreeSet;
 use std::future::Future;
+use std::sync::atomic::{AtomicBool, Ordering as AtomicOrdering};
 
 use chrono::{DateTime, Utc};
 use serde::Serialize;
@@ -1168,17 +1169,31 @@ where
 
     // All §7.2 checks passed. Hand to the caller's business handler.
     //
-    // `claim` is held across this await: if the handler panics, or this
-    // future is dropped before the handler returns, its destructor releases
-    // the claim (see `HeldClaim`). Once the handler has returned, the claim is
+    // `claim` is held across this await. If the handler panics, its
+    // destructor releases the claim; if this future is dropped while the
+    // handler is running (a request timeout, a client disconnect), the claim
+    // is left in flight, because the handler may already have committed its
+    // effect (see `HeldClaim`). Once the handler has returned, the claim is
     // settled below exactly once.
     let doc_id = doc.id.clone();
+    let executing = AtomicBool::new(false);
     let claim = claim.map(|(guard, digest)| HeldClaim {
         guard,
         id: doc_id.clone(),
         digest: Some(digest),
+        executing: &executing,
     });
-    let outcome = handler(doc, parties).await;
+    let outcome = {
+        let mut running = std::pin::pin!(handler(doc, parties));
+        std::future::poll_fn(|cx| {
+            executing.store(true, AtomicOrdering::Relaxed);
+            running.as_mut().poll(cx)
+        })
+        .await
+    };
+    // The handler has returned: a cancellation from here on (mid-release,
+    // mid-record) abandons the settlement, not an effect in progress.
+    executing.store(false, AtomicOrdering::Relaxed);
     match outcome {
         Ok(response) => {
             if let Some(claim) = claim {
@@ -1248,18 +1263,29 @@ async fn record_settled<T: Serialize>(guard: &dyn ReplayGuard, id: &str, respons
 
 /// The item-11 claim [`consume_core`] holds while the handler runs.
 ///
-/// Released from its destructor unless [`settle`](Self::settle) took it first.
-/// That covers the two ways the handler can fail to return: a panic, which
-/// unwinds through the await and drops the claim, and cancellation, where the
-/// future running the pipeline is dropped mid-await (a request timeout, a
-/// client disconnect). Either way nothing says the effect happened, and
-/// holding the claim would answer every resend with an in-flight duplicate
-/// until the record expired. The panic itself continues unchanged.
+/// Unless [`settle`](Self::settle) took it first, its destructor decides what
+/// becomes of the claim when the handler did not return:
+///
+/// * **A panic** unwinds through the await and drops the claim: it is
+///   released, and the panic continues unchanged.
+/// * **Cancellation while the handler runs** (the future running the
+///   pipeline dropped mid-await by a request timeout or a client disconnect)
+///   leaves the claim **in flight**. The handler may have committed its
+///   effect before the await it was cancelled at, and releasing would let a
+///   resend execute it a second time. A resend is answered as an in-flight
+///   duplicate until the record expires with the acceptance window: the same
+///   answer a resend gets while a handler that cannot be cancelled is still
+///   running.
+/// * **Cancellation before the handler first ran, or after it returned**
+///   (while a retryable refusal's claim is being released) releases the
+///   claim: no effect is in progress.
 struct HeldClaim<'g> {
     guard: &'g dyn ReplayGuard,
     id: String,
     /// `None` once settled.
     digest: Option<DocumentDigest>,
+    /// Whether the handler has been polled and has not yet returned.
+    executing: &'g AtomicBool,
 }
 
 impl<'g> HeldClaim<'g> {
@@ -1279,6 +1305,11 @@ impl<'g> HeldClaim<'g> {
 impl Drop for HeldClaim<'_> {
     fn drop(&mut self) {
         if let Some(digest) = self.digest.take() {
+            if self.executing.load(AtomicOrdering::Relaxed) && !std::thread::panicking() {
+                // Cancelled mid-handler: the effect may have happened. Leave
+                // the claim in flight; it expires with the record.
+                return;
+            }
             // A destructor that panics while a handler's panic unwinds aborts
             // the process; a guard that panics here loses only this release.
             let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
