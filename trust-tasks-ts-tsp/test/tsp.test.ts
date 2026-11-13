@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import type { TrustTaskDocument, ResolvedParties, ErrorResponse } from "@openvtc/trust-tasks/runtime";
-import { respondWith } from "@openvtc/trust-tasks/runtime";
+import { InMemoryReplayGuard, respondWith } from "@openvtc/trust-tasks/runtime";
 import { ed25519, x25519 } from "@noble/curves/ed25519.js";
 import {
   packTrustTask,
@@ -10,6 +10,7 @@ import {
   ENVELOPE_TYPE,
   TspEnvelopeError,
   TspConsumer,
+  DOCUMENT_TOO_LARGE_WIRE_MESSAGE,
   type SenderPublicKeys,
   type PackKeys,
   type UnpackKeys,
@@ -310,4 +311,74 @@ test("consumer: a later version declaring extends is read forward", async () => 
 
   assert.equal(codeOf((await run(`${base}0.99`)).r), "unsupportedVersion");
   assert.equal(codeOf((await run("https://trusttasks.org/spec/rooms/records/get/0.4")).r), "unsupportedType");
+});
+
+// SPEC §12.4 (#1121): the declared maxDocumentBytes is held against the
+// received document — refused malformedRequest to the authenticated sender,
+// before the item-11 record or the handler; within it, never refused for size.
+test("consumer: a document over its declared maxDocumentBytes is refused before the record", async () => {
+  const doc = echoDoc();
+  const size = new TextEncoder().encode(JSON.stringify(doc)).length;
+  const run = async (bound: number) => {
+    const h = harness();
+    const guard = new InMemoryReplayGuard();
+    const consumer = new TspConsumer({
+      recipientVid: h.bob.vid,
+      decryptionKey: h.bob.encPriv,
+      signingKey: h.bob.sigPriv,
+      resolveSender: () => senderKeys(h.alice),
+      guard,
+      now,
+    });
+    const calls: string[] = [];
+    const r = await consumer.receive<Echo, Echo>(
+      await h.seal(doc),
+      { ...echoSpec, maxDocumentBytes: bound } as typeof echoSpec,
+      (d) => {
+        calls.push(d.payload.text);
+        return respondWith<Echo, Echo>(d, "urn:uuid:resp", { text: "ok" });
+      },
+    );
+    return { r, calls, guard, h };
+  };
+
+  const over = await run(size - 1);
+  assert.equal(over.r.outcome.kind, "rejected");
+  assert.equal(codeOf(over.r), "malformedRequest");
+  const error = JSON.parse(new TextDecoder().decode(over.r.reply!)) as ErrorResponse;
+  assert.ok(error.recipient === undefined || error.recipient === over.h.alice.vid);
+  // Sealed back to the TSP-authenticated sender, who opens it.
+  const sealed = await over.h.consumer.packReply(over.r);
+  const back = await unpackTrustTask(sealed, { recipientVid: over.h.alice.vid, keys: unpackKeys(over.h.alice, over.h.bob) });
+  assert.equal(back.document.type, (error as unknown as { type: string }).type);
+  assert.equal(error.payload.message, DOCUMENT_TOO_LARGE_WIRE_MESSAGE);
+  assert.deepEqual(over.calls, []);
+  assert.equal(over.guard.size, 0, "a refused document writes no record");
+
+  const at = await run(size);
+  assert.equal(at.r.outcome.kind, "handled");
+  assert.deepEqual(at.calls, ["hello"]);
+  assert.equal(at.guard.size, 1);
+});
+
+test("consumer: a document read forward is not held to the implemented version's bound", async () => {
+  const base = "https://trusttasks.org/spec/rooms/records/put/";
+  const spec = {
+    typeUri: `${base}0.4`,
+    isBearer: false,
+    isProofRequired: false,
+    isRecipientRequired: false,
+    payloadSchema: { type: "object", properties: { text: { type: "string" } } },
+    maxDocumentBytes: 16,
+  } as unknown as typeof echoSpec;
+  const respond = (d: TrustTaskDocument<Echo>) => respondWith<Echo, Echo>(d, "urn:uuid:resp", { text: "ok" });
+
+  const h = harness();
+  const forward = await h.consumer.receive<Echo, Echo>(await h.seal(echoDoc({ type: `${base}0.5` })), spec, respond);
+  assert.equal(forward.outcome.kind, "handled");
+
+  // The same bound refuses a document of the implemented version itself.
+  const h2 = harness();
+  const same = await h2.consumer.receive<Echo, Echo>(await h2.seal(echoDoc({ type: `${base}0.4` })), spec, respond);
+  assert.equal(codeOf(same), "malformedRequest");
 });

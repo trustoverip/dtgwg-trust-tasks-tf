@@ -150,7 +150,9 @@ pub struct ConsumeChecks<'a> {
     /// specification that declares none, than
     /// [`default_max_document_bytes`](Self::default_max_document_bytes) — is
     /// refused `malformedRequest` as soon as the type is known, before anything
-    /// else reads it. See [`Self::with_received_bytes`].
+    /// else reads it. A document read forward along `extends` (SPEC §5.2) is
+    /// not held to the implemented version's bound, since its own version may
+    /// declare a larger one. See [`Self::with_received_bytes`].
     pub received_bytes: Option<usize>,
     /// The bound [`received_bytes`](Self::received_bytes) is held to for a
     /// specification that declares no `maxDocumentBytes`: the binding's own
@@ -575,13 +577,18 @@ where
     // Type URI, or a later version whose declared extension chain reaches it
     // (SPEC §5.2, as `extension::read_as` reads one); refuse anything else
     // before the record is written, as the dispatched path does.
-    if let Err(reason) = crate::extension::reading_of::<P>(&doc.type_uri) {
-        return route_rejection(transport, &doc, reason, error_id_factory).into();
-    }
+    let reading = match crate::extension::reading_of::<P>(&doc.type_uri) {
+        Ok(reading) => reading,
+        Err(reason) => return route_rejection(transport, &doc, reason, error_id_factory).into(),
+    };
     // SPEC §12.4 — the size bound the specification declares, now that the
-    // type is known.
-    if let Some(reason) = checks.size_rejection(P::MAX_DOCUMENT_BYTES) {
-        return route_rejection(transport, &doc, reason, error_id_factory).into();
+    // type is known. Only for a document of `P`'s own version: a later version
+    // read forward along `extends` may declare a larger bound of its own, and
+    // a document within that MUST NOT be refused for its size.
+    if matches!(reading, crate::extension::Reading::Same) {
+        if let Some(reason) = checks.size_rejection(P::MAX_DOCUMENT_BYTES) {
+            return route_rejection(transport, &doc, reason, error_id_factory).into();
+        }
     }
     consume_core(
         transport,
@@ -630,8 +637,10 @@ where
 ///    pruned to what the implemented version knows, as
 ///    [`AsyncDispatcher::dispatch`] does.
 /// 2. **The size bound** — with [`ConsumeChecks::received_bytes`], a document
-///    larger than the registered `P`'s `MAX_DOCUMENT_BYTES` (or the default
-///    bound, for one that declares none) is `malformedRequest`.
+///    of the registered `P`'s own version larger than its `MAX_DOCUMENT_BYTES`
+///    (or the default bound, for one that declares none) is
+///    `malformedRequest`. A document routed forward along `extends` is not
+///    held to `P`'s bound: its own version may declare a larger one.
 /// 3. **The payload deserializes** into the registered `P` — the part of item
 ///    2 the typed path performs by parsing — or the document is
 ///    `malformedRequest`.
@@ -787,8 +796,13 @@ where
 
     // SPEC §12.4 — the size bound the implemented specification declares, the
     // moment the type is known and before anything else reads the document.
-    if let Some(reason) = checks.size_rejection(facts.max_document_bytes) {
-        return route_rejection(transport, &doc, reason, error_id_factory);
+    // A document read forward along `extends` is not held to it: its own
+    // (later) version may declare a larger bound, and a document within that
+    // MUST NOT be refused for its size.
+    if !forwarded {
+        if let Some(reason) = checks.size_rejection(facts.max_document_bytes) {
+            return route_rejection(transport, &doc, reason, error_id_factory);
+        }
     }
 
     let prune = |payload: &mut Value| -> Result<(), RejectReason> {
