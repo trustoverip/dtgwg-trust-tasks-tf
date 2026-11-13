@@ -200,7 +200,7 @@ export function parseFrontMatter(text) {
  * The §7.2 policy a spec's front matter gives each variant, as the generated
  * libraries emit it (`IS_BEARER`, `IS_PROOF_REQUIRED`, `IS_RECIPIENT_REQUIRED`,
  * `IS_ISSUED_AT_REQUIRED`). Derived here independently of the generators and
- * of check-bindings-conformance.mjs, for the reason CLAUDE.md gives for not
+ * of check-bindings-conformance.mjs, for the reason docs/DEVELOPMENT.md gives for not
  * sharing that derivation.
  *
  * `proofRequirement` and `issuedAtRequirement` take either one `requirement`

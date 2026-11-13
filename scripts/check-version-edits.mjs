@@ -5,7 +5,7 @@
 // Every publish job keys on "this manifest's version is not on the registry /
 // not tagged yet" (publish.yml), so a version moved by an ordinary feature PR
 // publishes the moment that PR merges — bypassing the Release PR, and for Go and
-// crates.io irreversibly. CLAUDE.md and RELEASING.md say never to do it; this
+// crates.io irreversibly. docs/DEVELOPMENT.md and RELEASING.md say never to do it; this
 // makes it a check rather than a convention (#1137). The workflow runs it only
 // when the head branch is not this repository's `release` branch.
 //
