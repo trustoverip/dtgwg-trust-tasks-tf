@@ -10,6 +10,12 @@
  * not exist, as the origin would — so 404s and content negotiation behave in
  * the preview the way they do on trusttasks.org.
  *
+ * Every response carries the headers CloudFront's response headers policy
+ * adds (infra/cloudfront/response-headers-policy.json) — the
+ * Content-Security-Policy among them, so a page change the policy would block
+ * shows up here, and in `npm run smoke:website`, before it ships. HSTS aside:
+ * a browser ignores it over plain HTTP.
+ *
  * Differences that remain: no compression, no Cache-Control, and the deploy's
  * gzip-encoded upload of tasks.generated.js is not reproduced.
  *
@@ -26,6 +32,7 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { responseHeaders } from '../infra/cloudfront/response-headers.mjs';
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ROOT = path.join(REPO, 'website');
@@ -34,6 +41,8 @@ const ROOT = path.join(REPO, 'website');
 // module system, so it is evaluated rather than imported — as its tests do.
 const functionSource = fs.readFileSync(path.join(REPO, 'infra', 'cloudfront', 'type-uri-negotiation.js'), 'utf8');
 const handler = new Function(`${functionSource}; return handler;`)();
+
+const POLICY_HEADERS = responseHeaders(undefined, { https: false });
 
 const portArg = process.argv.indexOf('--port');
 const PORT = portArg >= 0 ? Number(process.argv[portArg + 1]) : 8765;
@@ -69,6 +78,7 @@ function notFound(res) {
 }
 
 const server = http.createServer((req, res) => {
+  for (const [name, value] of Object.entries(POLICY_HEADERS)) res.setHeader(name, value);
   let url;
   try {
     url = new URL(req.url, 'http://localhost');
