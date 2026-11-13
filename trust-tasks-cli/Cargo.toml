@@ -49,3 +49,16 @@ tempfile = "3"
 # served with rustls on ring (the provider ureq already uses).
 rcgen = "0.14"
 rustls = { version = "0.23", default-features = false, features = ["ring", "std"] }
+
+# `cargo binstall trust-tasks-cli` downloads the prebuilt binary that
+# .github/workflows/cli-binaries.yml attaches to this crate's GitHub Release
+# (#1128) instead of compiling. The names here and the workflow's `Package` step
+# must agree: trust-tasks-cli-<version>-<target>.tar.gz (.zip on Windows) under
+# the release-plz tag trust-tasks-cli-v<version>, binary at the archive root.
+[package.metadata.binstall]
+pkg-url = "{ repo }/releases/download/{ name }-v{ version }/{ name }-{ version }-{ target }{ archive-suffix }"
+bin-dir = "{ bin }{ binary-ext }"
+pkg-fmt = "tgz"
+
+[package.metadata.binstall.overrides.x86_64-pc-windows-msvc]
+pkg-fmt = "zip"
