@@ -61,6 +61,7 @@ CI runs the build on every pull request (validation only) and on every push to `
 
 Contributions are governed by the ToIP Foundation's contribution process:
 
+- Participation is governed by the LF Decentralized Trust [Code of Conduct](https://www.lfdecentralizedtrust.org/code-of-conduct), which the ToIP community follows.
 - Every commit **MUST** carry a DCO `Signed-off-by` trailer. Use `git commit -s`.
 - By opening a pull request, contributors agree to the Open Web Foundation **Contributor License Agreement** in [`CONTRIBUTING.md`](CONTRIBUTING.md). That agreement grants the patent and copyright rights necessary to incorporate contributions into the published specification.
 - Source code in this repository — the client libraries, `scripts/`, `website/` and build tooling — is contributed under the license in [`SOURCE_CODE.md`](SOURCE_CODE.md) (Apache-2.0).
