@@ -54,6 +54,7 @@ library;
 
 import 'canonical.dart';
 import 'codes.dart';
+import 'critical.dart';
 import 'document.dart';
 import 'extension.dart' show typeRefusalFor;
 import 'freshness.dart';
@@ -75,13 +76,30 @@ import 'transport.dart';
 /// can make, and the failure mode of getting it wrong silently — an ACL grant
 /// applied twice by a mediator retry — is not one to discover after the fact.
 class ConsumeChecks {
-  const ConsumeChecks({required this.freshness, required this.replay});
+  const ConsumeChecks({
+    required this.freshness,
+    required this.replay,
+    this.recognizedExtensions = const [],
+  });
 
   /// Bounds the document in time (SPEC §4.2, §7.2 item 4).
   final FreshnessPolicy freshness;
 
   /// Applies (or knowingly disapplies) SPEC §7.2 item 11.
   final ReplayPolicy replay;
+
+  /// The `ext` namespaces this consumer implements (SPEC §4.5.2). A document
+  /// that marks any other namespace critical in an `extCritical` member is
+  /// refused `unsupportedExtension`. None by default.
+  final List<String> recognizedExtensions;
+
+  /// A copy of these checks recognizing [namespaces].
+  ConsumeChecks withRecognizedExtensions(List<String> namespaces) =>
+      ConsumeChecks(
+        freshness: freshness,
+        replay: replay,
+        recognizedExtensions: namespaces,
+      );
 }
 
 /// The posture for a *consequential Trust Task* (§2): item 11 enforced against
@@ -91,9 +109,9 @@ class ConsumeChecks {
 /// discloses a secret, or otherwise cannot be undone by ignoring the next
 /// document.
 ConsumeChecks consequentialChecks(ReplayGuard guard) => ConsumeChecks(
-      freshness: FreshnessPolicy.consequential,
-      replay: ReplayPolicy.guarded(guard),
-    );
+  freshness: FreshnessPolicy.consequential,
+  replay: ReplayPolicy.guarded(guard),
+);
 
 /// The posture for a task that is **not** consequential, or whose specification
 /// "explicitly declares repeated execution safe and intended" — the narrow
@@ -103,9 +121,9 @@ ConsumeChecks consequentialChecks(ReplayGuard guard) => ConsumeChecks(
 /// future-dated document and one with an empty validity interval are malformed
 /// whatever the task does.
 ConsumeChecks notConsequentialChecks() => const ConsumeChecks(
-      freshness: FreshnessPolicy.defaults,
-      replay: ReplayPolicy.notConsequential(),
-    );
+  freshness: FreshnessPolicy.defaults,
+  replay: ReplayPolicy.notConsequential(),
+);
 
 /// Verifies a document's Data Integrity proof (SPEC §4.7).
 ///
@@ -343,8 +361,7 @@ Refusal refuse<P>(
   String id,
   RejectReason reason, {
   Clock? clock,
-}) =>
-    Refusal(rejectWith(request, id, toErrorPayload(reason), clock: clock));
+}) => Refusal(rejectWith(request, id, toErrorPayload(reason), clock: clock));
 
 /// Run SPEC §7.2 items 4–8 against [doc], then either call [handler] or build
 /// the routed error response per §8.1.
@@ -403,7 +420,8 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
   if (exceedsNestingDepth(received ?? doc.toJson(payloadToJson))) {
     const reason = RejectReason(
       code: StandardCode.malformedRequest,
-      message: 'document is not a well-formed Trust Task document '
+      message:
+          'document is not a well-formed Trust Task document '
           '(SPEC §7.2 item 1): nested more than $maxNestingDepth levels deep',
     );
     final error = reject(transport, doc, newErrorId(), reason, clock: clock);
@@ -433,8 +451,10 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
   if (payloadPolicy is ValidatePayload && schema != null) {
     String? failure;
     try {
-      failure =
-          payloadPolicy.validator.validate(schema, payloadToJson(doc.payload));
+      failure = payloadPolicy.validator.validate(
+        schema,
+        payloadToJson(doc.payload),
+      );
     } on Object catch (e) {
       // A validator that throws has not accepted the document. Treating an
       // exception as a pass would make a broken validator indistinguishable from
@@ -518,6 +538,22 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
   final policy = enforceSpecPolicy(doc, spec);
   if (policy != null) return route(policy);
 
+  // SPEC §4.5.2 — namespaces marked critical. After the proof and the per-spec
+  // checks, so a sender nobody has authenticated learns nothing about which
+  // namespaces this consumer implements, and before the record, so a refused
+  // document never burns its `id`. Read from the document as received where the
+  // caller passed it: [doc]'s typed payload drops every member its type does
+  // not model, and the marking is exactly such a member when the payload was
+  // not validated.
+  final critical = checkCriticalExtensions(
+    received != null && received['id'] == doc.id && received['type'] == doc.type
+        ? received['payload']
+        : payloadToJson(doc.payload),
+    spec.payloadSchema,
+    checks.recognizedExtensions,
+  );
+  if (critical != null) return route(critical);
+
   // §7.2 item 11 — the duplicate-execution record. Deliberately **last**:
   // claiming the `id` marks the document as accepted for execution, and a
   // document some earlier check refuses was never accepted. Claiming first would
@@ -535,7 +571,8 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
     // forward along an `extends` chain, the pruned payload members — so two
     // documents differing only there would be absorbed as a duplicate instead
     // of refused `idConflict`.
-    final digest = received != null &&
+    final digest =
+        received != null &&
             received['id'] == doc.id &&
             received['type'] == doc.type
         ? sha256HexOfString(canonicalJson(received))
@@ -559,7 +596,12 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
     try {
       verdict = guard is IssuerScopedReplayGuard
           ? await guard.claimFor(
-              parties.issuer, doc.id, digest, retainUntil, now)
+              parties.issuer,
+              doc.id,
+              digest,
+              retainUntil,
+              now,
+            )
           : await guard.claim(doc.id, digest, retainUntil, now);
     } on Object {
       // Fail closed. A consumer that cannot consult its record has not satisfied

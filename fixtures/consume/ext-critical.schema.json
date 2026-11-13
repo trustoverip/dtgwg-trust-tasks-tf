@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "subject"
+  ],
+  "properties": {
+    "subject": {
+      "type": "string"
+    },
+    "ext": {
+      "$ref": "#/$defs/Ext"
+    },
+    "extCritical": {
+      "$ref": "#/$defs/ExtCritical"
+    },
+    "item": {
+      "$ref": "#/$defs/Item"
+    },
+    "other": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "a": {
+          "type": "string"
+        },
+        "ext": {
+          "$ref": "#/$defs/Ext"
+        }
+      }
+    },
+    "data": {
+      "type": "object"
+    },
+    "list": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Item"
+      }
+    }
+  },
+  "$defs": {
+    "Ext": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "ExtCritical": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
+      }
+    },
+    "Item": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "ext": {
+              "$ref": "#/$defs/Ext"
+            },
+            "extCritical": {
+              "$ref": "#/$defs/ExtCritical"
+            }
+          }
+        },
+        {
+          "type": "string"
+        }
+      ]
+    }
+  }
+}

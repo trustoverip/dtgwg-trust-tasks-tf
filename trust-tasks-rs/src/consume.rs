@@ -156,6 +156,11 @@ pub struct ConsumeChecks<'a> {
     /// specification that declares no `maxDocumentBytes`: the binding's own
     /// transport bound. `None` leaves such a document unbounded here.
     pub default_max_document_bytes: Option<usize>,
+    /// The `ext` namespaces this consumer implements (SPEC §4.5.2). A
+    /// document that marks any other namespace critical in an `extCritical`
+    /// member is refused `unsupportedExtension`. Empty by default; see
+    /// [`with_recognized_extensions`](Self::with_recognized_extensions).
+    pub recognized_extensions: &'a [&'a str],
 }
 
 impl<'a> ConsumeChecks<'a> {
@@ -174,6 +179,7 @@ impl<'a> ConsumeChecks<'a> {
             proof_did_methods: None,
             received_bytes: None,
             default_max_document_bytes: None,
+            recognized_extensions: &[],
         }
     }
 
@@ -192,6 +198,7 @@ impl<'a> ConsumeChecks<'a> {
             proof_did_methods: None,
             received_bytes: None,
             default_max_document_bytes: None,
+            recognized_extensions: &[],
         }
     }
 
@@ -242,6 +249,18 @@ impl<'a> ConsumeChecks<'a> {
         (received > bound).then(|| RejectReason::MalformedRequest {
             reason: "document exceeds the size bound declared for its type".to_string(),
         })
+    }
+    /// Builder: the `ext` namespaces this consumer implements.
+    ///
+    /// SPEC §4.5.2 rule 4: a consumer that does not recognize a namespace a
+    /// document names in `extCritical` **MUST NOT** process the document. The
+    /// pipeline refuses such a document `unsupportedExtension` unless the
+    /// namespace is listed here. Listing a namespace is a statement that the
+    /// handler acts on it; the marking itself changes nothing else.
+    #[must_use]
+    pub fn with_recognized_extensions(mut self, namespaces: &'a [&'a str]) -> Self {
+        self.recognized_extensions = namespaces;
+        self
     }
 }
 
@@ -980,6 +999,7 @@ where
         // Applied by the callers, which know the specification's bound.
         received_bytes: _,
         default_max_document_bytes: _,
+        recognized_extensions,
     } = checks;
     // §7.2 item 2 — payload schema. Runs first here (the envelope checks and
     // the attribution gate ran in the caller, ahead of the type check), and
@@ -1107,6 +1127,35 @@ where
     // cross-check, proof verification) are applied per-pipeline; this runs
     // after them.
     if let Err(reason) = spec.policy.enforce(&doc) {
+        return route_rejection(transport, &doc, reason, error_id_factory);
+    }
+
+    // SPEC §4.5.2 — namespaces marked critical. After the proof and the
+    // per-spec checks, so a sender nobody has authenticated learns nothing
+    // about which namespaces this consumer implements, and before the record,
+    // so a refused document never burns its `id`. Read from the document as
+    // received where it is in hand: a member the payload type does not model
+    // is gone from `doc`, and the marking is exactly such a member when the
+    // payload was not validated.
+    let critical = match received {
+        Some((received, true)) => match received.get("payload") {
+            Some(payload) => crate::critical::check_critical_extensions(
+                payload,
+                spec.schema,
+                recognized_extensions,
+            ),
+            None => Ok(()),
+        },
+        _ => match serde_json::to_value(&doc.payload) {
+            Ok(payload) => crate::critical::check_critical_extensions(
+                &payload,
+                spec.schema,
+                recognized_extensions,
+            ),
+            Err(e) => Err(RejectReason::malformed_from_serde(&e)),
+        },
+    };
+    if let Err(reason) = critical {
         return route_rejection(transport, &doc, reason, error_id_factory);
     }
 

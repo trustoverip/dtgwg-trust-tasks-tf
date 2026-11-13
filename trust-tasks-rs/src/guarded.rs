@@ -115,6 +115,7 @@ pub enum UnanswerableBody {
 pub struct GuardedConsumer {
     record: Record,
     freshness: FreshnessPolicy,
+    recognized_extensions: &'static [&'static str],
 }
 
 impl std::fmt::Debug for GuardedConsumer {
@@ -127,6 +128,7 @@ impl std::fmt::Debug for GuardedConsumer {
         f.debug_struct("GuardedConsumer")
             .field("replay_record", &record)
             .field("freshness", &self.freshness)
+            .field("recognized_extensions", &self.recognized_extensions)
             .finish()
     }
 }
@@ -149,6 +151,7 @@ impl GuardedConsumer {
         Self {
             record: Record::InProcess(InMemoryReplayGuard::default()),
             freshness: FreshnessPolicy::consequential(),
+            recognized_extensions: &[],
         }
     }
 
@@ -164,6 +167,7 @@ impl GuardedConsumer {
         Self {
             record: Record::Shared(guard),
             freshness: FreshnessPolicy::consequential(),
+            recognized_extensions: &[],
         }
     }
 
@@ -190,6 +194,7 @@ impl GuardedConsumer {
         Self {
             record: Record::Disabled,
             freshness: FreshnessPolicy::default(),
+            recognized_extensions: &[],
         }
     }
 
@@ -204,6 +209,16 @@ impl GuardedConsumer {
     #[must_use]
     pub fn with_freshness(mut self, freshness: FreshnessPolicy) -> Self {
         self.freshness = freshness;
+        self
+    }
+
+    /// Builder: the `ext` namespaces this consumer implements, so a document
+    /// that marks one of them critical (SPEC §4.5.2) is accepted. A document
+    /// marking any other namespace critical is refused `unsupportedExtension`.
+    /// None by default. See [`ConsumeChecks::with_recognized_extensions`].
+    #[must_use]
+    pub fn with_recognized_extensions(mut self, namespaces: &'static [&'static str]) -> Self {
+        self.recognized_extensions = namespaces;
         self
     }
 
@@ -234,6 +249,7 @@ impl GuardedConsumer {
                 Some(guard) => ReplayPolicy::Guard(guard),
                 None => ReplayPolicy::NotConsequential,
             },
+            recognized_extensions: self.recognized_extensions,
             ..ConsumeChecks::not_consequential()
         }
     }
