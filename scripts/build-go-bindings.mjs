@@ -209,6 +209,62 @@ function inlineCrossFileRefs(schema, baseDir) {
 }
 
 /**
+ * `doc` with every root `$defs` entry its root does not reach removed (#1098),
+ * the survivors in their order, and `$defs` dropped when none survive.
+ *
+ * The request schema carries `$defs.Response` and what only the response uses,
+ * and the response document a copy of every request definition; pruning each
+ * keeps the other side's definitions out of the emitted constant. Only the
+ * constant is pruned, never the schema the types are compiled from.
+ * Reachability follows each `$ref` of the form `#/$defs/<name>[/…]` (its first
+ * segment, pointer-unescaped) from the root object without its `$defs` (its
+ * own `$ref` included — all a response document has), then each reached
+ * definition whole. Any other local `$ref` (`#`, an anchor) keeps
+ * every definition. Written independently of the other generators' copies
+ * (see the file header); `check-bindings` compares the results.
+ */
+function pruneUnreachableDefs(doc) {
+  if (doc === null) return null;
+  const defs = doc.$defs;
+  if (!defs || typeof defs !== "object" || Array.isArray(defs)) return doc;
+  const reached = new Set();
+  let opaque = false;
+  const rootView = { ...doc };
+  delete rootView.$defs;
+  const frontier = [rootView];
+  while (frontier.length > 0) {
+    const node = frontier.pop();
+    if (Array.isArray(node)) {
+      frontier.push(...node);
+    } else if (node && typeof node === "object") {
+      if (typeof node.$ref === "string") {
+        if (node.$ref.startsWith("#/$defs/")) {
+          const name = node.$ref.slice(8).split("/")[0].replaceAll("~1", "/").replaceAll("~0", "~");
+          if (Object.hasOwn(defs, name) && !reached.has(name)) {
+            reached.add(name);
+            frontier.push(defs[name]);
+          }
+        } else if (node.$ref.startsWith("#")) {
+          opaque = true;
+        }
+      }
+      frontier.push(...Object.values(node));
+    }
+  }
+  if (opaque) return doc;
+  const out = {};
+  for (const [k, v] of Object.entries(doc)) {
+    if (k !== "$defs") {
+      out[k] = v;
+      continue;
+    }
+    const kept = Object.entries(defs).filter(([name]) => reached.has(name));
+    if (kept.length > 0) out[k] = Object.fromEntries(kept);
+  }
+  return out;
+}
+
+/**
  * The response variant needs a schema of its own: the root describes the
  * *request* payload and `$defs.Response` describes the response. Wrap the
  * latter so `$defs` stays reachable and its internal `$ref`s still resolve.
@@ -940,14 +996,14 @@ function emitTail(slugInfo, policy, schemas, hasResponse, deprecation) {
         "// schema's constraints — not minLength, not pattern, not the oneOf mutual",
         "// exclusion — so without it every such rule is unenforced. Cross-file $refs are",
         "// already inlined, so it needs no resolver.",
-        `const PayloadSchemaJSON = ${goString(JSON.stringify(schemas.request))}`,
+        `const PayloadSchemaJSON = ${goString(JSON.stringify(pruneUnreachableDefs(schemas.request)))}`,
       ].join("\n"),
     );
     if (schemas.response) {
       out.push(
         [
           "// ResponsePayloadSchemaJSON is PayloadSchemaJSON for the success-response variant.",
-          `const ResponsePayloadSchemaJSON = ${goString(JSON.stringify(schemas.response))}`,
+          `const ResponsePayloadSchemaJSON = ${goString(JSON.stringify(pruneUnreachableDefs(schemas.response)))}`,
         ].join("\n"),
       );
     }

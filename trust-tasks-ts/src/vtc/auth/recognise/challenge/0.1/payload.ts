@@ -88,31 +88,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Auth Recognise Challenge — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "nonce",
-        "expiresAt"
-      ],
-      "properties": {
-        "nonce": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Single-use, unpredictable value to bind into the presentation. Consumed on first use regardless of verdict."
-        },
-        "expiresAt": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Unix timestamp after which the nonce is refused."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

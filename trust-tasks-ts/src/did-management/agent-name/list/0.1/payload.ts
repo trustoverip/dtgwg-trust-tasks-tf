@@ -116,61 +116,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "AgentNameEntry": {
-      "title": "AgentNameEntry",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "name",
-        "enabled",
-        "createdAt"
-      ],
-      "properties": {
-        "name": {
-          "type": "string",
-          "description": "The name's local part, without the `@` — `alice` for `/@alice`. Bare rather than a full URL because a name is only meaningful within its domain, which is carried once on the response."
-        },
-        "enabled": {
-          "type": "boolean",
-          "description": "Whether the name currently resolves. `false` means parked, not gone: the name still belongs to this DID and nobody else can claim it."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "RFC3339 timestamp of when the name was first bound to this DID."
-        }
-      }
-    },
-    "Response": {
-      "$anchor": "response",
-      "title": "DID Management List Agent Names — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "mnemonic",
-        "agentNames"
-      ],
-      "properties": {
-        "mnemonic": {
-          "type": "string",
-          "description": "The slot the listing is for, echoed."
-        },
-        "domain": {
-          "type": "string",
-          "description": "The slot's hosting domain. Omitted (rather than empty) for an un-domained legacy slot."
-        },
-        "agentNames": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/AgentNameEntry"
-          },
-          "description": "Every name bound to the slot, including parked entries. Always present — a slot with no names answers with an empty array, so a caller never has to distinguish 'no names' from 'field missing'."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

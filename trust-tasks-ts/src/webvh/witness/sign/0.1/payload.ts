@@ -117,67 +117,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "WebVH Witness Sign — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "witnessId",
-        "versionId",
-        "proof"
-      ],
-      "properties": {
-        "witnessId": {
-          "type": "string",
-          "minLength": 1
-        },
-        "versionId": {
-          "type": "string",
-          "minLength": 1
-        },
-        "proof": {
-          "type": "object",
-          "description": "The W3C Data Integrity proof over {versionId}, by the witness identity's key. Carried verbatim into the DID's did-witness.json; further Data Integrity members are permitted.",
-          "additionalProperties": true,
-          "required": [
-            "type",
-            "cryptosuite",
-            "verificationMethod",
-            "proofPurpose",
-            "proofValue"
-          ],
-          "properties": {
-            "type": {
-              "const": "DataIntegrityProof"
-            },
-            "cryptosuite": {
-              "type": "string",
-              "minLength": 1
-            },
-            "verificationMethod": {
-              "type": "string",
-              "minLength": 1
-            },
-            "proofPurpose": {
-              "type": "string",
-              "minLength": 1
-            },
-            "proofValue": {
-              "type": "string",
-              "minLength": 1
-            },
-            "created": {
-              "type": "string",
-              "format": "date-time"
-            }
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

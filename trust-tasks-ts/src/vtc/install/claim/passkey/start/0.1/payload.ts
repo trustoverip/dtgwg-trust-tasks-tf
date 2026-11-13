@@ -111,35 +111,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Install Claim Passkey Start — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "registrationId",
-        "options",
-        "assertionOptions"
-      ],
-      "properties": {
-        "registrationId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Echoes the install token's jti (a UUID); pass it back to vtc/install/claim/passkey/finish."
-        },
-        "options": {
-          "type": "object",
-          "description": "WebAuthn PublicKeyCredentialCreationOptions (opaque here). pubKeyCredParams lists exactly EdDSA (-8, Ed25519) and ES256 (-7, P-256), the two algorithms whose key the administrator's did:key can name; user.id, user.name and user.displayName name no DID."
-        },
-        "assertionOptions": {
-          "type": "object",
-          "description": "WebAuthn PublicKeyCredentialRequestOptions (opaque here) for the one assertion that proves possession of the passkey just registered: a fresh challenge of at least 128 bits, distinct from the creation challenge, single-use and bound to this registration, with the community's rpId. allowCredentials is omitted — the credential does not exist yet — and the installer's page sets it to the rawId navigator.credentials.create() returned."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

@@ -306,153 +306,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "ListedVetter": {
-      "title": "ListedVetter",
-      "description": "One listed vetter: the published profile without `listed` and `ext`, the vetter's DID, the expiry of their live grant, and when the profile was stored. Nothing else about the member is disclosed.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "vetterDid",
-        "languages",
-        "methods",
-        "acceptsDocumentation",
-        "events",
-        "grantValidUntil",
-        "updatedAt"
-      ],
-      "properties": {
-        "vetterDid": {
-          "type": "string",
-          "pattern": "^did:",
-          "description": "The vetter's member DID — the subject of their vetter role credential, and the DID a vetting/request is addressed to."
-        },
-        "displayName": {
-          "$ref": "#/$defs/VetterDisplayName"
-        },
-        "languages": {
-          "type": "array",
-          "maxItems": 16,
-          "uniqueItems": true,
-          "items": {
-            "$ref": "#/$defs/LanguageTag"
-          }
-        },
-        "location": {
-          "$ref": "#/$defs/VetterLocation"
-        },
-        "methods": {
-          "$ref": "#/$defs/VetterMethods"
-        },
-        "acceptsDocumentation": {
-          "$ref": "#/$defs/VetterAcceptsDocumentation"
-        },
-        "availability": {
-          "$ref": "#/$defs/VetterAvailability"
-        },
-        "contactHint": {
-          "$ref": "#/$defs/VetterContactHint"
-        },
-        "events": {
-          "type": "array",
-          "maxItems": 32,
-          "items": {
-            "$ref": "#/$defs/VetterEvent"
-          },
-          "description": "The profile's events whose `endDate` is today (UTC) or later. Ended events are never returned."
-        },
-        "grantValidUntil": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The `validUntil` of the vetter's live vetter role credential."
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the community stored this profile, as returned by vtc/vetting/vetters/profile."
-        }
-      }
-    },
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Vetting — Vetters List — response payload",
-      "description": "One page of listed vetters matching every filter sent.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "vetters"
-      ],
-      "properties": {
-        "vetters": {
-          "type": "array",
-          "maxItems": 100,
-          "items": {
-            "$ref": "#/$defs/ListedVetter"
-          },
-          "description": "The page, in the order Conformance defines. May be empty."
-        },
-        "nextCursor": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 512,
-          "description": "Present when more entries match; send it as `cursor`, with the same filters, for the next page. Absent on the last page."
-        }
-      }
-    },
-    "VetterEvent": {
-      "title": "VetterEvent",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "name",
-        "startDate",
-        "endDate"
-      ],
-      "properties": {
-        "name": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 200,
-          "description": "The event's name, e.g. `Linux Plumbers Conference 2026`."
-        },
-        "startDate": {
-          "$ref": "#/$defs/CalendarDate"
-        },
-        "endDate": {
-          "$ref": "#/$defs/CalendarDate"
-        },
-        "location": {
-          "$ref": "#/$defs/VetterLocation"
-        },
-        "url": {
-          "type": "string",
-          "format": "uri",
-          "pattern": "^https://",
-          "maxLength": 2048,
-          "description": "OPTIONAL. The event's own https page."
-        }
-      },
-      "description": "An event the vetter will attend and vet at. `endDate` is on or after `startDate` and no more than 31 days after it; JSON Schema cannot compare two members, so the community checks both and refuses a violation with `malformedRequest`."
-    },
-    "VetterLocation": {
-      "title": "VetterLocation",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "country"
-      ],
-      "properties": {
-        "country": {
-          "$ref": "#/$defs/CountryCode"
-        },
-        "region": {
-          "$ref": "#/$defs/PlaceName"
-        },
-        "city": {
-          "$ref": "#/$defs/PlaceName"
-        }
-      },
-      "description": "Where a vetter can meet people, as coarse as the vetter chooses: a country, optionally a region, optionally a city. Never a street address."
-    },
     "PlaceName": {
       "title": "PlaceName",
       "type": "string",
@@ -473,49 +326,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
       "description": "A calendar date, `YYYY-MM-DD` (RFC 3339 full-date), with no time or zone. Compared as a UTC date."
     },
-    "VetterContactHint": {
-      "title": "VetterContactHint",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 300,
-      "description": "Vetter-authored free text on how to obtain a ticket from them, e.g. `Find me at the OpenVTC booth`. A hint, not an address a request can be sent to: vetting/request still needs a ticket or an introduction the vetter accepts."
-    },
-    "VetterAvailability": {
-      "title": "VetterAvailability",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 500,
-      "description": "Vetter-authored free text on when they are available to vet. Attributed to the vetter."
-    },
-    "VetterAcceptsDocumentation": {
-      "title": "VetterAcceptsDocumentation",
-      "type": "array",
-      "maxItems": 16,
-      "uniqueItems": true,
-      "items": {
-        "$ref": "#/$defs/VettingDocumentation"
-      },
-      "description": "What documentation the vetter relies on, in the same tokens as vetting/request's `acceptsDocumentation` — `passport`, `nationalId`, `driverLicence`, `none`, or another lowerCamelCase class. The vetter's own choice; empty says nothing either way."
-    },
-    "VettingDocumentation": {
-      "title": "VettingDocumentation",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 64,
-      "pattern": "^[a-z][a-zA-Z0-9]*$",
-      "description": "A class of documentation, named in lowerCamelCase. Open rather than enumerated, because what documentation a vetter accepts is each vetter's own choice. Well-known values: `passport`, `nationalId`, `driverLicence`, and `none` — the vetter will attest without a document, which is the `priorAcquaintance` case. Only the class ever travels — never a document number, an image, an issuing authority or an expiry date. `none` states a policy (what a vetter accepts); a record of what was relied on expresses 'no document' as an empty list instead."
-    },
-    "VetterMethods": {
-      "title": "VetterMethods",
-      "type": "array",
-      "minItems": 1,
-      "maxItems": 3,
-      "uniqueItems": true,
-      "items": {
-        "$ref": "#/$defs/VettingMethod"
-      },
-      "description": "The methods the vetter offers, from `inPerson`, `video`, `priorAcquaintance`."
-    },
     "VettingMethod": {
       "title": "VettingMethod",
       "type": "string",
@@ -533,13 +343,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "maxLength": 35,
       "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{1,8})*$",
       "description": "A BCP 47 language tag, e.g. `en`, `de-AT`. Compared case-insensitively."
-    },
-    "VetterDisplayName": {
-      "title": "VetterDisplayName",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 128,
-      "description": "The name the vetter chooses to be listed under. Self-asserted and unverified: it is not the name on any document, and a client MUST attribute it to the vetter."
     },
     "Ext": {
       "title": "Ext",
@@ -793,16 +596,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "minLength": 1,
       "maxLength": 128,
       "description": "The name the vetter chooses to be listed under. Self-asserted and unverified: it is not the name on any document, and a client MUST attribute it to the vetter."
-    },
-    "Ext": {
-      "title": "Ext",
-      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-      "type": "object",
-      "minProperties": 1,
-      "additionalProperties": true,
-      "propertyNames": {
-        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
     }
   }
 };

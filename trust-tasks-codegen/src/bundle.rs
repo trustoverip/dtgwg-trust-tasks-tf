@@ -248,6 +248,54 @@ mod tests {
         })
     }
 
+    /// Assert that `embedded` is `bundled` with its root `$defs` narrowed
+    /// (#1098): every other member equal, each kept definition equal to the
+    /// bundle's, and every local `#/$defs/<name>` reference in what is kept
+    /// resolving. Returns the kept names. Checked from the outside rather than
+    /// by calling the generator's pruning, which would only agree with itself.
+    fn embeds_pruned(embedded: &Value, bundled: &Value, ctx: &str) -> Vec<String> {
+        let (Value::Object(e), Value::Object(b)) = (embedded, bundled) else {
+            panic!("{ctx}: not objects");
+        };
+        let without_defs = |m: &serde_json::Map<String, Value>| {
+            let mut m = m.clone();
+            m.remove("$defs");
+            m
+        };
+        assert_eq!(
+            without_defs(e),
+            without_defs(b),
+            "{ctx}: members besides $defs"
+        );
+        let empty = serde_json::Map::new();
+        let kept = e.get("$defs").and_then(Value::as_object).unwrap_or(&empty);
+        let all = b.get("$defs").and_then(Value::as_object).unwrap_or(&empty);
+        for (name, def) in kept {
+            assert_eq!(Some(def), all.get(name), "{ctx}: $defs.{name}");
+        }
+        fn refs(v: &Value, out: &mut Vec<String>) {
+            match v {
+                Value::Object(m) => {
+                    if let Some(Value::String(r)) = m.get("$ref") {
+                        out.push(r.clone());
+                    }
+                    m.values().for_each(|v| refs(v, out));
+                }
+                Value::Array(a) => a.iter().for_each(|v| refs(v, out)),
+                _ => {}
+            }
+        }
+        let mut found = Vec::new();
+        refs(embedded, &mut found);
+        for r in found {
+            if let Some(rest) = r.strip_prefix("#/$defs/") {
+                let name = rest.split('/').next().unwrap();
+                assert!(kept.contains_key(name), "{ctx}: {r} dangles");
+            }
+        }
+        kept.keys().cloned().collect()
+    }
+
     fn spec(slug: &str, version: &str) -> Spec {
         let repo_root = find_repo_root().unwrap();
         discover_all(&repo_root)
@@ -280,10 +328,14 @@ mod tests {
             let ctx = format!("{slug}/{version}");
 
             let request = impl_consts(&file, "Payload").expect("Payload impl");
-            assert_eq!(
-                request.schema.as_ref(),
-                Some(&bundle["schema"]),
-                "{ctx} schema"
+            let names = embeds_pruned(
+                request.schema.as_ref().expect("a request schema"),
+                &bundle["schema"],
+                &format!("{ctx} schema"),
+            );
+            assert!(
+                !names.iter().any(|n| n == "Response"),
+                "{ctx}: the request schema still carries $defs.Response"
             );
             let policy = &bundle["policy"];
             assert_eq!(policy["bearer"], json!(request.bearer), "{ctx} bearer");
@@ -310,11 +362,12 @@ mod tests {
 
             match impl_consts(&file, "Response") {
                 Some(response) => {
-                    assert_eq!(
-                        response.schema.as_ref(),
-                        Some(&bundle["responseSchema"]),
-                        "{ctx} responseSchema"
+                    let names = embeds_pruned(
+                        response.schema.as_ref().expect("a response schema"),
+                        &bundle["responseSchema"],
+                        &format!("{ctx} responseSchema"),
                     );
+                    assert!(names.iter().any(|n| n == "Response"), "{ctx}");
                     assert_eq!(policy["proofRequired"]["response"], json!(response.proof));
                     assert_eq!(
                         policy["issuedAtRequired"]["response"],

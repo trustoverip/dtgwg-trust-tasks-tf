@@ -143,48 +143,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Messaging Update Access List — response payload",
-      "description": "The success response to a messaging/access-list/update request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/access-list/update/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "added",
-        "removed",
-        "accessListCount"
-      ],
-      "properties": {
-        "did": {
-          "$ref": "#/$defs/Vid",
-          "description": "The account whose access list was modified."
-        },
-        "added": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Vid"
-          },
-          "description": "The entries actually added (those not already present when `add` was applied)."
-        },
-        "removed": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Vid"
-          },
-          "description": "The entries actually removed by `remove` (those present when it was applied). Entries dropped by `clear` are not enumerated here."
-        },
-        "accessListCount": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "The resulting number of entries in the account's access list."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

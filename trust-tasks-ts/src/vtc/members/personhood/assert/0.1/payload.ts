@@ -114,40 +114,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Members Personhood-Assert — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "personhood",
-        "vmc",
-        "roleVac"
-      ],
-      "properties": {
-        "did": {
-          "type": "string",
-          "minLength": 1
-        },
-        "personhood": {
-          "type": "boolean",
-          "const": true,
-          "description": "Always true on success — the flag flipped or stayed asserted."
-        },
-        "vmc": {
-          "type": "object",
-          "description": "Re-issued membership credential carrying the asserted personhood (opaque here)."
-        },
-        "roleVac": {
-          "type": "object",
-          "description": "Re-issued role credential (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\"role:<name>\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

@@ -110,47 +110,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Witness — Accept — response payload",
-      "description": "The stored VWC's vault handle, its digest, and the evidence documents that carry it. Sent only once the VWC is verified and stored.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "sessionId",
-        "credentialId",
-        "witness",
-        "vwcDigestMultibase",
-        "evidence"
-      ],
-      "properties": {
-        "sessionId": {
-          "$ref": "#/$defs/SessionId"
-        },
-        "credentialId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 256,
-          "description": "The credential-vault handle the VWC is now stored under, with its evidence."
-        },
-        "witness": {
-          "type": "string",
-          "pattern": "^did:",
-          "description": "The witness that issued the VWC: the session's witness, since a VWC issued by any other party is refused, not stored."
-        },
-        "vwcDigestMultibase": {
-          "$ref": "#/$defs/DigestMultibase",
-          "description": "The digest the witness returned for the VWC, which the VTA has checked against the VWC it stored: over the RFC 8785 canonicalization of the VWC, proof included."
-        },
-        "evidence": {
-          "$ref": "#/$defs/OutcomeEvidence",
-          "description": "The two documents a holder ships with the VWC so a verifier can pair it with the session that produced it: `session`, the witness/session/0.2 document as the VTA built it, and `outcome`, the witness/session/submit/0.2 #response as received, which carries the VWC. Each is carried exactly as sent or received, never re-serialised."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -160,42 +119,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "OutcomeEvidence": {
-      "title": "OutcomeEvidence",
-      "description": "One witnessing session's outcome evidence. `session` is the initiating witness/session document; `outcome` is the terminal witness/session/submit #response that the initiating document's own specification declares as its outcome evidence, under the witness's proof, delivering the VWC and its vwcDigestMultibase. A consumer pairs them with a presented VWC by SPEC §4.9.4's four checks and the witnessing checks of witness/session/submit (This response is the outcome evidence).",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "session",
-        "outcome"
-      ],
-      "properties": {
-        "session": {
-          "$ref": "#/$defs/EvidenceDocument",
-          "description": "The witness/session document that opened the session. The VWC's taskContext is its id and its taskDigestMultibase is computed over it (SPEC §4.9.3)."
-        },
-        "outcome": {
-          "$ref": "#/$defs/EvidenceDocument",
-          "description": "The witness/session/submit #response that closed the session, under the witness's proof. It carries the VWC and its vwcDigestMultibase."
-        }
-      }
-    },
-    "EvidenceDocument": {
-      "title": "EvidenceDocument",
-      "description": "A whole Trust Task document — `id`, `type`, `payload` and every other member, `proof` included — carried exactly as it was sent or received, never re-serialised: a task digest and a proof are taken over its members, and a re-serialised copy reproduces neither reliably. Typed as an open object so every member survives; the checks that give it meaning belong to the task that reads it.",
-      "type": "object",
-      "minProperties": 1
-    },
-    "DigestMultibase": {
-      "title": "DigestMultibase",
-      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-      "type": "string",
-      "minLength": 16,
-      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
-      "examples": [
-        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-      ]
     },
     "SessionId": {
       "title": "SessionId",
@@ -311,12 +234,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "type": "string",
       "minLength": 1,
       "maxLength": 256
-    },
-    "CarriedDocument": {
-      "title": "CarriedDocument",
-      "description": "A whole Trust Task document — `id`, `type`, `payload` and every other member, `proof` included — carried between the VTA and the witness by the client: one the VTA built and signed for the client to send, or one the witness returned for the client to hand back. Typed as an open object so every member survives a round trip: carried exactly as built or received, never re-serialised, because its proof is over itself. Its envelope is checked by the VTA against the session record (CONVENTIONS.md §3), not by this schema.",
-      "type": "object",
-      "minProperties": 1
     }
   }
 };

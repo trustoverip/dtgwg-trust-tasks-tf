@@ -118,42 +118,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Messaging — Mux Admin Revoke All — response payload",
-      "description": "The success response to a messaging/mux/admin-revoke-all request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/mux/admin-revoke-all/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "epoch",
-        "epochAdvanced",
-        "revokedGrants"
-      ],
-      "properties": {
-        "did": {
-          "$ref": "#/$defs/MuxDid"
-        },
-        "epoch": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "The member DID's epoch now in force; a new grant must carry it."
-        },
-        "epochAdvanced": {
-          "type": "boolean",
-          "description": "False when the epoch named in the request had already been voided, so nothing changed."
-        },
-        "revokedGrants": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "How many grants that were active this request moved to `epochRevoked`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

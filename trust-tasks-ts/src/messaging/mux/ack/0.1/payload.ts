@@ -137,62 +137,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "type": "string",
       "pattern": "^[0-9a-f]{64}$"
     },
-    "AckRefusal": {
-      "title": "Ack refusal",
-      "description": "An id the mediator did not delete, and why.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "messageId",
-        "reason"
-      ],
-      "properties": {
-        "messageId": {
-          "$ref": "#/$defs/MessageId"
-        },
-        "reason": {
-          "type": "string",
-          "enum": [
-            "notFound",
-            "notPermitted"
-          ],
-          "description": "`notPermitted`: the message is held for a member this connection carries with the `receive` or `pickup` scope, which lacks the `delete` scope (or whose account no longer stands); it stays in the member's inbox. `notFound`: anything else — already deleted, expired, never delivered here, or held for a DID whose mail the connection cannot read (one it does not carry, or carries with neither `receive` nor `pickup`), which is not told apart from a message that does not exist."
-        }
-      }
-    },
-    "Response": {
-      "$anchor": "response",
-      "title": "Messaging — Mux Ack — response payload",
-      "description": "The success response to a messaging/mux/ack request: every requested id appears in `acked` or `refused`. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/mux/ack/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "acked",
-        "refused"
-      ],
-      "properties": {
-        "acked": {
-          "type": "array",
-          "maxItems": 100,
-          "items": {
-            "$ref": "#/$defs/MessageId"
-          },
-          "description": "Ids whose messages were deleted."
-        },
-        "refused": {
-          "type": "array",
-          "maxItems": 100,
-          "items": {
-            "$ref": "#/$defs/AckRefusal"
-          },
-          "description": "Ids that were not deleted, each with its reason. Those messages are left as they were."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

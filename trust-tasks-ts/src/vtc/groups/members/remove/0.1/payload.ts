@@ -109,45 +109,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Groups — Members — Remove — response payload",
-      "description": "The success response to a vtc/groups/members/remove/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/groups/members/remove/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "groupId",
-        "entryId",
-        "state"
-      ],
-      "properties": {
-        "groupId": {
-          "$ref": "#/$defs/GroupId"
-        },
-        "entryId": {
-          "$ref": "#/$defs/EntryId"
-        },
-        "state": {
-          "type": "string",
-          "enum": [
-            "removed",
-            "pending"
-          ],
-          "description": "`removed`: done. `pending`: a reduction of authority the community is holding for its cooling-off or consent."
-        },
-        "credentialValidUntil": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "format": "date-time",
-          "description": "When the member's last group credential lapses; renewal has stopped. Null when they held none."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

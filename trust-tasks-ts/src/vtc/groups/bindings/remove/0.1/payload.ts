@@ -105,34 +105,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Groups — Bindings — Remove — response payload",
-      "description": "The success response to a vtc/groups/bindings/remove/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/groups/bindings/remove/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "bindingId",
-        "state"
-      ],
-      "properties": {
-        "bindingId": {
-          "$ref": "#/$defs/BindingId"
-        },
-        "state": {
-          "type": "string",
-          "enum": [
-            "removed",
-            "removing",
-            "pending"
-          ],
-          "description": "`removed`: done. `removing`: the reconciler is withdrawing what only this binding provided. `pending`: a reduction of authority the community is holding on its terms."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -204,12 +176,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "title": "BindingId",
       "type": "string",
       "pattern": "^gb_[A-Za-z0-9_-]{16,64}$"
-    },
-    "GroupId": {
-      "title": "GroupId",
-      "description": "Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.",
-      "type": "string",
-      "pattern": "^grp_[A-Za-z0-9_-]{16,64}$"
     }
   }
 };

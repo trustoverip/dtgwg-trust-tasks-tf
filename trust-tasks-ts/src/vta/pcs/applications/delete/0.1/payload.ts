@@ -92,31 +92,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA PCS — Applications — Delete — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "applicationId",
-        "deleted"
-      ],
-      "properties": {
-        "applicationId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128
-        },
-        "deleted": {
-          "type": "boolean",
-          "const": true,
-          "description": "Always true: a refusal is a trust-task-error, not a false here."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

@@ -157,25 +157,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Keys Import — response payload",
-      "description": "The success response to a keys/import request: the record the custodian now holds. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/import/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "key"
-      ],
-      "properties": {
-        "key": {
-          "$ref": "#/$defs/KeyRecord",
-          "description": "The realized record. `origin` is `imported` and `derivationPath` is absent — an imported key is not reproducible from any seed the custodian holds."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -185,95 +166,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "KeyRecord": {
-      "title": "KeyRecord",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "keyId",
-        "keyType",
-        "status",
-        "publicKey",
-        "createdAt"
-      ],
-      "properties": {
-        "keyId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Maintainer-scoped identifier for the key. Stable for the key's lifetime except through an explicit `keys/rename`."
-        },
-        "keyType": {
-          "$ref": "#/$defs/KeyType"
-        },
-        "status": {
-          "$ref": "#/$defs/KeyStatus"
-        },
-        "publicKey": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The public half, multibase-encoded. The private half is never carried by any keys/* response."
-        },
-        "derivationPath": {
-          "type": "string",
-          "description": "Hierarchical-deterministic path the key was derived at, when `origin` is `derived`. Absent for imported keys, which have no path."
-        },
-        "seedId": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Identifier of the seed the key was derived from, when the maintainer holds more than one. Absent for imported keys."
-        },
-        "origin": {
-          "$ref": "#/$defs/KeyOrigin"
-        },
-        "label": {
-          "type": "string",
-          "maxLength": 256,
-          "description": "Optional human-readable label. Operator-facing only; carries no authorization meaning."
-        },
-        "exportable": {
-          "type": "boolean",
-          "description": "Whether the private half may be released to a caller. `false` means the custodian refuses every export of this key and can only be asked to *use* it — signing, key agreement — so the material never leaves. **Absence means the key may be exported.** That is the permissive reading, and it is deliberate: it is what every record written before this member existed already meant, so a custodian adding the member cannot silently retract access to keys its callers already hold. A consumer MUST NOT infer the converse — absence is not a statement that export was considered and allowed. Marking a key non-exportable does not make it unrecoverable: a custodian's own whole-store backup is a different mechanism from an export to a caller, and this member does not speak to it.",
-          "$comment": "No JSON Schema `default` is declared here on purpose. A declared default is materialised by the generated bindings — the field becomes non-optional with a serde default — so an absent member reappears as an explicit `true` on re-serialisation, which breaks round-trip idempotence for every record written before this member existed. The permissive reading is stated in prose above, where a binding cannot act on it."
-        },
-        "contextId": {
-          "type": "string",
-          "description": "Scope the key belongs to. **Absence is not 'every scope'** — a key with no context is reachable only by a caller with unrestricted authority over the maintainer, which is the more restrictive reading, and a consumer that treats absence as a wildcard inverts the guarantee."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "RFC 3339 timestamp at which the key was created or imported."
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "RFC 3339 timestamp of the last change to the record (rename, revocation)."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
-    "KeyOrigin": {
-      "title": "KeyOrigin",
-      "type": "string",
-      "enum": [
-        "derived",
-        "imported",
-        "internal"
-      ],
-      "description": "Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.",
-      "default": "derived"
-    },
-    "KeyStatus": {
-      "title": "KeyStatus",
-      "type": "string",
-      "enum": [
-        "active",
-        "revoked"
-      ],
-      "description": "Lifecycle state. Only an `active` key may be named in a signing request; a `revoked` key is retained so historic signatures remain attributable, and MUST NOT be reactivated."
     },
     "KeyType": {
       "title": "KeyType",

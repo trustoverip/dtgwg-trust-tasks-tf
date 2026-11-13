@@ -100,35 +100,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "required": [
-        "profileId",
-        "existed"
-      ],
-      "properties": {
-        "profileId": {
-          "$ref": "#/$defs/Ulid"
-        },
-        "existed": {
-          "type": "boolean"
-        },
-        "unboundPersonas": {
-          "type": "array",
-          "maxItems": 64,
-          "items": {
-            "type": "string"
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      },
-      "$anchor": "response",
-      "title": "Persona Local Profile Delete — response payload",
-      "description": "Success response to persona/local/profile/delete. Type https://trusttasks.org/spec/persona/local/profile/delete/1.0#response.",
-      "type": "object",
-      "additionalProperties": false
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

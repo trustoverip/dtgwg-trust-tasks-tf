@@ -171,25 +171,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Rooms Keys Open — response payload",
-      "description": "Success response to rooms/keys/open. Type https://trusttasks.org/spec/rooms/keys/open/0.2#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "plaintext"
-      ],
-      "properties": {
-        "plaintext": {
-          "type": "string",
-          "description": "The opened record, base64url. The only thing that crosses back — never the key."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

@@ -140,59 +140,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       ],
       "description": "`auto`: the hosting service's own policy decides, typically by the slot's traffic; this clears any override. `fine`: always keep the finest series the service offers. `coarse`: never keep the finest series, only the coarser ones. `off`: keep the slot's totals only, and no series over time."
     },
-    "Response": {
-      "$anchor": "response",
-      "title": "Stats Set Resolution — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "mnemonic",
-        "resolution",
-        "previousResolution",
-        "changed",
-        "tier",
-        "tierReason"
-      ],
-      "properties": {
-        "mnemonic": {
-          "type": "string",
-          "description": "Echo of the slot."
-        },
-        "resolution": {
-          "$ref": "#/$defs/Resolution",
-          "description": "The resolution now set for the slot."
-        },
-        "previousResolution": {
-          "$ref": "#/$defs/Resolution",
-          "description": "The resolution this request replaced; `auto` when none was set."
-        },
-        "changed": {
-          "type": "boolean",
-          "description": "`false` when `previousResolution` already equalled the requested resolution."
-        },
-        "tier": {
-          "type": "string",
-          "enum": [
-            "fine",
-            "coarse",
-            "off"
-          ],
-          "description": "The detail the service keeps for the slot as of this response. Under `auto` it can change later with the slot's traffic or the service's policy."
-        },
-        "tierReason": {
-          "type": "string",
-          "enum": [
-            "override",
-            "policy",
-            "traffic"
-          ],
-          "description": "Why `tier` applies: `override`, this slot's resolution; `policy`, a service-wide setting that applies to every slot; `traffic`, the service's automatic choice from the slot's activity."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

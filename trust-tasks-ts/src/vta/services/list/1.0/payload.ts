@@ -93,28 +93,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Services — List — response payload",
-      "description": "Success response to vta/services/list. Type https://trusttasks.org/spec/vta/services/list/1.0#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "services"
-      ],
-      "properties": {
-        "services": {
-          "type": "array",
-          "description": "Every transport the agent knows about, advertised or not. A kind absent from this array has never been configured — distinct from one present with `enabled: false`.",
-          "items": {
-            "$ref": "#/$defs/ServiceState"
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -124,52 +102,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "ServiceState": {
-      "title": "ServiceState",
-      "description": "What the agent currently advertises for one service. `enabled` is the only member every kind carries; the rest are kind-specific and absent when they do not apply. Note that `enabled: false` and an absent entry are different: the first says the agent knows about this transport and is not advertising it, the second says it has never been configured.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "kind",
-        "enabled"
-      ],
-      "properties": {
-        "kind": {
-          "$ref": "#/$defs/ServiceKind"
-        },
-        "enabled": {
-          "type": "boolean",
-          "description": "Whether the agent currently advertises this transport in its DID document."
-        },
-        "mediatorDid": {
-          "type": "string",
-          "description": "The mediator this transport routes through. Present for `didcomm` and `tsp`."
-        },
-        "url": {
-          "type": "string",
-          "description": "The advertised endpoint. Present for `rest` and `webauthn`."
-        },
-        "drainsUntil": {
-          "type": "string",
-          "format": "date-time",
-          "description": "RFC 3339 instant at which a scheduled drain completes. Present only while a `didcomm` mediator is draining — see `vta/services/drain/list`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
-    "ServiceKind": {
-      "title": "ServiceKind",
-      "description": "Which transport a task is acting on. This is the discriminator: it selects which member of `config` is meaningful, and a payload naming one kind with another's config is malformed rather than merely ignored.",
-      "type": "string",
-      "enum": [
-        "didcomm",
-        "rest",
-        "tsp",
-        "webauthn"
-      ]
     }
   }
 };

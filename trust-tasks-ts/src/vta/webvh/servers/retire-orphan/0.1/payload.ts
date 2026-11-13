@@ -123,37 +123,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA WebVH Servers Retire Orphan — response payload",
-      "description": "Success response to vta/webvh/servers/retire-orphan. Type https://trusttasks.org/spec/vta/webvh/servers/retire-orphan/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "serverId",
-        "slotId",
-        "retired"
-      ],
-      "properties": {
-        "serverId": {
-          "type": "string"
-        },
-        "slotId": {
-          "type": "string"
-        },
-        "retired": {
-          "type": "boolean",
-          "description": "Whether the slot is no longer served. False is reported, not inferred: an agent that could not confirm removal with the host MUST NOT claim it."
-        },
-        "did": {
-          "type": "string",
-          "description": "The DID the slot was serving, echoed so the record of what was retired survives the slot's disappearance. Absent where the slot was never published to."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

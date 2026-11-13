@@ -146,90 +146,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "TimelineEvent": {
-      "title": "TimelineEvent",
-      "description": "One thing that happened to a face. Which members are present depends on `kind`; none carries a value or a private label.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "occurredAt",
-        "kind"
-      ],
-      "properties": {
-        "occurredAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "kind": {
-          "type": "string",
-          "enum": [
-            "composed",
-            "worn",
-            "unworn",
-            "expired",
-            "disclosed",
-            "valueChanged",
-            "promoted",
-            "retired",
-            "reinstated"
-          ],
-          "description": "`composed` — the face was made. `worn` / `unworn` — a persona began or stopped wearing it in a context. `expired` — a binding's `until` passed. `disclosed` — it told a party something (`verifierDid`, `claimTypes`). `valueChanged` — a value it shows changed (`claimTypes`, `version`). `promoted` — it moved from one context into the pool. `retired` / `reinstated`."
-        },
-        "contextId": {
-          "type": "string",
-          "minLength": 1
-        },
-        "personaDid": {
-          "type": "string",
-          "minLength": 1
-        },
-        "verifierDid": {
-          "type": "string",
-          "minLength": 1
-        },
-        "claimTypes": {
-          "type": "array",
-          "maxItems": 64,
-          "items": {
-            "$ref": "#/$defs/ClaimType"
-          }
-        },
-        "version": {
-          "$ref": "#/$defs/Version"
-        }
-      }
-    },
-    "Response": {
-      "$anchor": "response",
-      "title": "Persona Profile Timeline — response payload",
-      "description": "Success response to persona/profile/timeline. Type https://trusttasks.org/spec/persona/profile/timeline/1.1#response. Oldest first.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "profileId",
-        "events"
-      ],
-      "properties": {
-        "profileId": {
-          "$ref": "#/$defs/Ulid"
-        },
-        "events": {
-          "type": "array",
-          "maxItems": 500,
-          "items": {
-            "$ref": "#/$defs/TimelineEvent"
-          }
-        },
-        "nextCursor": {
-          "type": "string",
-          "maxLength": 4096,
-          "description": "Present when more events follow. Absent at the end — a producer MUST NOT infer the end from a short page."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -245,20 +161,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "description": "A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.",
       "type": "string",
       "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
-    },
-    "Version": {
-      "title": "Version",
-      "description": "A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.",
-      "type": "integer",
-      "minimum": 1
-    },
-    "ClaimType": {
-      "title": "ClaimType",
-      "description": "The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\n\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\n\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 128,
-      "pattern": "^(x:)?[a-z][a-zA-Z0-9]*(\\.[a-z][a-zA-Z0-9]*)*$"
     }
   }
 };

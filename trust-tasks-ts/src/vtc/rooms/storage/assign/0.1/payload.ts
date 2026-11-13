@@ -124,40 +124,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Rooms — Storage — Assign — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "roomId",
-        "configId",
-        "previousConfigId",
-        "blobsOnEarlierConfigs"
-      ],
-      "properties": {
-        "roomId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 512,
-          "description": "The room's identifier, as its owner minted it."
-        },
-        "configId": {
-          "$ref": "#/$defs/StorageConfigId"
-        },
-        "previousConfigId": {
-          "$ref": "#/$defs/StorageConfigId"
-        },
-        "blobsOnEarlierConfigs": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "The room's blobs now on a config other than its assigned one. vtc/rooms/storage/migrate moves them."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

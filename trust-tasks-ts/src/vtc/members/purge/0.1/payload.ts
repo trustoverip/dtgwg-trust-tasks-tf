@@ -94,36 +94,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Members Purge — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "disposition",
-        "removed"
-      ],
-      "properties": {
-        "did": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The purged DID, echoed."
-        },
-        "disposition": {
-          "type": "string",
-          "minLength": 1,
-          "description": "How the member's published record was disposed of."
-        },
-        "removed": {
-          "type": "boolean",
-          "description": "True when a record or tombstone was erased."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

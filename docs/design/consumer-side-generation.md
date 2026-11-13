@@ -178,8 +178,14 @@ therefore, by construction, what the generator generates from.
 | `propertyOrder` | (milestone 2) JSON Pointer of every schema object in `schema` / `responseSchema` that has `properties` → its member names in **authored** order, read from the file the definition was written in (the payload schema, or the shared file a `$defs` entry was spliced from). A reader of an older bundle treats it as `{}` |
 | `defsOrder` | (milestone 3) `/schema` and `/responseSchema` → the root `$defs` names in the order the TypeScript, Go and Dart generators declare them: the payload schema's own as authored, then each spliced definition in the order their inliners' last-in-first-out `$ref` frontier reaches it. A reader of an older bundle treats it as `{}` |
 | `defOrigins` | (milestone 3) each `$defs` entry spliced in from another document → `<that document's $id>#/$defs/<name>` (a document with no `$id`: its path under the specifications root, below the Type URI prefix). One shared component carries the same origin in every bundle, so a generator can declare it once; the payload schema's own definitions have none. A reader of an older bundle treats it as `{}` |
-| `schema` | the request payload schema, self-contained — `Payload::PAYLOAD_SCHEMA` |
-| `responseSchema` | the response document — `Response::PAYLOAD_SCHEMA` — or `null` when there is no `$defs.Response` (then the `response` policy values carry no meaning) |
+| `schema` | the request payload schema, self-contained — `Payload::PAYLOAD_SCHEMA` before pruning (below) |
+| `responseSchema` | the response document — `Response::PAYLOAD_SCHEMA` before pruning — or `null` when there is no `$defs.Response` (then the `response` policy values carry no meaning) |
+
+Both carry every root `$defs` entry: the request schema keeps `$defs.Response`,
+and the response document a copy of the request's definitions. A generator
+emits each one pruned to the definitions its root reaches (#1098), dropping
+`$defs` when none are left, and still generates types from the whole schema.
+The bundle is not pruned, because that would change every published digest.
 
 The policy is per variant rather than the single `recipient` the sketch above
 had, because the generated libraries already hold it per variant.
@@ -208,9 +214,10 @@ output, index-vs-disk agreement and digests. `scripts/check-bundles.mjs`
 (`npm run check-bundles`, run in `deploy.yml` after the bundles are built)
 checks independently: digests, canonical form re-derived with
 `JSON.stringify`, the index against the tree, and every non-withdrawn bundle's
-schemas against the **TypeScript** generator's `PAYLOAD_SCHEMA` /
-`RESPONSE_PAYLOAD_SCHEMA`, every `defsOrder` against the order of those
-schemas' `$defs`, and every `defOrigins` entry against the `$id`s and `$defs`
+schemas, pruned as above by its own re-derivation, against the **TypeScript**
+generator's `PAYLOAD_SCHEMA` / `RESPONSE_PAYLOAD_SCHEMA`, every `defsOrder`
+against the `$defs` it points at and, restricted to the pruned ones, against
+the order of those schemas' `$defs`, and every `defOrigins` entry against the `$id`s and `$defs`
 of the shared schemas in `specs/`.
 
 Measured on main, 2026-10-26: 1,121 bundles, 14.6 MB in total, 13.0 KB

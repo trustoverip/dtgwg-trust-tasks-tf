@@ -146,44 +146,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Memory Get — response payload",
-      "description": "Success response to vta/memory/get. Type https://trusttasks.org/spec/vta/memory/get/0.1#response. Every requested key appears in exactly one of `items`, `missing` or `deferred`, so a caller can account for all of them without comparing sets itself.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "items",
-        "missing"
-      ],
-      "properties": {
-        "items": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/MemoryRecord"
-          },
-          "description": "The items found, each with its `value` (a tombstone has none), in the order the keys were requested. May be empty."
-        },
-        "missing": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/MemoryKey"
-          },
-          "description": "Requested keys holding no item — and, unless `includeDeleted` was set, keys holding only a tombstone. Reported rather than silently omitted."
-        },
-        "deferred": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/MemoryKey"
-          },
-          "description": "Requested keys the maintainer did not evaluate because the response had reached its size budget. The caller re-requests exactly these. A deferred key was not read, and a maintainer MUST NOT record it as read."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -201,72 +163,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "minLength": 1,
       "maxLength": 512,
       "pattern": "^[^\\u0000]+$"
-    },
-    "MemoryRecord": {
-      "title": "MemoryRecord",
-      "description": "A memory item as the maintainer holds it. `value` is absent in two distinct situations and a consumer MUST NOT conflate them: the item is a tombstone (`deleted` is true), or the caller asked for a metadata-only view (`vta/memory/list` without `includeValues`). This is why `deleted` is required rather than defaulted — a consumer that infers deletion from an absent value gets the tombstone case wrong exactly when convergence depends on it.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "contextId",
-        "key",
-        "version",
-        "deleted",
-        "updatedAt"
-      ],
-      "properties": {
-        "contextId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The VTA context the item is scoped to; the isolation boundary."
-        },
-        "key": {
-          "$ref": "#/$defs/MemoryKey"
-        },
-        "version": {
-          "$ref": "#/$defs/MemoryVersion",
-          "description": "The context counter value this item's most recent write took. Supply it as `expectedVersion` on the next write to make that write conditional on nothing having changed in between."
-        },
-        "value": {
-          "$ref": "#/$defs/MemoryValue",
-          "description": "The remembered text. Absent when this is a tombstone or a metadata-only view."
-        },
-        "valueBytes": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Size of the stored value in bytes over its UTF-8 encoding, as the maintainer measures it for the per-item cap. Present in metadata-only views so a consumer can decide what to fetch without fetching it; absent on a tombstone."
-        },
-        "deleted": {
-          "type": "boolean",
-          "description": "True when this is a tombstone: the item was deleted, and this entry exists so that a consumer syncing incrementally learns of the deletion. Tombstones are reaped after the maintainer's retention window; see `vta/memory/list`."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the item was first created at this key. MAY be absent on a tombstone whose body has been discarded, and on an item written before the maintainer kept versions."
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the write that produced this `version` was applied. For a tombstone, when the delete was applied."
-        },
-        "deletedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the item was deleted. Present only when `deleted` is true; equal to `updatedAt` for a tombstone the maintainer has not since rewritten."
-        }
-      }
-    },
-    "MemoryValue": {
-      "title": "MemoryValue",
-      "description": "The remembered text: a fact, a summary, a preference. Opaque to the maintainer, which stores it as given and never interprets, rewrites or summarises it. The maintainer enforces a documented per-item cap on its size (see `vta/memory/put`).",
-      "type": "string"
-    },
-    "MemoryVersion": {
-      "title": "MemoryVersion",
-      "description": "A value of the context's monotonic write counter (see this schema's description). Server-assigned; a producer never chooses one.",
-      "type": "integer",
-      "minimum": 1
     }
   }
 };

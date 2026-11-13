@@ -90,27 +90,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Config Show — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "fields"
-      ],
-      "properties": {
-        "fields": {
-          "type": "array",
-          "description": "The effective value of each requested (or every) configuration key.",
-          "items": {
-            "$ref": "#/$defs/ConfigField"
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -119,38 +98,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "ConfigField": {
-      "$anchor": "configField",
-      "title": "ConfigField",
-      "description": "One runtime configuration key as the maintainer currently sees it, after resolving whatever layered overlay it uses.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "key",
-        "value",
-        "source",
-        "requiresRestart"
-      ],
-      "properties": {
-        "key": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The configuration key, e.g. `server.port` or `log.level`."
-        },
-        "value": {
-          "description": "The effective value. Any JSON scalar the key holds (string, number, boolean, or null). A maintainer MUST redact the value of a secret-bearing key (see the spec) rather than return it here."
-        },
-        "source": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Which layer supplied the effective value. An opaque maintainer-defined label — the framework does not enumerate it. A maintainer with a layered overlay reports the winning layer (e.g. `env`, `db`, `toml`, `default`); one without layers reports its single source."
-        },
-        "requiresRestart": {
-          "type": "boolean",
-          "description": "True when a change to this key takes effect only after a restart, rather than on the next read."
-        }
       }
     }
   }

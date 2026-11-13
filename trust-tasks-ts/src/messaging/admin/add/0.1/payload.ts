@@ -112,29 +112,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Messaging Add Admins — response payload",
-      "description": "The success response to a messaging/admin/add request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/admin/add/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "admins"
-      ],
-      "properties": {
-        "admins": {
-          "type": "array",
-          "description": "The accounts now holding admin rights (the requested set, post-change).",
-          "items": {
-            "$ref": "#/$defs/Vid"
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

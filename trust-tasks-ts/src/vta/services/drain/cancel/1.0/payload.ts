@@ -93,25 +93,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Services Drain — Cancel — response payload",
-      "description": "Success response to vta/services/drain/cancel. Type https://trusttasks.org/spec/vta/services/drain/cancel/1.0#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "mediatorDid"
-      ],
-      "properties": {
-        "mediatorDid": {
-          "type": "string",
-          "description": "The mediator that was dropped."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

@@ -88,75 +88,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Collection — Settings — Show — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "setting"
-      ],
-      "description": "The context's setting as the VTA holds and applies it.",
-      "properties": {
-        "setting": {
-          "$ref": "#/$defs/CollectionSetting"
-        }
-      }
-    },
-    "CollectionSetting": {
-      "title": "CollectionSetting",
-      "description": "Whether the VTA collects by default for the identifiers of one trust context that no client has claimed (VTI-NTF-094 – VTI-NTF-098), and who last changed that. The VTA collects for them exactly when `collectByDefault` is true and `suspendedByOperator` is false. `changedBy` and `changedAt` are present together, and both absent while the setting has never been changed.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "contextId",
-        "collectByDefault",
-        "suspendedByOperator"
-      ],
-      "properties": {
-        "contextId": {
-          "$ref": "#/$defs/ContextId",
-          "description": "The trust context the setting belongs to. It applies to that context's identifiers alone, not to its ancestors' or descendants' (VTI-NTF-094)."
-        },
-        "collectByDefault": {
-          "type": "boolean",
-          "description": "The context's own setting: true unless a party with administrative authority over the context has disabled it (VTI-NTF-094, VTI-NTF-095). The VTA keeps it across restarts."
-        },
-        "suspendedByOperator": {
-          "type": "boolean",
-          "description": "Whether the VTA's operator has suspended collection by default for every context (VTI-NTF-098). While true, the VTA collects for no unclaimed identifier here whatever `collectByDefault` says, and does not change it; once lifted, `collectByDefault` applies again. Always false at a VTA that offers its operator no suspension."
-        },
-        "changedBy": {
-          "$ref": "#/$defs/Did",
-          "description": "The subject of the access control entry that last changed `collectByDefault` (VTI-NTF-096)."
-        },
-        "changedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When `collectByDefault` was last changed."
-        }
-      },
-      "dependentSchemas": {
-        "changedBy": {
-          "required": [
-            "changedAt"
-          ]
-        },
-        "changedAt": {
-          "required": [
-            "changedBy"
-          ]
-        }
-      }
-    },
-    "Did": {
-      "title": "Did",
-      "description": "A DID.",
-      "type": "string",
-      "minLength": 8,
-      "maxLength": 2048,
-      "pattern": "^did:[a-z0-9]+:\\S+$"
-    },
     "ContextId": {
       "title": "ContextId",
       "description": "The trust context the identifier belongs to.",
@@ -257,16 +188,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "type": "string",
       "minLength": 1,
       "maxLength": 256
-    },
-    "Ext": {
-      "title": "Ext",
-      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-      "type": "object",
-      "minProperties": 1,
-      "additionalProperties": true,
-      "propertyNames": {
-        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
     }
   }
 };

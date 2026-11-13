@@ -129,24 +129,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Rooms Community Members Add — response payload",
-      "description": "Success response to vtc/rooms/community/members/add. Type https://trusttasks.org/spec/vtc/rooms/community/members/add/0.1#response. The member as recorded, in state `offered`.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "member"
-      ],
-      "properties": {
-        "member": {
-          "$ref": "#/$defs/RoomMember"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -156,59 +138,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "RoomMember": {
-      "title": "RoomMember",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "member",
-        "actions",
-        "validUntil",
-        "state",
-        "offeredAt"
-      ],
-      "description": "One party the community admitted to a room it owns, or offered admission to.",
-      "properties": {
-        "member": {
-          "type": "string",
-          "pattern": "^did:",
-          "maxLength": 2048
-        },
-        "actions": {
-          "$ref": "#/$defs/MemberActions"
-        },
-        "validUntil": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the member's authority credential expires."
-        },
-        "state": {
-          "$ref": "#/$defs/MemberState"
-        },
-        "offeredAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "admittedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "removedAt": {
-          "type": "string",
-          "format": "date-time"
-        }
-      }
-    },
-    "MemberState": {
-      "title": "MemberState",
-      "type": "string",
-      "enum": [
-        "offered",
-        "admitted",
-        "removed"
-      ],
-      "description": "Where an admission stands. `offered`: credentials issued and waiting for the member to collect and accept them. `admitted`: accepted — on a sealed tier, the member is in the room's group. `removed`: an administrator removed them; on a sealed tier the room has advanced past them."
     },
     "MemberActions": {
       "title": "MemberActions",
@@ -347,13 +276,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "curate"
       ],
       "description": "What a member of a community-owned room may do there. `admin` is not among them: minting epochs, admitting and removing members are the community's, as the room's owner, and are exercised through the vtc/rooms/community/* tasks rather than by any member's credential. `curate` is not implied by `write`."
-    },
-    "Reason": {
-      "title": "Reason",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 500,
-      "description": "Why the administrator is making this change. Recorded with it in the audit trail. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions."
     }
   }
 };

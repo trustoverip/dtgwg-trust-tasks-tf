@@ -129,42 +129,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Messaging Check Access List Membership — response payload",
-      "description": "The success response to a messaging/access-list/get request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/access-list/get/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "present",
-        "absent"
-      ],
-      "properties": {
-        "did": {
-          "$ref": "#/$defs/Vid",
-          "description": "The account whose access list was checked."
-        },
-        "present": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Vid"
-          },
-          "description": "The supplied entries that are present in the account's access list."
-        },
-        "absent": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Vid"
-          },
-          "description": "The supplied entries that are not present in the account's access list."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

@@ -149,32 +149,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Vetting PCS Root Credential — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "label",
-        "preCredential"
-      ],
-      "description": "The blind pre-credential. The vetter unblinds it into a credential the community has never seen.",
-      "properties": {
-        "label": {
-          "type": "string",
-          "pattern": "^vetter/[0-9]{4}-[0-9]{2}$",
-          "description": "The label signed under — the one asked for."
-        },
-        "preCredential": {
-          "type": "string",
-          "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$",
-          "description": "The pre-credential, multibase base58btc. Useless to anyone but the holder of the request's blinding state."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

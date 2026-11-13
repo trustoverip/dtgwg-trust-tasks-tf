@@ -98,29 +98,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Networks — Deliver — response payload",
-      "description": "Whether the community passed the message on. Deliberately carries no count of the group's members, so the network does not learn the group's size.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "status"
-      ],
-      "properties": {
-        "status": {
-          "type": "string",
-          "enum": [
-            "delivered",
-            "duplicate"
-          ],
-          "description": "`delivered`: accepted and passed on to the group's members. `duplicate`: the community had delivered this message before; nothing was sent."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -198,33 +175,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "Envelope": {
-      "description": "A broadcast in transit.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "message",
-        "hops"
-      ],
-      "properties": {
-        "message": {
-          "$ref": "#/$defs/Credential",
-          "description": "The message, signed by the origin network."
-        },
-        "hops": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Credential"
-          },
-          "description": "One signed hop per relay step, each by the network that owns the previous hop's group.",
-          "maxItems": 16
-        }
-      }
-    },
-    "Credential": {
-      "type": "object",
-      "description": "A DTG credential (W3C VC 2.0, JSON) exactly as signed. Verified by the party relying on it, never by its shape here: it is an open object so a binding cannot narrow away a member the proof covers."
     }
   }
 };

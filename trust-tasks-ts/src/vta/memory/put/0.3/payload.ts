@@ -143,52 +143,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Memory Put — response payload",
-      "description": "Success response to vta/memory/put. Type https://trusttasks.org/spec/vta/memory/put/0.3#response. A failed precondition is not a success: it is a trust-task-error carrying vta/memory/put:versionConflict, whose details carry the maintainer's current version and value.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "contextId",
-        "key",
-        "version",
-        "wasCreated",
-        "updatedAt"
-      ],
-      "properties": {
-        "contextId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Echoed from the request."
-        },
-        "key": {
-          "$ref": "#/$defs/MemoryKey"
-        },
-        "version": {
-          "$ref": "#/$defs/MemoryVersion",
-          "description": "The version this write took. Supply it as `expectedVersion` on the next write to chain conditional updates without an intervening read."
-        },
-        "wasCreated": {
-          "type": "boolean",
-          "description": "True when no live item existed at the key beforehand — including when the key held a tombstone, since a tombstone is not a live item."
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the write was applied."
-        },
-        "valueBytes": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Size of the stored value in bytes as the maintainer measured it against its per-item cap."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -198,12 +152,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "MemoryVersion": {
-      "title": "MemoryVersion",
-      "description": "A value of the context's monotonic write counter (see this schema's description). Server-assigned; a producer never chooses one.",
-      "type": "integer",
-      "minimum": 1
     },
     "MemoryKey": {
       "title": "MemoryKey",
@@ -320,36 +268,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "minLength": 1,
       "maxLength": 512,
       "pattern": "^[^\\u0000]+$"
-    },
-    "MemoryPurpose": {
-      "title": "MemoryPurpose",
-      "description": "The one purpose for which the caller will use the memory content a request discloses (VTI-ACL-103): a name registered in the VTI specification's purpose registry (`personalisation`, `taskExecution`, `analytics`, `modelTraining`) or an absolute IRI. The VTA grants it only if the caller's ACL entry does — `any` grants every purpose but `modelTraining` — refuses it otherwise (`purposeNotGranted`), and records it in the audit record of the read. Optional where the entry lists exactly one purpose (that one applies) or states `any` (the read is recorded as for no stated purpose).",
-      "$ref": "#/$defs/Purpose"
-    },
-    "Purpose": {
-      "title": "Purpose",
-      "description": "What content is used for: a lowerCamelCase name registered in the VTI specification's purpose registry (Appendix H) — `personalisation`, `taskExecution`, `analytics`, `modelTraining` at the time of writing — or an absolute IRI naming a purpose defined elsewhere, such as a purpose of the W3C Data Privacy Vocabulary (`https://w3id.org/dpv#ServicePersonalisation`). Compared by exact string equality: a consumer MUST NOT treat a purpose it does not recognise as equal to any other, and grants only a request naming exactly a listed purpose (VTI-ACL-109). A registered name is never an IRI, because it contains no `:`.",
-      "type": "string",
-      "maxLength": 2048,
-      "anyOf": [
-        {
-          "pattern": "^[a-z][a-zA-Z0-9]{0,63}$"
-        },
-        {
-          "pattern": "^[a-zA-Z][a-zA-Z0-9+.-]*:[^\\s]+$"
-        }
-      ]
-    },
-    "MemoryExpectedVersion": {
-      "title": "MemoryExpectedVersion",
-      "description": "Optimistic-concurrency precondition on a write. A positive value requires that the item's current `version` equals it exactly. Zero means \"create only\" — the write applies only if no LIVE item exists at the key. A tombstone is not a live item, so `expectedVersion: 0` succeeds over one; the created item takes the context's next counter value, which is necessarily greater than the tombstone's.",
-      "type": "integer",
-      "minimum": 0
-    },
-    "MemoryValue": {
-      "title": "MemoryValue",
-      "description": "The remembered text: a fact, a summary, a preference. Opaque to the maintainer, which stores it as given and never interprets, rewrites or summarises it. The maintainer enforces a documented per-item cap on its size (see `vta/memory/put`).",
-      "type": "string"
     }
   }
 };

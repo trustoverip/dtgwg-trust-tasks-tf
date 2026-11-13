@@ -181,45 +181,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   ],
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Rooms Records Curate — response payload",
-      "description": "Success response to rooms/records/curate. Type https://trusttasks.org/spec/rooms/records/curate/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "key",
-        "version",
-        "status"
-      ],
-      "properties": {
-        "key": {
-          "type": "string",
-          "description": "The record curated."
-        },
-        "version": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "The version the curation assigned. A caller syncing on `sinceVersion` sees the change at this version."
-        },
-        "status": {
-          "type": "string",
-          "enum": [
-            "active",
-            "deprecated",
-            "retracted"
-          ],
-          "description": "The record's standing after the operation."
-        },
-        "pinned": {
-          "type": "boolean",
-          "description": "Whether the record is pinned after the operation."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -314,35 +275,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "AuthorityPresentation": {
-      "title": "AuthorityPresentation",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "membership",
-        "authority"
-      ],
-      "description": "What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier. A host MUST bind the presenter to the chain's leaf. A chain that verifies is evidence that authority was conferred on somebody; it is not evidence that the party presenting it is that somebody. The leaf's subject MUST equal the party the host authenticated for this request — an identity the transport established or a document `proof` proved, never one named in a payload. A host that omits this check authorizes every captured presentation, and the omission is silent, because the chain still verifies.\n\n**Every credential is its issuer's attestation, and only its issuer's.** For the membership credential and for every link of `authority`, a host MUST verify the credential's `proof` with a key that the credential's own `issuer` lists for `assertionMethod` in its DID document, and MUST refuse a credential whose proof names a verification method that is not its issuer's. A proof that verifies under some other party's key is that party's statement, not the issuer's, and confers nothing. The same binding holds for every other document a room signs, such as a `RevocationList`.\n\n**A chain that verifies may still be revoked.** A host that has accepted a `RevocationList` for the room (`rooms/revocations/put`) MUST, from the moment it accepted it, refuse every presentation in which the membership credential or any link of `authority` is revoked by that list, under every task and every version of every task it serves for the room. A chain from which any link is revoked is refused whole: a credential delegated from a revoked one confers nothing, however it was attenuated. The refusal is the same `permissionDenied` as any other failed presentation.",
-      "properties": {
-        "membership": {
-          "type": "string",
-          "description": "The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile."
-        },
-        "authority": {
-          "type": "array",
-          "minItems": 1,
-          "maxItems": 8,
-          "items": {
-            "type": "string"
-          },
-          "description": "The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent."
-        },
-        "subjectBinding": {
-          "type": "string",
-          "description": "REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this."
-        }
       }
     }
   }

@@ -102,25 +102,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VRC Relationships Issue — response payload",
-      "description": "The delivery receipt: the receiving party accepted and stored the credential, and names which one. A refusal is a trust-task-error, never a receipt reporting failure.\n\nThe receipt names the stored artifact rather than merely asserting that something arrived, following the delivery idiom of vtc/members/vmc and vtc/join-requests/accept. It has to: both directions of this exchange share one threadId, and a #response carries no inResponseTo, so the digest is what tells a party which of its two deliveries a receipt answers.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "vrcDigestMultibase"
-      ],
-      "properties": {
-        "vrcDigestMultibase": {
-          "$ref": "#/$defs/DigestMultibase",
-          "description": "Digest over the RFC 8785 canonicalization of the credential AS STORED, computed by the receiving party rather than copied from the request. Computing it is the point: a copied value attests nothing, while a recomputed one makes a mismatch between what was sent and what was stored detectable in-band, and identifies which delivery this receipt answers."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

@@ -115,35 +115,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Vault Delete — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "deletedAt",
-        "graceUntil"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "minLength": 1
-        },
-        "deletedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "graceUntil": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Time after which the maintainer MAY garbage-collect the tombstone. Late-syncing consumers that connect before this time MUST receive the tombstone via vault/sync and wipe their cache; consumers that connect after this time will simply see the entry as absent."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
