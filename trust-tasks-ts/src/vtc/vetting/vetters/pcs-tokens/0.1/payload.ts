@@ -170,44 +170,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Vetting PCS Tokens — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "label",
-        "tick",
-        "preCredentials"
-      ],
-      "description": "One blind signature per request, in the order asked.",
-      "properties": {
-        "label": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "description": "The label served."
-        },
-        "tick": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "The tick served."
-        },
-        "preCredentials": {
-          "type": "array",
-          "minItems": 1,
-          "maxItems": 64,
-          "description": "The blind signatures, positionally matching `requests`.",
-          "items": {
-            "type": "string",
-            "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

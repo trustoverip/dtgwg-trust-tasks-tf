@@ -92,51 +92,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Vault Credentials Get — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "format"
-      ],
-      "oneOf": [
-        {
-          "required": [
-            "credential"
-          ]
-        },
-        {
-          "required": [
-            "credentialBase64"
-          ]
-        }
-      ],
-      "properties": {
-        "credential": {
-          "type": "object",
-          "minProperties": 1,
-          "description": "The verifiable credential as stored, for a format whose canonical form is a JSON object. Carried verbatim. Mutually exclusive with `credentialBase64`."
-        },
-        "credentialBase64": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 1048576,
-          "pattern": "^[A-Za-z0-9_-]+$",
-          "description": "The credential's stored bytes, base64url-encoded without padding, for a format whose canonical form is not a JSON object: an SD-JWT's compact serialisation, an mdoc's CBOR. Mutually exclusive with `credential`."
-        },
-        "format": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "description": "The credential's format, as an OpenID for Verifiable Credentials format identifier (`ldp_vc`, `dc+sd-jwt`, `mso_mdoc`, `jwt_vc_json`), so the consumer reads the body without sniffing it."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

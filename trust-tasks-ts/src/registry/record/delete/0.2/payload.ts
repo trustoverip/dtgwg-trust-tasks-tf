@@ -104,29 +104,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Registry Record Delete — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "ok"
-      ],
-      "properties": {
-        "ok": {
-          "type": "boolean",
-          "description": "Whether the record was deleted."
-        },
-        "message": {
-          "type": "string",
-          "maxLength": 1024,
-          "description": "Optional human-readable detail."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

@@ -147,52 +147,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Memory Put — response payload",
-      "description": "Success response to vta/memory/put. Type https://trusttasks.org/spec/vta/memory/put/0.2#response. A failed precondition is not a success: it is a trust-task-error carrying vta/memory/put:versionConflict, whose details carry the maintainer's current version and value.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "contextId",
-        "key",
-        "version",
-        "wasCreated",
-        "updatedAt"
-      ],
-      "properties": {
-        "contextId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Echoed from the request."
-        },
-        "key": {
-          "$ref": "#/$defs/MemoryKey"
-        },
-        "version": {
-          "$ref": "#/$defs/MemoryVersion",
-          "description": "The version this write took. Supply it as `expectedVersion` on the next write to chain conditional updates without an intervening read."
-        },
-        "wasCreated": {
-          "type": "boolean",
-          "description": "True when no live item existed at the key beforehand — including when the key held a tombstone, since a tombstone is not a live item."
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the write was applied."
-        },
-        "valueBytes": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Size of the stored value in bytes as the maintainer measured it against its per-item cap."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -202,12 +156,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "MemoryVersion": {
-      "title": "MemoryVersion",
-      "description": "A value of the context's monotonic write counter (see this schema's description). Server-assigned; a producer never chooses one.",
-      "type": "integer",
-      "minimum": 1
     },
     "MemoryKey": {
       "title": "MemoryKey",
@@ -305,17 +253,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "minLength": 1,
       "maxLength": 512,
       "pattern": "^[^\\u0000]+$"
-    },
-    "MemoryExpectedVersion": {
-      "title": "MemoryExpectedVersion",
-      "description": "Optimistic-concurrency precondition on a write. A positive value requires that the item's current `version` equals it exactly. Zero means \"create only\" — the write applies only if no LIVE item exists at the key. A tombstone is not a live item, so `expectedVersion: 0` succeeds over one; the created item takes the context's next counter value, which is necessarily greater than the tombstone's.",
-      "type": "integer",
-      "minimum": 0
-    },
-    "MemoryValue": {
-      "title": "MemoryValue",
-      "description": "The remembered text: a fact, a summary, a preference. Opaque to the maintainer, which stores it as given and never interprets, rewrites or summarises it. The maintainer enforces a documented per-item cap on its size (see `vta/memory/put`).",
-      "type": "string"
     }
   }
 };

@@ -74,27 +74,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "WebVH Witness Key List — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "keys"
-      ],
-      "properties": {
-        "keys": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/WitnessKey"
-          },
-          "description": "Every witness identity the service holds, ordered by createdAt. Empty when it holds none."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -103,44 +82,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "WitnessKey": {
-      "title": "WitnessKey",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "witnessId",
-        "did",
-        "createdAt",
-        "proofsSigned"
-      ],
-      "properties": {
-        "witnessId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 256,
-          "description": "The witness service's identifier for this identity. Opaque to the requester."
-        },
-        "did": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The witness identity's DID (for example a `did:key`) — the value a did:webvh log names in its `witness` parameter, and the controller of the key that signs its proofs."
-        },
-        "label": {
-          "type": "string",
-          "maxLength": 256,
-          "description": "Operator-chosen display label. Untrusted free text. Absent when none was given."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "proofsSigned": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "How many witness proofs this identity has signed."
-        }
       }
     }
   }

@@ -14,6 +14,7 @@ use crate::names::{is_reserved_slug, module_name};
 use crate::passes::{
     desugar_oneof_with_compound_not, drop_anyof_of_required_members,
     flatten_unevaluated_compositions, migrate_defs_to_definitions, normalize_titles,
+    prune_unreachable_defs,
 };
 use crate::render::{
     apply_deprecation, apply_non_exhaustive, indent_safe_docs, render_module,
@@ -129,11 +130,14 @@ pub(crate) fn generate_module_inner(bundle: &Bundle, target: &Target) -> Result<
     // Compact, not pretty-printed: it is read by a validator, never by a
     // person, and indentation was a quarter of its bytes in a crate that sits
     // near crates.io's 10 MB upload limit.
-    let raw = serde_json::to_string(&schema)? + "\n";
+    // Each side keeps only the `$defs` its root reaches (#1098): the request
+    // drops `Response` and what only it uses, the response what only the
+    // request uses. The bundle itself is untouched.
+    let raw = serde_json::to_string(&prune_unreachable_defs(&schema))? + "\n";
     let response_raw = bundle
         .response_schema
         .as_ref()
-        .map(|doc| serde_json::to_string(doc).map(|s| s + "\n"))
+        .map(|doc| serde_json::to_string(&prune_unreachable_defs(doc)).map(|s| s + "\n"))
         .transpose()?;
 
     let has_response = normalize_titles(&mut schema)?;

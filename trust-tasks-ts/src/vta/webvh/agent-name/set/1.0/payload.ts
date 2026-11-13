@@ -105,33 +105,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA WebVH Agent-Name Set — response payload",
-      "description": "Success response to vta/webvh/agent-name/set. Type https://trusttasks.org/spec/vta/webvh/agent-name/set/1.0#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "name",
-        "enabled"
-      ],
-      "properties": {
-        "did": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "enabled": {
-          "type": "boolean",
-          "description": "Whether the name resolves after this call."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

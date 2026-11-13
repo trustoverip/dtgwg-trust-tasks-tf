@@ -112,25 +112,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Git Namespaces — Reseat Namespace — response payload",
-      "description": "The recorded git.ns.admin right.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "right"
-      ],
-      "properties": {
-        "right": {
-          "$ref": "#/$defs/RightRecord",
-          "description": "The git.ns.admin record the reseat created. It never carries `expiresAt`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -141,121 +122,12 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
-    "RightRecord": {
-      "title": "RightRecord",
-      "description": "One recorded right. Implied rights (§4.2 of the rights model: `own` implies `maintain` implies `commit.sign` on the same resource; `ns.admin` implies `repo.create` and `own` across its namespace) are not records and never appear as RightRecords. A record carrying `breakGlass` was given by its subject to themselves through git-ns/right/break-glass; it is a real right, published like any other, and is shown with that flag on every surface that shows the record.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "subject",
-        "right",
-        "resource",
-        "grantedBy",
-        "grantedAt"
-      ],
-      "properties": {
-        "subject": {
-          "$ref": "#/$defs/Did",
-          "description": "Who holds the right. For `git.commit.sign` this is the DID whose commit signatures the CI check accepts."
-        },
-        "right": {
-          "$ref": "#/$defs/Right"
-        },
-        "resource": {
-          "$ref": "#/$defs/Resource"
-        },
-        "grantedBy": {
-          "$ref": "#/$defs/Did",
-          "description": "The actor whose task caused the right: the granter, the creator of a repository (for its first `own`), the adopting admin, the transferring owner, or the binding admin (for the first `git.ns.admin`). The VTC's own DID for a right it derives from its configuration."
-        },
-        "grantedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the right lapses. Absent: no expiry."
-        },
-        "reason": {
-          "type": "string",
-          "maxLength": 1024,
-          "description": "The granter's free-text reason. Disclosed only to holders of `git.repo.own` on the resource and of `git.ns.admin` over it."
-        },
-        "breakGlass": {
-          "$ref": "#/$defs/BreakGlass",
-          "description": "Present exactly when the subject gave themselves this right through git-ns/right/break-glass. Absent for every other record."
-        }
-      }
-    },
-    "BreakGlass": {
-      "title": "BreakGlass",
-      "description": "How a self-granted right came to be, and whether another administrator has since ratified it. A record whose `breakGlass` has no `ratifiedBy` is **unratified**: it is live and published like any other right, it does not count toward the last-owner or last-admin invariants, and any community administrator or namespace admin of its namespace may revoke it. Ratification (git-ns/right/ratify) sets `ratifiedBy` and `ratifiedAt`; from then on the record is an ordinary grant, and `breakGlass` stays as its history. Never published to the Trust Registry.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "by",
-        "recordedAt",
-        "justification"
-      ],
-      "properties": {
-        "by": {
-          "$ref": "#/$defs/Did",
-          "description": "Who broke the glass: always the record's `subject`, restated so the flag reads on its own."
-        },
-        "recordedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the VTC recorded the break-glass."
-        },
-        "justification": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 2048,
-          "pattern": "\\S",
-          "description": "The actor's statement of why nobody else could grant this right. Shown to every community administrator, every namespace admin of the namespace and every owner of the resource; kept in the audit record; never published."
-        },
-        "effectiveAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the right takes effect, where the community's policy imposed a delay. Absent: it took effect at `recordedAt`. Until this instant the record confers nothing and is not published, and any administrator who may revoke it may do so."
-        },
-        "ratifiedBy": {
-          "$ref": "#/$defs/Did",
-          "description": "The administrator who ratified the record — never its subject. Absent while unratified."
-        },
-        "ratifiedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When it was ratified. Present exactly when `ratifiedBy` is."
-        }
-      }
-    },
     "Did": {
       "title": "Did",
       "description": "A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.",
       "type": "string",
       "maxLength": 2048,
       "pattern": "^did:[a-z0-9]+:(?:(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})*:)*(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})+$"
-    },
-    "Resource": {
-      "title": "Resource",
-      "description": "A forge-qualified resource, all lowercase: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo-path>` for one repository — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. On a forge with nested groups (GitLab) the repository path holds the subgroups between the top-level owner and the project: `gitlab.com/acme/platform/tools/cli` is one repository of the namespace `gitlab.com/acme`, and a subgroup such as `gitlab.com/acme/platform` is not a resource. A repository path has 1 to 21 segments (GitLab: 20 levels of subgroup and the project); GitHub and Forgejo repository paths are always one. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.",
-      "type": "string",
-      "maxLength": 5885,
-      "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,254}(?:/[a-z0-9_-][a-z0-9._-]{0,254}){0,21}$"
-    },
-    "Right": {
-      "title": "Right",
-      "description": "One of the five git rights. Each string is also the TRQP `action` the VTC publishes the right under in its Trust Registry, so it is carried verbatim. `git.ns.admin` and `git.repo.create` apply to a namespace resource; `git.repo.own` and `git.repo.maintain` to a repository resource; `git.commit.sign` to either.",
-      "type": "string",
-      "enum": [
-        "git.ns.admin",
-        "git.repo.create",
-        "git.repo.own",
-        "git.repo.maintain",
-        "git.commit.sign"
-      ]
     },
     "NamespaceId": {
       "title": "NamespaceId",
@@ -416,13 +288,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         "git.repo.maintain",
         "git.commit.sign"
       ]
-    },
-    "NamespaceId": {
-      "title": "NamespaceId",
-      "description": "The VTC's opaque identifier for a namespace, assigned when it is bound. Stable for the life of the binding; never reused for another binding.",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 128
     }
   }
 };

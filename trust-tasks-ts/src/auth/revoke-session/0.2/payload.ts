@@ -186,27 +186,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   ],
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Auth Revoke Session — response payload",
-      "description": "Acknowledgement carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/revoke-session/0.2#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "revokedCount"
-      ],
-      "properties": {
-        "revokedCount": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Number of sessions this request invalidated. Zero is a valid outcome: the named session was already gone, or the subject held no active sessions."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

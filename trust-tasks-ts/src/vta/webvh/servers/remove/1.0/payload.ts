@@ -86,29 +86,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA WebVH Servers Remove — response payload",
-      "description": "Success response to vta/webvh/servers/remove. Type https://trusttasks.org/spec/vta/webvh/servers/remove/1.0#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "removed"
-      ],
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "removed": {
-          "type": "boolean",
-          "description": "Whether the registration was removed. Removing it does not unpublish anything: DIDs the server already serves keep resolving, and the VTA simply loses its route for updating them."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

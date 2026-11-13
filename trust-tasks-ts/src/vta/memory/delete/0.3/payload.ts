@@ -134,45 +134,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Memory Delete — response payload",
-      "description": "Success response to vta/memory/delete. Type https://trusttasks.org/spec/vta/memory/delete/0.3#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "contextId",
-        "key",
-        "existed"
-      ],
-      "properties": {
-        "contextId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Echoed from the request."
-        },
-        "key": {
-          "$ref": "#/$defs/MemoryKey"
-        },
-        "existed": {
-          "type": "boolean",
-          "description": "True when a live item was removed by this request. False when the key already held a tombstone, or held nothing at all — both of which are successes, because the caller's intent is satisfied either way."
-        },
-        "version": {
-          "$ref": "#/$defs/MemoryVersion",
-          "description": "The tombstone's version — the counter value this delete took, or the value the existing tombstone already held when `existed` is false. Absent only when the key held nothing and no tombstone was written."
-        },
-        "deletedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the deletion was recorded. Absent on the same terms as `version`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -286,25 +247,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "minLength": 1,
       "maxLength": 512,
       "pattern": "^[^\\u0000]+$"
-    },
-    "MemoryPurpose": {
-      "title": "MemoryPurpose",
-      "description": "The one purpose for which the caller will use the memory content a request discloses (VTI-ACL-103): a name registered in the VTI specification's purpose registry (`personalisation`, `taskExecution`, `analytics`, `modelTraining`) or an absolute IRI. The VTA grants it only if the caller's ACL entry does — `any` grants every purpose but `modelTraining` — refuses it otherwise (`purposeNotGranted`), and records it in the audit record of the read. Optional where the entry lists exactly one purpose (that one applies) or states `any` (the read is recorded as for no stated purpose).",
-      "$ref": "#/$defs/Purpose"
-    },
-    "Purpose": {
-      "title": "Purpose",
-      "description": "What content is used for: a lowerCamelCase name registered in the VTI specification's purpose registry (Appendix H) — `personalisation`, `taskExecution`, `analytics`, `modelTraining` at the time of writing — or an absolute IRI naming a purpose defined elsewhere, such as a purpose of the W3C Data Privacy Vocabulary (`https://w3id.org/dpv#ServicePersonalisation`). Compared by exact string equality: a consumer MUST NOT treat a purpose it does not recognise as equal to any other, and grants only a request naming exactly a listed purpose (VTI-ACL-109). A registered name is never an IRI, because it contains no `:`.",
-      "type": "string",
-      "maxLength": 2048,
-      "anyOf": [
-        {
-          "pattern": "^[a-z][a-zA-Z0-9]{0,63}$"
-        },
-        {
-          "pattern": "^[a-zA-Z][a-zA-Z0-9+.-]*:[^\\s]+$"
-        }
-      ]
     }
   }
 };

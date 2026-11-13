@@ -130,31 +130,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Storage — Credentials — Set — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "configId",
-        "credentialState"
-      ],
-      "properties": {
-        "configId": {
-          "$ref": "#/$defs/StorageConfigId"
-        },
-        "credentialState": {
-          "$ref": "#/$defs/CredentialState"
-        },
-        "probeOk": {
-          "type": "boolean",
-          "description": "Present when the community probed the config with the new credential."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -164,64 +139,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "CredentialState": {
-      "title": "CredentialState",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "status"
-      ],
-      "description": "Whether a config can authenticate now, and how — never the credential. `status`: `vta-account`, `ambient` and `sealed` are usable; `required` means the config cannot store until a credential is provided (a `sealed` config never set, or set before a restore, which carries no credential); `none` is a `local` config.",
-      "properties": {
-        "status": {
-          "type": "string",
-          "enum": [
-            "vta-account",
-            "ambient",
-            "sealed",
-            "required",
-            "none"
-          ]
-        },
-        "context": {
-          "$ref": "#/$defs/ExternalAccountContextId",
-          "description": "Present with `vta-account`."
-        },
-        "account": {
-          "$ref": "#/$defs/ExternalAccountId",
-          "description": "Present with `vta-account`."
-        },
-        "fingerprint": {
-          "$ref": "#/$defs/DigestMultibase",
-          "description": "Present with `sealed`: a digest identifying the stored credential, so an administrator can tell which one is set without anyone being able to read it. Computed over the credential with a community-held key, never a bare hash of a low-entropy secret."
-        },
-        "setAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Present with `sealed`: when the stored credential was last set."
-        },
-        "roomsHoldingCredentials": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Present with `vta-account`: how many rooms the community currently holds a live room-scoped credential for."
-        }
-      }
-    },
-    "ExternalAccountId": {
-      "title": "ExternalAccountId",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 64,
-      "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
-      "description": "The identifier of an external account held by the community's VTA (the external/accounts/* family), which issues the community short-lived, room-scoped credentials and holds the long-lived authority itself."
-    },
-    "ExternalAccountContextId": {
-      "title": "ExternalAccountContextId",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 256,
-      "description": "The context at the community's VTA that owns an external account. The VTA names an account by its context and its identifier, and decides who may use it by act scope in that context: the community must hold `external-auth-use` there, and be bound to the account, for the account to issue it anything. Naming a context grants nothing; the VTA's binding is the gate."
     },
     "DigestMultibase": {
       "title": "DigestMultibase",

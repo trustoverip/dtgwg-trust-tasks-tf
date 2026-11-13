@@ -115,47 +115,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Vetting — Vetters Grant — response payload",
-      "description": "The grant — newly issued, or the member's existing live grant.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "endorsementId",
-        "credentialId",
-        "validFrom",
-        "validUntil"
-      ],
-      "properties": {
-        "endorsementId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "description": "The community's record of this grant's credential and its status-list slot — the identifier vtc/endorsements/revoke takes to revoke it. The name is kept from when the role credential was an endorsement; the credential is a Verifiable Authority Credential."
-        },
-        "credentialId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 512,
-          "pattern": "^[a-zA-Z][a-zA-Z0-9+.-]*:\\S+$",
-          "description": "The `id` of the role credential (the Verifiable Authority Credential), a URI."
-        },
-        "validFrom": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The role credential's `validFrom`."
-        },
-        "validUntil": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The role credential's `validUntil`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

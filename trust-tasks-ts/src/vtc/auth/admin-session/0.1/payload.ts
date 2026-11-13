@@ -100,31 +100,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Auth Admin Session — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "sessionId",
-        "expiresAt"
-      ],
-      "properties": {
-        "sessionId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The cookie-backed session's identifier."
-        },
-        "expiresAt": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Session expiry as a Unix timestamp. Matches the presented token's — the exchange does not extend a session."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

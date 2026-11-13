@@ -143,34 +143,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Registry Record Query — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "records"
-      ],
-      "properties": {
-        "records": {
-          "type": "array",
-          "description": "The matching trust records. Exactly one entry on a fully keyed fetch; zero or more per page on an enumeration.",
-          "items": {
-            "$ref": "#/$defs/TrustRecord"
-          }
-        },
-        "nextCursor": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "Continuation token for the next page, or null/absent when this is the last."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -180,57 +152,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "TrustRecord": {
-      "title": "TrustRecord",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "entity_id",
-        "authority_id",
-        "action",
-        "resource",
-        "record_type"
-      ],
-      "properties": {
-        "entity_id": {
-          "type": "string"
-        },
-        "authority_id": {
-          "type": "string"
-        },
-        "action": {
-          "type": "string"
-        },
-        "resource": {
-          "type": "string"
-        },
-        "recognized": {
-          "type": "boolean",
-          "description": "Present on recognition records: whether the action+resource is recognised."
-        },
-        "authorized": {
-          "type": "boolean",
-          "description": "Present on authorization records: whether the action+resource authorization is confirmed."
-        },
-        "context": {
-          "type": "object",
-          "description": "Opaque governance context attached to the record.",
-          "additionalProperties": true
-        },
-        "record_type": {
-          "$ref": "#/$defs/RecordType"
-        }
-      }
-    },
-    "RecordType": {
-      "title": "RecordType",
-      "type": "string",
-      "enum": [
-        "authorization",
-        "recognition"
-      ],
-      "description": "Whether the record asserts an authorization or a recognition relationship."
     }
   }
 };

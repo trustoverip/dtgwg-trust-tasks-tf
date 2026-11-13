@@ -221,44 +221,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
         }
       }
     },
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Application State Put-Many — response payload",
-      "description": "Success response to vta/app-state/put-many in `independent` mode. Type https://trusttasks.org/spec/vta/app-state/put-many/1.0#response. A response is returned even when some writes conflicted, because the task did what it promised — applied each write on its own merits — and the per-record outcomes are the answer rather than the failure. An `atomic` batch that does not apply is a trust-task-error carrying vta/app-state/put-many:atomicBatchRejected, whose details carry the same per-record outcomes.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "mode",
-        "results"
-      ],
-      "properties": {
-        "mode": {
-          "type": "string",
-          "enum": [
-            "independent",
-            "atomic"
-          ],
-          "description": "The mode the maintainer applied, echoed so a caller relying on the default sees what it got."
-        },
-        "results": {
-          "type": "array",
-          "minItems": 1,
-          "maxItems": 64,
-          "items": {
-            "$ref": "#/$defs/WriteResult"
-          },
-          "description": "One result per requested write, in request order. Every write is accounted for."
-        },
-        "highWatermark": {
-          "$ref": "#/$defs/Version",
-          "description": "The namespace's counter value after the batch. A writer that is also a sync consumer can adopt this instead of issuing a list call to discover where its own writes landed."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -267,67 +229,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "Version": {
-      "title": "Version",
-      "description": "A value of the namespace's monotonic write counter (see this schema's description). Server-assigned; a producer never chooses one.",
-      "type": "integer",
-      "minimum": 1
-    },
-    "WriteResult": {
-      "title": "WriteResult",
-      "description": "The outcome of one write within a `vta/app-state/put-many` batch. Per-record rather than per-batch, because the default batch mode applies each write on its own merits: a caller flushing ten unrelated edits needs to know which one conflicted, not merely that something did.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "key",
-        "outcome"
-      ],
-      "properties": {
-        "key": {
-          "$ref": "#/$defs/Key"
-        },
-        "outcome": {
-          "type": "string",
-          "enum": [
-            "written",
-            "conflict",
-            "tooLarge",
-            "notFound",
-            "skipped"
-          ],
-          "description": "`written`: applied, and `version` carries the new value. `conflict`: `expectedVersion` did not match; `currentVersion`, `currentValue` and `currentDeleted` carry the maintainer's view so the caller can resolve without a re-read. `tooLarge`: the value exceeded the per-record cap; `limitBytes` and `actualBytes` say by how much. `notFound`: a `mergePatch` write named an address with no live record. `skipped`: atomic mode only — this write was not attempted because another in the batch failed."
-        },
-        "version": {
-          "$ref": "#/$defs/Version",
-          "description": "The new version, on `written`."
-        },
-        "created": {
-          "type": "boolean",
-          "description": "On `written`: true when no live record existed at the address beforehand."
-        },
-        "currentVersion": {
-          "$ref": "#/$defs/Version",
-          "description": "On `conflict`: the version the maintainer actually holds. Absent when the conflict is that no record exists (`expectedVersion` was positive and the address is empty)."
-        },
-        "currentValue": {
-          "description": "On `conflict`: the value the maintainer actually holds, returned WITH the rejection rather than left for the caller to re-read. A bare rejection has no fixed point under contention — between the rejection and the re-read the record can change again — so returning the winner's view removes the race rather than narrowing it. Absent when `currentDeleted` is true or no record exists."
-        },
-        "currentDeleted": {
-          "type": "boolean",
-          "description": "On `conflict`: true when the address holds a tombstone rather than a live record."
-        },
-        "limitBytes": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "On `tooLarge`: the maintainer's per-record cap in bytes."
-        },
-        "actualBytes": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "On `tooLarge`: the size of the rejected value in bytes."
-        }
       }
     },
     "Key": {
@@ -360,53 +261,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
-    "Write": {
-      "title": "Write",
-      "description": "One write within the batch. Shaped exactly like a vta/app-state/put payload minus the context and namespace, which the batch supplies.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "key"
-      ],
-      "oneOf": [
-        {
-          "required": [
-            "value"
-          ],
-          "not": {
-            "required": [
-              "mergePatch"
-            ]
-          }
-        },
-        {
-          "required": [
-            "mergePatch"
-          ],
-          "not": {
-            "required": [
-              "value"
-            ]
-          }
-        }
-      ],
-      "properties": {
-        "key": {
-          "$ref": "#/$defs/Key"
-        },
-        "value": {
-          "description": "The complete new value, replacing whatever the record held. Any JSON value, including `null`. Mutually exclusive with `mergePatch`."
-        },
-        "mergePatch": {
-          "type": "object",
-          "description": "An RFC 7386 JSON Merge Patch applied to the record's current value. Requires a live record at the address; otherwise this write's outcome is `notFound`. Mutually exclusive with `value`."
-        },
-        "expectedVersion": {
-          "$ref": "#/$defs/ExpectedVersion",
-          "description": "This write's own precondition, evaluated independently of every other write in the batch. A positive value requires the record to be at exactly that version; 0 requires that no live record exists."
-        }
-      }
-    },
     "Response": {
       "$anchor": "response",
       "title": "VTA Application State Put-Many — response payload",
@@ -523,20 +377,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "minLength": 1,
       "maxLength": 512,
       "pattern": "^[^\\u0000]+$"
-    },
-    "ExpectedVersion": {
-      "title": "ExpectedVersion",
-      "description": "Optimistic-concurrency precondition on a write. A positive value requires that the record's current `version` equals it exactly. Zero means \"create only\" — the write applies only if no LIVE record exists at the address, which is what makes lease acquisition safe: without it two instances can each read \"absent\", each write, and each believe it won. A tombstone is not a live record, so `expectedVersion: 0` succeeds over one; the created record takes the namespace's next counter value, which is necessarily greater than the tombstone's.",
-      "type": "integer",
-      "minimum": 0
-    },
-    "Namespace": {
-      "title": "Namespace",
-      "description": "Scopes one application's records within a context, so several tools can share a context without colliding — `openvtc`, `cnm`, an agent runtime. The maintainer MUST NOT interpret the value; it is an opaque partition name. Namespaces are first-come and unreserved, so an application SHOULD pick a stable, specific one: a future per-namespace ACL would grant on this exact string, which makes renaming a namespace a migration rather than an edit.",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 64,
-      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
     }
   }
 };

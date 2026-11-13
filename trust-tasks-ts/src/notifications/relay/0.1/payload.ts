@@ -98,36 +98,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "type": "object",
       "minProperties": 1
     },
-    "Response": {
-      "$anchor": "response",
-      "title": "Notifications — Relay — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "notificationId",
-        "revision"
-      ],
-      "description": "Receipt of a relay the recipient verified, naming the innermost notification. The same whether the recipient held it, declined it under its acceptance policy, or relayed it on, and never saying which (VTI-NTF-023).",
-      "properties": {
-        "notificationId": {
-          "$ref": "#/$defs/NotificationId"
-        },
-        "revision": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 1000000,
-          "description": "The revision of the innermost notification, echoed."
-        }
-      }
-    },
-    "NotificationId": {
-      "title": "NotificationId",
-      "description": "The originator's identifier for one notification, unique among the notifications that originator issues and the same in every document that carries it — retries, re-issued documents and relayed copies alike. It is the notification's idempotency key (VTI-NTF-021). Compared for equality only. An originator SHOULD make it unguessable and SHOULD NOT make it descriptive: it travels as far as the notification does.",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 256,
-      "pattern": "^[A-Za-z0-9._~:-]+$"
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -146,12 +116,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/Response",
   "$defs": {
-    "ForwardedDocument": {
-      "title": "ForwardedDocument",
-      "description": "The Trust Task document the relayer received, kept whole and exactly as received — proof included — never restated, re-serialised from a typed form, or re-signed: a notifications/notify/0.1 document, or a notifications/relay/0.1 document whose own `forwarded` carries the next layer in. Deliberately an opaque object, so that every member the originator signed — `issuedAt`, `expiresAt`, `threadId` and any other envelope member — survives every relay byte for byte. Its `recipient` MUST be this relay's `issuer`, because only the addressee of a notification may relay it (VTI-NTF-041). The recipient validates each layer as a document of its own `type`, to at most four relays in all (VTI-NTF-042).",
-      "type": "object",
-      "minProperties": 1
-    },
     "Response": {
       "$anchor": "response",
       "title": "Notifications — Relay — response payload",
@@ -181,16 +145,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "minLength": 1,
       "maxLength": 256,
       "pattern": "^[A-Za-z0-9._~:-]+$"
-    },
-    "Ext": {
-      "title": "Ext",
-      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-      "type": "object",
-      "minProperties": 1,
-      "additionalProperties": true,
-      "propertyNames": {
-        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
     }
   }
 };

@@ -90,31 +90,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Admin Bootstrap — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "adminDid",
-        "eventId"
-      ],
-      "properties": {
-        "adminDid": {
-          "type": "string",
-          "pattern": "^did:key:z",
-          "description": "The admin DID just written to the ACL."
-        },
-        "eventId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "event_id of the persisted CommunityInstalled audit envelope (a UUID)."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

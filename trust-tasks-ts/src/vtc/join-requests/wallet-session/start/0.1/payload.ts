@@ -127,52 +127,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Join-Requests Wallet Session Start — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "sessionId",
-        "walletUri",
-        "clientId",
-        "dcqlQuery",
-        "expiresAt"
-      ],
-      "properties": {
-        "sessionId": {
-          "type": "string",
-          "minLength": 16,
-          "maxLength": 128,
-          "description": "Opaque, unguessable identifier of the session, carrying at least 128 bits of entropy. The applicant reads the outcome with vtc/join-requests/wallet-session/status under it."
-        },
-        "walletUri": {
-          "type": "string",
-          "format": "uri",
-          "minLength": 1,
-          "maxLength": 4096,
-          "description": "The OpenID4VP invocation URI for this session, carrying `client_id` and `request_uri`, to be rendered as a QR code or opened as a deep link. Its scheme is the community's choice for the wallet ecosystem it serves — `openid4vp://`, `swiyu-verify://`, `haip-vp://` and others."
-        },
-        "clientId": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 2048,
-          "description": "The full OpenID4VP client identifier the community presents to the wallet, prefix included (`decentralized_identifier:did:webvh:…`, `x509_hash:…`). It is the audience the wallet's key-binding JWT will name."
-        },
-        "dcqlQuery": {
-          "type": "object",
-          "description": "The DCQL query (OpenID4VP 1.0 §6) the wallet will be asked to satisfy: the criterion's published query, unchanged. Opaque here; its members are DCQL's own and keep DCQL's snake_case names."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the session closes if no wallet has answered it. Minutes, not hours."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -256,16 +210,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "DigestMultibase": {
-      "title": "DigestMultibase",
-      "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-      "type": "string",
-      "minLength": 16,
-      "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$",
-      "examples": [
-        "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-      ]
     }
   }
 };

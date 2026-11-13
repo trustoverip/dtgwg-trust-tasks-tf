@@ -97,26 +97,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA Collection — Release — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "identifier"
-      ],
-      "description": "The outcome. `endsAt` is present when a claim was in force: the instant the claim ends — the release itself, for the claimant's own release, and the claim's stated end otherwise. Absent, no claim was in force, and nothing changed.",
-      "properties": {
-        "identifier": {
-          "$ref": "#/$defs/Did"
-        },
-        "endsAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "When the released claim ends. The VTA resumes collecting for the identifier then, plus its clock-skew tolerance where the release was not the claimant's."
-        }
-      }
-    },
     "Did": {
       "title": "Did",
       "description": "A DID.",
@@ -177,23 +157,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "minLength": 8,
       "maxLength": 2048,
       "pattern": "^did:[a-z0-9]+:\\S+$"
-    },
-    "Ext": {
-      "title": "Ext",
-      "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-      "type": "object",
-      "minProperties": 1,
-      "additionalProperties": true,
-      "propertyNames": {
-        "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "ContextId": {
-      "title": "ContextId",
-      "description": "The trust context the identifier belongs to.",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 256
     }
   }
 };

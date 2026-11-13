@@ -106,35 +106,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "External — Sign — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "signature",
-        "digest"
-      ],
-      "properties": {
-        "signature": {
-          "type": "string",
-          "minLength": 4,
-          "maxLength": 256,
-          "pattern": "^[A-Za-z0-9+/]+={0,2}$",
-          "description": "Sui serialized signature, base64: the scheme flag (0x02 for secp256r1), the 64-byte signature and the 33-byte compressed public key."
-        },
-        "digest": {
-          "type": "string",
-          "minLength": 32,
-          "maxLength": 64,
-          "pattern": "^[1-9A-HJ-NP-Za-km-z]+$",
-          "description": "The transaction digest the custodian computed, base58 as Sui displays it, so the caller can match it to the transaction it submits."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -206,21 +177,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "AccountId": {
-      "title": "AccountId",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 64,
-      "pattern": "^[a-z0-9][a-z0-9-]*$",
-      "description": "The account's identifier within its context, chosen by whoever creates it. Lowercase letters, digits and hyphens, so that it can be embedded in a certificate subject, a token subject or a provider-side condition without escaping. Unique per context; never reused after deletion while anything that names it (a provider-side trust policy, an audit row) may still exist."
-    },
-    "AccountContextId": {
-      "title": "AccountContextId",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 256,
-      "description": "The custodian context that owns the account. Act scope in this context decides who may manage the account and who may consume it; the account's keys are derived in this context's key space."
     }
   }
 };

@@ -118,44 +118,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Policy Activate — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "activated",
-        "purpose"
-      ],
-      "properties": {
-        "activated": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The id now active for `purpose` — equal to the request `id`."
-        },
-        "purpose": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "description": "Echoed from the request."
-        },
-        "previousPolicyId": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "The policy id that was active for this (contextId, purpose) immediately before, deactivated by this call. `null` when no policy was active — the first activation for the slot. Recorded so an operator can roll back to the prior policy and so the audit trail links the displacement."
-        },
-        "contextId": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Echoed from the request when it was supplied."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

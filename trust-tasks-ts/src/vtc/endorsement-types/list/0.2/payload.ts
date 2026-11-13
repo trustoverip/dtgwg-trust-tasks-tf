@@ -93,30 +93,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Endorsement-Types List — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "items"
-      ],
-      "properties": {
-        "items": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/EndorsementType"
-          }
-        },
-        "nextCursor": {
-          "type": "string",
-          "description": "Continuation token for the next page; pass it back as `cursor`. Absent on the last page — never `null`."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -125,39 +101,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "EndorsementType": {
-      "$anchor": "endorsementType",
-      "title": "EndorsementType",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "typeUri"
-      ],
-      "properties": {
-        "typeUri": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 512,
-          "description": "The predicate IRI the community accepts, compared as an exact string. Always an absolute IRI: a DTG VSC predicate registry IRI (e.g. `https://registry.trustoverip.org/dtg/vsc/vetted/1`) or a community-namespace IRI defined in the registry's predicate definition format. The four core predicates — endorses/1, witnessed/1, vetted/1 and presented/1 under `https://registry.trustoverip.org/dtg/vsc/` — are seeded when the community starts. The reserved value `role:vetter`, which names the vetter-role record vtc/endorsements/* keeps beside statements, is never registered."
-        },
-        "description": {
-          "type": "string",
-          "maxLength": 1024
-        },
-        "claimSchema": {
-          "type": "object",
-          "description": "Optional JSON Schema a statement's `credentialSubject.object.value` must satisfy (opaque here) — for a registry predicate, the object schema its profile publishes."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "createdByDid": {
-          "type": "string",
-          "description": "The member who registered this endorsement type. An endorsement vocabulary is community-defined and shapes what every later endorsement can claim, so who introduced a type is audit-relevant in a way its creation time alone is not."
-        }
       }
     }
   }

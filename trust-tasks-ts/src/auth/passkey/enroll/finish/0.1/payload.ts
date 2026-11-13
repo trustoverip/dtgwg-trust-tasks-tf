@@ -139,41 +139,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Auth Passkey Enroll Finish — response payload",
-      "description": "Acknowledgement of the registered credential. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/finish/0.1#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "credentialId",
-        "subject",
-        "registeredAt"
-      ],
-      "properties": {
-        "credentialId": {
-          "type": "string",
-          "description": "base64url-encoded WebAuthn credential id, durable identifier for later management."
-        },
-        "subject": {
-          "type": "string",
-          "description": "The VID the credential is now bound to. Echoed for symmetry with finish-time error responses."
-        },
-        "deviceLabel": {
-          "type": "string",
-          "maxLength": 256,
-          "description": "The label persisted with the credential."
-        },
-        "registeredAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext",
-          "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -290,61 +255,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "AttestationResponse": {
-      "$anchor": "attestationResponse",
-      "title": "AuthenticatorAttestationResponse (registration)",
-      "description": "The credential the client returns from `navigator.credentials.create`. Binary fields are base64url-encoded.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "rawId",
-        "type",
-        "response"
-      ],
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "rawId": {
-          "type": "string"
-        },
-        "type": {
-          "const": "public-key"
-        },
-        "response": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "clientDataJSON",
-            "attestationObject"
-          ],
-          "properties": {
-            "clientDataJSON": {
-              "type": "string"
-            },
-            "attestationObject": {
-              "type": "string"
-            },
-            "transports": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          }
-        },
-        "authenticatorAttachment": {
-          "enum": [
-            "platform",
-            "cross-platform"
-          ]
-        },
-        "clientExtensionResults": {
-          "type": "object"
-        }
       }
     }
   }

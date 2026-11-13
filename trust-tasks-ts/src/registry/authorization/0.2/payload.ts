@@ -137,59 +137,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Registry Authorization — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "entityId",
-        "authorityId",
-        "action",
-        "resource",
-        "authorized",
-        "evaluatedAt"
-      ],
-      "properties": {
-        "entityId": {
-          "type": "string"
-        },
-        "authorityId": {
-          "type": "string"
-        },
-        "action": {
-          "type": "string"
-        },
-        "resource": {
-          "type": "string"
-        },
-        "authorized": {
-          "type": "boolean",
-          "description": "True if the action+resource authorization has been confirmed, false otherwise."
-        },
-        "evaluatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Server time the query was evaluated at, per the endpoint clock."
-        },
-        "asOf": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The requested server time, echoed from the request `context.time` when supplied."
-        },
-        "message": {
-          "type": "string",
-          "maxLength": 1024,
-          "description": "Additional human-readable detail about the authorization response."
-        },
-        "context": {
-          "$ref": "#/$defs/QueryContext"
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

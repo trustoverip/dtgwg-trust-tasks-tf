@@ -167,25 +167,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "Rooms Keys Open — response payload",
-      "description": "Success response to rooms/keys/open. Type https://trusttasks.org/spec/rooms/keys/open/0.2#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "plaintext"
-      ],
-      "properties": {
-        "plaintext": {
-          "type": "string",
-          "description": "The opened record, base64url. The only thing that crosses back — never the key."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -251,25 +232,6 @@ export const RESPONSE_PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "RecordPurpose": {
-      "title": "RecordPurpose",
-      "description": "The one purpose for which a caller will use room content a request discloses (VTI-ACL-103): a name registered in the VTI specification's purpose registry (`personalisation`, `taskExecution`, `analytics`, `modelTraining`) or an absolute IRI. Granted only as the caller's authority grants it — `any` grants every purpose but `modelTraining` — refused otherwise (`purposeNotGranted`), and recorded with the read. Distinct from `PermittedUse`, which is what a record's author permits and is a statement, not a grant.",
-      "$ref": "#/$defs/Purpose"
-    },
-    "Purpose": {
-      "title": "Purpose",
-      "description": "What content is used for: a lowerCamelCase name registered in the VTI specification's purpose registry (Appendix H) — `personalisation`, `taskExecution`, `analytics`, `modelTraining` at the time of writing — or an absolute IRI naming a purpose defined elsewhere, such as a purpose of the W3C Data Privacy Vocabulary (`https://w3id.org/dpv#ServicePersonalisation`). Compared by exact string equality: a consumer MUST NOT treat a purpose it does not recognise as equal to any other, and grants only a request naming exactly a listed purpose (VTI-ACL-109). A registered name is never an IRI, because it contains no `:`.",
-      "type": "string",
-      "maxLength": 2048,
-      "anyOf": [
-        {
-          "pattern": "^[a-z][a-zA-Z0-9]{0,63}$"
-        },
-        {
-          "pattern": "^[a-zA-Z][a-zA-Z0-9+.-]*:[^\\s]+$"
-        }
-      ]
     }
   }
 };

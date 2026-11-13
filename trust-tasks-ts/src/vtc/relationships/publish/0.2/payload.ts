@@ -145,40 +145,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Relationships Publish — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "issuerDid",
-        "subjectDid",
-        "vrcDigestMultibase"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Id assigned to the stored relationship (a UUID)."
-        },
-        "issuerDid": {
-          "type": "string",
-          "minLength": 1
-        },
-        "subjectDid": {
-          "type": "string",
-          "minLength": 1
-        },
-        "vrcDigestMultibase": {
-          "$ref": "#/$defs/DigestMultibase",
-          "description": "Digest over the RFC 8785 canonicalization of the stored VRC, for out-of-band integrity checks. The same value vtc/relationships/request reports on issuance and vtc/relationships/list reports per entry, so a member can tie the three together without re-hashing."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",

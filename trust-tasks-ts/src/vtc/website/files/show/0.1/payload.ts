@@ -123,55 +123,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Website — Files — Show — response payload",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "path",
-        "etag",
-        "sizeBytes",
-        "contentType",
-        "offset",
-        "data",
-        "complete"
-      ],
-      "properties": {
-        "path": {
-          "$ref": "#/$defs/WebsitePath"
-        },
-        "etag": {
-          "$ref": "#/$defs/WebsiteEtag"
-        },
-        "sizeBytes": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "The whole file's size."
-        },
-        "contentType": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 255,
-          "description": "The media type the site serves the file as, guessed from its extension; `application/octet-stream` when unknown."
-        },
-        "offset": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Echoed."
-        },
-        "data": {
-          "$ref": "#/$defs/FileData"
-        },
-        "complete": {
-          "type": "boolean",
-          "description": "Whether this range reached the end of the file."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -181,13 +132,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
-    },
-    "FileData": {
-      "title": "FileData",
-      "type": "string",
-      "maxLength": 349526,
-      "pattern": "^[A-Za-z0-9_-]*$",
-      "description": "A range of a file's bytes, base64url-encoded without padding (RFC 4648 §5). Empty for an empty range. Bounded at 349526 characters, the unpadded encoding of the 262144-byte range ceiling."
     },
     "WebsiteEtag": {
       "title": "WebsiteEtag",

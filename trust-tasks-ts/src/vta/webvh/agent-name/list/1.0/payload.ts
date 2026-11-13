@@ -106,32 +106,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "Response": {
-      "$anchor": "response",
-      "title": "VTA WebVH Agent-Name List — response payload",
-      "description": "Success response to vta/webvh/agent-name/list. Type https://trusttasks.org/spec/vta/webvh/agent-name/list/1.0#response.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "names"
-      ],
-      "properties": {
-        "did": {
-          "type": "string"
-        },
-        "names": {
-          "type": "array",
-          "description": "Names held for the DID, including disabled ones — a disabled name is still held and cannot be taken by anyone else.",
-          "items": {
-            "$ref": "#/$defs/AgentNameEntry"
-          }
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
@@ -140,34 +114,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
       "additionalProperties": true,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-      }
-    },
-    "AgentNameEntry": {
-      "title": "AgentNameEntry",
-      "description": "An agent name bound to a DID. A name is only ever authoritative in the DID→name direction: the DID document's `alsoKnownAs` is what proves the binding, because anyone controlling a domain can point a name at somebody else's DID.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "name",
-        "enabled"
-      ],
-      "properties": {
-        "name": {
-          "type": "string",
-          "description": "The name, without the host — the full form is `<host>/@<name>`."
-        },
-        "enabled": {
-          "type": "boolean",
-          "description": "Whether the name currently resolves. A disabled name is still held — it is not available for anyone else to take."
-        },
-        "createdAt": {
-          "type": "integer",
-          "minimum": 0,
-          "description": "Unix epoch seconds."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
       }
     }
   }

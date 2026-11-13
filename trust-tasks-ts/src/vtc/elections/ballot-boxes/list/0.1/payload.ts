@@ -100,58 +100,6 @@ export const PAYLOAD_SCHEMA: { readonly [key: string]: unknown } = {
     }
   },
   "$defs": {
-    "TrustedBallotBox": {
-      "title": "TrustedBallotBox",
-      "description": "One voting service the community trusts (VTI-VOT-082), with what its members are told about it when an election names it (VTI-VOT-090).",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "did",
-        "operator",
-        "sameOperator"
-      ],
-      "properties": {
-        "did": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 2048,
-          "description": "The ballot box's DID, exactly as a manifest names it in `ballotBox`."
-        },
-        "operator": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 512,
-          "description": "Who operates it, as the community names them — the `ballotBoxOperator` a member is shown."
-        },
-        "sameOperator": {
-          "type": "boolean",
-          "description": "Whether the party operating the community's VTC also operates this ballot box — the `sameOperator` a member is shown."
-        }
-      }
-    },
-    "Response": {
-      "$anchor": "response",
-      "title": "VTC Elections — Ballot Boxes — List — response payload",
-      "description": "Success response to vtc/elections/ballot-boxes/list/0.1: every voting service the community trusts, as it trusts them now.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "ballotBoxes"
-      ],
-      "properties": {
-        "ballotBoxes": {
-          "type": "array",
-          "maxItems": 256,
-          "items": {
-            "$ref": "#/$defs/TrustedBallotBox"
-          },
-          "description": "Every trusted ballot box, in the community's own order. Empty when the community trusts none, and so can create no election."
-        },
-        "ext": {
-          "$ref": "#/$defs/Ext"
-        }
-      }
-    },
     "Ext": {
       "title": "Ext",
       "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
