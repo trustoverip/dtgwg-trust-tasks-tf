@@ -97,7 +97,7 @@ int? _countValuesIfMarked(Object? payload) {
   while (stack.isNotEmpty) {
     final v = stack.removeLast();
     n += 1;
-    if (v is Map) {
+    if (v is Map<dynamic, dynamic>) {
       if (v.containsKey(_extCritical)) marked = true;
       stack.addAll(v.values);
     } else if (v is List) {
@@ -115,7 +115,7 @@ Object? _resolve(String ref, Object? root) {
   Object? node = root;
   for (final raw in pointer.substring(1).split('/')) {
     final token = raw.replaceAll('~1', '/').replaceAll('~0', '~');
-    if (node is Map && node.containsKey(token)) {
+    if (node is Map<dynamic, dynamic> && node.containsKey(token)) {
       node = node[token];
     } else if (node is List) {
       final i = int.tryParse(token);
@@ -128,21 +128,26 @@ Object? _resolve(String ref, Object? root) {
   return node;
 }
 
-Object? _property(Map schema, String name) {
+Object? _property(Map<dynamic, dynamic> schema, String name) {
   final props = schema['properties'];
-  return props is Map && props.containsKey(name) ? props[name] : null;
+  return props is Map<dynamic, dynamic> && props.containsKey(name)
+      ? props[name]
+      : null;
 }
 
-bool _hasProperty(Map schema, String name) {
+bool _hasProperty(Map<dynamic, dynamic> schema, String name) {
   final props = schema['properties'];
-  return props is Map && props.containsKey(name);
+  return props is Map<dynamic, dynamic> && props.containsKey(name);
 }
 
-bool _closes(Map schema) =>
+bool _closes(Map<dynamic, dynamic> schema) =>
     schema['additionalProperties'] == false ||
     schema['unevaluatedProperties'] == false;
 
-List<Object?> _memberSchemas(List<Map> applicable, String name) {
+List<Object?> _memberSchemas(
+  List<Map<dynamic, dynamic>> applicable,
+  String name,
+) {
   final out = <Object?>[];
   for (final schema in applicable) {
     if (_hasProperty(schema, name)) {
@@ -152,14 +157,17 @@ List<Object?> _memberSchemas(List<Map> applicable, String name) {
     // Taken whole: matching the patterns would only narrow the places a
     // marking may be read.
     final patterns = schema['patternProperties'];
-    if (patterns is Map) out.addAll(patterns.values);
+    if (patterns is Map<dynamic, dynamic>) out.addAll(patterns.values);
     final additional = schema['additionalProperties'];
-    if (additional is Map) out.add(additional);
+    if (additional is Map<dynamic, dynamic>) out.add(additional);
   }
   return out;
 }
 
-List<Object?> _elementSchemas(List<Map> applicable, int index) {
+List<Object?> _elementSchemas(
+  List<Map<dynamic, dynamic>> applicable,
+  int index,
+) {
   final out = <Object?>[];
   for (final schema in applicable) {
     final prefix = schema['prefixItems'];
@@ -168,7 +176,7 @@ List<Object?> _elementSchemas(List<Map> applicable, int index) {
       continue;
     }
     final items = schema['items'];
-    if (items is Map) out.add(items);
+    if (items is Map<dynamic, dynamic>) out.add(items);
   }
   return out;
 }
@@ -192,7 +200,7 @@ class _Walk {
       for (final e in value) {
         blind(e, depth + 1);
       }
-    } else if (value is Map) {
+    } else if (value is Map<dynamic, dynamic>) {
       if (value.containsKey(_extCritical)) _checkLevel(value);
       for (final entry in value.entries) {
         if (entry.key == 'ext' || entry.key == _extCritical) continue;
@@ -203,8 +211,8 @@ class _Walk {
 
   void guided(Object? value, List<Object?> schemas, int depth) {
     _spend(depth);
-    if (value is! Map && value is! List) return;
-    final applicable = <Map>[];
+    if (value is! Map<dynamic, dynamic> && value is! List) return;
+    final applicable = <Map<dynamic, dynamic>>[];
     for (final s in schemas) {
       _expand(s, applicable, depth);
     }
@@ -216,7 +224,7 @@ class _Walk {
       }
       return;
     }
-    final level = value as Map;
+    final level = value as Map<dynamic, dynamic>;
     if (level.containsKey(_extCritical)) {
       if (applicable.any((s) => _hasProperty(s, _extCritical))) {
         _checkLevel(level);
@@ -233,9 +241,9 @@ class _Walk {
     }
   }
 
-  void _expand(Object? schema, List<Map> out, int depth) {
+  void _expand(Object? schema, List<Map<dynamic, dynamic>> out, int depth) {
     _spend(depth);
-    if (schema is! Map) return;
+    if (schema is! Map<dynamic, dynamic>) return;
     if (out.any((s) => identical(s, schema))) return;
     out.add(schema);
     final ref = schema[r'$ref'];
@@ -254,14 +262,14 @@ class _Walk {
   }
 
   /// Rules 1 and 2, then rule 4, at one object level.
-  void _checkLevel(Map level) {
+  void _checkLevel(Map<dynamic, dynamic> level) {
     final entries = level[_extCritical];
     if (entries is! List) throw _malformed('`extCritical` must be an array');
     if (entries.isEmpty) {
       throw _malformed('`extCritical` must name at least one namespace');
     }
     final ext = level['ext'];
-    if (ext is! Map) {
+    if (ext is! Map<dynamic, dynamic>) {
       throw _malformed(
         '`extCritical` is present where there is no sibling `ext` object',
       );

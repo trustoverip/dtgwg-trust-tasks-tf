@@ -331,7 +331,7 @@ fn member_schemas<'s>(applicable: &[&'s Value], name: &str) -> Vec<&'s Value> {
 }
 
 /// The schemas that apply to element `index` of an array.
-fn element_schemas(applicable: &[&Value], index: usize) -> Vec<&Value> {
+fn element_schemas<'s>(applicable: &[&'s Value], index: usize) -> Vec<&'s Value> {
     let mut out = Vec::new();
     for schema in applicable {
         match schema
