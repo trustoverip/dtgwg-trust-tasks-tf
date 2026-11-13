@@ -32,7 +32,7 @@ typify = "0.6"
 # `schemars::RootSchema`, so the majors must match (see trust-tasks-codegen).
 schemars = "0.8"
 prettyplease = "0.2"
-syn = { version = "2", features = ["full", "visit-mut"] }
+syn = { version = "3", features = ["full", "visit-mut"] }
 proc-macro2 = "1"
 quote = "1"
 heck = "0.5"
