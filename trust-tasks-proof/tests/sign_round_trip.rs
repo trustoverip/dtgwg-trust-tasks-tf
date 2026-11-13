@@ -108,13 +108,15 @@ async fn explicit_cryptosuite_option_is_honored() {
     // RDFC canonicalisation processes the document as JSON-LD and
     // requires an @context (the JCS default needs none). It expands in
     // safe mode (affinidi-data-integrity 0.8.2+), so every member must be
-    // defined by the context: the inline `@vocab` defines the Trust Task
-    // members the credentials context does not.
+    // defined by the context: the credentials examples context's `@vocab`
+    // defines the Trust Task members the credentials context does not. (An
+    // inline context object is not an option: the verifier supports only a
+    // proof `@context` of strings.)
     doc.as_object_mut().unwrap().insert(
         "@context".into(),
         json!([
             "https://www.w3.org/ns/credentials/v2",
-            { "@vocab": "https://trusttasks.org/vocab#" }
+            "https://www.w3.org/ns/credentials/examples/v2"
         ]),
     );
 
