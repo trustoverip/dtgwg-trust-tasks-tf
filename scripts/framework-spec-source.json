@@ -1,0 +1,5 @@
+{
+  "$comment": "The canonical framework specification commit SPEC.md is generated from (trustoverip/dtgwg-trust-tasks-spec). Moved only by a pull request — .github/workflows/framework-spec-bump.yml opens one when canonical main moves, via `npm run bump-framework-spec` — so trusttasks.org serves only text reviewed here. `ref` is the branch or tag the commit was taken from, shown in SPEC.md's banner. Never edit `commit` without regenerating SPEC.md: `npm run check-framework-spec` fails until they agree.",
+  "commit": "bdf2cdd9256f9d7b98fe8b40c776124fc27a6084",
+  "ref": "main"
+}

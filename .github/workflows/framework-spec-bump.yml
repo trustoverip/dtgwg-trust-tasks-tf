@@ -1,0 +1,140 @@
+name: Framework specification bump
+# SPEC.md is generated from the canonical framework repository
+# (trustoverip/dtgwg-trust-tasks-spec) at the commit
+# scripts/framework-spec-source.json pins, and the website serves the committed
+# copy. This keeps the pin from going stale: each night, and whenever the
+# canonical repository dispatches `framework-spec-updated`, it regenerates
+# SPEC.md from canonical `main` and, when that differs from the committed copy,
+# opens (or refreshes) one pull request moving the pin. The text reaches
+# trusttasks.org when that PR merges; its CI builds the registry against it,
+# so a canonical change that breaks a `/SPEC.md#…` link fails there.
+#
+# Only git, gh and the generator (Node built-ins, no npm dependency) run here,
+# so the one job holds the token it pushes with.
+
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+  repository_dispatch:
+    types: [framework-spec-updated]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: framework-spec-bump
+  cancel-in-progress: false
+
+jobs:
+  bump:
+    name: propose canonical main
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+
+      - name: Open or refresh the bump pull request
+        env:
+          # The PR must trigger CI, which a GITHUB_TOKEN push does not.
+          GH_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
+          PUSH_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          pinned=$(jq -r .commit scripts/framework-spec-source.json)
+          # Regenerates SPEC.md from canonical main and writes the commit it
+          # fetched into the pin file.
+          node scripts/generate-framework-spec.mjs --update
+          latest=$(jq -r .commit scripts/framework-spec-source.json)
+          if git diff --quiet -- SPEC.md scripts/framework-spec-source.json; then
+            echo "::notice::SPEC.md already matches canonical main (${latest:0:12})"
+            exit 0
+          fi
+          # Author as the token's owner, not the bot: EasyCLA authorises the
+          # commit author and github-actions[bot] has signed no CLA (as
+          # rust-toolchain-bump.yml and release-pr.sh do).
+          if ! author_json=$(gh api user 2>/dev/null); then
+            echo "::error::Could not resolve the token owner via \`gh api user\`; set RELEASE_PLZ_TOKEN to a user token."
+            exit 1
+          fi
+          git config user.name "$(jq -r '.name // .login' <<<"$author_json")"
+          git config user.email "$(jq -r '.id' <<<"$author_json")+$(jq -r '.login' <<<"$author_json")@users.noreply.github.com"
+          # One branch, refreshed by every run until it merges.
+          branch="framework-spec/bump"
+          git switch -C "$branch"
+          git add SPEC.md scripts/framework-spec-source.json
+          title="docs(spec): regenerate SPEC.md from the canonical spec at ${latest:0:12}"
+          compare="https://github.com/trustoverip/dtgwg-trust-tasks-spec/compare/${pinned}...${latest}"
+          {
+            echo "Moves the canonical framework specification pin in \`scripts/framework-spec-source.json\` from"
+            echo "\`${pinned:0:12}\` to \`${latest:0:12}\` (canonical \`main\`) and regenerates SPEC.md from it."
+            echo
+            echo "Canonical changes in this range: $compare"
+            echo
+            echo "Review the SPEC.md diff as the text trusttasks.org will serve once this merges. If the"
+            echo "registry build fails on a \`/SPEC.md#…\` link, update the link or add the old anchor to"
+            echo "\`scripts/framework-spec-legacy-anchors.json\` on this branch, then run"
+            echo "\`npm run generate-framework-spec\` and commit the result."
+            echo
+            echo "Opened by .github/workflows/framework-spec-bump.yml."
+          } > "$RUNNER_TEMP/body.md"
+          { echo "$title"; echo; cat "$RUNNER_TEMP/body.md"; } > "$RUNNER_TEMP/message.txt"
+          git commit -s -q -F "$RUNNER_TEMP/message.txt"
+          auth=$(printf 'x-access-token:%s' "$PUSH_TOKEN" | base64 | tr -d '\n')
+          echo "::add-mask::$auth"
+          GIT_CONFIG_COUNT=1 \
+            GIT_CONFIG_KEY_0="http.https://github.com/.extraheader" \
+            GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $auth" \
+            git push -f origin "$branch"
+          # REST, not `gh pr edit`, for the reason release-pr.sh gives.
+          existing=$(gh pr list --head "$branch" --state open --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh api --silent -X PATCH "repos/{owner}/{repo}/pulls/$existing" \
+              -f title="$title" -f body="$(cat "$RUNNER_TEMP/body.md")"
+            echo "::notice::updated PR #$existing"
+          else
+            gh pr create --base main --head "$branch" --title "$title" --body-file "$RUNNER_TEMP/body.md"
+          fi
+
+  # Nobody watches a scheduled run: when it fails (canonical text the generator
+  # cannot number or link, or a push refused), the pin silently stops moving.
+  # Open an issue instead, or comment on the one already open, so the failure
+  # is visible to every maintainer. A later green run does not close it;
+  # whoever fixes the cause does.
+  report-failure:
+    needs: [bump]
+    if: failure() && (github.event_name == 'schedule' || github.event_name == 'repository_dispatch')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      issues: write
+    steps:
+      - name: Open or update the failure issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          title="Framework specification bump is failing"
+          body="The \`$EVENT\` run of the framework specification bump failed: $RUN_URL
+
+          SPEC.md (and trusttasks.org) stays at the pinned canonical commit until a run succeeds. The usual cause is a change in the canonical framework repository that the generator refuses (a cross-reference to no heading, or a legacy anchor that now names no section); see CLAUDE.md, \"SPEC.md is generated\"."
+          existing=$(gh issue list --state open --search "\"$title\" in:title" --json number,title \
+            --jq "[.[] | select(.title == \"$title\")][0].number // empty")
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body "Failed again: $RUN_URL"
+          else
+            gh issue create --title "$title" --body "$body"
+          fi
