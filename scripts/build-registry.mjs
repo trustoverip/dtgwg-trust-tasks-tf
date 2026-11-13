@@ -31,9 +31,11 @@ import {
 import { checkDisclosureFloor } from './lib/disclosure-floor.mjs';
 import { createErrorCodeCasingLint, checkStandardErrorCodeCasing } from './lib/error-code-casing.mjs';
 import { checkMemberCasing } from './lib/member-casing.mjs';
+import { findGeneratorKeywords } from './lib/generator-keywords.mjs';
 import { checkWireConventions } from './lib/wire-conventions.mjs';
 import { checkStaleReferences } from './lib/stale-references.mjs';
 import { checkSpecExamples } from './lib/spec-examples.mjs';
+import { checkSchemaBounds } from './lib/schema-bounds.mjs';
 import { incompatibilities, frontMatterIncompatibilities } from './lib/schema-compat.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -199,6 +201,7 @@ function discoverSharedSchemas() {
       if (!underInternal) continue;
       try {
         const schema = readJson(full);
+        checkGeneratorKeywords(schema, rel);
         found.push({ filePath: full, rel, schema });
       } catch (e) {
         fail(rel, `invalid JSON: ${e.message}`);
@@ -1296,6 +1299,15 @@ function closedObjectSubschemas(schema) {
   return out;
 }
 
+/* A code generator's keyword (`tsType`, `tsEnumNames`) is not JSON Schema, and
+ * the TypeScript generators would write its value into a module as source. The
+ * generators add `tsType` themselves; a schema never carries one. */
+function checkGeneratorKeywords(schema, rel) {
+  for (const { pointer, keyword } of findGeneratorKeywords(schema)) {
+    fail(rel, `${pointer}: \`${keyword}\` is a code-generator keyword, not JSON Schema — remove it`);
+  }
+}
+
 function checkPayloadSchema(slug, version, dir) {
   const schemaPath = path.join(dir, 'payload.schema.json');
   if (!fs.existsSync(schemaPath)) {
@@ -1316,6 +1328,7 @@ function checkPayloadSchema(slug, version, dir) {
   if (schema.$schema !== 'https://json-schema.org/draft/2020-12/schema') {
     fail(`${slug}/${version}/payload.schema.json`, `$schema must be JSON Schema 2020-12`);
   }
+  checkGeneratorKeywords(schema, `${slug}/${version}/payload.schema.json`);
   // §7.3 item 7.4 asks a schema to say how unrecognized members are treated.
   // `unevaluatedProperties` satisfies that as squarely as `additionalProperties`
   // and is the only one that composes: a schema built by `allOf` over a shared
@@ -2559,6 +2572,13 @@ function main() {
   checkSpecExamples({
     specsDir: SPECS_DIR,
     allowlistPath: path.join(ROOT, 'scripts', 'lib', 'spec-examples-allowlist.json'),
+    fail,
+    warn,
+    log: console.log,
+  });
+  checkSchemaBounds({
+    specsDir: SPECS_DIR,
+    allowlistPath: path.join(ROOT, 'scripts', 'lib', 'schema-bounds-allowlist.json'),
     fail,
     warn,
     log: console.log,
