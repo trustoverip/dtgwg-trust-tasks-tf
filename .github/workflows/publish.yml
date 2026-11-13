@@ -90,9 +90,7 @@ jobs:
       - name: Install libdbus-1-dev
         uses: ./.github/actions/install-libdbus
 
-      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
-        with:
-          toolchain: stable
+      - uses: ./.github/actions/rust-toolchain
 
       - name: Authenticate to crates.io (Trusted Publishing)
         uses: rust-lang/crates-io-auth-action@3268eb413133e2960fa4ae0e963ca76380c54cd9 # v1.0.6
@@ -777,9 +775,7 @@ jobs:
       - name: Install libdbus-1-dev
         uses: ./.github/actions/install-libdbus
 
-      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
-        with:
-          toolchain: stable
+      - uses: ./.github/actions/rust-toolchain
 
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
