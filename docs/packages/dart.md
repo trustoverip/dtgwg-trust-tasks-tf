@@ -38,7 +38,7 @@ because a Dart library is a file and not a directory. Four things are its own:
    publish does not; `tag-dart` warns when that happens.
 
 Paths are snake_cased for Dart's `file_names` lint, so the slug
-`acl/change-role` becomes `lib/specs/acl/change_role/v0_1/payload.dart`.
+`acl/change-role` becomes `lib/specs/acl/change_role/v0_3/payload.dart`.
 
 ### The hand-written Dart packages beside it
 
