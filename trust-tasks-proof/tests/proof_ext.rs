@@ -114,16 +114,21 @@ async fn mutating_the_payload_after_signing_fails_verification() {
 async fn typed_sign_matches_the_free_function_byte_for_byte() {
     let (secret, did) = fresh_did_key(33);
     let mut doc = unsigned(&did);
+    // Pin `created`: two signatures taken either side of a second boundary
+    // would otherwise differ in their timestamp, not in what was signed.
+    let created = chrono::Utc::now();
 
     let via_free_fn = sign_trust_task(
         &serde_json::to_value(&doc).expect("serialise"),
         &secret,
-        SignOptions::new(),
+        SignOptions::new().with_created(created),
     )
     .await
     .expect("free function sign");
 
-    doc.sign(&secret, SignOptions::new()).await.expect("sign");
+    doc.sign(&secret, SignOptions::new().with_created(created))
+        .await
+        .expect("sign");
 
     assert_eq!(
         serde_json::to_value(&doc).expect("serialise signed"),
