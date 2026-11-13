@@ -4,7 +4,7 @@
 #![allow(deprecated)]
 /// Why this specification version is deprecated (SPEC "Superseded and
 /// Withdrawn Versions"), or `None` while it is current.
-pub const DEPRECATION: Option<&str> = Some("superseded by rooms/records/list/0.7");
+pub const DEPRECATION: Option<&str> = Some("superseded by rooms/records/list/0.8");
 #[allow(unused_imports)]
 use serde::{Deserialize, Serialize};
 /// Error types.
@@ -388,7 +388,7 @@ impl ::std::fmt::Display for HeadVersion {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by rooms/records/list/0.7")]
+#[deprecated(note = "superseded by rooms/records/list/0.8")]
 pub struct Payload {
     ///An opaque continuation token from a previous response's `nextCursor`. A host MUST NOT accept a cursor it did not issue.
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
@@ -837,7 +837,7 @@ impl RecordPrune {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by rooms/records/list/0.7")]
+#[deprecated(note = "superseded by rooms/records/list/0.8")]
 pub struct Response {
     ///The room's data commitment at the moment this listing was taken. OPTIONAL because a host that does not maintain the tree cannot honestly assert one, and a fabricated root is worse than an absent one — its absence says 'this host offers no completeness guarantee', which is true and useful. Present, it is signed along with the rest of the response, which is what makes it evidence rather than a claim.
     #[serde(

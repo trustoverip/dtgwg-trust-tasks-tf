@@ -116,7 +116,7 @@ no-dereference rules of
 [`rooms/records/put`](../../put/0.3/spec.md), and **MUST NOT** condition service of a
 `private` room on a session of its own.
 
-A host **MUST** return `createdAt`, `createdBy` and `bodyStoredAt` as [`rooms/records/list/0.7`](../../list/0.7/spec.md)
+A host **MUST** return `createdAt`, `createdBy` and `bodyStoredAt` as [`rooms/records/list/0.8`](../../list/0.8/spec.md)
 returns them on its rows — the same values for the same record, `createdBy` never on a `private`
 room — and as [`rooms/records/put/0.5`](../../put/0.5/spec.md) Host items 16 and 17 record them.
 
@@ -150,7 +150,7 @@ one.
 
 `dataCommitment` carries the room's record-tree root at the moment this record was
 read — the same value and the same construction as
-[`rooms/records/list`](../../list/0.7/spec.md), whose section on it governs.
+[`rooms/records/list`](../../list/0.8/spec.md), whose section on it governs.
 
 It is here, on a single-record read, for two reasons. A reader taking several
 reads can tell **whether the room moved between them**, which a per-read root
@@ -162,7 +162,7 @@ a root; not a completeness proof on its own, because a single root is the host's
 own assertion until it is compared against one the host did not choose.
 
 `recordCount` and `headVersion` travel with it and are what make that comparison
-possible at all — see [`rooms/records/list`](../../list/0.7/spec.md), whose section
+possible at all — see [`rooms/records/list`](../../list/0.8/spec.md), whose section
 on them governs. The short of it: a root without a `headVersion` names no state, so
 two of them differing is a room that moved as readily as a host that equivocated,
 and a reader **MUST NOT** compare it against another root.
